@@ -138,9 +138,10 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             if (string.IsNullOrEmpty(response.Content))
             {
                 StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
-                if (functionCall != null)
+                if (functionCall?.Name != null)
                 {
-                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                    (string? pluginName, string functionName) = this.ParseFunctionName(functionCall.Name);
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {$"{pluginName}." ?? string.Empty}{functionName}");
                 }
 
                 continue;
@@ -187,11 +188,12 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+            return
+                """
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                """;
         }
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]

@@ -131,5 +131,9 @@
   "BedrockAgent": {
     "AgentResourceRoleArn": "",
     "FoundationModel": "anthropic.claude-3-haiku-20240307-v1:0"
+  },
+  "Mem0": {
+    "ServiceUri": "https://api.mem0.ai",
+    "ApiKey": ""
   }
 }

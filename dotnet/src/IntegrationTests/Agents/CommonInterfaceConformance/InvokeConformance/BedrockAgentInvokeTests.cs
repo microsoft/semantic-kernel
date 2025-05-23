@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -11,7 +10,9 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.Invo
 
 public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixture())
 {
-    [Fact(Skip = "This test is for manual verification.")]
+    private const string ManualVerificationSkipReason = "This test is for manual verification.";
+
+    [Fact(Skip = ManualVerificationSkipReason)]
     public override async Task ConversationMaintainsHistoryAsync()
     {
         var q1 = "What is the capital of France.";
@@ -32,7 +33,7 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
         //Assert.Contains("Eiffel", result2.Message.Content);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = ManualVerificationSkipReason)]
     public override async Task InvokeReturnsResultAsync()
     {
         var agent = this.Fixture.Agent;
@@ -48,7 +49,7 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
         //Assert.Contains("Paris", firstResult.Message.Content);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = ManualVerificationSkipReason)]
     public override async Task InvokeWithoutThreadCreatesThreadAsync()
     {
         var agent = this.Fixture.Agent;
@@ -66,20 +67,19 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
         await this.Fixture.DeleteThread(firstResult.Thread);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "The BedrockAgent does not support invoking without a message.")]
     public override Task InvokeWithoutMessageCreatesThreadAsync()
     {
-        // The Bedrock agent does not support invoking without a message.
-        return Assert.ThrowsAsync<InvalidOperationException>(async () => await base.InvokeWithoutThreadCreatesThreadAsync());
+        return base.InvokeWithoutMessageCreatesThreadAsync();
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "The BedrockAgent does not yet support plugins")]
     public override Task MultiStepInvokeWithPluginAndArgOverridesAsync()
     {
         return base.MultiStepInvokeWithPluginAndArgOverridesAsync();
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "The BedrockAgent does not yet support plugins")]
     public override Task InvokeWithPluginNotifiesForAllMessagesAsync()
     {
         return base.InvokeWithPluginNotifiesForAllMessagesAsync();

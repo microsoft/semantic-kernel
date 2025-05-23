@@ -3,8 +3,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core;
@@ -139,6 +142,135 @@ public class AgentThreadTests
         Assert.Equal(1, thread.CreateInternalAsyncCount);
         Assert.Equal(1, thread.DeleteInternalAsyncCount);
         Assert.Equal(0, thread.OnNewMessageInternalAsyncCount);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is not yet created.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldThrowIfThreadNotCreatedAsync()
+    {
+        // Arrange
+        var thread = new TestAgentThread();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is deleted.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldThrowIfThreadDeletedAsync()
+    {
+        // Arrange
+        var thread = new TestAgentThread();
+        await thread.CreateAsync();
+        await thread.DeleteAsync();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnSuspendAsync(CancellationToken)"/> method
+    /// calls each registered state part in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnSuspendShouldCallOnSuspendOnRegisteredPartsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockProvider = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockProvider.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnSuspendAsync();
+
+        // Assert.
+        mockProvider.Verify(x => x.SuspendingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method
+    /// calls each registered state part in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldCallOnResumeOnRegisteredPartsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockProvider = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockProvider.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnResumeAsync();
+
+        // Assert.
+        mockProvider.Verify(x => x.ResumingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.CreateAsync(CancellationToken)"/> method
+    /// calls each registered state parts in turn.
+    /// </summary>
+    [Fact]
+    public async Task CreateShouldCallOnThreadCreatedOnRegisteredPartsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockProvider = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockProvider.Object);
+
+        // Act.
+        await thread.CreateAsync();
+
+        // Assert.
+        mockProvider.Verify(x => x.ConversationCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.DeleteAsync(CancellationToken)"/> method
+    /// calls each registered state parts in turn.
+    /// </summary>
+    [Fact]
+    public async Task DeleteShouldCallOnThreadDeleteOnRegisteredPartsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockProvider = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockProvider.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.DeleteAsync();
+
+        // Assert.
+        mockProvider.Verify(x => x.ConversationDeletingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnNewMessageAsync(ChatMessageContent, CancellationToken)"/> method
+    /// calls each registered state part in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnNewMessageShouldCallOnNewMessageOnRegisteredPartsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockProvider = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockProvider.Object);
+        var message = new ChatMessageContent(AuthorRole.User, "Test Message.");
+
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnNewMessageAsync(message);
+
+        // Assert.
+        mockProvider.Verify(x => x.MessageAddingAsync("test-thread-id", It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestAgentThread : AgentThread
