@@ -4,7 +4,7 @@ import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -46,11 +46,11 @@ async def main():
     # Next, we will create the AzureAssistantAgent
 
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="CopyWriter",
         instructions="""
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.

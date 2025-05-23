@@ -55,7 +55,7 @@ class OpenAIAssistantChannel(AgentChannel):
         Yields:
             tuple[bool, ChatMessageContent]: The conversation messages.
         """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+        from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 
         if not isinstance(agent, OpenAIAssistantAgent):
             raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
@@ -77,7 +77,7 @@ class OpenAIAssistantChannel(AgentChannel):
         Yields:
             tuple[bool, StreamingChatMessageContent]: The conversation messages.
         """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+        from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 
         if not isinstance(agent, OpenAIAssistantAgent):
             raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")

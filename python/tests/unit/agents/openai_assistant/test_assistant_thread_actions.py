@@ -53,7 +53,7 @@ from openai.types.shared.function_definition import FunctionDefinition
 
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent

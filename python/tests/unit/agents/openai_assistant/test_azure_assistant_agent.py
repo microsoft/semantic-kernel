@@ -13,8 +13,9 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import BaseModel, ValidationError
 
+from semantic_kernel.agents import AgentRegistry
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
+from semantic_kernel.agents.open_ai.openai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -24,6 +25,28 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+
+@pytest.fixture
+def mock_azure_openai_client_and_definition():
+    client = AsyncMock(spec=AsyncOpenAI)
+    client.beta = MagicMock()
+    client.beta.assistants = MagicMock()
+
+    definition = AsyncMock(spec=Assistant)
+    definition.id = "agent123"
+    definition.name = "DeclarativeAgent"
+    definition.description = "desc"
+    definition.instructions = "test agent"
+    definition.tools = []
+    definition.model = "gpt-4o"
+    definition.temperature = 1.0
+    definition.top_p = 1.0
+    definition.metadata = {}
+
+    client.beta.assistants.create = AsyncMock(return_value=definition)
+
+    return client, definition
 
 
 class SamplePlugin:
@@ -325,3 +348,121 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
             endpoint="https://test_endpoint.com",
             default_headers={"user_agent": "test"},
         )
+
+
+async def test_azure_assistant_agent_from_yaml_minimal(
+    azure_openai_unit_test_env, mock_azure_openai_client_and_definition
+):
+    spec = """
+type: azure_assistant
+name: MinimalAgent
+model:
+  id: ${AzureOpenAI:ChatModelId}
+  connection:
+    api_key: ${AzureOpenAI:ApiKey}
+    endpoint: ${AzureOpenAI:Endpoint}
+"""
+    client, definition = mock_azure_openai_client_and_definition
+    definition.name = "MinimalAgent"
+    agent = await AgentRegistry.create_from_yaml(spec, client=client)
+    assert isinstance(agent, AzureAssistantAgent)
+    assert agent.name == "MinimalAgent"
+    assert agent.definition.model == "gpt-4o"
+
+
+async def test_azure_assistant_agent_with_tools(azure_openai_unit_test_env, mock_azure_openai_client_and_definition):
+    spec = """
+type: azure_assistant
+name: CodeAgent
+description: Uses code interpreter.
+model:
+  id: ${AzureOpenAI:ChatModelId}
+  connection:
+    api_key: ${AzureOpenAI:ApiKey}
+    endpoint: ${AzureOpenAI:Endpoint}
+tools:
+  - type: code_interpreter
+    options:
+      file_ids:
+        - ${AzureOpenAI:FileId1}
+"""
+    client, definition = mock_azure_openai_client_and_definition
+    definition.name = "CodeAgent"
+    definition.tools = [{"type": "code_interpreter", "options": {"file_ids": ["file-123"]}}]
+    agent = await AgentRegistry.create_from_yaml(spec, client=client, extras={"AzureOpenAI:FileId1": "file-123"})
+    assert agent.name == "CodeAgent"
+    assert any(t["type"] == "code_interpreter" for t in agent.definition.tools)
+
+
+async def test_azure_assistant_agent_with_inputs_outputs_template(
+    azure_openai_unit_test_env, mock_azure_openai_client_and_definition
+):
+    spec = """
+type: azure_assistant
+name: StoryAgent
+model:
+  id: ${AzureOpenAI:ChatModelId}
+  connection:
+    api_key: ${AzureOpenAI:ApiKey}
+inputs:
+  topic:
+    description: The story topic.
+    required: true
+    default: AI
+  length:
+    description: The length of story.
+    required: true
+    default: 2
+outputs:
+  output1:
+    description: The story.
+template:
+  format: semantic-kernel
+"""
+    client, definition = mock_azure_openai_client_and_definition
+    definition.name = "StoryAgent"
+    agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(spec, client=client)
+    assert agent.name == "StoryAgent"
+    assert agent.prompt_template.prompt_template_config.template_format == "semantic-kernel"
+
+
+async def test_azure_assistant_agent_from_dict_missing_type():
+    data = {"name": "NoType"}
+    with pytest.raises(AgentInitializationException, match="Missing 'type'"):
+        await AgentRegistry.create_from_dict(data)
+
+
+async def test_azure_assistant_agent_from_yaml_missing_required_fields():
+    spec = """
+type: azure_assistant
+"""
+    with pytest.raises(AgentInitializationException):
+        await AgentRegistry.create_from_yaml(spec)
+
+
+async def test_agent_from_file_success(tmp_path, azure_openai_unit_test_env, mock_azure_openai_client_and_definition):
+    file_path = tmp_path / "spec.yaml"
+    file_path.write_text(
+        """
+type: azure_assistant
+name: DeclarativeAgent
+model:
+  id: ${AzureOpenAI:ChatModelId}
+  connection:
+    api_key: ${AzureOpenAI:ApiKey}
+""",
+        encoding="utf-8",
+    )
+    client, _ = mock_azure_openai_client_and_definition
+    agent = await AgentRegistry.create_from_file(str(file_path), client=client)
+    assert agent.name == "DeclarativeAgent"
+    assert isinstance(agent, AzureAssistantAgent)
+
+
+async def test_azure_assistant_agent_from_yaml_invalid_type():
+    spec = """
+type: not_registered
+name: ShouldFail
+"""
+    with pytest.raises(AgentInitializationException, match="not registered"):
+        await AgentRegistry.create_from_yaml(spec)

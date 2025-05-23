@@ -4,19 +4,19 @@ import os
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import ChatMessageContent, StreamingAnnotationContent
 
 """
-The following sample demonstrates how to create an OpenAI
-assistant using either Azure OpenAI or OpenAI and leverage the
-assistant's ability to have the code interpreter work with
+The following sample demonstrates how to create an Azure Assistant Agent 
+to leverage the assistant's ability to have the code interpreter work with
 uploaded files. This sample uses streaming responses.
 """
 
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
@@ -36,7 +36,7 @@ async def main():
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="FileManipulation",
         instructions="Find answers to the user's questions in the provided file.",
         tools=code_interpreter_tools,

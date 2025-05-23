@@ -2,6 +2,7 @@
 import asyncio
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -25,11 +26,11 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # 2. Create the assistant on the Azure OpenAI service
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         instructions="Answer questions about the world in one sentence.",
         name="Assistant",
     )

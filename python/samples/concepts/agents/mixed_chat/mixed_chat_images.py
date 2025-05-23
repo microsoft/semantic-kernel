@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
 from semantic_kernel.contents import AnnotationContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -24,14 +24,14 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Get the code interpreter tool and resources
     code_interpreter_tool, code_interpreter_resources = AzureAssistantAgent.configure_code_interpreter_tool()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="Analyst",
         instructions="Create charts as requested without explanation",
         tools=code_interpreter_tool,

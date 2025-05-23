@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import AzureResponsesAgent
-from semantic_kernel.agents.open_ai.openai_responses_agent import ResponsesAgentThread
+from semantic_kernel.agents import AzureResponsesAgent, ResponsesAgentThread
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -24,13 +24,11 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureResponsesAgent.setup_resources()
-
-    print(f"Using model: {model}")
+    client = AzureResponsesAgent.create_client()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = AzureResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=AzureOpenAISettings().chat_deployment_name,
         client=client,
         instructions="Answer questions about from the user.",
         name="Joker",

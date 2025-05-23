@@ -4,8 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAIAgent
 
 """
 The following sample demonstrates how to create an Azure AI agent based 
