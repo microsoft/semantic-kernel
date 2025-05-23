@@ -7,11 +7,8 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the file search tool.
-
-The agent is used to answer user questions that require file search to help ground 
-answers from the model.
+The following sample demonstrates how to create an Azure AI Agent that invokes
+a story generation task using a prompt template and a declarative spec.
 """
 
 # Define the YAML string for the sample
@@ -23,7 +20,7 @@ instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    connection_string: ${AzureAI:Endpoint}
 inputs:
   topic:
     description: The topic of the story.
@@ -62,9 +59,13 @@ async def main():
             # Cleanup: Delete the agent, vector store, and file
             await client.agents.delete_agent(agent.id)
 
-        """
+    """
+    Sample output:
 
-        """
+    # StoryAgent: Under the silvery moon, three mischievous cats tiptoed across the rooftop, chasing 
+      shadows and sharing secret whispers. By dawn, they curled up together, purring softly, dreaming 
+      of adventures yet to come.
+    """
 
 
 if __name__ == "__main__":

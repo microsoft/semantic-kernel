@@ -6,10 +6,7 @@ from semantic_kernel.agents import AgentRegistry, OpenAIAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI Assistant Agent that answers
-user questions using the file search tool.
-
-The agent is used to answer user questions that require file search to help ground 
-answers from the model.
+user questions using templating from a declarative spec.
 """
 
 # Define the YAML string for the sample

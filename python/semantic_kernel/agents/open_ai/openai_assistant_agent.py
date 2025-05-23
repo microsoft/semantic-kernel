@@ -308,7 +308,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
 
     @staticmethod
     @deprecated(
-        "setup_resources is deprecated. Use AzureAssistantAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
+        "setup_resources is deprecated. Use OpenAIAssistantAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
     )
     def setup_resources(
         *,

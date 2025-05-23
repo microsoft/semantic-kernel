@@ -17,10 +17,9 @@ answers from the model.
 spec = """
 type: azure_assistant
 name: FileSearchAgent
-description: Agent with code interpreter tool.
+description: Agent with file search tool.
 instructions: >
-  Use the code interpreter tool to answer questions that require code to be generated
-  and executed.
+  Use the file search tool to answer questions from the user.
 model:
   id: ${AzureOpenAI:ChatModelId}
   connection:

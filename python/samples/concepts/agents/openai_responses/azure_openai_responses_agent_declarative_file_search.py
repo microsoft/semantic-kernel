@@ -6,21 +6,17 @@ import os
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an Azure Responses Agent that answers
 user questions using the file search tool.
-
-The agent is used to answer user questions that require file search to help ground 
-answers from the model.
 """
 
 # Define the YAML string for the sample
 spec = """
 type: azure_responses
 name: FileSearchAgent
-description: Agent with code interpreter tool.
+description: Agent with file search tool.
 instructions: >
-  Use the code interpreter tool to answer questions that require code to be generated
-  and executed.
+  Use the file search tool to answer questions from the user.
 model:
   id: ${AzureOpenAI:ChatModelId}
   connection:

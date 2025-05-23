@@ -5,11 +5,8 @@ import asyncio
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the file search tool.
-
-The agent is used to answer user questions that require file search to help ground 
-answers from the model.
+The following sample demonstrates how to create an Azure Responses Agent that invokes
+a story generation task using a prompt template and a declarative spec.
 """
 
 # Define the YAML string for the sample

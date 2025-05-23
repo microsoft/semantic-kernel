@@ -8,7 +8,7 @@ from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an Azure Responses Agent that answers
 user questions. The sample shows how to load a declarative spec from a file. 
 The plugins/functions must already exist in the kernel.
 They are not created declaratively via the spec.
