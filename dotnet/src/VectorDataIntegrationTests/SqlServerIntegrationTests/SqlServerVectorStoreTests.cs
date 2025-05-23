@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
@@ -140,7 +139,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             // Let's use a model with the same storage names, but different types
             // to trigger a mapping exception (deserializing a string to Memory<float>).
             var invalidJsonCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButInvalidVector>(collectionName);
-            await Assert.ThrowsAsync<JsonException>(() => invalidJsonCollection.GetAsync(inserted.Id, new() { IncludeVectors = true }));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => invalidJsonCollection.GetAsync(inserted.Id, new() { IncludeVectors = true }));
         }
         finally
         {

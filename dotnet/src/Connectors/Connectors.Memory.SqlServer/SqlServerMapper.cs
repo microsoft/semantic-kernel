@@ -26,21 +26,29 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
         {
             foreach (var property in model.VectorProperties)
             {
-                var ordinal = reader.GetOrdinal(property.StorageName);
-                if (!reader.IsDBNull(ordinal))
+                try
                 {
-                    // TODO: For now, SQL Server provides access to vectors as JSON arrays, but the plan is to switch
-                    // to an efficient binary format in the future.
-                    var vectorArray = JsonSerializer.Deserialize<float[]>(reader.GetString(ordinal), SqlServerJsonSerializerContext.Default.SingleArray);
+                    var ordinal = reader.GetOrdinal(property.StorageName);
 
-                    property.SetValueAsObject(record, property.Type switch
+                    if (!reader.IsDBNull(ordinal))
                     {
-                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorArray),
-                        var t when t == typeof(Embedding<float>) => new Embedding<float>(vectorArray),
-                        var t when t == typeof(float[]) => vectorArray,
+                        // TODO: For now, SQL Server provides access to vectors as JSON arrays, but the plan is to switch
+                        // to an efficient binary format in the future.
+                        var vectorArray = JsonSerializer.Deserialize<float[]>(reader.GetString(ordinal), SqlServerJsonSerializerContext.Default.SingleArray);
 
-                        _ => throw new UnreachableException()
-                    });
+                        property.SetValueAsObject(record, property.Type switch
+                        {
+                            var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorArray),
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vectorArray),
+                            var t when t == typeof(float[]) => vectorArray,
+
+                            _ => throw new UnreachableException()
+                        });
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize vector property '{property.ModelName}'.", e);
                 }
             }
         }
