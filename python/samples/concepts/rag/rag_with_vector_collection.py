@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory import InMemoryCollection
-from semantic_kernel.data import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField, vectorstoremodel
+from semantic_kernel.data import VectorStoreField, vectorstoremodel
 from semantic_kernel.functions import KernelArguments
 
 """
@@ -27,11 +27,11 @@ Finally, in two different ways we call the function to search the collection.
 @vectorstoremodel(collection_name="budget")
 @dataclass
 class BudgetItem:
-    id: Annotated[str, VectorStoreKeyField]
-    text: Annotated[str, VectorStoreDataField]
+    id: Annotated[str, VectorStoreField("key")]
+    text: Annotated[str, VectorStoreField("data")]
     embedding: Annotated[
         list[float] | str | None,
-        VectorStoreVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
+        VectorStoreField("vector", dimensions=1536, embedding_generator=OpenAITextEmbedding()),
     ] = None
 
     def __post_init__(self):

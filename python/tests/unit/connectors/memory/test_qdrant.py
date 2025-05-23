@@ -8,7 +8,7 @@ from qdrant_client.models import Datatype, Distance, FieldCondition, MatchValue,
 
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreField
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -197,7 +197,7 @@ def test_collection_init_fail(definition):
     with raises(
         VectorStoreModelValidationError, match="Only one vector field is allowed when not using named vectors."
     ):
-        definition.fields.append(VectorStoreVectorField(name="vector2", dimensions=3))
+        definition.fields.append(VectorStoreField("vector", name="vector2", dimensions=3))
         QdrantCollection(
             record_type=dict,
             collection_name="test",

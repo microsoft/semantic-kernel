@@ -21,7 +21,7 @@ from weaviate.exceptions import WeaviateClosedClientError, WeaviateConnectionErr
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -86,15 +86,6 @@ DATATYPE_MAP: Final[dict[str, DataType]] = {
 }
 
 
-def _check_field(vector_field: VectorStoreVectorField):
-    if vector_field.distance_function not in DISTANCE_FUNCTION_MAP:
-        raise VectorStoreModelValidationError(
-            f"Distance function {vector_field.distance_function} is not supported by Weaviate."
-        )
-    if vector_field.index_kind not in INDEX_KIND_MAP:
-        raise VectorStoreModelValidationError(f"Index kind {vector_field.index_kind} is not supported by Weaviate.")
-
-
 def _definition_to_weaviate_named_vectors(
     definition: VectorStoreCollectionDefinition,
 ) -> list[_NamedVectorConfigCreate]:
@@ -109,7 +100,12 @@ def _definition_to_weaviate_named_vectors(
     vector_list: list[_NamedVectorConfigCreate] = []
 
     for field in definition.vector_fields:
-        _check_field(field)
+        if field.distance_function is None or field.distance_function not in DISTANCE_FUNCTION_MAP:
+            raise VectorStoreModelValidationError(
+                f"Distance function {field.distance_function} is not supported by Weaviate."
+            )
+        if field.index_kind is None or field.index_kind not in INDEX_KIND_MAP:
+            raise VectorStoreModelValidationError(f"Index kind {field.index_kind} is not supported by Weaviate.")
         vector_list.append(
             Configure.NamedVectors.none(
                 name=field.storage_name or field.name,  # type: ignore
@@ -478,7 +474,7 @@ class WeaviateCollection(
         self,
         collection: CollectionAsync,
         vector: list[float | int],
-        vector_field: VectorStoreVectorField | None,
+        vector_field: VectorStoreField | None,
         args: dict[str, Any],
     ) -> Any:
         if self.named_vectors and not vector_field:
@@ -580,7 +576,17 @@ class WeaviateCollection(
                 vectorizer_config = _definition_to_weaviate_named_vectors(self.definition)
             else:
                 vector_field = self.definition.vector_fields[0]
-                _check_field(vector_field)
+                if (
+                    vector_field.distance_function is None
+                    or vector_field.distance_function not in DISTANCE_FUNCTION_MAP
+                ):
+                    raise VectorStoreModelValidationError(
+                        f"Distance function {vector_field.distance_function} is not supported by Weaviate."
+                    )
+                if vector_field.index_kind is None or vector_field.index_kind not in INDEX_KIND_MAP:
+                    raise VectorStoreModelValidationError(
+                        f"Index kind {vector_field.index_kind} is not supported by Weaviate."
+                    )
                 vector_index_config = INDEX_KIND_MAP[vector_field.index_kind](
                     distance_metric=DISTANCE_FUNCTION_MAP[vector_field.distance_function]
                 )

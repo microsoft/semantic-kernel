@@ -18,12 +18,7 @@ from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -34,10 +29,10 @@ from semantic_kernel.data.vectors import (
     VectorStore,
     VectorStoreRecordCollection,
 )
-from semantic_kernel.exceptions import VectorStoreOperationException
-from semantic_kernel.exceptions.vector_store_exceptions import (
+from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.kernel_types import OneOrMany
@@ -845,9 +840,9 @@ def _add_cast_check(placeholder: str, value: Any) -> str:
 def _build_create_table_query(
     schema: str,
     table: str,
-    key_field: VectorStoreKeyField,
-    data_fields: list[VectorStoreDataField],
-    vector_fields: list[VectorStoreVectorField],
+    key_field: VectorStoreField,
+    data_fields: list[VectorStoreField],
+    vector_fields: list[VectorStoreField],
     if_not_exists: bool = False,
 ) -> SqlCommand:
     """Build the CREATE TABLE query based on the data model."""
@@ -928,9 +923,9 @@ def _build_select_table_name_query(
 
 def _add_field_names(
     command: SqlCommand,
-    key_field: VectorStoreKeyField,
-    data_fields: list[VectorStoreDataField],
-    vector_fields: list[VectorStoreVectorField] | None,
+    key_field: VectorStoreField,
+    data_fields: list[VectorStoreField],
+    vector_fields: list[VectorStoreField] | None,
     table_identifier: str | None = None,
 ) -> None:
     """Add the field names to the query builder.
@@ -956,9 +951,9 @@ def _add_field_names(
 def _build_merge_query(
     schema: str,
     table: str,
-    key_field: VectorStoreKeyField,
-    data_fields: list[VectorStoreDataField],
-    vector_fields: list[VectorStoreVectorField],
+    key_field: VectorStoreField,
+    data_fields: list[VectorStoreField],
+    vector_fields: list[VectorStoreField],
     records: Sequence[dict[str, Any]],
 ) -> SqlCommand:
     """Build the MERGE TABLE query based on the data model."""
@@ -1019,9 +1014,9 @@ def _build_merge_query(
 def _build_select_query(
     schema: str,
     table: str,
-    key_field: VectorStoreKeyField,
-    data_fields: list[VectorStoreDataField],
-    vector_fields: list[VectorStoreVectorField] | None,
+    key_field: VectorStoreField,
+    data_fields: list[VectorStoreField],
+    vector_fields: list[VectorStoreField] | None,
     keys: Sequence[Any],
 ) -> SqlCommand:
     """Build the SELECT query based on the data model."""
@@ -1046,7 +1041,7 @@ def _build_select_query(
 def _build_delete_query(
     schema: str,
     table: str,
-    key_field: VectorStoreKeyField,
+    key_field: VectorStoreField,
     keys: Sequence[Any],
 ) -> SqlCommand:
     """Build the DELETE query based on the data model."""
@@ -1066,9 +1061,9 @@ def _build_delete_query(
 def _build_search_query(
     schema: str,
     table: str,
-    key_field: VectorStoreKeyField,
-    data_fields: list[VectorStoreDataField],
-    vector_fields: list[VectorStoreVectorField],
+    key_field: VectorStoreField,
+    data_fields: list[VectorStoreField],
+    vector_fields: list[VectorStoreField],
     vector: Sequence[float | int],
     options: VectorSearchOptions,
     filter: SqlCommand | list[SqlCommand] | None = None,
@@ -1079,10 +1074,14 @@ def _build_search_query(
     # add the data and vector fields
     _add_field_names(command, key_field, data_fields, vector_fields if options.include_vectors else None)
     # add the vector search clause
-    vector_field: VectorStoreVectorField | None = None
+    vector_field: VectorStoreField | None = None
     if options.vector_property_name:
         vector_field = next(
-            (field for field in vector_fields if field.name == options.vector_property_name),
+            (
+                field
+                for field in vector_fields
+                if field.name == options.vector_property_name or field.storage_name == options.vector_property_name
+            ),
             None,
         )
     elif len(vector_fields) == 1:

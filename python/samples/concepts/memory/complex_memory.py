@@ -26,13 +26,8 @@ from semantic_kernel.connectors.memory import (
     SqlServerCollection,
     WeaviateCollection,
 )
-from semantic_kernel.data import (
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreRecordCollection,
-    VectorStoreVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStoreRecordCollection, vectorstoremodel
+from semantic_kernel.data.definitions import VectorStoreField
 from semantic_kernel.data.vectors import SearchType, VectorSearch
 
 # This is a rather complex sample, showing how to use the vector store
@@ -48,14 +43,19 @@ from semantic_kernel.data.vectors import SearchType, VectorSearch
 @vectorstoremodel(collection_name="test")
 @dataclass
 class DataModel:
-    title: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
-    content: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
+    title: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
+    content: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
     embedding: Annotated[
         str | None,
-        VectorStoreVectorField(dimensions=1536, type_="float"),
+        VectorStoreField("vector", dimensions=1536, type_="float"),
     ] = None
-    id: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
-    tag: Annotated[str | None, VectorStoreDataField(type_="str", is_indexed=True)] = None
+    id: Annotated[
+        str,
+        VectorStoreField(
+            "key",
+        ),
+    ] = field(default_factory=lambda: str(uuid4()))
+    tag: Annotated[str | None, VectorStoreField("data", type_="str", is_indexed=True)] = None
 
     def __post_init__(self, **kwargs):
         if self.embedding is None:

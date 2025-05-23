@@ -14,7 +14,7 @@ from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -208,7 +208,7 @@ class PineconeCollection(
         )
 
     async def _create_index_with_integrated_embeddings(
-        self, vector_field: VectorStoreVectorField | None, **kwargs: Any
+        self, vector_field: VectorStoreField | None, **kwargs: Any
     ) -> None:
         """Create the Pinecone index with the embed parameter."""
         if isinstance(self.client, PineconeGRPC):
@@ -243,7 +243,7 @@ class PineconeCollection(
         self.index = await self.client.create_index_for_model(**index_creation_args)
         await self._load_index_client()
 
-    async def _create_regular_index(self, vector_field: VectorStoreVectorField | None, **kwargs: Any) -> None:
+    async def _create_regular_index(self, vector_field: VectorStoreField | None, **kwargs: Any) -> None:
         """Create the Pinecone index with the embed parameter."""
         if not vector_field:
             raise VectorStoreOperationException(
