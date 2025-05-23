@@ -134,7 +134,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             // to trigger a mapping exception (casting a string to an int).
             var sameNameDifferentModelCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButDifferentType>(collectionName);
             InvalidOperationException mappingEx = await Assert.ThrowsAsync<InvalidOperationException>(() => sameNameDifferentModelCollection.GetAsync(inserted.Id));
-            Assert.IsType<ArgumentException>(mappingEx.InnerException);
+            Assert.IsType<InvalidCastException>(mappingEx.InnerException);
 
             // Let's use a model with the same storage names, but different types
             // to trigger a mapping exception (deserializing a string to Memory<float>).
