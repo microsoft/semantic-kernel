@@ -22,12 +22,8 @@ from semantic_kernel.connectors.memory.sql_server import (
     _build_select_table_names_query,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-)
-from semantic_kernel.data.vector_search import VectorSearchOptions
+from semantic_kernel.data.definitions import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField
+from semantic_kernel.data.vectors import VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
@@ -114,13 +110,13 @@ class TestQueryBuildFunctions:
     def test_build_create_table_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreRecordKeyField(name="id", property_type="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreRecordDataField(name="name", property_type="str"),
-            VectorStoreRecordDataField(name="age", property_type="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreRecordVectorField(name="embedding", property_type="float", dimensions=1536),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=1536),
         ]
         cmd = _build_create_table_query(schema, table, key_field, data_fields, vector_fields)
         assert not cmd.parameters
@@ -153,13 +149,13 @@ class TestQueryBuildFunctions:
     def test_build_merge_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreRecordKeyField(name="id", property_type="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreRecordDataField(name="name", property_type="str"),
-            VectorStoreRecordDataField(name="age", property_type="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreRecordVectorField(name="embedding", property_type="float", dimensions=5),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
         ]
         records = [
             {
@@ -186,13 +182,13 @@ class TestQueryBuildFunctions:
     def test_build_select_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreRecordKeyField(name="id", property_type="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreRecordDataField(name="name", property_type="str"),
-            VectorStoreRecordDataField(name="age", property_type="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreRecordVectorField(name="embedding", property_type="float", dimensions=5),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
         ]
         keys = ["test"]
         cmd = _build_select_query(schema, table, key_field, data_fields, vector_fields, keys)
@@ -203,7 +199,7 @@ class TestQueryBuildFunctions:
     def test_build_delete_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreRecordKeyField(name="id", property_type="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         keys = ["test"]
         cmd = _build_delete_query(schema, table, key_field, keys)
         str_cmd = str(cmd)
@@ -213,15 +209,15 @@ class TestQueryBuildFunctions:
     def test_build_search_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreRecordKeyField(name="id", property_type="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreRecordDataField(name="name", property_type="str"),
-            VectorStoreRecordDataField(name="age", property_type="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 name="embedding",
-                property_type="float",
+                type="float",
                 dimensions=5,
                 distance_function=DistanceFunction.COSINE_DISTANCE,
             ),
@@ -320,11 +316,9 @@ class TestSqlServerStore:
         with raises(VectorStoreInitializationException):
             SqlServerStore(env_file_path="test.env")
 
-    def test_get_collection(self, sql_server_unit_test_env, data_model_definition):
+    def test_get_collection(self, sql_server_unit_test_env, definition):
         store = SqlServerStore()
-        collection = store.get_collection(
-            collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
-        )
+        collection = store.get_collection(collection_name="test", record_type=dict, definition=definition)
         assert collection is not None
 
     async def test_list_collection_names(self, sql_server_unit_test_env, mock_connection):
@@ -344,19 +338,17 @@ class TestSqlServerStore:
 
 class TestSqlServerCollection:
     @mark.parametrize("exclude_list", ["SQL_SERVER_CONNECTION_STRING"], indirect=True)
-    def test_create_without_connection_string(self, sql_server_unit_test_env, data_model_definition):
+    def test_create_without_connection_string(self, sql_server_unit_test_env, definition):
         with raises(VectorStoreInitializationException):
             SqlServerCollection(
                 collection_name="test",
-                data_model_type=dict,
-                data_model_definition=data_model_definition,
+                record_type=dict,
+                definition=definition,
                 env_file_path="test.env",
             )
 
-    async def test_create(self, sql_server_unit_test_env, data_model_definition):
-        collection = SqlServerCollection(
-            collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
-        )
+    async def test_create(self, sql_server_unit_test_env, definition):
+        collection = SqlServerCollection(collection_name="test", record_type=dict, definition=definition)
         assert collection is not None
         assert collection.collection_name == "test"
         assert collection.settings is not None
@@ -371,12 +363,12 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
         record = {"id": "1", "content": "test", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
@@ -400,7 +392,7 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
         class MockRow(NamedTuple):
             id: str
@@ -412,8 +404,8 @@ class TestSqlServerCollection:
 
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
         key = "1"
@@ -434,12 +426,12 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
         key = "1"
@@ -452,16 +444,16 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
         mock_cursor = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
-        for field in data_model_definition.vector_fields:
+        for field in definition.vector_fields:
             field.distance_function = DistanceFunction.COSINE_DISTANCE
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -498,14 +490,14 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
-        for field in data_model_definition.vector_fields:
+        for field in definition.vector_fields:
             field.index_kind = IndexKind.FLAT
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
         await collection.create_collection()
@@ -522,29 +514,29 @@ class TestSqlServerCollection:
         self,
         sql_server_unit_test_env,
         mock_connection,
-        data_model_definition,
+        definition,
     ):
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             connection=mock_connection,
         )
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             "DROP TABLE IF EXISTS [dbo].[test] ;", ()
         )
 
-    async def test_no_connection(self, sql_server_unit_test_env, data_model_definition):
+    async def test_no_connection(self, sql_server_unit_test_env, definition):
         collection = SqlServerCollection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
         )
         with raises(VectorStoreOperationException):
             await collection.create_collection()
         with raises(VectorStoreOperationException):
-            await collection.delete_collection()
+            await collection.ensure_collection_deleted()
         with raises(VectorStoreOperationException):
             await collection.does_collection_exist()
         with raises(VectorStoreOperationException):

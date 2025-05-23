@@ -8,14 +8,14 @@ from semantic_kernel.data.const import (
     DistanceFunction,
     IndexKind,
 )
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.text_search import (
+from semantic_kernel.data.search import (
     DynamicFilterFunction,
     KernelSearchResults,
     TextSearch,
@@ -23,8 +23,7 @@ from semantic_kernel.data.text_search import (
     create_options,
     default_dynamic_filter_function,
 )
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult
-from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vectors import VectorSearch, VectorSearchResult, VectorStore, VectorStoreRecordCollection
 
 __all__ = [
     "DEFAULT_DESCRIPTION",
@@ -39,11 +38,11 @@ __all__ = [
     "VectorSearch",
     "VectorSearchResult",
     "VectorStore",
+    "VectorStoreCollectionDefinition",
+    "VectorStoreDataField",
+    "VectorStoreKeyField",
     "VectorStoreRecordCollection",
-    "VectorStoreRecordDataField",
-    "VectorStoreRecordDefinition",
-    "VectorStoreRecordKeyField",
-    "VectorStoreRecordVectorField",
+    "VectorStoreVectorField",
     "create_options",
     "default_dynamic_filter_function",
     "vectorstoremodel",

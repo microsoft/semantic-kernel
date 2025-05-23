@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from semantic_kernel.connectors.search.brave import BraveSearch, BraveSearchResponse, BraveWebPage, BraveWebPages
-from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearchResult
+from semantic_kernel.data.search import KernelSearchResults, SearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 

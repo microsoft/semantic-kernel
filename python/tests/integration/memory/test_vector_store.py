@@ -28,8 +28,8 @@ class TestVectorStore(VectorStoreTestBase):
             "store_id",
             "collection_name",
             "collection_options",
-            "data_model_type",
-            "data_model_definition",
+            "record_type",
+            "definition",
             "distance_function",
             "index_kind",
             "vector_property_type",
@@ -69,7 +69,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "redis_json_pandas_data_model",
                 {"collection_type": RedisCollectionTypes.JSON},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -108,7 +108,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "redis_hashset_pandas_data_model",
                 {"collection_type": RedisCollectionTypes.HASHSET},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -149,7 +149,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "azure_ai_search_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -190,7 +190,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "qdrant_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -229,7 +229,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "qdrant_in_memory_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -268,7 +268,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "qdrant_grpc_pandas_data_model",
                 {"prefer_grpc": True},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -319,7 +319,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "weaviate_local_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -373,7 +373,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "azure_cosmos_db_no_sql_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 "flat",
                 None,
@@ -418,7 +418,7 @@ class TestVectorStore(VectorStoreTestBase):
                 "chroma_pandas_data_model",
                 {},
                 pd.DataFrame,
-                "data_model_definition_pandas",
+                "definition_pandas",
                 None,
                 None,
                 None,
@@ -436,8 +436,8 @@ class TestVectorStore(VectorStoreTestBase):
         store_id: str,
         collection_name: str,
         collection_options: dict[str, Any],
-        data_model_type: str | type,
-        data_model_definition: str | None,
+        record_type: str | type,
+        definition: str | None,
         distance_function,
         index_kind,
         vector_property_type,
@@ -446,19 +446,19 @@ class TestVectorStore(VectorStoreTestBase):
         request,
     ):
         """Test vector store functionality."""
-        if isinstance(data_model_type, str):
-            data_model_type = request.getfixturevalue(data_model_type)
-        if data_model_definition is not None:
-            data_model_definition = request.getfixturevalue(data_model_definition)
+        if isinstance(record_type, str):
+            record_type = request.getfixturevalue(record_type)
+        if definition is not None:
+            definition = request.getfixturevalue(definition)
         try:
             async with (
                 stores[store_id]() as vector_store,
                 vector_store.get_collection(
-                    collection_name, data_model_type, data_model_definition, **collection_options
+                    collection_name, record_type, definition, **collection_options
                 ) as collection,
             ):
                 try:
-                    await collection.delete_collection()
+                    await collection.ensure_collection_deleted()
                 except Exception as exc:
                     logger.warning(f"Failed to delete collection: {exc}")
 
@@ -468,9 +468,7 @@ class TestVectorStore(VectorStoreTestBase):
                     pytest.fail(f"Failed to create collection: {exc}")
 
                 # Upsert record
-                await collection.upsert(
-                    data_model_type([record]) if data_model_type == pd.DataFrame else data_model_type(**record)
-                )
+                await collection.upsert(record_type([record]) if record_type == pd.DataFrame else record_type(**record))
                 # Get record
                 result = await collection.get(record["id"])
                 assert result is not None
@@ -481,7 +479,7 @@ class TestVectorStore(VectorStoreTestBase):
                 assert result is None
 
                 try:
-                    await collection.delete_collection()
+                    await collection.ensure_collection_deleted()
                 except Exception as exc:
                     pytest.fail(f"Failed to delete collection: {exc}")
         except MemoryConnectorConnectionException as exc:

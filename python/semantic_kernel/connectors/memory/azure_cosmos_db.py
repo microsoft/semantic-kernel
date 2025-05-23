@@ -24,16 +24,19 @@ from semantic_kernel.connectors.memory.mongodb import (
     MongoDBAtlasStore,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreVectorField,
 )
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
     _get_collection_name_from_model,
@@ -59,15 +62,15 @@ else:
 
 
 @release_candidate
-class AzureCosmosDBNoSQLCompositeKey(KernelBaseModel):
-    """Azure CosmosDB NoSQL composite key."""
+class CosmosNoSqlCompositeKey(KernelBaseModel):
+    """CosmosDB NoSQL composite key."""
 
     partition_key: str
     key: str
 
 
 TKey = TypeVar("TKey", bound=str)
-TNoSQLKey = TypeVar("TNoSQLKey", str, AzureCosmosDBNoSQLCompositeKey)
+TNoSQLKey = TypeVar("TNoSQLKey", str, CosmosNoSqlCompositeKey)
 
 # region: Constants
 
@@ -108,13 +111,13 @@ VECTOR_DATATYPES_MAP: Final[dict[str, str]] = {
 # region: Helpers
 
 
-def _create_default_indexing_policy_nosql(data_model_definition: VectorStoreRecordDefinition) -> dict[str, Any]:
+def _create_default_indexing_policy_nosql(definition: VectorStoreCollectionDefinition) -> dict[str, Any]:
     """Creates a default indexing policy for the Azure Cosmos DB NoSQL container.
 
     A default indexing policy is created based on the data model definition and has an automatic indexing policy.
 
     Args:
-        data_model_definition (VectorStoreRecordDefinition): The definition of the data model.
+        definition (VectorStoreRecordDefinition): The definition of the data model.
 
     Returns:
         dict[str, Any]: The indexing policy.
@@ -137,32 +140,32 @@ def _create_default_indexing_policy_nosql(data_model_definition: VectorStoreReco
         "vectorIndexes": [],
     }
 
-    for field in data_model_definition.fields:
-        if isinstance(field, VectorStoreRecordDataField) and (not field.is_full_text_indexed and not field.is_indexed):
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.storage_property_name or field.name}"/*'})
+    for field in definition.fields:
+        if isinstance(field, VectorStoreDataField) and (not field.is_full_text_indexed and not field.is_indexed):
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.storage_name or field.name}"/*'})
 
-        if isinstance(field, VectorStoreRecordVectorField):
+        if isinstance(field, VectorStoreVectorField):
             if field.index_kind not in INDEX_KIND_MAP_NOSQL:
                 raise VectorStoreModelException(
                     f"Index kind '{field.index_kind}' is not supported by Azure Cosmos DB NoSQL container."
                 )
             indexing_policy["vectorIndexes"].append({
-                "path": f'/"{field.storage_property_name or field.name}"',
+                "path": f'/"{field.storage_name or field.name}"',
                 "type": INDEX_KIND_MAP_NOSQL[field.index_kind],
             })
             # Exclude the vector field from the index for performance optimization.
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.storage_property_name or field.name}"/*'})
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.storage_name or field.name}"/*'})
 
     return indexing_policy
 
 
-def _create_default_vector_embedding_policy(data_model_definition: VectorStoreRecordDefinition) -> dict[str, Any]:
+def _create_default_vector_embedding_policy(definition: VectorStoreCollectionDefinition) -> dict[str, Any]:
     """Creates a default vector embedding policy for the Azure Cosmos DB NoSQL container.
 
     A default vector embedding policy is created based on the data model definition.
 
     Args:
-        data_model_definition (VectorStoreRecordDefinition): The definition of the data model.
+        definition (VectorStoreRecordDefinition): The definition of the data model.
 
     Returns:
         dict[str, Any]: The vector embedding policy.
@@ -173,20 +176,20 @@ def _create_default_vector_embedding_policy(data_model_definition: VectorStoreRe
     """
     vector_embedding_policy: dict[str, Any] = {"vectorEmbeddings": []}
 
-    for field in data_model_definition.fields:
-        if isinstance(field, VectorStoreRecordVectorField):
+    for field in definition.fields:
+        if isinstance(field, VectorStoreVectorField):
             if field.distance_function not in DISTANCE_FUNCTION_MAP_NOSQL:
                 raise VectorStoreModelException(
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB NoSQL."
                 )
-            if field.property_type and field.property_type not in VECTOR_DATATYPES_MAP:
+            if field.type_ and field.type_ not in VECTOR_DATATYPES_MAP:
                 raise VectorStoreModelException(
-                    f"Vector property type '{field.property_type}' is not supported by Azure Cosmos DB NoSQL."
+                    f"Vector property type '{field.type_}' is not supported by Azure Cosmos DB NoSQL."
                 )
 
             vector_embedding_policy["vectorEmbeddings"].append({
-                "path": f'/"{field.storage_property_name or field.name}"',
-                "dataType": VECTOR_DATATYPES_MAP[field.property_type or "default"],
+                "path": f'/"{field.storage_name or field.name}"',
+                "dataType": VECTOR_DATATYPES_MAP[field.type_ or "default"],
                 "distanceFunction": DISTANCE_FUNCTION_MAP_NOSQL[field.distance_function],
                 "dimensions": field.dimensions,
             })
@@ -194,16 +197,16 @@ def _create_default_vector_embedding_policy(data_model_definition: VectorStoreRe
     return vector_embedding_policy
 
 
-def _get_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
+def _get_key(key: str | CosmosNoSqlCompositeKey) -> str:
     """Gets the key value from the key."""
-    if isinstance(key, AzureCosmosDBNoSQLCompositeKey):
+    if isinstance(key, CosmosNoSqlCompositeKey):
         return key.key
     return key
 
 
-def _get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
+def _get_partition_key(key: str | CosmosNoSqlCompositeKey) -> str:
     """Gets the partition key value from the key."""
-    if isinstance(key, AzureCosmosDBNoSQLCompositeKey):
+    if isinstance(key, CosmosNoSqlCompositeKey):
         return key.partition_key
     return key
 
@@ -212,7 +215,7 @@ def _get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
 
 
 @release_candidate
-class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
+class CosmosMongoSettings(KernelBaseSettings):
     """Azure CosmosDB for MongoDB settings.
 
     The settings are first loaded from environment variables with
@@ -241,7 +244,7 @@ class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
 
 
 @release_candidate
-class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
+class CosmosNoSqlSettings(KernelBaseSettings):
     """Azure CosmosDB NoSQL settings.
 
     The settings are first loaded from environment variables with
@@ -280,13 +283,13 @@ class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
 
 
 @release_candidate
-class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, TModel]):
+class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, TModel]):
     """Azure Cosmos DB for MongoDB collection."""
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         mongo_client: AsyncMongoClient | None = None,
@@ -296,11 +299,11 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         env_file_encoding: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """Initializes a new instance of the AzureCosmosDBforMongoDBCollection class.
+        """Initializes a new instance of the CosmosMongoCollection class.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The model definition, optional.
+            record_type: The type of the data model.
+            definition: The model definition, optional.
             collection_name: The name of the collection, optional.
             embedding_generator: The embedding generator to use for generating embeddings.
             mongo_client: The MongoDB client for interacting with Azure CosmosDB for MongoDB,
@@ -315,7 +318,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
 
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         if not collection_name:
             raise VectorStoreInitializationException(
                 "The collection name is required, can be passed directly or through the data model."
@@ -323,8 +326,8 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         managed_client = not mongo_client
         if mongo_client:
             super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
+                record_type=record_type,
+                definition=definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
                 database_name=database_name or DEFAULT_DB_NAME,
@@ -334,7 +337,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
             return
 
         try:
-            settings = AzureCosmosDBforMongoDBSettings(
+            settings = CosmosMongoSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,
@@ -349,8 +352,8 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         )
 
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             mongo_client=mongo_client,
             managed_client=managed_client,
@@ -384,13 +387,13 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         """Creates index definitions for the collection."""
         indexes = [
             {
-                "name": f"{field.storage_property_name or field.name}_",
-                "key": {field.storage_property_name or field.name: 1},
+                "name": f"{field.storage_name or field.name}_",
+                "key": {field.storage_name or field.name: 1},
             }
-            for field in self.data_model_definition.data_fields
+            for field in self.definition.data_fields
             if field.is_indexed or field.is_full_text_indexed
         ]
-        for field in self.data_model_definition.vector_fields:
+        for field in self.definition.vector_fields:
             if field.index_kind not in INDEX_KIND_MAP_MONGODB:
                 raise VectorStoreModelException(
                     f"Index kind '{field.index_kind}' is not supported by Azure Cosmos DB for MongoDB."
@@ -399,11 +402,11 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
                 raise VectorStoreModelException(
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB for MongoDB."
                 )
-            index_name = f"{field.storage_property_name or field.name}_"
+            index_name = f"{field.storage_name or field.name}_"
             index_kind = DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function]
             index: dict[str, Any] = {
                 "name": index_name,
-                "key": {field.storage_property_name or field.name: "cosmosSearch"},
+                "key": {field.storage_name or field.name: "cosmosSearch"},
                 "cosmosSearchOptions": {
                     "kind": index_kind,
                     "similarity": DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function],
@@ -437,7 +440,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -446,16 +449,16 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
             vector = await self._generate_vector_from_values(values, options)
         vector_search_query: dict[str, Any] = {
             "k": options.top + options.skip,
-            "index": f"{vector_field.storage_property_name or vector_field.name}_",
+            "index": f"{vector_field.storage_name or vector_field.name}_",
             "vector": vector,
-            "path": vector_field.storage_property_name or vector_field.name,
+            "path": vector_field.storage_name or vector_field.name,
         }
         if filter := self._build_filter(options.filter):  # type: ignore
             vector_search_query["filter"] = filter if isinstance(filter, dict) else {"$and": filter}
 
         projection_query: dict[str, int | dict] = {
             field: 1
-            for field in self.data_model_definition.get_field_names(
+            for field in self.definition.get_names(
                 include_vector_fields=options.include_vectors,
                 include_key_field=False,  # _id is always included
             )
@@ -478,7 +481,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
 
 
 @release_candidate
-class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
+class CosmosMongoStore(MongoDBAtlasStore):
     """Azure Cosmos DB for MongoDB store."""
 
     def __init__(
@@ -490,7 +493,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the AzureCosmosDBforMongoDBStore class."""
+        """Initializes a new instance of the CosmosMongoStore class."""
         managed_client: bool = not mongo_client
         if mongo_client:
             super().__init__(
@@ -501,7 +504,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
             )
             return
         try:
-            settings = AzureCosmosDBforMongoDBSettings(
+            settings = CosmosMongoSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,
@@ -525,16 +528,16 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> AzureCosmosDBforMongoDBCollection:
-        return AzureCosmosDBforMongoDBCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+    ) -> CosmosMongoCollection:
+        return CosmosMongoCollection(
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             mongo_client=self.mongo_client,
             managed_client=False,
@@ -548,12 +551,12 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
 
 
 @release_candidate
-class AzureCosmosDBNoSQLBase(KernelBaseModel):
+class CosmosNoSqlBase(KernelBaseModel):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
     cosmos_client: CosmosClient
     database_name: str
-    cosmos_db_nosql_settings: AzureCosmosDBNoSQLSettings
+    cosmos_db_nosql_settings: CosmosNoSqlSettings
     # If create_database is True, the database will be created
     # if it does not exist when an operation requires a database.
     create_database: bool
@@ -569,7 +572,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
         env_file_encoding: str | None = None,
         **kwargs,
     ):
-        """Initialize the AzureCosmosDBNoSQLBase.
+        """Initialize the CosmosNoSqlBase.
 
         Args:
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
@@ -585,7 +588,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
             kwargs: Additional keyword arguments.
         """
         try:
-            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings(
+            cosmos_db_nosql_settings = CosmosNoSqlSettings(
                 url=url,
                 key=key,
                 database_name=database_name,
@@ -653,8 +656,8 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
 
 
 @release_candidate
-class AzureCosmosDBNoSQLCollection(
-    AzureCosmosDBNoSQLBase,
+class CosmosNoSqlCollection(
+    CosmosNoSqlBase,
     VectorStoreRecordCollection[TNoSQLKey, TModel],
     VectorSearch[TNoSQLKey, TModel],
     Generic[TNoSQLKey, TModel],
@@ -662,13 +665,13 @@ class AzureCosmosDBNoSQLCollection(
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
     partition_key: PartitionKey
-    supported_key_types: ClassVar[set[str] | None] = {"str", "AzureCosmosDBNoSQLCompositeKey"}
+    supported_key_types: ClassVar[set[str] | None] = {"str", "CosmosNoSqlCompositeKey"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR, SearchType.KEYWORD_HYBRID}
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         database_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
@@ -680,15 +683,15 @@ class AzureCosmosDBNoSQLCollection(
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ):
-        """Initializes a new instance of the AzureCosmosDBNoSQLCollection class.
+        """Initializes a new instance of the CosmosNoSqlCollection class.
 
         Args:
-            data_model_type: The type of the data model.
+            record_type: The type of the data model.
             collection_name: The name of the collection.
             database_name: The name of the database. Used to create a database proxy if not provided.
                                  Defaults to None.
             embedding_generator: The embedding generator to use for generating embeddings.
-            data_model_definition: The definition of the data model. Defaults to None.
+            definition: The definition of the data model. Defaults to None.
             url: The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key: The key of the Azure Cosmos DB NoSQL account. Defaults to None.
             cosmos_client: The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
@@ -701,7 +704,7 @@ class AzureCosmosDBNoSQLCollection(
             env_file_encoding: The encoding of the .env file. Defaults to None.
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         if not partition_key:
             partition_key = PartitionKey(path=f"/{COSMOS_ITEM_ID_PROPERTY_NAME}")
         elif isinstance(partition_key, str):
@@ -716,8 +719,8 @@ class AzureCosmosDBNoSQLCollection(
             create_database=create_database,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             managed_client=cosmos_client is None,
             embedding_generator=embedding_generator,
@@ -775,7 +778,7 @@ class AzureCosmosDBNoSQLCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         params = [{"name": "@top", "value": options.top}]
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -789,7 +792,7 @@ class AzureCosmosDBNoSQLCollection(
                 if isinstance(where_clauses, str)
                 else f"WHERE ({' AND '.join(where_clauses)}) "
             )
-        vector_field_name = vector_field.storage_property_name or vector_field.name
+        vector_field_name = vector_field.storage_name or vector_field.name
         select_clause = self._build_select_clause(options.include_vectors)
         params.append({"name": "@vector", "value": vector})
         if vector_field.distance_function not in DISTANCE_FUNCTION_MAP_NOSQL:
@@ -828,14 +831,11 @@ class AzureCosmosDBNoSQLCollection(
 
     def _build_select_clause(self, include_vectors: bool) -> str:
         """Create the select clause for a CosmosDB query."""
-        included_fields = [
-            field
-            for field in self.data_model_definition.get_storage_property_names(include_vector_fields=include_vectors)
-        ]
-        if self.data_model_definition.key_field_name != COSMOS_ITEM_ID_PROPERTY_NAME:
+        included_fields = [field for field in self.definition.get_storage_names(include_vector_fields=include_vectors)]
+        if self.definition.key_name != COSMOS_ITEM_ID_PROPERTY_NAME:
             # Replace the key field name with the Cosmos item id property name
             included_fields = [
-                field if field != self.data_model_definition.key_field_name else COSMOS_ITEM_ID_PROPERTY_NAME
+                field if field != self.definition.key_name else COSMOS_ITEM_ID_PROPERTY_NAME
                 for field in included_fields
             ]
 
@@ -904,7 +904,7 @@ class AzureCosmosDBNoSQLCollection(
                 raise NotImplementedError(f"Unsupported unary operator: {type(node.op)}")
             case ast.Attribute():
                 # Cosmos DB: c.field_name
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
@@ -935,7 +935,7 @@ class AzureCosmosDBNoSQLCollection(
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         serialized_records = []
 
-        key_field_name = self.data_model_definition.key_field_name
+        key_field_name = self.definition.key_name
         for record in records:
             serialized_record = {**record, COSMOS_ITEM_ID_PROPERTY_NAME: record[key_field_name]}
             if key_field_name != COSMOS_ITEM_ID_PROPERTY_NAME:
@@ -950,7 +950,7 @@ class AzureCosmosDBNoSQLCollection(
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         deserialized_records = []
 
-        key_field_name = self.data_model_definition.key_field_name
+        key_field_name = self.definition.key_name
         for record in records:
             if COSMOS_ITEM_ID_PROPERTY_NAME not in record:
                 raise VectorStoreModelDeserializationException(
@@ -968,11 +968,9 @@ class AzureCosmosDBNoSQLCollection(
 
     @override
     async def create_collection(self, **kwargs) -> None:
-        indexing_policy = kwargs.pop(
-            "indexing_policy", _create_default_indexing_policy_nosql(self.data_model_definition)
-        )
+        indexing_policy = kwargs.pop("indexing_policy", _create_default_indexing_policy_nosql(self.definition))
         vector_embedding_policy = kwargs.pop(
-            "vector_embedding_policy", _create_default_vector_embedding_policy(self.data_model_definition)
+            "vector_embedding_policy", _create_default_vector_embedding_policy(self.definition)
         )
         database_proxy = await self._get_database_proxy(**kwargs)
         try:
@@ -996,7 +994,7 @@ class AzureCosmosDBNoSQLCollection(
             return False
 
     @override
-    async def delete_collection(self, **kwargs) -> None:
+    async def ensure_collection_deleted(self, **kwargs) -> None:
         database_proxy = await self._get_database_proxy(**kwargs)
         try:
             await database_proxy.delete_container(self.collection_name)
@@ -1014,7 +1012,7 @@ class AzureCosmosDBNoSQLCollection(
 
 
 @release_candidate
-class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
+class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
     """A VectorStore implementation that uses Azure CosmosDB NoSQL as the backend storage."""
 
     def __init__(
@@ -1028,7 +1026,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ):
-        """Initialize the AzureCosmosDBNoSQLStore.
+        """Initialize the CosmosNoSqlStore.
 
         Args:
             url: The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
@@ -1057,16 +1055,16 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> AzureCosmosDBNoSQLCollection:
-        return AzureCosmosDBNoSQLCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+    ) -> CosmosNoSqlCollection:
+        return CosmosNoSqlCollection(
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             database_name=self.database_name,
             embedding_generator=embedding_generator or self.embedding_generator,

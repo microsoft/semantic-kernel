@@ -12,12 +12,15 @@ from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
 )
@@ -90,16 +93,16 @@ class InMemoryCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
         """Create a In Memory Collection."""
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator,
             **kwargs,
@@ -108,7 +111,7 @@ class InMemoryCollection(
     def _validate_data_model(self):
         """Check if the In Memory Score key is not used."""
         super()._validate_data_model()
-        if IN_MEMORY_SCORE_KEY in self.data_model_definition.field_names:
+        if IN_MEMORY_SCORE_KEY in self.definition.names:
             raise VectorStoreModelValidationError(f"Field name '{IN_MEMORY_SCORE_KEY}' is reserved for internal use.")
 
     @override
@@ -146,7 +149,7 @@ class InMemoryCollection(
         pass
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         self.inner_storage = {}
 
     @override
@@ -166,7 +169,7 @@ class InMemoryCollection(
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
         return_records: dict[TKey, float] = {}
-        field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        field = self.definition.try_get_vector_field(options.vector_property_name)
         if not field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -182,7 +185,7 @@ class InMemoryCollection(
             if vector and field is not None:
                 return_records[key] = self._calculate_vector_similarity(
                     vector,
-                    record[field.storage_property_name or field.name],
+                    record[field.storage_name or field.name],
                     distance_func,
                     invert_score=field.distance_function == DistanceFunction.COSINE_SIMILARITY,
                 )
@@ -315,17 +318,17 @@ class InMemoryStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> InMemoryCollection:
         """Get a collection."""
         return InMemoryCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator or self.embedding_generator,
         )

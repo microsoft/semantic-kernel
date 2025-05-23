@@ -15,11 +15,11 @@ def mock_client():
 
 
 @pytest.fixture
-def chroma_collection(mock_client, data_model_definition):
+def chroma_collection(mock_client, definition):
     return ChromaCollection(
         collection_name="test_collection",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         client=mock_client,
     )
 
@@ -31,7 +31,7 @@ def chroma_store(mock_client):
 
 def test_chroma_collection_initialization(chroma_collection):
     assert chroma_collection.collection_name == "test_collection"
-    assert chroma_collection.data_model_type is dict
+    assert chroma_collection.record_type is dict
 
 
 def test_chroma_store_initialization(chroma_store):
@@ -44,10 +44,8 @@ def test_chroma_collection_get_collection(chroma_collection, mock_client):
     assert collection == "mock_collection"
 
 
-def test_chroma_store_get_collection(chroma_store, mock_client, data_model_definition):
-    collection = chroma_store.get_collection(
-        collection_name="test_collection", data_model_type=dict, data_model_definition=data_model_definition
-    )
+def test_chroma_store_get_collection(chroma_store, mock_client, definition):
+    collection = chroma_store.get_collection(collection_name="test_collection", record_type=dict, definition=definition)
     assert collection is not None
     assert isinstance(collection, ChromaCollection)
 
@@ -74,7 +72,7 @@ async def test_chroma_collection_create_collection(chroma_collection, mock_clien
 
 
 async def test_chroma_collection_delete_collection(chroma_collection, mock_client):
-    await chroma_collection.delete_collection()
+    await chroma_collection.ensure_collection_deleted()
     mock_client.delete_collection.assert_called_once_with(name="test_collection")
 
 

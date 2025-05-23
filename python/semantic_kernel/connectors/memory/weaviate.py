@@ -21,12 +21,15 @@ from weaviate.exceptions import WeaviateClosedClientError, WeaviateConnectionErr
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
 )
@@ -83,7 +86,7 @@ DATATYPE_MAP: Final[dict[str, DataType]] = {
 }
 
 
-def _check_field(vector_field: VectorStoreRecordVectorField):
+def _check_field(vector_field: VectorStoreVectorField):
     if vector_field.distance_function not in DISTANCE_FUNCTION_MAP:
         raise VectorStoreModelValidationError(
             f"Distance function {vector_field.distance_function} is not supported by Weaviate."
@@ -92,24 +95,24 @@ def _check_field(vector_field: VectorStoreRecordVectorField):
         raise VectorStoreModelValidationError(f"Index kind {vector_field.index_kind} is not supported by Weaviate.")
 
 
-def _data_model_definition_to_weaviate_named_vectors(
-    data_model_definition: VectorStoreRecordDefinition,
+def _definition_to_weaviate_named_vectors(
+    definition: VectorStoreCollectionDefinition,
 ) -> list[_NamedVectorConfigCreate]:
     """Convert vector store vector fields to Weaviate named vectors.
 
     Args:
-        data_model_definition (VectorStoreRecordDefinition): The data model definition.
+        definition (VectorStoreRecordDefinition): The data model definition.
 
     Returns:
         list[_NamedVectorConfigCreate]: The Weaviate named vectors.
     """
     vector_list: list[_NamedVectorConfigCreate] = []
 
-    for field in data_model_definition.vector_fields:
+    for field in definition.vector_fields:
         _check_field(field)
         vector_list.append(
             Configure.NamedVectors.none(
-                name=field.storage_property_name or field.name,  # type: ignore
+                name=field.storage_name or field.name,  # type: ignore
                 vector_index_config=INDEX_KIND_MAP[field.index_kind](
                     distance_metric=DISTANCE_FUNCTION_MAP[field.distance_function]
                 ),
@@ -208,8 +211,8 @@ class WeaviateCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         url: str | None = None,
@@ -226,8 +229,8 @@ class WeaviateCollection(
         """Initialize a Weaviate collection.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The definition of the data model.
+            record_type: The type of the data model.
+            definition: The definition of the data model.
             collection_name: The name of the collection.
             embedding_generator: The embedding generator.
             url: The Weaviate URL
@@ -284,8 +287,8 @@ class WeaviateCollection(
                 raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
 
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             async_client=async_client,  # type: ignore[call-arg]
             managed_client=managed_client,
@@ -350,13 +353,13 @@ class WeaviateCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         args = {
             "include_vector": options.include_vectors,
             "limit": options.top,
             "offset": options.skip,
             "return_metadata": MetadataQuery(distance=True),
-            "target_vector": vector_field.storage_property_name or vector_field.name
+            "target_vector": vector_field.storage_name or vector_field.name
             if self.named_vectors and vector_field
             else None,
         }
@@ -455,14 +458,14 @@ class WeaviateCollection(
                 raise NotImplementedError("Unary +, -, ~, ! are not supported in Weaviate filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return node.attr
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -475,7 +478,7 @@ class WeaviateCollection(
         self,
         collection: CollectionAsync,
         vector: list[float | int],
-        vector_field: VectorStoreRecordVectorField | None,
+        vector_field: VectorStoreVectorField | None,
         args: dict[str, Any],
     ) -> Any:
         if self.named_vectors and not vector_field:
@@ -512,24 +515,15 @@ class WeaviateCollection(
         """Create a data object from a record based on the data model definition."""
         records_in_store_model: list[DataObject[dict[str, Any], None]] = []
         for record in records:
-            properties = {
-                field.storage_property_name or field.name: record[field.name]
-                for field in self.data_model_definition.data_fields
-            }
+            properties = {field.storage_name or field.name: record[field.name] for field in self.definition.data_fields}
             # If key is None, Weaviate will generate a UUID
-            key = record[
-                self.data_model_definition.key_field.storage_property_name or self.data_model_definition.key_field.name
-            ]
+            key = record[self.definition.key_field.storage_name or self.definition.key_field.name]
             if self.named_vectors:
                 vectors = {
-                    vector.storage_property_name or vector.name: record[vector.name]
-                    for vector in self.data_model_definition.vector_fields
+                    vector.storage_name or vector.name: record[vector.name] for vector in self.definition.vector_fields
                 }
             else:
-                vectors = record[
-                    self.data_model_definition.vector_fields[0].storage_property_name
-                    or self.data_model_definition.vector_fields[0].name
-                ]
+                vectors = record[self.definition.vector_fields[0].storage_name or self.definition.vector_fields[0].name]
             records_in_store_model.append(DataObject(properties=properties, uuid=key, vector=vectors))
         return records_in_store_model
 
@@ -538,22 +532,22 @@ class WeaviateCollection(
         records_in_dict: list[dict[str, Any]] = []
         for record in records:
             properties = {
-                field.name: record.properties[field.storage_property_name or field.name]
-                for field in self.data_model_definition.data_fields
-                if (field.storage_property_name or field.name) in record.properties
+                field.name: record.properties[field.storage_name or field.name]
+                for field in self.definition.data_fields
+                if (field.storage_name or field.name) in record.properties
             }
-            key = {self.data_model_definition.key_field.name: record.uuid}
+            key = {self.definition.key_field.name: record.uuid}
             if not record.vector:
                 records_in_dict.append(properties | key)
             else:
                 if self.named_vectors:
                     vectors = {
-                        vector.name: record.vector[vector.storage_property_name or vector.name]
-                        for vector in self.data_model_definition.vector_fields
-                        if (vector.storage_property_name or vector.name) in record.vector
+                        vector.name: record.vector[vector.storage_name or vector.name]
+                        for vector in self.definition.vector_fields
+                        if (vector.storage_name or vector.name) in record.vector
                     }
                 else:
-                    vector_field = self.data_model_definition.vector_fields[0]
+                    vector_field = self.definition.vector_fields[0]
                     vectors = {vector_field.name: record.vector["default"]}
                 records_in_dict.append(properties | key | vectors)
         return records_in_dict
@@ -567,7 +561,7 @@ class WeaviateCollection(
                 straight to the Weaviate client.collections.create method.
                 Make sure to check the arguments of that method for the specifications.
         """
-        if not self.named_vectors and len(self.data_model_definition.vector_field_names) != 1:
+        if not self.named_vectors and len(self.definition.vector_field_names) != 1:
             raise VectorStoreOperationException(
                 "Named vectors must be enabled if there is not exactly one vector field in the data model definition."
             )
@@ -583,9 +577,9 @@ class WeaviateCollection(
         try:
             if self.named_vectors:
                 vector_index_config = None
-                vectorizer_config = _data_model_definition_to_weaviate_named_vectors(self.data_model_definition)
+                vectorizer_config = _definition_to_weaviate_named_vectors(self.definition)
             else:
-                vector_field = self.data_model_definition.vector_fields[0]
+                vector_field = self.definition.vector_fields[0]
                 _check_field(vector_field)
                 vector_index_config = INDEX_KIND_MAP[vector_field.index_kind](
                     distance_metric=DISTANCE_FUNCTION_MAP[vector_field.distance_function]
@@ -593,11 +587,11 @@ class WeaviateCollection(
                 vectorizer_config = None
 
             properties: list[Property] = []
-            for field in self.data_model_definition.data_fields:
+            for field in self.definition.data_fields:
                 properties.append(
                     Property(
-                        name=field.storage_property_name or field.name,
-                        data_type=DATATYPE_MAP[field.property_type or "default"],
+                        name=field.storage_name or field.name,
+                        data_type=DATATYPE_MAP[field.type_ or "default"],
                         index_filterable=field.is_indexed,
                         index_full_text=field.is_full_text_indexed,
                     )
@@ -636,7 +630,7 @@ class WeaviateCollection(
             raise VectorStoreOperationException(f"Failed to check if collection exists: {ex}") from ex
 
     @override
-    async def delete_collection(self, **kwargs) -> None:
+    async def ensure_collection_deleted(self, **kwargs) -> None:
         """Delete the collection in Weaviate.
 
         Args:
@@ -665,7 +659,7 @@ class WeaviateCollection(
 
     def _validate_data_model(self):
         super()._validate_data_model()
-        if self.named_vectors and len(self.data_model_definition.vector_field_names) > 1:
+        if self.named_vectors and len(self.definition.vector_field_names) > 1:
             raise VectorStoreModelValidationError(
                 "Named vectors must be enabled if there are more then 1 vector fields in the data model definition."
             )
@@ -753,16 +747,16 @@ class WeaviateStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> WeaviateCollection:
         return WeaviateCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator or self.embedding_generator,
             async_client=self.async_client,

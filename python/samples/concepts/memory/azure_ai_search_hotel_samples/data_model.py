@@ -15,12 +15,7 @@ from azure.search.documents.indexes.models import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField, vectorstoremodel
 
 """
 The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
@@ -60,31 +55,29 @@ class Address(BaseModel):
 
 @vectorstoremodel(collection_name="hotel-index")
 class HotelSampleClass(BaseModel):
-    HotelId: Annotated[str, VectorStoreRecordKeyField]
-    HotelName: Annotated[str | None, VectorStoreRecordDataField()] = None
+    HotelId: Annotated[str, VectorStoreKeyField]
+    HotelName: Annotated[str | None, VectorStoreDataField()] = None
     Description: Annotated[
         str,
-        VectorStoreRecordDataField(is_full_text_indexed=True),
+        VectorStoreDataField(is_full_text_indexed=True),
     ]
     DescriptionVector: Annotated[
         list[float] | str | None,
-        VectorStoreRecordVectorField(dimensions=1536),
+        VectorStoreVectorField(dimensions=1536),
     ] = None
-    Description_fr: Annotated[str, VectorStoreRecordDataField(is_full_text_indexed=True)]
+    Description_fr: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
     DescriptionFrVector: Annotated[
         list[float] | str | None,
-        VectorStoreRecordVectorField(dimensions=1536),
+        VectorStoreVectorField(dimensions=1536),
     ] = None
-    Category: Annotated[str, VectorStoreRecordDataField()]
-    Tags: Annotated[list[str], VectorStoreRecordDataField(is_indexed=True)]
-    ParkingIncluded: Annotated[bool | None, VectorStoreRecordDataField()] = None
-    LastRenovationDate: Annotated[
-        str | None, VectorStoreRecordDataField(property_type=SearchFieldDataType.DateTimeOffset)
-    ] = None
-    Rating: Annotated[float, VectorStoreRecordDataField()]
-    Location: Annotated[dict[str, Any], VectorStoreRecordDataField(property_type=SearchFieldDataType.GeographyPoint)]
-    Address: Annotated[Address, VectorStoreRecordDataField()]
-    Rooms: Annotated[list[Rooms], VectorStoreRecordDataField()]
+    Category: Annotated[str, VectorStoreDataField()]
+    Tags: Annotated[list[str], VectorStoreDataField(is_indexed=True)]
+    ParkingIncluded: Annotated[bool | None, VectorStoreDataField()] = None
+    LastRenovationDate: Annotated[str | None, VectorStoreDataField(type=SearchFieldDataType.DateTimeOffset)] = None
+    Rating: Annotated[float, VectorStoreDataField()]
+    Location: Annotated[dict[str, Any], VectorStoreDataField(type=SearchFieldDataType.GeographyPoint)]
+    Address: Annotated[Address, VectorStoreDataField()]
+    Rooms: Annotated[list[Rooms], VectorStoreDataField()]
 
     model_config = ConfigDict(extra="ignore")
 

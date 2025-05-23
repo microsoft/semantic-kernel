@@ -14,12 +14,15 @@ from chromadb.config import Settings
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
     _get_collection_name_from_model,
@@ -70,8 +73,8 @@ class ChromaCollection(
 
     def __init__(
         self,
-        data_model_type: type[object],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[object],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         persist_directory: str | None = None,
         client_settings: "Settings | None" = None,
@@ -83,8 +86,8 @@ class ChromaCollection(
         """Initialize the Chroma vector store collection.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The definition of the data model.
+            record_type: The type of the data model.
+            definition: The definition of the data model.
             collection_name: The name of the collection.
             persist_directory: The directory to persist the collection.
             client_settings: The settings for the Chroma client.
@@ -97,7 +100,7 @@ class ChromaCollection(
 
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         managed_client = not client
         if client is None:
             settings = client_settings or Settings()
@@ -107,8 +110,8 @@ class ChromaCollection(
             client = Client(settings)
         super().__init__(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             client=client,
             managed_client=managed_client,
             embedding_func=embedding_func,
@@ -153,10 +156,10 @@ class ChromaCollection(
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
                 See the Chroma documentation for more details.
         """
-        if self.data_model_definition.vector_fields:
+        if self.definition.vector_fields:
             configuration = kwargs.pop("configuration", {})
             configuration = CreateCollectionConfiguration(**configuration)
-            vector_field = self.data_model_definition.vector_fields[0]
+            vector_field = self.definition.vector_fields[0]
             if vector_field.index_kind not in INDEX_KIND_MAP:
                 raise VectorStoreInitializationException(f"Index kind {vector_field.index_kind} is not supported.")
             if vector_field.distance_function not in DISTANCE_FUNCTION_MAP:
@@ -176,7 +179,7 @@ class ChromaCollection(
         self.client.create_collection(name=self.collection_name, embedding_function=self.embedding_func, **kwargs)
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the collection."""
         try:
             self.client.delete_collection(name=self.collection_name)
@@ -189,16 +192,15 @@ class ChromaCollection(
 
     def _validate_data_model(self):
         super()._validate_data_model()
-        if len(self.data_model_definition.vector_fields) > 1:
+        if len(self.definition.vector_fields) > 1:
             raise VectorStoreModelValidationError(
-                "Chroma only supports one vector field, but "
-                f"{len(self.data_model_definition.vector_fields)} were provided."
+                f"Chroma only supports one vector field, but {len(self.definition.vector_fields)} were provided."
             )
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-        vector_field = self.data_model_definition.vector_fields[0]
-        id_field_name = self.data_model_definition.key_field_name
+        vector_field = self.definition.vector_fields[0]
+        id_field_name = self.definition.key_name
         store_models = []
         for record in records:
             store_model = {
@@ -206,13 +208,13 @@ class ChromaCollection(
                 "metadata": {
                     k: v
                     for k, v in record.items()
-                    if k not in [id_field_name, vector_field.storage_property_name or vector_field.name]
+                    if k not in [id_field_name, vector_field.storage_name or vector_field.name]
                 },
             }
             if self.embedding_func:
-                store_model["document"] = (record[vector_field.storage_property_name or vector_field.name],)
+                store_model["document"] = (record[vector_field.storage_name or vector_field.name],)
             else:
-                store_model["embedding"] = record[vector_field.storage_property_name or vector_field.name]
+                store_model["embedding"] = record[vector_field.storage_name or vector_field.name]
             if store_model["metadata"] == {}:
                 store_model.pop("metadata")
             store_models.append(store_model)
@@ -220,10 +222,10 @@ class ChromaCollection(
 
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        vector_field = self.data_model_definition.vector_fields[0]
+        vector_field = self.definition.vector_fields[0]
         # replace back the name of the vector, content and id fields
         for record in records:
-            record[self.data_model_definition.key_field_name] = record.pop("id")
+            record[self.definition.key_name] = record.pop("id")
             record[vector_field.name] = record.pop("document", None) or record.pop("embedding", None)
         return records
 
@@ -324,7 +326,7 @@ class ChromaCollection(
         vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -406,14 +408,14 @@ class ChromaCollection(
                 raise NotImplementedError("Unary +, -, ~ and ! are not supported in Chroma filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return node.attr
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -452,9 +454,9 @@ class ChromaStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
@@ -463,8 +465,8 @@ class ChromaStore(VectorStore):
         return ChromaCollection(
             client=self.client,
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
