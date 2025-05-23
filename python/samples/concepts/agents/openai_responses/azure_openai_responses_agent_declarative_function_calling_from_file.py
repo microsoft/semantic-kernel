@@ -42,7 +42,7 @@ async def main():
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
             "resources",
             "declarative_spec",
-            "azure_resonses_spec.yaml",
+            "azure_responses_spec.yaml",
         )
 
         # Create the Responses Agent from the YAML spec
