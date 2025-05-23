@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -48,11 +49,13 @@ public sealed class Mem0Provider : AIContextProvider
     private readonly string _contextPrompt;
 
     private readonly Mem0Client _mem0Client;
+    private readonly ILogger<Mem0Provider>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Mem0Provider"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client used for making requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="options">Options for configuring the component.</param>
     /// <remarks>
     /// The base address of the required mem0 service, and any authentication headers, should be set on the <paramref name="httpClient"/>
@@ -64,7 +67,7 @@ public sealed class Mem0Provider : AIContextProvider
     /// new Mem0Client(httpClient);
     /// </code>
     /// </remarks>
-    public Mem0Provider(HttpClient httpClient, Mem0ProviderOptions? options = default)
+    public Mem0Provider(HttpClient httpClient, ILoggerFactory? loggerFactory = default, Mem0ProviderOptions? options = default)
     {
         Verify.NotNull(httpClient);
 
@@ -79,6 +82,7 @@ public sealed class Mem0Provider : AIContextProvider
         this._userId = options?.UserId;
         this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
+        this._logger = loggerFactory?.CreateLogger<Mem0Provider>();
 
         this._mem0Client = new(httpClient);
     }
@@ -133,15 +137,16 @@ public sealed class Mem0Provider : AIContextProvider
                 Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).
                 Select(m => m.Text));
 
-        var memories = await this._mem0Client.SearchAsync(
+        var memories = (await this._mem0Client.SearchAsync(
                 this._applicationId,
                 this._agentId,
                 this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
                 this._userId,
-                inputText).ConfigureAwait(false);
+                inputText).ConfigureAwait(false)).ToList();
 
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
-        return new()
+
+        var context = new AIContext
         {
             Instructions =
                 $"""
@@ -149,6 +154,14 @@ public sealed class Mem0Provider : AIContextProvider
                 {lineSeparatedMemories}
                 """
         };
+
+        if (this._logger != null)
+        {
+            this._logger.LogInformation("Mem0Behavior: Retrieved {Count} memories from mem0.", memories.Count);
+            this._logger.LogTrace("Mem0Behavior:\nInput messages:{Input}\nOutput context instructions:\n{Instructions}", inputText, context.Instructions);
+        }
+
+        return context;
     }
 
     /// <summary>
