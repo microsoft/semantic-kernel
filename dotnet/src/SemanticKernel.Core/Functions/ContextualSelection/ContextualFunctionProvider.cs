@@ -48,21 +48,18 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="inMemoryVectorStore">An instance of the `Connectors.Memory.InMemory`
     /// in-memory vector store. Using other vector stores will require the data synchronization
     /// and data lifetime management to be done by the caller.</param>
-    /// <param name="embeddingGenerator">Embedding generator to use for generating embeddings.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
         VectorStore inMemoryVectorStore,
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         int vectorDimensions,
         IReadOnlyList<AIFunction> functions,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
         Verify.NotNull(inMemoryVectorStore);
-        Verify.NotNull(embeddingGenerator);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -72,7 +69,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         this._functionStore = new FunctionStore(
             inMemoryVectorStore,
             collectionName,
-            embeddingGenerator,
             vectorDimensions,
             functions,
             options: new()

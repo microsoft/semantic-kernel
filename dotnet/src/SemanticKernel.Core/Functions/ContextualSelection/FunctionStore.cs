@@ -17,7 +17,6 @@ internal sealed class FunctionStore
 {
     private readonly VectorStore _vectorStore;
     private readonly Dictionary<string, AIFunction> _functionByName;
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly string _collectionName;
     private readonly FunctionStoreOptions _options;
     private readonly VectorStoreCollection<object, Dictionary<string, object?>> _collection;
@@ -28,27 +27,23 @@ internal sealed class FunctionStore
     /// </summary>
     /// <param name="inMemoryVectorStore">The vector store to use for storing functions.</param>
     /// <param name="collectionName">The name of the collection to use for storing and retrieving functions.</param>
-    /// <param name="embeddingGenerator">The embedding generator to use for generating embeddings.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="options">The options to use for the function store.</param>
     public FunctionStore(
         VectorStore inMemoryVectorStore,
         string collectionName,
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         int vectorDimensions,
         IReadOnlyList<AIFunction> functions,
         FunctionStoreOptions? options = null)
     {
         Verify.NotNull(inMemoryVectorStore);
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.NotNull(embeddingGenerator);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
 
         this._vectorStore = inMemoryVectorStore;
         this._collectionName = collectionName;
-        this._embeddingGenerator = embeddingGenerator;
         this._functionByName = functions.ToDictionary(function => function.Name);
 
         this._options = options ?? new FunctionStoreOptions();
@@ -58,7 +53,7 @@ internal sealed class FunctionStore
         {
             Properties = [
                 new VectorStoreKeyProperty("Name", typeof(string)),
-                new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), dimensions: vectorDimensions)
+                new VectorStoreVectorProperty("Embedding", typeof(string), dimensions: vectorDimensions)
             ]
         });
     }
@@ -72,22 +67,17 @@ internal sealed class FunctionStore
         // Get function data to vectorize
         var nameSourcePairs = await this.GetFunctionVectorizationSourcesAsync(cancellationToken).ConfigureAwait(false);
 
-        // Generate embeddings
-        var embeddings = await this._embeddingGenerator
-            .GenerateAsync([.. nameSourcePairs.Select(l => l.VectorizationSource)], cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
         var functionRecords = new List<Dictionary<string, object?>>(nameSourcePairs.Count);
 
         // Create vector store records
         for (var i = 0; i < nameSourcePairs.Count; i++)
         {
-            var (name, data) = nameSourcePairs[i];
+            var (name, vectorizationSource) = nameSourcePairs[i];
 
             functionRecords.Add(new Dictionary<string, object?>()
             {
                 ["Name"] = name,
-                ["Embedding"] = embeddings[i].Vector
+                ["Embedding"] = vectorizationSource
             });
         }
 
@@ -102,14 +92,12 @@ internal sealed class FunctionStore
     /// </summary>
     /// <param name="context">The context to search for functions.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
-    public async Task<IEnumerable<AIFunction>> SearchAsync(string context, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AIFunction>> SearchAsync( string context, CancellationToken cancellationToken = default)
     {
         await this.AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var requestEmbedding = await this._embeddingGenerator.GenerateAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-
         var results = await this._collection
-            .SearchAsync(requestEmbedding, top: this._options.MaxNumberOfFunctions, cancellationToken: cancellationToken)
+            .SearchAsync(context, top: this._options.MaxNumberOfFunctions, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

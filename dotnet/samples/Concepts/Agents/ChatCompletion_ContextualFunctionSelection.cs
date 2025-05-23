@@ -54,9 +54,8 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
 
         agentThread.AIContextProviders.Add(
             new ContextualFunctionProvider(
-                inMemoryVectorStore: new InMemoryVectorStore(),
+                inMemoryVectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
                 vectorDimensions: 1536,
-                embeddingGenerator: embeddingGenerator,
                 options: new()
                 {
                     // Selecting top three relevant functions.
