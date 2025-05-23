@@ -52,15 +52,22 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
         // provided functions to advertise only those that are relevant to the current context.
         ChatHistoryAgentThread agentThread = new();
 
-        agentThread.AIContextProviders.Add(new ContextualFunctionProvider(
-            inMemoryVectorStore: new InMemoryVectorStore(),
-            functions: [.. gitHubMcpTools],
-            embeddingGenerator: embeddingGenerator,
-            options: new()
-            {
-                MaxNumberOfFunctions = 3, // Selecting three most relevant functions
-                ContextEmbeddingValueProvider = (messages, _) => Task.FromResult(messages.Last(m => m.Role == ChatRole.User).Text) // Use the last user message as context as relevant functions might be required to answer it
-            }));
+        agentThread.AIContextProviders.Add(
+            new ContextualFunctionProvider(
+                inMemoryVectorStore: new InMemoryVectorStore(),
+                vectorDimensions: 1536,
+                embeddingGenerator: embeddingGenerator,
+                options: new()
+                {
+                    // Selecting top three relevant functions.
+                    MaxNumberOfFunctions = 3,
+
+                    // Use the last user message as context as relevant functions might be required to answer it.
+                    ContextEmbeddingValueProvider = (messages, _) => Task.FromResult(messages.Last(m => m.Role == ChatRole.User).Text)
+                },
+                functions: [.. gitHubMcpTools]
+            )
+        );
 
         // Invoke and display assistant response
         ChatMessageContent message = await agent.InvokeAsync("Get the two latest pull requests from the microsoft/semantic-kernel GitHub repository.", agentThread).FirstAsync();

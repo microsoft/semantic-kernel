@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Functions;
 internal sealed class FunctionStore
 {
     private readonly VectorStore _vectorStore;
-    private readonly IReadOnlyList<AIFunction> _functions;
+    private readonly Dictionary<string, AIFunction> _functionByName;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly string _collectionName;
     private readonly FunctionStoreOptions _options;
@@ -26,26 +26,29 @@ internal sealed class FunctionStore
     /// Initializes a new instance of the <see cref="FunctionStore"/> class.
     /// </summary>
     /// <param name="inMemoryVectorStore">The vector store to use for storing functions.</param>
-    /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
-    /// <param name="embeddingGenerator">The embedding generator to use for generating embeddings.</param>
-    /// <param name="options">The options to use for the function store.</param>
     /// <param name="collectionName">The name of the collection to use for storing and retrieving functions.</param>
+    /// <param name="embeddingGenerator">The embedding generator to use for generating embeddings.</param>
+    /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
+    /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
+    /// <param name="options">The options to use for the function store.</param>
     public FunctionStore(
         VectorStore inMemoryVectorStore,
-        IReadOnlyList<AIFunction> functions,
+        string collectionName,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        FunctionStoreOptions? options = null,
-        string collectionName = "functions")
+        int vectorDimensions,
+        IReadOnlyList<AIFunction> functions,
+        FunctionStoreOptions? options = null)
     {
         Verify.NotNull(inMemoryVectorStore);
-        Verify.NotNull(functions);
-        Verify.NotNull(embeddingGenerator);
         Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNull(embeddingGenerator);
+        Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
+        Verify.NotNull(functions);
 
         this._vectorStore = inMemoryVectorStore;
-        this._functions = functions;
-        this._embeddingGenerator = embeddingGenerator;
         this._collectionName = collectionName;
+        this._embeddingGenerator = embeddingGenerator;
+        this._functionByName = functions.ToDictionary(function => function.Name);
 
         this._options = options ?? new FunctionStoreOptions();
 
@@ -54,7 +57,7 @@ internal sealed class FunctionStore
         {
             Properties = [
                 new VectorStoreKeyProperty("Name", typeof(string)),
-                new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), dimensions: 1536)
+                new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), dimensions: vectorDimensions)
             ]
         });
     }
@@ -66,7 +69,7 @@ internal sealed class FunctionStore
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
         // Get function data to vectorize
-        var nameSourcePairs = await this.GetFunctionVectorizationSourcesAsync(this._functions, cancellationToken).ConfigureAwait(false);
+        var nameSourcePairs = await this.GetFunctionVectorizationSourcesAsync(cancellationToken).ConfigureAwait(false);
 
         // Generate embeddings
         var embeddings = await this._embeddingGenerator
@@ -117,29 +120,28 @@ internal sealed class FunctionStore
             results = [.. results.Where(result => result.Score >= minScore)];
         }
 
-        return results.Select(result => this._functions.Single(function => function.Name == (result.Record["Name"] as string)));
+        return results.Select(result => this._functionByName[(string)result.Record["Name"]!]);
     }
 
     /// <summary>
     /// Get the function vectorization sources.
     /// </summary>
-    /// <param name="functions">The functions to get the vectorization sources for.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     /// <returns>The function name and vectorization source pairs.</returns>
-    private async Task<List<(string Name, string VectorizationSource)>> GetFunctionVectorizationSourcesAsync(IReadOnlyList<AIFunction> functions, CancellationToken cancellationToken)
+    private async Task<List<(string Name, string VectorizationSource)>> GetFunctionVectorizationSourcesAsync(CancellationToken cancellationToken)
     {
-        List<(string, string)> nameSourcePairs = new(functions.Count);
+        List<(string, string)> nameSourcePairs = new(this._functionByName.Count);
 
         var provider = (Func<AIFunction, CancellationToken, Task<string>>?)this._options.FunctionEmbeddingValueProvider ?? ((function, _) =>
         {
             return Task.FromResult($"Function name: {function.Name}. Description: {function.Description}");
         });
 
-        foreach (var function in functions)
+        foreach (KeyValuePair<string, AIFunction> pair in this._functionByName)
         {
-            var vectorizationSource = await provider.Invoke(function, cancellationToken).ConfigureAwait(false);
+            var vectorizationSource = await provider.Invoke(pair.Value, cancellationToken).ConfigureAwait(false);
 
-            nameSourcePairs.Add((function.Name, vectorizationSource));
+            nameSourcePairs.Add((pair.Key, vectorizationSource));
         }
 
         return nameSourcePairs;

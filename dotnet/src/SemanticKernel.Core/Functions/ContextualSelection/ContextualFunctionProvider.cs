@@ -39,7 +39,6 @@ namespace Microsoft.SemanticKernel.Functions;
 public sealed class ContextualFunctionProvider : AIContextProvider
 {
     private readonly FunctionStore _functionStore;
-    private readonly IReadOnlyList<AIFunction> _functions;
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized = false;
 
@@ -49,34 +48,40 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="inMemoryVectorStore">An instance of the `Connectors.Memory.InMemory`
     /// in-memory vector store. Using other vector stores will require the data synchronization
     /// and data lifetime management to be done by the caller.</param>
-    /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="embeddingGenerator">Embedding generator to use for generating embeddings.</param>
+    /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
+    /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
         VectorStore inMemoryVectorStore,
-        IReadOnlyList<AIFunction> functions,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        int vectorDimensions,
+        IReadOnlyList<AIFunction> functions,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
-        Verify.NotNull(functions);
+        Verify.NotNull(inMemoryVectorStore);
         Verify.NotNull(embeddingGenerator);
+        Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
+        Verify.NotNull(functions);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
-        this._functions = functions;
         this._options = options ?? new ContextualFunctionProviderOptions();
 
         this._functionStore = new FunctionStore(
             inMemoryVectorStore,
-            functions,
+            collectionName,
             embeddingGenerator,
+            vectorDimensions,
+            functions,
             options: new()
             {
                 FunctionEmbeddingValueProvider = this._options.FunctionEmbeddingValueProvider,
                 MaxNumberOfFunctions = this._options.MaxNumberOfFunctions,
                 MinimumRelevanceScore = this._options.MinimumRelevanceScore,
-            },
-            collectionName);
+            }
+         );
     }
 
     /// <inheritdoc />
