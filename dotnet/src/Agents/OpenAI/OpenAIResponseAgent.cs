@@ -40,6 +40,19 @@ public sealed class OpenAIResponseAgent : Agent
     /// </summary>
     public bool StoreEnabled { get; init; } = true;
 
+    /// <summary>
+    /// Plugins associated with the agent.
+    /// </summary>
+    public IEnumerable<KernelPlugin>? Plugins
+    {
+        get => this.Kernel.Plugins;
+        init
+        {
+            Verify.NotNull(value);
+            this.Kernel.Plugins.AddRange(value);
+        }
+    }
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -93,6 +106,11 @@ public sealed class OpenAIResponseAgent : Agent
         for (int i = messageCount; i < chatHistory.Count; i++)
         {
             await this.NotifyThreadOfNewMessage(agentThread, chatHistory[i], cancellationToken).ConfigureAwait(false);
+
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(chatHistory[i]).ConfigureAwait(false);
+            }
         }
     }
 
