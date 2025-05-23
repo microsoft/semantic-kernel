@@ -251,7 +251,7 @@ class ResponsesAgentThread(AgentThread):
 
 
 @experimental
-@register_agent_type("openai_responses_agent")
+@register_agent_type("openai_responses")
 class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
     """OpenAI Responses Agent class.
 

@@ -15,7 +15,7 @@ answers from the model.
 
 # Define the YAML string for the sample
 spec = """
-type: openai_responses_agent
+type: openai_responses
 name: StoryAgent
 description: An agent that generates a story about a topic.
 instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
@@ -42,37 +42,35 @@ async def main():
     # Setup the OpenAI client
     client = OpenAIResponsesAgent.create_client()
 
-    try:
-        # Create the Responses Agent from the YAML spec
-        # Note: the extras can be provided in the short-format (shown below) or
-        # in the long-format (as shown in the YAML spec, with the `OpenAI:` prefix).
-        # The short-format is used here for brevity
-        agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(
-            yaml_str=spec,
-            client=client,
-        )
+    # Create the Responses Agent from the YAML spec
+    # Note: the extras can be provided in the short-format (shown below) or
+    # in the long-format (as shown in the YAML spec, with the `OpenAI:` prefix).
+    # The short-format is used here for brevity
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(
+        yaml_str=spec,
+        client=client,
+    )
 
+    USER_INPUTS = ["Tell me a fun story."]
+
+    # Invoke the agent for the specified task
+    for user_input in USER_INPUTS:
+        # Print the user input
+        print(f"# User: '{user_input}'")
         # Invoke the agent for the specified task
         async for response in agent.invoke(
-            messages=None,
+            messages=user_input,
         ):
             print(f"# {response.name}: {response}")
-    finally:
-        # Cleanup: Delete the agent, vector store, and file
-        await client.beta.assistants.delete(agent.id)
 
-        """
-        Sample output:
+    """
+    Sample output:
 
-        # User: 'Who can help me if I have a sales question?'
-        # FileSearchAgent: If you have a sales question, you may contact the following individuals:
-
-        1. **Hicran Bea** - Sales Manager
-        2. **Mariam Jaslyn** - Sales Representative
-        3. **Angelino Embla** - Sales Representative
-
-        This information comes from the employee records【4:0†source】.
-        """
+    # User: 'Tell me a fun story.'
+    # StoryAgent: Late at night, a mischievous cat named Whiskers tiptoed across the piano keys, 
+      accidentally composing a tune so catchy that all the neighborhood felines gathered outside 
+      to dance. By morning, the humans awoke to find a crowd of cats meowing for an encore performance.
+    """
 
 
 if __name__ == "__main__":

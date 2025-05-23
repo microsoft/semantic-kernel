@@ -257,7 +257,7 @@ async def test_open_ai_agent_missing_chat_deployment_name_throws(kernel, openai_
 
 async def test_openai_assistant_agent_from_yaml_minimal(openai_unit_test_env, mock_openai_client):
     spec = """
-type: openai_responses_agent
+type: openai_responses
 name: MinimalAgent
 model:
   id: ${OpenAI:ChatModelId}
@@ -273,7 +273,7 @@ model:
 
 async def test_openai_assistant_agent_with_tools(openai_unit_test_env, mock_openai_client):
     spec = """
-type: openai_responses_agent
+type: openai_responses
 name: FileSearchAgent
 description: Uses file search.
 model:
@@ -297,7 +297,7 @@ tools:
 
 async def test_openai_assistant_agent_with_inputs_outputs_template(openai_unit_test_env, mock_openai_client):
     spec = """
-type: openai_responses_agent
+type: openai_responses
 name: StoryAgent
 model:
   id: ${OpenAI:ChatModelId}
@@ -332,7 +332,7 @@ async def test_openai_assistant_agent_from_dict_missing_type():
 
 async def test_openai_assistant_agent_from_yaml_missing_required_fields():
     spec = """
-type: openai_responses_agent
+type: openai_responses
 """
     with pytest.raises(AgentInitializationException):
         await AgentRegistry.create_from_yaml(spec)
@@ -342,7 +342,7 @@ async def test_agent_from_file_success(tmp_path, openai_unit_test_env, mock_open
     file_path = tmp_path / "spec.yaml"
     file_path.write_text(
         """
-type: openai_responses_agent
+type: openai_responses
 name: DeclarativeAgent
 model:
   id: ${OpenAI:ChatModelId}

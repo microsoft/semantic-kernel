@@ -21,7 +21,7 @@ USER_INPUTS = [
 
 # Define the YAML string for the sample
 SPEC = """
-type: openai_responses_agent
+type: openai_responses
 name: Host
 instructions: Respond politely to the user's questions.
 model:

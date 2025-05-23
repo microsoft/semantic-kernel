@@ -16,7 +16,7 @@ answers from the model.
 
 # Define the YAML string for the sample
 spec = """
-type: openai_responses_agent
+type: openai_responses
 name: FileSearchAgent
 description: Agent with code interpreter tool.
 instructions: >

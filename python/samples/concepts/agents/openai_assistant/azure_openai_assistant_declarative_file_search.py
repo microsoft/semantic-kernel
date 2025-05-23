@@ -16,7 +16,7 @@ answers from the model.
 
 # Define the YAML string for the sample
 spec = """
-type: azure_openai_assistant
+type: azure_assistant
 name: FileSearchAgent
 description: Agent with code interpreter tool.
 instructions: >
@@ -62,7 +62,7 @@ async def main():
         agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
             yaml_str=spec,
             client=client,
-            extras={"OpenAI:VectorStoreId": vector_store.id},
+            extras={"AzureOpenAI:VectorStoreId": vector_store.id},
         )
 
         # Define the task for the agent

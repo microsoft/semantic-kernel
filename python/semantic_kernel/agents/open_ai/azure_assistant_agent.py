@@ -37,7 +37,7 @@ else:
 
 
 @release_candidate
-@register_agent_type("azure_openai_assistant")
+@register_agent_type("azure_assistant")
 class AzureAssistantAgent(OpenAIAssistantAgent):
     """An Azure Assistant Agent class that extends the OpenAI Assistant Agent class."""
 

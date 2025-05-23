@@ -354,7 +354,7 @@ async def test_azure_assistant_agent_from_yaml_minimal(
     azure_openai_unit_test_env, mock_azure_openai_client_and_definition
 ):
     spec = """
-type: azure_openai_assistant
+type: azure_assistant
 name: MinimalAgent
 model:
   id: ${AzureOpenAI:ChatModelId}
@@ -372,7 +372,7 @@ model:
 
 async def test_azure_assistant_agent_with_tools(azure_openai_unit_test_env, mock_azure_openai_client_and_definition):
     spec = """
-type: azure_openai_assistant
+type: azure_assistant
 name: CodeAgent
 description: Uses code interpreter.
 model:
@@ -398,7 +398,7 @@ async def test_azure_assistant_agent_with_inputs_outputs_template(
     azure_openai_unit_test_env, mock_azure_openai_client_and_definition
 ):
     spec = """
-type: azure_openai_assistant
+type: azure_assistant
 name: StoryAgent
 model:
   id: ${AzureOpenAI:ChatModelId}
@@ -434,7 +434,7 @@ async def test_azure_assistant_agent_from_dict_missing_type():
 
 async def test_azure_assistant_agent_from_yaml_missing_required_fields():
     spec = """
-type: azure_openai_assistant
+type: azure_assistant
 """
     with pytest.raises(AgentInitializationException):
         await AgentRegistry.create_from_yaml(spec)
@@ -444,7 +444,7 @@ async def test_agent_from_file_success(tmp_path, azure_openai_unit_test_env, moc
     file_path = tmp_path / "spec.yaml"
     file_path.write_text(
         """
-type: azure_openai_assistant
+type: azure_assistant
 name: DeclarativeAgent
 model:
   id: ${AzureOpenAI:ChatModelId}

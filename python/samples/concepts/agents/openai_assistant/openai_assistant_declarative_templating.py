@@ -61,18 +61,13 @@ async def main():
         # Cleanup: Delete the agent, vector store, and file
         await client.beta.assistants.delete(agent.id)
 
-        """
-        Sample output:
+    """
+    Sample output:
 
-        # User: 'Who can help me if I have a sales question?'
-        # FileSearchAgent: If you have a sales question, you may contact the following individuals:
-
-        1. **Hicran Bea** - Sales Manager
-        2. **Mariam Jaslyn** - Sales Representative
-        3. **Angelino Embla** - Sales Representative
-
-        This information comes from the employee records【4:0†source】.
-        """
+    # StoryAgent: Under the silvery moon, three mischievous cats tiptoed across the rooftop, chasing 
+      shadows and sharing secret whispers. By dawn, they curled up together, purring softly, dreaming 
+      of adventures yet to come.
+    """
 
 
 if __name__ == "__main__":

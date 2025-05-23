@@ -80,6 +80,21 @@ async def main():
         await client.beta.assistants.delete(agent.id) if agent else None
         await thread.delete() if thread else None
 
+    """
+    Sample Output:
+
+    # User: 'Hello'
+    # Host: Hi there! How can I assist you today?
+    # User: 'What is the special soup?'
+    # Host: The special soup is Clam Chowder.
+    # User: 'What is the special drink?'
+    # Host: The special drink is Chai Tea.
+    # User: 'How much is it?'
+    # Host: The Chai Tea costs $9.99.
+    # User: 'Thank you'
+    # Host: You're welcome! If you have any more questions, feel free to ask.
+    """
+
 
 if __name__ == "__main__":
     asyncio.run(main())

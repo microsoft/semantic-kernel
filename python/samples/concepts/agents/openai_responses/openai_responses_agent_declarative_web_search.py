@@ -15,7 +15,7 @@ answers from the model.
 
 # Define the YAML string for the sample
 spec = """
-type: openai_responses_agent
+type: openai_responses
 name: WebSearchAgent
 description: Agent with web search tool.
 instructions: >
@@ -65,25 +65,25 @@ async def main():
     finally:
         await thread.delete() if thread else None
 
-        """
-        Sample output:
+    """
+    Sample output:
 
-        # User: 'Who won the 2025 NCAA basketball championship?'
-        # WebSearchAgent: The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston 
-            Cougars 65-63 on April 7, 2025, at the Alamodome in San Antonio, Texas. This victory marked Florida's 
-            third national title and their first since 2007. ([reuters.com](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai))
+    # User: 'Who won the 2025 NCAA basketball championship?'
+    # WebSearchAgent: The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston 
+        Cougars 65-63 on April 7, 2025, at the Alamodome in San Antonio, Texas. This victory marked Florida's 
+        third national title and their first since 2007. ([reuters.com](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai))
 
-        In the championship game, Florida overcame a 12-point deficit in the second half. Senior guard Walter Clayton 
-            Jr. was instrumental in the comeback, scoring all 11 of his points in the second half and delivering a 
-            crucial defensive stop in the final seconds to secure the win. Will Richard led the Gators with 18 points. ([apnews.com](https://apnews.com/article/74a9c790277595ce53ca130c5ec64429?utm_source=openai))
+    In the championship game, Florida overcame a 12-point deficit in the second half. Senior guard Walter Clayton 
+        Jr. was instrumental in the comeback, scoring all 11 of his points in the second half and delivering a 
+        crucial defensive stop in the final seconds to secure the win. Will Richard led the Gators with 18 points. ([apnews.com](https://apnews.com/article/74a9c790277595ce53ca130c5ec64429?utm_source=openai))
 
-        Head coach Todd Golden, in his third season, became the youngest coach to win the NCAA title since 1983. ([reuters.com](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai))
+    Head coach Todd Golden, in his third season, became the youngest coach to win the NCAA title since 1983. ([reuters.com](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai))
 
-        ## Florida Gators' 2025 NCAA Championship Victory:
-        - [Florida overcome Houston in massive comeback to claim third NCAA title](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai)
-        - [Walter Clayton Jr.'s defensive stop gives Florida its 3rd national title with 65-63 win over Houston](https://apnews.com/article/74a9c790277595ce53ca130c5ec64429?utm_source=openai)
-        - [Reports: National champion Florida sets White House visit](https://www.reuters.com/sports/reports-national-champion-florida-sets-white-house-visit-2025-05-18/?utm_source=openai) 
-        """
+    ## Florida Gators' 2025 NCAA Championship Victory:
+    - [Florida overcome Houston in massive comeback to claim third NCAA title](https://www.reuters.com/sports/basketball/florida-beat-houston-claim-third-ncaa-mens-basketball-title-2025-04-08/?utm_source=openai)
+    - [Walter Clayton Jr.'s defensive stop gives Florida its 3rd national title with 65-63 win over Houston](https://apnews.com/article/74a9c790277595ce53ca130c5ec64429?utm_source=openai)
+    - [Reports: National champion Florida sets White House visit](https://www.reuters.com/sports/reports-national-champion-florida-sets-white-house-visit-2025-05-18/?utm_source=openai) 
+    """
 
 
 if __name__ == "__main__":

@@ -47,19 +47,19 @@ async def main():
         await client.agents.delete_agent(agent.id)
 
     """
-        Sample output:
+    Sample output:
 
-        # User: 'Why is the sky blue?'
-        # WeatherAgent: Le ciel est bleu à cause d'un phénomène appelé **diffusion de Rayleigh**. La lumière du 
-        Soleil est composée de toutes les couleurs du spectre visible, mais lorsqu'elle traverse l'atmosphère 
-        terrestre, elle entre en contact avec les molécules d'air et les particules présentes.
+    # User: 'Why is the sky blue?'
+    # WeatherAgent: Le ciel est bleu à cause d'un phénomène appelé **diffusion de Rayleigh**. La lumière du 
+    Soleil est composée de toutes les couleurs du spectre visible, mais lorsqu'elle traverse l'atmosphère 
+    terrestre, elle entre en contact avec les molécules d'air et les particules présentes.
 
-        Les couleurs à courtes longueurs d'onde, comme le bleu et le violet, sont diffusées dans toutes les directions 
-        beaucoup plus efficacement que les couleurs à longues longueurs d'onde, comme le rouge et l'orange. Bien que le 
-        violet ait une longueur d'onde encore plus courte que le bleu, nos yeux sont moins sensibles à cette couleur, 
-        et une partie du violet est également absorbée par la haute atmosphère. Ainsi, le bleu domine, donnant au ciel 
-        sa couleur caractéristique.
-        """
+    Les couleurs à courtes longueurs d'onde, comme le bleu et le violet, sont diffusées dans toutes les directions 
+    beaucoup plus efficacement que les couleurs à longues longueurs d'onde, comme le rouge et l'orange. Bien que le 
+    violet ait une longueur d'onde encore plus courte que le bleu, nos yeux sont moins sensibles à cette couleur, 
+    et une partie du violet est également absorbée par la haute atmosphère. Ainsi, le bleu domine, donnant au ciel 
+    sa couleur caractéristique.
+    """
 
 
 if __name__ == "__main__":

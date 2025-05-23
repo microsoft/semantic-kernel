@@ -42,7 +42,7 @@ async def main():
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
             "resources",
             "declarative_spec",
-            "azure_assistant_spec.yaml",
+            "azure_resonses_spec.yaml",
         )
 
         # Create the Responses Agent from the YAML spec
@@ -76,9 +76,23 @@ async def main():
                 # Store the thread for the next iteration
                 thread = response.thread
     finally:
-        # Cleanup: Delete the thread and agent
-        await client.beta.assistants.delete(agent.id) if agent else None
+        # Cleanup: Delete the thread
         await thread.delete() if thread else None
+
+    """
+    Sample Output:
+
+    # User: 'Hello'
+    # Host: Hi there! How can I assist you today?
+    # User: 'What is the special soup?'
+    # Host: The special soup is Clam Chowder.
+    # User: 'What is the special drink?'
+    # Host: The special drink is Chai Tea.
+    # User: 'How much is it?'
+    # Host: The Chai Tea costs $9.99.
+    # User: 'Thank you'
+    # Host: You're welcome! If you have any more questions, feel free to ask.
+    """
 
 
 if __name__ == "__main__":

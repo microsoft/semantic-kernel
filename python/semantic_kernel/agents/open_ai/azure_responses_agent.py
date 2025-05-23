@@ -41,7 +41,7 @@ else:
 
 
 @experimental
-@register_agent_type("azure_openai_responses_agent")
+@register_agent_type("azure_responses")
 class AzureResponsesAgent(OpenAIResponsesAgent):
     """Azure Responses Agent class.
 

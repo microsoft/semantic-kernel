@@ -15,7 +15,7 @@ executed. The responses are handled in a streaming manner.
 
 # Define the YAML string for the sample
 spec = """
-type: azure_openai_assistant
+type: azure_assistant
 name: CodeInterpreterAgent
 description: Agent with code interpreter tool.
 instructions: >
