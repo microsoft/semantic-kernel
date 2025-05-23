@@ -65,7 +65,6 @@ _T = TypeVar("_T", bound="VectorStoreRecordHandler")
 TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 TFilters = TypeVar("TFilters")
 
-
 # region: Helpers
 
 
