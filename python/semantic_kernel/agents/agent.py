@@ -306,8 +306,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
@@ -336,8 +336,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -367,8 +367,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
