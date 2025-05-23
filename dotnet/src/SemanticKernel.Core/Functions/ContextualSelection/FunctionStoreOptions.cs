@@ -18,11 +18,6 @@ internal sealed class FunctionStoreOptions
     public int MaxNumberOfFunctions { get; set; } = 5;
 
     /// <summary>
-    /// The minimum relevance score for functions to be considered relevant.
-    /// </summary>
-    public double? MinimumRelevanceScore { get; set; }
-
-    /// <summary>
     /// A callback function that returns a value used to create a function embedding. The value is vectorized,
     /// and the resulting vector is stored in the vector store for use in vector searches for functions relevant
     /// to the context.

@@ -101,11 +101,6 @@ internal sealed class FunctionStore
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        if (this._options.MinimumRelevanceScore is { } minScore)
-        {
-            results = [.. results.Where(result => result.Score >= minScore)];
-        }
-
         return results.Select(result => this._functionByName[(string)result.Record["Name"]!]);
     }
 

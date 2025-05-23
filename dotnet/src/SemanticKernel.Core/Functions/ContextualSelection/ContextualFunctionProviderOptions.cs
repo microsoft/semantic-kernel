@@ -21,11 +21,6 @@ public sealed class ContextualFunctionProviderOptions
     public int MaxNumberOfFunctions { get; set; } = 5;
 
     /// <summary>
-    /// The minimum relevance score for functions to be considered relevant.
-    /// </summary>
-    public double? MinimumRelevanceScore { get; set; }
-
-    /// <summary>
     /// A callback function that returns a value used to create a context embedding. The value is vectorized,
     /// and the resulting vector is used to perform vector searches for functions relevant to the context.
     /// If not provided, the default behavior is to concatenate the non-empty messages into a single string,

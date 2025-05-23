@@ -75,7 +75,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             {
                 EmbeddingValueProvider = this._options.EmbeddingValueProvider,
                 MaxNumberOfFunctions = this._options.MaxNumberOfFunctions,
-                MinimumRelevanceScore = this._options.MinimumRelevanceScore,
             }
          );
     }
