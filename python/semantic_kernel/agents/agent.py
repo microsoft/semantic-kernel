@@ -774,6 +774,7 @@ class AgentRegistry:
         kernel: Kernel | None = None,
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
         **kwargs,
     ) -> _TAgent:
         """Create a single agent instance from a dictionary.
@@ -783,6 +784,7 @@ class AgentRegistry:
             kernel: The Kernel instance to use for tool resolution and agent initialization.
             plugins: The plugins to use for the agent.
             settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
             **kwargs: Additional parameters passed to the agent constructor if required.
 
         Returns:
@@ -814,7 +816,9 @@ class AgentRegistry:
         return await agent_cls.from_dict(
             data,
             kernel=kernel,
+            plugins=plugins,
             settings=settings,
+            extras=extras,
             **kwargs,
         )
 
@@ -987,9 +991,9 @@ class DeclarativeSpecMixin(ABC):
             if v.get("default") is not None
         }
 
-        # Step 1: Start with model options
+        # Start with model options
         arguments = KernelArguments(**model_options)
-        # Step 2: Update with input defaults (only if not already provided by model options)
+        # Update with input defaults (only if not already provided by model options)
         for k, v in input_defaults.items():
             if k not in arguments:
                 arguments[k] = v
