@@ -12,8 +12,8 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
-/// A model representing a record in a vector store collection.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// Represents a record in a vector store collection.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public sealed class CollectionModel
@@ -26,32 +26,32 @@ public sealed class CollectionModel
     private DataPropertyModel? _singleFullTextSearchProperty;
 
     /// <summary>
-    /// The key properties of the record.
+    /// Gets the key properties of the record.
     /// </summary>
     public IReadOnlyList<KeyPropertyModel> KeyProperties { get; }
 
     /// <summary>
-    /// The data properties of the record.
+    /// Gets the data properties of the record.
     /// </summary>
     public IReadOnlyList<DataPropertyModel> DataProperties { get; }
 
     /// <summary>
-    /// The vector properties of the record.
+    /// Gets the vector properties of the record.
     /// </summary>
     public IReadOnlyList<VectorPropertyModel> VectorProperties { get; }
 
     /// <summary>
-    /// All properties of the record, of all types.
+    /// Gets all properties of the record, of all types.
     /// </summary>
     public IReadOnlyList<PropertyModel> Properties { get; }
 
     /// <summary>
-    /// All properties of the record, of all types, indexed by their model name.
+    /// Gets all properties of the record, of all types, indexed by their model name.
     /// </summary>
     public IReadOnlyDictionary<string, PropertyModel> PropertyMap { get; }
 
     /// <summary>
-    /// Whether any of the vector properties in the model require embedding generation.
+    /// Gets a value that indicates whether any of the vector properties in the model require embedding generation.
     /// </summary>
     public bool EmbeddingGenerationRequired { get; }
 
@@ -102,12 +102,11 @@ public sealed class CollectionModel
     }
 
     /// <summary>
-    /// Get the vector property with the provided name if a name is provided, and fall back
-    /// to a vector property in the schema if not. If no name is provided and there is more
-    /// than one vector property, an exception will be thrown.
+    /// Gets the vector property with the provided name if a name is provided, and falls back
+    /// to a vector property in the schema if not.
     /// </summary>
-    /// <param name="searchOptions">The search options.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
+    /// <param name="searchOptions">The search options, which defines the vector property name.</param>
+    /// <exception cref="InvalidOperationException"><para>The provided property name is not a valid text data property name.</para><para>OR</para><para>No name was provided and there's more than one vector property.</para></exception>
     public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
     {
         if (searchOptions.VectorProperty is not null)
@@ -137,12 +136,11 @@ public sealed class CollectionModel
     }
 
     /// <summary>
-    /// Get the text data property, that has full text search indexing enabled, with the provided name if a name is provided, and fall back
-    /// to a text data property in the schema if not. If no name is provided and there is more than one text data property with
-    /// full text search indexing enabled, an exception will be thrown.
+    /// Gets the text data property with the provided name that has full text search indexing enabled, or falls back
+    /// to a text data property in the schema if no name is provided.
     /// </summary>
     /// <param name="expression">The full text search property selector.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
+    /// <exception cref="InvalidOperationException"><para>The provided property name is not a valid text data property name.</para><para>OR</para><para>No name was provided and there's more than one text data property with full text search indexing enabled.</para></exception>
     public DataPropertyModel GetFullTextDataPropertyOrSingle<TRecord>(Expression<Func<TRecord, object?>>? expression)
     {
         if (expression is not null)
@@ -183,10 +181,10 @@ public sealed class CollectionModel
     }
 
     /// <summary>
-    /// Get the data or key property selected by provided expression.
+    /// Gets the data or key property selected by the provided expression.
     /// </summary>
     /// <param name="expression">The property selector.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid data or key property name.</exception>
+    /// <exception cref="InvalidOperationException">The provided property name is not a valid data or key property name.</exception>
     public PropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
         => this.GetMatchingProperty<TRecord, PropertyModel>(expression, data: true);
 
