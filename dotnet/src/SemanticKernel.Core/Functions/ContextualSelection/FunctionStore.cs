@@ -11,7 +11,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
-/// Represents a store for functions.
+/// Represents a vector store for <see cref="AIFunction"/> objects where the function name and description can be used for similarity searches.
 /// </summary>
 internal sealed class FunctionStore
 {
