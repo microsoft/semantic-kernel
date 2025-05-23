@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
 /// A component that performs RAG (Retrieval-Augmented Generation) on the provided functions to identify
-/// the most relevant functions for the current context. This component vectorizes the provided functions
+/// the most relevant functions for the current context. This component vectorizes the provided function names and descriptions
 /// and stores them in the specified vector store, allowing for a vector search to find the most relevant
 /// functions for a given context and provide the functions to the AI model/agent.
 /// </summary>
