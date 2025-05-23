@@ -390,7 +390,7 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
                 "There must be at least one field with a VectorStoreRecordField annotation."
             )
         for field in self.fields:
-            if field.name == "":
+            if not field.name or field.name == "":
                 raise VectorStoreModelException("Field names must not be empty.")
             if field.field_type == "key":
                 if self.key_name != "":
