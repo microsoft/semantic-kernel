@@ -2,8 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponsesAgent
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, OpenAIResponsesAgent
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers

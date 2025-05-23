@@ -3,8 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import AzureAssistantAgent
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an Azure Assistant Agent that answers

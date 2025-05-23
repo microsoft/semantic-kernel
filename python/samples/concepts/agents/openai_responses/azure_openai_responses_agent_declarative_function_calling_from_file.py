@@ -5,7 +5,7 @@ import os
 from typing import Annotated
 
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers

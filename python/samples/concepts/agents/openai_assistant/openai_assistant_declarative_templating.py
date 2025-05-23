@@ -2,8 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import OpenAIAssistantAgent
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, OpenAIAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI Assistant Agent that answers

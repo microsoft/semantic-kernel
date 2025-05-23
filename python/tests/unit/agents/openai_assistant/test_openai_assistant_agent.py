@@ -7,8 +7,7 @@ from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
 from pydantic import BaseModel, ValidationError
 
-from semantic_kernel.agents import OpenAIAssistantAgent
-from semantic_kernel.agents.agent import AgentRegistry, AgentResponseItem
+from semantic_kernel.agents import AgentRegistry, AgentResponseItem, OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.openai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_history import ChatHistory
