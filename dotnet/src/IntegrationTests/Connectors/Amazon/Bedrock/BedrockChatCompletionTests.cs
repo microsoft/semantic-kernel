@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -39,9 +41,9 @@ public class BedrockChatCompletionTests
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Act
-        var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+        var messages = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
         string output = "";
-        foreach (var message in response)
+        foreach (var message in messages)
         {
             output += message.Content;
             Assert.NotNull(message.InnerContent);
@@ -50,9 +52,12 @@ public class BedrockChatCompletionTests
 
         // Assert
         Assert.NotNull(output);
-        Assert.True(response.Count > 0);
+        Assert.True(messages.Count > 0);
         Assert.Equal(4, chatHistory.Count);
-        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
+
+        var assistantMessage = messages[0];
+        Assert.Equal(AuthorRole.Assistant, assistantMessage.Role);
+        Assert.NotNull(assistantMessage.Metadata?["Usage"] as TokenUsage);
     }
 
     [Theory(Skip = "For manual verification only")]
@@ -87,10 +92,15 @@ public class BedrockChatCompletionTests
         // Act
         var response = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
         string output = "";
+        List<IReadOnlyDictionary<string, object?>> metadataList = [];
         await foreach (var message in response)
         {
             output += message.Content;
             Assert.NotNull(message.InnerContent);
+            if (message.Metadata != null)
+            {
+                metadataList.Add(message.Metadata);
+            }
         }
         chatHistory.AddAssistantMessage(output);
 
@@ -99,5 +109,6 @@ public class BedrockChatCompletionTests
         Assert.Equal(4, chatHistory.Count);
         Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
         Assert.False(string.IsNullOrEmpty(output));
+        Assert.Contains(metadataList, m => m["Usage"] is TokenUsage);
     }
 }

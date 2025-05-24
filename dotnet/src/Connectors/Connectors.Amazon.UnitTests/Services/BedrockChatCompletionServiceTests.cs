@@ -106,8 +106,9 @@ public sealed class BedrockChatCompletionServiceTests
             {
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
+        var converseResponse = this.CreateConverseResponse("Hello, world!", ConversationRole.Assistant);
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(this.CreateConverseResponse("Hello, world!", ConversationRole.Assistant));
+            .ReturnsAsync(converseResponse);
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
@@ -121,6 +122,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
         Assert.NotNull(result[0].InnerContent);
+        Assert.Equal(result[0].Metadata?["Usage"], converseResponse.Usage);
     }
 
     /// <summary>
@@ -170,6 +172,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Equal(iterations, output.Count);
         Assert.NotNull(service.GetModelId());
         Assert.NotNull(service.Attributes);
+        Assert.Contains(output, c => c.Metadata?["Usage"] is TokenUsage);
     }
 
     /// <summary>
