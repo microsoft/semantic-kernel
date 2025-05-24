@@ -6,17 +6,27 @@ import pytest
 from openai._streaming import AsyncStream
 from openai.types.responses import ResponseFunctionToolCall
 from openai.types.responses.response import Response
-from openai.types.responses.response_output_item_added_event import ResponseOutputItemAddedEvent
-from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
+from openai.types.responses.response_output_item_added_event import (
+    ResponseOutputItemAddedEvent,
+)
+from openai.types.responses.response_output_item_done_event import (
+    ResponseOutputItemDoneEvent,
+)
 from openai.types.responses.response_output_message import ResponseOutputMessage
 from openai.types.responses.response_output_text import ResponseOutputText
 from openai.types.responses.response_stream_event import ResponseStreamEvent
 from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
 
 from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
-from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
+from semantic_kernel.agents.open_ai.responses_agent_thread_actions import (
+    ResponsesAgentThreadActions,
+)
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.file_content import FileContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -68,11 +78,15 @@ def mock_thread():
 
 
 @pytest.mark.asyncio
-async def test_invoke_no_function_calls(mock_agent, mock_response, mock_chat_history, mock_thread):
+async def test_invoke_no_function_calls(
+    mock_agent, mock_response, mock_chat_history, mock_thread
+):
     async def mock_get_response(*args, **kwargs):
         return mock_response
 
-    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+    with patch.object(
+        ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+    ):
         results = []
         async for is_visible, msg in ResponsesAgentThreadActions.invoke(
             agent=mock_agent,
@@ -90,7 +104,9 @@ async def test_invoke_no_function_calls(mock_agent, mock_response, mock_chat_his
 
 
 @pytest.mark.asyncio
-async def test_invoke_raises_on_failed_response(mock_agent, mock_chat_history, mock_thread):
+async def test_invoke_raises_on_failed_response(
+    mock_agent, mock_chat_history, mock_thread
+):
     mock_failed_response = MagicMock(spec=Response)
     mock_failed_response.status = "failed"
     mock_failed_response.error = MagicMock()
@@ -102,7 +118,9 @@ async def test_invoke_raises_on_failed_response(mock_agent, mock_chat_history, m
         return mock_failed_response
 
     with (
-        patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response),
+        patch.object(
+            ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+        ),
         pytest.raises(Exception, match="Run failed with status: `failed`"),
     ):
         async for _ in ResponsesAgentThreadActions.invoke(
@@ -116,7 +134,9 @@ async def test_invoke_raises_on_failed_response(mock_agent, mock_chat_history, m
 
 
 @pytest.mark.asyncio
-async def test_invoke_reaches_maximum_attempts(mock_agent, mock_chat_history, mock_thread):
+async def test_invoke_reaches_maximum_attempts(
+    mock_agent, mock_chat_history, mock_thread
+):
     call_counter = 0
 
     response_with_tool_call = MagicMock(spec=Response)
@@ -159,7 +179,9 @@ async def test_invoke_reaches_maximum_attempts(mock_agent, mock_chat_history, mo
             return response_with_tool_call
         return final_response
 
-    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+    with patch.object(
+        ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+    ):
         messages = []
         async for _, msg in ResponsesAgentThreadActions.invoke(
             agent=mock_agent,
@@ -213,7 +235,9 @@ async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_th
     async def mock_get_response(*args, **kwargs):
         return responses.pop(0)
 
-    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+    with patch.object(
+        ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+    ):
         messages = []
         async for is_visible, msg in ResponsesAgentThreadActions.invoke(
             agent=mock_agent,
@@ -227,7 +251,9 @@ async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_th
         assert len(messages) == 3, f"Expected exactly 3 messages, got {len(messages)}"
 
 
-async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mock_thread):
+async def test_invoke_stream_no_function_calls(
+    mock_agent, mock_chat_history, mock_thread
+):
     class MockStream(AsyncStream[ResponseStreamEvent]):
         def __init__(self, events):
             self._events = events
@@ -260,7 +286,11 @@ async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mo
             role="assistant",
             status="completed",
             id="fake-item-id",
-            content=[ResponseOutputText(text="Test partial content", type="output_text", annotations=[])],
+            content=[
+                ResponseOutputText(
+                    text="Test partial content", type="output_text", annotations=[]
+                )
+            ],
             type="message",
         ),
         output_index=0,
@@ -271,7 +301,9 @@ async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mo
     async def mock_get_response(*args, **kwargs):
         return MockStream([mock_stream_event, mock_stream_event_end])
 
-    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+    with patch.object(
+        ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+    ):
         collected_stream_messages = []
         received_text = ""
 
@@ -288,13 +320,19 @@ async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mo
                 if isinstance(item, StreamingTextContent):
                     received_text += item.text
 
-        assert "Test partial content" in received_text, "Expected streamed partial content."
-        assert len(collected_stream_messages) == 1, "Expected exactly one final message."
+        assert (
+            "Test partial content" in received_text
+        ), "Expected streamed partial content."
+        assert (
+            len(collected_stream_messages) == 1
+        ), "Expected exactly one final message."
         assert collected_stream_messages[0].role == AuthorRole.ASSISTANT
 
 
 @pytest.mark.asyncio
-async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock_thread):
+async def test_invoke_stream_with_tool_calls(
+    mock_agent, mock_chat_history, mock_thread
+):
     class MockStream(AsyncStream[ResponseStreamEvent]):
         def __init__(self, events):
             self._events = events
@@ -331,7 +369,13 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
             role="assistant",
             status="completed",
             id="fake-item-id",
-            content=[ResponseOutputText(text="Final message after tool call", type="output_text", annotations=[])],
+            content=[
+                ResponseOutputText(
+                    text="Final message after tool call",
+                    type="output_text",
+                    annotations=[],
+                )
+            ],
             type="message",
         ),
         output_index=0,
@@ -345,9 +389,13 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
     async def mock_invoke_function_call(*args, **kwargs):
         return MagicMock(terminate=False)
 
-    mock_agent.kernel.invoke_function_call = MagicMock(side_effect=mock_invoke_function_call)
+    mock_agent.kernel.invoke_function_call = MagicMock(
+        side_effect=mock_invoke_function_call
+    )
 
-    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+    with patch.object(
+        ResponsesAgentThreadActions, "_get_response", new=mock_get_response
+    ):
         collected_stream_messages = []
         received_text = ""
 
@@ -364,5 +412,29 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
                 if isinstance(item, StreamingTextContent):
                     received_text += item.text
 
-        assert len(collected_stream_messages) == 2, "Expected exactly two final messages after tool call."
+        assert (
+            len(collected_stream_messages) == 2
+        ), "Expected exactly two final messages after tool call."
         assert collected_stream_messages[0].role == AuthorRole.ASSISTANT
+
+    @pytest.mark.asyncio
+    async def test_prepare_chat_history_for_request_with_file_content():
+
+        pdf_bytes = b"%PDF-1.4 test pdf content"
+        file_content = FileContent(
+            filename="sample.pdf", data=pdf_bytes, mime_type="application/pdf"
+        )
+
+        chat_history = ChatHistory()
+        chat_history.add_user_message([file_content])
+
+        mapped = ResponsesAgentThreadActions._prepare_chat_history_for_request(
+            chat_history
+        )
+
+        assert len(mapped) == 1
+        assert mapped[0]["role"] == AuthorRole.USER
+        assert any(
+            part.get("type") == "input_file" and part.get("filename") == "sample.pdf"
+            for part in mapped[0]["content"]
+        )

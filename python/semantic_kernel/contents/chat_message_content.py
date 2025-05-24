@@ -16,6 +16,7 @@ from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
+    FILE_CONTENT_TAG,
     FILE_REFERENCE_CONTENT_TAG,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
@@ -26,12 +27,17 @@ from semantic_kernel.contents.const import (
     ContentTypes,
 )
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.file_content import FileContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
-from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+from semantic_kernel.contents.streaming_annotation_content import (
+    StreamingAnnotationContent,
+)
+from semantic_kernel.contents.streaming_file_reference_content import (
+    StreamingFileReferenceContent,
+)
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -48,6 +54,7 @@ TAG_CONTENT_MAP = {
     IMAGE_CONTENT_TAG: ImageContent,
     STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
+    FILE_CONTENT_TAG: FileContent,
 }
 
 CMC_ITEM_TYPES = Annotated[
@@ -58,6 +65,7 @@ CMC_ITEM_TYPES = Annotated[
     | FunctionResultContent
     | FunctionCallContent
     | FileReferenceContent
+    | FileContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
     | AudioContent,
@@ -239,7 +247,13 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(self.tag)
         for field in self.model_fields_set:
-            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
+            if field not in [
+                "role",
+                "name",
+                "encoding",
+                "finish_reason",
+                "ai_model_id",
+            ]:
                 continue
             value = getattr(self, field)
             if isinstance(value, Enum):
@@ -260,15 +274,22 @@ class ChatMessageContent(KernelContent):
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(
+                f"Element tag is not {cls.tag}"
+            )  # pragma: no cover
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
             items.append(TextContent(text=unescape(element.text)))
         for child in element:
             if child.tag not in TAG_CONTENT_MAP:
-                logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
-                text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
+                logger.warning(
+                    'Unknown tag "%s" in ChatMessageContent, treating as text',
+                    child.tag,
+                )
+                text = ElementTree.tostring(
+                    child, encoding="unicode", short_empty_elements=False
+                )
                 items.append(TextContent(text=unescape(text) or ""))
             else:
                 items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
@@ -294,9 +315,13 @@ class ChatMessageContent(KernelContent):
             str - The prompt from the ChatMessageContent.
         """
         root = self.to_element()
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+        return ElementTree.tostring(
+            root, encoding=self.encoding or "unicode", short_empty_elements=False
+        )
 
-    def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:
+    def to_dict(
+        self, role_key: str = "role", content_key: str = "content"
+    ) -> dict[str, Any]:
         """Serialize the ChatMessageContent to a dictionary.
 
         Returns:
@@ -305,8 +330,14 @@ class ChatMessageContent(KernelContent):
         ret: dict[str, Any] = {
             role_key: self.role.value,
         }
-        if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
-            ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionCallContent)]
+        if self.role == AuthorRole.ASSISTANT and any(
+            isinstance(item, FunctionCallContent) for item in self.items
+        ):
+            ret["tool_calls"] = [
+                item.to_dict()
+                for item in self.items
+                if isinstance(item, FunctionCallContent)
+            ]
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
@@ -330,5 +361,16 @@ class ChatMessageContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the chat message content."""
-        hashable_items = [make_hashable(item) for item in self.items] if self.items else []
-        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *hashable_items))
+        hashable_items = (
+            [make_hashable(item) for item in self.items] if self.items else []
+        )
+        return hash(
+            (
+                self.tag,
+                self.role,
+                self.content,
+                self.encoding,
+                self.finish_reason,
+                *hashable_items,
+            )
+        )
