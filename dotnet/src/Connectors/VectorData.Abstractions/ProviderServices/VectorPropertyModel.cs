@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a vector property on a vector store record.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
@@ -21,7 +21,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     private int _dimensions;
 
     /// <summary>
-    /// The number of dimensions that the vector has.
+    /// Gets or sets the number of dimensions that the vector has.
     /// </summary>
     /// <remarks>
     /// This property is required when creating collections, but can be omitted if not using that functionality.
@@ -43,25 +43,25 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     }
 
     /// <summary>
-    /// The kind of index to use.
+    /// Gets or sets the kind of index to use.
     /// </summary>
     /// <value>
-    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default varies by database type. For more information, see the documentation of your chosen database connector.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
     public string? IndexKind { get; set; }
 
     /// <summary>
-    /// The distance function to use when comparing vectors.
+    /// Gets or sets the distance function to use when comparing vectors.
     /// </summary>
     /// <value>
-    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default varies by database type. For more information, see the documentation of your chosen database connector.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; set; }
 
     /// <summary>
-    /// If <see cref="EmbeddingGenerator"/> is set, contains the type representing the embedding stored in the database.
+    /// Gets or sets the type representing the embedding stored in the database if <see cref="EmbeddingGenerator"/> is set.
     /// Otherwise, this property is identical to <see cref="Type"/>.
     /// </summary>
     // TODO: sort out the nullability story here: EmbeddingType must be non-null after model building is complete, but can be null during
@@ -70,7 +70,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     public Type EmbeddingType { get; set; } = null!;
 
     /// <summary>
-    /// The embedding generator to use for this property.
+    /// Gets or sets the embedding generator to use for this property.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 

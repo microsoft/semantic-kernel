@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -122,7 +123,8 @@ internal static class SqlServerCommandBuilder
         string? schema,
         string tableName,
         CollectionModel model,
-        IDictionary<string, object?> record)
+        object record,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings)
     {
         SqlCommand command = connection.CreateCommand();
         StringBuilder sb = new(200);
@@ -134,8 +136,13 @@ internal static class SqlServerCommandBuilder
 
         foreach (var property in model.Properties)
         {
-            sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.AddParameter(property, paramName, record[property.StorageName]);
+            sb.AppendParameterName(property, ref paramIndex, out var paramName).Append(',');
+
+            var value = property is VectorPropertyModel vectorProperty && generatedEmbeddings?.TryGetValue(vectorProperty, out var ge) == true
+                ? ge[0]
+                : property.GetValueAsObject(record);
+
+            command.AddParameter(property, paramName, value);
         }
 
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
@@ -174,7 +181,9 @@ internal static class SqlServerCommandBuilder
         string? schema,
         string tableName,
         CollectionModel model,
-        IEnumerable<IDictionary<string, object?>> records)
+        IEnumerable<object> records,
+        int firstRecordIndex,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings)
     {
         StringBuilder sb = new(200);
         // The DECLARE statement creates a table variable to store the keys of the inserted rows.
@@ -189,11 +198,18 @@ internal static class SqlServerCommandBuilder
         foreach (var record in records)
         {
             sb.Append('(');
+
             foreach (var property in model.Properties)
             {
-                sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-                command.AddParameter(property, paramName, record[property.StorageName]);
+                sb.AppendParameterName(property, ref paramIndex, out var paramName).Append(',');
+
+                var value = property is VectorPropertyModel vectorProperty && generatedEmbeddings?.TryGetValue(vectorProperty, out var ge) == true
+                    ? ge[firstRecordIndex + rowIndex]
+                    : property.GetValueAsObject(record);
+
+                command.AddParameter(property, paramName, value);
             }
+
             sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
             sb.AppendLine(",");
             rowIndex++;
@@ -585,14 +601,19 @@ internal static class SqlServerCommandBuilder
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:
-            case ReadOnlyMemory<float> vector when vector.Length == 0:
                 command.Parameters.AddWithValue(name, DBNull.Value);
                 break;
             case byte[] buffer:
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = buffer;
                 break;
             case ReadOnlyMemory<float> vector:
-                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector));
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
+                break;
+            case Embedding<float> { Vector: var vector }:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
+                break;
+            case float[] vectorArray:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vectorArray, SqlServerJsonSerializerContext.Default.SingleArray));
                 break;
             default:
                 command.Parameters.AddWithValue(name, value);

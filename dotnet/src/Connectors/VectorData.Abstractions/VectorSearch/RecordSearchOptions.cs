@@ -28,16 +28,16 @@ public class VectorSearchOptions<TRecord>
     /// Gets or sets the vector property to search on.
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
-    /// <value>
-    /// If not provided will check if there is a vector property to use by default, and
-    /// will throw if either none or multiple exist.
-    /// </value>
+    /// <remarks>
+    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/> checks if there is a vector property to use by default, and
+    /// throws an exception if either none or multiple exist.
+    /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The value is less than 0.</exception>
     public int Skip
     {
         get => this._skip;

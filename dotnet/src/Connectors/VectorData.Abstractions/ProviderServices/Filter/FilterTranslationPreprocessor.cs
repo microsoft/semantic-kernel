@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 /// <summary>
 /// A processor for user-provided filter expressions which performs various common transformations before actual translation takes place.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public class FilterTranslationPreprocessor : ExpressionVisitor

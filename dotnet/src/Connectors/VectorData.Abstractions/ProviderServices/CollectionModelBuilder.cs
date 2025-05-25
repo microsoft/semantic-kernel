@@ -12,44 +12,44 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a builder for a <see cref="CollectionModel"/>.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
-/// <remarks>Note that this class is single-use only, and not thread-safe.</remarks>
+/// <remarks>This class is single-use only, and not thread-safe.</remarks>
 [Experimental("MEVD9001")]
 public abstract class CollectionModelBuilder
 {
     /// <summary>
-    /// Options for building the model.
+    /// Gets the options for building the model.
     /// </summary>
     protected CollectionModelBuildingOptions Options { get; }
 
     /// <summary>
-    /// The key properties of the record.
+    /// Gets the key properties of the record.
     /// </summary>
     protected List<KeyPropertyModel> KeyProperties { get; } = [];
 
     /// <summary>
-    /// The data properties of the record.
+    /// Gets the data properties of the record.
     /// </summary>
     protected List<DataPropertyModel> DataProperties { get; } = [];
 
     /// <summary>
-    /// The vector properties of the record.
+    /// Gets the vector properties of the record.
     /// </summary>
     protected List<VectorPropertyModel> VectorProperties { get; } = [];
 
     /// <summary>
-    /// All properties of the record, of all types.
+    /// Gets all properties of the record, of all types.
     /// </summary>
     protected IEnumerable<PropertyModel> Properties => this.PropertyMap.Values;
 
     /// <summary>
-    /// All properties of the record, of all types, indexed by their model name.
+    /// Gets all properties of the record, of all types, indexed by their model name.
     /// </summary>
     protected Dictionary<string, PropertyModel> PropertyMap { get; } = new();
 
     /// <summary>
-    /// The default embedding generator to use for vector properties, when none is specified at the property or collection level.
+    /// Gets the default embedding generator to use for vector properties, when none is specified at the property or collection level.
     /// </summary>
     protected IEmbeddingGenerator? DefaultEmbeddingGenerator { get; private set; }
 
@@ -245,7 +245,7 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// As part of building the model, this method processes the given <paramref name="definition"/>.
+    /// Processes the given <paramref name="definition"/> as part of building the model.
     /// </summary>
     protected virtual void ProcessRecordDefinition(VectorStoreCollectionDefinition definition, Type? type)
     {

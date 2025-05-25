@@ -24,7 +24,7 @@ public sealed class VectorSearchFilter
     public static VectorSearchFilter Default { get; } = new VectorSearchFilter();
 
     /// <summary>
-    /// The filter clauses to 'and' together.
+    /// Gets the filter clauses to 'and' together.
     /// </summary>
     public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
 

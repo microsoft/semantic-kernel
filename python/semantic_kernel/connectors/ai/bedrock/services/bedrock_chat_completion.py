@@ -321,6 +321,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 FunctionCallContent(
                     id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
                     name=event["contentBlockStart"]["start"]["toolUse"]["name"],
+                    index=event["contentBlockStart"]["contentBlockIndex"],
                 )
             )
 
@@ -350,6 +351,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             else FunctionCallContent(
                 arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
                 inner_content=event,
+                index=event["contentBlockDelta"]["contentBlockIndex"],
             )
         ]
 
