@@ -25,7 +25,7 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
             });
         }
 
-        this.Client = new(model: "gpt-4o", credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.Client = new(model: TestConfiguration.OpenAI.ModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
     }
 
     protected bool EnableLogging { get; set; } = false;
