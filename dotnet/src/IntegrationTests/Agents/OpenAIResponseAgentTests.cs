@@ -102,60 +102,6 @@ public sealed class OpenAIResponseAgentTests
         Assert.Contains("Computer says no", responseText);
     }
 
-    /*
-    /// <summary>
-    /// Integration test for <see cref="OpenAIResponseAgent"/> created declaratively.
-    /// </summary>
-    [RetryFact(typeof(HttpOperationException))]
-    public async Task OpenAIResponseAgentDeclarativeAsync()
-    {
-        OpenAIConfiguration configuration = this.ReadConfiguration();
-        OpenAIResponseClient client = CreateClient(configuration);
-
-        var text =
-            $"""
-            type: openai_response
-            name: MyAgent
-            description: My helpful agent.
-            instructions: You are helpful agent.
-            model:
-              id: {configuration.ChatModelId}
-              connection:
-                type: openai
-                api_key: {configuration.ApiKey}
-            """;
-        OpenAIResponseAgentFactory factory = new();
-
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
-        var kernel = builder.Build();
-
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
-        Assert.NotNull(agent);
-
-        OpenAIResponseAgentThread agentThread = new(assistantClient);
-        try
-        {
-            RunCreationOptions invocationOptions = new()
-            {
-                InstructionsOverride = "Respond to all user questions with 'Computer says no'.",
-            };
-
-            var response = await agent.InvokeAsync(
-                "What is the capital of France?",
-                agentThread,
-                new OpenAIResponseAgentInvokeOptions() { RunCreationOptions = invocationOptions }).FirstAsync();
-
-            Assert.Contains("Computer says no", response.Message.Content);
-        }
-        finally
-        {
-            await agentThread.DeleteAsync();
-            await assistantClient.DeleteAssistantAsync(agent.Id);
-        }
-    }
-    */
-
     #region private
     private async Task ExecuteAgentAsync(
         OpenAIResponseClient client,

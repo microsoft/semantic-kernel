@@ -75,11 +75,11 @@ public sealed class OpenAIResponseAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected override Task DeleteInternalAsync(CancellationToken cancellationToken = default)
+    protected async override Task DeleteInternalAsync(CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (this.ResponseId is null)
@@ -89,7 +89,7 @@ public sealed class OpenAIResponseAgentThread : AgentThread
 
         try
         {
-            this._client.DeleteResponseAsync(this.ResponseId, cancellationToken).GetAwaiter().GetResult();
+            await this._client.DeleteResponseAsync(this.ResponseId, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -97,8 +97,6 @@ public sealed class OpenAIResponseAgentThread : AgentThread
         }
 
         this._isDeleted = true;
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
