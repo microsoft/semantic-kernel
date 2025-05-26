@@ -30,6 +30,8 @@ public class AzureAIAgentFixture : AgentFixture
     private AzureAIAgentThread? _serviceFailingAgentThread;
     private AzureAIAgentThread? _createdServiceFailingAgentThread;
 
+    public PersistentAgentsClient AgentsClient => this._agentsClient!;
+
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
@@ -39,6 +41,11 @@ public class AzureAIAgentFixture : AgentFixture
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
+
+    public override AgentThread GetNewThread()
+    {
+        return new AzureAIAgentThread(this._agentsClient!);
+    }
 
     public override async Task<ChatHistory> GetChatHistory()
     {

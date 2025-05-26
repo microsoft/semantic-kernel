@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a property on a vector store record.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public abstract class PropertyModel(string modelName, Type type)
@@ -18,12 +18,12 @@ public abstract class PropertyModel(string modelName, Type type)
     private string? _storageName;
 
     /// <summary>
-    /// The model name of the property. If the property corresponds to a .NET property, this name is the name of that property.
+    /// Gets or sets the model name of the property. If the property corresponds to a .NET property, this name is the name of that property.
     /// </summary>
     public string ModelName { get; set; } = modelName;
 
     /// <summary>
-    /// The storage name of the property. This is the name to which the property is mapped in the vector store.
+    /// Gets or sets the storage name of the property. This is the name to which the property is mapped in the vector store.
     /// </summary>
     public string StorageName
     {
@@ -35,20 +35,23 @@ public abstract class PropertyModel(string modelName, Type type)
     // TODO: Spend more time thinking about this, there may be a less hacky way to handle it.
 
     /// <summary>
-    /// A temporary storage name for the property, for use during the serialization process by certain connectors.
+    /// Gets or sets the temporary storage name for the property, for use during the serialization process by certain connectors.
     /// </summary>
     [Experimental("MEVD9001")]
     public string? TemporaryStorageName { get; set; }
 
     /// <summary>
-    /// The CLR type of the property.
+    /// Gets or sets the CLR type of the property.
     /// </summary>
     public Type Type { get; set; } = type;
 
     /// <summary>
+    /// Gets or sets the reflection <see cref="PropertyInfo"/> for the .NET property.
+    /// </summary>
+    /// <value>
     /// The reflection <see cref="PropertyInfo"/> for the .NET property.
     /// <see langword="null"/> when using dynamic mapping.
-    /// </summary>
+    /// </value>
     public PropertyInfo? PropertyInfo { get; set; }
 
     /// <summary>
@@ -112,5 +115,19 @@ public abstract class PropertyModel(string modelName, Type type)
         }
     }
 
-    // TODO: implement the generic accessors to avoid boxing, and make use of them in connectors
+    /// <summary>
+    /// Reads the property from the given <paramref name="record"/>.
+    /// </summary>
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    public virtual T GetValue<T>(object record)
+        => (T)(object)this.GetValueAsObject(record)!;
+
+    /// <summary>
+    /// Writes the property from the given <paramref name="record"/>.
+    /// </summary>s
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    public virtual void SetValue<T>(object record, T value)
+    {
+        this.SetValueAsObject(record, value);
+    }
 }
