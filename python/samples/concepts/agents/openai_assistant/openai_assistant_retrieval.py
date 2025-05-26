@@ -2,6 +2,7 @@
 import asyncio
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -14,11 +15,11 @@ ID and creating a new instance of the assistant using the retrieved definition.
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="Assistant",
         instructions="You are a helpful assistant answering questions about the world in one sentence.",
     )
