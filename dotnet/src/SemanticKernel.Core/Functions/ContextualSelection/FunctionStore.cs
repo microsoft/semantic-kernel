@@ -92,7 +92,7 @@ internal sealed class FunctionStore
     /// </summary>
     /// <param name="context">The context to search for functions.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
-    public async Task<IEnumerable<AIFunction>> SearchAsync( string context, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AIFunction>> SearchAsync(string context, CancellationToken cancellationToken = default)
     {
         await this.AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
