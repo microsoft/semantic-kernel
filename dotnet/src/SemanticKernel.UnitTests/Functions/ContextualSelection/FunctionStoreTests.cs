@@ -19,10 +19,10 @@ public sealed class FunctionStoreTests
         var vectorStore = new Mock<VectorStore>().Object;
         var functions = new List<AIFunction> { CreateFunction("f1") };
 
-        Assert.Throws<ArgumentNullException>(() => new FunctionStore(null!, "col", 1, functions));
-        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "", 1, functions));
-        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "col", 0, functions));
-        Assert.Throws<ArgumentNullException>(() => new FunctionStore(vectorStore, "col", 1, null!));
+        Assert.Throws<ArgumentNullException>(() => new FunctionStore(null!, "col", 1, functions, 3));
+        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "", 1, functions, 3));
+        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "col", 0, functions, 3));
+        Assert.Throws<ArgumentNullException>(() => new FunctionStore(vectorStore, "col", 1, null!, 3));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class FunctionStoreTests
         vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
             .Returns(collectionMock.Object);
 
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions);
+        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act
         await store.SaveAsync();
@@ -89,7 +89,7 @@ public sealed class FunctionStoreTests
         vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
             .Returns(collectionMock.Object);
 
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions);
+        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act
         var result = await store.SearchAsync("desc3");
@@ -116,7 +116,7 @@ public sealed class FunctionStoreTests
         vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
             .Returns(collectionMock.Object);
 
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions);
+        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.SearchAsync("query"));

@@ -18,6 +18,7 @@ internal sealed class FunctionStore
     private readonly VectorStore _vectorStore;
     private readonly Dictionary<string, AIFunction> _functionByName;
     private readonly string _collectionName;
+    private readonly int _maxNumberOfFunctions;
     private readonly FunctionStoreOptions _options;
     private readonly VectorStoreCollection<object, Dictionary<string, object?>> _collection;
     private bool _isCollectionExistenceAsserted = false;
@@ -29,22 +30,26 @@ internal sealed class FunctionStore
     /// <param name="collectionName">The name of the collection to use for storing and retrieving functions.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
+    /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
     /// <param name="options">The options to use for the function store.</param>
     public FunctionStore(
         VectorStore inMemoryVectorStore,
         string collectionName,
         int vectorDimensions,
         IReadOnlyList<AIFunction> functions,
+        int maxNumberOfFunctions,
         FunctionStoreOptions? options = null)
     {
         Verify.NotNull(inMemoryVectorStore);
         Verify.NotNullOrWhiteSpace(collectionName);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
+        Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
 
         this._vectorStore = inMemoryVectorStore;
         this._collectionName = collectionName;
         this._functionByName = functions.ToDictionary(function => function.Name);
+        this._maxNumberOfFunctions = maxNumberOfFunctions;
 
         this._options = options ?? new FunctionStoreOptions();
 
@@ -97,7 +102,7 @@ internal sealed class FunctionStore
         await this.AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var results = await this._collection
-            .SearchAsync(context, top: this._options.MaxNumberOfFunctions, cancellationToken: cancellationToken)
+            .SearchAsync(context, top: this._maxNumberOfFunctions, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

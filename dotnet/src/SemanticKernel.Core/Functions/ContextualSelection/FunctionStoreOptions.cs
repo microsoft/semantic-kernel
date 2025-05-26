@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Functions;
 internal sealed class FunctionStoreOptions
 {
     /// <summary>
-    /// The maximum number of relevant functions to retrieve from the vector store.
-    /// </summary>
-    public int MaxNumberOfFunctions { get; set; } = 5;
-
-    /// <summary>
     /// A callback function that returns a value used to create a function embedding. The value is vectorized,
     /// and the resulting vector is stored in the vector store for use in vector searches for functions relevant
     /// to the context.

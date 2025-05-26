@@ -50,18 +50,21 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// and data lifetime management to be done by the caller.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
+    /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
         VectorStore inMemoryVectorStore,
         int vectorDimensions,
         IReadOnlyList<AIFunction> functions,
+        int maxNumberOfFunctions,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
         Verify.NotNull(inMemoryVectorStore);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
+        Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
         Verify.NotNullOrWhiteSpace(collectionName);
 
         this._options = options ?? new ContextualFunctionProviderOptions();
@@ -71,10 +74,10 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             collectionName,
             vectorDimensions,
             functions,
+            maxNumberOfFunctions,
             options: new()
             {
                 EmbeddingValueProvider = this._options.EmbeddingValueProvider,
-                MaxNumberOfFunctions = this._options.MaxNumberOfFunctions,
             }
          );
     }

@@ -55,12 +55,8 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
             new ContextualFunctionProvider(
                 inMemoryVectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
                 vectorDimensions: 1536,
-                options: new()
-                {
-                    // Selecting top five relevant functions.
-                    MaxNumberOfFunctions = 3,
-                },
-                functions: allAvailableFunctions
+                functions: allAvailableFunctions,
+                maxNumberOfFunctions: 3 // Instruct the provider to return a maximum of 3 relevant functions
             )
         );
 

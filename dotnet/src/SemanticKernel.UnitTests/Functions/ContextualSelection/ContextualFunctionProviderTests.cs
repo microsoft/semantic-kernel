@@ -19,10 +19,10 @@ public sealed class ContextualFunctionProviderTests
         var vectorStore = new Mock<VectorStore>().Object;
         var functions = new List<AIFunction> { CreateFunction("f1") };
 
-        Assert.Throws<ArgumentNullException>(() => new ContextualFunctionProvider(null!, 1, functions));
-        Assert.Throws<ArgumentException>(() => new ContextualFunctionProvider(vectorStore, 0, functions));
-        Assert.Throws<ArgumentNullException>(() => new ContextualFunctionProvider(vectorStore, 1, null!));
-        Assert.Throws<ArgumentException>(() => new ContextualFunctionProvider(vectorStore, 1, functions, collectionName: ""));
+        Assert.Throws<ArgumentNullException>(() => new ContextualFunctionProvider(null!, 1, functions, 3));
+        Assert.Throws<ArgumentException>(() => new ContextualFunctionProvider(vectorStore, 0, functions, 3));
+        Assert.Throws<ArgumentNullException>(() => new ContextualFunctionProvider(vectorStore, 1, null!, 3));
+        Assert.Throws<ArgumentException>(() => new ContextualFunctionProvider(vectorStore, 1, functions, 3,collectionName: ""));
     }
 
     [Fact]
@@ -47,14 +47,8 @@ public sealed class ContextualFunctionProviderTests
         var function = CreateFunction("f1", "desc");
         var functions = new List<AIFunction> { function };
 
-        // We need to track SaveAsync and SearchAsync, so we use a custom FunctionStoreOptions
-        var options = new ContextualFunctionProviderOptions
-        {
-            MaxNumberOfFunctions = 1
-        };
-
         // Use the real ContextualFunctionProvider, which will create a real FunctionStore
-        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, options);
+        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, 1);
 
         // Patch the SaveAsync and SearchAsync methods on the collection to simulate FunctionStore behavior
         collectionMock
@@ -123,12 +117,7 @@ public sealed class ContextualFunctionProviderTests
             .Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), null, It.IsAny<CancellationToken>()))
             .Returns(new[] { searchResult }.ToAsyncEnumerable());
 
-        var options = new ContextualFunctionProviderOptions
-        {
-            MaxNumberOfFunctions = 1
-        };
-
-        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, options);
+        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, 1);
 
         // Act
         var messages = new List<ChatMessage> { new() { Contents = [new TextContent("context")] } };
@@ -176,7 +165,7 @@ public sealed class ContextualFunctionProviderTests
             ContextEmbeddingValueProvider = (_, ct) => Task.FromResult("custom context")
         };
 
-        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, options);
+        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, 1, options);
 
         var messages = new List<ChatMessage>
         {
@@ -222,7 +211,7 @@ public sealed class ContextualFunctionProviderTests
             .Returns(AsyncEnumerable.Empty<VectorSearchResult<Dictionary<string, object?>>>());
 
         var functions = new List<AIFunction> { CreateFunction("f1") };
-        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions);
+        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, 1);
 
         var messages = new List<ChatMessage>
         {
@@ -281,7 +270,7 @@ public sealed class ContextualFunctionProviderTests
             EmbeddingValueProvider = (func, ct) => Task.FromResult($"custom embedding for {func.Name}:{func.Description}")
         };
 
-        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, options);
+        var provider = new ContextualFunctionProvider(vectorStoreMock.Object, 3, functions, 1, options);
 
         var messages = new List<ChatMessage>
         {
