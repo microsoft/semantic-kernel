@@ -290,7 +290,6 @@ class AgentThreadActions:
                                     content = generate_bing_grounding_content(
                                         agent_name=agent.name, bing_tool_call=bing_call
                                     )
-                                    is_visible = True
                                 case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
                                     logger.debug(
                                         f"Entering tool_calls (azure_ai_search) for run [{run.id}], agent "
@@ -496,7 +495,6 @@ class AgentThreadActions:
                                         content = generate_streaming_bing_grounding_content(
                                             agent_name=agent.name, step_details=details
                                         )
-                                        content_is_visible = True
                                     case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
                                         content = generate_streaming_azure_ai_search_content(
                                             agent_name=agent.name, step_details=details
