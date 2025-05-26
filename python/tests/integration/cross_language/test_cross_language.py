@@ -12,8 +12,7 @@ import pytest
 import pytest_asyncio
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAISettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -23,7 +22,7 @@ from semantic_kernel.kernel import Kernel
 
 logger = logging.getLogger(__name__)
 
-OPENAI_MODEL_ID = "gpt-3.5-turbo"
+OPENAI_MODEL_ID = "gpt-4.1-nano"
 
 # region Test Prompts
 

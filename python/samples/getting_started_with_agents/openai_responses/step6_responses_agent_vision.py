@@ -4,6 +4,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -22,14 +23,14 @@ maintain the conversation history if conversation context is desired.
 
 async def main():
     # 1. Create the client using OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     # 2. Define a file path for an image that will be used in the conversation
     file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg")
 
     # 3. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=OpenAISettings().responses_model_id,
         client=client,
         instructions="Answer questions about the provided images.",
         name="VisionAgent",
