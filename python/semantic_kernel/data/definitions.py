@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import Enum
 from inspect import Parameter, _empty, signature
 from types import MappingProxyType, NoneType
 from typing import Annotated, Any, Literal, Protocol, TypeVar, overload, runtime_checkable
@@ -22,11 +23,24 @@ logger = logging.getLogger(__name__)
 
 
 @release_candidate
+class FieldTypes(str, Enum):
+    """Enumeration for field types in vector store models."""
+
+    KEY = "key"
+    VECTOR = "vector"
+    DATA = "data"
+
+    def __str__(self) -> str:
+        """Return the string representation of the enum."""
+        return self.value
+
+
+@release_candidate
 @dataclass
 class VectorStoreField:
     """Vector store fields."""
 
-    field_type: Literal["key", "data", "vector"] = "data"
+    field_type: Literal[FieldTypes.DATA, FieldTypes.KEY, FieldTypes.VECTOR] = FieldTypes.DATA
     name: str = ""
     storage_name: str | None = None
     type_: str | None = None
@@ -43,7 +57,7 @@ class VectorStoreField:
     @overload
     def __init__(
         self,
-        field_type: Literal["key"] = "key",
+        field_type: Literal[FieldTypes.KEY, "key"] = FieldTypes.KEY,  # type: ignore[assignment]
         *,
         name: str | None = None,
         type: str | None = None,
@@ -64,7 +78,7 @@ class VectorStoreField:
     @overload
     def __init__(
         self,
-        field_type: Literal["data"] = "data",
+        field_type: Literal[FieldTypes.DATA, "data"] = FieldTypes.DATA,  # type: ignore[assignment]
         *,
         name: str | None = None,
         type: str | None = None,
@@ -87,7 +101,7 @@ class VectorStoreField:
     @overload
     def __init__(
         self,
-        field_type: Literal["vector"] = "vector",
+        field_type: Literal[FieldTypes.VECTOR, "vector"] = FieldTypes.VECTOR,  # type: ignore[assignment]
         *,
         name: str | None = None,
         type: str | None = None,
@@ -134,7 +148,7 @@ class VectorStoreField:
 
     def __init__(
         self,
-        field_type="data",
+        field_type=FieldTypes.DATA,
         *,
         name=None,
         type=None,
@@ -147,7 +161,7 @@ class VectorStoreField:
         embedding_generator=None,
     ):
         """Vector store field."""
-        self.field_type = field_type
+        self.field_type = field_type if isinstance(field_type, FieldTypes) else FieldTypes(field_type)
         # when a field is created, the name can be empty,
         # when a field get's added to a definition, the name needs to be there.
         self.name = name
@@ -299,22 +313,22 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
     @property
     def vector_fields(self) -> list[VectorStoreField]:
         """Get the names of the vector fields."""
-        return [field for field in self.fields if field.field_type == "vector"]
+        return [field for field in self.fields if field.field_type == FieldTypes.VECTOR]
 
     @property
     def data_fields(self) -> list[VectorStoreField]:
         """Get the names of the data fields."""
-        return [field for field in self.fields if field.field_type == "data"]
+        return [field for field in self.fields if field.field_type == FieldTypes.DATA]
 
     @property
     def vector_field_names(self) -> list[str]:
         """Get the names of the vector fields."""
-        return [field.name for field in self.fields if field.field_type == "vector"]
+        return [field.name for field in self.fields if field.field_type == FieldTypes.VECTOR]
 
     @property
     def data_field_names(self) -> list[str]:
         """Get the names of all the data fields."""
-        return [field.name for field in self.fields if field.field_type == "data"]
+        return [field.name for field in self.fields if field.field_type == FieldTypes.DATA]
 
     def try_get_vector_field(self, field_name: str | None = None) -> VectorStoreField | None:
         """Try to get the vector field.
@@ -334,7 +348,7 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
             return self.vector_fields[0]
         for field in self.fields:
             if field.name == field_name or field.storage_name == field_name:
-                if field.field_type == "vector":
+                if field.field_type == FieldTypes.VECTOR:
                     return field
                 raise VectorStoreModelException(
                     f"Field {field_name} is not a vector field, it is of type {type(field).__name__}."
@@ -354,9 +368,9 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
         return [
             field.storage_name or field.name
             for field in self.fields
-            if field.field_type == "data"
-            or (field.field_type == "vector" and include_vector_fields)
-            or (field.field_type == "key" and include_key_field)
+            if field.field_type == FieldTypes.DATA
+            or (field.field_type == FieldTypes.VECTOR and include_vector_fields)
+            or (field.field_type == FieldTypes.KEY and include_key_field)
         ]
 
     def get_names(self, include_vector_fields: bool = True, include_key_field: bool = True) -> list[str]:
@@ -372,9 +386,9 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
         return [
             field.name
             for field in self.fields
-            if field.field_type == "data"
-            or (field.field_type == "vector" and include_vector_fields)
-            or (field.field_type == "key" and include_key_field)
+            if field.field_type == FieldTypes.DATA
+            or (field.field_type == FieldTypes.VECTOR and include_vector_fields)
+            or (field.field_type == FieldTypes.KEY and include_key_field)
         ]
 
     def model_post_init(self, _: Any):
@@ -392,7 +406,7 @@ class VectorStoreCollectionDefinition(KernelBaseModel):
         for field in self.fields:
             if not field.name or field.name == "":
                 raise VectorStoreModelException("Field names must not be empty.")
-            if field.field_type == "key":
+            if field.field_type == FieldTypes.KEY:
                 if self.key_name != "":
                     raise VectorStoreModelException("Memory record definition must have exactly one key field.")
                 self.key_name = field.name
@@ -408,7 +422,7 @@ def _parse_vector_store_record_field_instance(record_field: VectorStoreField, fi
         record_field.name = field.name
     if not record_field.type_ and hasattr(field.annotation, "__origin__"):
         property_type = field.annotation.__origin__
-        if record_field.field_type == "vector":
+        if record_field.field_type == FieldTypes.VECTOR:
             if args := getattr(property_type, "__args__", None):
                 if NoneType in args and len(args) > 1:
                     for arg in args:

@@ -25,7 +25,7 @@ from redisvl.schema import StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -94,7 +94,7 @@ DATATYPE_MAP_VECTOR: Final[dict[str, str]] = {
 
 
 def _field_to_redis_field_hashset(name: str, field: VectorStoreField) -> RedisField:
-    if field.field_type == "vector":
+    if field.field_type == FieldTypes.VECTOR:
         if field.distance_function not in DISTANCE_FUNCTION_MAP:
             raise VectorStoreOperationException(
                 f"Distance function {field.distance_function} is not supported. "
@@ -121,7 +121,7 @@ def _field_to_redis_field_hashset(name: str, field: VectorStoreField) -> RedisFi
 
 
 def _field_to_redis_field_json(name: str, field: VectorStoreField) -> RedisField:
-    if field.field_type == "vector":
+    if field.field_type == FieldTypes.VECTOR:
         if field.distance_function not in DISTANCE_FUNCTION_MAP:
             raise VectorStoreOperationException(
                 f"Distance function {field.distance_function} is not supported. "
@@ -154,7 +154,7 @@ def _definition_to_redis_fields(
     """Create a list of fields for Redis from a definition."""
     fields: list[RedisField] = []
     for field in definition.fields:
-        if field.field_type == "key":
+        if field.field_type == FieldTypes.KEY:
             continue
         if collection_type == RedisCollectionTypes.HASHSET:
             fields.append(_field_to_redis_field_hashset(field.storage_name or field.name, field))  # type: ignore
@@ -371,13 +371,13 @@ class RedisCollection(
             )
             if field is None:
                 raise VectorStoreOperationException(f"Field '{field_name}' not found in data model.")
-            if field.field_type == "data":
+            if field.field_type == FieldTypes.DATA:
                 if field.is_full_text_indexed:
                     return lambda: Text(field_name)
                 if field.type_ in ("int", "float"):
                     return lambda: Num(field_name)
                 return lambda: Tag(field_name)
-            if field.field_type == "vector":
+            if field.field_type == FieldTypes.VECTOR:
                 raise VectorStoreOperationException(f"Cannot filter on vector field '{field_name}'.")
             return lambda: Tag(field_name)
 
@@ -588,11 +588,11 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
         for record in records:
             result: dict[str, Any] = {"mapping": {}}
             for field in self.definition.fields:
-                if field.field_type == "vector":
+                if field.field_type == FieldTypes.VECTOR:
                     dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"].lower()
                     result["mapping"][field.storage_name or field.name] = array_to_buffer(record[field.name], dtype)
                     continue
-                if field.field_type == "key":
+                if field.field_type == FieldTypes.KEY:
                     result["name"] = self._get_redis_key(record[field.name])
                     continue
                 result["mapping"][field.storage_name or field.name] = record[field.name]
@@ -610,7 +610,7 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
             rec = record.copy()
             for field in self.definition.fields:
                 match field.field_type:
-                    case "key":
+                    case FieldTypes.KEY:
                         rec[field.name] = self._unget_redis_key(rec[field.name])
                     case "vector":
                         dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
@@ -716,7 +716,7 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         for record in records:
             result: dict[str, Any] = {"value": {}}
             for field in self.definition.fields:
-                if field.field_type == "key":
+                if field.field_type == FieldTypes.KEY:
                     result["name"] = self._get_redis_key(record[field.name])
                     continue
                 if field.field_type == "vector":
@@ -743,7 +743,7 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         """Add the return fields to the query."""
         for field in self.definition.fields:
             match field.field_type:
-                case "vector":
+                case FieldTypes.VECTOR:
                     if include_vectors:
                         query.return_field(field.name)
                 case _:

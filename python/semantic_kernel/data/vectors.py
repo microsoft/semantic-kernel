@@ -17,7 +17,12 @@ from pydantic.dataclasses import dataclass
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.definitions import SerializeMethodProtocol, VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data.definitions import (
+    FieldTypes,
+    SerializeMethodProtocol,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+)
 from semantic_kernel.data.search import (
     DynamicFilterFunction,
     KernelSearchResults,
@@ -59,6 +64,7 @@ TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
 TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 TFilters = TypeVar("TFilters")
+
 
 # region: Helpers
 
@@ -406,7 +412,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         data_model_dict: dict[str, Any] = {}
         for field in self.definition.fields:
             value = record.get(field.storage_name or field.name, None)
-            if field.field_type == "vector" and not kwargs.get("include_vectors"):
+            if field.field_type == FieldTypes.VECTOR and not kwargs.get("include_vectors"):
                 continue
             data_model_dict[field.name] = value
         if self.record_type is dict:

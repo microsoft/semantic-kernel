@@ -18,7 +18,7 @@ from pydantic_settings import SettingsConfigDict
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -152,7 +152,7 @@ def _convert_row_to_dict(row: tuple[Any, ...], fields: Sequence[tuple[str, Vecto
     def _convert(v: Any | None, field: VectorStoreField | None) -> Any | None:
         if v is None:
             return None
-        if field and field.field_type == "vector" and isinstance(v, str):
+        if field and field.field_type == FieldTypes.VECTOR and isinstance(v, str):
             # psycopg returns vector as a string if pgvector is not loaded.
             # If pgvector is registered with the connection, no conversion is required.
             return json.loads(v)
@@ -579,14 +579,14 @@ class PostgresCollection(
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
             # but would need to be created outside of this method.
-            if field.field_type == "vector":
+            if field.field_type == FieldTypes.VECTOR:
                 column_definitions.append(
                     sql.SQL("{name} VECTOR({dimensions})").format(
                         name=sql.Identifier(field.storage_name or field.name),
                         dimensions=sql.Literal(field.dimensions),
                     )
                 )
-            elif field.field_type == "key":
+            elif field.field_type == FieldTypes.KEY:
                 # Use the property_type directly for key fields
                 column_definitions.append(
                     sql.SQL("{name} {col_type} PRIMARY KEY").format(
