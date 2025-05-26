@@ -11,7 +11,7 @@ from typing import Annotated, Any, Literal, Protocol, TypeVar, overload, runtime
 from pydantic import Field, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data._vectors import DistanceFunction, IndexKind
 from semantic_kernel.exceptions import VectorStoreModelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
@@ -164,12 +164,13 @@ class VectorStoreField:
         self.field_type = field_type if isinstance(field_type, FieldTypes) else FieldTypes(field_type)
         # when a field is created, the name can be empty,
         # when a field get's added to a definition, the name needs to be there.
-        self.name = name
+        if name:
+            self.name = name
         self.storage_name = storage_name
         self.type_ = type
         self.is_indexed = is_indexed
         self.is_full_text_indexed = is_full_text_indexed
-        if field_type == "vector":
+        if field_type == FieldTypes.VECTOR:
             if dimensions is None:
                 raise ValidationError("Vector fields must specify 'dimensions'")
             self.dimensions = dimensions
@@ -193,7 +194,7 @@ class ToDictFunctionProtocol(Protocol):
         A list of dictionaries.
     """
 
-    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
+    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover
 
 
 @runtime_checkable
@@ -208,7 +209,7 @@ class FromDictFunctionProtocol(Protocol):
         A record or list thereof.
     """
 
-    def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
+    def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...
 
 
 @runtime_checkable
@@ -224,7 +225,7 @@ class SerializeFunctionProtocol(Protocol):
 
     """
 
-    def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
+    def __call__(self, record: Any, **kwargs: Any) -> Any: ...
 
 
 @runtime_checkable
@@ -240,7 +241,7 @@ class DeserializeFunctionProtocol(Protocol):
 
     """
 
-    def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102
+    def __call__(self, records: Any, **kwargs: Any) -> Any: ...
 
 
 @runtime_checkable

@@ -5,11 +5,10 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
-from typing import Annotated, Any, Generic, Literal, Protocol, TypeVar, overload
+from typing import Annotated, Any, Final, Generic, Literal, Protocol, TypeVar, overload
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -19,9 +18,14 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrList
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
+logger = logging.getLogger(__name__)
+
 TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
 
-logger = logging.getLogger(__name__)
+DEFAULT_FUNCTION_NAME: Final[str] = "search"
+DEFAULT_DESCRIPTION: Final[str] = (
+    "Perform a search for content related to the specified query and return string results"
+)
 
 # region: Options
 

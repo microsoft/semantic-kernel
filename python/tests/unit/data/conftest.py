@@ -16,8 +16,8 @@ from semantic_kernel.data import (
     VectorStoreRecordCollection,
     vectorstoremodel,
 )
-from semantic_kernel.data.definitions import VectorStoreField
-from semantic_kernel.data.vectors import VectorSearch, VectorSearchResult
+from semantic_kernel.data._definitions import VectorStoreField
+from semantic_kernel.data._vectors import VectorSearch, VectorSearchResult
 from semantic_kernel.kernel_types import OptionalOneOrMany
 
 

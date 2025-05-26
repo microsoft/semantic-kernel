@@ -4,7 +4,8 @@ import faiss
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
-from semantic_kernel.data import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data._vectors import DistanceFunction
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 

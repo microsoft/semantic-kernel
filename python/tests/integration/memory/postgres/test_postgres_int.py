@@ -12,9 +12,8 @@ from pydantic import BaseModel
 
 from semantic_kernel.connectors.memory.postgres import PostgresCollection, PostgresSettings, PostgresStore
 from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import vectorstoremodel
-from semantic_kernel.data.vectors import VectorSearchOptions
+from semantic_kernel.data._definitions import vectorstoremodel
+from semantic_kernel.data._vectors import DistanceFunction, IndexKind, VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,

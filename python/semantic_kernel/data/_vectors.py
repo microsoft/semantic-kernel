@@ -2,6 +2,7 @@
 
 import json
 import logging
+import operator
 import sys
 from abc import abstractmethod
 from ast import AST, Lambda, NodeVisitor, expr, parse
@@ -9,21 +10,21 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from enum import Enum
 from inspect import getsource
-from typing import Annotated, Any, ClassVar, Generic, Literal, TypeVar, overload
+from typing import Annotated, Any, ClassVar, Final, Generic, Literal, TypeVar, overload
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.definitions import (
+from semantic_kernel.data._definitions import (
     FieldTypes,
     SerializeMethodProtocol,
     VectorStoreCollectionDefinition,
     VectorStoreField,
 )
-from semantic_kernel.data.search import (
+from semantic_kernel.data._search import (
+    DEFAULT_FUNCTION_NAME,
     DynamicFilterFunction,
     KernelSearchResults,
     SearchOptions,
@@ -66,6 +67,9 @@ TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 TFilters = TypeVar("TFilters")
 
 # region: Helpers
+DEFAULT_DESCRIPTION: Final[str] = (
+    "Perform a vector search for data in a vector store, using the provided search options."
+)
 
 
 def _get_collection_name_from_model(
@@ -81,20 +85,18 @@ def _get_collection_name_from_model(
 
 
 @dataclass
-class OrderBy:
-    """Order by class."""
-
-    field: str
-    ascending: bool = Field(default=True)
-
-
-@dataclass
 class GetFilteredRecordOptions:
-    """Options for filtering records."""
+    """Options for filtering records.
+
+    Args:
+        top: The maximum number of records to return.
+        skip: The number of records to skip.
+        order_by: A dictionary with fields names and a bool, True means ascending, False means descending.
+    """
 
     top: int = 10
     skip: int = 0
-    order_by: OptionalOneOrMany[OrderBy] = None
+    order_by: Mapping[str, bool] | None = None
 
 
 class LambdaVisitor(NodeVisitor, Generic[TFilters]):
@@ -734,7 +736,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
         self,
         top: int = ...,
         skip: int = ...,
-        order_by: OptionalOneOrMany[OrderBy | dict[str, Any] | list[dict[str, Any]]] = None,
+        order_by: OneOrMany[str] | dict[str, bool] | None = None,
         include_vectors: bool = False,
         **kwargs: Any,
     ) -> Sequence[TModel] | None:
@@ -749,10 +751,11 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
                 Only used if keys are not provided.
             skip: The number of records to skip.
                 Only used if keys are not provided.
-            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
-                (default is True, which means ascending).
-                Only used if keys are not provided.
-                example: {"field": "hotel_id", "ascending": True}
+            order_by: The order by clause,
+                this can be a string, a list of strings or a dict,
+                when passing strings, they are assumed to be ascending.
+                Otherwise, use the value in the dict to set ascending (True) or descending (False).
+                example: {"field_name": True} or ["field_name", {"field_name2": False}].
             **kwargs: Additional arguments.
 
         Returns:
@@ -858,8 +861,28 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
                 keys = key
         if not keys:
             if kwargs:
+                kw_order_by: OneOrList[str] | dict[str, bool] | None = kwargs.pop("order_by", None)  # type: ignore
+                top = kwargs.pop("top", None)
+                skip = kwargs.pop("skip", None)
+                order_by: dict[str, bool] | None = None
+                if kw_order_by is not None:
+                    order_by = {}
+                    if isinstance(kw_order_by, str):
+                        order_by[kw_order_by] = True
+                    elif isinstance(kw_order_by, dict):
+                        order_by = kw_order_by
+                    elif isinstance(kw_order_by, list):
+                        for item in kw_order_by:
+                            if isinstance(item, str):
+                                order_by[item] = True
+                            else:
+                                order_by.update(item)
+                    else:
+                        raise VectorStoreOperationException(
+                            f"Invalid order_by type: {type(order_by)}, expected str, dict or list."
+                        )
                 try:
-                    options = GetFilteredRecordOptions(**kwargs)
+                    options = GetFilteredRecordOptions(top=top, skip=skip, order_by=order_by)
                 except Exception as exc:
                     raise VectorStoreOperationException(f"Error creating options: {exc}") from exc
             else:
@@ -1513,3 +1536,109 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             parameters=TextSearch._default_parameter_metadata() if parameters is None else parameters,
             return_parameter=return_parameter or TextSearch._default_return_parameter_metadata(),
         )
+
+
+class IndexKind(str, Enum):
+    """Index kinds for similarity search.
+
+    HNSW
+        Hierarchical Navigable Small World which performs an approximate nearest neighbor (ANN) search.
+        Lower accuracy than exhaustive k nearest neighbor, but faster and more efficient.
+
+    Flat
+        Does a brute force search to find the nearest neighbors.
+        Calculates the distances between all pairs of data points, so has a linear time complexity,
+        that grows directly proportional to the number of points.
+        Also referred to as exhaustive k nearest neighbor in some databases.
+        High recall accuracy, but slower and more expensive than HNSW.
+        Better with smaller datasets.
+
+    IVF Flat
+        Inverted File with Flat Compression.
+        Designed to enhance search efficiency by narrowing the search area
+        through the use of neighbor partitions or clusters.
+        Also referred to as approximate nearest neighbor (ANN) search.
+
+    Disk ANN
+        Disk-based Approximate Nearest Neighbor algorithm designed for efficiently searching
+        for approximate nearest neighbors (ANN) in high-dimensional spaces.
+        The primary focus of DiskANN is to handle large-scale datasets that cannot fit entirely
+        into memory, leveraging disk storage to store the data while maintaining fast search times.
+
+    Quantized Flat
+        Index that compresses vectors using DiskANN-based quantization methods for better efficiency in the kNN search.
+
+    Dynamic
+        Dynamic index allows to automatically switch from FLAT to HNSW indexes.
+
+    Default
+        Default index type.
+        Used when no index type is specified.
+        Will differ per vector store.
+
+    """
+
+    HNSW = "hnsw"
+    FLAT = "flat"
+    IVF_FLAT = "ivf_flat"
+    DISK_ANN = "disk_ann"
+    QUANTIZED_FLAT = "quantized_flat"
+    DYNAMIC = "dynamic"
+    DEFAULT = "default"
+
+
+class DistanceFunction(str, Enum):
+    """Distance functions for similarity search.
+
+    Cosine Similarity
+        the cosine (angular) similarity between two vectors
+        measures only the angle between the two vectors, without taking into account the length of the vectors
+        Cosine Similarity = 1 - Cosine Distance
+        -1 means vectors are opposite
+        0 means vectors are orthogonal
+        1 means vectors are identical
+    Cosine Distance
+        the cosine (angular) distance between two vectors
+        measures only the angle between the two vectors, without taking into account the length of the vectors
+        Cosine Distance = 1 - Cosine Similarity
+        2 means vectors are opposite
+        1 means vectors are orthogonal
+        0 means vectors are identical
+    Dot Product
+        measures both the length and angle between two vectors
+        same as cosine similarity if the vectors are the same length, but more performant
+    Euclidean Distance
+        measures the Euclidean distance between two vectors
+        also known as l2-norm
+    Euclidean Squared Distance
+        measures the Euclidean squared distance between two vectors
+        also known as l2-squared
+    Manhattan
+        measures the Manhattan distance between two vectors
+    Hamming
+        number of differences between vectors at each dimensions
+    DEFAULT
+        default distance function
+        used when no distance function is specified
+        will differ per vector store.
+    """
+
+    COSINE_SIMILARITY = "cosine_similarity"
+    COSINE_DISTANCE = "cosine_distance"
+    DOT_PROD = "dot_prod"
+    EUCLIDEAN_DISTANCE = "euclidean_distance"
+    EUCLIDEAN_SQUARED_DISTANCE = "euclidean_squared_distance"
+    MANHATTAN = "manhattan"
+    HAMMING = "hamming"
+    DEFAULT = "DEFAULT"
+
+
+DISTANCE_FUNCTION_DIRECTION_HELPER: Final[dict[DistanceFunction, Callable[[int | float, int | float], bool]]] = {
+    DistanceFunction.COSINE_SIMILARITY: operator.gt,
+    DistanceFunction.COSINE_DISTANCE: operator.le,
+    DistanceFunction.DOT_PROD: operator.gt,
+    DistanceFunction.EUCLIDEAN_DISTANCE: operator.le,
+    DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE: operator.le,
+    DistanceFunction.MANHATTAN: operator.le,
+    DistanceFunction.HAMMING: operator.le,
+}

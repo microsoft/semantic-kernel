@@ -29,11 +29,12 @@ from azure.search.documents.models import VectorizableTextQuery, VectorizedQuery
 from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition
-from semantic_kernel.data.search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data._definitions import FieldTypes, VectorStoreCollectionDefinition
+from semantic_kernel.data._search import KernelSearchResults
+from semantic_kernel.data._vectors import (
+    DistanceFunction,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     TModel,
     VectorSearch,
@@ -432,12 +433,11 @@ class AzureAISearchCollection(
         if options is not None:
             ordering = []
             if options.order_by:
-                order_by = options.order_by if isinstance(options.order_by, Sequence) else [options.order_by]
-                for order in order_by:
-                    if order.field not in self.definition.storage_names:
-                        logger.warning(f"Field {order.field} not in data model, skipping.")
+                for field, asc_flag in options.order_by.items():
+                    if field not in self.definition.storage_names:
+                        logger.warning(f"Field {field} not in data model, skipping.")
                         continue
-                    ordering.append(order.field if order.ascending else f"{order.field} desc")
+                    ordering.append(field if asc_flag else f"{field} desc")
 
             result = await client.search(
                 search_text="*",

@@ -27,8 +27,8 @@ from semantic_kernel.connectors.memory import (
     WeaviateCollection,
 )
 from semantic_kernel.data import VectorStoreRecordCollection, vectorstoremodel
-from semantic_kernel.data.definitions import VectorStoreField
-from semantic_kernel.data.vectors import SearchType, VectorSearch
+from semantic_kernel.data._definitions import VectorStoreField
+from semantic_kernel.data._vectors import SearchType, VectorSearch
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -47,7 +47,7 @@ class DataModel:
     content: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
     embedding: Annotated[
         str | None,
-        VectorStoreField("vector", dimensions=1536, type_="float"),
+        VectorStoreField("vector", dimensions=1536, type="float"),
     ] = None
     id: Annotated[
         str,
@@ -55,7 +55,7 @@ class DataModel:
             "key",
         ),
     ] = field(default_factory=lambda: str(uuid4()))
-    tag: Annotated[str | None, VectorStoreField("data", type_="str", is_indexed=True)] = None
+    tag: Annotated[str | None, VectorStoreField("data", type="str", is_indexed=True)] = None
 
     def __post_init__(self, **kwargs):
         if self.embedding is None:
@@ -172,7 +172,7 @@ async def main(collection: str, use_azure_openai: bool):
         keys = await record_collection.upsert(records)
         print(f"    Upserted {keys=}")
         print_with_color("Getting records!", Colors.CBLUE)
-        results = await record_collection.get(top=10, order_by={"field": "content"})
+        results = await record_collection.get(top=10, order_by="content")
         if results:
             [print_record(record=result) for result in results]
         else:

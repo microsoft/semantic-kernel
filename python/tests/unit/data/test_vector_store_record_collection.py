@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 from pandas import DataFrame
 from pytest import mark, raises
 
-from semantic_kernel.data.definitions import SerializeMethodProtocol, ToDictMethodProtocol
+from semantic_kernel.data._definitions import SerializeMethodProtocol, ToDictMethodProtocol
 from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
