@@ -8,12 +8,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.data.definitions import (
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data.definitions import VectorStoreField, vectorstoremodel
 
 
 @fixture
@@ -32,17 +27,18 @@ def record_type() -> type:
     class TestDataModelType(BaseModel):
         vector: Annotated[
             list[float] | None,
-            VectorStoreVectorField(
+            VectorStoreField(
+                "vector",
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
                 type="float",
             ),
         ] = None
-        id: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
-        product_type: Annotated[str, VectorStoreDataField()] = "N/A"
+        id: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
+        product_type: Annotated[str, VectorStoreField("data")] = "N/A"
         description: Annotated[
-            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
+            str, VectorStoreField("data", has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType
@@ -64,17 +60,18 @@ def record_type_with_key_as_key_field() -> type:
     class TestDataModelType(BaseModel):
         vector: Annotated[
             list[float] | None,
-            VectorStoreVectorField(
+            VectorStoreField(
+                "vector",
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
                 type="float",
             ),
         ] = None
-        key: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
-        product_type: Annotated[str, VectorStoreDataField()] = "N/A"
+        key: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
+        product_type: Annotated[str, VectorStoreField("data")] = "N/A"
         description: Annotated[
-            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
+            str, VectorStoreField("data", has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType

@@ -11,12 +11,7 @@ import pytest_asyncio
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.memory.postgres import PostgresCollection, PostgresSettings, PostgresStore
-from semantic_kernel.data import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.definitions import vectorstoremodel
 from semantic_kernel.data.vectors import VectorSearchOptions
@@ -47,10 +42,11 @@ pytestmark = pytest.mark.skipif(
 
 @vectorstoremodel
 class SimpleDataModel(BaseModel):
-    id: Annotated[int, VectorStoreKeyField()]
+    id: Annotated[int, VectorStoreField("key")]
     embedding: Annotated[
-        list[float] | None,
-        VectorStoreVectorField(
+        list[float] | str | None,
+        VectorStoreField(
+            "vector",
             index_kind=IndexKind.HNSW,
             dimensions=3,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
@@ -58,25 +54,28 @@ class SimpleDataModel(BaseModel):
     ] = None
     data: Annotated[
         dict[str, Any],
-        VectorStoreDataField(has_embedding=True, embedding_property_name="embedding", type="JSONB"),
+        VectorStoreField("data", type="JSONB"),
     ]
+
+    def model_post_init(self, context: Any) -> None:
+        if self.embedding is None:
+            self.embedding = self.data
 
 
 def DataModelPandas(record) -> tuple:
     definition = VectorStoreCollectionDefinition(
-        fields={
-            "embedding": VectorStoreVectorField(
+        fields=[
+            VectorStoreField(
+                "vector",
                 name="embedding",
                 index_kind="hnsw",
                 dimensions=3,
                 distance_function="cosine_similarity",
                 type="float",
             ),
-            "id": VectorStoreKeyField(name="id", type="int"),
-            "data": VectorStoreDataField(
-                name="data", has_embedding=True, embedding_property_name="embedding", type="dict"
-            ),
-        },
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="data", type="dict"),
+        ],
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
         from_dict=lambda x, **_: pd.DataFrame(x),
@@ -203,18 +202,18 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         await collection.ensure_collection_deleted()
 
 
-async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
+async def test_upsert_get_and_delete_multiple(vector_store: PostgresStore):
     async with create_simple_collection(vector_store) as simple_collection:
         record1 = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
         record2 = SimpleDataModel(id=2, embedding=[4.4, 5.5, 6.6], data={"key": "value"})
 
-        result_before_upsert = await simple_collection.get_batch([1, 2])
+        result_before_upsert = await simple_collection.get([1, 2])
         assert result_before_upsert is None
 
-        await simple_collection.upsert_batch([record1, record2])
-        # Test get_batch for the two existing keys and one non-existing key;
+        await simple_collection.upsert([record1, record2])
+        # Test get for the two existing keys and one non-existing key;
         # this should return only the two existing records.
-        result = await simple_collection.get_batch([1, 2, 3])
+        result = await simple_collection.get([1, 2, 3])
         assert result is not None
         assert isinstance(result, Sequence)
         assert len(result) == 2
@@ -227,8 +226,8 @@ async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
         assert result[1].embedding == record2.embedding
         assert result[1].data == record2.data
 
-        await simple_collection.delete_batch([1, 2])
-        result_after_delete = await simple_collection.get_batch([1, 2])
+        await simple_collection.delete([1, 2])
+        result_after_delete = await simple_collection.get([1, 2])
         assert result_after_delete is None
 
 
@@ -243,7 +242,7 @@ async def test_search(vector_store: PostgresStore):
             SimpleDataModel(id=6, embedding=[1.0, 0.0, 1.0], data={"key": "value6"}),
         ]
 
-        await simple_collection.upsert_batch(records)
+        await simple_collection.upsert(records)
 
         try:
             search_results = await simple_collection.vectorized_search(
@@ -254,4 +253,4 @@ async def test_search(vector_store: PostgresStore):
             assert {result.record.id async for result in search_results.results} == {1, 2, 3}
 
         finally:
-            await simple_collection.delete_batch([r.id for r in records])
+            await simple_collection.delete([r.id for r in records])

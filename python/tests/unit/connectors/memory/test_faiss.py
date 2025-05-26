@@ -4,13 +4,7 @@ import faiss
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
-from semantic_kernel.data import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
-from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
@@ -18,9 +12,10 @@ from semantic_kernel.exceptions import VectorStoreInitializationException
 def data_model_def() -> VectorStoreCollectionDefinition:
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField(
+                "vector",
                 name="vector",
                 dimensions=5,
                 index_kind="flat",

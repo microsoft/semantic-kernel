@@ -16,7 +16,7 @@ from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -87,7 +87,7 @@ class MongoDBAtlasSettings(KernelBaseSettings):
     index_name: str = DEFAULT_SEARCH_INDEX_NAME
 
 
-def _create_vector_field(field: VectorStoreVectorField) -> dict:
+def _create_vector_field(field: VectorStoreField) -> dict:
     """Create a vector field.
 
     Args:

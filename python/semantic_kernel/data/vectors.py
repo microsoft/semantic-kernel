@@ -18,10 +18,10 @@ from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGene
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.definitions import (
+    FieldTypes,
     SerializeMethodProtocol,
     VectorStoreCollectionDefinition,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
+    VectorStoreField,
 )
 from semantic_kernel.data.search import (
     DynamicFilterFunction,
@@ -47,7 +47,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrList, OptionalOneOrMany
+from semantic_kernel.kernel_types import OneOrList, OneOrMany, OptionalOneOrList, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import desync_list
 
@@ -64,6 +64,7 @@ TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
 TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 TFilters = TypeVar("TFilters")
+
 
 # region: Helpers
 
@@ -233,7 +234,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
     # region Serialization methods
 
-    def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any]:
+    async def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any]:
         """Serialize the data model to the store model.
 
         This method follows the following steps:
@@ -253,19 +254,38 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         try:
             if serialized := self._serialize_data_model_to_store_model(records):
                 return serialized
+        except VectorStoreModelSerializationException:
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorStoreModelSerializationException(f"Error serializing records: {exc}") from exc
 
-            if isinstance(records, Sequence):
-                dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
-                return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
+        try:
+            dict_records: list[dict[str, Any]] = []
+            if not isinstance(records, list):
+                records = [records]  # type: ignore
+            for rec in records:
+                dict_rec = self._serialize_data_model_to_dict(rec)
+                if isinstance(dict_rec, list):
+                    dict_records.extend(dict_rec)
+                else:
+                    dict_records.append(dict_rec)
+        except VectorStoreModelSerializationException:
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorStoreModelSerializationException(f"Error serializing records: {exc}") from exc
 
-            dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
-            if isinstance(dict_records, Sequence):
-                # most likely this is a container, so we return all records as a list
-                # can also be a single record, but the to_dict returns a list
-                # hence we will treat it as a container.
-                return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
-            # this case is single record in, single record out
-            return self._serialize_dicts_to_store_models([dict_records], **kwargs)[0]
+        # add vectors
+        try:
+            dict_records = await self._add_vectors_to_records(dict_records)  # type: ignore
+        except (VectorStoreModelException, VectorStoreOperationException):
+            raise
+        except Exception as exc:
+            raise VectorStoreOperationException(
+                "Exception occurred while trying to add the vectors to the records."
+            ) from exc
+
+        try:
+            return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
         except VectorStoreModelSerializationException:
             raise  # pragma: no cover
         except Exception as exc:
@@ -290,7 +310,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
             return record.serialize(**kwargs)
         return None
 
-    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrList[dict[str, Any]]:
         """This function is used if no serialize method is found on the data model.
 
         This will generally serialize the data model to a dict, should not be overridden by child classes.
@@ -298,7 +318,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         The output of this should be passed to the serialize_dict_to_store_model method.
         """
         if self.definition.to_dict:
-            return self.definition.to_dict(record, **kwargs)
+            return self.definition.to_dict(record, **kwargs)  # type: ignore
         if isinstance(record, BaseModel):
             return record.model_dump()
 
@@ -392,7 +412,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         data_model_dict: dict[str, Any] = {}
         for field in self.definition.fields:
             value = record.get(field.storage_name or field.name, None)
-            if isinstance(field, VectorStoreVectorField) and not kwargs.get("include_vectors"):
+            if field.field_type == FieldTypes.VECTOR and not kwargs.get("include_vectors"):
                 continue
             data_model_dict[field.name] = value
         if self.record_type is dict:
@@ -425,6 +445,10 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
             embedding_generator = field.embedding_generator or self.embedding_generator
             if not embedding_generator:
                 continue
+            if field.dimensions is None:
+                raise VectorStoreModelException(
+                    f"Field {field.name} has no dimensions, cannot create embedding for field."
+                )
             embeddings_to_make.append((
                 field.storage_name or field.name,
                 field.dimensions,
@@ -455,9 +479,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         contents: list[Any] = []
         dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
         list_of_dicts: bool = False
-        if container_mode:
-            contents = inputs[field_name].tolist()  # type: ignore
-        elif isinstance(inputs, list):
+        if isinstance(inputs, list):
             list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
             for record in inputs:
                 if list_of_dicts:
@@ -475,9 +497,6 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         )  # type: ignore
         if vectors is None:
             raise VectorStoreOperationException("No vectors were generated.")
-        if container_mode:
-            inputs[field_name] = vectors  # type: ignore
-            return
         if isinstance(inputs, list):
             for record, vector in zip(inputs, vectors):
                 if list_of_dicts:
@@ -698,20 +717,11 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
             raise VectorStoreOperationException("Either record or records must be provided.")
 
         try:
-            data = self.serialize(records)
+            data = await self.serialize(records)
         # the serialize method will parse any exception into a VectorStoreModelSerializationException
         except VectorStoreModelSerializationException:
             raise
 
-        try:
-            # fix this!
-            data = await self._add_vectors_to_records(data)
-        except (VectorStoreModelException, VectorStoreOperationException):
-            raise
-        except Exception as exc:
-            raise VectorStoreOperationException(
-                "Exception occurred while trying to add the vectors to the records."
-            ) from exc
         try:
             results = await self._inner_upsert(data if isinstance(data, list) else [data], **kwargs)  # type: ignore
         except Exception as exc:
@@ -952,7 +962,7 @@ class VectorStore(KernelBaseModel):
         to check if the collection exists.
         """
         try:
-            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreKeyField(name="id")])
+            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreField("key", name="id")])
             collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
             return await collection.does_collection_exist()
         except VectorStoreOperationException:
@@ -965,7 +975,7 @@ class VectorStore(KernelBaseModel):
         to delete the collection.
         """
         try:
-            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreKeyField(name="id")])
+            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreField("key", name="id")])
             collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
             await collection.ensure_collection_deleted()
         except VectorStoreOperationException:

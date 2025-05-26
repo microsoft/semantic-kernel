@@ -9,10 +9,9 @@ from semantic_kernel.data.const import (
     IndexKind,
 )
 from semantic_kernel.data.definitions import (
+    FieldTypes,
     VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
+    VectorStoreField,
     vectorstoremodel,
 )
 from semantic_kernel.data.search import (
@@ -31,6 +30,7 @@ __all__ = [
     "DISTANCE_FUNCTION_DIRECTION_HELPER",
     "DistanceFunction",
     "DynamicFilterFunction",
+    "FieldTypes",
     "IndexKind",
     "KernelSearchResults",
     "TextSearch",
@@ -39,10 +39,8 @@ __all__ = [
     "VectorSearchResult",
     "VectorStore",
     "VectorStoreCollectionDefinition",
-    "VectorStoreDataField",
-    "VectorStoreKeyField",
+    "VectorStoreField",
     "VectorStoreRecordCollection",
-    "VectorStoreVectorField",
     "create_options",
     "default_dynamic_filter_function",
     "vectorstoremodel",

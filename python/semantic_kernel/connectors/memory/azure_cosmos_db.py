@@ -24,11 +24,7 @@ from semantic_kernel.connectors.memory.mongodb import (
     MongoDBAtlasStore,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -141,10 +137,10 @@ def _create_default_indexing_policy_nosql(definition: VectorStoreCollectionDefin
     }
 
     for field in definition.fields:
-        if isinstance(field, VectorStoreDataField) and (not field.is_full_text_indexed and not field.is_indexed):
+        if field.field_type == FieldTypes.DATA and (not field.is_full_text_indexed and not field.is_indexed):
             indexing_policy["excludedPaths"].append({"path": f'/"{field.storage_name or field.name}"/*'})
 
-        if isinstance(field, VectorStoreVectorField):
+        if field.field_type == FieldTypes.VECTOR:
             if field.index_kind not in INDEX_KIND_MAP_NOSQL:
                 raise VectorStoreModelException(
                     f"Index kind '{field.index_kind}' is not supported by Azure Cosmos DB NoSQL container."
@@ -177,7 +173,7 @@ def _create_default_vector_embedding_policy(definition: VectorStoreCollectionDef
     vector_embedding_policy: dict[str, Any] = {"vectorEmbeddings": []}
 
     for field in definition.fields:
-        if isinstance(field, VectorStoreVectorField):
+        if field.field_type == FieldTypes.VECTOR:
             if field.distance_function not in DISTANCE_FUNCTION_MAP_NOSQL:
                 raise VectorStoreModelException(
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB NoSQL."
@@ -388,7 +384,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
         indexes = [
             {
                 "name": f"{field.storage_name or field.name}_",
-                "key": {field.storage_name or field.name: 1},
+                FieldTypes.KEY: {field.storage_name or field.name: 1},
             }
             for field in self.definition.data_fields
             if field.is_indexed or field.is_full_text_indexed
@@ -406,7 +402,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
             index_kind = DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function]
             index: dict[str, Any] = {
                 "name": index_name,
-                "key": {field.storage_name or field.name: "cosmosSearch"},
+                FieldTypes.KEY: {field.storage_name or field.name: "cosmosSearch"},
                 "cosmosSearchOptions": {
                     "kind": index_kind,
                     "similarity": DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function],

@@ -179,7 +179,7 @@ class InMemoryCollection(
                 f"Distance function '{field.distance_function}' is not supported. "
                 f"Supported functions are: {list(DISTANCE_FUNCTION_MAP.keys())}"
             )
-        distance_func = DISTANCE_FUNCTION_MAP[field.distance_function]
+        distance_func = DISTANCE_FUNCTION_MAP[field.distance_function]  # type: ignore[assignment]
 
         for key, record in self._get_filtered_records(options).items():
             if vector and field is not None:
@@ -192,7 +192,7 @@ class InMemoryCollection(
         if field.distance_function == DistanceFunction.DEFAULT:
             reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[DistanceFunction.COSINE_DISTANCE]
         else:
-            reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[field.distance_function]
+            reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[field.distance_function]  # type: ignore[assignment]
         sorted_records = dict(
             sorted(
                 return_records.items(),

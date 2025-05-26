@@ -11,13 +11,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosNoSqlStore
 from semantic_kernel.contents import ChatHistory, ChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.data import (
-    VectorStore,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreRecordCollection,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStore, VectorStoreField, VectorStoreRecordCollection, vectorstoremodel
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -39,9 +33,9 @@ in order to search for similar conversations.
 @vectorstoremodel
 @dataclass
 class ChatHistoryModel:
-    session_id: Annotated[str, VectorStoreKeyField]
-    user_id: Annotated[str, VectorStoreDataField(is_indexed=True)]
-    messages: Annotated[list[dict[str, str]], VectorStoreDataField(is_indexed=True)]
+    session_id: Annotated[str, VectorStoreField("key")]
+    user_id: Annotated[str, VectorStoreField("data", is_indexed=True)]
+    messages: Annotated[list[dict[str, str]], VectorStoreField("data", is_indexed=True)]
 
 
 # 2. We then create a class that extends the ChatHistory class

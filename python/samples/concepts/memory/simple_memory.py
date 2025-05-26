@@ -10,13 +10,7 @@ from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 from semantic_kernel.connectors.memory import InMemoryCollection
-from semantic_kernel.data import (
-    VectorSearchOptions,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStoreField, vectorstoremodel
 
 # This is the most basic example of a vector store and collection
 # For a more complex example, using different collection types, see "complex_memory.py"
@@ -36,14 +30,14 @@ embedder = OpenAITextEmbedding(service_id="embedding")
 @vectorstoremodel(collection_name="test")
 @dataclass
 class DataModel:
-    content: Annotated[str, VectorStoreRecordDataField()]
-    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+    content: Annotated[str, VectorStoreField("data")]
+    id: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
     vector: Annotated[
-        str | list[float] | None,
-        VectorStoreRecordVectorField(dimensions=1536, property_type="float"),
+        list[float] | str | None,
+        VectorStoreField("vector", dimensions=1536),
     ] = None
-    title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_indexed=True)] = "title"
-    tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_indexed=True)] = "tag"
+    title: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)] = "title"
+    tag: Annotated[str, VectorStoreField("data", is_indexed=True)] = "tag"
 
     def __post_init__(self):
         if self.vector is None:
@@ -80,13 +74,12 @@ async def main():
     # for the in memory collection, this is just a no-op
     # but for other collections, like Azure AI Search, this will open and close the connection
     async with InMemoryCollection[str, DataModel](
-        data_model_type=DataModel,
+        record_type=DataModel,
         embedding_generator=embedder,
     ) as record_collection:
         # Create the collection after wiping it
         print_with_color("Creating test collection!", Colors.CGREY)
-        await record_collection.ensure_collection_deleted()
-        await record_collection.create_collection_if_not_exists()
+        await record_collection.delete_create_collection()
 
         # First add vectors to the records
         print_with_color("Adding records!", Colors.CBLUE)
@@ -108,10 +101,10 @@ async def main():
         # The most important option is the vector_field_name, which is the name of the field that contains the vector
         # The other options are optional, but can be useful
         # The filter option is used to filter the results based on the tag field
-        options = VectorSearchOptions(
-            vector_property_name="vector",
-            filter=lambda x: x.tag == "general",
-        )
+        options = {
+            "vector_property_name": "vector",
+            "filter": lambda x: x.tag == "general",
+        }
         query = "python"
         print_with_color(f"Searching for '{query}', with filter 'tag == general'", Colors.CBLUE)
         print_with_color(
@@ -120,7 +113,7 @@ async def main():
         )
         search_results = await record_collection.search(
             values=query,
-            options=options,
+            **options,
         )
         if search_results.total_count == 0:
             print("\nNothing found...\n")

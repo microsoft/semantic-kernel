@@ -18,12 +18,7 @@ from semantic_kernel.connectors.memory.postgres import (
     PostgresStore,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import (
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data.definitions import VectorStoreField, vectorstoremodel
 
 
 @fixture(scope="function")
@@ -61,14 +56,15 @@ async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, 
 @vectorstoremodel
 @dataclass
 class SimpleDataModel:
-    id: Annotated[int, VectorStoreKeyField()]
+    id: Annotated[int, VectorStoreField("key")]
     data: Annotated[
         list[float] | str | None,
-        VectorStoreVectorField(
-            index_kind=IndexKind.HNSW,
-            dimensions=1536,
-            distance_function=DistanceFunction.COSINE_SIMILARITY,
+        VectorStoreField(
+            "vector",
             type="float",
+            dimensions=1536,
+            index_kind=IndexKind.HNSW,
+            distance_function=DistanceFunction.COSINE_SIMILARITY,
         ),
     ] = None
 
@@ -159,12 +155,12 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
     @vectorstoremodel
     @dataclass
     class ModelWithImplicitTypes:
-        name: Annotated[str, VectorStoreKeyField()]
-        age: Annotated[int, VectorStoreDataField()]
-        data: Annotated[dict[str, Any], VectorStoreDataField()]
-        embedding: Annotated[list[float], VectorStoreVectorField(dimensions=20)]
-        scores: Annotated[list[float], VectorStoreDataField()]
-        tags: Annotated[list[str], VectorStoreDataField()]
+        name: Annotated[str, VectorStoreField("key")]
+        age: Annotated[int, VectorStoreField("data")]
+        data: Annotated[dict[str, Any], VectorStoreField("data")]
+        embedding: Annotated[list[float], VectorStoreField("vector", dimensions=20)]
+        scores: Annotated[list[float], VectorStoreField("data")]
+        tags: Annotated[list[str], VectorStoreField("data")]
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithImplicitTypes)
 
@@ -260,10 +256,11 @@ async def test_vector_search(
     @vectorstoremodel
     @dataclass
     class SimpleDataModel:
-        id: Annotated[int, VectorStoreKeyField()]
+        id: Annotated[int, VectorStoreField("key")]
         embedding: Annotated[
-            list[float],
-            VectorStoreVectorField(
+            list[float] | str | None,
+            VectorStoreField(
+                "vector",
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=distance_function,
@@ -272,8 +269,12 @@ async def test_vector_search(
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreDataField(type="JSONB"),
+            VectorStoreField("data", type="JSONB"),
         ]
+
+        def model_post_init(self, context: Any) -> None:
+            if self.embedding is None:
+                self.embedding = self.data
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
@@ -326,14 +327,15 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
     @vectorstoremodel
     @dataclass
     class ConflictingDataModel:
-        id: Annotated[int, VectorStoreKeyField()]
+        id: Annotated[int, VectorStoreField("key")]
         sk_pg_distance: Annotated[
-            float, VectorStoreDataField()
+            float, VectorStoreField("data")
         ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
 
         embedding: Annotated[
             list[float],
-            VectorStoreVectorField(
+            VectorStoreField(
+                "vector",
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=DistanceFunction.COSINE_SIMILARITY,
@@ -342,7 +344,7 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreDataField(type="JSONB"),
+            VectorStoreField("data", type="JSONB"),
         ]
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ConflictingDataModel)

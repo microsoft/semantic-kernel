@@ -22,7 +22,7 @@ from semantic_kernel.connectors.memory.sql_server import (
     _build_select_table_names_query,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreField
 from semantic_kernel.data.vectors import VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
@@ -110,13 +110,13 @@ class TestQueryBuildFunctions:
     def test_build_create_table_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type="str")
+        key_field = VectorStoreField("key", name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type="str"),
-            VectorStoreDataField(name="age", type="int"),
+            VectorStoreField("data", name="name", type="str"),
+            VectorStoreField("data", name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type="float", dimensions=1536),
+            VectorStoreField("vector", name="embedding", type="float", dimensions=1536),
         ]
         cmd = _build_create_table_query(schema, table, key_field, data_fields, vector_fields)
         assert not cmd.parameters
@@ -149,13 +149,13 @@ class TestQueryBuildFunctions:
     def test_build_merge_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type="str")
+        key_field = VectorStoreField("key", name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type="str"),
-            VectorStoreDataField(name="age", type="int"),
+            VectorStoreField("data", name="name", type="str"),
+            VectorStoreField("data", name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
+            VectorStoreField("vector", name="embedding", type="float", dimensions=5),
         ]
         records = [
             {
@@ -182,13 +182,13 @@ class TestQueryBuildFunctions:
     def test_build_select_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type="str")
+        key_field = VectorStoreField("key", name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type="str"),
-            VectorStoreDataField(name="age", type="int"),
+            VectorStoreField("data", name="name", type="str"),
+            VectorStoreField("data", name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
+            VectorStoreField("vector", name="embedding", type="float", dimensions=5),
         ]
         keys = ["test"]
         cmd = _build_select_query(schema, table, key_field, data_fields, vector_fields, keys)
@@ -199,7 +199,7 @@ class TestQueryBuildFunctions:
     def test_build_delete_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type="str")
+        key_field = VectorStoreField("key", name="id", type="str")
         keys = ["test"]
         cmd = _build_delete_query(schema, table, key_field, keys)
         str_cmd = str(cmd)
@@ -209,13 +209,14 @@ class TestQueryBuildFunctions:
     def test_build_search_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type="str")
+        key_field = VectorStoreField("key", name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type="str"),
-            VectorStoreDataField(name="age", type="int"),
+            VectorStoreField("data", name="name", type="str"),
+            VectorStoreField("data", name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(
+            VectorStoreField(
+                "vector",
                 name="embedding",
                 type="float",
                 dimensions=5,
