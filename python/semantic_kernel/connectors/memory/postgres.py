@@ -18,13 +18,7 @@ from pydantic_settings import SettingsConfigDict
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreFieldBase,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -142,9 +136,7 @@ def _python_type_to_postgres(python_type_str: str) -> str | None:
     return None
 
 
-def _convert_row_to_dict(
-    row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreFieldBase | None]]
-) -> dict[str, Any]:
+def _convert_row_to_dict(row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreField | None]]) -> dict[str, Any]:
     """Convert a row from a PostgreSQL query to a dictionary.
 
     Uses the field information to map the row values to the corresponding field names.
@@ -157,10 +149,10 @@ def _convert_row_to_dict(
         A dictionary representation of the row.
     """
 
-    def _convert(v: Any | None, field: VectorStoreFieldBase | None) -> Any | None:
+    def _convert(v: Any | None, field: VectorStoreField | None) -> Any | None:
         if v is None:
             return None
-        if isinstance(field, VectorStoreVectorField) and isinstance(v, str):
+        if field and field.field_type == FieldTypes.VECTOR and isinstance(v, str):
             # psycopg returns vector as a string if pgvector is not loaded.
             # If pgvector is registered with the connection, no conversion is required.
             return json.loads(v)
@@ -171,7 +163,7 @@ def _convert_row_to_dict(
 
 def _convert_dict_to_row(
     record: dict[str, Any],
-    fields: list[VectorStoreKeyField | VectorStoreVectorField | VectorStoreDataField],
+    fields: list[VectorStoreField],
 ) -> tuple[Any, ...]:
     """Convert a dictionary to a row for a PostgreSQL query.
 
@@ -587,14 +579,14 @@ class PostgresCollection(
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
             # but would need to be created outside of this method.
-            if isinstance(field, VectorStoreVectorField):
+            if field.field_type == FieldTypes.VECTOR:
                 column_definitions.append(
                     sql.SQL("{name} VECTOR({dimensions})").format(
                         name=sql.Identifier(field.storage_name or field.name),
                         dimensions=sql.Literal(field.dimensions),
                     )
                 )
-            elif isinstance(field, VectorStoreKeyField):
+            elif field.field_type == FieldTypes.KEY:
                 # Use the property_type directly for key fields
                 column_definitions.append(
                     sql.SQL("{name} {col_type} PRIMARY KEY").format(
@@ -661,7 +653,7 @@ class PostgresCollection(
             )
             await conn.commit()
 
-    async def _create_index(self, table_name: str, vector_field: VectorStoreVectorField) -> None:
+    async def _create_index(self, table_name: str, vector_field: VectorStoreField) -> None:
         """Create an index on a column in the table.
 
         Args:
@@ -762,7 +754,7 @@ class PostgresCollection(
         vector: Sequence[float | int],
         options: VectorSearchOptions,
         **kwargs: Any,
-    ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreFieldBase | None]]]:
+    ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreField | None]]]:
         """Construct a vector search query.
 
         Args:

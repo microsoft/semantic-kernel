@@ -10,15 +10,7 @@ from uuid import uuid4
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.in_memory import InMemoryStore
-from semantic_kernel.data import (
-    VectorSearchOptions,
-    VectorStore,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreRecordCollection,
-    VectorStoreVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStore, VectorStoreField, VectorStoreRecordCollection, vectorstoremodel
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
 from semantic_kernel.functions import FunctionResult
 
@@ -32,9 +24,9 @@ RECORD_ID_KEY = "cache_record_id"
 @vectorstoremodel(collection_name=COLLECTION_NAME)
 @dataclass
 class CacheRecord:
-    result: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
-    prompt: Annotated[str | None, VectorStoreVectorField(dimensions=1536)] = None
-    id: Annotated[str, VectorStoreKeyField] = field(default_factory=lambda: str(uuid4()))
+    result: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
+    prompt: Annotated[str | None, VectorStoreField("vector", dimensions=1536)] = None
+    id: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
 
 
 # Define the filters, one for caching the results and one for using the cache.
@@ -66,9 +58,7 @@ class PromptCacheFilter:
         """
         await next(context)
         await self.collection.ensure_collection_exists()
-        results = await self.collection.search(
-            context.rendered_prompt, options=VectorSearchOptions(vector_property_name="prompt", top=1)
-        )
+        results = await self.collection.search(context.rendered_prompt, vector_property_name="prompt", top=1)
         async for result in results.results:
             if result.score and result.score < self.score_threshold:
                 context.function_result = FunctionResult(

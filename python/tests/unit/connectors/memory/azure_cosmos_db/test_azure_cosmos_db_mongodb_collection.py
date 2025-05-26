@@ -6,12 +6,7 @@ import pytest
 from pymongo import AsyncMongoClient
 
 from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosMongoCollection
-from semantic_kernel.data.definitions import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
@@ -19,9 +14,9 @@ from semantic_kernel.exceptions import VectorStoreInitializationException
 def mock_model() -> VectorStoreCollectionDefinition:
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(name="vector", dimensions=5),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", name="vector", dimensions=5),
         ]
     )
 

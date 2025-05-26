@@ -322,7 +322,7 @@ async def test_serialize_in_upsert_fail(DictVectorStoreRecordCollection, definit
         await vector_store_record_collection.upsert([record])
 
 
-def test_serialize_record_type_serialize_fail(DictVectorStoreRecordCollection, record_type_vanilla_serialize):
+async def test_serialize_record_type_serialize_fail(DictVectorStoreRecordCollection, record_type_vanilla_serialize):
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
         record_type=record_type_vanilla_serialize,
@@ -330,7 +330,7 @@ def test_serialize_record_type_serialize_fail(DictVectorStoreRecordCollection, r
     record = MagicMock(spec=SerializeMethodProtocol)
     record.serialize = MagicMock(side_effect=Exception)
     with raises(VectorStoreModelSerializationException, match="Error serializing record"):
-        vector_store_record_collection.serialize(record)
+        await vector_store_record_collection.serialize(record)
 
 
 def test_serialize_data_model_to_dict_fail_object(DictVectorStoreRecordCollection, record_type_vanilla):
@@ -344,7 +344,7 @@ def test_serialize_data_model_to_dict_fail_object(DictVectorStoreRecordCollectio
 
 
 @mark.parametrize("vector_store_record_collection", ["type_pydantic"], indirect=True)
-def test_pydantic_serialize_fail(vector_store_record_collection):
+async def test_pydantic_serialize_fail(vector_store_record_collection):
     id = "test_id"
     model = deepcopy(vector_store_record_collection.record_type)
     model.model_dump = MagicMock(side_effect=Exception)
@@ -352,15 +352,15 @@ def test_pydantic_serialize_fail(vector_store_record_collection):
     dict_record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     record = model(**dict_record)
     with raises(VectorStoreModelSerializationException, match="Error serializing record"):
-        vector_store_record_collection.serialize(record)
+        await vector_store_record_collection.serialize(record)
 
 
 @mark.parametrize("vector_store_record_collection", ["type_vanilla_with_to_from_dict"], indirect=True)
-def test_to_dict_fail(vector_store_record_collection):
+async def test_to_dict_fail(vector_store_record_collection):
     record = MagicMock(spec=ToDictMethodProtocol)
     record.to_dict = MagicMock(side_effect=Exception)
     with raises(VectorStoreModelSerializationException, match="Error serializing record"):
-        vector_store_record_collection.serialize(record)
+        await vector_store_record_collection.serialize(record)
 
 
 # region Deserialize

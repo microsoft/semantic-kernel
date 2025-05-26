@@ -30,12 +30,7 @@ from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
@@ -206,7 +201,7 @@ def _definition_to_azure_ai_search_index(
     search_algos = []
 
     for field in definition.fields:
-        if isinstance(field, VectorStoreDataField):
+        if field.field_type == FieldTypes.DATA:
             if not field.type_:
                 logger.debug(f"Field {field.name} has not specified type, defaulting to Edm.String.")
             if field.type_ and field.type_ not in TYPE_MAP_DATA:
@@ -232,7 +227,7 @@ def _definition_to_azure_ai_search_index(
                     hidden=False,
                 )
             )
-        elif isinstance(field, VectorStoreKeyField):
+        elif field.field_type == FieldTypes.KEY:
             fields.append(
                 SimpleField(
                     name=field.storage_name or field.name,
@@ -242,7 +237,7 @@ def _definition_to_azure_ai_search_index(
                     searchable=True,
                 )
             )
-        elif isinstance(field, VectorStoreVectorField):
+        elif field.field_type == FieldTypes.VECTOR:
             if not field.type_:
                 logger.debug(f"Field {field.name} has not specified type, defaulting to Collection(Edm.Single).")
             if field.index_kind not in INDEX_ALGORITHM_MAP:
@@ -563,7 +558,7 @@ class AzureAISearchCollection(
                     else [
                         field.name
                         for field in self.definition.fields
-                        if isinstance(field, VectorStoreDataField) and field.is_full_text_indexed
+                        if field.field_type == FieldTypes.DATA and field.is_full_text_indexed
                     ]
                 )
                 if not search_args["search_fields"]:

@@ -11,7 +11,7 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.search import KernelSearchResults
 from semantic_kernel.data.vectors import SearchType, TModel, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
@@ -35,7 +35,7 @@ INDEX_KIND_MAP: Final[dict[IndexKind, bool]] = {
 }
 
 
-def _create_index(field: VectorStoreVectorField) -> faiss.Index:
+def _create_index(field: VectorStoreField) -> faiss.Index:
     """Create a Faiss index."""
     if field.index_kind not in INDEX_KIND_MAP:
         raise VectorStoreInitializationException(f"Index kind {field.index_kind} is not supported.")
