@@ -36,12 +36,12 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
-        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
+        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered --cov-report=xml:python-coverage.xml ./tests/unit
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           path: |
-            python/python-coverage.txt
+            python/python-coverage.xml
             python/pytest.xml
             python/pr_number
           overwrite: true

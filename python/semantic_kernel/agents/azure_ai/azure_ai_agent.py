@@ -496,6 +496,11 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         if "settings" in kwargs:
             kwargs.pop("settings")
 
+        args = data.pop("arguments", None)
+        arguments = None
+        if args:
+            arguments = KernelArguments(**args)
+
         if spec.id:
             existing_definition = await client.agents.get_agent(spec.id)
 
@@ -519,6 +524,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 client=client,
                 kernel=kernel,
                 prompt_template_config=prompt_template_config,
+                arguments=arguments,
                 **kwargs,
             )
 
@@ -548,6 +554,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             definition=agent_definition,
             client=client,
             kernel=kernel,
+            arguments=arguments,
             prompt_template_config=prompt_template_config,
             **kwargs,
         )

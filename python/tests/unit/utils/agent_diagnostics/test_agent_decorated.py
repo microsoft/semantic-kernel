@@ -3,7 +3,7 @@
 import pytest
 
 from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 
 pytestmark = pytest.mark.parametrize(
     "decorated_method, expected_attribute",

@@ -4,6 +4,7 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.filters import (
     AutoFunctionInvocationContext,
@@ -93,11 +94,11 @@ USER_INPUTS = ["What's the special food on the menu?", "What should I do then?"]
 
 async def main() -> None:
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # 2. Define the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="Host",
         instructions="Answer questions about the menu.",
     )
