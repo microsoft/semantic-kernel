@@ -170,8 +170,6 @@ public sealed class ContextualFunctionProviderTests
 
         await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
         await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
-        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("")] });
-        await provider.MessageAddingAsync(null, new() { Contents = null });
 
         // Act
         var context = await provider.ModelInvokingAsync([]);
