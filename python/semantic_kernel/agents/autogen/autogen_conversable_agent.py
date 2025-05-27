@@ -135,6 +135,7 @@ class AutoGenConversableAgent(Agent):
     async def get_response(
         self,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
@@ -170,8 +171,8 @@ class AutoGenConversableAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         recipient: "AutoGenConversableAgent | None" = None,
         clear_history: bool = True,
@@ -254,8 +255,8 @@ class AutoGenConversableAgent(Agent):
     @override
     def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         kernel: "Kernel | None" = None,
         arguments: KernelArguments | None = None,

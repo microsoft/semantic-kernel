@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.VectorData;
 /// <summary>
 /// Defines a base exception type for any type of failure when using vector stores.
 /// </summary>
-public abstract class VectorStoreException : Exception
+public class VectorStoreException : Exception
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreException"/> class.
     /// </summary>
-    protected VectorStoreException()
+    public VectorStoreException()
     {
     }
 
@@ -20,7 +20,7 @@ public abstract class VectorStoreException : Exception
     /// Initializes a new instance of the <see cref="VectorStoreException"/> class with a specified error message.
     /// </summary>
     /// <param name="message">The error message that explains the reason for the exception.</param>
-    protected VectorStoreException(string? message) : base(message)
+    public VectorStoreException(string? message) : base(message)
     {
     }
 
@@ -29,20 +29,20 @@ public abstract class VectorStoreException : Exception
     /// </summary>
     /// <param name="message">The error message that explains the reason for the exception.</param>
     /// <param name="innerException">The exception that's the cause of the current exception, or a null reference if no inner exception is specified.</param>
-    protected VectorStoreException(string? message, Exception? innerException) : base(message, innerException)
+    public VectorStoreException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 
-    /// <summary>The name of the vector store system.</summary>
+    /// <summary>Gets or sets the name of the vector store system.</summary>
     /// <remarks>
-    /// Where possible, this maps to the "db.system.name" attribute defined in the
-    /// OpenTelemetry Semantic Conventions for database calls and systems, see <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
+    /// Where possible, this value maps to the "db.system.name" attribute defined in the
+    /// OpenTelemetry Semantic Conventions for database calls and systems; see <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
     /// Example: redis, sqlite, mysql.
     /// </remarks>
     public string? VectorStoreSystemName { get; init; }
 
     /// <summary>
-    /// The name of the vector store (database).
+    /// Gets or sets the name of the vector store (database).
     /// </summary>
     public string? VectorStoreName { get; init; }
 

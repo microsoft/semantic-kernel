@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ComponentModel;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Xunit;
@@ -9,7 +9,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpeAzureAInAI.Extensions;
 
 /// <summary>
-/// Unit testing of <see cref="KernelFunctionExtensions"/>.
+/// Unit testing of <see cref="Microsoft.SemanticKernel.Agents.AzureAI.KernelFunctionExtensions"/>.
 /// </summary>
 public class KernelFunctionExtensionsTests
 {

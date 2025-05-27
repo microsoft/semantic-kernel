@@ -4,8 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent

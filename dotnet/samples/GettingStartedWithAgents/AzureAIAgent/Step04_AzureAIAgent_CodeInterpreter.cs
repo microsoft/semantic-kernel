@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -15,13 +16,13 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
     public async Task UseCodeInterpreterToolWithAgent()
     {
         // Define the agent
-        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new Azure.AI.Projects.CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+            tools: [new CodeInterpreterToolDefinition()]);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -31,7 +32,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

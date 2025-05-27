@@ -6,8 +6,9 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 
@@ -20,7 +21,7 @@ internal static class SqlServerCommandBuilder
         string? schema,
         string tableName,
         bool ifNotExists,
-        VectorStoreRecordModel model)
+        CollectionModel model)
     {
         StringBuilder sb = new(200);
         if (ifNotExists)
@@ -121,8 +122,9 @@ internal static class SqlServerCommandBuilder
         SqlConnection connection,
         string? schema,
         string tableName,
-        VectorStoreRecordModel model,
-        IDictionary<string, object?> record)
+        CollectionModel model,
+        object record,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings)
     {
         SqlCommand command = connection.CreateCommand();
         StringBuilder sb = new(200);
@@ -134,8 +136,13 @@ internal static class SqlServerCommandBuilder
 
         foreach (var property in model.Properties)
         {
-            sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.AddParameter(property, paramName, record[property.StorageName]);
+            sb.AppendParameterName(property, ref paramIndex, out var paramName).Append(',');
+
+            var value = property is VectorPropertyModel vectorProperty && generatedEmbeddings?.TryGetValue(vectorProperty, out var ge) == true
+                ? ge[0]
+                : property.GetValueAsObject(record);
+
+            command.AddParameter(property, paramName, value);
         }
 
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
@@ -147,7 +154,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
-            if (property is not VectorStoreRecordKeyPropertyModel) // don't update the key
+            if (property is not KeyPropertyModel) // don't update the key
             {
                 sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
             }
@@ -173,8 +180,10 @@ internal static class SqlServerCommandBuilder
         SqlCommand command,
         string? schema,
         string tableName,
-        VectorStoreRecordModel model,
-        IEnumerable<IDictionary<string, object?>> records)
+        CollectionModel model,
+        IEnumerable<object> records,
+        int firstRecordIndex,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings)
     {
         StringBuilder sb = new(200);
         // The DECLARE statement creates a table variable to store the keys of the inserted rows.
@@ -189,11 +198,18 @@ internal static class SqlServerCommandBuilder
         foreach (var record in records)
         {
             sb.Append('(');
+
             foreach (var property in model.Properties)
             {
-                sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-                command.AddParameter(property, paramName, record[property.StorageName]);
+                sb.AppendParameterName(property, ref paramIndex, out var paramName).Append(',');
+
+                var value = property is VectorPropertyModel vectorProperty && generatedEmbeddings?.TryGetValue(vectorProperty, out var ge) == true
+                    ? ge[firstRecordIndex + rowIndex]
+                    : property.GetValueAsObject(record);
+
+                command.AddParameter(property, paramName, value);
             }
+
             sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
             sb.AppendLine(",");
             rowIndex++;
@@ -214,7 +230,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
-            if (property is not VectorStoreRecordKeyPropertyModel) // don't update the key
+            if (property is not KeyPropertyModel) // don't update the key
             {
                 sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
             }
@@ -241,7 +257,7 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand DeleteSingle(
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreRecordKeyPropertyModel keyProperty, object key)
+        KeyPropertyModel keyProperty, object key)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -259,7 +275,7 @@ internal static class SqlServerCommandBuilder
 
     internal static bool DeleteMany<TKey>(
         SqlCommand command, string? schema, string tableName,
-        VectorStoreRecordKeyPropertyModel keyProperty, IEnumerable<TKey> keys)
+        KeyPropertyModel keyProperty, IEnumerable<TKey> keys)
     {
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
@@ -279,7 +295,7 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand SelectSingle(
         SqlConnection sqlConnection, string? schema, string collectionName,
-        VectorStoreRecordModel model,
+        CollectionModel model,
         object key,
         bool includeVectors)
     {
@@ -303,7 +319,7 @@ internal static class SqlServerCommandBuilder
 
     internal static bool SelectMany<TKey>(
         SqlCommand command, string? schema, string tableName,
-        VectorStoreRecordModel model,
+        CollectionModel model,
         IEnumerable<TKey> keys,
         bool includeVectors)
     {
@@ -329,8 +345,8 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand SelectVector<TRecord>(
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
-        VectorStoreRecordModel model,
+        VectorPropertyModel vectorProperty,
+        CollectionModel model,
         int top,
         VectorSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
@@ -378,9 +394,9 @@ internal static class SqlServerCommandBuilder
     internal static SqlCommand SelectWhere<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        GetFilteredRecordOptions<TRecord> options,
+        FilteredRecordRetrievalOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreRecordModel model)
+        CollectionModel model)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -406,11 +422,12 @@ internal static class SqlServerCommandBuilder
             sb.AppendLine();
         }
 
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             sb.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.OrderBy.Values)
+            foreach (var sortInfo in orderBy)
             {
                 sb.AppendFormat("[{0}] {1},",
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
@@ -434,7 +451,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static StringBuilder AppendParameterName(this StringBuilder sb, VectorStoreRecordPropertyModel property, ref int paramIndex, out string parameterName)
+    internal static StringBuilder AppendParameterName(this StringBuilder sb, PropertyModel property, ref int paramIndex, out string parameterName)
     {
         // In SQL Server, parameter names cannot be just a number like "@1".
         // Parameter names must start with an alphabetic character or an underscore
@@ -489,14 +506,14 @@ internal static class SqlServerCommandBuilder
     }
 
     private static StringBuilder AppendColumnNames(this StringBuilder sb,
-        IEnumerable<VectorStoreRecordPropertyModel> properties,
+        IEnumerable<PropertyModel> properties,
         string? prefix = null,
         bool includeVectors = true)
     {
         bool any = false;
         foreach (var property in properties)
         {
-            if (!includeVectors && property is VectorStoreRecordVectorPropertyModel)
+            if (!includeVectors && property is VectorPropertyModel)
             {
                 continue;
             }
@@ -519,7 +536,7 @@ internal static class SqlServerCommandBuilder
     }
 
     private static StringBuilder AppendKeyParameterList<TKey>(this StringBuilder sb,
-        IEnumerable<TKey> keys, SqlCommand command, VectorStoreRecordKeyPropertyModel keyProperty, out bool emptyKeys)
+        IEnumerable<TKey> keys, SqlCommand command, KeyPropertyModel keyProperty, out bool emptyKeys)
     {
         int keyIndex = 0;
         foreach (TKey key in keys)
@@ -576,7 +593,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    private static void AddParameter(this SqlCommand command, VectorStoreRecordPropertyModel? property, string name, object? value)
+    private static void AddParameter(this SqlCommand command, PropertyModel? property, string name, object? value)
     {
         switch (value)
         {
@@ -584,14 +601,19 @@ internal static class SqlServerCommandBuilder
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:
-            case ReadOnlyMemory<float> vector when vector.Length == 0:
                 command.Parameters.AddWithValue(name, DBNull.Value);
                 break;
             case byte[] buffer:
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = buffer;
                 break;
             case ReadOnlyMemory<float> vector:
-                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector));
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
+                break;
+            case Embedding<float> { Vector: var vector }:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
+                break;
+            case float[] vectorArray:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vectorArray, SqlServerJsonSerializerContext.Default.SingleArray));
                 break;
             default:
                 command.Parameters.AddWithValue(name, value);
@@ -599,15 +621,15 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-    private static string Map(VectorStoreRecordPropertyModel property) => property.Type switch
+    private static string Map(PropertyModel property) => property.Type switch
     {
         Type t when t == typeof(byte) => "TINYINT",
         Type t when t == typeof(short) => "SMALLINT",
         Type t when t == typeof(int) => "INT",
         Type t when t == typeof(long) => "BIGINT",
         Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
-        Type t when t == typeof(string) && property is VectorStoreRecordKeyPropertyModel => "NVARCHAR(4000)",
-        Type t when t == typeof(string) && property is VectorStoreRecordDataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is KeyPropertyModel => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is DataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
         Type t when t == typeof(string) => "NVARCHAR(MAX)",
         Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
         Type t when t == typeof(bool) => "BIT",

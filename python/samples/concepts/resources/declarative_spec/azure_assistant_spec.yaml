@@ -1,0 +1,16 @@
+type: azure_assistant
+name: Host
+description: This agent uses the provided functions to answer questions about the menu.
+instructions: Use the provided functions to answer questions about the menu.
+model:
+  id: ${AzureOpenAI:ChatModelId}
+  connection:
+    connection:
+      endpoint: ${AzureOpenAI:Endpoint}
+  options:
+    temperature: 0.4
+tools:
+  - id: MenuPlugin.get_specials
+    type: function
+  - id: MenuPlugin.get_item_price
+    type: function

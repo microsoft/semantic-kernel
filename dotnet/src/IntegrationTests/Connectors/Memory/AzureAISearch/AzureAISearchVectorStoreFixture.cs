@@ -65,18 +65,18 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
-        this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Rating", typeof(double?))
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
+                new VectorStoreDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StorageName = "parking_is_included" },
+                new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
+                new VectorStoreDataProperty("Rating", typeof(double?))
             }
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
@@ -102,7 +102,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets the manually created vector store record definition for our test model.
     /// </summary>
-    public VectorStoreRecordDefinition VectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition VectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Gets the configuration for the Azure AI Search service.
@@ -172,8 +172,10 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         searchFields.Add(new VectorSearchField("DescriptionEmbedding", 1536, "my-vector-profile"));
 
         // Create an index definition with a vectorizer to use when doing vector searches using text.
-        var definition = new SearchIndex(indexName, searchFields);
-        definition.VectorSearch = new VectorSearch();
+        var definition = new SearchIndex(indexName, searchFields)
+        {
+            VectorSearch = new VectorSearch()
+        };
         definition.VectorSearch.Vectorizers.Add(new AzureOpenAIVectorizer("text-embedding-vectorizer")
         {
             Parameters = new AzureOpenAIVectorizerParameters

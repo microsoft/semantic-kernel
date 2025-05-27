@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
-    protected IVectorStore? VectorStore { get; set; }
+    protected VectorStore? VectorStore { get; set; }
 
     [Obsolete("Temporary for Obsoleted TextEmbeddingGenerationService AzureAISearchVectorStore Ctor")]
     protected ITextEmbeddingGenerationService? TextEmbeddingGenerationService { get; set; }
@@ -39,13 +39,13 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// Add sample records to the vector store record collection.
     /// </summary>
     [Obsolete("Temporary test mock for Obsolete ITextEmbeddingGenerationService")]
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
-        IVectorStore vectorStore,
+    public static async Task<VectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        VectorStore vectorStore,
         string collectionName,
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -56,13 +56,13 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Add sample records to the vector store record collection.
     /// </summary>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
-        IVectorStore vectorStore,
+    public static async Task<VectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        VectorStore vectorStore,
         string collectionName,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -130,19 +130,19 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     protected sealed class DataModel
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }
