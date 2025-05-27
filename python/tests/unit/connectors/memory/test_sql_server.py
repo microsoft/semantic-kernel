@@ -21,8 +21,7 @@ from semantic_kernel.connectors.memory.sql_server import (
     _build_select_query,
     _build_select_table_names_query,
 )
-from semantic_kernel.data._definitions import VectorStoreField
-from semantic_kernel.data._vectors import DistanceFunction, IndexKind, VectorSearchOptions
+from semantic_kernel.data.vectors import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,

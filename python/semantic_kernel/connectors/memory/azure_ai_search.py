@@ -29,10 +29,10 @@ from azure.search.documents.models import VectorizableTextQuery, VectorizedQuery
 from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data._definitions import FieldTypes, VectorStoreCollectionDefinition
 from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data._vectors import (
+from semantic_kernel.data.vectors import (
     DistanceFunction,
+    FieldTypes,
     GetFilteredRecordOptions,
     IndexKind,
     SearchType,
@@ -41,7 +41,8 @@ from semantic_kernel.data._vectors import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
     _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions import (
@@ -277,7 +278,7 @@ def _definition_to_azure_ai_search_index(
 
 @release_candidate
 class AzureAISearchCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

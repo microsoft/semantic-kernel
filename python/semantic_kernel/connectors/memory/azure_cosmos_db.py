@@ -23,10 +23,10 @@ from semantic_kernel.connectors.memory.mongodb import (
     MongoDBAtlasCollection,
     MongoDBAtlasStore,
 )
-from semantic_kernel.data._definitions import FieldTypes, VectorStoreCollectionDefinition
 from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data._vectors import (
+from semantic_kernel.data.vectors import (
     DistanceFunction,
+    FieldTypes,
     GetFilteredRecordOptions,
     IndexKind,
     SearchType,
@@ -35,7 +35,8 @@ from semantic_kernel.data._vectors import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
     _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions import (
@@ -655,7 +656,7 @@ class CosmosNoSqlBase(KernelBaseModel):
 @release_candidate
 class CosmosNoSqlCollection(
     CosmosNoSqlBase,
-    VectorStoreRecordCollection[TNoSQLKey, TModel],
+    VectorStoreCollection[TNoSQLKey, TModel],
     VectorSearch[TNoSQLKey, TModel],
     Generic[TNoSQLKey, TModel],
 ):

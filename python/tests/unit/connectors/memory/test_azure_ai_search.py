@@ -201,11 +201,13 @@ async def test_get(collection, mock_get):
 @mark.parametrize(
     "order_by, ordering",
     [
-        param({"field": "id"}, ["id"], id="single id"),
-        param({"field": "id", "ascending": True}, ["id"], id="ascending id"),
-        param({"field": "id", "ascending": False}, ["id desc"], id="descending id"),
-        param([{"field": "id", "ascending": True}], ["id"], id="ascending id list"),
-        param([{"field": "id"}, {"field": "content"}], ["id", "content"], id="multiple"),
+        param("id", ["id"], id="single id"),
+        param({"id": True}, ["id"], id="ascending id"),
+        param({"id": False}, ["id desc"], id="descending id"),
+        param(["id"], ["id"], id="ascending id list"),
+        param(["id", "content"], ["id", "content"], id="multiple"),
+        param([{"id": True}, {"content": False}], ["id", "content desc"], id="multiple desc"),
+        param(["id", {"content": False}], ["id", "content desc"], id="multiple mix"),
     ],
 )
 async def test_get_without_key(collection, mock_get, mock_search, order_by, ordering):
