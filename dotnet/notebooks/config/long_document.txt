@@ -18,7 +18,7 @@ Small, common fragments or strings proceeded by complex BM escape sequences shou
 
 Using the same strings, or subsets of the same strings will cause multiple hits and can cause false positives.
 e.g. {1, s'Explorer'}, {1, s'Internet Explorer'},
-Ensure code fragments are unique and likely to appear in future variants. As a good rule of thumb, if you can't explain what it does in your comments, then probably don't use it. There is a high likelyhood of library code.
+Ensure code fragments are unique and likely to appear in future variants. As a good rule of thumb, if you can't explain what it does in your comments, then probably don't use it. There is a high likelihood of library code.
 
 Smaller, precise fragments are preferred over slabs of code
 
@@ -105,7 +105,7 @@ d - 'dynamic'. That is, the attribute/string must be matched in 'dynamically' al
 r - 'RPF'. That is, when the attribute/string is matched, we'll invoke all the routines in the database matching the routine type __RPF_ROUTINEID_HSTR_LOGIC__. a RPF routine gets the ID of the string matched and can do extra checks to 'validate' the match (freedom is the middle name 😃)
 c - 'code': this modifier is matched on fragments found in pages allocated specifically with PAGE_EXECUTE during emulation. This should help for short fragments where you explicitly want to match them in the code.
 o - collect the match offsets for each escape. See Lua hstr for more details.
-m - save the macro source to make it avaliable in Lua. Macro only. See Lua hstr.
+m - save the macro source to make it available in Lua. Macro only. See Lua hstr.
 G - force include the fragment. The compiler checks the fragment to not be too weak (e.g. 'exe') or perf killer. With this modifier the compiler check is bypassed. Use with care.
 string - The string to match.  By default, this is matched case-insensitively.  These string may contain binary data (using the '\x<hex value>' escape sequence and other C-like escape sequences.
 
