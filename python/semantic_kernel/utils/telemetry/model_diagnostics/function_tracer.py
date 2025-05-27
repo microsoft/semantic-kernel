@@ -24,7 +24,7 @@ def start_as_current_span(
     tracer: trace.Tracer,
     function: "KernelFunction",
     metadata: dict[str, Any] | None = None,
-) -> trace.Span:
+):
     """Starts a span for the given function using the provided tracer.
 
     Args:
@@ -33,16 +33,17 @@ def start_as_current_span(
         metadata (dict[str, Any] | None): Optional metadata to include in the span attributes.
 
     Returns:
-        trace.Span: The started span.
+        trace.Span: The started span as a context manager.
     """
-    tool_call_id = metadata.get("id", None) if metadata else None
+    attributes = {
+        OPERATION: OPERATION_NAME,
+        TOOL_NAME: function.fully_qualified_name,
+    }
 
-    return tracer.start_as_current_span(
-        f"{OPERATION_NAME} {function.fully_qualified_name}",
-        attributes={
-            OPERATION: OPERATION_NAME,
-            TOOL_CALL_ID: tool_call_id,
-            TOOL_NAME: function.fully_qualified_name,
-            TOOL_DESCRIPTION: function.description,
-        },
-    )
+    tool_call_id = metadata.get("id", None) if metadata else None
+    if tool_call_id:
+        attributes[TOOL_CALL_ID] = tool_call_id
+    if function.description:
+        attributes[TOOL_DESCRIPTION] = function.description
+
+    return tracer.start_as_current_span(f"{OPERATION_NAME} {function.fully_qualified_name}", attributes=attributes)

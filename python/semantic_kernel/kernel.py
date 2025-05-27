@@ -454,7 +454,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             result = await context.function.invoke(
                 context.kernel,
                 context.arguments,
-                metadata=context.function_call_content.metadata | context.function_call_content.to_dict(),
+                metadata=context.function_call_content.metadata | context.function_call_content.to_dict()
+                if context.function_call_content
+                else {},
             )
             if result:
                 context.function_result = result
