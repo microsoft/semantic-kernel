@@ -129,6 +129,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <summary>
     /// Builds the context from chat messages.
     /// </summary>
+    /// <param name="messages">The messages to build the context from.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     private async Task<string> BuildContextAsync(CancellationToken cancellationToken)
     {
