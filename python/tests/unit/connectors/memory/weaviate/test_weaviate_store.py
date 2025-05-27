@@ -10,7 +10,7 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, Vec
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.use_async_with_weaviate_cloud",
+    "semantic_kernel.connectors.weaviate.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_weaviate_cloud(
@@ -32,7 +32,7 @@ def test_weaviate_store_init_with_weaviate_cloud(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.use_async_with_local",
+    "semantic_kernel.connectors.weaviate.use_async_with_local",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_local(
@@ -50,7 +50,7 @@ def test_weaviate_store_init_with_local(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.use_async_with_embedded",
+    "semantic_kernel.connectors.weaviate.use_async_with_embedded",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_embedded(
@@ -104,7 +104,7 @@ def test_weaviate_store_init_with_custom_client(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.use_async_with_local",
+    "semantic_kernel.connectors.weaviate.use_async_with_local",
     side_effect=Exception,
 )
 def test_weaviate_store_init_fail_to_create_client(

@@ -270,7 +270,7 @@ async def test_get_mssql_connection(connection_string):
         credential.get_token.return_value = token
 
         settings = SqlSettings(connection_string=connection_string)
-        with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
+        with patch("semantic_kernel.connectors.sql_server.DefaultAzureCredential", return_value=credential):
             connection = await _get_mssql_connection(settings)
             assert connection is not None
             assert isinstance(connection, MagicMock)
@@ -290,7 +290,7 @@ class TestSqlServerStore:
         assert store.settings.connection_string is not None
         assert "LongAsMax=yes;" in store.settings.connection_string.get_secret_value()
 
-        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+        with patch("semantic_kernel.connectors.sql_server._get_mssql_connection") as mock_get_connection:
             mock_get_connection.return_value = AsyncMock()
             await store.__aenter__()
             assert store.connection is not None
@@ -353,7 +353,7 @@ class TestSqlServerCollection:
         assert collection.settings is not None
         assert collection.settings.connection_string is not None
 
-        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+        with patch("semantic_kernel.connectors.sql_server._get_mssql_connection") as mock_get_connection:
             mock_get_connection.return_value = AsyncMock()
             await collection.__aenter__()
             assert collection.connection is not None

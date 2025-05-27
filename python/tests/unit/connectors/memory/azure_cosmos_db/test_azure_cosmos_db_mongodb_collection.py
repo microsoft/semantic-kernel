@@ -111,7 +111,7 @@ async def test_context_manager_calls_aconnect_and_close_when_managed(mock_model)
     mock_client = AsyncMock(spec=AsyncMongoClient)
 
     with patch(
-        "semantic_kernel.connectors.memory.azure_cosmos_db.AsyncMongoClient",
+        "semantic_kernel.connectors.azure_cosmos_db.AsyncMongoClient",
         return_value=mock_client,
     ):
         collection = CosmosMongoCollection(
