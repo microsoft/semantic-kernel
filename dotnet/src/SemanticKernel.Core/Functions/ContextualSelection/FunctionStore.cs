@@ -26,27 +26,27 @@ internal sealed class FunctionStore
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionStore"/> class.
     /// </summary>
-    /// <param name="inMemoryVectorStore">The vector store to use for storing functions.</param>
+    /// <param name="vectorStore">The vector store to use for storing functions.</param>
     /// <param name="collectionName">The name of the collection to use for storing and retrieving functions.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
     /// <param name="options">The options to use for the function store.</param>
     public FunctionStore(
-        VectorStore inMemoryVectorStore,
+        VectorStore vectorStore,
         string collectionName,
         int vectorDimensions,
-        IReadOnlyList<AIFunction> functions,
+        IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
         FunctionStoreOptions? options = null)
     {
-        Verify.NotNull(inMemoryVectorStore);
+        Verify.NotNull(vectorStore);
         Verify.NotNullOrWhiteSpace(collectionName);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
 
-        this._vectorStore = inMemoryVectorStore;
+        this._vectorStore = vectorStore;
         this._collectionName = collectionName;
         this._functionByName = functions.ToDictionary(function => function.Name);
         this._maxNumberOfFunctions = maxNumberOfFunctions;

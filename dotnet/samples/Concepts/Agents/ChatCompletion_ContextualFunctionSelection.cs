@@ -53,7 +53,7 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
 
         agentThread.AIContextProviders.Add(
             new ContextualFunctionProvider(
-                inMemoryVectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
+                vectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
                 vectorDimensions: 1536,
                 functions: allAvailableFunctions,
                 maxNumberOfFunctions: 3 // Instruct the provider to return a maximum of 3 relevant functions

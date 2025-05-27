@@ -20,8 +20,8 @@ namespace Microsoft.SemanticKernel.Functions;
 /// <remarks>
 /// <list type="bullet">
 /// <item>
-/// The provider is designed to work with `Connectors.Memory.InMemory` vector store. Using other
-/// vector stores will require the data synchronization and data lifetime management to be done by the caller.
+/// The provider is designed to work with in-memory vector stores. Using other vector stores
+/// will require the data synchronization and data lifetime management to be done by the caller.
 /// </item>
 /// <item>
 /// The in-memory vector store is supposed to be created per provider and not shared between providers
@@ -45,23 +45,21 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="ContextualFunctionProvider"/> class.
     /// </summary>
-    /// <param name="inMemoryVectorStore">An instance of the `Connectors.Memory.InMemory`
-    /// in-memory vector store. Using other vector stores will require the data synchronization
-    /// and data lifetime management to be done by the caller.</param>
+    /// <param name="vectorStore">An instance of a vector store.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
-        VectorStore inMemoryVectorStore,
+        VectorStore vectorStore,
         int vectorDimensions,
-        IReadOnlyList<AIFunction> functions,
+        IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
-        Verify.NotNull(inMemoryVectorStore);
+        Verify.NotNull(vectorStore);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
@@ -70,7 +68,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         this._options = options ?? new ContextualFunctionProviderOptions();
 
         this._functionStore = new FunctionStore(
-            inMemoryVectorStore,
+            vectorStore,
             collectionName,
             vectorDimensions,
             functions,

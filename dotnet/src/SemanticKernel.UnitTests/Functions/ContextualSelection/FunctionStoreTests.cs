@@ -13,16 +13,44 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class FunctionStoreTests
 {
+    private readonly Mock<VectorStore> _vectorStoreMock;
+    private readonly Mock<VectorStoreCollection<object, Dictionary<string, object?>>> _collectionMock;
+
+    public FunctionStoreTests()
+    {
+        this._vectorStoreMock = new Mock<VectorStore>(MockBehavior.Strict);
+        this._collectionMock = new Mock<VectorStoreCollection<object, Dictionary<string, object?>>>(MockBehavior.Strict);
+
+        this._vectorStoreMock
+            .Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
+            .Returns(this._collectionMock.Object);
+
+        this._collectionMock
+            .Setup(c => c.CollectionExistsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        this._collectionMock
+            .Setup(c => c.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        this._collectionMock
+            .Setup(c => c.UpsertAsync(It.IsAny<IEnumerable<Dictionary<string, object?>>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        this._collectionMock
+            .Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), null, It.IsAny<CancellationToken>()))
+            .Returns(AsyncEnumerable.Empty<VectorSearchResult<Dictionary<string, object?>>>());
+    }
+
     [Fact]
     public void ConstructorShouldThrowOnNullArguments()
     {
-        var vectorStore = new Mock<VectorStore>().Object;
         var functions = new List<AIFunction> { CreateFunction("f1") };
 
         Assert.Throws<ArgumentNullException>(() => new FunctionStore(null!, "col", 1, functions, 3));
-        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "", 1, functions, 3));
-        Assert.Throws<ArgumentException>(() => new FunctionStore(vectorStore, "col", 0, functions, 3));
-        Assert.Throws<ArgumentNullException>(() => new FunctionStore(vectorStore, "col", 1, null!, 3));
+        Assert.Throws<ArgumentException>(() => new FunctionStore(this._vectorStoreMock.Object, "", 1, functions, 3));
+        Assert.Throws<ArgumentException>(() => new FunctionStore(this._vectorStoreMock.Object, "col", 0, functions, 3));
+        Assert.Throws<ArgumentNullException>(() => new FunctionStore(this._vectorStoreMock.Object, "col", 1, null!, 3));
     }
 
     [Fact]
@@ -35,26 +63,18 @@ public sealed class FunctionStoreTests
             CreateFunction("f2", "desc2")
         };
 
-        var collectionMock = new Mock<VectorStoreCollection<object, Dictionary<string, object?>>>();
-        collectionMock.Setup(c => c.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-        collectionMock.Setup(c => c.UpsertAsync(It.IsAny<IEnumerable<Dictionary<string, object?>>>(), It.IsAny<CancellationToken>()))
+        this._collectionMock.Setup(c => c.UpsertAsync(It.IsAny<IEnumerable<Dictionary<string, object?>>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        var vectorStoreMock = new Mock<VectorStore>();
-        vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
-            .Returns(collectionMock.Object);
-
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
+        var store = new FunctionStore(this._vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act
         await store.SaveAsync();
 
         // Assert
-        collectionMock.Verify(c => c.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        collectionMock.Verify(c => c.UpsertAsync(It.Is<IEnumerable<Dictionary<string, object?>>>(records =>
+        this._collectionMock.Verify(c => c.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        this._collectionMock.Verify(c => c.UpsertAsync(It.Is<IEnumerable<Dictionary<string, object?>>>(records =>
             records.Count() == 2 &&
             records.Any(r => (r["Name"] as string) == "f1") &&
             records.Any(r => (r["Name"] as string) == "f2")
@@ -79,17 +99,10 @@ public sealed class FunctionStoreTests
             new(new Dictionary<string, object?> { ["Name"] = "f1" }, 0.1)
         };
 
-        var collectionMock = new Mock<VectorStoreCollection<object, Dictionary<string, object?>>>();
-        collectionMock.Setup(c => c.CollectionExistsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-        collectionMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), null, It.IsAny<CancellationToken>()))
+        this._collectionMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), null, It.IsAny<CancellationToken>()))
             .Returns(searchResults.ToAsyncEnumerable());
 
-        var vectorStoreMock = new Mock<VectorStore>();
-        vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
-            .Returns(collectionMock.Object);
-
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
+        var store = new FunctionStore(this._vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act
         var result = await store.SearchAsync("desc3");
@@ -108,15 +121,10 @@ public sealed class FunctionStoreTests
         // Arrange
         var functions = new List<AIFunction> { CreateFunction("f1") };
 
-        var collectionMock = new Mock<VectorStoreCollection<object, Dictionary<string, object?>>>();
-        collectionMock.Setup(c => c.CollectionExistsAsync(It.IsAny<CancellationToken>()))
+        this._collectionMock.Setup(c => c.CollectionExistsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var vectorStoreMock = new Mock<VectorStore>();
-        vectorStoreMock.Setup(vs => vs.GetDynamicCollection(It.IsAny<string>(), It.IsAny<VectorStoreCollectionDefinition>()))
-            .Returns(collectionMock.Object);
-
-        var store = new FunctionStore(vectorStoreMock.Object, "col", 3, functions, 3);
+        var store = new FunctionStore(this._vectorStoreMock.Object, "col", 3, functions, 3);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.SearchAsync("query"));
