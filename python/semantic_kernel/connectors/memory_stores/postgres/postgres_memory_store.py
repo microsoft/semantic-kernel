@@ -12,7 +12,7 @@ from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.postgres import DEFAULT_SCHEMA, MAX_DIMENSIONALITY, PostgresSettings
+from semantic_kernel.connectors.postgres import DEFAULT_SCHEMA, MAX_DIMENSIONALITY, PostgresSettings
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceResourceNotFoundError,

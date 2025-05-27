@@ -6,7 +6,7 @@ from uuid import uuid4
 import pandas as pd
 
 from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField
 
 definition = VectorStoreCollectionDefinition(

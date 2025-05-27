@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock, patch
 
 from pytest import fixture, mark, param, raises
 
-from semantic_kernel.connectors.memory.sql_server import (
+from semantic_kernel.connectors.sql_server import (
     QueryBuilder,
     SqlCommand,
     SqlServerCollection,
@@ -260,7 +260,7 @@ async def test_get_mssql_connection(connection_string):
     with patch("pyodbc.connect") as patched_connection:
         from azure.identity.aio import DefaultAzureCredential
 
-        from semantic_kernel.connectors.memory.sql_server import SqlSettings, _get_mssql_connection
+        from semantic_kernel.connectors.sql_server import SqlSettings, _get_mssql_connection
 
         token = MagicMock()
         token.token.return_value = "test_token"

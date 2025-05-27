@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import HTTPStatusError, RequestError, Response
 
-from semantic_kernel.connectors.search.google import (
+from semantic_kernel.connectors.google_search import (
     GoogleSearch,
     GoogleSearchInformation,
     GoogleSearchResponse,

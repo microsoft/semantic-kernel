@@ -10,7 +10,7 @@ import pytest
 import pytest_asyncio
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.memory.postgres import PostgresCollection, PostgresSettings, PostgresStore
+from semantic_kernel.connectors.postgres import PostgresCollection, PostgresSettings, PostgresStore
 from semantic_kernel.data.vectors import (
     DistanceFunction,
     IndexKind,

@@ -5,7 +5,7 @@ from unittest.mock import ANY, AsyncMock, patch
 import pytest
 from weaviate import WeaviateAsyncClient
 
-from semantic_kernel.connectors.memory.weaviate import WeaviateStore
+from semantic_kernel.connectors.weaviate import WeaviateStore
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, VectorStoreInitializationException
 
 

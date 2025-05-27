@@ -6,7 +6,7 @@ import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis import (
+from semantic_kernel.connectors.redis import (
     RedisCollectionTypes,
     RedisHashsetCollection,
     RedisJsonCollection,

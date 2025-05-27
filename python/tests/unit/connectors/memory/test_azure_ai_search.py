@@ -10,7 +10,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from pytest import fixture, mark, param, raises
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.memory.azure_ai_search import (
+from semantic_kernel.connectors.azure_ai_search import (
     AzureAISearchCollection,
     AzureAISearchSettings,
     AzureAISearchStore,

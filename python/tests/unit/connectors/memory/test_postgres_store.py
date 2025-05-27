@@ -11,7 +11,7 @@ from psycopg import AsyncConnection, AsyncCursor
 from psycopg_pool import AsyncConnectionPool
 from pytest import fixture
 
-from semantic_kernel.connectors.memory.postgres import (
+from semantic_kernel.connectors.postgres import (
     DISTANCE_COLUMN_NAME,
     PostgresCollection,
     PostgresSettings,

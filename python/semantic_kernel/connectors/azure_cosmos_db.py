@@ -17,7 +17,7 @@ from pymongo.driver_info import DriverInfo
 from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.memory.mongodb import (
+from semantic_kernel.connectors.mongodb import (
     DEFAULT_DB_NAME,
     MONGODB_SCORE_FIELD,
     MongoDBAtlasCollection,

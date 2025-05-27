@@ -8,7 +8,7 @@ from weaviate.classes.config import Configure, DataType, Property
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
-from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
+from semantic_kernel.connectors.weaviate import WeaviateCollection
 from semantic_kernel.exceptions import (
     ServiceInvalidExecutionSettingsError,
     VectorStoreInitializationException,
