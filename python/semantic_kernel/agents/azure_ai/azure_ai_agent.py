@@ -138,12 +138,21 @@ def _azure_function(spec: ToolSpec) -> ToolDefinition:
 
 @_register_tool("bing_grounding")
 def _bing_grounding(spec: ToolSpec) -> BingGroundingTool:
+    opts = spec.options or {}
+
     connections = spec.options.get("tool_connections")
     if not connections or not isinstance(connections, list) or not connections[0]:
         raise AgentInitializationException(f"Missing or malformed 'tool_connections' in: {spec}")
-
     conn_id = connections[0]
-    return BingGroundingTool(connection_id=conn_id)
+
+    market = opts.get("market", "")
+    set_lang = opts.get("set_lang", "")
+    count = opts.get("count", 5)
+    if not isinstance(count, int):
+        raise AgentInitializationException(f"'count' must be an integer in: {spec}")
+    freshness = opts.get("freshness", "")
+
+    return BingGroundingTool(connection_id=conn_id, market=market, set_lang=set_lang, count=count, freshness=freshness)
 
 
 @_register_tool("code_interpreter")
