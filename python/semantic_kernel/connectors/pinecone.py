@@ -13,10 +13,10 @@ from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
 from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     DistanceFunction,
     GetFilteredRecordOptions,
+    KernelSearchResults,
     SearchType,
     TModel,
     VectorSearch,

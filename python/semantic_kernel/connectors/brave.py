@@ -10,7 +10,7 @@ from typing import Any, ClassVar, Final, Literal
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.connectors._search_utils import SearchLambdaVisitor
+from semantic_kernel.connectors._search_shared import SearchLambdaVisitor
 from semantic_kernel.data.text_search import (
     KernelSearchResults,
     SearchOptions,

@@ -23,12 +23,12 @@ from semantic_kernel.connectors.mongodb import (
     MongoDBAtlasCollection,
     MongoDBAtlasStore,
 )
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     DistanceFunction,
     FieldTypes,
     GetFilteredRecordOptions,
     IndexKind,
+    KernelSearchResults,
     SearchType,
     TModel,
     VectorSearch,

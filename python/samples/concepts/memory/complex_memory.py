@@ -26,7 +26,7 @@ from semantic_kernel.connectors.memory import (
     SqlServerCollection,
     WeaviateCollection,
 )
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     SearchType,
     VectorSearchProtocol,
     VectorStoreCollection,

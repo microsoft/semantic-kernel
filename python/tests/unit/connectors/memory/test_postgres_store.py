@@ -17,7 +17,7 @@ from semantic_kernel.connectors.postgres import (
     PostgresSettings,
     PostgresStore,
 )
-from semantic_kernel.data.vectors import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
 
 
 @fixture(scope="function")

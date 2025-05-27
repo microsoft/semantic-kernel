@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-# region: Options
-
+# Classes in this file are shared between text search and vectors.
+# They should not be imported directly, as they are also exposed in both modules.
 
 from abc import ABC
 from collections.abc import AsyncIterable, Callable, Mapping
@@ -26,7 +25,6 @@ DEFAULT_RETURN_PARAMETER_METADATA: KernelParameterMetadata = KernelParameterMeta
     type_object=list,
     is_required=True,
 )
-# region: Text Search
 
 DEFAULT_PARAMETER_METADATA: list[KernelParameterMetadata] = [
     KernelParameterMetadata(
@@ -80,9 +78,6 @@ class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
     results: AsyncIterable[TSearchResult]
     total_count: int | None = None
     metadata: Mapping[str, Any] | None = None
-
-
-# region: Options functions
 
 
 class DynamicFilterFunction(Protocol):

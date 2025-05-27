@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 from pandas import DataFrame
 from pytest import mark, raises
 
-from semantic_kernel.data.vectors import SerializeMethodProtocol, ToDictMethodProtocol
+from semantic_kernel.data.vector import SerializeMethodProtocol, ToDictMethodProtocol
 from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
@@ -276,7 +276,7 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, definition):
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
     with (
-        patch("semantic_kernel.data.vectors.VectorStoreCollection.deserialize") as deserialize_mock,
+        patch("semantic_kernel.data.vector.VectorStoreCollection.deserialize") as deserialize_mock,
         raises(
             VectorStoreModelDeserializationException, match="Error deserializing record, multiple records returned:"
         ),

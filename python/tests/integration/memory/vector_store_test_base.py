@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
-from semantic_kernel.data.vectors import VectorStore
+from semantic_kernel.data.vector import VectorStore
 
 
 def get_redis_store():

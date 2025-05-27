@@ -11,7 +11,7 @@ from semantic_kernel.connectors.azure_cosmos_db import CosmosNoSqlStore
 from semantic_kernel.contents import ChatHistory, ChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.data.vectors import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 
 """
 This sample demonstrates how to build a conversational chatbot
