@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -39,6 +40,8 @@ namespace Microsoft.SemanticKernel.Functions;
 public sealed class ContextualFunctionProvider : AIContextProvider
 {
     private readonly FunctionStore _functionStore;
+    private readonly ConcurrentQueue<ChatMessage> _recentMessages = new();
+    private readonly int _contextSize;
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized = false;
 
@@ -49,6 +52,10 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
+    /// <param name="contextSize">
+    /// The number of messages the provider uses to form a context. The provider collects new messages, up to this number, and uses them to build a context.
+    /// While adding new messages, the provider will remove the oldest messages to keep the context size within the specified limit.
+    /// </param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
@@ -56,6 +63,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         int vectorDimensions,
         IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
+        int contextSize = 1,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
@@ -63,8 +71,9 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
+        Verify.True(contextSize > 0, "Context size must be greater than 0");
         Verify.NotNullOrWhiteSpace(collectionName);
-
+        this._contextSize = contextSize;
         this._options = options ?? new ContextualFunctionProviderOptions();
 
         this._functionStore = new FunctionStore(
@@ -92,7 +101,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         }
 
         // Build the context from the messages
-        var context = await this.BuildContextAsync(newMessages, cancellationToken).ConfigureAwait(false);
+        var context = await this.BuildContextAsync(cancellationToken).ConfigureAwait(false);
 
         // Get the function relevant to the context
         var functions = await this._functionStore
@@ -102,21 +111,35 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         return new AIContext { AIFunctions = [.. functions] };
     }
 
+    /// <inheritdoc/>
+    public override Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    {
+        // Add the new message to the recent messages queue
+        this._recentMessages.Enqueue(newMessage);
+
+        // If there are more than ContextSize messages in the queue, remove the oldest ones
+        for (int i = this._contextSize; i < this._recentMessages.Count; i++)
+        {
+            this._recentMessages.TryDequeue(out _);
+        }
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Builds the context from chat messages.
     /// </summary>
-    /// <param name="messages">The messages to build the context from.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
-    private async Task<string> BuildContextAsync(ICollection<ChatMessage> messages, CancellationToken cancellationToken)
+    private async Task<string> BuildContextAsync(CancellationToken cancellationToken)
     {
         if (this._options.ContextEmbeddingValueProvider is not null)
         {
-            return await this._options.ContextEmbeddingValueProvider.Invoke(messages, cancellationToken).ConfigureAwait(false);
+            return await this._options.ContextEmbeddingValueProvider.Invoke([.. this._recentMessages], cancellationToken).ConfigureAwait(false);
         }
 
         return string.Join(
             Environment.NewLine,
-            messages.
+            this._recentMessages.
                 Where(m => !string.IsNullOrWhiteSpace(m?.Text)).
                 Select(m => m.Text));
     }

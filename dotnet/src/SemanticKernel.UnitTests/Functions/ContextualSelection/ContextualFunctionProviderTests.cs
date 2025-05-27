@@ -138,6 +138,7 @@ public sealed class ContextualFunctionProviderTests
             vectorDimensions: 1536,
             functions: functions,
             maxNumberOfFunctions: 5,
+            contextSize: 1,
             options: options);
 
         var messages = new List<ChatMessage>
@@ -164,18 +165,14 @@ public sealed class ContextualFunctionProviderTests
             vectorStore: this._vectorStoreMock.Object,
             vectorDimensions: 1536,
             functions: functions,
-            maxNumberOfFunctions: 5);
+            maxNumberOfFunctions: 5,
+            contextSize: 2);
 
-        var messages = new List<ChatMessage>
-        {
-            new() { Contents = [new TextContent("msg1")] },
-            new() { Contents = [new TextContent("msg2")] },
-            new() { Contents = [new TextContent("")] },
-            new() { Contents = null }
-        };
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
 
         // Act
-        var context = await provider.ModelInvokingAsync(messages);
+        var context = await provider.ModelInvokingAsync([]);
 
         // Assert
         var expected = "msg1" + Environment.NewLine + "msg2";
@@ -206,6 +203,7 @@ public sealed class ContextualFunctionProviderTests
             vectorDimensions: 1536,
             functions: functions,
             maxNumberOfFunctions: 5,
+            contextSize: 1,
             options: options);
 
         var messages = new List<ChatMessage>
@@ -220,6 +218,49 @@ public sealed class ContextualFunctionProviderTests
         Assert.NotNull(upsertedRecords);
         var embeddingSource = upsertedRecords!.SelectMany(r => r).FirstOrDefault(kv => kv.Key == "Embedding").Value as string;
         Assert.Equal("custom embedding for f1:desc1", embeddingSource);
+    }
+
+    [Fact]
+    public async Task ContextEmbeddingValueProviderReceivesOnlyContextSizeMessages()
+    {
+        // Arrange
+        var functions = new List<AIFunction> { CreateFunction("f1") };
+        int contextSize = 2;
+        ICollection<ChatMessage>? capturedMessages = null;
+
+        var options = new ContextualFunctionProviderOptions
+        {
+            ContextEmbeddingValueProvider = (messages, ct) =>
+            {
+                capturedMessages = messages;
+                // Return a dummy context string
+                return Task.FromResult("context");
+            }
+        };
+
+        var provider = new ContextualFunctionProvider(
+            vectorStore: this._vectorStoreMock.Object,
+            vectorDimensions: 1536,
+            functions: functions,
+            maxNumberOfFunctions: 5,
+            contextSize: contextSize,
+            options: options);
+
+        // Add more messages than contextSize
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg3")] });
+
+        // Act
+        await provider.ModelInvokingAsync(new List<ChatMessage>());
+
+        // Assert: Only the last 'contextSize' messages should be passed to the callback
+        Assert.NotNull(capturedMessages);
+        var capturedList = capturedMessages!.ToList();
+
+        Assert.Equal(contextSize, capturedList.Count);
+        Assert.Equal("msg2", capturedList[0].Text);
+        Assert.Equal("msg3", capturedList[1].Text);
     }
 
     private static AIFunction CreateFunction(string name, string description = "")
