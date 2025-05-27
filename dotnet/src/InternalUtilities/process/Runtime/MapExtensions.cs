@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -156,5 +157,25 @@ internal static class MapExtensions
         }
 
         return false;
+    }
+
+    public static T GetStepInfo<T>(this IReadOnlyDictionary<string, KernelProcess> processes, string processId, string stepId) where T : KernelProcessStepInfo
+    {
+        Verify.NotNull(processes, nameof(processes));
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
+
+        if (!processes.TryGetValue(processId, out var registeredProcess) || registeredProcess is null)
+        {
+            throw new InvalidOperationException("No process registered with the specified key");
+        }
+
+        var targetStep = registeredProcess.Steps.Where(s => s.State.Id == stepId).FirstOrDefault();
+        if (targetStep is null || targetStep is not T typedTarget)
+        {
+            throw new InvalidOperationException("The specifiec step could not be found in the specified process.");
+        }
+
+        return typedTarget;
     }
 }

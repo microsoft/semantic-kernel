@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Process.IntegrationTests;
 using SemanticKernel.Process.TestsShared.CloudEvents;
+
+Debugger.Break();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +32,10 @@ builder.Services.AddActors(static options =>
     options.Actors.RegisterActor<HealthActor>();
 });
 
-builder.Services.AddKeyedSingleton<KernelProcess>("cStep", (sp, key) =>
+var process = ProcessResources.GetCStepProcess();
+builder.Services.AddKeyedSingleton<KernelProcess>(process.State.Id, (sp, key) =>
 {
-    return ProcessResources.GetCStepProcess();
+    return process;
 });
 
 // Register our processes

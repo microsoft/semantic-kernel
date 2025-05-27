@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -17,7 +18,7 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
 
     private readonly AgentFactory _agentFactory;
 
-    internal DaprAgentStepInfo? _daprAgentStepInfo;
+    internal KernelProcessAgentStep? _daprAgentStepInfo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProxyActor"/> class.
@@ -35,7 +36,7 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
 
     internal override KernelProcessStep GetStepInstance()
     {
-        return (KernelProcessAgentExecutor)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!, this._agentFactory, this._daprAgentStepInfo!.ToKernelProcessAgentStep());
+        return (KernelProcessAgentExecutor)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!, this._agentFactory, this._daprAgentStepInfo!);
     }
 
     internal override Dictionary<string, Dictionary<string, object?>?> GenerateInitialInputs()
@@ -43,10 +44,12 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
         return this.FindInputChannels(this._functions, this._logger, agentDefinition: this._daprAgentStepInfo!.AgentDefinition);
     }
 
-    public async Task InitializeAgentStepAsync(DaprAgentStepInfo stepInfo, string? parentProcessId)
+    public async Task InitializeAgentStepAsync(string processId, string stepId, string? parentProcessId)
     {
-        this._daprAgentStepInfo = stepInfo;
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
 
-        await base.InitializeStepAsync(stepInfo, parentProcessId).ConfigureAwait(false);
+        this._daprAgentStepInfo = this._registeredProcesses.GetStepInfo<KernelProcessAgentStep>(processId, stepId);
+        await base.InitializeStepAsync(processId, stepId, parentProcessId).ConfigureAwait(false);
     }
 }

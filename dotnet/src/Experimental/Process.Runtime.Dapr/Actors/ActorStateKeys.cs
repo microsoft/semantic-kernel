@@ -9,6 +9,7 @@ internal static class ActorStateKeys
 {
     // Shared Actor keys
     public const string StepParentProcessId = "parentProcessId";
+    public const string StepId = "stepId";
 
     // StepActor keys
     public const string StepInfoState = nameof(DaprStepInfo);
@@ -21,6 +22,8 @@ internal static class ActorStateKeys
 
     // ProcessActor keys
     public const string ProcessInfoState = nameof(DaprProcessInfo);
+    public const string ProcessKey = "processKey";
+    public const string StepInfoKey = "stepInfoKey";
     public const string EventProxyStepId = "processEventProxyId";
     public const string StepActivatedState = "kernelStepActivated";
 

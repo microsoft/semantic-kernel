@@ -14,5 +14,5 @@ public interface IAgentStep : IActor
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    Task InitializeAgentStepAsync(DaprAgentStepInfo stepInfo, string? parentProcessId);
+    Task InitializeAgentStepAsync(string processId, string stepId, string? parentProcessId);
 }

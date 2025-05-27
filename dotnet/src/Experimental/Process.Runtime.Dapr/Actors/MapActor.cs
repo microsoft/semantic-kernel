@@ -20,9 +20,7 @@ internal sealed class MapActor : StepActor, IMap
     private bool _isInitialized;
     private HashSet<string> _mapEvents = [];
     private ILogger? _logger;
-    private KernelProcessMap? _map;
-
-    internal DaprMapInfo? _mapInfo;
+    internal KernelProcessMap? _mapInfo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapActor"/> class.
@@ -37,7 +35,7 @@ internal sealed class MapActor : StepActor, IMap
 
     #region Public Actor Methods
 
-    public async Task InitializeMapAsync(DaprMapInfo mapInfo, string? parentProcessId)
+    public async Task InitializeMapAsync(string processId, string stepId)
     {
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -46,13 +44,18 @@ internal sealed class MapActor : StepActor, IMap
             return;
         }
 
-        this.InitializeMapActor(mapInfo, parentProcessId);
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
+
+        var mapInfo = this._registeredProcesses.GetStepInfo<KernelProcessMap>(processId, stepId);
+
+        this.InitializeMapActor(mapInfo, processId);
 
         this._isInitialized = true;
 
         // Save the state
         await this.StateManager.AddStateAsync(DaprProcessMapStateName, mapInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, processId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -61,15 +64,15 @@ internal sealed class MapActor : StepActor, IMap
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
-    public override Task<DaprStepInfo> ToDaprStepInfoAsync() => Task.FromResult<DaprStepInfo>(this._mapInfo!);
+    public override Task<DaprStepInfo> ToDaprStepInfoAsync() => throw new NotImplementedException();
 
     protected override async Task OnActivateAsync()
     {
-        var existingMapInfo = await this.StateManager.TryGetStateAsync<DaprMapInfo>(DaprProcessMapStateName).ConfigureAwait(false);
-        if (existingMapInfo.HasValue)
+        var existingStepId = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.StepId).ConfigureAwait(false);
+        if (existingStepId.HasValue)
         {
             this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
-            this.InitializeMapActor(existingMapInfo.Value, this.ParentProcessId);
+            this.InitializeMapActor(this._registeredProcesses.GetStepInfo<KernelProcessMap>(this.ParentProcessId, existingStepId.Value), this.ParentProcessId);
         }
     }
 
@@ -87,7 +90,7 @@ internal sealed class MapActor : StepActor, IMap
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         // Initialize the current operation
-        (IEnumerable inputValues, KernelProcess mapOperation, string startEventId) = this._map!.Initialize(message, this._logger);
+        (IEnumerable inputValues, KernelProcess mapOperation, string startEventId) = this._mapInfo!.Initialize(message, this._logger);
 
         List<Task> mapOperations = [];
         foreach (var value in inputValues)
@@ -169,13 +172,12 @@ internal sealed class MapActor : StepActor, IMap
         }
     }
 
-    private void InitializeMapActor(DaprMapInfo mapInfo, string? parentProcessId)
+    private void InitializeMapActor(KernelProcessMap mapInfo, string? parentProcessId)
     {
         Verify.NotNull(mapInfo);
         Verify.NotNull(mapInfo.Operation);
 
         this._mapInfo = mapInfo;
-        this._map = mapInfo.ToKernelProcessMap();
         this.ParentProcessId = parentProcessId;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
         this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());

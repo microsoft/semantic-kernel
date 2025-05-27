@@ -25,8 +25,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     internal readonly List<IStep> _steps = [];
 
-    internal IList<DaprStepInfo>? _stepsInfos;
-    internal DaprProcessInfo? _process;
+    internal IList<KernelProcessStepInfo>? _stepsInfos;
+    internal KernelProcess? _process;
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
     private bool _isInitialized;
@@ -56,10 +56,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     #region Public Actor Methods
 
-    public async Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId = null)
+    public async Task InitializeProcessAsync(string processKey, string? parentProcessId, string? eventProxyStepId = null)
     {
-        Verify.NotNull(processInfo);
-        Verify.NotNull(processInfo.Steps);
+        Verify.NotNullOrWhiteSpace(processKey);
+
+        if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
+        {
+            throw new KernelException("The specified process key could not be found");
+        }
 
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -69,10 +73,10 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
 
         // Initialize the process
-        await this.InitializeProcessActorAsync(processInfo, parentProcessId, eventProxyStepId).ConfigureAwait(false);
+        await this.InitializeProcessActorAsync(process, parentProcessId, eventProxyStepId).ConfigureAwait(false);
 
         // Save the state
-        await this.StateManager.AddStateAsync(ActorStateKeys.ProcessInfoState, processInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.ProcessKey, processKey).ConfigureAwait(false);
         await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.AddStateAsync(ActorStateKeys.StepActivatedState, true).ConfigureAwait(false);
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
@@ -112,15 +116,15 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns></returns>
     public async Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent)
     {
-        if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
-        {
-            throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
-        }
+        //if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
+        //{
+        //    throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
+        //}
 
-        this._processKey = processKey; // TODO: save state
-        var processWithId = process with { State = process.State with { Id = processId } };
-        var daprProcess = DaprProcessInfo.FromKernelProcess(processWithId);
-        await this.InitializeProcessAsync(daprProcess, null, eventProxyStepId).ConfigureAwait(false);
+        //this._processKey = processKey; // TODO: save state
+        //var processWithId = process with { State = process.State with { Id = processId } };
+        //var daprProcess = DaprProcessInfo.FromKernelProcess(processWithId);
+        await this.InitializeProcessAsync(processKey, null, eventProxyStepId).ConfigureAwait(false);
         await this.RunOnceAsync(processEvent).ConfigureAwait(false);
     }
 
@@ -200,16 +204,22 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     protected override async Task OnActivateAsync()
     {
-        var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(ActorStateKeys.ProcessInfoState).ConfigureAwait(false);
-        if (existingProcessInfo.HasValue)
+        var existingProcessKey = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.ProcessKey).ConfigureAwait(false);
+        if (existingProcessKey.HasValue)
         {
+            string processKey = existingProcessKey.Value;
             this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             string? eventProxyStepId = null;
             if (await this.StateManager.ContainsStateAsync(ActorStateKeys.EventProxyStepId).ConfigureAwait(false))
             {
                 eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
             }
-            await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId, eventProxyStepId).ConfigureAwait(false);
+
+            if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
+            {
+                throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
+            }
+            await this.InitializeProcessActorAsync(process, this.ParentProcessId, eventProxyStepId).ConfigureAwait(false);
         }
     }
 
@@ -262,13 +272,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         return default;
     }
 
-    private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId)
+    private async Task InitializeProcessActorAsync(KernelProcess process, string? parentProcessId, string? eventProxyStepId)
     {
-        Verify.NotNull(processInfo, nameof(processInfo));
-        Verify.NotNull(processInfo.Steps);
+        Verify.NotNull(process, nameof(process));
+        Verify.NotNull(process.Steps);
 
         this.ParentProcessId = parentProcessId;
-        this._process = processInfo;
+        this._process = process;
         this._stepsInfos = [.. this._process.Steps];
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
@@ -287,7 +297,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             // The current step should already have a name.
             Verify.NotNull(step.State?.Name);
 
-            if (step is DaprProcessInfo processStep)
+            if (step is KernelProcess processStep)
             {
                 // The process will only have an Id if its already been executed.
                 if (string.IsNullOrWhiteSpace(processStep.State.Id))
@@ -298,31 +308,31 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 // Initialize the step as a process.
                 var scopedProcessId = this.ScopedActorId(new ActorId(processStep.State.Id!));
                 var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
-                await processActor.InitializeProcessAsync(processStep, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
+                await processActor.InitializeProcessAsync(processStep.State.Id, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false); // TODO: specifying the process key as processStep.State.Id is not correct. Can we make the key and the process Id the same?
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
             }
-            else if (step is DaprMapInfo mapStep)
+            else if (step is KernelProcessMap mapStep)
             {
                 // Initialize the step as a map.
                 ActorId scopedMapId = this.ScopedActorId(new ActorId(mapStep.State.Id!));
                 IMap mapActor = this.ProxyFactory.CreateActorProxy<IMap>(scopedMapId, nameof(MapActor));
-                await mapActor.InitializeMapAsync(mapStep, this.Id.GetId()).ConfigureAwait(false);
+                await mapActor.InitializeMapAsync(process.State.Id, mapStep.State.Id).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMapId, nameof(MapActor));
             }
-            else if (step is DaprProxyInfo proxyStep)
+            else if (step is KernelProcessProxy proxyStep)
             {
                 // Initialize the step as a proxy
                 ActorId scopedProxyId = this.ScopedActorId(new ActorId(proxyStep.State.Id!));
                 IProxy proxyActor = this.ProxyFactory.CreateActorProxy<IProxy>(scopedProxyId, nameof(ProxyActor));
-                await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
+                await proxyActor.InitializeProxyAsync(process.State.Id, proxyStep.State.Id, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
             }
-            else if (step is DaprAgentStepInfo agentStepInfo)
+            else if (step is KernelProcessAgentStep agentStepInfo)
             {
                 // Initialize the step as a proxy
                 ActorId scopedAgentStepId = this.ScopedActorId(new ActorId(agentStepInfo.State.Id!));
                 IAgentStep agentActor = this.ProxyFactory.CreateActorProxy<IAgentStep>(scopedAgentStepId, nameof(AgentStepActor));
-                await agentActor.InitializeAgentStepAsync(agentStepInfo, this.Id.GetId()).ConfigureAwait(false);
+                await agentActor.InitializeAgentStepAsync(process.State.Id, agentStepInfo.State.Id, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedAgentStepId, nameof(AgentStepActor));
             }
             else
@@ -332,7 +342,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
                 var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
-                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId, this._processKey).ConfigureAwait(false);
+                await stepActor.InitializeStepAsync(process.State.Id, step.State.Id, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
             }
 
             this._steps.Add(stepActor);
@@ -526,10 +536,11 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     private async Task<DaprProcessInfo> ToDaprProcessInfoAsync()
     {
-        var processState = new KernelProcessState(this.Name, this._process!.State.Version, this.Id.GetId());
-        var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
-        var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
+        throw new NotImplementedException();
+        //var processState = new KernelProcessState(this.Name, this._process!.State.Version, this.Id.GetId());
+        //var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
+        //var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
+        //return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
     }
 
     /// <summary>

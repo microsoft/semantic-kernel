@@ -14,5 +14,5 @@ public interface IProxy : IActor
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    Task InitializeProxyAsync(DaprProxyInfo proxyInfo, string? parentProcessId);
+    Task InitializeProxyAsync(string processId, string stepId, string? parentProcessId);
 }

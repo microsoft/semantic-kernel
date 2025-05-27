@@ -42,22 +42,30 @@ public class ProcessTestController : Controller
     [HttpPost("processes/{processKey}/{processId}")]
     public async Task<IActionResult> StartProcessAsync(string processId, [FromBody] ProcessStartRequest request, string? processKey = null)
     {
-        if (s_processes.ContainsKey(processId))
+        try
         {
-            return this.BadRequest("Process already started");
-        }
+            if (s_processes.ContainsKey(processId))
+            {
+                return this.BadRequest("Process already started");
+            }
 
-        if (string.IsNullOrWhiteSpace(processKey))
+            if (string.IsNullOrWhiteSpace(processKey))
+            {
+                return this.BadRequest("Process key is required for Dapr runtime.");
+            }
+
+            KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
+
+            var context = await this._daprKernelProcessFactory.StartAsync(processKey, processId, initialEvent);
+            s_processes.Add(processId, context);
+
+            return this.Ok();
+        }
+        catch (Exception)
         {
-            return this.BadRequest("Process key is required for Dapr runtime.");
+
+            throw;
         }
-
-        KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
-
-        var context = await this._daprKernelProcessFactory.StartAsync(processKey, processId, initialEvent);
-        s_processes.Add(processId, context);
-
-        return this.Ok();
     }
 
     /// <summary>

@@ -23,7 +23,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     protected readonly IReadOnlyDictionary<string, KernelProcess> _registeredProcesses;
     protected Dictionary<string, DaprEdgeGroupProcessor> _edgeGroupProcessors = [];
 
-    private DaprStepInfo? _stepInfo;
+    private KernelProcessStepInfo? _stepInfo;
     private ILogger? _logger;
 
     private bool _isInitialized;
@@ -64,30 +64,28 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// Initializes the step with the provided step information.
     /// </summary>
-    /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
+    /// <param name="processId"></param>
+    /// <param name="stepId"></param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
-    /// <param name="processKey"></param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null, string? processKey = null)
+    public async Task InitializeStepAsync(string processId, string stepId, string? parentProcessId, string? eventProxyStepId = null)
     {
-        Verify.NotNull(stepInfo, nameof(stepInfo));
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
 
-        if (!string.IsNullOrWhiteSpace(processKey))
+        if (!this._registeredProcesses.TryGetValue(processId, out var registeredProcess) || registeredProcess is null)
         {
-            if (!this._registeredProcesses.TryGetValue(processKey, out var registeredProcess) || registeredProcess is null)
-            {
-                throw new InvalidOperationException("No process registered with the specified key");
-            }
-
-            var currentStep = registeredProcess.Steps.Where(s => s.State.Id == stepInfo.State.Id).FirstOrDefault();
-            if (currentStep is null)
-            {
-                throw new InvalidOperationException("");
-            }
-
-            this._edgeGroupProcessors = currentStep.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new DaprEdgeGroupProcessor(kvp.Value)) ?? [];
+            throw new InvalidOperationException("No process registered with the specified key");
         }
+
+        var currentStep = registeredProcess.Steps.Where(s => s.State.Id == stepId).FirstOrDefault();
+        if (currentStep is null)
+        {
+            throw new InvalidOperationException("");
+        }
+
+        this._edgeGroupProcessors = currentStep.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new DaprEdgeGroupProcessor(kvp.Value)) ?? [];
 
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -96,10 +94,10 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             return;
         }
 
-        this.InitializeStep(stepInfo, parentProcessId, eventProxyStepId);
+        this.InitializeStep(currentStep, parentProcessId, eventProxyStepId);
 
         // Save initial state
-        await this.StateManager.AddStateAsync(ActorStateKeys.StepInfoState, stepInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepInfoKey, stepId).ConfigureAwait(false);
         await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
@@ -114,15 +112,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
-    protected virtual void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
+    protected virtual void InitializeStep(KernelProcessStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
         Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // Attempt to load the inner step type
-        this._innerStepType = Type.GetType(stepInfo.InnerStepDotnetType);
+        this._innerStepType = stepInfo.InnerStepType;
         if (this._innerStepType is null)
         {
-            throw new KernelException($"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.").Log(this._logger);
+            throw new KernelException($"Could not load the inner step type '{stepInfo.InnerStepType}'.").Log(this._logger);
         }
 
         this.ParentProcessId = parentProcessId;
@@ -184,14 +182,16 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Extracts the current state of the step and returns it as a <see cref="DaprStepInfo"/>.
     /// </summary>
     /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
-    public virtual async Task<DaprStepInfo> ToDaprStepInfoAsync()
+    public virtual Task<DaprStepInfo> ToDaprStepInfoAsync()
     {
-        // Lazy one-time initialization of the step before extracting state information.
-        // This allows state information to be extracted even if the step has not been activated.
-        await this._activateTask.Value.ConfigureAwait(false);
+        throw new NotImplementedException();
 
-        var stepInfo = new DaprStepInfo { InnerStepDotnetType = this._stepInfo!.InnerStepDotnetType!, State = this._stepInfo.State, Edges = this._stepInfo.Edges! };
-        return stepInfo;
+        //// Lazy one-time initialization of the step before extracting state information.
+        //// This allows state information to be extracted even if the step has not been activated.
+        //await this._activateTask.Value.ConfigureAwait(false);
+
+        //var stepInfo = new DaprStepInfo { InnerStepDotnetType = this._stepInfo!.InnerStepDotnetType!, State = this._stepInfo.State, Edges = this._stepInfo.Edges! };
+        //return stepInfo;
     }
 
     /// <summary>
@@ -200,8 +200,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(ActorStateKeys.StepInfoState).ConfigureAwait(false);
-        if (existingStepInfo.HasValue)
+        var existingStepId = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.StepInfoKey).ConfigureAwait(false);
+        if (existingStepId.HasValue)
         {
             // Initialize the step from persisted state
             string? parentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
@@ -210,7 +210,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             {
                 eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
             }
-            this.InitializeStep(existingStepInfo.Value, parentProcessId, eventProxyStepId);
+
+            var step = this._registeredProcesses.GetStepInfo<KernelProcessStepInfo>(parentProcessId, existingStepId.Value);
+            this.InitializeStep(step, parentProcessId, eventProxyStepId);
 
             // Load the persisted incoming messages
             var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.StepIncomingMessagesState).ConfigureAwait(false);

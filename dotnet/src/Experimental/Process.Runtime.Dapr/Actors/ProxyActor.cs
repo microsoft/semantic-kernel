@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ internal sealed class ProxyActor : StepActor, IProxy
 {
     private readonly ILogger? _logger;
 
-    internal DaprProxyInfo? _daprProxyInfo;
+    internal KernelProcessProxy? _proxyInfo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProxyActor"/> class.
@@ -55,7 +56,7 @@ internal sealed class ProxyActor : StepActor, IProxy
             functionParameters = this._inputs[message.FunctionName];
         }
 
-        if (this._daprProxyInfo?.ProxyMetadata != null && message.SourceEventId != null && this._daprProxyInfo.ProxyMetadata.EventMetadata.TryGetValue(message.SourceEventId, out var metadata) && metadata != null)
+        if (this._proxyInfo?.ProxyMetadata != null && message.SourceEventId != null && this._proxyInfo.ProxyMetadata.EventMetadata.TryGetValue(message.SourceEventId, out var metadata) && metadata != null)
         {
             functionParameters![kvp.Key] = KernelProcessProxyMessageFactory.CreateProxyMessage(this.ParentProcessId!, message.SourceEventId, metadata.TopicName, kvp.Value);
         }
@@ -72,10 +73,12 @@ internal sealed class ProxyActor : StepActor, IProxy
         return this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
     }
 
-    public async Task InitializeProxyAsync(DaprProxyInfo proxyInfo, string? parentProcessId)
+    public async Task InitializeProxyAsync(string processId, string stepId, string? parentProcessId)
     {
-        this._daprProxyInfo = proxyInfo;
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
 
-        await base.InitializeStepAsync(proxyInfo, parentProcessId).ConfigureAwait(false);
+        this._proxyInfo = this._registeredProcesses.GetStepInfo<KernelProcessProxy>(processId, stepId);
+        await base.InitializeStepAsync(processId, stepId, parentProcessId).ConfigureAwait(false);
     }
 }

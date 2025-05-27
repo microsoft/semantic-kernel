@@ -14,5 +14,5 @@ public interface IMap : IActor
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    Task InitializeMapAsync(DaprMapInfo mapInfo, string? parentProcessId);
+    Task InitializeMapAsync(string processId, string stepId);
 }

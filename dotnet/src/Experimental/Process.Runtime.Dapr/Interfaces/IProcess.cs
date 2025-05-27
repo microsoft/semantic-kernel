@@ -13,11 +13,11 @@ public interface IProcess : IActor, IStep
     /// <summary>
     /// Initializes the process with the specified instance of <see cref="DaprProcessInfo"/>.
     /// </summary>
-    /// <param name="processInfo">Used to initialize the process.</param>
+    /// <param name="processKey">Used to indicate the process that should be initialized.</param>
     /// <param name="parentProcessId">The parent Id of the process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     /// <returns>A<see cref="Task"/></returns>
-    Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId);
+    Task InitializeProcessAsync(string processKey, string? parentProcessId, string? eventProxyStepId);
 
     /// <summary>
     /// Initializes the process with the specified process key.
