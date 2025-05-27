@@ -210,10 +210,10 @@ internal sealed class BedrockChatCompletionClient
             {
                 var metadata = new Dictionary<string, object?>
                 {
-                    { "Usage", metadataEvent.Usage }
+                    ["Usage"] = metadataEvent.Usage
                 };
 
-                var content = new StreamingChatMessageContent(AuthorRole.Assistant, "", metadataEvent, metadata: metadata);
+                var content = new StreamingChatMessageContent(AuthorRole.Assistant, string.Empty, metadataEvent, metadata: metadata);
                 streamedContents?.Add(content);
                 yield return content;
             }

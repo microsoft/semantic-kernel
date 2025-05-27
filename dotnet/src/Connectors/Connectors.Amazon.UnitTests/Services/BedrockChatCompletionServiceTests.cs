@@ -122,7 +122,40 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
         Assert.NotNull(result[0].InnerContent);
-        Assert.Equal(result[0].Metadata?["Usage"], converseResponse.Usage);
+    }
+
+    /// <summary>
+    /// Checks that GetChatMessageContentsAsync calls and correctly handles outputs from ConverseAsync.
+    /// </summary>
+    [Fact]
+    public async Task GetChatMessageContentsAsyncShouldReturnChatMessageUsageMetadataAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        var converseResponse = this.CreateConverseResponse("Hello, world!", ConversationRole.Assistant);
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(converseResponse);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+
+        // Assert
+        Assert.Single(result);
+        Assert.NotNull(result[0].InnerContent);
+        var response = Assert.IsType<ConverseResponse>(result[0].InnerContent);
+        Assert.Equal(result[0].Metadata?["Usage"], response.Usage);
+        Assert.Equal(1000, response.Usage.InputTokens);
+        Assert.Equal(1000, response.Usage.OutputTokens);
+        Assert.Equal(2000, response.Usage.TotalTokens);
     }
 
     /// <summary>
@@ -411,7 +444,7 @@ public sealed class BedrockChatCompletionServiceTests
             },
             Metrics = new ConverseMetrics(),
             StopReason = StopReason.Max_tokens,
-            Usage = new TokenUsage()
+            Usage = new TokenUsage() { InputTokens = 1000, OutputTokens = 1000, TotalTokens = 2000 }
         };
     }
 }
