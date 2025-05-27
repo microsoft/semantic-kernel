@@ -10,10 +10,17 @@ from pydantic import Field
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
-from semantic_kernel.data.vectors import SearchType, TModel, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data._search import KernelSearchResults
+from semantic_kernel.data.vectors import (
+    DistanceFunction,
+    IndexKind,
+    SearchType,
+    TModel,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+)
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
 

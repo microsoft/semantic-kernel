@@ -15,10 +15,9 @@ from pymongo.driver_info import DriverInfo
 from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
     GetFilteredRecordOptions,
     SearchType,
     TModel,
@@ -26,7 +25,9 @@ from semantic_kernel.data.vectors import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
     _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions import (
@@ -150,7 +151,7 @@ def _create_index_definitions(
 
 @release_candidate
 class MongoDBAtlasCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

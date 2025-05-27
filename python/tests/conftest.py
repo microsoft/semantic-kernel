@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from pytest import fixture
 
 from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
@@ -380,7 +380,7 @@ def record_type(index_kind: str, distance_function: str, vector_property_type: s
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreField("data")]
         vector: Annotated[
-            str | list[float] | None,
+            list[float] | str | None,
             VectorStoreField(
                 "vector",
                 type=vector_property_type,

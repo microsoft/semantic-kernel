@@ -17,17 +17,20 @@ from azure.identity.aio import DefaultAzureCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
+    DistanceFunction,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     VectorSearch,
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
 )
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
@@ -268,7 +271,7 @@ async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
 
 @release_candidate
 class SqlServerCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

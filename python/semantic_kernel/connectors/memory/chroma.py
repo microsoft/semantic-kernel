@@ -13,18 +13,19 @@ from chromadb.api.types import EmbeddingFunction, Space
 from chromadb.config import Settings
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     TModel,
     VectorSearch,
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
     _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions.vector_store_exceptions import (
@@ -60,7 +61,7 @@ INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
 
 @release_candidate
 class ChromaCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

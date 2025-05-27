@@ -26,9 +26,13 @@ from semantic_kernel.connectors.memory import (
     SqlServerCollection,
     WeaviateCollection,
 )
-from semantic_kernel.data import VectorStoreRecordCollection, vectorstoremodel
-from semantic_kernel.data.definitions import VectorStoreField
-from semantic_kernel.data.vectors import SearchType, VectorSearch
+from semantic_kernel.data.vectors import (
+    SearchType,
+    VectorSearchProtocol,
+    VectorStoreCollection,
+    VectorStoreField,
+    vectorstoremodel,
+)
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -46,8 +50,8 @@ class DataModel:
     title: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
     content: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
     embedding: Annotated[
-        str | None,
-        VectorStoreField("vector", dimensions=1536, type_="float"),
+        list[float] | str | None,
+        VectorStoreField("vector", dimensions=1536, type="float"),
     ] = None
     id: Annotated[
         str,
@@ -55,7 +59,7 @@ class DataModel:
             "key",
         ),
     ] = field(default_factory=lambda: str(uuid4()))
-    tag: Annotated[str | None, VectorStoreField("data", type_="str", is_indexed=True)] = None
+    tag: Annotated[str | None, VectorStoreField("data", type="str", is_indexed=True)] = None
 
     def __post_init__(self, **kwargs):
         if self.embedding is None:
@@ -94,7 +98,7 @@ class DataModel:
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
 # so that settings for unused collections do not cause validation errors.
-collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
+collections: dict[str, Callable[[], VectorStoreCollection]] = {
     "ai_search": lambda: AzureAISearchCollection[str, DataModel](record_type=DataModel),
     "postgres": lambda: PostgresCollection[str, DataModel](record_type=DataModel),
     "redis_json": lambda: RedisJsonCollection[str, DataModel](
@@ -143,6 +147,7 @@ async def main(collection: str, use_azure_openai: bool):
     )
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
+        assert isinstance(record_collection, VectorSearchProtocol)  # nosec
         record_collection.embedding_generator = embedder
         print_with_color(f"Creating {collection} collection!", Colors.CGREY)
         # cleanup any existing collection
@@ -172,7 +177,7 @@ async def main(collection: str, use_azure_openai: bool):
         keys = await record_collection.upsert(records)
         print(f"    Upserted {keys=}")
         print_with_color("Getting records!", Colors.CBLUE)
-        results = await record_collection.get(top=10, order_by={"field": "content"})
+        results = await record_collection.get(top=10, order_by="content")
         if results:
             [print_record(record=result) for result in results]
         else:
@@ -187,7 +192,6 @@ async def main(collection: str, use_azure_openai: bool):
         print_with_color("Now we can start searching.", Colors.CBLUE)
         print_with_color("  For each type of search, enter a search term, for instance `python`.", Colors.CBLUE)
         print_with_color("  Enter exit to exit, and skip or nothing to skip this search.", Colors.CBLUE)
-        assert isinstance(record_collection, VectorSearch)  # nosec
         print("-" * 30)
         print_with_color(
             "This collection supports the following search types: "

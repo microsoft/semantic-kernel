@@ -9,7 +9,7 @@ import pytest
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos.partition_key import PartitionKey
 
-from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCompositeKey, CosmosNoSqlStore
+from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosNoSqlCompositeKey, CosmosNoSqlStore
 from semantic_kernel.data.vectors import VectorStore
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
 from tests.integration.memory.vector_store_test_base import VectorStoreTestBase
@@ -90,9 +90,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
                 partition_key=PartitionKey(path="/product_type"),
             )
 
-            composite_key = AzureCosmosDBNoSQLCompositeKey(
-                key=data_record["id"], partition_key=data_record["product_type"]
-            )
+            composite_key = CosmosNoSqlCompositeKey(key=data_record["id"], partition_key=data_record["product_type"])
 
             # Upsert
             await collection.create_collection()

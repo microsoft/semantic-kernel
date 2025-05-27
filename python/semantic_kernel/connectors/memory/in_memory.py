@@ -11,10 +11,10 @@ from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeucl
 from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
+    DistanceFunction,
     GetFilteredRecordOptions,
     SearchType,
     TModel,
@@ -22,7 +22,8 @@ from semantic_kernel.data.vectors import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
@@ -81,7 +82,7 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
 
 
 class InMemoryCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
