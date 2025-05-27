@@ -9,8 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 from pytest import raises
 
-from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.definitions import vectorstoremodel
+from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
 from semantic_kernel.exceptions import VectorStoreModelException
 
 

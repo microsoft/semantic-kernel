@@ -13,8 +13,11 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
     _create_default_indexing_policy_nosql,
     _create_default_vector_embedding_policy,
 )
-from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
+from semantic_kernel.exceptions import (
+    VectorStoreInitializationException,
+    VectorStoreModelException,
+    VectorStoreOperationException,
+)
 
 
 def test_azure_cosmos_db_no_sql_collection_init(
@@ -300,7 +303,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     [
         ("hnsw", "cosine_similarity", "float"),  # unsupported index kind
         ("flat", "hamming", "float"),  # unsupported distance function
-        ("flat", "cosine_similarity", "double"),  # unsupported property type
     ],
 )
 async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_vector_field_property(

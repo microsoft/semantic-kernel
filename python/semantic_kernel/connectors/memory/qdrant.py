@@ -28,18 +28,19 @@ from qdrant_client.models import (
 from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     TModel,
     VectorSearch,
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
 )
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
@@ -120,7 +121,7 @@ class QdrantSettings(KernelBaseSettings):
 
 @release_candidate
 class QdrantCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

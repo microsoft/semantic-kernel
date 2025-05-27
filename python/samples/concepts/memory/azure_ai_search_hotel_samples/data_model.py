@@ -15,7 +15,7 @@ from azure.search.documents.indexes.models import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from semantic_kernel.data import VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vectors import VectorStoreField, vectorstoremodel
 
 """
 The data model used for this sample is based on the hotel data model from the Azure AI Search samples.

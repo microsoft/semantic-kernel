@@ -7,8 +7,7 @@ from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Datatype, Distance, FieldCondition, MatchValue, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreField
+from semantic_kernel.data.vectors import DistanceFunction, VectorStoreField
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,

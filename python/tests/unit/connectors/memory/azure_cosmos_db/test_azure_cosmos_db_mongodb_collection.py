@@ -6,7 +6,7 @@ import pytest
 from pymongo import AsyncMongoClient
 
 from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosMongoCollection
-from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 

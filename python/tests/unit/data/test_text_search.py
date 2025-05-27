@@ -8,9 +8,15 @@ import pytest
 from pydantic import BaseModel
 
 from semantic_kernel import Kernel
-from semantic_kernel.data import TextSearch
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.search import KernelSearchResults, SearchOptions, TextSearchResult, create_options
+from semantic_kernel.data.text_search import (
+    DEFAULT_DESCRIPTION,
+    DEFAULT_FUNCTION_NAME,
+    KernelSearchResults,
+    SearchOptions,
+    TextSearch,
+    TextSearchResult,
+    create_options,
+)
 from semantic_kernel.data.vectors import VectorSearchOptions
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata

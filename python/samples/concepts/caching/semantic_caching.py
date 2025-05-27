@@ -10,7 +10,7 @@ from uuid import uuid4
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.in_memory import InMemoryStore
-from semantic_kernel.data import VectorStore, VectorStoreField, VectorStoreRecordCollection, vectorstoremodel
+from semantic_kernel.data.vectors import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
 from semantic_kernel.functions import FunctionResult
 
@@ -41,9 +41,7 @@ class PromptCacheFilter:
         if vector_store.embedding_generator is None:
             raise ValueError("The vector store must have an embedding generator.")
         self.vector_store = vector_store
-        self.collection: VectorStoreRecordCollection[str, CacheRecord] = vector_store.get_collection(
-            record_type=CacheRecord
-        )
+        self.collection: VectorStoreCollection[str, CacheRecord] = vector_store.get_collection(record_type=CacheRecord)
         self.score_threshold = score_threshold
 
     async def on_prompt_render(

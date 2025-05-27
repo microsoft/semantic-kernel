@@ -17,18 +17,21 @@ from pydantic import Field, PrivateAttr, SecretStr
 from pydantic_settings import SettingsConfigDict
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
+    FieldTypes,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     TModel,
     VectorSearch,
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
 )
 from semantic_kernel.exceptions import VectorStoreModelValidationError, VectorStoreOperationException
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorConnectionException
@@ -301,7 +304,7 @@ class PostgresSettings(KernelBaseSettings):
 
 @release_candidate
 class PostgresCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

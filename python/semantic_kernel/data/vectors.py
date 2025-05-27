@@ -2,32 +2,30 @@
 
 import json
 import logging
+import operator
 import sys
 from abc import abstractmethod
 from ast import AST, Lambda, NodeVisitor, expr, parse
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
+from dataclasses import dataclass
 from enum import Enum
-from inspect import getsource
-from typing import Annotated, Any, ClassVar, Generic, Literal, TypeVar, overload
+from inspect import Parameter, _empty, getsource, signature
+from types import MappingProxyType, NoneType
+from typing import Annotated, Any, ClassVar, Final, Generic, Literal, Protocol, TypeVar, overload, runtime_checkable
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
-from pydantic.dataclasses import dataclass
+from pydantic.dataclasses import dataclass as pyd_dataclass
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.definitions import (
-    FieldTypes,
-    SerializeMethodProtocol,
-    VectorStoreCollectionDefinition,
-    VectorStoreField,
-)
-from semantic_kernel.data.search import (
+from semantic_kernel.data._search import (
+    DEFAULT_FUNCTION_NAME,
+    DEFAULT_PARAMETER_METADATA,
+    DEFAULT_RETURN_PARAMETER_METADATA,
     DynamicFilterFunction,
     KernelSearchResults,
     SearchOptions,
-    TextSearch,
     create_options,
     default_dynamic_filter_function,
 )
@@ -62,10 +60,631 @@ logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
-TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 TFilters = TypeVar("TFilters")
 
-# region: Helpers
+DEFAULT_DESCRIPTION: Final[str] = (
+    "Perform a vector search for data in a vector store, using the provided search options."
+)
+
+
+# region: Fields and Collection Definitions
+
+
+@release_candidate
+class FieldTypes(str, Enum):
+    """Enumeration for field types in vector store models."""
+
+    KEY = "key"
+    VECTOR = "vector"
+    DATA = "data"
+
+    def __str__(self) -> str:
+        """Return the string representation of the enum."""
+        return self.value
+
+
+@runtime_checkable
+class SerializeMethodProtocol(Protocol):
+    """Data model serialization protocol.
+
+    This can optionally be implemented to allow single step serialization and deserialization
+    for using your data model with a specific datastore.
+    """
+
+    def serialize(self, **kwargs: Any) -> Any:
+        """Serialize the object to the format required by the data store."""
+        ...  # pragma: no cover
+
+
+@runtime_checkable
+class ToDictFunctionProtocol(Protocol):
+    """Protocol for to_dict function.
+
+    Args:
+        record: The record to be serialized.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        A list of dictionaries.
+    """
+
+    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover
+
+
+@runtime_checkable
+class FromDictFunctionProtocol(Protocol):
+    """Protocol for from_dict function.
+
+    Args:
+        records: A list of dictionaries.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        A record or list thereof.
+    """
+
+    def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...
+
+
+@runtime_checkable
+class SerializeFunctionProtocol(Protocol):
+    """Protocol for serialize function.
+
+    Args:
+        record: The record to be serialized.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        The serialized record, ready to be consumed by the specific store.
+
+    """
+
+    def __call__(self, record: Any, **kwargs: Any) -> Any: ...
+
+
+@runtime_checkable
+class DeserializeFunctionProtocol(Protocol):
+    """Protocol for deserialize function.
+
+    Args:
+        records: The serialized record directly from the store.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        The deserialized record in the format expected by the application.
+
+    """
+
+    def __call__(self, records: Any, **kwargs: Any) -> Any: ...
+
+
+@runtime_checkable
+class ToDictMethodProtocol(Protocol):
+    """Class used internally to check if a model has a to_dict method."""
+
+    def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Serialize the object to the format required by the data store."""
+        ...  # pragma: no cover
+
+
+class IndexKind(str, Enum):
+    """Index kinds for similarity search.
+
+    HNSW
+        Hierarchical Navigable Small World which performs an approximate nearest neighbor (ANN) search.
+        Lower accuracy than exhaustive k nearest neighbor, but faster and more efficient.
+
+    Flat
+        Does a brute force search to find the nearest neighbors.
+        Calculates the distances between all pairs of data points, so has a linear time complexity,
+        that grows directly proportional to the number of points.
+        Also referred to as exhaustive k nearest neighbor in some databases.
+        High recall accuracy, but slower and more expensive than HNSW.
+        Better with smaller datasets.
+
+    IVF Flat
+        Inverted File with Flat Compression.
+        Designed to enhance search efficiency by narrowing the search area
+        through the use of neighbor partitions or clusters.
+        Also referred to as approximate nearest neighbor (ANN) search.
+
+    Disk ANN
+        Disk-based Approximate Nearest Neighbor algorithm designed for efficiently searching
+        for approximate nearest neighbors (ANN) in high-dimensional spaces.
+        The primary focus of DiskANN is to handle large-scale datasets that cannot fit entirely
+        into memory, leveraging disk storage to store the data while maintaining fast search times.
+
+    Quantized Flat
+        Index that compresses vectors using DiskANN-based quantization methods for better efficiency in the kNN search.
+
+    Dynamic
+        Dynamic index allows to automatically switch from FLAT to HNSW indexes.
+
+    Default
+        Default index type.
+        Used when no index type is specified.
+        Will differ per vector store.
+
+    """
+
+    HNSW = "hnsw"
+    FLAT = "flat"
+    IVF_FLAT = "ivf_flat"
+    DISK_ANN = "disk_ann"
+    QUANTIZED_FLAT = "quantized_flat"
+    DYNAMIC = "dynamic"
+    DEFAULT = "default"
+
+
+class DistanceFunction(str, Enum):
+    """Distance functions for similarity search.
+
+    Cosine Similarity
+        the cosine (angular) similarity between two vectors
+        measures only the angle between the two vectors, without taking into account the length of the vectors
+        Cosine Similarity = 1 - Cosine Distance
+        -1 means vectors are opposite
+        0 means vectors are orthogonal
+        1 means vectors are identical
+    Cosine Distance
+        the cosine (angular) distance between two vectors
+        measures only the angle between the two vectors, without taking into account the length of the vectors
+        Cosine Distance = 1 - Cosine Similarity
+        2 means vectors are opposite
+        1 means vectors are orthogonal
+        0 means vectors are identical
+    Dot Product
+        measures both the length and angle between two vectors
+        same as cosine similarity if the vectors are the same length, but more performant
+    Euclidean Distance
+        measures the Euclidean distance between two vectors
+        also known as l2-norm
+    Euclidean Squared Distance
+        measures the Euclidean squared distance between two vectors
+        also known as l2-squared
+    Manhattan
+        measures the Manhattan distance between two vectors
+    Hamming
+        number of differences between vectors at each dimensions
+    DEFAULT
+        default distance function
+        used when no distance function is specified
+        will differ per vector store.
+    """
+
+    COSINE_SIMILARITY = "cosine_similarity"
+    COSINE_DISTANCE = "cosine_distance"
+    DOT_PROD = "dot_prod"
+    EUCLIDEAN_DISTANCE = "euclidean_distance"
+    EUCLIDEAN_SQUARED_DISTANCE = "euclidean_squared_distance"
+    MANHATTAN = "manhattan"
+    HAMMING = "hamming"
+    DEFAULT = "DEFAULT"
+
+
+DISTANCE_FUNCTION_DIRECTION_HELPER: Final[dict[DistanceFunction, Callable[[int | float, int | float], bool]]] = {
+    DistanceFunction.COSINE_SIMILARITY: operator.gt,
+    DistanceFunction.COSINE_DISTANCE: operator.le,
+    DistanceFunction.DOT_PROD: operator.gt,
+    DistanceFunction.EUCLIDEAN_DISTANCE: operator.le,
+    DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE: operator.le,
+    DistanceFunction.MANHATTAN: operator.le,
+    DistanceFunction.HAMMING: operator.le,
+}
+
+
+@release_candidate
+@dataclass
+class VectorStoreField:
+    """Vector store fields."""
+
+    field_type: Literal[FieldTypes.DATA, FieldTypes.KEY, FieldTypes.VECTOR] = FieldTypes.DATA
+    name: str = ""
+    storage_name: str | None = None
+    type_: str | None = None
+    # data specific fields (all optional)
+    is_indexed: bool | None = None
+    is_full_text_indexed: bool | None = None
+    # vector specific fields (dimensions is mandatory)
+    dimensions: int | None = None
+    embedding_generator: EmbeddingGeneratorBase | None = None
+    # defaults for these fields are not set here, because they are not relevant for data and key types
+    index_kind: IndexKind | None = None
+    distance_function: DistanceFunction | None = None
+
+    @overload
+    def __init__(
+        self,
+        field_type: Literal[FieldTypes.KEY, "key"] = FieldTypes.KEY,  # type: ignore[assignment]
+        *,
+        name: str | None = None,
+        type: str | None = None,
+        storage_name: str | None = None,
+    ):
+        """Key field of the record.
+
+        When the key will be auto-generated by the store, make sure it has a default, usually None.
+
+        Args:
+            field_type: always "key".
+            name: The name of the field.
+            storage_name: The name of the field in the store, uses the field name by default.
+            type: The type of the field.
+        """
+        ...
+
+    @overload
+    def __init__(
+        self,
+        field_type: Literal[FieldTypes.DATA, "data"] = FieldTypes.DATA,  # type: ignore[assignment]
+        *,
+        name: str | None = None,
+        type: str | None = None,
+        storage_name: str | None = None,
+        is_indexed: bool | None = None,
+        is_full_text_indexed: bool | None = None,
+    ):
+        """Data field in the record.
+
+        Args:
+            field_type: always "data".
+            name: The name of the field.
+            storage_name: The name of the field in the store, uses the field name by default.
+            type: The type of the field.
+            is_indexed: Whether the field is indexed.
+            is_full_text_indexed: Whether the field is full text indexed.
+        """
+        ...
+
+    @overload
+    def __init__(
+        self,
+        field_type: Literal[FieldTypes.VECTOR, "vector"] = FieldTypes.VECTOR,  # type: ignore[assignment]
+        *,
+        name: str | None = None,
+        type: str | None = None,
+        dimensions: Annotated[int, Field(gt=0)],
+        storage_name: str | None = None,
+        index_kind: IndexKind | None = None,
+        distance_function: DistanceFunction | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
+    ):
+        """Vector field in the record.
+
+        This field should contain the value you want to use for the vector.
+        When passing in the embedding generator, the embedding will be
+        generated locally before upserting.
+        If this is not set, the store should support generating the embedding for you.
+        If you want to retrieve the original content of the vector,
+        make sure to set this field twice,
+        once with the VectorStoreRecordDataField and once with the VectorStoreRecordVectorField.
+
+        If you want to be able to get the vectors back, make sure the type allows this, especially for pydantic models.
+        For instance, if the input is a string, then the type annotation should be `str | list[float] | None`.
+
+        If you want to cast the vector that is returned, you need to set the deserialize_function,
+        for instance: `deserialize_function=np.array`, (with `import numpy as np` at the top of your file).
+        If you want to set it up with more specific options, use a lambda, a custom function or a partial.
+
+        Args:
+            field_type: always "vector".
+            name: The name of the field.
+            storage_name: The name of the field in the store, uses the field name by default.
+            type: Property type.
+                For vectors this should be the inner type of the vector.
+                By default the vector will be a list of numbers.
+                If you want to use a numpy array or some other optimized format,
+                set the cast_function with a function
+                that takes a list of floats and returns a numpy array.
+            dimensions: The number of dimensions of the vector, mandatory.
+            index_kind: The index kind to use, uses a default index kind when None.
+            distance_function: The distance function to use, uses a default distance function when None.
+            embedding_generator: The embedding generator to use.
+                If this is set, the embedding will be generated locally before upserting.
+        """
+        ...
+
+    def __init__(
+        self,
+        field_type=FieldTypes.DATA,
+        *,
+        name=None,
+        type=None,
+        storage_name=None,
+        is_indexed=None,
+        is_full_text_indexed=None,
+        dimensions=None,
+        index_kind=None,
+        distance_function=None,
+        embedding_generator=None,
+    ):
+        """Vector store field."""
+        self.field_type = field_type if isinstance(field_type, FieldTypes) else FieldTypes(field_type)
+        # when a field is created, the name can be empty,
+        # when a field get's added to a definition, the name needs to be there.
+        if name:
+            self.name = name
+        self.storage_name = storage_name
+        self.type_ = type
+        self.is_indexed = is_indexed
+        self.is_full_text_indexed = is_full_text_indexed
+        if field_type == FieldTypes.VECTOR:
+            if dimensions is None:
+                raise ValidationError("Vector fields must specify 'dimensions'")
+            self.dimensions = dimensions
+            self.index_kind = index_kind or IndexKind.DEFAULT
+            self.distance_function = distance_function or DistanceFunction.DEFAULT
+            self.embedding_generator = embedding_generator
+
+
+@release_candidate
+class VectorStoreCollectionDefinition(KernelBaseModel):
+    """Collection definition for vector stores.
+
+    Args:
+        fields: The fields of the record.
+        container_mode: Whether the record is in container mode.
+        to_dict: The to_dict function, should take a record and return a list of dicts.
+        from_dict: The from_dict function, should take a list of dicts and return a record.
+        deserialize: The deserialize function, should take a type specific to a datastore and return a record.
+
+    """
+
+    fields: list[VectorStoreField]
+    key_name: str = Field(default="", init=False)
+    container_mode: bool = False
+    collection_name: str | None = None
+    to_dict: ToDictFunctionProtocol | None = None
+    from_dict: FromDictFunctionProtocol | None = None
+    serialize: SerializeFunctionProtocol | None = None
+    deserialize: DeserializeFunctionProtocol | None = None
+
+    @property
+    def names(self) -> list[str]:
+        """Get the names of the fields."""
+        return [field.name for field in self.fields]
+
+    @property
+    def storage_names(self) -> list[str]:
+        """Get the names of the fields for storage."""
+        return [field.storage_name or field.name for field in self.fields]
+
+    @property
+    def key_field(self) -> VectorStoreField:
+        """Get the key field."""
+        return next((field for field in self.fields if field.name == self.key_name), None)  # type: ignore
+
+    @property
+    def key_field_storage_name(self) -> str:
+        """Get the key field storage name."""
+        return self.key_field.storage_name or self.key_field.name
+
+    @property
+    def vector_fields(self) -> list[VectorStoreField]:
+        """Get the names of the vector fields."""
+        return [field for field in self.fields if field.field_type == FieldTypes.VECTOR]
+
+    @property
+    def data_fields(self) -> list[VectorStoreField]:
+        """Get the names of the data fields."""
+        return [field for field in self.fields if field.field_type == FieldTypes.DATA]
+
+    @property
+    def vector_field_names(self) -> list[str]:
+        """Get the names of the vector fields."""
+        return [field.name for field in self.fields if field.field_type == FieldTypes.VECTOR]
+
+    @property
+    def data_field_names(self) -> list[str]:
+        """Get the names of all the data fields."""
+        return [field.name for field in self.fields if field.field_type == FieldTypes.DATA]
+
+    def try_get_vector_field(self, field_name: str | None = None) -> VectorStoreField | None:
+        """Try to get the vector field.
+
+        If the field_name is None, then the first vector field is returned.
+        If no vector fields are present None is returned.
+
+        Args:
+            field_name: The field name.
+
+        Returns:
+            VectorStoreRecordVectorField | None: The vector field or None.
+        """
+        if field_name is None:
+            if len(self.vector_fields) == 0:
+                return None
+            return self.vector_fields[0]
+        for field in self.fields:
+            if field.name == field_name or field.storage_name == field_name:
+                if field.field_type == FieldTypes.VECTOR:
+                    return field
+                raise VectorStoreModelException(
+                    f"Field {field_name} is not a vector field, it is of type {type(field).__name__}."
+                )
+        raise VectorStoreModelException(f"Field {field_name} not found.")
+
+    def get_storage_names(self, include_vector_fields: bool = True, include_key_field: bool = True) -> list[str]:
+        """Get the names of the fields for the storage.
+
+        Args:
+            include_vector_fields: Whether to include vector fields.
+            include_key_field: Whether to include the key field.
+
+        Returns:
+            list[str]: The names of the fields.
+        """
+        return [
+            field.storage_name or field.name
+            for field in self.fields
+            if field.field_type == FieldTypes.DATA
+            or (field.field_type == FieldTypes.VECTOR and include_vector_fields)
+            or (field.field_type == FieldTypes.KEY and include_key_field)
+        ]
+
+    def get_names(self, include_vector_fields: bool = True, include_key_field: bool = True) -> list[str]:
+        """Get the names of the fields.
+
+        Args:
+            include_vector_fields: Whether to include vector fields.
+            include_key_field: Whether to include the key field.
+
+        Returns:
+            list[str]: The names of the fields.
+        """
+        return [
+            field.name
+            for field in self.fields
+            if field.field_type == FieldTypes.DATA
+            or (field.field_type == FieldTypes.VECTOR and include_vector_fields)
+            or (field.field_type == FieldTypes.KEY and include_key_field)
+        ]
+
+    def model_post_init(self, _: Any):
+        """Validate the fields.
+
+        Raises:
+            VectorStoreModelException: If there is a field with an embedding property name
+                but no corresponding vector field.
+            VectorStoreModelException: If there is no key field.
+        """
+        if len(self.fields) == 0:
+            raise VectorStoreModelException(
+                "There must be at least one field with a VectorStoreRecordField annotation."
+            )
+        for field in self.fields:
+            if not field.name or field.name == "":
+                raise VectorStoreModelException("Field names must not be empty.")
+            if field.field_type == FieldTypes.KEY:
+                if self.key_name != "":
+                    raise VectorStoreModelException("Memory record definition must have exactly one key field.")
+                self.key_name = field.name
+        if not self.key_name:
+            raise VectorStoreModelException("Memory record definition must have exactly one key field.")
+
+
+# region: Decorator
+
+
+def _parse_vector_store_record_field_instance(record_field: VectorStoreField, field: Parameter) -> VectorStoreField:
+    if not record_field.name or record_field.name != field.name:
+        record_field.name = field.name
+    if not record_field.type_ and hasattr(field.annotation, "__origin__"):
+        property_type = field.annotation.__origin__
+        if record_field.field_type == FieldTypes.VECTOR:
+            if args := getattr(property_type, "__args__", None):
+                if NoneType in args and len(args) > 1:
+                    for arg in args:
+                        if arg is NoneType:
+                            continue
+
+                        if (
+                            (inner_args := getattr(arg, "__args__", None))
+                            and len(inner_args) == 1
+                            and inner_args[0] is not NoneType
+                        ):
+                            property_type = inner_args[0]
+                            break
+                        property_type = arg
+                        break
+                else:
+                    property_type = args[0]
+
+        else:
+            if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
+                property_type = args[0]
+
+        record_field.type_ = str(property_type) if hasattr(property_type, "__args__") else property_type.__name__
+
+    return record_field
+
+
+def _parse_parameter_to_field(field: Parameter) -> VectorStoreField | None:
+    # first check if there are any annotations
+    if field.annotation is not _empty and hasattr(field.annotation, "__metadata__"):
+        for field_annotation in field.annotation.__metadata__:
+            if isinstance(field_annotation, VectorStoreField):
+                return _parse_vector_store_record_field_instance(field_annotation, field)
+    # This means there are no annotations or that all annotations are of other types.
+    # we will check if there is a default, otherwise this will cause a runtime error.
+    # because it will not be stored, and retrieving this object will fail without a default for this field.
+    if field.default is _empty:
+        raise VectorStoreModelException(
+            "Fields that do not have a VectorStoreField annotation must have a default value."
+        )
+    logger.debug(f'Field "{field.name}" does not have a VectorStoreField annotation, will not be part of the record.')
+    return None
+
+
+def _parse_signature_to_definition(
+    parameters: MappingProxyType[str, Parameter], collection_name: str | None = None
+) -> VectorStoreCollectionDefinition:
+    if len(parameters) == 0:
+        raise VectorStoreModelException(
+            "There must be at least one field in the datamodel. If you are using this with a @dataclass, "
+            "you might have inverted the order of the decorators, the vectorstoremodel decorator should be the top one."
+        )
+    fields = []
+    for param in parameters.values():
+        field = _parse_parameter_to_field(param)
+        if field:
+            fields.append(field)
+
+    return VectorStoreCollectionDefinition(
+        fields=fields,
+        collection_name=collection_name,
+    )
+
+
+@release_candidate
+def vectorstoremodel(
+    cls: type[TModel] | None = None,
+    collection_name: str | None = None,
+) -> type[TModel]:
+    """Returns the class as a vector store model.
+
+    This decorator makes a class a vector store model.
+    There are three things being checked:
+    - The class must have at least one field with a annotation,
+        of type VectorStoreField.
+    - The class must have exactly one field with the field_type `key`.
+    - When creating a Vector Field, either supply the property type directly,
+    or make sure to set the property that you want the index to use first.
+
+
+    Args:
+        cls: The class to be decorated.
+        collection_name: The name of the collection to be used.
+            This is used to set the collection name in the VectorStoreCollectionDefinition.
+
+    Raises:
+        VectorStoreModelException: If there are no fields with a VectorStoreField annotation.
+        VectorStoreModelException: If there are fields with no name.
+        VectorStoreModelException: If there is no key field.
+    """
+
+    def wrap(cls: type[TModel]) -> type[TModel]:
+        # get fields and annotations
+        cls_sig = signature(cls)
+        setattr(cls, "__kernel_vectorstoremodel__", True)
+        setattr(
+            cls,
+            "__kernel_vectorstoremodel_definition__",
+            _parse_signature_to_definition(cls_sig.parameters, collection_name),
+        )
+
+        return cls  # type: ignore
+
+    # See if we're being called as @vectorstoremodel or @vectorstoremodel().
+    if cls is None:
+        # We're called with parens.
+        return wrap  # type: ignore
+
+    # We're called as @vectorstoremodel without parens.
+    return wrap(cls)
+
+
+# region: VectorSearch Helpers
 
 
 def _get_collection_name_from_model(
@@ -80,21 +699,19 @@ def _get_collection_name_from_model(
     return None
 
 
-@dataclass
-class OrderBy:
-    """Order by class."""
-
-    field: str
-    ascending: bool = Field(default=True)
-
-
-@dataclass
+@pyd_dataclass
 class GetFilteredRecordOptions:
-    """Options for filtering records."""
+    """Options for filtering records.
+
+    Args:
+        top: The maximum number of records to return.
+        skip: The number of records to skip.
+        order_by: A dictionary with fields names and a bool, True means ascending, False means descending.
+    """
 
     top: int = 10
     skip: int = 0
-    order_by: OptionalOneOrMany[OrderBy] = None
+    order_by: Mapping[str, bool] | None = None
 
 
 class LambdaVisitor(NodeVisitor, Generic[TFilters]):
@@ -513,7 +1130,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
 
 @release_candidate
-class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]):
+class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 
     collection_name: str = ""
@@ -734,7 +1351,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
         self,
         top: int = ...,
         skip: int = ...,
-        order_by: OptionalOneOrMany[OrderBy | dict[str, Any] | list[dict[str, Any]]] = None,
+        order_by: OneOrMany[str] | dict[str, bool] | None = None,
         include_vectors: bool = False,
         **kwargs: Any,
     ) -> Sequence[TModel] | None:
@@ -749,10 +1366,11 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
                 Only used if keys are not provided.
             skip: The number of records to skip.
                 Only used if keys are not provided.
-            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
-                (default is True, which means ascending).
-                Only used if keys are not provided.
-                example: {"field": "hotel_id", "ascending": True}
+            order_by: The order by clause,
+                this can be a string, a list of strings or a dict,
+                when passing strings, they are assumed to be ascending.
+                Otherwise, use the value in the dict to set ascending (True) or descending (False).
+                example: {"field_name": True} or ["field_name", {"field_name2": False}].
             **kwargs: Additional arguments.
 
         Returns:
@@ -858,8 +1476,32 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
                 keys = key
         if not keys:
             if kwargs:
+                get_args = {}
+                kw_order_by: OneOrList[str] | dict[str, bool] | None = kwargs.pop("order_by", None)  # type: ignore
+                if "top" in kwargs:
+                    get_args["top"] = kwargs.pop("top", None)
+                if "skip" in kwargs:
+                    get_args["skip"] = kwargs.pop("skip", None)
+                order_by: dict[str, bool] | None = None
+                if kw_order_by is not None:
+                    order_by = {}
+                    if isinstance(kw_order_by, str):
+                        order_by[kw_order_by] = True
+                    elif isinstance(kw_order_by, dict):
+                        order_by = kw_order_by
+                    elif isinstance(kw_order_by, list):
+                        for item in kw_order_by:
+                            if isinstance(item, str):
+                                order_by[item] = True
+                            else:
+                                order_by.update(item)
+                    else:
+                        raise VectorStoreOperationException(
+                            f"Invalid order_by type: {type(order_by)}, expected str, dict or list."
+                        )
+                    get_args["order_by"] = order_by
                 try:
-                    options = GetFilteredRecordOptions(**kwargs)
+                    options = GetFilteredRecordOptions(**get_args)
                 except Exception as exc:
                     raise VectorStoreOperationException(f"Error creating options: {exc}") from exc
             else:
@@ -933,7 +1575,7 @@ class VectorStore(KernelBaseModel):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> "VectorStoreCollection":
         """Get a vector store record collection instance tied to this store.
 
         Args:
@@ -1510,6 +2152,252 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         return KernelFunctionFromMethod(
             method=search_wrapper,
-            parameters=TextSearch._default_parameter_metadata() if parameters is None else parameters,
-            return_parameter=return_parameter or TextSearch._default_return_parameter_metadata(),
+            parameters=DEFAULT_PARAMETER_METADATA if parameters is None else parameters,
+            return_parameter=return_parameter or DEFAULT_RETURN_PARAMETER_METADATA,
         )
+
+
+@runtime_checkable
+class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
+    collection_name: str
+    record_type: object
+    definition: VectorStoreCollectionDefinition
+    supported_key_types: ClassVar[set[str]]
+    supported_vector_types: ClassVar[set[str]]
+    embedding_generator: EmbeddingGeneratorBase | None = None
+
+    async def ensure_collection_exists(self, **kwargs: Any) -> bool:
+        """Create the collection in the service if it does not exists.
+
+        First uses does_collection_exist to check if it exists, if it does returns False.
+        Otherwise, creates the collection and returns True.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        Returns:
+            bool: True if the collection was created, False if it already exists.
+        """
+        ...
+
+    async def create_collection(self, **kwargs: Any) -> None:
+        """Create the collection in the service.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+        """
+        ...
+
+    async def does_collection_exist(self, **kwargs: Any) -> bool:
+        """Check if the collection exists.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        Returns:
+            bool: True if the collection exists, False otherwise.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+        """
+        ...
+
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
+        """Delete the collection.
+
+        Args:
+            **kwargs: Additional arguments.
+        """
+        ...
+
+    async def get(
+        self,
+        key: Any = None,
+        keys: Sequence[Any] | None = None,
+        include_vectors: bool = False,
+        top: int | None = None,
+        skip: int | None = None,
+        order_by: OneOrMany[str] | dict[str, bool] | None = None,
+        **kwargs: Any,
+    ) -> OptionalOneOrList[Any]:
+        """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
+
+        Args:
+            key: The key to get.
+            keys: The keys to get, if keys are provided, key is ignored.
+            include_vectors: Include the vectors in the response. Default is False.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            top: The number of records to return.
+                Only used if keys are not provided.
+            skip: The number of records to skip.
+                Only used if keys are not provided.
+            order_by: The order by clause,
+                this can be a string, a list of strings or a dict,
+                when passing strings, they are assumed to be ascending.
+                Otherwise, use the value in the dict to set ascending (True) or descending (False).
+                example: {"field_name": True} or ["field_name", {"field_name2": False}].
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
+
+    async def upsert(
+        self,
+        records: OneOrMany[Any],
+        **kwargs: Any,
+    ) -> OneOrMany[Any]:
+        """Upsert one or more records.
+
+        If the key of the record already exists, the existing record will be updated.
+        If the key does not exist, a new record will be created.
+
+        Args:
+            records: The records to upsert, can be a single record, a list of records, or a single container.
+                If a single record is passed, a single key is returned, instead of a list of keys.
+            **kwargs: Additional arguments.
+
+        Returns:
+            OneOrMany[Any]: The keys of the upserted records.
+
+        Raises:
+            VectorStoreModelSerializationException: If an error occurs during serialization.
+            VectorStoreOperationException: If an error occurs during upserting.
+        """
+        ...
+
+    async def delete(self, keys: OneOrMany[Any], **kwargs: Any) -> None:
+        """Delete one or more records by key.
+
+        An exception will be raised at the end if any record does not exist.
+
+        Args:
+            keys: The key or keys to be deleted.
+            **kwargs: Additional arguments.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during deletion or a record does not exist.
+        """
+        ...
+
+
+@runtime_checkable
+class VectorSearchProtocol(VectorStoreCollectionProtocol, Protocol):
+    """Protocol to check that a collection supports vector search."""
+
+    supported_search_types: ClassVar[set[SearchType]]
+
+    async def search(
+        self,
+        values: Any = None,
+        *,
+        vector: Sequence[float | int] | None = None,
+        vector_property_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult]:
+        """Search the vector store for records that match the given value and filter.
+
+        Args:
+            values: The values to search for. These will be vectorized,
+                either by the store or using the provided generator.
+            vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector property to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Returns:
+            The search results.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+        """
+        ...
+
+    async def hybrid_search(
+        self,
+        values: Any,
+        *,
+        vector: list[float | int] | None = None,
+        vector_property_name: str | None = None,
+        additional_property_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult]:
+        """Search the vector store for records that match the given values and filter using hybrid search.
+
+        Args:
+            values: The values to search for.
+            vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector field to use for the search.
+            additional_property_name: The name of the additional property field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Returns:
+            The search results.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+        """
+        ...
+
+
+__all__ = [
+    "DEFAULT_DESCRIPTION",
+    "DEFAULT_FUNCTION_NAME",
+    "DEFAULT_PARAMETER_METADATA",
+    "DEFAULT_RETURN_PARAMETER_METADATA",
+    "DISTANCE_FUNCTION_DIRECTION_HELPER",
+    "DistanceFunction",
+    "DynamicFilterFunction",
+    "FieldTypes",
+    "IndexKind",
+    "KernelSearchResults",
+    "SearchType",
+    "VectorSearch",
+    "VectorSearchProtocol",
+    "VectorSearchResult",
+    "VectorStore",
+    "VectorStoreCollection",
+    "VectorStoreCollectionDefinition",
+    "VectorStoreCollectionProtocol",
+    "VectorStoreField",
+    "create_options",
+    "default_dynamic_filter_function",
+    "vectorstoremodel",
+]

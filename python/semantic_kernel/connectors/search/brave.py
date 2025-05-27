@@ -11,13 +11,8 @@ from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
 from semantic_kernel.connectors.search.utils import SearchLambdaVisitor
-from semantic_kernel.data.search import (
-    KernelSearchResults,
-    SearchOptions,
-    TextSearch,
-    TextSearchResult,
-    TSearchResult,
-)
+from semantic_kernel.data._search import KernelSearchResults, SearchOptions
+from semantic_kernel.data.text_search import TextSearch, TextSearchResult, TSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.kernel_types import OptionalOneOrList

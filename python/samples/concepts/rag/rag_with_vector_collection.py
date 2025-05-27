@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory import InMemoryCollection
-from semantic_kernel.data import VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vectors import VectorStoreField, vectorstoremodel
 from semantic_kernel.functions import KernelArguments
 
 """

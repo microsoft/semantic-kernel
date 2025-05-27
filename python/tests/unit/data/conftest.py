@@ -10,23 +10,26 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from pytest import fixture
 
-from semantic_kernel.data import (
+from semantic_kernel.data.vectors import (
     KernelSearchResults,
+    SearchType,
+    VectorSearch,
+    VectorSearchResult,
+    VectorStoreCollection,
     VectorStoreCollectionDefinition,
-    VectorStoreRecordCollection,
+    VectorStoreField,
     vectorstoremodel,
 )
-from semantic_kernel.data.definitions import VectorStoreField
-from semantic_kernel.data.vectors import VectorSearch, VectorSearchResult
 from semantic_kernel.kernel_types import OptionalOneOrMany
 
 
 @fixture
 def DictVectorStoreRecordCollection() -> type[VectorSearch]:
     class DictVectorStoreRecordCollection(
-        VectorStoreRecordCollection[str, Any],
+        VectorStoreCollection[str, Any],
         VectorSearch[str, Any],
     ):
+        supported_search_types = {SearchType.VECTOR}
         inner_storage: dict[str, Any] = Field(default_factory=dict)
 
         async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:

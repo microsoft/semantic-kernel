@@ -11,7 +11,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosNoSqlStore
 from semantic_kernel.contents import ChatHistory, ChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.data import VectorStore, VectorStoreField, VectorStoreRecordCollection, vectorstoremodel
+from semantic_kernel.data.vectors import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -49,7 +49,7 @@ class ChatHistoryInCosmosDB(ChatHistory):
     session_id: str
     user_id: str
     store: VectorStore
-    collection: VectorStoreRecordCollection[str, ChatHistoryModel] | None = None
+    collection: VectorStoreCollection[str, ChatHistoryModel] | None = None
 
     async def create_collection(self, collection_name: str) -> None:
         """Create a collection with the inbuild data model using the vector store.

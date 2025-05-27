@@ -24,18 +24,21 @@ from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
 from redisvl.schema import StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.definitions import FieldTypes, VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
+    FieldTypes,
     GetFilteredRecordOptions,
+    IndexKind,
     SearchType,
     TModel,
     VectorSearch,
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
 )
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
@@ -179,7 +182,7 @@ class RedisSettings(KernelBaseSettings):
 
 @release_candidate
 class RedisCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):

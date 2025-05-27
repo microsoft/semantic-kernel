@@ -13,10 +13,9 @@ from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
 from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data._search import KernelSearchResults
 from semantic_kernel.data.vectors import (
+    DistanceFunction,
     GetFilteredRecordOptions,
     SearchType,
     TModel,
@@ -24,7 +23,9 @@ from semantic_kernel.data.vectors import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorStore,
-    VectorStoreRecordCollection,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
     _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions.vector_store_exceptions import (
@@ -73,7 +74,7 @@ class PineconeSettings(KernelBaseSettings):
 
 @release_candidate
 class PineconeCollection(
-    VectorStoreRecordCollection[TKey, TModel],
+    VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
