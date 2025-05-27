@@ -216,7 +216,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
         # Add Prompt caching for SYSTEM messages
         if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
-            messages.append({"cachePoint": {"type": "default"}})
+            if messages:
+                messages.append({"cachePoint": {"type": "default"}})
 
         return messages
 
