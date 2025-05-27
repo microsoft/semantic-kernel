@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Text.Json;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -11,92 +11,117 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
 {
-    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
-    {
-        Dictionary<string, object?> map = new(StringComparer.Ordinal);
-
-        map[model.KeyProperty.StorageName] = model.KeyProperty.GetValueAsObject(dataModel!);
-
-        foreach (var property in model.DataProperties)
-        {
-            map[property.StorageName] = property.GetValueAsObject(dataModel!);
-        }
-
-        for (var i = 0; i < model.VectorProperties.Count; i++)
-        {
-            var property = model.VectorProperties[i];
-
-            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> ge
-                ? ge[recordIndex]
-                : property.GetValueAsObject(dataModel!)!;
-
-            map[property.StorageName] = vector switch
-            {
-                ReadOnlyMemory<float> m => m,
-                Embedding<float> e => e.Vector,
-                float[] a => a,
-
-                _ => throw new UnreachableException()
-            };
-        }
-
-        return map;
-    }
-
-    public TRecord MapFromStorageToDataModel(IDictionary<string, object?> storageModel, bool includeVectors)
+    public TRecord MapFromStorageToDataModel(SqlDataReader reader, bool includeVectors)
     {
         var record = model.CreateRecord<TRecord>()!;
 
-        SetValue(storageModel, record, model.KeyProperty, storageModel[model.KeyProperty.StorageName]);
+        PopulateValue(reader, model.KeyProperty, record);
 
         foreach (var property in model.DataProperties)
         {
-            SetValue(storageModel, record, property, storageModel[property.StorageName]);
+            PopulateValue(reader, property, record);
         }
 
         if (includeVectors)
         {
             foreach (var property in model.VectorProperties)
             {
-                var value = storageModel[property.StorageName];
-
-                if (value is not null)
+                try
                 {
-                    if (value is ReadOnlyMemory<float> floats)
+                    var ordinal = reader.GetOrdinal(property.StorageName);
+
+                    if (!reader.IsDBNull(ordinal))
                     {
+                        // TODO: For now, SQL Server provides access to vectors as JSON arrays, but the plan is to switch
+                        // to an efficient binary format in the future.
+                        var vectorArray = JsonSerializer.Deserialize<float[]>(reader.GetString(ordinal), SqlServerJsonSerializerContext.Default.SingleArray);
+
                         property.SetValueAsObject(record, property.Type switch
                         {
-                            var t when t == typeof(ReadOnlyMemory<float>) => value,
-                            var t when t == typeof(Embedding<float>) => new Embedding<float>(floats),
-                            var t when t == typeof(float[])
-                                => MemoryMarshal.TryGetArray(floats, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-                                    ? segment.Array
-                                    : floats.ToArray(),
+                            var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorArray),
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vectorArray),
+                            var t when t == typeof(float[]) => vectorArray,
 
                             _ => throw new UnreachableException()
                         });
                     }
-                    else
-                    {
-                        // When deserializing a string to a ReadOnlyMemory<float> fails in SqlDataReaderDictionary,
-                        // we store the raw value so the user can handle the error in a custom mapper.
-                        throw new InvalidOperationException($"Failed to deserialize vector property '{property.ModelName}', it contained value '{value}'.");
-                    }
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize vector property '{property.ModelName}'.", e);
                 }
             }
         }
 
         return record;
 
-        static void SetValue(IDictionary<string, object?> storageModel, object record, PropertyModel property, object? value)
+        static void PopulateValue(SqlDataReader reader, PropertyModel property, object record)
         {
             try
             {
-                property.SetValueAsObject(record, value);
+                var ordinal = reader.GetOrdinal(property.StorageName);
+
+                if (reader.IsDBNull(ordinal))
+                {
+                    property.SetValueAsObject(record, null);
+                    return;
+                }
+
+                switch (property.Type)
+                {
+                    case var t when t == typeof(byte):
+                        property.SetValue(record, reader.GetByte(ordinal)); // TINYINT
+                        break;
+                    case var t when t == typeof(short):
+                        property.SetValue(record, reader.GetInt16(ordinal)); // SMALLINT
+                        break;
+                    case var t when t == typeof(int):
+                        property.SetValue(record, reader.GetInt32(ordinal)); // INT
+                        break;
+                    case var t when t == typeof(long):
+                        property.SetValue(record, reader.GetInt64(ordinal)); // BIGINT
+                        break;
+
+                    case var t when t == typeof(float):
+                        property.SetValue(record, reader.GetFloat(ordinal)); // REAL
+                        break;
+                    case var t when t == typeof(double):
+                        property.SetValue(record, reader.GetDouble(ordinal)); // FLOAT
+                        break;
+                    case var t when t == typeof(decimal):
+                        property.SetValue(record, reader.GetDecimal(ordinal)); // DECIMAL
+                        break;
+
+                    case var t when t == typeof(string):
+                        property.SetValue(record, reader.GetString(ordinal)); // NVARCHAR
+                        break;
+                    case var t when t == typeof(Guid):
+                        property.SetValue(record, reader.GetGuid(ordinal)); // UNIQUEIDENTIFIER
+                        break;
+                    case var t when t == typeof(byte[]):
+                        property.SetValueAsObject(record, reader.GetValue(ordinal)); // VARBINARY
+                        break;
+                    case var t when t == typeof(bool):
+                        property.SetValue(record, reader.GetBoolean(ordinal)); // BIT
+                        break;
+
+                    case var t when t == typeof(DateTime):
+                        property.SetValue(record, reader.GetDateTime(ordinal)); // DATETIME2
+                        break;
+
+#if NET
+                    case var t when t == typeof(TimeOnly):
+                        property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
+                        break;
+#endif
+
+                    default:
+                        throw new NotSupportedException($"Unsupported type '{property.Type.Name}' for property '{property.ModelName}'.");
+                }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to set value '{value}' on property '{property.ModelName}' of type '{property.Type.Name}'.", ex);
+                throw new InvalidOperationException($"Failed to read property '{property.ModelName}' of type '{property.Type.Name}'.", ex);
             }
         }
     }

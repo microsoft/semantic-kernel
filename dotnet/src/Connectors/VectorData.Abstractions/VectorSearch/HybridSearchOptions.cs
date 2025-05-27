@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Options for hybrid search when using a dense vector and string keywords to do the search.
+/// Defines options for hybrid search when using a dense vector and string keywords to do the search.
 /// </summary>
 public class HybridSearchOptions<TRecord>
 {
@@ -29,24 +29,26 @@ public class HybridSearchOptions<TRecord>
     /// Gets or sets the target dense vector property to search on.
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
-    /// <value>
-    /// If not provided will check if there is a vector property to use by default, and
-    /// will throw if either none or multiple exist.
-    /// </value>
+    /// <remarks>
+    /// If this property isn't set, <see cref="IKeywordHybridSearchable{TRecord}.HybridSearchAsync{TInput}(TInput, System.Collections.Generic.ICollection{string}, int, Microsoft.Extensions.VectorData.HybridSearchOptions{TRecord}?, System.Threading.CancellationToken)"/> checks if there is a vector property to use by default, and
+    /// throws if either none or multiple exist.
+    /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 
     /// <summary>
-    /// Gets or sets the additional target property to do the text/keyword search on.
+    /// Gets or sets the additional target property to do the text or keyword search on.
     /// The property must have full text indexing enabled.
-    /// If not provided will look if there is a text property with full text indexing enabled, and
-    /// will throw if either none or multiple exist.
     /// </summary>
+    /// <remarks>
+    /// If this property isn't set, <see cref="IKeywordHybridSearchable{TRecord}.HybridSearchAsync{TInput}(TInput, System.Collections.Generic.ICollection{string}, int, Microsoft.Extensions.VectorData.HybridSearchOptions{TRecord}?, System.Threading.CancellationToken)"/> checks if there is a text property with full text indexing enabled, and
+    /// throws an exception if either none or multiple exist.
+    /// </remarks>
     public Expression<Func<TRecord, object?>>? AdditionalProperty { get; set; }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The value is less than 0.</exception>
     public int Skip
     {
         get => this._skip;

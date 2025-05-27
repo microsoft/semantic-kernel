@@ -3,6 +3,7 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import AuthorRole, FunctionCallContent, FunctionResultContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
@@ -54,11 +55,11 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Define the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="Host",
         instructions="Answer questions about the menu.",
     )

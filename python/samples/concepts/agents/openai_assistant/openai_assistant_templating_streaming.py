@@ -3,6 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.const import TEMPLATE_FORMAT_TYPES
@@ -30,14 +31,14 @@ async def invoke_agent_with_template(
     template_str: str, template_format: TEMPLATE_FORMAT_TYPES, default_style: str = "haiku"
 ):
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Configure the prompt template
     prompt_template_config = PromptTemplateConfig(template=template_str, template_format=template_format)
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="MyPoetAgent",
     )
 

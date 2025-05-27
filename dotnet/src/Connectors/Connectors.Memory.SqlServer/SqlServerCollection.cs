@@ -259,20 +259,18 @@ public class SqlServerCollection<TKey, TRecord>
             key,
             includeVectors);
 
-        using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+        return await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,
             operationName: "Get",
             async () =>
             {
-                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-                return reader;
+                return reader.HasRows
+                    ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
+                    : null;
             },
             cancellationToken).ConfigureAwait(false);
-
-        return reader.HasRows
-            ? this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, this._model.VectorProperties), includeVectors)
-            : default;
     }
 
     /// <inheritdoc/>
@@ -320,12 +318,22 @@ public class SqlServerCollection<TKey, TRecord>
                 () => command.ExecuteReaderAsync(cancellationToken),
                 cancellationToken).ConfigureAwait(false);
 
-            while (await reader.ReadWithErrorHandlingAsync(
-                this._collectionMetadata,
-                "GetBatch",
-                cancellationToken).ConfigureAwait(false))
+            while (true)
             {
-                yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, this._model.VectorProperties), includeVectors);
+                TRecord? record = await VectorStoreErrorHandler.RunOperationAsync<TRecord?, SqlException>(
+                    this._collectionMetadata,
+                    "GetBatch",
+                    async () => await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+                        ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
+                        : null)
+                        .ConfigureAwait(false);
+
+                if (record is null)
+                {
+                    break;
+                }
+
+                yield return record;
             }
         } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
     }
@@ -335,7 +343,7 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(record);
 
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -354,8 +362,8 @@ public class SqlServerCollection<TKey, TRecord>
             // and generate embeddings for them in a single batch. That's some more complexity though.
             if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
             {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
+                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+                generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
             }
             else
             {
@@ -370,7 +378,8 @@ public class SqlServerCollection<TKey, TRecord>
             this._schema,
             this.Name,
             this._model,
-            this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
+            record,
+            generatedEmbeddings);
 
         await connection.ExecuteWithErrorHandlingAsync(
            this._collectionMetadata,
@@ -393,7 +402,7 @@ public class SqlServerCollection<TKey, TRecord>
         IReadOnlyList<TRecord>? recordsList = null;
 
         // If an embedding generator is defined, invoke it once per property for all records.
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -426,8 +435,8 @@ public class SqlServerCollection<TKey, TRecord>
             // and generate embeddings for them in a single batch. That's some more complexity though.
             if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
+                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+                generatedEmbeddings[vectorProperty] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
             else
             {
@@ -459,9 +468,9 @@ public class SqlServerCollection<TKey, TRecord>
                         this._schema,
                         this.Name,
                         this._model,
-                        records.Skip(taken)
-                               .Take(SqlServerConstants.MaxParameterCount / parametersPerRecord)
-                               .Select((r, i) => this._mapper.MapFromDataToStorageModel(r, taken + i, generatedEmbeddings))))
+                        records.Skip(taken).Take(SqlServerConstants.MaxParameterCount / parametersPerRecord),
+                        firstRecordIndex: taken,
+                        generatedEmbeddings))
                     {
                         break; // records is empty
                     }
@@ -613,7 +622,7 @@ public class SqlServerCollection<TKey, TRecord>
                 }
 
                 yield return new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), includeVectors),
+                    this._mapper.MapFromStorageToDataModel(reader, includeVectors),
                     reader.GetDouble(scoreIndex));
             }
         }
@@ -655,7 +664,7 @@ public class SqlServerCollection<TKey, TRecord>
                 operationName: "GetAsync",
                 cancellationToken).ConfigureAwait(false))
         {
-            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), options.IncludeVectors);
+            yield return this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
         }
     }
 }

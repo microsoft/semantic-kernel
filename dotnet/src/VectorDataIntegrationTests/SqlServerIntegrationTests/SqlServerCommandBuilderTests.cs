@@ -153,14 +153,16 @@ public class SqlServerCommandBuilderTests
             ]);
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, "schema", "table", model,
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
+            connection, "schema", "table", model,
             new Dictionary<string, object?>
             {
                 { "id", null },
                 { "simpleString", "nameValue" },
                 { "simpleInt", 134 },
-                { "embedding", "{ 10.0 }" }
-            });
+                { "embedding", new ReadOnlyMemory<float>([10.0f]) }
+            },
+            generatedEmbeddings: null);
 
         string expectedCommand =
         """"
@@ -183,7 +185,7 @@ public class SqlServerCommandBuilderTests
         Assert.Equal("@simpleInt_2", command.Parameters[2].ParameterName);
         Assert.Equal(134, command.Parameters[2].Value);
         Assert.Equal("@embedding_3", command.Parameters[3].ParameterName);
-        Assert.Equal("{ 10.0 }", command.Parameters[3].Value);
+        Assert.Equal("[10]", command.Parameters[3].Value);
     }
 
     [Fact]
@@ -204,21 +206,21 @@ public class SqlServerCommandBuilderTests
                 { "id", 0L },
                 { "simpleString", "nameValue0" },
                 { "simpleInt", 134 },
-                { "embedding", "{ 10.0 }" }
+                { "embedding", new ReadOnlyMemory<float>([10.0f]) }
             },
             new Dictionary<string, object?>
             {
                 { "id", 1L },
                 { "simpleString", "nameValue1" },
                 { "simpleInt", 135 },
-                { "embedding", "{ 11.0 }" }
+                { "embedding", new ReadOnlyMemory<float>([11.0f]) }
             }
         ];
 
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = connection.CreateCommand();
 
-        Assert.True(SqlServerCommandBuilder.MergeIntoMany(command, "schema", "table", model, records));
+        Assert.True(SqlServerCommandBuilder.MergeIntoMany(command, "schema", "table", model, records, firstRecordIndex: 0, generatedEmbeddings: null));
 
         string expectedCommand =
         """"
@@ -248,7 +250,7 @@ public class SqlServerCommandBuilderTests
             Assert.Equal($"@simpleInt_{4 * i + 2}", command.Parameters[4 * i + 2].ParameterName);
             Assert.Equal(134 + i, command.Parameters[4 * i + 2].Value);
             Assert.Equal($"@embedding_{4 * i + 3}", command.Parameters[4 * i + 3].ParameterName);
-            Assert.Equal($"{{ 1{i}.0 }}", command.Parameters[4 * i + 3].Value);
+            Assert.Equal($"[1{i}]", command.Parameters[4 * i + 3].Value);
         }
     }
 

@@ -138,12 +138,21 @@ def _azure_function(spec: ToolSpec) -> ToolDefinition:
 
 @_register_tool("bing_grounding")
 def _bing_grounding(spec: ToolSpec) -> BingGroundingTool:
+    opts = spec.options or {}
+
     connections = spec.options.get("tool_connections")
     if not connections or not isinstance(connections, list) or not connections[0]:
         raise AgentInitializationException(f"Missing or malformed 'tool_connections' in: {spec}")
-
     conn_id = connections[0]
-    return BingGroundingTool(connection_id=conn_id)
+
+    market = opts.get("market", "")
+    set_lang = opts.get("set_lang", "")
+    count = opts.get("count", 5)
+    if not isinstance(count, int):
+        raise AgentInitializationException(f"'count' must be an integer in: {spec}")
+    freshness = opts.get("freshness", "")
+
+    return BingGroundingTool(connection_id=conn_id, market=market, set_lang=set_lang, count=count, freshness=freshness)
 
 
 @_register_tool("code_interpreter")
@@ -487,6 +496,11 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         if "settings" in kwargs:
             kwargs.pop("settings")
 
+        args = data.pop("arguments", None)
+        arguments = None
+        if args:
+            arguments = KernelArguments(**args)
+
         if spec.id:
             existing_definition = await client.agents.get_agent(spec.id)
 
@@ -510,6 +524,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 client=client,
                 kernel=kernel,
                 prompt_template_config=prompt_template_config,
+                arguments=arguments,
                 **kwargs,
             )
 
@@ -539,6 +554,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             definition=agent_definition,
             client=client,
             kernel=kernel,
+            arguments=arguments,
             prompt_template_config=prompt_template_config,
             **kwargs,
         )
@@ -606,8 +622,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
@@ -710,8 +726,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -815,8 +831,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,

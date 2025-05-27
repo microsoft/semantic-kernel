@@ -16,7 +16,7 @@ public sealed class VectorStoreDataProperty : VectorStoreProperty
     /// Initializes a new instance of the <see cref="VectorStoreDataProperty"/> class.
     /// </summary>
     /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
-    /// <param name="type">The type of the property. Required when using a record type of <c>Dictionary&lt;string, object?&gt;</c> (dynamic mapping), but can omitted when mapping any other .NET type.</param>
+    /// <param name="type">The type of the property. Required when using a record type of <c>Dictionary&lt;string, object?&gt;</c> (dynamic mapping), but can be omitted when mapping any other .NET type.</param>
     public VectorStoreDataProperty(string name, Type? type = null)
         : base(name, type)
     {

@@ -4,6 +4,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -21,7 +22,7 @@ USER_INPUTS = {
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # 2. Read and upload the file to the Azure OpenAI assistant service
     pdf_file_path = os.path.join(
@@ -41,7 +42,7 @@ async def main():
 
     # 4. Create the assistant on the Azure OpenAI service with the file search tool
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         instructions="Find answers to the user's questions in the provided file.",
         name="FileSearch",
         tools=file_search_tool,
