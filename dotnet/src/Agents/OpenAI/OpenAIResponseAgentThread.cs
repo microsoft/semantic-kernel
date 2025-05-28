@@ -65,11 +65,11 @@ public sealed class OpenAIResponseAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected override Task DeleteInternalAsync(CancellationToken cancellationToken = default)
+    protected async override Task DeleteInternalAsync(CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (this.ResponseId is null)
@@ -77,9 +77,16 @@ public sealed class OpenAIResponseAgentThread : AgentThread
             throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
         }
 
-        this._isDeleted = true;
+        try
+        {
+            await this._client.DeleteResponseAsync(this.ResponseId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new AgentThreadOperationException("The thread could not be deleted due to an error response from the service.", ex);
+        }
 
-        return Task.CompletedTask;
+        this._isDeleted = true;
     }
 
     /// <inheritdoc/>
