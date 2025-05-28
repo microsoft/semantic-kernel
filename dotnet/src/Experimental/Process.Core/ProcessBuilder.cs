@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
-using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Tools;
 
 namespace Microsoft.SemanticKernel;

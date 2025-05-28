@@ -10,7 +10,6 @@ using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 

@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -288,7 +286,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.
     /// </summary>
-    private object? _initialState;
+    private readonly object? _initialState;
 
     private readonly Type _stepType;
 
