@@ -80,7 +80,7 @@ public sealed class GoogleAIGeminiChatCompletionServiceTests : IDisposable
         var sut = new GoogleAIGeminiChatCompletionService(model, "key", httpClient: this._httpClient);
 
         // Act
-        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = labels});
+        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = labels });
 
         // Assert
         Assert.NotNull(result);
