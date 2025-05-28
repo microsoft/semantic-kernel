@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from pytest import fixture
 
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     KernelSearchResults,
     SearchType,
     VectorSearch,

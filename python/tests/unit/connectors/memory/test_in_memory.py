@@ -2,8 +2,8 @@
 
 from pytest import fixture, mark, raises
 
-from semantic_kernel.connectors.memory.in_memory import InMemoryCollection, InMemoryStore
-from semantic_kernel.data.vectors import DistanceFunction
+from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
+from semantic_kernel.data.vector import DistanceFunction
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 

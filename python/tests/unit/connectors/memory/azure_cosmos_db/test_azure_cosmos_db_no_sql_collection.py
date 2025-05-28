@@ -7,7 +7,7 @@ import pytest
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
-from semantic_kernel.connectors.memory.azure_cosmos_db import (
+from semantic_kernel.connectors.azure_cosmos_db import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
     CosmosNoSqlCollection,
     _create_default_indexing_policy_nosql,

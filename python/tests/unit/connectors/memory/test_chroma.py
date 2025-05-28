@@ -6,7 +6,7 @@ import pytest
 from chromadb.api import ClientAPI
 from chromadb.api.models.Collection import Collection
 
-from semantic_kernel.connectors.memory.chroma import ChromaCollection, ChromaStore
+from semantic_kernel.connectors.chroma import ChromaCollection, ChromaStore
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@
 from typing import TypeVar
 
 from samples.concepts.resources.utils import Colors, print_with_color
-from semantic_kernel.data.vectors import VectorSearchResult
+from semantic_kernel.data.vector import VectorSearchResult
 
 _T = TypeVar("_T")
 

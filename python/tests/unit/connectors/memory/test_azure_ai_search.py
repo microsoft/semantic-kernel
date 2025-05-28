@@ -10,7 +10,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from pytest import fixture, mark, param, raises
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.memory.azure_ai_search import (
+from semantic_kernel.connectors.azure_ai_search import (
     AzureAISearchCollection,
     AzureAISearchSettings,
     AzureAISearchStore,
@@ -150,7 +150,7 @@ def test_init_with_clients(azure_ai_search_unit_test_env, definition):
 
 def test_init_with_search_index_client(azure_ai_search_unit_test_env, definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
-    with patch("semantic_kernel.connectors.memory.azure_ai_search._get_search_client") as get_search_client:
+    with patch("semantic_kernel.connectors.azure_ai_search._get_search_client") as get_search_client:
         search_client = MagicMock(spec=SearchClient)
         get_search_client.return_value = search_client
 
@@ -245,7 +245,7 @@ async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
-        "semantic_kernel.connectors.memory.azure_ai_search._definition_to_azure_ai_search_index",
+        "semantic_kernel.connectors.azure_ai_search._definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
         await collection.create_collection()

@@ -9,11 +9,11 @@ import numpy as np
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.connectors.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
+from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
+    KernelSearchResults,
     SearchType,
     TModel,
     VectorSearchOptions,

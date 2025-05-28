@@ -79,7 +79,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): The encoding of the environment settings file
 
         """
-        from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchSettings
+        from semantic_kernel.connectors.azure_ai_search import AzureAISearchSettings
 
         try:
             acs_memory_settings = AzureAISearchSettings(

@@ -8,7 +8,7 @@ from samples.concepts.memory.azure_ai_search_hotel_samples.data_model import (
     load_records,
 )
 from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
-from semantic_kernel.connectors.memory import AzureAISearchCollection
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchCollection
 
 """
 With the data model and records defined in step_0_data_model.py, this script will create an Azure AI Search collection,
@@ -32,7 +32,7 @@ async def main(query: str):
             await collection.create_collection(index=custom_index)
         await collection.upsert(records)
         # get the first five records to check the upsert worked.
-        results = await collection.get(order_by={"field": "HotelName", "ascending": True}, top=5)
+        results = await collection.get(order_by="HotelName", top=5)
         print("Get first five records: ")
         if results:
             for result in results:
@@ -56,7 +56,9 @@ async def main(query: str):
         print("Search results using hybrid: ")
         # Use hybrid search to search using the vector.
         results = await collection.hybrid_search(
-            query, vector_property_name="DescriptionVector", additional_property_name="Description"
+            query,
+            vector_property_name="DescriptionVector",
+            additional_property_name="Description",
         )
         async for result in results.results:
             print(

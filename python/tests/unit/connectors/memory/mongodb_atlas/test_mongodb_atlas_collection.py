@@ -7,7 +7,7 @@ from pymongo.asynchronous.cursor import AsyncCursor
 from pymongo.results import UpdateResult
 from pytest import mark, raises
 
-from semantic_kernel.connectors.memory.mongodb import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME, MongoDBAtlasCollection
+from semantic_kernel.connectors.mongodb import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME, MongoDBAtlasCollection
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 

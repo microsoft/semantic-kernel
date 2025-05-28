@@ -8,7 +8,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.data.vectors import VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 
 
 @fixture

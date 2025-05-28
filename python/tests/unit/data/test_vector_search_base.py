@@ -3,7 +3,7 @@
 
 import pytest
 
-from semantic_kernel.data.vectors import VectorSearch, VectorSearchOptions, VectorSearchProtocol
+from semantic_kernel.data.vector import VectorSearch, VectorSearchOptions, VectorSearchProtocol
 
 
 async def test_search(vector_store_record_collection: VectorSearch):

@@ -11,13 +11,13 @@ from psycopg import AsyncConnection, AsyncCursor
 from psycopg_pool import AsyncConnectionPool
 from pytest import fixture
 
-from semantic_kernel.connectors.memory.postgres import (
+from semantic_kernel.connectors.postgres import (
     DISTANCE_COLUMN_NAME,
     PostgresCollection,
     PostgresSettings,
     PostgresStore,
 )
-from semantic_kernel.data.vectors import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
 
 
 @fixture(scope="function")

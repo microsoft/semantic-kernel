@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from pytest import fixture
 
 from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
-from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel

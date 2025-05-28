@@ -7,7 +7,7 @@ from uuid import uuid4
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
-from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
 
 # This concept shows the different ways you can create a vector store data model
 # using dataclasses, Pydantic, and Python classes.

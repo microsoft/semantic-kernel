@@ -17,7 +17,7 @@ from semantic_kernel.data.text_search import (
     TextSearchResult,
     create_options,
 )
-from semantic_kernel.data.vectors import VectorSearchOptions
+from semantic_kernel.data.vector import VectorSearchOptions
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
 from semantic_kernel.utils.list_handler import desync_list

@@ -19,7 +19,7 @@ from pydantic.dataclasses import dataclass as pyd_dataclass
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data._search import (
+from semantic_kernel.data._shared import (
     DEFAULT_FUNCTION_NAME,
     DEFAULT_PARAMETER_METADATA,
     DEFAULT_RETURN_PARAMETER_METADATA,

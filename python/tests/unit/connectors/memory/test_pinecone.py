@@ -14,7 +14,7 @@ from pinecone.core.openapi.db_data.models import (
 from pinecone.data.index_asyncio import _IndexAsyncio
 from pytest import fixture, mark, raises
 
-from semantic_kernel.connectors.memory.pinecone import PineconeCollection, PineconeStore
+from semantic_kernel.connectors.pinecone import PineconeCollection, PineconeStore
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 BASE_PATH_ASYNCIO = "pinecone.PineconeAsyncio"

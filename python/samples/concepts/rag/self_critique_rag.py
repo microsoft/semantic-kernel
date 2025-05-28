@@ -7,9 +7,9 @@ from typing import Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
-from semantic_kernel.connectors.memory import AzureAISearchCollection
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.data.vectors import VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 from semantic_kernel.functions.kernel_function import KernelFunction
 
 """

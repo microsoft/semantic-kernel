@@ -3,26 +3,20 @@
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from samples.concepts.memory.azure_ai_search_hotel_samples.data_model import (
     HotelSampleClass,
     custom_index,
     load_records,
 )
-from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.agents.agent import AgentThread
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.agents import AgentThread, ChatCompletionAgent
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
-from semantic_kernel.connectors.memory import AzureAISearchCollection
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import KernelParameterMetadata
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions import KernelParameterMetadata, KernelPlugin
 from semantic_kernel.kernel_types import OptionalOneOrList
-
-if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelParameterMetadata
-
 
 """
 This sample builds on the previous one, but can be run independently.
@@ -185,8 +179,7 @@ async def chat():
     # Create the Azure AI Search collection
     async with collection:
         # Check if the collection exists.
-        if not await collection.does_collection_exist():
-            await collection.create_collection(index=custom_index)
+        await collection.ensure_collection_exists(index=custom_index)
         if not await collection.get(top=1):
             await collection.upsert(records)
         thread: AgentThread | None = None
