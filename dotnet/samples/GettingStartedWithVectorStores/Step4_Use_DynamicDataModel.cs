@@ -36,27 +36,27 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         // using a record definition. The benefit over a custom data model is that this definition
         // does not have to be known at compile time.
         // E.g. it can be read from a configuration or retrieved from a service.
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("Category", typeof(string)),
-                new VectorStoreRecordDataProperty("Term", typeof(string)),
-                new VectorStoreRecordDataProperty("Definition", typeof(string)),
-                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("Category", typeof(string)),
+                new VectorStoreDataProperty("Term", typeof(string)),
+                new VectorStoreDataProperty("Definition", typeof(string)),
+                new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
             }
         };
 
         // Now, let's create a collection that uses a dynamic data model.
-        var dynamicDataModelCollection = vectorStore.GetCollection<string, Dictionary<string, object?>>("skglossary", recordDefinition);
+        var dynamicDataModelCollection = vectorStore.GetDynamicCollection("skglossary", recordDefinition);
 
         // Generate an embedding from the search string.
         var searchString = "How do I provide additional context to an LLM?";
         var searchVector = (await fixture.EmbeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the generic data model collection and get the single most relevant result.
-        var searchResultItems = await dynamicDataModelCollection.SearchEmbeddingAsync(
+        var searchResultItems = await dynamicDataModelCollection.SearchAsync(
             searchVector,
             top: 1).ToListAsync();
 

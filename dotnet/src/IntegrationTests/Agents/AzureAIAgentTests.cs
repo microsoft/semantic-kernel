@@ -2,7 +2,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,16 +21,14 @@ public class AzureAIAgentTests
 {
     private readonly Kernel _kernel;
     private readonly AzureAIConfiguration _configuration;
-    private readonly AIProjectClient _client;
-    private readonly AgentsClient _agentsClient;
+    private readonly PersistentAgentsClient _client;
 
     public AzureAIAgentTests()
     {
         var kernelBuilder = Kernel.CreateBuilder();
         this._kernel = kernelBuilder.Build();
         this._configuration = this.ReadAzureConfiguration();
-        this._client = AzureAIAgent.CreateAzureAIClient(this._configuration.ConnectionString!, new AzureCliCredential());
-        this._agentsClient = this._client.GetAgentsClient();
+        this._client = AzureAIAgent.CreateAgentsClient(this._configuration.Endpoint, new AzureCliCredential());
     }
 
     /// <summary>
@@ -40,14 +38,14 @@ public class AzureAIAgentTests
     public async Task AzureAIAgentWithThreadCustomOptionsAsync()
     {
         var aiAgent =
-            await this._agentsClient.CreateAgentAsync(
+            await this._client.Administration.CreateAgentAsync(
                 this._configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 description: "Helpful Assistant",
                 instructions: "You are a helpful assistant.");
-        var agent = new AzureAIAgent(aiAgent, this._agentsClient) { Kernel = this._kernel };
+        var agent = new AzureAIAgent(aiAgent, this._client) { Kernel = this._kernel };
 
-        AzureAIAgentThread agentThread = new(this._agentsClient);
+        AzureAIAgentThread agentThread = new(this._client);
 
         try
         {
@@ -63,7 +61,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._agentsClient.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -74,14 +72,14 @@ public class AzureAIAgentTests
     public async Task AzureAIAgentWithThreadCustomOptionsStreamingAsync()
     {
         var aiAgent =
-            await this._agentsClient.CreateAgentAsync(
+            await this._client.Administration.CreateAgentAsync(
                 this._configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 description: "Helpful Assistant",
                 instructions: "You are a helpful assistant.");
-        var agent = new AzureAIAgent(aiAgent, this._agentsClient) { Kernel = this._kernel };
+        var agent = new AzureAIAgent(aiAgent, this._client) { Kernel = this._kernel };
 
-        AzureAIAgentThread agentThread = new(this._agentsClient);
+        AzureAIAgentThread agentThread = new(this._client);
 
         try
         {
@@ -97,7 +95,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._agentsClient.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -108,7 +106,7 @@ public class AzureAIAgentTests
     public async Task AzureAIAgentDeclarativeAsync()
     {
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AIProjectClient>(this._client);
+        builder.Services.AddSingleton<PersistentAgentsClient>(this._client);
         var kernel = builder.Build();
 
         var text =
@@ -125,7 +123,7 @@ public class AzureAIAgentTests
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
         Assert.NotNull(agent);
 
-        AzureAIAgentThread agentThread = new(this._agentsClient);
+        AzureAIAgentThread agentThread = new(this._client);
         try
         {
             var response = await agent.InvokeAsync("What is the capital of France?", agentThread).FirstAsync();
@@ -135,7 +133,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._agentsClient.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 

@@ -4,6 +4,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import StreamingAnnotationContent
 
 """
@@ -34,7 +35,7 @@ filenames = [
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Upload the files to the client
     file_ids: list[str] = []
@@ -55,7 +56,7 @@ async def main():
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         instructions="""
             The document store contains the text of fictional stories.
             Always analyze the document store to provide an answer to the user's question.

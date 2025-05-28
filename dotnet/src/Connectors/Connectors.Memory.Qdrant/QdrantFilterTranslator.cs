@@ -8,8 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using Google.Protobuf.Collections;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using Qdrant.Client.Grpc;
 using Range = Qdrant.Client.Grpc.Range;
 
@@ -17,18 +17,18 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal class QdrantFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Filter Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal Filter Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
         return this.Translate(preprocessedExpression);
     }
@@ -47,7 +47,11 @@ internal class QdrantFilterTranslator
 
             BinaryExpression { NodeType: ExpressionType.AndAlso } andAlso => this.TranslateAndAlso(andAlso.Left, andAlso.Right),
             BinaryExpression { NodeType: ExpressionType.OrElse } orElse => this.TranslateOrElse(orElse.Left, orElse.Right),
+
             UnaryExpression { NodeType: ExpressionType.Not } not => this.TranslateNot(not.Operand),
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type
+                => this.Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
@@ -339,17 +343,15 @@ internal class QdrantFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        var unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
+            unwrappedExpression = convert.Operand;
         }
 
-        var modelName = expression switch
+        var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
             MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
@@ -377,9 +379,17 @@ internal class QdrantFilterTranslator
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
 
-        if (convertedClrType is not null && convertedClrType != property.Type)
+        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+            if (convertType != property.Type && convertType != typeof(object))
+            {
+                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+            }
+
+            unwrappedExpression = convert.Operand;
         }
 
         return true;

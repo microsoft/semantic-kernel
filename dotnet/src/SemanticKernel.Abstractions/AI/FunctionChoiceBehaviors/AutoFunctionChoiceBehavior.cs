@@ -15,7 +15,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
-    private readonly bool _autoInvoke = true;
+    internal readonly bool AutoInvoke = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
@@ -39,7 +39,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     internal AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this._autoInvoke = autoInvoke;
+        this.AutoInvoke = autoInvoke;
         this.Options = options;
     }
 
@@ -62,13 +62,13 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this.AutoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Auto,
             Functions = functions,
-            AutoInvoke = this._autoInvoke,
+            AutoInvoke = this.AutoInvoke,
         };
     }
 }

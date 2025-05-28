@@ -119,6 +119,67 @@ public class OllamaKernelBuilderExtensionsTests
     }
 
     [Theory]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaTextEmbeddingGenerationShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
+    {
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
+
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaTextEmbeddingGeneration("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        ITextEmbeddingGenerationService service = kernel.GetRequiredService<ITextEmbeddingGenerationService>(serviceId);
+        Assert.NotNull(service);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaEmbeddingGeneratorShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
+    {
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
+
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaEmbeddingGenerator("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>(serviceId);
+        Assert.NotNull(service);
+    }
+
+    [Theory]
     [MemberData(nameof(AddOllamaApiClientScenarios))]
     [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public async Task AddOllamaApiClientEmbeddingsFromServiceCollectionAsync(ServiceCollectionRegistration registration)

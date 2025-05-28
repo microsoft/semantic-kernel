@@ -4,12 +4,12 @@ using System;
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IVectorStore"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="VectorStore"/> instances.</summary>
 public static class VectorStoreExtensions
 {
     /// <summary>
-    /// Asks the <see cref="IVectorStore"/> for an object of the specified type <paramref name="serviceType"/>
-    /// and throw an exception if one isn't available.
+    /// Asks the <see cref="VectorStore"/> for an object of the specified type <paramref name="serviceType"/>
+    /// and throws an exception if one isn't available.
     /// </summary>
     /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
     /// <param name="vectorStore">The vector store.</param>
@@ -19,7 +19,7 @@ public static class VectorStoreExtensions
     /// <exception cref="ArgumentNullException"><paramref name="vectorStore"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
-    public static object GetRequiredService<TRecord>(this IVectorStore vectorStore, Type serviceType, object? serviceKey = null)
+    public static object GetRequiredService<TRecord>(this VectorStore vectorStore, Type serviceType, object? serviceKey = null)
     {
         if (vectorStore is null) { throw new ArgumentNullException(nameof(vectorStore)); }
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }

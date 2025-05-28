@@ -8,7 +8,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Qdrant setup and teardown.</param>
 [Collection("QdrantVectorStoreCollection")]
@@ -19,12 +19,12 @@ public class CommonQdrantVectorStoreRecordCollectionTests(QdrantVectorStoreFixtu
     protected override ulong Key3 => 3;
     protected override ulong Key4 => 4;
 
-    protected override IVectorStoreRecordCollection<ulong, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<ulong, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
-        return new QdrantVectorStoreRecordCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, new()
+        return new QdrantCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, ownsClient: false, new()
         {
             HasNamedVectors = true,
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

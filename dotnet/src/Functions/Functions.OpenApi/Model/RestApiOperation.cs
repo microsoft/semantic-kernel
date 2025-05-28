@@ -49,6 +49,19 @@ public sealed class RestApiOperation
     }
 
     /// <summary>
+    /// The operation summary.
+    /// </summary>
+    public string? Summary
+    {
+        get => this._summary;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._summary = value;
+        }
+    }
+
+    /// <summary>
     /// The operation path.
     /// </summary>
     public string Path { get; }
@@ -399,6 +412,7 @@ public sealed class RestApiOperation
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
     private readonly Freezable _freezable = new();
     private string? _description;
+    private string? _summary;
 
     #endregion
 }
