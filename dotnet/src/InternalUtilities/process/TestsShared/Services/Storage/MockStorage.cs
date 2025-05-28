@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 namespace SemanticKernel.Process.TestsShared.Services.Storage;
 
