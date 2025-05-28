@@ -27,7 +27,7 @@ public sealed record DaprMapInfo : DaprStepInfo
         KernelProcessStepInfo processStepInfo = this.ToKernelProcessStepInfo();
         if (this.State is not KernelProcessMapState state)
         {
-            throw new KernelException($"Unable to read state from map with name '{this.State.Name}' and Id '{this.State.Id}'.");
+            throw new KernelException($"Unable to read state from map with name '{this.State.StepId}' and Id '{this.State.RunId}'.");
         }
 
         KernelProcessStepInfo operationStep =

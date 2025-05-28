@@ -12,7 +12,6 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -149,9 +148,9 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
+    public KernelProcess Build()
     {
-        return this._processBuilder.Build(stateMetadata);
+        return this._processBuilder.Build();
     }
 
     /// <summary>

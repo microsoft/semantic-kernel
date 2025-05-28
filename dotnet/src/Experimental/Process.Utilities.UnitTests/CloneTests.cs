@@ -139,8 +139,8 @@ public class CloneTests
 
     private static void VerifyProcess(KernelProcess expected, KernelProcess actual)
     {
-        Assert.Equal(expected.State.Id, actual.State.Id);
-        Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.State.RunId, actual.State.RunId);
+        Assert.Equal(expected.State.StepId, actual.State.StepId);
         Assert.Equal(expected.State.Version, actual.State.Version);
         Assert.Equal(expected.InnerStepType, actual.InnerStepType);
         Assert.Equivalent(expected.Edges, actual.Edges);

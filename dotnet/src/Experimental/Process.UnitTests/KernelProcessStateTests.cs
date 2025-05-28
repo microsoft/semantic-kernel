@@ -24,8 +24,8 @@ public class KernelProcessStateTests
         KernelProcessState state = new(name, "v1", id);
 
         // Assert
-        Assert.Equal(name, state.Name);
-        Assert.Equal(id, state.Id);
+        Assert.Equal(name, state.StepId);
+        Assert.Equal(id, state.RunId);
     }
 
     /// <summary>
@@ -41,8 +41,8 @@ public class KernelProcessStateTests
         KernelProcessState state = new(name, version: "v1");
 
         // Assert
-        Assert.Equal(name, state.Name);
-        Assert.Null(state.Id);
+        Assert.Equal(name, state.StepId);
+        Assert.Null(state.RunId);
     }
 
     /// <summary>

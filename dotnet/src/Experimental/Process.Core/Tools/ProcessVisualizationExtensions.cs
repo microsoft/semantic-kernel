@@ -64,10 +64,10 @@ public static class ProcessVisualizationExtensions
 
         // Dictionary to map step IDs to step names
         var stepNames = process.Steps
-            .Where(step => step.State.Id != null && step.State.Name != null)
+            .Where(step => step.State.RunId != null && step.State.StepId != null)
             .ToDictionary(
-                step => step.State.Id!,
-                step => step.State.Name!
+                step => step.State.RunId!,
+                step => step.State.StepId!
             );
 
         // Add Start and End nodes only if this is not a sub-process
@@ -80,8 +80,8 @@ public static class ProcessVisualizationExtensions
         // Process each step
         foreach (var step in process.Steps)
         {
-            var stepId = step.State.Id;
-            var stepName = step.State.Name;
+            var stepId = step.State.RunId;
+            var stepName = step.State.StepId;
 
             // Check if the step is a nested process (sub-process)
             if (step is KernelProcess nestedProcess && level < maxLevel)
@@ -115,7 +115,7 @@ public static class ProcessVisualizationExtensions
                     var stepEdges = kvp.Value;
 
                     // Skip drawing edges that point to a nested process as an entry point
-                    if (stepNames.ContainsKey(eventId) && process.Steps.Any(s => s.State.Name == eventId && s is KernelProcess))
+                    if (stepNames.ContainsKey(eventId) && process.Steps.Any(s => s.State.StepId == eventId && s is KernelProcess))
                     {
                         continue;
                     }
@@ -156,8 +156,8 @@ public static class ProcessVisualizationExtensions
         // Connect Start to the first step and the last step to End (only for the main process)
         if (!isSubProcess && process.Steps.Count > 0)
         {
-            var firstStepName = process.Steps.First().State.Name;
-            var lastStepName = process.Steps.Last().State.Name;
+            var firstStepName = process.Steps.First().State.StepId;
+            var lastStepName = process.Steps.Last().State.StepId;
 
             sb.AppendLine($"{indentation}Start --> {firstStepName}[\"{firstStepName}\"]");
             sb.AppendLine($"{indentation}{lastStepName}[\"{lastStepName}\"] --> End");

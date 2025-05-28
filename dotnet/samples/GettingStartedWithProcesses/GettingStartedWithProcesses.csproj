@@ -10,7 +10,7 @@
     <RootNamespace></RootNamespace>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
     <NoWarn>
-      $(NoWarn);CS8618,IDE0009,IDE1006,CA1051,CA1050,CA1707,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0081,SKEXP0101,SKEXP0110,OPENAI001
+      $(NoWarn);CS8618,IDE0005,IDE0009,IDE1006,CA1051,CA1050,CA1707,CA1812,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0081,SKEXP0101,SKEXP0110,OPENAI001
     </NoWarn>
     <OutputType>Library</OutputType>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/LocalStorageComponents.props" />
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Schema/*.cs"
@@ -75,6 +76,14 @@
     <EmbeddedResource
       Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-White-Snake.txt"
       Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Step03\States\FriedFishSuccess\" />
+    <Folder Include="Step03\States\FriedFishSuccessLowStock\" />
+    <Folder Include="Step03\States\FriedFishSuccessNoStock\" />
+    <Folder Include="Step03\States\FishSandwichSuccessLowStock\" />
+    <Folder Include="Step03\States\FishSandwichSuccess\" />
   </ItemGroup>
 
 </Project>

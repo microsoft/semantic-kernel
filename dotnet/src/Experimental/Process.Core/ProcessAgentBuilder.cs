@@ -10,7 +10,6 @@ using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -208,10 +207,8 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
     #endregion
 
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
-        KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
-
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var agentActions = new ProcessAgentActions(
@@ -226,7 +223,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
                 OnError = this.OnErrorBuilder?.Build()
             });
 
-        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState(this.StepId, "1.0", this.StepId);
 
         return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.DefaultThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
     }

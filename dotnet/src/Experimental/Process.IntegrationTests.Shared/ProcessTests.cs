@@ -123,7 +123,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var innerProcess = processInfo.Steps.Where(s => s.State.Name == "Inner").Single() as KernelProcess;
+        var innerProcess = processInfo.Steps.Where(s => s.State.StepId == "Inner").Single() as KernelProcess;
         Assert.NotNull(innerProcess);
         this.AssertStepStateLastMessage(innerProcess, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 4)));
     }
@@ -278,7 +278,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var subprocessStepInfo = processInfo.Steps.Where(s => s.State.Name == fanInStepName)?.FirstOrDefault() as KernelProcess;
+        var subprocessStepInfo = processInfo.Steps.Where(s => s.State.StepId == fanInStepName)?.FirstOrDefault() as KernelProcess;
         Assert.NotNull(subprocessStepInfo);
         this.AssertStepStateLastMessage(subprocessStepInfo, nameof(FanInStep), expectedLastMessage: $"{testInput}-{testInput} {testInput}");
     }
@@ -474,10 +474,12 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>(id: nameof(RepeatStep));
 
-        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
-        echoStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo))
+        echoStep
+            .OnFunctionResult()
             .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
 
         return processBuilder;
@@ -511,7 +513,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
 
-        echoAStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
+        echoAStep.OnFunctionResult().SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
         repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
 
         return processBuilder;
@@ -551,7 +553,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     #region Assert Utils
     private void AssertStepStateLastMessage(KernelProcess processInfo, string stepName, string? expectedLastMessage, int? expectedInvocationCount = null)
     {
-        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
+        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.StepId == stepName);
         Assert.NotNull(stepInfo);
         var outputStepResult = stepInfo.State as KernelProcessStepState<StepState>;
         Assert.NotNull(outputStepResult?.State);
@@ -563,7 +565,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
     private void AssertStepState<T>(KernelProcess processInfo, string stepName, Func<KernelProcessStepState<T>, bool> predicate) where T : class, new()
     {
-        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
+        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.StepId == stepName);
         Assert.NotNull(stepInfo);
         var outputStepResult = stepInfo.State as KernelProcessStepState<T>;
         Assert.NotNull(outputStepResult?.State);

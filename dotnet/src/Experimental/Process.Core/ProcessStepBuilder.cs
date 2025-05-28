@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,14 +16,10 @@ public abstract class ProcessStepBuilder
     #region Public Interface
 
     /// <summary>
-    /// The unique identifier for the step. This may be null until the step is run within a process.
+    /// The unique identifier for the step within a process. A process cannot have two steps with the same stepId.
+    /// This can be human-readable but is required to be unique within the process.
     /// </summary>
-    public string Id { get; }
-
-    /// <summary>
-    /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
-    /// </summary>
-    public string Name { get; }
+    public string StepId { get; }
 
     /// <summary>
     /// Alternative names that have been used to previous versions of the step
@@ -67,11 +61,18 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Returns the event Id that is used to identify the step specific event.
     /// </summary>
-    /// <param name="eventName"></param>
+    /// <param name="eventName">used for custom events emitted by step</param>
+    /// <param name="functionName">used for return objects from specific function, if step has only 1 function no need to provide functionName</param>
     /// <returns></returns>
-    public string GetFullEventId(string eventName)
+    public string GetFullEventId(string? eventName = null, string? functionName = null)
     {
-        return $"{this.Id}.{eventName}";
+        if (eventName == null)
+        {
+            // default function result are used
+            eventName = this.GetFunctionResultEventId(functionName);
+        }
+
+        return $"{this.StepId}.{eventName}";
     }
 
     /// <summary>
@@ -125,7 +126,7 @@ public abstract class ProcessStepBuilder
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null);
+    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder);
 
     /// <summary>
     /// Registers a group input mapping for the step.
@@ -152,11 +153,11 @@ public abstract class ProcessStepBuilder
     {
         if (this.FunctionsDict.Count == 0)
         {
-            throw new KernelException($"The step {this.Name} has no functions.");
+            throw new KernelException($"The step {this.StepId} has no functions.");
         }
         else if (this.FunctionsDict.Count > 1)
         {
-            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+            throw new KernelException($"The step {this.StepId} has more than one function, so a function name must be provided.");
         }
 
         return this.FunctionsDict.Keys.First();
@@ -194,7 +195,7 @@ public abstract class ProcessStepBuilder
 
         if (this.FunctionsDict.Count == 0)
         {
-            throw new KernelException($"The target step {this.Name} has no functions.");
+            throw new KernelException($"The target step {this.StepId} has no functions.");
         }
 
         // If the function name is null or whitespace, then there can only one function on the step
@@ -211,7 +212,7 @@ public abstract class ProcessStepBuilder
         // Verify that the target function exists
         if (!this.FunctionsDict.TryGetValue(verifiedFunctionName!, out var kernelFunctionMetadata) || kernelFunctionMetadata is null)
         {
-            throw new KernelException($"The function {functionName} does not exist on step {this.Name}");
+            throw new KernelException($"The function {functionName} does not exist on step {this.StepId}");
         }
 
         // If the parameter name is null or whitespace, then the function must have 0 or 1 parameters
@@ -236,7 +237,7 @@ public abstract class ProcessStepBuilder
         Verify.NotNull(verifiedFunctionName);
 
         return new KernelProcessFunctionTarget(
-            stepId: this.Id!,
+            stepId: this.StepId!,
             functionName: verifiedFunctionName,
             parameterName: verifiedParameterName
         );
@@ -268,10 +269,10 @@ public abstract class ProcessStepBuilder
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
 
-        this.Id ??= id;
-        this.Name = id;
+        this.StepId ??= id;
+        this.StepId = id;
         this.FunctionsDict = [];
-        this._eventNamespace = this.Id;
+        this._eventNamespace = this.StepId;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
         this.ProcessBuilder = processBuilder;
     }
@@ -285,7 +286,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.
     /// </summary>
-    private object? _initialState;
+    private readonly object? _initialState;
 
     private readonly Type _stepType;
 
@@ -310,7 +311,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(this._stepType);
@@ -325,32 +326,20 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
-            {
-                try
-                {
-                    this._initialState = jsonState.Deserialize(userStateType);
-                }
-                catch (JsonException)
-                {
-                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                }
-            }
-
             // If the step has a user-defined state then we need to validate that the initial state is of the correct type.
             if (this._initialState is not null && this._initialState.GetType() != userStateType)
             {
-                throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
+                throw new KernelException($"The initial state provided for step {this.StepId} is not of the correct type. The expected type is {userStateType.Name}.");
             }
 
             var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.StepId, stepMetadataAttributes.Version, null);
             stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version, this.Id);
+            stateObject = new KernelProcessStepState(this.StepId, stepMetadataAttributes.Version);
         }
 
         Verify.NotNull(stateObject);

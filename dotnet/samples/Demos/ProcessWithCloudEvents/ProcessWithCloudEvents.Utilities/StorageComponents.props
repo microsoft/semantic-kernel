@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/Storage/**/*.cs" Link="Storage/%(RecursiveDir)/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

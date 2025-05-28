@@ -1,0 +1,9 @@
+{
+  "id": "myId_a5ed1a9b-2534-43bd-baf3-99c5d1bbe15b_a1ef573e-5e92-4dbc-8d1d-8bc903014829",
+  "name": "GatherFriedFishIngredientsWithStockStep",
+  "versionInfo": "GatherFishIngredient.V2",
+  "state": {
+    "ObjectType": "Step03.Steps.GatherIngredientsState, GettingStartedWithProcesses, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "Content": "{\u0022IngredientsStock\u0022:1}"
+  }
+}

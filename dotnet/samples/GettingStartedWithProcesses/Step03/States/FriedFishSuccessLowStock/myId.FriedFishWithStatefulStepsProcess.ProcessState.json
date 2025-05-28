@@ -1,0 +1,9 @@
+{
+  "processName": "FriedFishWithStatefulStepsProcess",
+  "processInstance": "myId",
+  "steps": {
+    "GatherFriedFishIngredientsWithStockStep": "myId_fbc551ab-1f31-47f4-92b1-0251909d86e2",
+    "CutFoodStep": "myId_c9e327ff-5673-4897-ae02-c4359c1d89de",
+    "FryFoodStep": "myId_db3f848e-1100-4aa8-b341-98dbae35a66c"
+  }
+}
