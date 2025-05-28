@@ -1,7 +1,7 @@
 # Get Started with Semantic Kernel Python
 
 Highlights
-- Flexible Agent Framework: Compose agents, plugins, and planning logic
+- Flexible Agent Framework: build, orchestrate, and deploy AI agents and multi-agent systems
 - Multi-Agent Systems: Model workflows and collaboration between AI specialists
 - Plugin Ecosystem: Extend with Python, OpenAPI, Model Context Protocol (MCP), and more
 - LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Vertex AI, ONNX, Ollama, NVIDIA NIM, and others
@@ -46,6 +46,8 @@ chat_service = AzureChatCompletion(
     api_version=...,
 )
 ```
+
+See the following [setup guide](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/concepts/setup) for more information.
 
 ## 2. Use the Kernel for Prompt Engineering
 
@@ -167,7 +169,9 @@ async def main():
 asyncio.run(main()) 
 ```
 
-## 5. Multi-Agent Group Orchestration
+You can explore additional getting started agent samples [here](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents).
+
+## 5. Multi-Agent Orchestration
 
 Coordinate a group of agents to iteratively solve a problem or refine content together:
 
@@ -214,6 +218,8 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+For orchestration-focused examples, see [these orchestration samples](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents/multi_agent_orchestration).
 
 ## More Examples & Notebooks
 
