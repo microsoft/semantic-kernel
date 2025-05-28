@@ -107,7 +107,6 @@ public class OpenAIResponseAgentFixture : AgentFixture
 
         var response = await this._responseClient.CreateResponseAsync([ResponseItem.CreateUserMessageItem("Hello")]);
         this._createdThread = new OpenAIResponseAgentThread(this._responseClient, response.Value.Id);
-        await this._createdThread.CreateAsync();
 
         var serviceFailingClient = new OpenAIResponseClient(configuration.ModelId, credential: new ApiKeyCredential("FakeApiKey"), options: options);
         this._serviceFailingAgentThread = new OpenAIResponseAgentThread(serviceFailingClient);
