@@ -65,7 +65,7 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
 
         // Assert
         KernelProcess processState = await processContext.GetStateAsync();
-        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.Name == "Union").Single().State;
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.StepId == "Union").Single().State;
 
         Assert.NotNull(unionState?.State);
         Assert.Equal(55L, unionState.State.SquareResult);
@@ -106,7 +106,7 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
         // Act
         KernelProcessContext processContext =
             await this._fixture.StartProcessAsync(
-                processInstance with { State = processInstance.State with { Id = Guid.NewGuid().ToString() } },
+                processInstance with { State = processInstance.State with { RunId = Guid.NewGuid().ToString() } },
                 kernel,
                 new KernelProcessEvent()
                 {
@@ -116,7 +116,7 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
 
         // Assert
         KernelProcess processState = await processContext.GetStateAsync();
-        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.Name == "Union").Single().State;
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.StepId == "Union").Single().State;
 
         Assert.NotNull(unionState?.State);
         Assert.Equal(55L, unionState.State.SquareResult);

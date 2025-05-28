@@ -50,10 +50,10 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (stepInfo is KernelProcess)
         {
             // Only KernelProcess can have a null Id if it is the root process
-            stepInfo = stepInfo with { State = stepInfo.State with { Id = instanceId ?? Guid.NewGuid().ToString() } };
+            stepInfo = stepInfo with { State = stepInfo.State with { RunId = instanceId ?? Guid.NewGuid().ToString() } };
         }
         // For any step that is not a process, step id must already be assigned from parent process in the step state
-        Verify.NotNullOrWhiteSpace(stepInfo.State.Id);
+        Verify.NotNullOrWhiteSpace(stepInfo.State.RunId);
 
         this._kernel = kernel;
         this._stepInfo = stepInfo;
@@ -64,7 +64,7 @@ internal class LocalStep : IKernelProcessMessageChannel
             this.InitializeStepInitialInputs();
         }
 
-        Verify.NotNull(stepInfo.State.Id);
+        Verify.NotNull(stepInfo.State.RunId);
 
         this.ParentProcessId = parentProcessId;
         this._stepState = stepInfo.State;
@@ -79,9 +79,9 @@ internal class LocalStep : IKernelProcessMessageChannel
         // Instantiate an instance of the inner step object
         this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
 
-        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(this._stepInstance, this._stepInfo.State.Id);
+        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(this._stepInstance, this._stepInfo.State.RunId);
 
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.StepId);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
@@ -113,12 +113,12 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    internal string Name => this._stepInfo.State.Name!;
+    internal string Name => this._stepInfo.State.StepId!;
 
     /// <summary>
     /// The Id of the step.
     /// </summary>
-    internal string Id => this._stepInfo.State.Id!;
+    internal string Id => this._stepInfo.State.RunId!;
 
     /// <summary>
     /// An event proxy that can be used to intercept events emitted by the step.
@@ -467,7 +467,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 
     internal (string, string) GetStepStorageKeyValues()
     {
-        return (this._stepInfo.State.Name, this._stepInfo.State.Id!);
+        return (this._stepInfo.State.StepId, this._stepInfo.State.RunId!);
     }
 
     internal virtual async Task SaveStepDataAsync()

@@ -74,7 +74,7 @@ public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
         var processContext = await this._fixture.StartProcessAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
 
         var processState = await processContext.GetStateAsync();
-        var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
+        var cStepState = processState.Steps.Where(s => s.State.StepId == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
 
         Assert.NotNull(cStepState?.State);
         Assert.Equal(3, cStepState.State.CurrentCycle);

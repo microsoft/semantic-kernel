@@ -85,10 +85,9 @@ public static class LocalKernelProcessFactory
             throw new ArgumentException($"The process with key '{processKey}' is not registered.");
         }
 
-        // Assign the process Id if one is provided and the processes does not already have an Id.
-        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
+        if (string.IsNullOrWhiteSpace(process.State.StepId))
         {
-            process = process with { State = process.State with { Name = processKey } };
+            process = process with { State = process.State with { StepId = processKey } };
         }
 
         LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, processId);

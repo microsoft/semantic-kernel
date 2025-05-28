@@ -23,8 +23,8 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
         : base(typeof(KernelProcessMap), state, edges)
     {
         Verify.NotNull(operation, nameof(operation));
-        Verify.NotNullOrWhiteSpace(state.Name, $"{nameof(state)}.{nameof(KernelProcessMapState.Name)}");
-        Verify.NotNullOrWhiteSpace(state.Id, $"{nameof(state)}.{nameof(KernelProcessMapState.Id)}");
+        Verify.NotNullOrWhiteSpace(state.StepId, $"{nameof(state)}.{nameof(KernelProcessMapState.StepId)}");
+        Verify.NotNullOrWhiteSpace(state.RunId, $"{nameof(state)}.{nameof(KernelProcessMapState.RunId)}");
 
         this.Operation = operation;
     }

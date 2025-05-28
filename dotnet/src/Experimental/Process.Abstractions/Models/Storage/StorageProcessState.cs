@@ -48,9 +48,9 @@ public static class StorageProcessExtension
     {
         return new StorageProcessState
         {
-            ProcessName = kernelProcess.State?.Name ?? string.Empty,
-            ProcessInstance = kernelProcess.State?.Id ?? string.Empty,
-            Steps = kernelProcess.Steps.ToList().ToDictionary(step => step.State.Name, step => step.State.Id ?? string.Empty) ?? []
+            ProcessName = kernelProcess.State?.StepId ?? string.Empty,
+            ProcessInstance = kernelProcess.State?.RunId ?? string.Empty,
+            Steps = kernelProcess.Steps.ToList().ToDictionary(step => step.State.StepId, step => step.State.RunId ?? string.Empty) ?? []
         };
     }
 }

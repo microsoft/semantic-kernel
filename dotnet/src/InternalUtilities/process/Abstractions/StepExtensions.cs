@@ -39,10 +39,10 @@ internal static class StepExtensions
     // Exposed for testing
     public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType, ILogger logger)
     {
-        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Version, sourceState.Id);
+        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.StepId, sourceState.Version, sourceState.RunId);
         if (newState == null)
         {
-            throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].").Log(logger);
+            throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.RunId}].").Log(logger);
         }
 
         if (userStateType != null)
@@ -187,7 +187,7 @@ internal static class StepExtensions
             throw new KernelException("Internal Error: The step needs a non-empty id").Log(logger);
         }
 
-        return step with { State = step.State with { Id = stepId }, Edges = ReplaceEdgeSourceNames(step.Edges, step.State.Name, stepId) };
+        return step with { State = step.State with { RunId = stepId }, Edges = ReplaceEdgeSourceNames(step.Edges, step.State.StepId, stepId) };
     }
 
     public static bool IsDefault(this KernelProcessEdgeCondition condition)

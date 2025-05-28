@@ -20,15 +20,15 @@ public class DaprKernelProcessContext : KernelProcessContext
     internal DaprKernelProcessContext(KernelProcess process, IActorProxyFactory? actorProxyFactory = null)
     {
         Verify.NotNull(process);
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
+        Verify.NotNullOrWhiteSpace(process.State?.StepId);
 
-        if (string.IsNullOrWhiteSpace(process.State.Id))
+        if (string.IsNullOrWhiteSpace(process.State.RunId))
         {
-            process = process with { State = process.State with { Id = Guid.NewGuid().ToString() } };
+            process = process with { State = process.State with { RunId = Guid.NewGuid().ToString() } };
         }
 
         this._process = process;
-        var processId = new ActorId(process.State.Id);
+        var processId = new ActorId(process.State.RunId);
 
         // For a non-dependency-injected application, the static methods on ActorProxy are used.
         // Since the ActorProxy methods are error prone, try to avoid using them when using
@@ -90,6 +90,6 @@ public class DaprKernelProcessContext : KernelProcessContext
     public override async Task<string> GetProcessIdAsync()
     {
         var processInfo = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
-        return processInfo.State.Id!;
+        return processInfo.State.RunId!;
     }
 }

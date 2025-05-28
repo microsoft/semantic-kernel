@@ -28,7 +28,7 @@ internal sealed class LocalProxy : LocalStep
         : base(proxy, kernel)
     {
         this._proxy = proxy;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.StepId) ?? new NullLogger<LocalStep>();
         this.ExternalMessageChannel = externalMessageChannel;
 
         this.InitializeStepInitialInputs();

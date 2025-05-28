@@ -47,7 +47,7 @@ public sealed record KernelProcess : KernelProcessStepInfo
         : base(typeof(KernelProcess), state, edges ?? [])
     {
         Verify.NotNull(steps);
-        Verify.NotNullOrWhiteSpace(state.Name);
+        Verify.NotNullOrWhiteSpace(state.StepId);
 
         this.Steps = [.. steps];
     }

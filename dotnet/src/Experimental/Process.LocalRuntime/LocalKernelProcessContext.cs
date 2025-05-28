@@ -18,7 +18,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
+        Verify.NotNullOrWhiteSpace(process.State?.StepId);
 
         if (storageConnector != null)
         {
