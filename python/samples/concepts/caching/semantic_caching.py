@@ -9,8 +9,8 @@ from uuid import uuid4
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
-from semantic_kernel.connectors.memory.in_memory import InMemoryStore
-from semantic_kernel.data.vectors import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
+from semantic_kernel.connectors.in_memory import InMemoryStore
+from semantic_kernel.data.vector import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
 from semantic_kernel.functions import FunctionResult
 

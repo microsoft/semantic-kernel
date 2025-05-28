@@ -9,7 +9,7 @@ from typing import Any, Final, Literal, TypeVar, overload
 
 from pydantic import BaseModel, ValidationError
 
-from semantic_kernel.data._search import (
+from semantic_kernel.data._shared import (
     DEFAULT_FUNCTION_NAME,
     DEFAULT_PARAMETER_METADATA,
     DEFAULT_RETURN_PARAMETER_METADATA,

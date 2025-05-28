@@ -11,11 +11,11 @@ from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeucl
 from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     GetFilteredRecordOptions,
+    KernelSearchResults,
     SearchType,
     TModel,
     VectorSearch,

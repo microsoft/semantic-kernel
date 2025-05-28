@@ -3,7 +3,7 @@
 
 from pymongo import AsyncMongoClient
 
-from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasCollection, MongoDBAtlasStore
+from semantic_kernel.connectors.mongodb import MongoDBAtlasCollection, MongoDBAtlasStore
 
 
 def test_mongodb_atlas_store_initialization(mongodb_atlas_unit_test_env):

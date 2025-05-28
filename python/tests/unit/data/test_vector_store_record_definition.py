@@ -2,7 +2,7 @@
 
 from pytest import raises
 
-from semantic_kernel.data.vectors import VectorStoreCollectionDefinition, VectorStoreField
+from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions import VectorStoreModelException
 
 

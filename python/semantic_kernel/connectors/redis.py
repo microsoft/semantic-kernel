@@ -24,12 +24,12 @@ from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
 from redisvl.schema import StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     DistanceFunction,
     FieldTypes,
     GetFilteredRecordOptions,
     IndexKind,
+    KernelSearchResults,
     SearchType,
     TModel,
     VectorSearch,

@@ -8,8 +8,8 @@ from numpy import ndarray
 from pinecone import FetchResponse, IndexList, IndexModel, Pinecone, ServerlessSpec
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.pinecone import PineconeSettings
 from semantic_kernel.connectors.memory_stores.pinecone.utils import build_payload, parse_payload
+from semantic_kernel.connectors.pinecone import PineconeSettings
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidRequestError,

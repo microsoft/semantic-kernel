@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from .brave import BraveSearch, BraveSearchResponse, BraveSettings, BraveWebPage, BraveWebPages
-from .google import (
+from .google_search import (
     GoogleSearch,
     GoogleSearchInformation,
     GoogleSearchResponse,

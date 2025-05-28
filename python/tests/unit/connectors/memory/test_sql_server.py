@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock, patch
 
 from pytest import fixture, mark, param, raises
 
-from semantic_kernel.connectors.memory.sql_server import (
+from semantic_kernel.connectors.sql_server import (
     QueryBuilder,
     SqlCommand,
     SqlServerCollection,
@@ -21,7 +21,7 @@ from semantic_kernel.connectors.memory.sql_server import (
     _build_select_query,
     _build_select_table_names_query,
 )
-from semantic_kernel.data.vectors import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField
+from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
@@ -260,7 +260,7 @@ async def test_get_mssql_connection(connection_string):
     with patch("pyodbc.connect") as patched_connection:
         from azure.identity.aio import DefaultAzureCredential
 
-        from semantic_kernel.connectors.memory.sql_server import SqlSettings, _get_mssql_connection
+        from semantic_kernel.connectors.sql_server import SqlSettings, _get_mssql_connection
 
         token = MagicMock()
         token.token.return_value = "test_token"
@@ -270,7 +270,7 @@ async def test_get_mssql_connection(connection_string):
         credential.get_token.return_value = token
 
         settings = SqlSettings(connection_string=connection_string)
-        with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
+        with patch("semantic_kernel.connectors.sql_server.DefaultAzureCredential", return_value=credential):
             connection = await _get_mssql_connection(settings)
             assert connection is not None
             assert isinstance(connection, MagicMock)
@@ -290,7 +290,7 @@ class TestSqlServerStore:
         assert store.settings.connection_string is not None
         assert "LongAsMax=yes;" in store.settings.connection_string.get_secret_value()
 
-        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+        with patch("semantic_kernel.connectors.sql_server._get_mssql_connection") as mock_get_connection:
             mock_get_connection.return_value = AsyncMock()
             await store.__aenter__()
             assert store.connection is not None
@@ -353,7 +353,7 @@ class TestSqlServerCollection:
         assert collection.settings is not None
         assert collection.settings.connection_string is not None
 
-        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+        with patch("semantic_kernel.connectors.sql_server._get_mssql_connection") as mock_get_connection:
             mock_get_connection.return_value = AsyncMock()
             await collection.__aenter__()
             assert collection.connection is not None

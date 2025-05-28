@@ -8,8 +8,8 @@ from typing import Any
 import pandas as pd
 import pytest
 
-from semantic_kernel.connectors.memory.redis import RedisCollectionTypes
-from semantic_kernel.data.vectors import VectorStore
+from semantic_kernel.connectors.redis import RedisCollectionTypes
+from semantic_kernel.data.vector import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorConnectionException
 from tests.integration.memory.data_records import RAW_RECORD_ARRAY, RAW_RECORD_LIST
 from tests.integration.memory.vector_store_test_base import VectorStoreTestBase

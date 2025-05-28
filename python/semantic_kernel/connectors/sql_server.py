@@ -17,12 +17,12 @@ from azure.identity.aio import DefaultAzureCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data._search import KernelSearchResults
-from semantic_kernel.data.vectors import (
+from semantic_kernel.data.vector import (
     DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     GetFilteredRecordOptions,
     IndexKind,
+    KernelSearchResults,
     SearchType,
     VectorSearch,
     VectorSearchOptions,

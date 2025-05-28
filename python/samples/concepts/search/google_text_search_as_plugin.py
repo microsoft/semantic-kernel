@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.search import GoogleSearch
+from semantic_kernel.connectors.google_search import GoogleSearch
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import KernelParameterMetadata

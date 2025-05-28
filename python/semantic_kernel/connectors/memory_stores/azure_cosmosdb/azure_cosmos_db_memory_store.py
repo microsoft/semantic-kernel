@@ -7,7 +7,7 @@ from typing import Literal
 from numpy import ndarray
 from pymongo import MongoClient
 
-from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBforMongoDBSettings
+from semantic_kernel.connectors.azure_cosmos_db import AzureCosmosDBforMongoDBSettings
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.utils import (

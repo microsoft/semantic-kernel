@@ -12,13 +12,13 @@ from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
-from semantic_kernel.connectors.memory.mongodb import NUM_CANDIDATES_SCALAR
 from semantic_kernel.connectors.memory_stores.mongodb_atlas.utils import (
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
+from semantic_kernel.connectors.mongodb import NUM_CANDIDATES_SCALAR
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -56,7 +56,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             env_file_encoding (str): The encoding of the .env file.
 
         """
-        from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasSettings
+        from semantic_kernel.connectors.mongodb import MongoDBAtlasSettings
 
         try:
             mongodb_settings = MongoDBAtlasSettings(
