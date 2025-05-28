@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Optional parameters for <see cref="OpenAIAssistantAgent"/> invocation.
+/// Optional parameters for <see cref="OpenAIResponseAgent"/> invocation.
 /// </summary>
 public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
 {
