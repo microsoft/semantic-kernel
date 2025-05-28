@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 #pragma warning restore IDE0005 // Using directive is unnecessary
 
-namespace ProcessWithCloudEvents.Shared.Storage;
+namespace ProcessWithCloudEvents.SharedComponents.Storage;
 
 internal sealed class JsonFileStorage : IProcessStorageConnector
 {

@@ -9,7 +9,7 @@ using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
 using ProcessWithCloudEvents.Grpc.Services;
 using ProcessWithCloudEvents.Processes;
-using ProcessWithCloudEvents.Shared.Options;
+using ProcessWithCloudEvents.SharedComponents.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 

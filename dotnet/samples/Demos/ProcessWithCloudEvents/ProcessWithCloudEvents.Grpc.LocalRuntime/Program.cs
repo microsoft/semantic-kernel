@@ -9,8 +9,8 @@ using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
 using ProcessWithCloudEvents.Grpc.LocalRuntime.Services;
 using ProcessWithCloudEvents.Processes;
-using ProcessWithCloudEvents.Shared.Options;
-using ProcessWithCloudEvents.Shared.Storage;
+using ProcessWithCloudEvents.SharedComponents.Options;
+using ProcessWithCloudEvents.SharedComponents.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,7 +63,8 @@ builder.Services.AddSingleton<IReadOnlyDictionary<string, KernelProcess>>(sp =>
 });
 
 // Registering storage used for persisting process state with Local Runtime
-var storageInstance = new JsonFileStorage("C:\\Users\\estenori\\Desktop\\TEST2");
+string tempDirectoryPath = Path.Combine(Path.GetTempPath(), "MySKProcessStorage");
+var storageInstance = new JsonFileStorage(tempDirectoryPath);
 builder.Services.AddSingleton<IProcessStorageConnector>(storageInstance);
 
 // Enabling CORS for grpc-web when using webApp as client, remove if not needed
