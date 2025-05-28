@@ -88,7 +88,6 @@ jobs:
 
       - name: Package install check
         shell: bash
-        if: matrix.os == 'ubuntu-latest'
         run: |
           export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
