@@ -129,9 +129,7 @@
     <Project Path="src/Connectors/Connectors.Memory.Chroma/Connectors.Memory.Chroma.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.CosmosMongoDB/Connectors.Memory.CosmosMongoDB.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.CosmosNoSql/Connectors.Memory.CosmosNoSql.csproj" />
-    <Project Path="src/Connectors/Connectors.Memory.DuckDB/Connectors.Memory.DuckDB.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.InMemory/Connectors.Memory.InMemory.csproj" />
-    <Project Path="src/Connectors/Connectors.Memory.Kusto/Connectors.Memory.Kusto.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.Milvus/Connectors.Memory.Milvus.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.MongoDB/Connectors.Memory.MongoDB.csproj" />
     <Project Path="src/Connectors/Connectors.Memory.PgVector/Connectors.Memory.PgVector.csproj" />
