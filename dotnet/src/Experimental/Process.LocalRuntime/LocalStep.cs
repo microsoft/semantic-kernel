@@ -59,7 +59,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._stepInfo = stepInfo;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
 
-        if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy)
+        if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy and not KernelProcessAgentStep)
         {
             this.InitializeStepInitialInputs();
         }
@@ -77,9 +77,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     internal void InitializeStepInitialInputs()
     {
         // Instantiate an instance of the inner step object
-        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-
-        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(this._stepInstance, this._stepInfo.State.RunId);
+        this._stepInstance = this.CreateStepInstance();
 
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.StepId);
 
@@ -93,16 +91,17 @@ internal class LocalStep : IKernelProcessMessageChannel
         this.PopulateInitialInputs();
     }
 
+    internal virtual KernelProcessStep CreateStepInstance()
+    {
+        var stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(stepInstance, this._stepInfo.State.RunId);
+
+        return stepInstance;
+    }
+
     internal virtual void PopulateInitialInputs()
     {
-        if (this._stepInfo is KernelProcessAgentStep agentStep)
-        {
-            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
-        }
-        else
-        {
-            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
-        }
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
     }
 
     /// <summary>
