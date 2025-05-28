@@ -789,7 +789,7 @@ class ResponsesAgentThreadActions:
             name=name,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status),
+            status=Status(response.status) if hasattr(response, "status") else None,
         )
 
     @classmethod
@@ -812,7 +812,7 @@ class ResponsesAgentThreadActions:
             metadata=metadata,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status),
+            status=Status(response.status) if hasattr(response, "status") else None,
         )
 
     @classmethod

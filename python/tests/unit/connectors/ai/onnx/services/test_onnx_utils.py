@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from semantic_kernel.connectors.ai.onnx.utils import (
-    gemma_template,
-    llama_template,
-    phi3_template,
-    phi3v_template,
-)
+
+from semantic_kernel.connectors.ai.onnx.utils import gemma_template, llama_template, phi3_template, phi3v_template
 from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, TextContent
 
 

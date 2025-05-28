@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -29,14 +30,25 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0130")]
 [RequiresDynamicCode("This API is not compatible with NativeAOT.")]
 [RequiresUnreferencedCode("This API is not compatible with trimming.")]
-public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
+public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
+#if NET7_0_OR_GREATER
+    [GeneratedRegex(@"\p{L}+", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex AnyLanguageWordRegex();
+#else
+    private static readonly Regex s_anyLanguageWordRegex = new(@"\p{L}+", RegexOptions.Compiled);
+    private static Regex AnyLanguageWordRegex() => s_anyLanguageWordRegex;
+#endif
+
+    private static readonly Func<string, ICollection<string>> s_defaultWordSegementer = text => ((IEnumerable<Match>)AnyLanguageWordRegex().Matches(text)).Select(x => x.Value).ToList();
+
     private readonly VectorStore _vectorStore;
     private readonly int _vectorDimensions;
     private readonly TextSearchStoreOptions _options;
+    private readonly Func<string, ICollection<string>> _wordSegmenter;
 
-    private readonly Lazy<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>> _vectorStoreRecordCollection;
+    private readonly VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> _vectorStoreRecordCollection;
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
     private bool _collectionInitialized = false;
     private bool _disposedValue;
@@ -74,6 +86,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         this._vectorStore = vectorStore;
         this._vectorDimensions = vectorDimensions;
         this._options = options ?? new TextSearchStoreOptions();
+        this._wordSegmenter = this._options.WordSegementer ?? s_defaultWordSegementer;
 
         // Create a definition so that we can use the dimensions provided at runtime.
         VectorStoreCollectionDefinition ragDocumentDefinition = new()
@@ -83,15 +96,14 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
                 new VectorStoreKeyProperty("Key", typeof(TKey)),
                 new VectorStoreDataProperty("Namespaces", typeof(List<string>)) { IsIndexed = true },
                 new VectorStoreDataProperty("SourceId", typeof(string)) { IsIndexed = true },
-                new VectorStoreDataProperty("Text", typeof(string)),
+                new VectorStoreDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
                 new VectorStoreDataProperty("SourceName", typeof(string)),
                 new VectorStoreDataProperty("SourceLink", typeof(string)),
                 new VectorStoreVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
             }
         };
 
-        this._vectorStoreRecordCollection = new Lazy<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>>(() =>
-            this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition));
+        this._vectorStoreRecordCollection = this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
     }
 
     /// <summary>
@@ -114,11 +126,9 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
                 throw new ArgumentException("One of the provided text chunks is null.", nameof(textChunks));
             }
 
-            var key = GenerateUniqueKey<TKey>(null);
-
             return new TextRagStorageDocument<TKey>
             {
-                Key = key,
+                Key = GenerateUniqueKey<TKey>(null),
                 Text = textChunk,
                 TextEmbedding = textChunk,
             };
@@ -214,20 +224,41 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <returns>The search results.</returns>
     private async Task<IEnumerable<TextRagStorageDocument<TKey>>> SearchInternalAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
+        // Short circuit if the query is empty.
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Enumerable.Empty<TextRagStorageDocument<TKey>>();
+        }
+
         var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+
+        // If the user has not opted out of hybrid search, check if the vector store supports it.
+        var hybridSearchCollection = this._options.UseHybridSearch ?? true ?
+            vectorStoreRecordCollection.GetService(typeof(IKeywordHybridSearchable<TextRagStorageDocument<TKey>>)) as IKeywordHybridSearchable<TextRagStorageDocument<TKey>> :
+            null;
 
         // Optional filter to limit the search to a specific namespace.
         Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._options.SearchNamespace) ? null : x => x.Namespaces.Contains(this._options.SearchNamespace);
 
-        // Generate the vector for the query and search.
-        var searchResult = vectorStoreRecordCollection.SearchAsync(
-            query,
-            searchOptions?.Top ?? 3,
-            options: new()
-            {
-                Filter = filter,
-            },
-            cancellationToken: cancellationToken);
+        // Execute a hybrid search if possible, otherwise perform a regular vector search.
+        var searchResult = hybridSearchCollection is null
+            ? vectorStoreRecordCollection.SearchAsync(
+                query,
+                searchOptions?.Top ?? 3,
+                options: new()
+                {
+                    Filter = filter,
+                },
+                cancellationToken: cancellationToken)
+            : hybridSearchCollection.HybridSearchAsync(
+                query,
+                this._wordSegmenter(query),
+                searchOptions?.Top ?? 3,
+                options: new()
+                {
+                    Filter = filter,
+                },
+                cancellationToken: cancellationToken);
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
@@ -281,12 +312,10 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <returns>The created collection.</returns>
     private async Task<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        var vectorStoreRecordCollection = this._vectorStoreRecordCollection.Value;
-
         // Return immediately if the collection is already created, no need to do any locking in this case.
         if (this._collectionInitialized)
         {
-            return vectorStoreRecordCollection;
+            return this._vectorStoreRecordCollection;
         }
 
         // Wait on a lock to ensure that only one thread can create the collection.
@@ -297,13 +326,13 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         if (this._collectionInitialized)
         {
             this._collectionInitializationLock.Release();
-            return vectorStoreRecordCollection;
+            return this._vectorStoreRecordCollection;
         }
 
         // Only the winning thread should reach this point and create the collection.
         try
         {
-            await vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+            await this._vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
             this._collectionInitialized = true;
         }
         finally
@@ -311,7 +340,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             this._collectionInitializationLock.Release();
         }
 
-        return vectorStoreRecordCollection;
+        return this._vectorStoreRecordCollection;
     }
 
     /// <summary>
@@ -338,6 +367,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         {
             if (disposing)
             {
+                this._vectorStoreRecordCollection.Dispose();
                 this._collectionInitializationLock.Dispose();
             }
 

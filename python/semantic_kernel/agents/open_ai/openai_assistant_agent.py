@@ -1,15 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 import logging
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
-from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from copy import copy, deepcopy
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
 from openai.lib._parsing._completions import type_to_response_format_param
@@ -20,11 +16,20 @@ from openai.types.beta.assistant_create_params import (
     ToolResourcesFileSearch,
 )
 from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
+from openai.types.beta.assistant_tool_param import AssistantToolParam
+from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 from semantic_kernel.agents import Agent
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents.agent import (
+    AgentResponseItem,
+    AgentSpec,
+    AgentThread,
+    DeclarativeSpecMixin,
+    ToolSpec,
+    register_agent_type,
+)
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
@@ -42,6 +47,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -53,15 +59,74 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semanti
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
-    from openai.types.beta.assistant_tool_param import AssistantToolParam
-    from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
     from openai.types.beta.thread_create_params import Message as ThreadCreateMessage
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
-    from semantic_kernel.kernel import Kernel
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+_T = TypeVar("_T", bound="OpenAIAssistantAgent")
+
 logger: logging.Logger = logging.getLogger(__name__)
+
+# region Declarative Spec
+
+_TOOL_BUILDERS: dict[
+    str,
+    Callable[[ToolSpec, Kernel | None], tuple[list[AssistantToolParam], ToolResources]],
+] = {}
+
+
+def _register_tool(tool_type: str):
+    def decorator(
+        fn: Callable[[ToolSpec, Kernel | None], tuple[list[AssistantToolParam], ToolResources]],
+    ):
+        _TOOL_BUILDERS[tool_type.lower()] = fn
+        return fn
+
+    return decorator
+
+
+# Update _code_interpreter
+@_register_tool("code_interpreter")
+def _code_interpreter(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[AssistantToolParam], ToolResources]:
+    file_ids = spec.options.get("file_ids")
+    return OpenAIAssistantAgent.configure_code_interpreter_tool(file_ids=file_ids)
+
+
+# Update _file_search
+@_register_tool("file_search")
+def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[AssistantToolParam], ToolResources]:
+    vector_store_ids = spec.options.get("vector_store_ids")
+    if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
+        raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
+    return OpenAIAssistantAgent.configure_file_search_tool(vector_store_ids=vector_store_ids)
+
+
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> tuple[list[AssistantToolParam], ToolResources]:
+    if not spec.type:
+        raise AgentInitializationException("Tool spec must include a 'type' field.")
+
+    try:
+        builder = _TOOL_BUILDERS[spec.type.lower()]
+    except KeyError as exc:
+        raise AgentInitializationException(f"Unsupported tool type: {spec.type}") from exc
+
+    sig = inspect.signature(builder)
+    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)  # type: ignore[call-arg]
+
+
+# endregion
 
 
 @release_candidate
@@ -157,7 +222,8 @@ class AssistantAgentThread(AgentThread):
 
 
 @release_candidate
-class OpenAIAssistantAgent(Agent):
+@register_agent_type("openai_assistant")
+class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
     """OpenAI Assistant Agent class.
 
     Provides the ability to interact with OpenAI Assistants.
@@ -241,6 +307,9 @@ class OpenAIAssistantAgent(Agent):
         super().__init__(**args)
 
     @staticmethod
+    @deprecated(
+        "setup_resources is deprecated. Use OpenAIAssistantAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
+    )
     def setup_resources(
         *,
         ai_model_id: str | None = None,
@@ -300,6 +369,226 @@ class OpenAIAssistantAgent(Agent):
 
         return client, openai_settings.chat_model_id
 
+    @staticmethod
+    def create_client(
+        *,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncOpenAI:
+        """A method to create the OpenAI client.
+
+        Any arguments provided will override the values in the environment variables/environment file.
+
+        Args:
+            ai_model_id: The AI model ID
+            api_key: The API key
+            org_id: The organization ID
+            env_file_path: The environment file path
+            env_file_encoding: The environment file encoding, defaults to utf-8
+            default_headers: The default headers to add to the client
+            kwargs: Additional keyword arguments
+
+        Returns:
+            An OpenAI client instance.
+        """
+        try:
+            openai_settings = OpenAISettings(
+                chat_model_id=ai_model_id,
+                api_key=api_key,
+                org_id=org_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+
+        if not openai_settings.api_key:
+            raise AgentInitializationException("The OpenAI API key is required.")
+
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationException("The OpenAI model ID is required.")
+
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        return AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            organization=openai_settings.org_id,
+            default_headers=merged_headers,
+            **kwargs,
+        )
+
+    # endregion
+
+    # region Declarative Spec
+
+    @override
+    @classmethod
+    async def _from_dict(
+        cls: type[_T],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
+        **kwargs,
+    ) -> _T:
+        """Create an Assistant Agent from the provided dictionary.
+
+        Args:
+            data: The dictionary containing the agent data.
+            kernel: The kernel to use for the agent.
+            prompt_template_config: The prompt template configuration.
+            kwargs: Additional keyword arguments. Note: unsupported keys may raise validation errors.
+
+        Returns:
+            AzureAIAgent: The OpenAI Assistant Agent instance.
+        """
+        client: AsyncOpenAI = kwargs.pop("client", None)
+        if client is None:
+            raise AgentInitializationException("Missing required 'client' in OpenAIAssistantAgent._from_dict()")
+
+        spec = AgentSpec.model_validate(data)
+
+        if "settings" in kwargs:
+            kwargs.pop("settings")
+
+        args = data.pop("arguments", None)
+        arguments = None
+        if args:
+            arguments = KernelArguments(**args)
+
+        if spec.id:
+            existing_definition = await client.beta.assistants.retrieve(spec.id)
+
+            # Create a mutable clone
+            definition = deepcopy(existing_definition)
+
+            # Selectively override attributes from spec
+            if spec.name is not None:
+                setattr(definition, "name", spec.name)
+            if spec.description is not None:
+                setattr(definition, "description", spec.description)
+            if spec.instructions is not None:
+                setattr(definition, "instructions", spec.instructions)
+            if spec.extras:
+                merged_metadata = dict(getattr(definition, "metadata", {}) or {})
+                merged_metadata.update(spec.extras)
+                setattr(definition, "metadata", merged_metadata)
+
+            return cls(
+                definition=definition,
+                client=client,
+                kernel=kernel,
+                prompt_template_config=prompt_template_config,
+                arguments=arguments,
+                **kwargs,
+            )
+
+        if not (spec.model and spec.model.id):
+            raise ValueError("model.id required when creating a new Azure AI agent")
+
+        # Build tool definitions & resources
+        tool_objs = [
+            _build_tool(t, kernel) for t in spec.tools if t.type != "function"
+        ]  # List[tuple[list[ToolParam], ToolResources]]
+        all_tools: list[AssistantToolParam] = []
+        all_resources: ToolResources = {}
+
+        for tool_list, resource in tool_objs:
+            all_tools.extend(tool_list)
+            all_resources.update(resource)
+
+        try:
+            agent_definition = await client.beta.assistants.create(
+                model=spec.model.id,
+                name=spec.name,
+                description=spec.description,
+                instructions=spec.instructions,
+                tools=all_tools,
+                tool_resources=all_resources,
+                metadata=spec.extras,
+                **kwargs,
+            )
+        except Exception as ex:
+            print(f"Error creating agent: {ex}")
+
+        return cls(
+            definition=agent_definition,
+            client=client,
+            arguments=arguments,
+            kernel=kernel,
+            prompt_template_config=prompt_template_config,
+            **kwargs,
+        )
+
+    @classmethod
+    def _get_setting(cls: type[_T], value: Any) -> Any:
+        """Return raw value if `SecretStr`, otherwise pass through."""
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
+
+    @override
+    @classmethod
+    def resolve_placeholders(
+        cls: type[_T],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Substitute ${OpenAI:Key} placeholders with fields from OpenAIAgentSettings and extras."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Build the mapping only if settings is provided and valid
+        field_mapping: dict[str, Any] = {}
+
+        if settings is None:
+            settings = OpenAISettings()
+
+        if not isinstance(settings, OpenAISettings):
+            raise AgentInitializationException(f"Expected OpenAISettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": cls._get_setting(getattr(settings, "chat_model_id", None)),
+            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+            "ApiKey": cls._get_setting(getattr(settings, "api_key", None)),
+        })
+
+        if extras:
+            field_mapping.update(extras)
+
+        def replacer(match: re.Match[str]) -> str:
+            """Replace the matched placeholder with the corresponding value from field_mapping."""
+            full_key = match.group(1)  # for example, OpenAI:ApiKey
+            section, _, key = full_key.partition(":")
+            if section != "OpenAI":
+                return match.group(0)
+
+            # Try short key first (ApiKey), then full (OpenAI:ApiKey)
+            return str(field_mapping.get(key) or field_mapping.get(full_key) or match.group(0))
+
+        result = pattern.sub(replacer, yaml_str)
+
+        # Safety check for unresolved placeholders
+        unresolved = pattern.findall(result)
+        if unresolved:
+            raise AgentInitializationException(
+                f"Unresolved placeholders in spec: {', '.join(f'${{{key}}}' for key in unresolved)}"
+            )
+
+        return result
+
     # endregion
 
     # region Tool Handling
@@ -307,7 +596,7 @@ class OpenAIAssistantAgent(Agent):
     @staticmethod
     def configure_code_interpreter_tool(
         file_ids: str | list[str] | None = None, **kwargs: Any
-    ) -> tuple[list["CodeInterpreterToolParam"], ToolResources]:
+    ) -> tuple[list["AssistantToolParam"], ToolResources]:
         """Generate tool + tool_resources for the code_interpreter."""
         if isinstance(file_ids, str):
             file_ids = [file_ids]
@@ -320,7 +609,7 @@ class OpenAIAssistantAgent(Agent):
     @staticmethod
     def configure_file_search_tool(
         vector_store_ids: str | list[str], **kwargs: Any
-    ) -> tuple[list[FileSearchToolParam], ToolResources]:
+    ) -> tuple[list[AssistantToolParam], ToolResources]:
         """Generate tool + tool_resources for the file_search."""
         if isinstance(vector_store_ids, str):
             vector_store_ids = [vector_store_ids]
@@ -442,8 +731,8 @@ class OpenAIAssistantAgent(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
@@ -549,8 +838,8 @@ class OpenAIAssistantAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -657,8 +946,8 @@ class OpenAIAssistantAgent(Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         additional_instructions: str | None = None,

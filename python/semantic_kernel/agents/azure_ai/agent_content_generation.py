@@ -398,14 +398,13 @@ def generate_streaming_bing_grounding_content(
 
     for index, tool in enumerate(step_details.tool_calls):
         if tool.type == "bing_grounding":
-            bing_tool = cast(RunStepBingGroundingToolCall, tool)
-            arguments = getattr(bing_tool, "bing_grounding", None)
+            arguments = tool.get("bing_grounding", None)
             items.append(
                 FunctionCallContent(
-                    id=bing_tool.id,
+                    id=tool.id,
                     index=index,
-                    name=bing_tool.type,
-                    function_name=bing_tool.type,
+                    name=tool.type,
+                    function_name=tool.type,
                     arguments=arguments,
                 )
             )

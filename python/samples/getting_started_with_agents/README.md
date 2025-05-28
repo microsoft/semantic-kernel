@@ -59,6 +59,7 @@ Example|Description
 [step3_assistant_vision](../getting_started_with_agents/openai_assistant/step3_assistant_vision.py)|How to provide an image as input to an OpenAI Assistant agent.
 [step4_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step4_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an OpenAI Assistant agent.
 [step5_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step5_assistant_tool_file_search.py)|How to use the file-search tool for an OpenAI Assistant agent.
+[step6_assistant](../getting_started_with_agents/openai_assistant/step6_assistant_declarative.py)|How to create an Assistant Agent from a declarative spec.
 
 ## OpenAI Responses Agent
 
@@ -71,6 +72,7 @@ Example|Description
 [step5_responses_agent_file_search](../getting_started_with_agents/openai_responses/step5_responses_agent_file_search.py)|How to use the file-search tool with an OpenAI Responses agent.
 [step6_responses_agent_vision](../getting_started_with_agents/openai_responses/step6_responses_agent_vision.py)|How to provide an image as input to an OpenAI Responses agent.
 [step7_responses_agent_structured_outputs](../getting_started_with_agents/openai_responses/step7_responses_agent_structured_outputs.py)|How to use have an OpenAI Responses agent use structured outputs.
+[step8_assistant](../getting_started_with_agents/openai_responses/step8_responses_agent_declarative.py)|How to create a Responses Agent from a declarative spec.
 
 ## Multi-Agent Orchestration
 
