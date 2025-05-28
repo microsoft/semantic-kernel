@@ -32,7 +32,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert await store.list_collection_names() == []
 
             collection_name = "list_collection_names"
-            collection = store.get_collection(collection_name, record_type)
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
             await collection.create_collection()
 
             collection_names = await store.list_collection_names()
@@ -43,9 +43,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             collection_names = await store.list_collection_names()
             assert collection_name not in collection_names
 
-            # Deleting the collection doesn't remove it from the vector_record_collections list in the store
-            assert collection_name in store.vector_record_collections
-
     async def test_collection_not_created(
         self,
         stores: dict[str, Callable[[], VectorStore]],
@@ -55,7 +52,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         """Test get without collection."""
         async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "collection_not_created"
-            collection = store.get_collection(collection_name, record_type)
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
 
             assert await collection.does_collection_exist() is False
 
@@ -85,8 +82,8 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "custom_partition_key"
             collection = store.get_collection(
-                collection_name,
-                record_type,
+                collection_name=collection_name,
+                record_type=record_type,
                 partition_key=PartitionKey(path="/product_type"),
             )
 
@@ -119,7 +116,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         """Test get with include_vector."""
         async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "get_include_vector"
-            collection = store.get_collection(collection_name, record_type)
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
 
             # Upsert
             await collection.create_collection()
@@ -149,7 +146,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         """Test get with include_vector."""
         async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "get_not_include_vector"
-            collection = store.get_collection(collection_name, record_type)
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
 
             # Upsert
             await collection.create_collection()
@@ -179,7 +176,9 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         """Test collection with key as key field."""
         async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "collection_with_key_as_key_field"
-            collection = store.get_collection(collection_name, record_type_with_key_as_key_field)
+            collection = store.get_collection(
+                collection_name=collection_name, record_type=record_type_with_key_as_key_field
+            )
 
             # Upsert
             await collection.create_collection()
@@ -220,7 +219,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert await store.list_collection_names() == []
 
             collection_name = "list_collection_names"
-            collection = store.get_collection(collection_name, record_type)
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
             await collection.create_collection()
 
             collection_names = await store.list_collection_names()
@@ -230,6 +229,3 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert await collection.does_collection_exist() is False
             collection_names = await store.list_collection_names()
             assert collection_name not in collection_names
-
-            # Deleting the collection doesn't remove it from the vector_record_collections list in the store
-            assert collection_name in store.vector_record_collections

@@ -14,7 +14,6 @@ from semantic_kernel.connectors.postgres import PostgresCollection, PostgresSett
 from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
-    VectorSearchOptions,
     VectorStoreCollectionDefinition,
     VectorStoreField,
     vectorstoremodel,
@@ -111,7 +110,7 @@ async def create_simple_collection(
     """
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
     collection_id = f"test_collection_{suffix}"
-    collection = vector_store.get_collection(collection_id, SimpleDataModel)
+    collection = vector_store.get_collection(collection_name=collection_id, record_type=SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
     await collection.create_collection()
     try:
@@ -128,7 +127,7 @@ def test_create_store(vector_store):
 async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
 
-    collection = vector_store.get_collection(f"test_collection_{suffix}", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name=f"test_collection_{suffix}", record_type=SimpleDataModel)
 
     does_exist_1 = await collection.does_collection_exist()
     assert does_exist_1 is False
@@ -183,7 +182,9 @@ async def test_upsert_get_and_delete_pandas(vector_store):
 
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
     collection = vector_store.get_collection(
-        f"test_collection_{suffix}", record_type=pd.DataFrame, definition=definition
+        collection_name=f"test_collection_{suffix}",
+        record_type=pd.DataFrame,
+        definition=definition,
     )
     await collection.create_collection()
 
@@ -249,9 +250,7 @@ async def test_search(vector_store: PostgresStore):
         await simple_collection.upsert(records)
 
         try:
-            search_results = await simple_collection.vectorized_search(
-                [1.0, 0.0, 0.0], options=VectorSearchOptions(top=3, include_total_count=True)
-            )
+            search_results = await simple_collection.search(vector=[1.0, 0.0, 0.0], top=3, include_total_count=True)
             assert search_results is not None
             assert search_results.total_count == 3
             assert {result.record.id async for result in search_results.results} == {1, 2, 3}
