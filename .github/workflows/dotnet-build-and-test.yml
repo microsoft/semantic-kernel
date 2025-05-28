@@ -96,7 +96,6 @@ jobs:
           done
           dotnet new console --name packcheck --output consoleapp
           dotnet add consoleapp/packcheck.csproj package Microsoft.SemanticKernel --source ./artifacts
-          dotnet restore consoleapp/packcheck.csproj --source ./artifacts --source https://api.nuget.org/v3/index.json
           dotnet build consoleapp/packcheck.csproj
           rm -rf ./artifacts
           rm -rf ./consoleapp
