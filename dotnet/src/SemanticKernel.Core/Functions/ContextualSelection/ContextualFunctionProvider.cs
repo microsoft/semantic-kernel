@@ -64,7 +64,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         int vectorDimensions,
         IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
-        ILoggerFactory? loggerFactory = default,
+        ILoggerFactory? loggerFactory = null,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
