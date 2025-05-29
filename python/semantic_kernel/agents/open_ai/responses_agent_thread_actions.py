@@ -723,22 +723,24 @@ class ResponsesAgentThreadActions:
         return response_inputs
 
     @classmethod
-    def _get_tool_calls_from_output(cls: type[_T], output: list[ResponseFunctionToolCall]) -> list[FunctionCallContent]:
+    def _get_tool_calls_from_output(
+        cls: type[_T], output: list[ResponseOutputItem | ResponseOutputMessage]
+    ) -> list[FunctionCallContent]:
         """Get tool calls from a response output."""
         function_calls: list[FunctionCallContent] = []
-        if not any(isinstance(i, ResponseFunctionToolCall) for i in output):
-            return []
-        for tool in cast(list[ResponseFunctionToolCall], output):
-            content = tool if isinstance(tool, ResponseFunctionToolCall) else tool.delta
-            function_calls.append(
-                FunctionCallContent(
-                    id=content.id,
-                    call_id=content.call_id,
-                    index=getattr(content, "index", None),
-                    name=content.name,
-                    arguments=content.arguments,
+
+        # Filter to only process ResponseFunctionToolCall objects
+        for item in output:
+            if isinstance(item, ResponseFunctionToolCall):
+                function_calls.append(
+                    FunctionCallContent(
+                        id=item.id,
+                        call_id=item.call_id,
+                        index=getattr(item, "index", None),
+                        name=item.name,
+                        arguments=item.arguments,
+                    )
                 )
-            )
         return function_calls
 
     @classmethod
