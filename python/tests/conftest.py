@@ -12,6 +12,7 @@ import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
+from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
@@ -455,3 +456,39 @@ def data_model_type_with_key_as_key_field(
         key: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
+
+
+# region Declarative Spec
+
+
+@register_agent_type("test_agent")
+class TestAgent(DeclarativeSpecMixin, Agent):
+    @classmethod
+    def resolve_placeholders(cls, yaml_str, settings=None, extras=None):
+        return yaml_str
+
+    @classmethod
+    async def _from_dict(cls, data, **kwargs):
+        return cls(
+            name=data.get("name"),
+            description=data.get("description"),
+            instructions=data.get("instructions"),
+            kernel=data.get("kernel"),
+        )
+
+    async def get_response(self, messages, instructions_override=None):
+        return "test response"
+
+    async def invoke(self, messages, **kwargs):
+        return "invoke result"
+
+    async def invoke_stream(self, messages, **kwargs):
+        yield "stream result"
+
+
+@fixture(scope="session")
+def test_agent_cls():
+    return TestAgent
+
+
+# endregion

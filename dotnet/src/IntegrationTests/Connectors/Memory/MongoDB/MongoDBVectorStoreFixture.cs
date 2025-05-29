@@ -29,7 +29,7 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
     public IMongoDatabase MongoDatabase { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for MongoDB test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     public async Task InitializeAsync()
     {
@@ -49,15 +49,15 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineSimilarity }
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)),
+                new VectorStoreDataProperty("HotelCode", typeof(int)),
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
+                new VectorStoreDataProperty("HotelRating", typeof(float)),
+                new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreDataProperty("Timestamp", typeof(DateTime)),
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineSimilarity }
             ]
         };
 

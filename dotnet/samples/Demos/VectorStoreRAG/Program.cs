@@ -71,29 +71,29 @@ switch (appConfig.RagConfig.AIEmbeddingService)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-        kernelBuilder.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureAISearchCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             new Uri(appConfig.AzureAISearchConfig.Endpoint),
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
         break;
-    case "AzureCosmosDBMongoDB":
-        kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosMongoDB":
+        kernelBuilder.Services.AddCosmosMongoCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBMongoDBConfig.ConnectionString,
-            appConfig.AzureCosmosDBMongoDBConfig.DatabaseName);
+            appConfig.CosmosMongoConfig.ConnectionString,
+            appConfig.CosmosMongoConfig.DatabaseName);
         break;
-    case "AzureCosmosDBNoSQL":
-        kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosNoSql":
+        kernelBuilder.Services.AddCosmosNoSqlCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
-            appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
+            appConfig.CosmosNoSqlConfig.ConnectionString,
+            appConfig.CosmosNoSqlConfig.DatabaseName);
         break;
     case "InMemory":
-        kernelBuilder.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
+        kernelBuilder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
-        kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
+        kernelBuilder.Services.AddQdrantCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
             appConfig.QdrantConfig.Host,
             appConfig.QdrantConfig.Port,
@@ -101,16 +101,16 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.QdrantConfig.ApiKey);
         break;
     case "Redis":
-        kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddRedisJsonCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.RedisConfig.ConnectionConfiguration);
         break;
     case "Weaviate":
-        kernelBuilder.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+        kernelBuilder.Services.AddWeaviateCollection<TextSnippet<Guid>>(
             // Weaviate collection names must start with an upper case letter.
             char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
-            null,
-            new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
+            endpoint: new Uri(appConfig.WeaviateConfig.Endpoint),
+            apiKey: null);
         break;
     default:
         throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");
@@ -120,8 +120,8 @@ switch (appConfig.RagConfig.VectorStoreType)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-    case "AzureCosmosDBMongoDB":
-    case "AzureCosmosDBNoSQL":
+    case "CosmosMongoDB":
+    case "CosmosNoSql":
     case "InMemory":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);

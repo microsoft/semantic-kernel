@@ -40,20 +40,20 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
         }
     ];
 
-    public override VectorStoreRecordDefinition GetRecordDefinition()
+    public override VectorStoreCollectionDefinition CreateRecordDefinition()
         => new()
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey)),
-                new VectorStoreRecordVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>?), SimpleRecord<TKey>.DimensionCount)
+                new VectorStoreKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey)),
+                new VectorStoreVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>), SimpleRecord<TKey>.DimensionCount)
                 {
                     DistanceFunction = this.DistanceFunction,
                     IndexKind = this.IndexKind
                 },
 
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Number), typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Text), typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty(nameof(SimpleRecord<TKey>.Number), typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty(nameof(SimpleRecord<TKey>.Text), typeof(string)) { IsIndexed = true },
             ]
         };
 }

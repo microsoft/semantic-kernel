@@ -33,8 +33,10 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
         Consider suggestions when refining an idea.
         """;
 
-    [Fact]
-    public async Task UseAgentGroupChatWithTwoAgents()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAgentGroupChatWithTwoAgents(bool useChatClient)
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -42,7 +44,7 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient1),
             };
 
         ChatCompletionAgent agentWriter =
@@ -50,7 +52,7 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Instructions = CopyWriterInstructions,
                 Name = CopyWriterName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient2),
             };
 
         // Create a chat for agent interaction.
@@ -84,6 +86,9 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient1?.Dispose();
+        chatClient2?.Dispose();
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

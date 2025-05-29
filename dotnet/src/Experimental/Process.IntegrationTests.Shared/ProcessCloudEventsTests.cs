@@ -180,7 +180,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
         var proxyTopics = new List<string>() { MockTopicNames.RepeatExternalTopic, MockTopicNames.EchoExternalTopic };
-        var proxyStep = processBuilder.AddProxyStep(proxyTopics);
+        var proxyStep = processBuilder.AddProxyStep(id: "proxy", proxyTopics);
 
         processBuilder
             .OnInputEvent(ProcessTestsEvents.StartProcess)
@@ -206,7 +206,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         ProcessBuilder process = new(processName);
 
         var echoStep = process.AddStepFromType<CommonSteps.EchoStep>();
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process
             .OnInputEvent(ProcessTestsEvents.StartInnerProcess)

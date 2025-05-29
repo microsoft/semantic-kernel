@@ -15,7 +15,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents import AgentResponseItem, AgentThread
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -261,8 +261,8 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
@@ -358,8 +358,8 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         agent_alias: str | None = None,
@@ -462,8 +462,8 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         agent_alias: str | None = None,

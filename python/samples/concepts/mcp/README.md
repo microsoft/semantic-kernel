@@ -16,7 +16,7 @@ There are two types of servers, Stdio and Sse based. The sample shows how to use
 
 Some other common runners are [uvx](https://docs.astral.sh/uv/guides/tools/), for python servers and [docker](https://www.docker.com/), for containerized servers.
 
-The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin.
+The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin. For Streamable HTTP server, MCPStreamableHttpPlugin can be used.
 
 The reverse, using Semantic Kernel as a server, can be found in the [demos/mcp_server](../../demos/mcp_server/) folder.
 

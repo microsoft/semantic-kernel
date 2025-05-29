@@ -312,7 +312,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
 
         // Assert
@@ -596,7 +596,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal([0], requestSequenceNumbers);
         Assert.Equal([0], functionSequenceNumbers);
 
-        // Results of function invoked before termination should be returned 
+        // Results of function invoked before termination should be returned
         Assert.Equal(3, streamingContent.Count);
 
         var lastMessageContent = streamingContent[^1] as StreamingChatMessageContent;

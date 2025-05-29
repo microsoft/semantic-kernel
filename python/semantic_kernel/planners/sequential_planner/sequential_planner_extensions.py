@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -8,9 +9,14 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated("Will be removed in a future version.")
 class SequentialPlannerFunctionExtension:
     """Function extension for the sequential planner."""
 

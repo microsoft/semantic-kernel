@@ -46,7 +46,7 @@ internal static partial class KernelVerify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
+    internal static IReadOnlyList<KernelParameterMetadata> ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -74,5 +74,7 @@ internal static partial class KernelVerify
                 }
             }
         }
+
+        return parameters;
     }
 }

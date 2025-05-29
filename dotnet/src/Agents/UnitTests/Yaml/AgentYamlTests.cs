@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -40,17 +39,18 @@ public class AgentYamlTests : IDisposable
         var builder = Kernel.CreateBuilder();
 
         // Add OpenAI client
-        OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(endpoint: null, httpClient: this._httpClient);
-        OpenAIClient openAIClient = new(new ApiKeyCredential("fakekey"), clientOptions);
-        builder.Services.AddSingleton<OpenAIClient>(openAIClient);
+        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new System.ClientModel.ApiKeyCredential("fakekey"), httpClient: this._httpClient);
+        builder.Services.AddSingleton(openAIClient);
 
         // Add Azure AI agents client
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
+        var client = new PersistentAgentsClient(
+            "https://endpoint",
             new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+            new PersistentAgentsAdministrationClientOptions
+            {
+                Transport = new HttpClientTransport(this._httpClient)
+            });
+        builder.Services.AddSingleton(client);
 
         this._kernel = builder.Build();
     }

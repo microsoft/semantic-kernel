@@ -4,12 +4,12 @@ using System;
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IVectorizedSearch{TRecord}"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="IVectorSearchable{TRecord}"/> instances.</summary>
 public static class VectorSearchExtensions
 {
     /// <summary>
-    /// Asks the <see cref="IVectorSearch{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>
-    /// and throw an exception if one isn't available.
+    /// Asks the <see cref="IVectorSearchable{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>
+    /// and throws an exception if one isn't available.
     /// </summary>
     /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
     /// <param name="vectorSearch">The vector search.</param>
@@ -19,7 +19,7 @@ public static class VectorSearchExtensions
     /// <exception cref="ArgumentNullException"><paramref name="vectorSearch"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
-    public static object GetRequiredService<TRecord>(this IVectorSearch<TRecord> vectorSearch, Type serviceType, object? serviceKey = null)
+    public static object GetRequiredService<TRecord>(this IVectorSearchable<TRecord> vectorSearch, Type serviceType, object? serviceKey = null)
     {
         if (vectorSearch is null) { throw new ArgumentNullException(nameof(vectorSearch)); }
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }

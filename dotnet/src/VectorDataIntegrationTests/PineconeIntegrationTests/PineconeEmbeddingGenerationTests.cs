@@ -3,8 +3,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
-using Microsoft.SemanticKernel;
+using Pinecone;
 using PineconeIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -12,29 +11,62 @@ using Xunit;
 
 namespace PineconeIntegrationTests;
 
-public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<string>(fixture), IClassFixture<PineconeEmbeddingGenerationTests.Fixture>
+public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PineconeEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<PineconeEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PineconeEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     // Overriding since Pinecone requires collection names to only contain ASCII lowercase letters, digits and dashes.
-    public override async Task SearchAsync_without_generator_throws()
+    public override async Task SearchAsync_string_without_generator_throws()
     {
         // The database doesn't support embedding generation, and no client-side generator has been configured at any level,
         // so SearchAsync should throw.
-        var collection = fixture.GetCollection<RawRecord>(fixture.TestStore.DefaultVectorStore, fixture.CollectionName + "-without-generator");
+        var collection = stringVectorFixture.GetCollection<RawRecord>(stringVectorFixture.TestStore.DefaultVectorStore, stringVectorFixture.CollectionName + "-without-generator");
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
-        Assert.Equal(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch, exception.Message);
+        Assert.StartsWith(
+            "A value of type 'string' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
+            exception.Message);
     }
 
-    public new class Fixture : EmbeddingGenerationTests<string>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
 
         // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
         public override string CollectionName => "embedding-generation-tests";
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => PineconeTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(PineconeTestStore.Instance.Client)
+                .AddPineconeVectorStore(),
+            services => services
+                .AddPineconeVectorStore("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions)
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(PineconeTestStore.Instance.Client)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, "ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, _ => new PineconeClient("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions))
+        ];
+    }
+
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
+    {
+        public override TestStore TestStore => PineconeTestStore.Instance;
+
+        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
+        public override string CollectionName => "search-only-embedding-generation-tests";
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => PineconeTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
@@ -48,7 +80,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.F
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

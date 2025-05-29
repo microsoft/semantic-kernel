@@ -13,15 +13,10 @@ public sealed class SqlServerTestStore : TestStore
 
     public static readonly SqlServerTestStore Instance = new();
 
-    public override IVectorStore DefaultVectorStore
-        => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
-
     public SqlServerVectorStore GetVectorStore(SqlServerVectorStoreOptions options)
         => new(this.ConnectionString, options);
 
     public override string DefaultDistanceFunction => DistanceFunction.CosineDistance;
-
-    private SqlServerVectorStore? _defaultVectorStore;
 
     protected override Task StartAsync()
     {
@@ -32,7 +27,7 @@ public sealed class SqlServerTestStore : TestStore
             throw new InvalidOperationException("Connection string is not configured, set the SqlServer:ConnectionString environment variable");
         }
 
-        this._defaultVectorStore = new(this._connectionString);
+        this.DefaultVectorStore = new SqlServerVectorStore(this._connectionString);
 
         return Task.CompletedTask;
     }

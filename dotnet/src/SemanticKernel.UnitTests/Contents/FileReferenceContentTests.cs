@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -17,9 +18,7 @@ public class FileReferenceContentTests
     [Fact]
     public void VerifyFileReferenceContentInitialState()
     {
-        FileReferenceContent definition = new();
-
-        Assert.Empty(definition.FileId);
+        Assert.Throws<ArgumentException>(() => new FileReferenceContent(string.Empty));
     }
 
     /// <summary>

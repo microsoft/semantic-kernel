@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -20,18 +20,18 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 // as we sometimes need to extend the collection (with for example another condition).
 internal class PineconeFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private Extensions.VectorData.ProviderServices.CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Metadata Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal Metadata Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
     {
         this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
         return this.Translate(preprocessedExpression);
     }
@@ -51,6 +51,9 @@ internal class PineconeFilterTranslator
                 => this.TranslateAndOr(andOr),
             UnaryExpression { NodeType: ExpressionType.Not } not
                 => this.TranslateNot(not),
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type
+                => this.Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
@@ -68,7 +71,7 @@ internal class PineconeFilterTranslator
                 ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
-    private Metadata GenerateEqualityComparison(VectorStoreRecordPropertyModel property, object? value, ExpressionType nodeType)
+    private Metadata GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
         {
@@ -224,17 +227,15 @@ internal class PineconeFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        var unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
+            unwrappedExpression = convert.Operand;
         }
 
-        var modelName = expression switch
+        var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
             MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
@@ -262,16 +263,24 @@ internal class PineconeFilterTranslator
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
 
-        if (convertedClrType is not null && convertedClrType != property.Type)
+        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+            if (convertType != property.Type && convertType != typeof(object))
+            {
+                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+            }
+
+            unwrappedExpression = convert.Operand;
         }
 
         return true;
     }
 
     private static MetadataValue? ToMetadata(object? value)
-        => value is null ? null : PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(value);
+        => value is null ? null : PineconeFieldMapping.ConvertToMetadataValue(value);
 
     private static List<MetadataValue?>? GetListOrNull(Metadata value, string mongoOperator)
         => value.Count == 1 && value.First() is var element && element.Key == mongoOperator ? element.Value?.Value as List<MetadataValue?> : null;

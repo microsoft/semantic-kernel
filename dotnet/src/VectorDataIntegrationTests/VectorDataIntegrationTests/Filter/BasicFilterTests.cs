@@ -30,10 +30,32 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r["String"] == "foo");
 
     [ConditionalFact]
+    public virtual Task Equal_with_string_sql_injection_in_value()
+    {
+        string sqlInjection = $"foo; DROP TABLE {fixture.Collection.Name};";
+
+        return this.TestFilterAsync(
+            r => r.String == sqlInjection,
+            r => r["String"] == sqlInjection,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
+    public virtual async Task Equal_with_string_sql_injection_in_name()
+    {
+        if (fixture.TestDynamic)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => this.GetDynamicRecords(r => r["String = \"not\"; DROP TABLE FilterTests;"] == "",
+            fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3])));
+        }
+    }
+
+    [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()
         => this.TestFilterAsync(
-            r => r.String == """with some special"characters'and\stuff""",
-            r => r["String"] == """with some special"characters'and\stuff""");
+            r => r.String == fixture.SpecialCharactersText,
+            r => r["String"] == fixture.SpecialCharactersText);
 
     [ConditionalFact]
     public virtual Task Equal_with_string_is_not_Contains()
@@ -63,6 +85,56 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r.String == s,
             r => r["String"] == s);
     }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_null_nullable_int()
+    {
+        int? i = null;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int_Value()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value);
+    }
+
+#pragma warning disable CS8629 // Nullable value type may be null.
+    [ConditionalFact]
+    public virtual async Task Equal_int_property_with_null_nullable_int_Value()
+    {
+        int? i = null;
+
+        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreException (#11766)
+        var exception = await Assert.ThrowsAnyAsync<Exception>(() => this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value,
+            expectZeroResults: true));
+
+        if (exception is not InvalidOperationException and not VectorStoreException { InnerException: InvalidOperationException })
+        {
+            Assert.Fail($"Expected {nameof(InvalidOperationException)} or {nameof(VectorStoreException)} but got {exception.GetType()}");
+        }
+    }
+#pragma warning restore CS8629
 
     [ConditionalFact]
     public virtual Task NotEqual_with_int()
@@ -263,8 +335,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Contains
 
+    #region Variable types
+
     [ConditionalFact]
-    public virtual Task Captured_variable()
+    public virtual Task Captured_local_variable()
     {
         // ReSharper disable once ConvertToConstant.Local
         var i = 8;
@@ -273,6 +347,59 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r.Int == i,
             r => (int)r["Int"] == i);
     }
+
+    [ConditionalFact]
+    public virtual Task Member_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberField,
+            r => (int)r["Int"] == this._memberField);
+
+    [ConditionalFact]
+    public virtual Task Member_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberReadOnlyField,
+            r => (int)r["Int"] == this._memberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberField,
+            r => (int)r["Int"] == _staticMemberField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberReadOnlyField,
+            r => (int)r["Int"] == _staticMemberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_nested_access()
+        => this.TestFilterAsync(
+            r => r.Int == this._someWrapper.SomeWrappedValue,
+            r => (int)r["Int"] == this._someWrapper.SomeWrappedValue);
+
+#pragma warning disable RCS1169 // Make field read-only
+#pragma warning disable IDE0044 // Make field read-only
+#pragma warning disable RCS1187 // Use constant instead of field
+#pragma warning disable CA1802 // Use literals where appropriate
+    private int _memberField = 8;
+    private readonly int _memberReadOnlyField = 8;
+
+    private static int _staticMemberField = 8;
+    private static readonly int _staticMemberReadOnlyField = 8;
+
+    private SomeWrapper _someWrapper = new();
+#pragma warning restore CA1802
+#pragma warning restore RCS1187
+#pragma warning restore RCS1169
+#pragma warning restore IDE0044
+
+    private sealed class SomeWrapper
+    {
+        public int SomeWrappedValue = 8;
+    }
+
+    #endregion Variable types
 
     #region Legacy filter support
 
@@ -308,7 +435,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<FilterRecord>> GetRecords(
         Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.Collection.SearchEmbeddingAsync(
+        => await fixture.Collection.SearchAsync(
                 vector,
                 top: top,
                 new() { Filter = filter })
@@ -316,7 +443,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<Dictionary<string, object?>>> GetDynamicRecords(
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.DynamicCollection.SearchEmbeddingAsync(
+        => await fixture.DynamicCollection.SearchAsync(
                 vector,
                 top: top,
                 new() { Filter = dynamicFilter })
@@ -332,12 +459,20 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (expected.Count == 0 && !expectZeroResults)
         {
-            Assert.Fail("The test returns zero results, and so is unreliable");
+            Assert.Fail("The test returns zero results, and so may be unreliable");
+        }
+        else if (expectZeroResults && expected.Count != 0)
+        {
+            Assert.Fail($"{nameof(expectZeroResults)} was true, but the test returned {expected.Count} results.");
         }
 
         if (expected.Count == fixture.TestData.Count && !expectAllResults)
         {
-            Assert.Fail("The test returns all results, and so is unreliable");
+            Assert.Fail("The test returns all results, and so may be unreliable");
+        }
+        else if (expectAllResults && expected.Count != fixture.TestData.Count)
+        {
+            Assert.Fail($"{nameof(expectAllResults)} was true, but the test returned {expected.Count} results instead of the expected {fixture.TestData.Count}.");
         }
 
         // Execute the query against the vector store, once using the strongly typed filter
@@ -389,7 +524,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var actual = await fixture.Collection.VectorizedSearchAsync(
+        var actual = await fixture.Collection.SearchAsync(
                 new ReadOnlyMemory<float>([1, 2, 3]),
                 top: fixture.TestData.Count,
                 new()
@@ -425,12 +560,14 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     {
         public override string CollectionName => "FilterTests";
 
+        public virtual string SpecialCharactersText => """>with $om[ specia]"chara<ters'and\stuff""";
+
         protected virtual ReadOnlyMemory<float> GetVector(int count)
             // All records have the same vector - this fixture is about testing criteria filtering only
             // Derived types may override this to provide different vectors for different records.
             => new(Enumerable.Range(1, count).Select(i => (float)i).ToArray());
 
-        public virtual IVectorStoreRecordCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
+        public virtual VectorStoreCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
 
         public virtual bool TestDynamic => true;
 
@@ -440,28 +577,28 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
             if (this.TestDynamic)
             {
-                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetCollection<object, Dictionary<string, object?>>(this.CollectionName, this.GetRecordDefinition());
+                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
             }
         }
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
-                    new VectorStoreRecordVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?), 3)
+                    new VectorStoreKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
+                    new VectorStoreVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?), 3)
                     {
                         DistanceFunction = this.DistanceFunction,
                         IndexKind = this.IndexKind
                     },
 
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.String), typeof(string)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
+                    new VectorStoreDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.String), typeof(string)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
                 ]
             };
 
@@ -518,7 +655,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Key = this.GenerateNextKey<TKey>(),
                     Int = 11,
                     Bool = true,
-                    String = """with some special"characters'and\stuff""",
+                    String = this.SpecialCharactersText,
                     Int2 = 101,
                     StringArray = ["y", "z"],
                     StringList = ["y", "z"],
@@ -529,24 +666,24 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         public virtual void AssertEqualFilterRecord(FilterRecord x, FilterRecord y)
         {
-            var definitionProperties = this.GetRecordDefinition().Properties;
+            var definitionProperties = this.CreateRecordDefinition().Properties;
 
             Assert.Equal(x.Key, y.Key);
             Assert.Equal(x.Int, y.Int);
             Assert.Equal(x.String, y.String);
             Assert.Equal(x.Int2, y.Int2);
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.Bool)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.Bool)))
             {
                 Assert.Equal(x.Bool, y.Bool);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringArray)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringArray)))
             {
                 Assert.Equivalent(x.StringArray, y.StringArray);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringList)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringList)))
             {
                 Assert.Equivalent(x.StringList, y.StringList);
             }
@@ -554,24 +691,24 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         public virtual void AssertEqualDynamic(FilterRecord x, Dictionary<string, object?> y)
         {
-            var definitionProperties = this.GetRecordDefinition().Properties;
+            var definitionProperties = this.CreateRecordDefinition().Properties;
 
             Assert.Equal(x.Key, y["Key"]);
             Assert.Equal(x.Int, y["Int"]);
             Assert.Equal(x.String, y["String"]);
             Assert.Equal(x.Int2, y["Int2"]);
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.Bool)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.Bool)))
             {
                 Assert.Equal(x.Bool, y["Bool"]);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringArray)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringArray)))
             {
                 Assert.Equivalent(x.StringArray, y["StringArray"]);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringList)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringList)))
             {
                 Assert.Equivalent(x.StringList, y["StringList"]);
             }

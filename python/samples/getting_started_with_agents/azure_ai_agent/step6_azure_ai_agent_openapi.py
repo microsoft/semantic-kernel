@@ -4,7 +4,7 @@ import asyncio
 import json
 import os
 
-from azure.ai.projects.models import OpenApiAnonymousAuthDetails, OpenApiTool
+from azure.ai.agents.models import OpenApiAnonymousAuthDetails, OpenApiTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
@@ -24,8 +24,6 @@ USER_INPUTS = [
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings()
-
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
@@ -58,7 +56,7 @@ async def main() -> None:
 
         # 3. Create an agent on the Azure AI agent service with the OpenAPI tools
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=openapi_weather.definitions + openapi_countries.definitions,
         )
 
@@ -83,7 +81,7 @@ async def main() -> None:
                     thread = response.thread
         finally:
             # 8. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
+            await client.agents.threads.delete(thread.id)
             await client.agents.delete_agent(agent.id)
 
         """

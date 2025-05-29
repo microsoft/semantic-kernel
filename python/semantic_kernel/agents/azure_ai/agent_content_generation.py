@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any, cast
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageDeltaImageFileContent,
     MessageDeltaImageFileContentObject,
     MessageDeltaTextContent,
@@ -16,6 +16,7 @@ from azure.ai.projects.models import (
     MessageTextUrlCitationAnnotation,
     RequiredFunctionToolCall,
     RunStep,
+    RunStepAzureAISearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
@@ -27,7 +28,7 @@ from azure.ai.projects.models import (
     ThreadRun,
 )
 
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.annotation_content import AnnotationContent, CitationType
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -42,7 +43,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import (
+    from azure.ai.agents.models import (
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )
@@ -270,7 +271,7 @@ def generate_function_result_content(
             function_name=function_step.function_name,
             plugin_name=function_step.plugin_name,
             id=function_step.id,
-            result=tool_call.function.output,  # type: ignore
+            result=tool_call.function.get("output"),  # type: ignore
         )
     )
     return function_call_content
@@ -288,6 +289,31 @@ def generate_bing_grounding_content(
             name=bing_tool_call.type,
             function_name=bing_tool_call.type,
             arguments=bing_tool_call.bing_grounding,
+        )
+    )
+    return message_content
+
+
+@experimental
+def generate_azure_ai_search_content(
+    agent_name: str, azure_ai_search_tool_call: "RunStepAzureAISearchToolCall"
+) -> ChatMessageContent:
+    """Generate function result content related to an Azure AI Search Tool."""
+    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    # Azure AI Search tool call contains both tool call input and output
+    message_content.items.append(
+        FunctionCallContent(
+            id=azure_ai_search_tool_call.id,
+            name=azure_ai_search_tool_call.type,
+            function_name=azure_ai_search_tool_call.type,
+            arguments=azure_ai_search_tool_call.azure_ai_search.get("input"),
+        )
+    )
+    message_content.items.append(
+        FunctionResultContent(
+            function_name=azure_ai_search_tool_call.type,
+            id=azure_ai_search_tool_call.id,
+            result=azure_ai_search_tool_call.azure_ai_search.get("output"),
         )
     )
     return message_content
@@ -372,15 +398,53 @@ def generate_streaming_bing_grounding_content(
 
     for index, tool in enumerate(step_details.tool_calls):
         if tool.type == "bing_grounding":
-            bing_tool = cast(RunStepBingGroundingToolCall, tool)
-            arguments = getattr(bing_tool, "bing_grounding", None)
+            arguments = tool.get("bing_grounding", None)
             items.append(
                 FunctionCallContent(
-                    id=bing_tool.id,
+                    id=tool.id,
                     index=index,
-                    name=bing_tool.type,
-                    function_name=bing_tool.type,
+                    name=tool.type,
+                    function_name=tool.type,
                     arguments=arguments,
+                )
+            )
+
+    return StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        choice_index=0,
+        items=items,  # type: ignore
+    )  # type: ignore
+
+
+@experimental
+def generate_streaming_azure_ai_search_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate function result content related to a Bing Grounding Tool."""
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "azure_ai_search":
+            azure_ai_search_tool = cast(RunStepAzureAISearchToolCall, tool)
+            arguments = getattr(azure_ai_search_tool, "azure_ai_search", None)
+            items.append(
+                FunctionCallContent(
+                    id=azure_ai_search_tool.id,
+                    index=index,
+                    name=azure_ai_search_tool.type,
+                    function_name=azure_ai_search_tool.type,
+                    arguments=arguments,
+                )
+            )
+            items.append(
+                FunctionResultContent(
+                    function_name=azure_ai_search_tool.type,
+                    id=azure_ai_search_tool.id,
+                    result=azure_ai_search_tool.azure_ai_search.get("output"),
                 )
             )
 
@@ -461,22 +525,30 @@ def generate_streaming_code_interpreter_content(
 def generate_annotation_content(
     annotation: MessageTextFilePathAnnotation | MessageTextFileCitationAnnotation | MessageTextUrlCitationAnnotation,
 ) -> AnnotationContent:
-    """Generate annotation content."""
+    """Generate annotation content with safe attribute access."""
     file_id = None
     url = None
-    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
+    title = None
+    citation_type = None
+    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path:
         file_id = annotation.file_path.file_id
-    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
+        citation_type = CitationType.FILE_PATH
+    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation:
         file_id = annotation.file_citation.file_id
-    elif isinstance(annotation, MessageTextUrlCitationAnnotation) and annotation.url_citation is not None:
-        url = annotation.url_citation.url if annotation.url_citation.url else None
+        citation_type = CitationType.FILE_CITATION
+    elif isinstance(annotation, MessageTextUrlCitationAnnotation) and annotation.url_citation:
+        url = annotation.url_citation.url
+        title = annotation.url_citation.title
+        citation_type = CitationType.URL_CITATION
 
     return AnnotationContent(
         file_id=file_id,
-        quote=annotation.text,
-        start_index=annotation.start_index if annotation.start_index is not None else None,
-        end_index=annotation.end_index if annotation.end_index is not None else None,
+        quote=getattr(annotation, "text", None),
+        start_index=getattr(annotation, "start_index", None),
+        end_index=getattr(annotation, "end_index", None),
         url=url,
+        title=title,
+        citation_type=citation_type,
     )
 
 
@@ -486,24 +558,31 @@ def generate_streaming_annotation_content(
     | MessageDeltaTextFileCitationAnnotation
     | MessageDeltaTextUrlCitationAnnotation,
 ) -> StreamingAnnotationContent:
-    """Generate streaming annotation content."""
+    """Generate streaming annotation content with defensive checks."""
     file_id = None
     url = None
     quote = None
+    title = None
+    citation_type = None
     if isinstance(annotation, MessageDeltaTextFilePathAnnotation) and annotation.file_path:
-        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
-        quote = annotation.text if annotation.text else None
+        file_id = annotation.file_path.file_id
+        quote = getattr(annotation, "text", None)
+        citation_type = CitationType.FILE_PATH
     elif isinstance(annotation, MessageDeltaTextFileCitationAnnotation) and annotation.file_citation:
-        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
-        quote = annotation.text if annotation.text else None
+        file_id = annotation.file_citation.file_id
+        quote = getattr(annotation, "text", None)
+        citation_type = CitationType.FILE_CITATION
     elif isinstance(annotation, MessageDeltaTextUrlCitationAnnotation) and annotation.url_citation:
-        url = annotation.url_citation.url if annotation.url_citation.url else None
-        quote = annotation.url_citation.title if annotation.url_citation.title else None
+        url = annotation.url_citation.url
+        title = annotation.url_citation.title
+        citation_type = CitationType.URL_CITATION
 
     return StreamingAnnotationContent(
         file_id=file_id,
         quote=quote,
-        start_index=annotation.start_index if annotation.start_index is not None else None,
-        end_index=annotation.end_index if annotation.end_index is not None else None,
+        start_index=getattr(annotation, "start_index", None),
+        end_index=getattr(annotation, "end_index", None),
         url=url,
+        title=title,
+        citation_type=citation_type,
     )

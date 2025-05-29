@@ -3,6 +3,7 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AzureResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import AuthorRole, FunctionCallContent, FunctionResultContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
@@ -37,20 +38,27 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
+# This callback function will be called for each intermediate message,
+# which will allow one to handle FunctionCallContent and FunctionResultContent.
+# If the callback is not provided, the agent will return the final response
+# with no intermediate tool call steps.
 async def handle_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureResponsesAgent.setup_resources()
+    client = AzureResponsesAgent.create_client()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = AzureResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=AzureOpenAISettings().chat_deployment_name,
         client=client,
         name="Host",
         instructions="Answer questions about the menu.",
@@ -77,52 +85,27 @@ async def main():
     finally:
         await thread.delete() if thread else None
 
-    # Print the final chat history
-    print("\nIntermediate Steps:")
-    for msg in intermediate_steps:
-        if any(isinstance(item, FunctionResultContent) for item in msg.items):
-            for fr in msg.items:
-                if isinstance(fr, FunctionResultContent):
-                    print(f"Function Result:> {fr.result} for function: {fr.name}")
-        elif any(isinstance(item, FunctionCallContent) for item in msg.items):
-            for fcc in msg.items:
-                if isinstance(fcc, FunctionCallContent):
-                    print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
-        else:
-            print(f"{msg.role}: {msg.content}")
-
     """
     Sample Output:
 
     # AuthorRole.USER: 'Hello'
     # Host: Hi there! How can I assist you with the menu today?
     # AuthorRole.USER: 'What is the special soup?'
-    # Host: The special soup is Clam Chowder.
+    Function Call:> MenuPlugin-get_specials with arguments: {}
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    # Host: The special soup is Clam Chowder. Would you like to know more about any other specials?
     # AuthorRole.USER: 'What is the special drink?'
-    # Host: The special drink is Chai Tea.
+    # Host: The special drink is Chai Tea. Would you like any more information?
     # AuthorRole.USER: 'How much is that?'
-    # Host: The Chai Tea is $9.99. Would you like to know more about the menu?
+    Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Chai Tea"}
+    Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    # Host: The Chai Tea is $9.99. Is there anything else you'd like to know?
     # AuthorRole.USER: 'Thank you'
-    # Host: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
-
-    Intermediate Steps:
-    AuthorRole.ASSISTANT: Hi there! How can I assist you with the menu today?
-    AuthorRole.ASSISTANT: 
-    Function Result:> 
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            for function: MenuPlugin-get_specials
-    AuthorRole.ASSISTANT: The special soup is Clam Chowder.
-    AuthorRole.ASSISTANT: 
-    Function Result:> 
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            for function: MenuPlugin-get_specials
-    AuthorRole.ASSISTANT: The special drink is Chai Tea.
-    AuthorRole.ASSISTANT: Could you please specify the menu item you are asking about?
-    AuthorRole.ASSISTANT: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
+    # Host: You're welcome! If you have any more questions, feel free to ask. Enjoy your day!
     """
 
 

@@ -164,7 +164,7 @@ internal sealed class ChatClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="AzureAIInferenceClientOptions"/>.</returns>
-    private static AzureAIInferenceClientOptions GetClientOptions(HttpClient? httpClient, AzureAIInferenceClientOptions.ServiceVersion? serviceVersion = null)
+    internal static AzureAIInferenceClientOptions GetClientOptions(HttpClient? httpClient, AzureAIInferenceClientOptions.ServiceVersion? serviceVersion = null)
     {
         AzureAIInferenceClientOptions options = serviceVersion is not null ?
             new(serviceVersion.Value) :

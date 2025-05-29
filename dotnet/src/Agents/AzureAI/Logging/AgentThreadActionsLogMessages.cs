@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Diagnostics.CodeAnalysis;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -136,4 +137,18 @@ internal static partial class AgentThreadActionsLogMessages
         RunStatus runStatus,
         string runId,
         string threadId);
+
+    /// <summary>
+    /// Logs <see cref="AgentThreadActions"/> polled run status (complete).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Warning,
+        Message = "[{MethodName}] Unknown annotation '{Type}': {RunId}/{ThreadId}.")]
+    public static partial void LogAzureAIAgentUnknownAnnotation(
+        this ILogger logger,
+        string methodName,
+        string runId,
+        string threadId,
+        Type type);
 }

@@ -12,6 +12,6 @@ public class CosmosMongoDBNoDataConformanceTests(CosmosMongoDBNoDataConformanceT
 {
     public new class Fixture : NoDataConformanceTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
     }
 }

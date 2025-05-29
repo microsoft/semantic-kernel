@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -45,7 +46,7 @@ public static class GoogleAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the specified service collection.
+    /// Add Google AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
@@ -54,6 +55,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("Use AddGoogleAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddGoogleAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

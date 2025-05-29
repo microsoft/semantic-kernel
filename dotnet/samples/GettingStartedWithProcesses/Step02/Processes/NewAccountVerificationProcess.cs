@@ -25,14 +25,14 @@ public static class NewAccountVerificationProcess
         process
             .OnInputEvent(AccountOpeningEvents.NewCustomerFormCompleted)
             // The information gets passed to the core system record creation step
-            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.Functions.DetermineCreditScore, parameterName: "customerDetails"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.ProcessStepFunctions.DetermineCreditScore, parameterName: "customerDetails"))
             // The information gets passed to the fraud detection step for validation
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.Functions.FraudDetectionCheck, parameterName: "customerDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "customerDetails"));
 
         // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
         customerCreditCheckStep
             .OnEvent(AccountOpeningEvents.CreditScoreCheckApproved)
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.Functions.FraudDetectionCheck, parameterName: "previousCheckSucceeded"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "previousCheckSucceeded"));
 
         return process;
     }

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -10,21 +10,14 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="AzureAIAgent"/>.
 /// </summary>
-public abstract class BaseAzureAgentTest : BaseAgentsTest<AIProjectClient>
+public abstract class BaseAzureAgentTest : BaseAgentsTest<PersistentAgentsClient>
 {
     protected BaseAzureAgentTest(ITestOutputHelper output) : base(output)
     {
-        this.Client = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        this.AgentsClient = this.Client.GetAgentsClient();
+        this.Client = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
     }
 
-    /// <inheritdoc/>
-    protected override AIProjectClient Client { get; }
-
-    /// <summary>
-    /// Gets the <see cref="AgentsClient"/>.
-    /// </summary>
-    protected AgentsClient AgentsClient { get; }
+    protected override PersistentAgentsClient Client { get; }
 
     protected async Task DownloadContentAsync(ChatMessageContent message)
     {
@@ -32,15 +25,15 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<AIProjectClient>
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileAsync(annotation.FileId!);
+                await this.DownloadFileAsync(annotation.ReferenceId!);
             }
         }
     }
 
     protected async Task DownloadFileAsync(string fileId, bool launchViewer = false)
     {
-        AgentFile fileInfo = this.AgentsClient.GetFile(fileId);
-        if (fileInfo.Purpose == AgentFilePurpose.AgentsOutput)
+        PersistentAgentFileInfo fileInfo = this.Client.Files.GetFile(fileId);
+        if (fileInfo.Purpose == PersistentAgentFilePurpose.AgentsOutput)
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)
@@ -48,7 +41,7 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<AIProjectClient>
                 filePath = Path.ChangeExtension(filePath, ".png");
             }
 
-            BinaryData content = await this.AgentsClient.GetFileContentAsync(fileId);
+            BinaryData content = await this.Client.Files.GetFileContentAsync(fileId);
             File.WriteAllBytes(filePath, content.ToArray());
             Console.WriteLine($"  File #{fileId} saved to: {filePath}");
 
