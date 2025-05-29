@@ -44,7 +44,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     // the new messages enqueued during the current invocation.
     private const int RecentMessagesBufferSize = 20;
     private readonly FunctionStore _functionStore;
-    private readonly ConcurrentQueue<ChatMessage> _recentMessages = new();
+    private readonly ConcurrentQueue<ChatMessage> _recentMessages = [];
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized = false;
 
