@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Functions;
 [ExcludeFromCodeCoverage]
 internal static class FunctionStoreLoggingExtensions
 {
-    public static void LogFunctionsVectorizationInfo(this ILogger logger, IList<FunctionStore.FunctionVectorizationInfo> vectorizationInfo)
+    internal static void LogFunctionsVectorizationInfo(this ILogger logger, IList<FunctionStore.FunctionVectorizationInfo> vectorizationInfo)
     {
         logger.LogInformation("ContextualFunctionProvider: Number of function to vectorize: {Count}", vectorizationInfo.Count);
 
