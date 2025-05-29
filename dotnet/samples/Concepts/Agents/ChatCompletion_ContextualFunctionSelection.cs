@@ -56,7 +56,8 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
                 vectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
                 vectorDimensions: 1536,
                 functions: allAvailableFunctions,
-                maxNumberOfFunctions: 3 // Instruct the provider to return a maximum of 3 relevant functions
+                maxNumberOfFunctions: 3, // Instruct the provider to return a maximum of 3 relevant functions
+                loggerFactory: this.LoggerFactory
             )
         );
 
@@ -127,6 +128,7 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
                 vectorDimensions: 1536,
                 functions: allAvailableFunctions,
                 maxNumberOfFunctions: 1, // Instruct the provider to return only one relevant function
+                loggerFactory: this.LoggerFactory,
                 options: new ContextualFunctionProviderOptions
                 {
                     NumberOfRecentMessagesInContext = 1 // Use only the last message from the previous agent invocation  

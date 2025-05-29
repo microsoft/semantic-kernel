@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Functions;
@@ -55,6 +56,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
+    /// <param name="loggerFactory">The logger factory to use for logging. If not provided, no logging will be performed.</param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
@@ -62,6 +64,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         int vectorDimensions,
         IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
+        ILoggerFactory? loggerFactory = default,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
@@ -80,6 +83,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             vectorDimensions,
             functions,
             maxNumberOfFunctions,
+            loggerFactory,
             options: new()
             {
                 EmbeddingValueProvider = this._options.EmbeddingValueProvider,
