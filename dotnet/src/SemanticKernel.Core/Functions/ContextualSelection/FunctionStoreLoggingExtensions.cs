@@ -13,7 +13,7 @@ internal static class FunctionStoreLoggingExtensions
 {
     public static void LogFunctionsVectorizationInfo(this ILogger logger, IList<FunctionStore.FunctionVectorizationInfo> vectorizationInfo)
     {
-        logger.LogInformation("Number of function to vectorize: {Count}", vectorizationInfo.Count);
+        logger.LogInformation("ContextualFunctionProvider: Number of function to vectorize: {Count}", vectorizationInfo.Count);
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
