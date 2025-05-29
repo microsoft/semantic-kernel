@@ -17,7 +17,7 @@ internal static class FunctionStoreLoggingExtensions
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Functions vectorization info: {VectorizationInfo}",
+            logger.LogTrace("ContextualFunctionProvider: Functions vectorization info: {VectorizationInfo}",
                 string.Join(", ", vectorizationInfo.Select(info => $"\"Function: {info.Name}, VectorizationSource: {info.VectorizationSource}\"")));
         }
     }
