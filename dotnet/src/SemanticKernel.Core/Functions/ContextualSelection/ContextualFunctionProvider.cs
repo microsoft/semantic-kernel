@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -38,7 +39,12 @@ namespace Microsoft.SemanticKernel.Functions;
 [Experimental("SKEXP0130")]
 public sealed class ContextualFunctionProvider : AIContextProvider
 {
+    // Determines how many recent messages, in addition to the configured number of recent messages for context, should be kept in the queue.
+    // This ensures that the recent messages (messages from previous invocations) are not pushed out of the queue by
+    // the new messages enqueued during the current invocation.
+    private const int RecentMessagesBufferSize = 20;
     private readonly FunctionStore _functionStore;
+    private readonly ConcurrentQueue<ChatMessage> _recentMessages = [];
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized = false;
 
@@ -66,6 +72,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         Verify.NotNullOrWhiteSpace(collectionName);
 
         this._options = options ?? new ContextualFunctionProviderOptions();
+        Verify.True(this._options.NumberOfRecentMessagesInContext > 0, "Number of recent messages to include into context must be greater than 0");
 
         this._functionStore = new FunctionStore(
             vectorStore,
@@ -91,7 +98,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             this._areFunctionsVectorized = true;
         }
 
-        // Build the context from the messages
+        // Build the context
         var context = await this.BuildContextAsync(newMessages, cancellationToken).ConfigureAwait(false);
 
         // Get the function relevant to the context
@@ -102,22 +109,42 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         return new AIContext { AIFunctions = [.. functions] };
     }
 
+    /// <inheritdoc/>
+    public override Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    {
+        // Add the new message to the recent messages queue
+        this._recentMessages.Enqueue(newMessage);
+
+        // If there are more messages than the configured limit, remove the oldest ones
+        for (int i = RecentMessagesBufferSize + this._options.NumberOfRecentMessagesInContext; i < this._recentMessages.Count; i++)
+        {
+            this._recentMessages.TryDequeue(out _);
+        }
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Builds the context from chat messages.
     /// </summary>
-    /// <param name="messages">The messages to build the context from.</param>
+    /// <param name="newMessages">The new messages.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
-    private async Task<string> BuildContextAsync(ICollection<ChatMessage> messages, CancellationToken cancellationToken)
+    private async Task<string> BuildContextAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken)
     {
         if (this._options.ContextEmbeddingValueProvider is not null)
         {
-            return await this._options.ContextEmbeddingValueProvider.Invoke(messages, cancellationToken).ConfigureAwait(false);
+            var recentMessages = this._recentMessages
+                .Except(newMessages) // Exclude the new messages from the recent messages
+                .TakeLast(this._options.NumberOfRecentMessagesInContext); // Ensure we only take the recent messages up to the configured limit
+
+            return await this._options.ContextEmbeddingValueProvider.Invoke(recentMessages, newMessages, cancellationToken).ConfigureAwait(false);
         }
 
+        // Build context from the recent messages that already include the new messages
         return string.Join(
             Environment.NewLine,
-            messages.
-                Where(m => !string.IsNullOrWhiteSpace(m?.Text)).
-                Select(m => m.Text));
+            this._recentMessages.TakeLast(newMessages.Count + this._options.NumberOfRecentMessagesInContext)
+                .Where(m => !string.IsNullOrWhiteSpace(m?.Text))
+                .Select(m => m.Text));
     }
 }

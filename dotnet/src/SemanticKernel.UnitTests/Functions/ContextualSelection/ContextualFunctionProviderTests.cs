@@ -130,7 +130,7 @@ public sealed class ContextualFunctionProviderTests
         var functions = new List<AIFunction> { CreateFunction("f1") };
         var options = new ContextualFunctionProviderOptions
         {
-            ContextEmbeddingValueProvider = (_, ct) => Task.FromResult("custom context")
+            ContextEmbeddingValueProvider = (_, _, _) => Task.FromResult("custom context")
         };
 
         var provider = new ContextualFunctionProvider(
@@ -166,19 +166,19 @@ public sealed class ContextualFunctionProviderTests
             functions: functions,
             maxNumberOfFunctions: 5);
 
-        var messages = new List<ChatMessage>
-        {
-            new() { Contents = [new TextContent("msg1")] },
-            new() { Contents = [new TextContent("msg2")] },
-            new() { Contents = [new TextContent("")] },
-            new() { Contents = null }
-        };
+        var message1 = new ChatMessage() { Contents = [new TextContent("msg1")] };
+        var message2 = new ChatMessage() { Contents = [new TextContent("msg2")] };
+        var message3 = new ChatMessage() { Contents = [new TextContent("msg3")] };
+
+        await provider.MessageAddingAsync(null, message1);
+        await provider.MessageAddingAsync(null, message2);
+        await provider.MessageAddingAsync(null, message3);
 
         // Act
-        var context = await provider.ModelInvokingAsync(messages);
+        var context = await provider.ModelInvokingAsync([message3]);
 
         // Assert
-        var expected = "msg1" + Environment.NewLine + "msg2";
+        var expected = string.Join(Environment.NewLine, ["msg1", "msg2", "msg3"]);
         this._collectionMock.Verify(c => c.SearchAsync<string>(expected, It.IsAny<int>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -220,6 +220,55 @@ public sealed class ContextualFunctionProviderTests
         Assert.NotNull(upsertedRecords);
         var embeddingSource = upsertedRecords!.SelectMany(r => r).FirstOrDefault(kv => kv.Key == "Embedding").Value as string;
         Assert.Equal("custom embedding for f1:desc1", embeddingSource);
+    }
+
+    [Fact]
+    public async Task ContextEmbeddingValueProviderReceivesRecentAndNewMessages()
+    {
+        // Arrange
+        var functions = new List<AIFunction> { CreateFunction("f1") };
+
+        IEnumerable<ChatMessage>? capturedRecentMessages = null;
+        IEnumerable<ChatMessage>? capturedNewMessages = null;
+
+        var options = new ContextualFunctionProviderOptions
+        {
+            NumberOfRecentMessagesInContext = 2,
+            ContextEmbeddingValueProvider = (recentMessages, newMessages, ct) =>
+            {
+                capturedRecentMessages = recentMessages;
+                capturedNewMessages = newMessages;
+
+                return Task.FromResult("context");
+            }
+        };
+
+        var provider = new ContextualFunctionProvider(
+            vectorStore: this._vectorStoreMock.Object,
+            vectorDimensions: 1536,
+            functions: functions,
+            maxNumberOfFunctions: 5,
+            options: options);
+
+        // Add more messages than the number of messages to keep
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
+        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg3")] });
+
+        // Act
+        await provider.ModelInvokingAsync([
+            new() { Contents = [new TextContent("msg4")] },
+            new() { Contents = [new TextContent("msg5")] }
+        ]);
+
+        // Assert
+        Assert.NotNull(capturedRecentMessages);
+        Assert.Equal("msg2", capturedRecentMessages.ElementAt(0).Text);
+        Assert.Equal("msg3", capturedRecentMessages.ElementAt(1).Text);
+
+        Assert.NotNull(capturedNewMessages);
+        Assert.Equal("msg4", capturedNewMessages.ElementAt(0).Text);
+        Assert.Equal("msg5", capturedNewMessages.ElementAt(1).Text);
     }
 
     private static AIFunction CreateFunction(string name, string description = "")
