@@ -55,7 +55,7 @@ internal sealed class FunctionStore
         this._collectionName = collectionName;
         this._functionByName = functions.ToDictionary(function => function.Name);
         this._maxNumberOfFunctions = maxNumberOfFunctions;
-        this._logger = loggerFactory?.CreateLogger<FunctionStore>() ?? NullLogger.Instance as ILogger;
+        this._logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<FunctionStore>();
         this._options = options ?? new FunctionStoreOptions();
 
         // Create and assert the collection support record keys of string type
