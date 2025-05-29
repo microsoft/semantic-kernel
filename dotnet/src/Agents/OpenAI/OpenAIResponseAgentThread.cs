@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a conversation thread for an OpenAI Response API based agent when store is enabled.
 /// </summary>
-[ExcludeFromCodeCoverage]
 public sealed class OpenAIResponseAgentThread : AgentThread
 {
     private readonly OpenAIResponseClient _client;

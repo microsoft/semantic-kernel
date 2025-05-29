@@ -2,13 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-[ExcludeFromCodeCoverage]
 internal static class ResponseItemExtensions
 {
     /// <summary>
@@ -25,7 +23,7 @@ internal static class ResponseItemExtensions
 
             return new ChatMessageContent(role, collection, innerContent: messageResponseItem);
         }
-        throw new InvalidOperationException();
+        throw new NotImplementedException("Only a message response items are supported in this version.");
     }
 
     #region private
@@ -44,7 +42,7 @@ internal static class ResponseItemExtensions
             }
             else if (part.Kind == ResponseContentPartKind.InputFile)
             {
-                collection.Add(new FileReferenceContent(part.InputFileId) { InnerContent = part });
+                collection.Add(new BinaryContent(part.InputFileBytes.ToArray(), part.InputFileBytes.MediaType) { InnerContent = part });
             }
             else if (part.Kind == ResponseContentPartKind.Refusal)
             {
