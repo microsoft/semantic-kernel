@@ -36,7 +36,7 @@ internal sealed class FunctionStore
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
     /// <param name="loggerFactory">The logger factory to use for logging. If not provided, no logging will be performed.</param>
     /// <param name="options">The options to use for the function store.</param>
-    public FunctionStore(
+    internal FunctionStore(
         VectorStore vectorStore,
         string collectionName,
         int vectorDimensions,
