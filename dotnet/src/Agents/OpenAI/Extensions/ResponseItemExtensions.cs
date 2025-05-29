@@ -23,7 +23,7 @@ internal static class ResponseItemExtensions
 
             return new ChatMessageContent(role, collection, innerContent: messageResponseItem);
         }
-        throw new NotImplementedException("Only a message response items are supported in this version.");
+        throw new InvalidOperationException();
     }
 
     #region private
@@ -42,7 +42,7 @@ internal static class ResponseItemExtensions
             }
             else if (part.Kind == ResponseContentPartKind.InputFile)
             {
-                collection.Add(new BinaryContent(part.InputFileBytes.ToArray(), part.InputFileBytes.MediaType) { InnerContent = part });
+                collection.Add(new FileReferenceContent(part.InputFileId) { InnerContent = part });
             }
             else if (part.Kind == ResponseContentPartKind.Refusal)
             {

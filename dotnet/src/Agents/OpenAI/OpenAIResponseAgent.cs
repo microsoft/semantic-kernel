@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a <see cref="Agent"/> specialization based on OpenAI Response API.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIResponseAgent : Agent
 {
     /// <summary>
@@ -38,6 +39,19 @@ public sealed class OpenAIResponseAgent : Agent
     /// Storing of messages is enabled.
     /// </summary>
     public bool StoreEnabled { get; init; } = true;
+
+    /// <summary>
+    /// Plugins associated with the agent.
+    /// </summary>
+    public IEnumerable<KernelPlugin>? Plugins
+    {
+        get => this.Kernel.Plugins;
+        init
+        {
+            Verify.NotNull(value);
+            this.Kernel.Plugins.AddRange(value);
+        }
+    }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -102,7 +116,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         throw new NotImplementedException("API will be removed in a future release.");
@@ -110,7 +123,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [ExcludeFromCodeCoverage]
     protected override IEnumerable<string> GetChannelKeys()
     {
         throw new NotImplementedException("API will be removed in a future release.");
@@ -118,7 +130,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         throw new NotImplementedException("API will be removed in a future release.");
