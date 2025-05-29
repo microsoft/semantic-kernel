@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -43,10 +44,12 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     }
 
     /// <summary>
-    /// Tests that the OpenAIResponseAgent.InvokeAsync verifies parameters and throws <see cref="ArgumentNullException"/> when necessary.
+    /// Tests that the OpenAIResponseAgent.InvokeAsync.
     /// </summary>
-    [Fact]
-    public async Task VerifyInvokeAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VerifyInvokeAsync(bool storeEnabled)
     {
         // Arrange
         this.MessageHandlerStub.ResponsesToReturn.Add(
@@ -56,6 +59,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
+            StoreEnabled = storeEnabled
         };
 
         // Act
@@ -66,6 +70,41 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
         Assert.Single(items);
         Assert.Equal("The capital of France is Paris.\n\nLa capitale de la France est Paris.", items[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Tests that the OpenAIResponseAgent.InvokeStreamingAsync.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VerifyInvokeStreamingAsync(bool storeEnabled)
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        );
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            Name = "ResponseAgent",
+            Instructions = "Answer all queries in English and French.",
+            StoreEnabled = storeEnabled
+        };
+
+        // Act
+        var message = new ChatMessageContent(AuthorRole.User, "What is the capital of France?");
+        var responseMessages = await agent.InvokeStreamingAsync(
+            message,
+            options: new OpenAIResponseAgentInvokeOptions()
+            {
+                AdditionalInstructions = "Respond to all user questions with 'Computer says no'.",
+            }).ToArrayAsync();
+
+        var responseText = string.Join(string.Empty, responseMessages.Select(ri => ri.Message.Content));
+
+        // Assert
+        Assert.NotNull(responseText);
+        Assert.Contains("Computer says no", responseText);
     }
 
     #region private
@@ -127,6 +166,37 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
           "user": "ResponseAgent",
           "metadata": {}
         }
+        """;
+
+    private const string InvokeStreamingResponse =
+        """
+        content block 0: event: response.created
+        data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68383e45be4081919b7bad84c27e436b0f0f17949d11ddcf","object":"response","created_at":1748516421,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"Answer all queries in English and French.\nRespond to all user questions with 'Computer says no'.","max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":"UnnamedAgent","metadata":{}}}
+
+        event: response.in_progress
+        
+        data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68383e45be4081919b7bad84c27e436b0f0f17949d11ddcf","object":"response","created_at":1748516421,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"Answer all queries in English and French.\nRespond to all user questions with 'Computer says no'.","max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":"UnnamedAgent","metadata":{}}}
+
+        content block 2: event: response.output_item.added
+        data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+        
+        content block 3: event: response.content_part.added
+        data: {"type":"response.content_part.added","sequence_number":3,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
+        
+        event: response.output_text.delta
+        data: {"type":"response.output_text.delta","sequence_number":4,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"Computer"}
+
+        content block 4: event: response.output_text.delta
+        data: {"type":"response.output_text.delta","sequence_number":5,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":" says"}
+        
+        event: response.output_text.delta
+        data: {"type":"response.output_text.delta","sequence_number":6,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":" no"}
+
+        content block 5: event: response.output_text.delta
+        data: {"type":"response.output_text.delta","sequence_number":7,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"."}
+        
+        content block 6: event: response.output_text.delta
+        data: {"type":"response.output_text.delta","sequence_number":8,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"  \n"}
         """;
     #endregion
 }

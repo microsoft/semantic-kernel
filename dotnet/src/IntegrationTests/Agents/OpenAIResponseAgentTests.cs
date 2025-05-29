@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -10,16 +11,18 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI;
 using OpenAI.Responses;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAIResponseAgentTests
+public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -29,36 +32,79 @@ public sealed class OpenAIResponseAgentTests
             .Build();
 
     /// <summary>
-    /// Integration test for <see cref="OpenAIResponseAgent"/> using function calling
-    /// and targeting Azure OpenAI services.
+    /// Integration test for <see cref="OpenAIResponseAgent"/>.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup?", "Clam Chowder")]
+    [InlineData("Answer all queries in English and French.", "Paris")]
     public async Task OpenAIResponseAgentInvokeAsync(string input, string expectedAnswerContains)
     {
         var configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(configuration);
 
         await this.ExecuteAgentAsync(
-            CreateClient(configuration),
+            this.CreateClient(configuration),
             configuration.ChatModelId!,
             input,
             expectedAnswerContains);
     }
 
     /// <summary>
-    /// Integration test for <see cref="OpenAIResponseAgent"/> using function calling
-    /// and targeting Azure OpenAI services.
+    /// Integration test for <see cref="OpenAIResponseAgent"/> using a thread.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup?", "special soup")]
+    [InlineData("Answer all queries in English and French.", "Paris")]
+    public async Task OpenAIResponseAgentInvokeWithThreadAsync(string input, string expectedAnswerContains)
+    {
+        var configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(configuration);
+
+        // Arrange
+        var client = this.CreateClient(configuration);
+        Kernel kernel = new();
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer all queries in English and French."
+        };
+
+        // Act & Assert
+        AgentThread? thread = null;
+        try
+        {
+            StringBuilder builder = new();
+            await foreach (var responseItem in agent.InvokeAsync(input))
+            {
+                Assert.NotNull(responseItem);
+                Assert.NotNull(responseItem.Message);
+                Assert.NotNull(responseItem.Thread);
+                Assert.Equal(AuthorRole.Assistant, responseItem.Message.Role);
+
+                builder.Append(responseItem.Message.Content);
+                thread = responseItem.Thread;
+            }
+        }
+        finally
+        {
+            Assert.NotNull(thread);
+            await thread.DeleteAsync();
+
+            // Copy of the thread that doesn't have the deleted state
+            thread = new OpenAIResponseAgentThread(client, thread.Id!);
+            await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await thread.DeleteAsync());
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIResponseAgent"/> using streaming.
+    /// </summary>
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData("Answer all queries in English and French.", "Paris")]
     public async Task OpenAIResponseAgentInvokeStreamingAsync(string input, string expectedAnswerContains)
     {
         OpenAIConfiguration configuration = this.ReadConfiguration();
         Assert.NotNull(configuration);
 
         await this.ExecuteStreamingAgentAsync(
-            CreateClient(configuration),
+            this.CreateClient(configuration),
             configuration.ChatModelId!,
             input,
             expectedAnswerContains);
@@ -72,8 +118,11 @@ public sealed class OpenAIResponseAgentTests
     {
         // Arrange
         OpenAIConfiguration configuration = this.ReadConfiguration();
-        OpenAIResponseClient client = CreateClient(configuration);
-        OpenAIResponseAgent agent = new(client);
+        OpenAIResponseClient client = this.CreateClient(configuration);
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer all queries in English and French."
+        };
 
         OpenAIResponseAgentThread agentThread = new(client);
 
@@ -103,6 +152,12 @@ public sealed class OpenAIResponseAgentTests
     }
 
     #region private
+    /// <summary>
+    /// Enable or disable logging for the tests.
+    /// </summary>
+    private bool EnableLogging { get; set; } = true;
+
+
     private async Task ExecuteAgentAsync(
         OpenAIResponseClient client,
         string modelName,
@@ -111,8 +166,10 @@ public sealed class OpenAIResponseAgentTests
     {
         // Arrange
         Kernel kernel = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        OpenAIResponseAgent agent = new(client) { Plugins = [plugin] };
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer all queries in English and French."
+        };
 
         // Act & Assert
         StringBuilder builder = new();
@@ -135,9 +192,10 @@ public sealed class OpenAIResponseAgentTests
     {
         // Arrange
         Kernel kernel = new();
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        OpenAIResponseAgent agent = new(client) { Plugins = [plugin] };
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer all queries in English and French."
+        };
 
         // Act
         StringBuilder builder = new();
@@ -177,9 +235,22 @@ public sealed class OpenAIResponseAgentTests
         return configuration;
     }
 
-    private static OpenAIResponseClient CreateClient(OpenAIConfiguration configuration)
+    private OpenAIResponseClient CreateClient(OpenAIConfiguration configuration)
     {
-        return new OpenAIResponseClient(configuration.ChatModelId, new ApiKeyCredential(configuration.ApiKey));
+        OpenAIClientOptions options = new();
+
+        if (this.EnableLogging)
+        {
+            options.ClientLoggingOptions = new ClientLoggingOptions
+            {
+                EnableLogging = true,
+                EnableMessageLogging = true,
+                EnableMessageContentLogging = true,
+                LoggerFactory = new RedirectOutput(output),
+            };
+        }
+
+        return new OpenAIResponseClient(configuration.ChatModelId, new ApiKeyCredential(configuration.ApiKey), options);
     }
 
     public sealed class MenuPlugin
