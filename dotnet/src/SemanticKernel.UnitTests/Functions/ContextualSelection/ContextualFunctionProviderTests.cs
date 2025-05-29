@@ -130,7 +130,7 @@ public sealed class ContextualFunctionProviderTests
         var functions = new List<AIFunction> { CreateFunction("f1") };
         var options = new ContextualFunctionProviderOptions
         {
-            ContextEmbeddingValueProvider = (_, ct) => Task.FromResult("custom context")
+            ContextEmbeddingValueProvider = (_, _, _) => Task.FromResult("custom context")
         };
 
         var provider = new ContextualFunctionProvider(
@@ -138,7 +138,6 @@ public sealed class ContextualFunctionProviderTests
             vectorDimensions: 1536,
             functions: functions,
             maxNumberOfFunctions: 5,
-            contextSize: 1,
             options: options);
 
         var messages = new List<ChatMessage>
@@ -165,17 +164,21 @@ public sealed class ContextualFunctionProviderTests
             vectorStore: this._vectorStoreMock.Object,
             vectorDimensions: 1536,
             functions: functions,
-            maxNumberOfFunctions: 5,
-            contextSize: 2);
+            maxNumberOfFunctions: 5);
 
-        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
-        await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
+        var message1 = new ChatMessage() { Contents = [new TextContent("msg1")] };
+        var message2 = new ChatMessage() { Contents = [new TextContent("msg2")] };
+        var message3 = new ChatMessage() { Contents = [new TextContent("msg3")] };
+
+        await provider.MessageAddingAsync(null, message1);
+        await provider.MessageAddingAsync(null, message2);
+        await provider.MessageAddingAsync(null, message3);
 
         // Act
-        var context = await provider.ModelInvokingAsync([]);
+        var context = await provider.ModelInvokingAsync([message3]);
 
         // Assert
-        var expected = "msg1" + Environment.NewLine + "msg2";
+        var expected = string.Join(Environment.NewLine, ["msg1", "msg2", "msg3"]);
         this._collectionMock.Verify(c => c.SearchAsync<string>(expected, It.IsAny<int>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -203,7 +206,6 @@ public sealed class ContextualFunctionProviderTests
             vectorDimensions: 1536,
             functions: functions,
             maxNumberOfFunctions: 5,
-            contextSize: 1,
             options: options);
 
         var messages = new List<ChatMessage>
@@ -221,19 +223,22 @@ public sealed class ContextualFunctionProviderTests
     }
 
     [Fact]
-    public async Task ContextEmbeddingValueProviderReceivesOnlyContextSizeMessages()
+    public async Task ContextEmbeddingValueProviderReceivesRecentAndNewMessages()
     {
         // Arrange
         var functions = new List<AIFunction> { CreateFunction("f1") };
-        int contextSize = 2;
-        ICollection<ChatMessage>? capturedMessages = null;
+
+        IEnumerable<ChatMessage>? capturedRecentMessages = null;
+        IEnumerable<ChatMessage>? capturedNewMessages = null;
 
         var options = new ContextualFunctionProviderOptions
         {
-            ContextEmbeddingValueProvider = (messages, ct) =>
+            NumberOfRecentMessagesInContext = 2,
+            ContextEmbeddingValueProvider = (recentMessages, newMessages, ct) =>
             {
-                capturedMessages = messages;
-                // Return a dummy context string
+                capturedRecentMessages = recentMessages;
+                capturedNewMessages = newMessages;
+
                 return Task.FromResult("context");
             }
         };
@@ -243,24 +248,27 @@ public sealed class ContextualFunctionProviderTests
             vectorDimensions: 1536,
             functions: functions,
             maxNumberOfFunctions: 5,
-            contextSize: contextSize,
             options: options);
 
-        // Add more messages than contextSize
+        // Add more messages than the number of messages to keep
         await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg1")] });
         await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg2")] });
         await provider.MessageAddingAsync(null, new() { Contents = [new TextContent("msg3")] });
 
         // Act
-        await provider.ModelInvokingAsync(new List<ChatMessage>());
+        await provider.ModelInvokingAsync([
+            new() { Contents = [new TextContent("msg4")] },
+            new() { Contents = [new TextContent("msg5")] }
+        ]);
 
-        // Assert: Only the last 'contextSize' messages should be passed to the callback
-        Assert.NotNull(capturedMessages);
-        var capturedList = capturedMessages!.ToList();
+        // Assert
+        Assert.NotNull(capturedRecentMessages);
+        Assert.Equal("msg2", capturedRecentMessages.ElementAt(0).Text);
+        Assert.Equal("msg3", capturedRecentMessages.ElementAt(1).Text);
 
-        Assert.Equal(contextSize, capturedList.Count);
-        Assert.Equal("msg2", capturedList[0].Text);
-        Assert.Equal("msg3", capturedList[1].Text);
+        Assert.NotNull(capturedNewMessages);
+        Assert.Equal("msg4", capturedNewMessages.ElementAt(0).Text);
+        Assert.Equal("msg5", capturedNewMessages.ElementAt(1).Text);
     }
 
     private static AIFunction CreateFunction(string name, string description = "")

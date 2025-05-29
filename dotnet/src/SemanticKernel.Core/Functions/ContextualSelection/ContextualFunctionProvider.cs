@@ -39,9 +39,12 @@ namespace Microsoft.SemanticKernel.Functions;
 [Experimental("SKEXP0130")]
 public sealed class ContextualFunctionProvider : AIContextProvider
 {
+    // Determines how many recent messages, in addition to the configured number of recent messages for context, should be kept in the queue.
+    // This ensures that the recent messages (messages from previous invocations) are not pushed out of the queue by
+    // the new messages enqueued during the current invocation.
+    private const int RecentMessagesBufferSize = 20;
     private readonly FunctionStore _functionStore;
     private readonly ConcurrentQueue<ChatMessage> _recentMessages = new();
-    private readonly int _contextSize;
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized = false;
 
@@ -52,10 +55,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="functions">The functions to vectorize and store for searching related functions.</param>
     /// <param name="maxNumberOfFunctions">The maximum number of relevant functions to retrieve from the vector store.</param>
-    /// <param name="contextSize">
-    /// The number of messages the provider uses to form a context. The provider collects new messages, up to this number, and uses them to build a context.
-    /// While adding new messages, the provider will remove the oldest messages to keep the context size within the specified limit.
-    /// </param>
     /// <param name="options">The provider options.</param>
     /// <param name="collectionName">The collection name to use for storing and retrieving functions.</param>
     public ContextualFunctionProvider(
@@ -63,7 +62,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         int vectorDimensions,
         IEnumerable<AIFunction> functions,
         int maxNumberOfFunctions,
-        int contextSize = 1,
         ContextualFunctionProviderOptions? options = null,
         string collectionName = "functions")
     {
@@ -71,10 +69,10 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
         Verify.NotNull(functions);
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
-        Verify.True(contextSize > 0, "Context size must be greater than 0");
         Verify.NotNullOrWhiteSpace(collectionName);
-        this._contextSize = contextSize;
+
         this._options = options ?? new ContextualFunctionProviderOptions();
+        Verify.True(this._options.NumberOfRecentMessagesInContext > 0, "Number of recent messages to include into context must be greater than 0");
 
         this._functionStore = new FunctionStore(
             vectorStore,
@@ -100,8 +98,8 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             this._areFunctionsVectorized = true;
         }
 
-        // Build the context from the messages
-        var context = await this.BuildContextAsync(cancellationToken).ConfigureAwait(false);
+        // Build the context
+        var context = await this.BuildContextAsync(newMessages, cancellationToken).ConfigureAwait(false);
 
         // Get the function relevant to the context
         var functions = await this._functionStore
@@ -117,8 +115,8 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         // Add the new message to the recent messages queue
         this._recentMessages.Enqueue(newMessage);
 
-        // If there are more than ContextSize messages in the queue, remove the oldest ones
-        for (int i = this._contextSize; i < this._recentMessages.Count; i++)
+        // If there are more messages than the configured limit, remove the oldest ones
+        for (int i = RecentMessagesBufferSize + this._options.NumberOfRecentMessagesInContext; i < this._recentMessages.Count; i++)
         {
             this._recentMessages.TryDequeue(out _);
         }
@@ -129,19 +127,24 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <summary>
     /// Builds the context from chat messages.
     /// </summary>
-    /// <param name="messages">The messages to build the context from.</param>
+    /// <param name="newMessages">The new messages.</param>
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
-    private async Task<string> BuildContextAsync(CancellationToken cancellationToken)
+    private async Task<string> BuildContextAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken)
     {
         if (this._options.ContextEmbeddingValueProvider is not null)
         {
-            return await this._options.ContextEmbeddingValueProvider.Invoke([.. this._recentMessages], cancellationToken).ConfigureAwait(false);
+            var recentMessages = this._recentMessages
+                .Except(newMessages) // Exclude the new messages from the recent messages
+                .TakeLast(this._options.NumberOfRecentMessagesInContext); // Ensure we only take the recent messages up to the configured limit
+
+            return await this._options.ContextEmbeddingValueProvider.Invoke(recentMessages, newMessages, cancellationToken).ConfigureAwait(false);
         }
 
+        // Build context from the recent messages that already include the new messages
         return string.Join(
             Environment.NewLine,
-            this._recentMessages.
-                Where(m => !string.IsNullOrWhiteSpace(m?.Text)).
-                Select(m => m.Text));
+            this._recentMessages.TakeLast(newMessages.Count + this._options.NumberOfRecentMessagesInContext)
+                .Where(m => !string.IsNullOrWhiteSpace(m?.Text))
+                .Select(m => m.Text));
     }
 }

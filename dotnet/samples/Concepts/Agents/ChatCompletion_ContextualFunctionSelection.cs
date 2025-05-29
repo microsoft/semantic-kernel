@@ -24,10 +24,10 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
 {
     /// <summary>
     /// Shows how to configure agent to use <see cref="ContextualFunctionProvider"/>
-    /// to enable contextual function selection.
+    /// to enable contextual function selection based on the current invocation context.
     /// </summary>
     [Fact]
-    private async Task SelectFunctionsRelevantToContext()
+    private async Task SelectFunctionsRelevantToCurrentInvocationContext()
     {
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
@@ -56,8 +56,7 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
                 vectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
                 vectorDimensions: 1536,
                 functions: allAvailableFunctions,
-                maxNumberOfFunctions: 3, // Instruct the provider to return a maximum of 3 relevant functions
-                contextSize: 2 // Use the last 2 messages as context for function selection
+                maxNumberOfFunctions: 3 // Instruct the provider to return a maximum of 3 relevant functions
             )
         );
 
@@ -91,6 +90,64 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
             - Tools-Summarize  
             - Tools-CollectSentiments  
          */
+    }
+
+    /// <summary>
+    /// Shows how to configure agent to use <see cref="ContextualFunctionProvider"/>
+    /// to enable contextual function selection based on the previous and current invocation context.
+    /// </summary>
+    [Fact]
+    private async Task SelectFunctionsBasedOnPreviousAndCurrentInvocationContext()
+    {
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator(1536);
+
+        // Create our agent.
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+        ChatCompletionAgent agent =
+            new()
+            {
+                Name = "AzureAssistant",
+                Instructions = "You are a helpful assistant that helps with Azure resource management. " +
+                               "Avoid including the phrase like 'If you need further assistance or have any additional tasks, feel free to let me know!' in any responses.",
+                Kernel = kernel,
+                Arguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new FunctionChoiceBehaviorOptions { RetainArgumentTypes = true }) })
+            };
+
+        // Create a thread and register context based function selection provider that will do RAG on
+        // provided functions to advertise only those that are relevant to the current context.
+        ChatHistoryAgentThread agentThread = new();
+
+        var allAvailableFunctions = GetAvailableFunctions();
+
+        agentThread.AIContextProviders.Add(
+            new ContextualFunctionProvider(
+                vectorStore: new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator }),
+                vectorDimensions: 1536,
+                functions: allAvailableFunctions,
+                maxNumberOfFunctions: 1, // Instruct the provider to return only one relevant function
+                options: new ContextualFunctionProviderOptions
+                {
+                    NumberOfRecentMessagesInContext = 1 // Use only the last message from the previous agent invocation  
+                }
+            )
+        );
+
+        // Ask agent to provision a VM on Azure. The contextual function selection provider will return only one relevant function: `ProvisionVM`
+        ChatMessageContent message = await agent.InvokeAsync("Please provision a VM on Azure", agentThread).FirstAsync();
+        Console.WriteLine(message.Content);
+
+        //Expected output: "A virtual machine has been successfully provisioned on Azure with the ID: 7f2aa1e4-13ac-4875-9e63-278ee82f3729."
+
+        // Ask the agent to deploy the VM, intentionally referring to the VM as "it".  
+        // This demonstrates that the contextual function selection provider uses the last message from the previous invocation
+        // to infer that the user is referring to the VM provisioned in the invocation and not any other Azure resource.
+        // The provider will return only one relevant function to deploy the VM: `DeployVM`
+        message = await agent.InvokeAsync("Deploy it", agentThread).FirstAsync();
+        Console.WriteLine(message.Content);
+
+        //Expected output: "The virtual machine with ID: 7f2aa1e4-13ac-4875-9e63-278ee82f3729 has been successfully deployed."
     }
 
     /// <summary>
@@ -148,6 +205,17 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
             AIFunctionFactory.Create(() => DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"), "GetCurrentUtcDateTime"),
         ];
 
-        return [.. reviewFunctions, .. sentimentFunctions, .. summaryFunctions, .. communicationFunctions, .. dateTimeFunctions];
+        List<AIFunction> azureFunctions = [
+            AIFunctionFactory.Create(() => $"Resource group provisioned: Id:{Guid.NewGuid()}", "ProvisionResourceGroup"),
+            AIFunctionFactory.Create((Guid id) => $"Resource group deployed: Id:{id}", "DeployResourceGroup"),
+
+            AIFunctionFactory.Create(() => $"Storage account provisioned: Id:{Guid.NewGuid()}", "ProvisionStorageAccount"),
+            AIFunctionFactory.Create((Guid id) => $"Storage account deployed: Id:{id}", "DeployStorageAccount"),
+
+            AIFunctionFactory.Create(() => $"VM provisioned: Id:{Guid.NewGuid()}", "ProvisionVM"),
+            AIFunctionFactory.Create((Guid id) => $"VM deployed: Id:{id}", "DeployVM"),
+        ];
+
+        return [.. reviewFunctions, .. sentimentFunctions, .. summaryFunctions, .. communicationFunctions, .. dateTimeFunctions, .. azureFunctions];
     }
 }
