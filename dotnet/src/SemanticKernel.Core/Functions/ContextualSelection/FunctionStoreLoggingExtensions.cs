@@ -28,7 +28,7 @@ internal static class FunctionStoreLoggingExtensions
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Functions search results for context {Context} with a maximum limit of {MaxCount}: {Results}",
+            logger.LogTrace("ContextualFunctionProvider: Functions search results for context {Context} with a maximum limit of {MaxCount}: {Results}",
                 $"\"{context}\"",
                 maxNumberOfFunctionsToReturn,
                 string.Join(", ", results.Select(result => $"\"Function: {result.Record["Name"]}, Score: {result.Score}\"")));
