@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
@@ -64,13 +66,13 @@ public static class KernelFunctionPrompty
         };
 
         PromptExecutionSettings? defaultExecutionSetting = null;
-        if (prompty.Model?.Parameters?.Items is not null && prompty.Model.Parameters.Items.Count > 0)
+        if (prompty.Model?.Id is not null || prompty.Model?.Connection?.ServiceId is not null || prompty.Model?.Options?.Count > 0)
         {
             defaultExecutionSetting = new PromptExecutionSettings()
             {
-                ServiceId = prompty.Model.Parameters.Items.TryGetValue("service_id", out var serviceId) && serviceId is string serviceIdStr ? serviceIdStr : null,
-                ModelId = prompty.Model.Parameters.Items.TryGetValue("model_id", out var modelId) && modelId is string modelIdStr ? modelIdStr : null,
-                ExtensionData = prompty.Model.Parameters.Items
+                ModelId = prompty.Model.Id,
+                ServiceId = prompty.Model.Connection?.ServiceId,
+                ExtensionData = prompty.Model.Options,
             };
             promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
         }
@@ -78,33 +80,55 @@ public static class KernelFunctionPrompty
         // Add input and output variables.
         if (prompty.Inputs is not null)
         {
-            foreach (var input in prompty.Inputs)
+            foreach (var kvp in prompty.Inputs)
             {
-                if (input.Items.TryGetValue("name", out var value) && value is string name)
+                var input = kvp.Value;
+                promptTemplateConfig.InputVariables.Add(new()
                 {
-                    string description = input.Items.TryGetValue("description", out var desc) && desc is string descStr ? descStr : string.Empty;
-                    promptTemplateConfig.InputVariables.Add(new()
-                    {
-                        Name = name,
-                        Description = description,
-                    });
-                }
+                    Name = kvp.Key,
+                    Default = input.Default,
+                    IsRequired = input.Required,
+                    Description = input.Description,
+                    AllowDangerouslySetContent = !input.Strict,
+                    JsonSchema = ToJsonSchema(input.JsonSchema),
+                });
             }
         }
         if (prompty.Outputs is not null)
         {
             // PromptTemplateConfig supports only a single output variable. If the prompty template
             // contains one and only one, use it. Otherwise, ignore any outputs.
-            if (prompty.Outputs.Length == 1 &&
-                prompty.Outputs[0].Items.TryGetValue("description", out var value) && value is string description)
+            if (prompty.Outputs.Count == 1)
             {
-                promptTemplateConfig.OutputVariable = new() { Description = description };
+                var output = prompty.Outputs.Values.First();
+                promptTemplateConfig.OutputVariable = new()
+                {
+                    Description = output.Description,
+                    JsonSchema = ToJsonSchema(output.JsonSchema),
+                };
             }
         }
 
         // Update template format. If not provided, use Liquid as default.
-        promptTemplateConfig.TemplateFormat = prompty.Template?.Type ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
+        promptTemplateConfig.TemplateFormat = prompty.Template?.Format ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
 
         return promptTemplateConfig;
     }
+
+    #region private
+    private static string? ToJsonSchema(object? input)
+    {
+        if (input is null)
+        {
+            return null;
+        }
+
+        if (input is string str)
+        {
+            return str;
+        }
+
+        return JsonSerializer.Serialize(input);
+    }
+    #endregion
 }

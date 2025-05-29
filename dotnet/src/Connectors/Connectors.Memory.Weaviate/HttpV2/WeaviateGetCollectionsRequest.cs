@@ -10,6 +10,6 @@ internal sealed class WeaviateGetCollectionsRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest(ApiRoute, this);
+        return HttpRequest.CreateGetRequest(ApiRoute);
     }
 }

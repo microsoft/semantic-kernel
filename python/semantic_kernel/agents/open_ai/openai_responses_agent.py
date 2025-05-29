@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 import logging
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable
 from copy import copy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._responses import type_to_text_format_param
@@ -18,12 +19,11 @@ from openai.types.responses.web_search_tool_param import UserLocation, WebSearch
 from openai.types.shared_params.comparison_filter import ComparisonFilter
 from openai.types.shared_params.compound_filter import CompoundFilter
 from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 
-from semantic_kernel.agents import Agent
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
+from semantic_kernel.agents.agent import AgentSpec, DeclarativeSpecMixin, ToolSpec, register_agent_type
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
-from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -39,6 +39,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -48,20 +49,91 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
+if TYPE_CHECKING:
+    from openai import AsyncOpenAI
+
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-if TYPE_CHECKING:
-    from openai import AsyncOpenAI
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
-    from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+_T = TypeVar("_T", bound="OpenAIResponsesAgent")
 ResponseFormatUnion = ResponseFormatText | ResponseFormatTextJSONSchemaConfigParam | ResponseFormatJSONObject
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+# region Declarative Spec
+
+_TOOL_BUILDERS: dict[str, Callable[[ToolSpec, Kernel | None], ToolParam]] = {}
+
+
+def _register_tool(tool_type: str):
+    def decorator(fn: Callable[[ToolSpec, Kernel | None], ToolParam]):
+        _TOOL_BUILDERS[tool_type.lower()] = fn
+        return fn
+
+    return decorator
+
+
+@_register_tool("file_search")
+def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> FileSearchToolParam:
+    options = spec.options or {}
+    vector_store_ids = options.get("vector_store_ids")
+    if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
+        raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
+
+    filters = options.get("filters")
+    max_num_results = options.get("max_num_results")
+    ranking_options = options.get("ranking_options", {})
+    score_threshold = ranking_options.get("score_threshold")
+    ranker = ranking_options.get("ranker")
+
+    return OpenAIResponsesAgent.configure_file_search_tool(
+        vector_store_ids=vector_store_ids,
+        filters=filters,
+        max_num_results=max_num_results,
+        score_threshold=score_threshold,
+        ranker=ranker,
+    )
+
+
+@_register_tool("web_search")
+def _web_search(spec: ToolSpec, kernel: Kernel | None = None) -> WebSearchToolParam:
+    options = spec.options or {}
+    context_size = options.get("search_context_size")
+    user_location = options.get("user_location")
+    return OpenAIResponsesAgent.configure_web_search_tool(
+        context_size=context_size,
+        user_location=user_location,
+    )
+
+
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolParam:
+    if not spec.type:
+        raise AgentInitializationException("Tool spec must include a 'type' field.")
+
+    try:
+        builder = _TOOL_BUILDERS[spec.type.lower()]
+    except KeyError as exc:
+        raise AgentInitializationException(f"Unsupported tool type: {spec.type}") from exc
+
+    sig = inspect.signature(builder)
+    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)  # type: ignore[call-arg]
+
+
+# endregion
+
 
 # region Agent Thread
 
@@ -179,7 +251,8 @@ class ResponsesAgentThread(AgentThread):
 
 
 @experimental
-class OpenAIResponsesAgent(Agent):
+@register_agent_type("openai_responses")
+class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
     """OpenAI Responses Agent class.
 
     Provides the ability to interact with OpenAI's Responses API.
@@ -305,6 +378,9 @@ class OpenAIResponsesAgent(Agent):
         super().__init__(**args)
 
     @staticmethod
+    @deprecated(
+        "setup_resources is deprecated. Use OpenAIResponsesAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
+    )
     def setup_resources(
         *,
         ai_model_id: str | None = None,
@@ -363,6 +439,181 @@ class OpenAIResponsesAgent(Agent):
         )
 
         return client, openai_settings.responses_model_id
+
+    @staticmethod
+    def create_client(
+        *,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncOpenAI:
+        """A method to create the OpenAI client.
+
+        Any arguments provided will override the values in the environment variables/environment file.
+
+        Args:
+            ai_model_id: The AI model ID
+            api_key: The API key
+            org_id: The organization ID
+            env_file_path: The environment file path
+            env_file_encoding: The environment file encoding, defaults to utf-8
+            default_headers: The default headers to add to the client
+            kwargs: Additional keyword arguments
+
+        Returns:
+            An OpenAI client instance.
+        """
+        try:
+            openai_settings = OpenAISettings(
+                responses_model_id=ai_model_id,
+                api_key=api_key,
+                org_id=org_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+
+        if not openai_settings.api_key:
+            raise AgentInitializationException("The OpenAI API key is required.")
+
+        if not openai_settings.responses_model_id:
+            raise AgentInitializationException("The OpenAI Responses model ID is required.")
+
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        return AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            organization=openai_settings.org_id,
+            default_headers=merged_headers,
+            **kwargs,
+        )
+
+    # endregion
+
+    # region Declarative Spec
+
+    @override
+    @classmethod
+    async def _from_dict(
+        cls: type[_T],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
+        **kwargs,
+    ) -> _T:
+        """Create an Assistant Agent from the provided dictionary.
+
+        Args:
+            data: The dictionary containing the agent data.
+            kernel: The kernel to use for the agent.
+            prompt_template_config: The prompt template configuration.
+            kwargs: Additional keyword arguments. Note: unsupported keys may raise validation errors.
+
+        Returns:
+            AzureAIAgent: The OpenAI Assistant Agent instance.
+        """
+        client: AsyncOpenAI = kwargs.pop("client", None)
+        if client is None:
+            raise AgentInitializationException("Missing required 'client' in OpenAIResponsesAgent._from_dict()")
+
+        spec = AgentSpec.model_validate(data)
+
+        if "settings" in kwargs:
+            kwargs.pop("settings")
+
+        args = data.pop("arguments", None)
+        arguments = None
+        if args:
+            arguments = KernelArguments(**args)
+
+        if not (spec.model and spec.model.id):
+            raise AgentInitializationException("model.id required when creating a new OpenAI Responses Agent.")
+
+        # Build tool definitions & resources
+        tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
+
+        return cls(
+            name=spec.name,
+            description=spec.description,
+            instruction_role=spec.instructions,
+            ai_model_id=spec.model.id,
+            client=client,
+            arguments=arguments,
+            kernel=kernel,
+            prompt_template_config=prompt_template_config,
+            tools=tool_objs,
+            **kwargs,
+        )
+
+    @classmethod
+    def _get_setting(cls: type[_T], value: Any) -> Any:
+        """Return raw value if `SecretStr`, otherwise pass through."""
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
+
+    @override
+    @classmethod
+    def resolve_placeholders(
+        cls: type[_T],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Substitute ${OpenAI:Key} placeholders with fields from OpenAIAgentSettings and extras."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Build the mapping only if settings is provided and valid
+        field_mapping: dict[str, Any] = {}
+
+        if settings is None:
+            settings = OpenAISettings()
+
+        if not isinstance(settings, OpenAISettings):
+            raise AgentInitializationException(f"Expected OpenAISettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": cls._get_setting(getattr(settings, "responses_model_id", None)),
+            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+            "ApiKey": cls._get_setting(getattr(settings, "api_key", None)),
+        })
+
+        if extras:
+            field_mapping.update(extras)
+
+        def replacer(match: re.Match[str]) -> str:
+            """Replace the matched placeholder with the corresponding value from field_mapping."""
+            full_key = match.group(1)  # for example, OpenAI:ApiKey
+            section, _, key = full_key.partition(":")
+            if section != "OpenAI":
+                return match.group(0)
+
+            # Try short key first (ApiKey), then full (OpenAI:ApiKey)
+            return str(field_mapping.get(key) or field_mapping.get(full_key) or match.group(0))
+
+        result = pattern.sub(replacer, yaml_str)
+
+        # Safety check for unresolved placeholders
+        unresolved = pattern.findall(result)
+        if unresolved:
+            raise AgentInitializationException(
+                f"Unresolved placeholders in spec: {', '.join(f'${{{key}}}' for key in unresolved)}"
+            )
+
+        return result
 
     # endregion
 
@@ -550,8 +801,8 @@ class OpenAIResponsesAgent(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -568,6 +819,7 @@ class OpenAIResponsesAgent(Agent):
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: RunPollingOptions | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
@@ -594,6 +846,7 @@ class OpenAIResponsesAgent(Agent):
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
+            polling_options: The polling options at the run-level.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -630,6 +883,7 @@ class OpenAIResponsesAgent(Agent):
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "reasoning_effort": reasoning,
             "text": text,
             "temperature": temperature,
@@ -667,8 +921,8 @@ class OpenAIResponsesAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -685,6 +939,7 @@ class OpenAIResponsesAgent(Agent):
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: RunPollingOptions | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
@@ -711,6 +966,7 @@ class OpenAIResponsesAgent(Agent):
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
+            polling_options: The polling options at the run-level.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -746,6 +1002,7 @@ class OpenAIResponsesAgent(Agent):
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "reasoning": reasoning,
             "text": text,
             "temperature": temperature,
@@ -758,7 +1015,7 @@ class OpenAIResponsesAgent(Agent):
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
         assert function_choice_behavior is not None  # nosec
 
-        async for is_visible, response in ResponsesAgentThreadActions.invoke(
+        async for is_visible, message in ResponsesAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
             thread=thread,
@@ -768,20 +1025,22 @@ class OpenAIResponsesAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            response.metadata["thread_id"] = thread.id
-            await thread.on_new_message(response)
-            if on_intermediate_message:
-                await on_intermediate_message(response)
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
 
             if is_visible:
-                yield AgentResponseItem(message=response, thread=thread)
+                # Only yield visible messages
+                yield AgentResponseItem(message=message, thread=thread)
+            elif on_intermediate_message:
+                # Emit tool-related messages only via callback
+                await on_intermediate_message(message)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -874,7 +1133,8 @@ class OpenAIResponsesAgent(Agent):
 
         collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
-        async for response in ResponsesAgentThreadActions.invoke_stream(
+        start_idx = 0
+        async for message in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
             chat_history=chat_history,
             thread=thread,
@@ -885,14 +1145,20 @@ class OpenAIResponsesAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            response.metadata["thread_id"] = thread.id
-            yield AgentResponseItem(message=response, thread=thread)
+            # Before yielding the current streamed message, emit any new full messages first
+            if collected_messages is not None:
+                new_messages = collected_messages[start_idx:]
+                start_idx = len(collected_messages)
 
-        for message in collected_messages or []:
+                for new_msg in new_messages:
+                    new_msg.metadata["thread_id"] = thread.id
+                    await thread.on_new_message(new_msg)
+                    if on_intermediate_message:
+                        await on_intermediate_message(new_msg)
+
+            # Now yield the current streamed content (StreamingTextContent)
             message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
-            if on_intermediate_message:
-                await on_intermediate_message(message)
+            yield AgentResponseItem(message=message, thread=thread)
 
     def _prepare_input_message(
         self,

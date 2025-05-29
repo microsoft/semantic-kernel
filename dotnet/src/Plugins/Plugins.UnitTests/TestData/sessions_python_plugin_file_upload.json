@@ -1,14 +1,8 @@
 {
-  "$id": "1",
-  "value": [
-    {
-      "$id": "2",
-      "properties": {
-        "$id": "3",
-        "filename": "test-file.txt",
-        "size": 516,
-        "lastModifiedTime": "2024-08-06T14:50:38.4228269Z"
-      }
-    }
-  ]
+  "$id": "3",
+  "name": "test-file.txt",
+  "type": "file",
+  "contentType": "text/plain; charset=utf-8",
+  "sizeInBytes": 516,
+  "lastModifiedAt": "2024-08-06T14:50:38.4228269Z"
 }

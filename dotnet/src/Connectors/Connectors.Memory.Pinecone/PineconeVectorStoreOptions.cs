@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -10,8 +10,19 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 public sealed class PineconeVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
+    /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
-    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
-    public IPineconeVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PineconeVectorStoreOptions"/> class.
+    /// </summary>
+    public PineconeVectorStoreOptions()
+    {
+    }
+
+    internal PineconeVectorStoreOptions(PineconeVectorStoreOptions? source)
+    {
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
 }

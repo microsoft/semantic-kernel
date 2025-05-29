@@ -1,26 +1,99 @@
 ---
 name: Contoso_Chat_Prompt
 description: A retail assistant for Contoso Outdoors products retailer.
-authors:
-  - ????
+metadata:
+  authors:
+    - markwallace
+  tags:
+    - basic
 model:
+  id: gpt-35-turbo
   api: chat
-  configuration:
+  connection:
     type: azure_openai
     api_version: 2023-07-01-preview
-  parameters:
-    model_id: gpt-35-turbo
+  options:
     tools_choice: auto
-    tools:
-    - type: function
-      function:
-        name: test
-        description: test function
-        parameters:
-          properties:
-            location:
-              description: The city and state or city and country, e.g. San Francisco, CA
-                or Tokyo, Japan
+tools:
+  - id: test
+    type: function
+    description: test function
+    options:
+      parameters:
+        - name: location
+          type: string
+          required: true
+          description: The city and state or city and country, e.g. San Francisco, CA or Tokyo, Japan
+inputs:
+  firstName:
+    type: string
+    default: User
+    sample: April
+    description: The first name of the customer
+    json_schema:
+      type: string
+  lastName:
+    type: string
+    sample: Kwong
+    required: true
+    strict: false
+    description: The last name of the customer
+    json_schema:
+      type: string
+  question:
+    type: string
+    description: The question to answer
+    required: true
+    json_schema:
+      type: string
+  answer:
+    type: object
+    description: Some count
+    required: true
+    description: The answer with citations
+    json_schema: |
+            {
+              "type": "object",
+              "properties": {
+                "answer": {
+                  "type": "string"
+                },
+                "citations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              },
+              "required": [
+                "answer",
+                "citations"
+              ],
+              "additionalProperties": false
+            }
+  other:
+    type: object
+    required: true
+    description: Property with JSON schema
+    json_schema:
+        type: object  
+        properties:  
+          answer:  
+            type: string  
+          citations:  
+            type: array  
+            items:  
+              type: string  
+              format: uri  
+        required:  
+          - answer  
+          - citations  
+        additionalProperties: false
+outputs:
+  work:
+    type: object
+    description: The thing to output
 ---
 system:
 You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 

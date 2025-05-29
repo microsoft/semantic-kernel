@@ -2,12 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -17,103 +22,123 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class AzureAISearchVectorStore : IVectorStore
+public sealed class AzureAISearchVectorStore : VectorStore
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchVectorStoreOptions _options;
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
+    /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStore"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public AzureAISearchVectorStore(SearchIndexClient searchIndexClient, AzureAISearchVectorStoreOptions? options = default)
     {
         Verify.NotNull(searchIndexClient);
 
         this._searchIndexClient = searchIndexClient;
-        this._options = options ?? new AzureAISearchVectorStoreOptions();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
+        this._jsonSerializerOptions = options?.JsonSerializerOptions;
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+            VectorStoreName = searchIndexClient.ServiceName
+        };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-    {
-#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
+    [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+    [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+#if NET8_0_OR_GREATER
+    public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
+#else
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
+#endif
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new AzureAISearchCollection<TKey, TRecord>(
+                this._searchIndexClient,
+                name,
+                new AzureAISearchCollectionOptions()
+                {
+                    JsonSerializerOptions = this._jsonSerializerOptions,
+                    Definition = definition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override AzureAISearchDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
+#endif
+        => new AzureAISearchDynamicCollection(
             this._searchIndexClient,
             name,
-            new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
+            new()
             {
-                JsonSerializerOptions = this._options.JsonSerializerOptions,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection!;
-    }
+                JsonSerializerOptions = this._jsonSerializerOptions,
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }
+        );
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
-        var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
-
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
-        while (nextResult.more)
-        {
-            yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Helper method to get the next index name from the enumerator with a try catch around the move next call to convert
-    /// any <see cref="RequestFailedException"/> to <see cref="HttpOperationException"/>, since try catch is not supported
-    /// around a yield return.
-    /// </summary>
-    /// <param name="enumerator">The enumerator to get the next result from.</param>
-    /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    private static async Task<(string name, bool more)> GetNextIndexNameAsync(ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
+    public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetIndexNames";
 
-        try
+        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
+        var errorHandlingEnumerable = new ConfiguredCancelableErrorHandlingAsyncEnumerable<string, RequestFailedException>(indexNamesEnumerable, this._metadata, OperationName);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task: False Positive
+        await foreach (var item in errorHandlingEnumerable.ConfigureAwait(false))
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         {
-            var more = await enumerator.MoveNextAsync();
-            return (enumerator.Current, more);
+            yield return item;
         }
-        catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreType = DatabaseName,
-                OperationName = OperationName
-            };
-        }
-        catch (RequestFailedException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreType = DatabaseName,
-                OperationName = OperationName
-            };
-        }
+    }
+
+    /// <inheritdoc />
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        return collection.CollectionExistsAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        return collection.EnsureCollectionDeletedAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

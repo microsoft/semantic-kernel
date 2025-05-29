@@ -57,7 +57,8 @@ public class AgentDefinitionYamlTests
                     default: input2 default
                     sample: input2 sample
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: liquid
                 parser: semantic-kernel

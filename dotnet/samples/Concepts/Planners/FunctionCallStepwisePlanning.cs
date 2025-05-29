@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -54,5 +55,22 @@ public class FunctionCallStepwisePlanning(ITestOutputHelper output) : BaseTest(o
         kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
+    }
+
+    private sealed class MathPlugin
+    {
+        [KernelFunction, Description("Adds an amount to a value")]
+        [return: Description("The sum")]
+        public int Add(
+            [Description("The value to add")] int value,
+            [Description("Amount to add")] int amount) =>
+            value + amount;
+
+        [KernelFunction, Description("Subtracts an amount from a value")]
+        [return: Description("The difference")]
+        public int Subtract(
+            [Description("The value to subtract")] int value,
+            [Description("Amount to subtract")] int amount) =>
+            value - amount;
     }
 }

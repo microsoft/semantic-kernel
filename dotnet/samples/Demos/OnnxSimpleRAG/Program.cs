@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.ML.OnnxRuntimeGenAI;
@@ -11,7 +12,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -36,35 +36,34 @@ using var ogaHandle = new OgaHandle();
 // Load the services
 var builder = Kernel.CreateBuilder()
     .AddOnnxRuntimeGenAIChatCompletion(chatModelId, chatModelPath)
-    .AddBertOnnxTextEmbeddingGeneration(embeddingModelPath, embeddingVocabPath);
+    .AddBertOnnxEmbeddingGenerator(embeddingModelPath, embeddingVocabPath);
 
 // Build Kernel
 var kernel = builder.Build();
 
 // Get the instances of the services
 using var chatService = kernel.GetRequiredService<IChatCompletionService>() as OnnxRuntimeGenAIChatCompletionService;
-var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+var embeddingService = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
 // Create a vector store and a collection to store information
-var vectorStore = new InMemoryVectorStore();
+var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingService });
 var collection = vectorStore.GetCollection<string, InformationItem>("ExampleCollection");
-await collection.CreateCollectionIfNotExistsAsync();
+await collection.EnsureCollectionExistsAsync();
 
 // Save some information to the memory
 var collectionName = "ExampleCollection";
 foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 {
     var factContent = File.ReadAllText(factTextFile);
-    await collection.UpsertAsync(new()
+    await collection.UpsertAsync(new InformationItem()
     {
         Id = Guid.NewGuid().ToString(),
-        Text = factContent,
-        Embedding = await embeddingService.GenerateEmbeddingAsync(factContent)
+        Text = factContent
     });
 }
 
 // Add a plugin to search the database with.
-var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection, embeddingService);
+var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection);
 kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch("SearchPlugin"));
 
 // Start the conversation
@@ -127,14 +126,14 @@ static void DisposeServices(Kernel kernel)
 /// </summary>
 internal sealed class InformationItem
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     [TextSearchResultName]
     public string Id { get; set; } = string.Empty;
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [TextSearchResultValue]
     public string Text { get; set; } = string.Empty;
 
-    [VectorStoreRecordVector(Dimensions: 384)]
-    public ReadOnlyMemory<float> Embedding { get; set; }
+    [VectorStoreVector(Dimensions: 384)]
+    public string Embedding => this.Text;
 }

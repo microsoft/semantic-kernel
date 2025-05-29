@@ -4,7 +4,7 @@ import os
 from typing import Annotated
 
 import pytest
-from azure.ai.projects.models import CodeInterpreterTool, FileSearchTool
+from azure.ai.agents.models import CodeInterpreterTool, FileInfo, FileSearchTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
@@ -46,8 +46,10 @@ class TestAzureAIAgentIntegration:
                     "resources",
                     "employees.pdf",
                 )
-                file = await client.agents.upload_file_and_poll(file_path=pdf_file_path, purpose="assistants")
-                vector_store = await client.agents.create_vector_store_and_poll(
+                file: FileInfo = await client.agents.files.upload_and_poll(
+                    file_path=pdf_file_path, purpose="assistants"
+                )
+                vector_store = await client.agents.vector_stores.create_and_poll(
                     file_ids=[file.id], name="my_vectorstore"
                 )
                 fs_tool = FileSearchTool(vector_store_ids=[vector_store.id])
@@ -82,6 +84,8 @@ class TestAzureAIAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
+        assert "run_id" in response.message.metadata
 
     async def test_get_response_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent with a thread."""

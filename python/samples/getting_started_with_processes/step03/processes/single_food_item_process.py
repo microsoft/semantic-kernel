@@ -8,11 +8,9 @@ from samples.getting_started_with_processes.step03.processes.fish_sandwich_proce
 from samples.getting_started_with_processes.step03.processes.fried_fish_process import FriedFishProcess
 from samples.getting_started_with_processes.step03.processes.potato_fries_process import PotatoFriesProcess
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes import ProcessBuilder
+from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
 
 class PackOrderStep(KernelProcessStep):
@@ -86,7 +84,7 @@ class SingleFoodItemProcess:
         external_step = process_builder.add_step(ExternalSingleOrderStep)
 
         process_builder.on_input_event(SingleFoodItemProcess.ProcessEvents.SingleOrderReceived).send_event_to(
-            ProcessFunctionTargetBuilder(dispatch_order_step)
+            dispatch_order_step
         )
 
         dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFriedFish).send_event_to(
@@ -105,24 +103,20 @@ class SingleFoodItemProcess:
             make_fish_and_chips_step.where_input_event_is(FishAndChipsProcess.ProcessEvents.PrepareFishAndChips)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(pack_order_step)
-        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(pack_order_step)
 
         make_potato_fries_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady).send_event_to(
-            ProcessFunctionTargetBuilder(pack_order_step)
+            pack_order_step
         )
 
         make_fish_sandwich_step.on_event(FishSandwichProcess.ProcessEvents.FishSandwichReady).send_event_to(
-            ProcessFunctionTargetBuilder(pack_order_step)
+            pack_order_step
         )
 
         make_fish_and_chips_step.on_event(FishAndChipsProcess.ProcessEvents.FishAndChipsReady).send_event_to(
-            ProcessFunctionTargetBuilder(pack_order_step)
+            pack_order_step
         )
 
-        pack_order_step.on_event(PackOrderStep.OutputEvents.FoodPacked).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
-        )
+        pack_order_step.on_event(PackOrderStep.OutputEvents.FoodPacked).send_event_to(external_step)
 
         return process_builder

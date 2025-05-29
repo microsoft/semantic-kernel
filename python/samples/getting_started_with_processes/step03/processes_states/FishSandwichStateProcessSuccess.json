@@ -1,0 +1,60 @@
+{
+    "$type": "Process",
+    "id": "612ad7ba84ea4b4593cfccd0092bc429",
+    "name": "FishSandwichWithStatefulStepsProcess",
+    "versionInfo": "FishSandwich.V1",
+    "stepsState": {
+        "FriedFishWithStatefulStepsProcess": {
+            "$type": "Process",
+            "id": "1632a2f0cec7417b825768625f8444e7",
+            "name": "FriedFishWithStatefulStepsProcess",
+            "versionInfo": "FriedFishProcess.v1",
+            "stepsState": {
+                "GatherFriedFishIngredientsWithStockStep": {
+                    "$type": "Step",
+                    "id": "b146fbb374ae4751b8e2bdf029b6cd69",
+                    "name": "GatherFriedFishIngredientsWithStockStep",
+                    "versionInfo": "GatherFishIngredient.V2",
+                    "state": {
+                        "IngredientsStock": 3
+                    }
+                },
+                "chopStep": {
+                    "$type": "Step",
+                    "id": "5be2e3825a7948d9bfa494aa907166d3",
+                    "name": "chopStep",
+                    "versionInfo": "CutFoodStep.V2",
+                    "state": {
+                        "KnifeSharpness": 3,
+                        "NeedsSharpeningLimit": 3,
+                        "SharpeningBoost": 5
+                    }
+                },
+                "FryFoodStep": {
+                    "$type": "Step",
+                    "id": "a975d1b33c634cf093179fea9d271b84",
+                    "name": "FryFoodStep",
+                    "versionInfo": "FryFoodStep.V1"
+                }
+            }
+        },
+        "AddBunStep": {
+            "$type": "Step",
+            "id": "5f4f96f48a1b4e83b4101688550491d3",
+            "name": "AddBunStep",
+            "versionInfo": "v1"
+        },
+        "AddSpecialSauceStep": {
+            "$type": "Step",
+            "id": "67e4b77e63cb447ea774fe9665019e71",
+            "name": "AddSpecialSauceStep",
+            "versionInfo": "v1"
+        },
+        "ExternalFriedFishStep": {
+            "$type": "Step",
+            "id": "9ecebab987cf4667b9abe48640034707",
+            "name": "ExternalFriedFishStep",
+            "versionInfo": "v1"
+        }
+    }
+}

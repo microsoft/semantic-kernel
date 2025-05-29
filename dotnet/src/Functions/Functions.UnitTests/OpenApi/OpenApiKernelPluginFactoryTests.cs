@@ -300,6 +300,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.NotNull(operation);
         Assert.Equal("GET", additionalProperties["method"]);
         Assert.Equal("/api-with-open-api-extensions", operation.Path);
+        Assert.Equal("Get API with open-api specification extensions", operation.Summary);
         var serverUrls = additionalProperties["server-urls"] as string[];
         Assert.NotNull(serverUrls);
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
@@ -641,6 +642,38 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         // Assert
         Assert.True(restApiOperationResponseFactoryIsInvoked);
+    }
+
+    [Fact]
+    public async Task ItCanImportSpecifiedOperationsAsync()
+    {
+        // Arrange
+        string[] operationsToInclude = ["GetSecret", "SetSecret"];
+
+        this._executionParameters.OperationSelectionPredicate = (context) => operationsToInclude.Contains(context.Id);
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.Equal(2, plugin.Count());
+        Assert.Contains(plugin, p => p.Name == "GetSecret");
+        Assert.Contains(plugin, p => p.Name == "SetSecret");
+    }
+
+    [Fact]
+    public async Task ItCanFilterOutSpecifiedOperationsAsync()
+    {
+        // Arrange
+        this._executionParameters.OperationsToExclude = ["GetSecret", "SetSecret"];
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.True(plugin.Any());
+        Assert.DoesNotContain(plugin, p => p.Name == "GetSecret");
+        Assert.DoesNotContain(plugin, p => p.Name == "SetSecret");
     }
 
     /// <summary>

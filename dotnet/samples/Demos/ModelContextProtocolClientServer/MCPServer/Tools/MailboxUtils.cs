@@ -2,7 +2,7 @@
 
 using MCPServer.ProjectResources;
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Tools;

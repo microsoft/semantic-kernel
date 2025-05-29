@@ -77,6 +77,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     /// Whether to inject a safety prompt before all conversations.
     /// </summary>
     [JsonPropertyName("safe_prompt")]
+    [JsonConverter(typeof(BoolJsonConverter))]
     public bool SafePrompt
     {
         get => this._safePrompt;

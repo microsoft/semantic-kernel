@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Protocol.Transport;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()

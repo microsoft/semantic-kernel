@@ -4,11 +4,13 @@ import types
 from typing import Any, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 TStep = TypeVar("TStep", bound=KernelProcessStep)
 TState = TypeVar("TState")
 
 
+@experimental
 def get_generic_state_type(cls) -> Any:
     """Given a subclass of KernelProcessStep, retrieve the concrete type of 'state'."""
     try:

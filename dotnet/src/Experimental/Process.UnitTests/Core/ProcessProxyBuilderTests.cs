@@ -23,7 +23,7 @@ public class ProcessProxyBuilderTests
     public void ProcessProxyBuilderInitialization()
     {
         // Arrange & Act
-        ProcessProxyBuilder proxy = new([this._topicName1, this._topicName2, this._topicName3], this._proxyName);
+        ProcessProxyBuilder proxy = new([this._topicName1, this._topicName2, this._topicName3], this._proxyName, null);
 
         // Assert
         Assert.NotNull(proxy.Id);
@@ -42,7 +42,7 @@ public class ProcessProxyBuilderTests
         List<string> repeatedTopics = [];
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new ProcessProxyBuilder(repeatedTopics, this._proxyName));
+        Assert.Throws<ArgumentException>(() => new ProcessProxyBuilder(repeatedTopics, this._proxyName, null));
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class ProcessProxyBuilderTests
         List<string> repeatedTopics = [this._topicName1, this._topicName1];
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new ProcessProxyBuilder(repeatedTopics, this._proxyName));
+        Assert.Throws<ArgumentException>(() => new ProcessProxyBuilder(repeatedTopics, this._proxyName, null));
     }
 
     /// <summary>
@@ -66,14 +66,14 @@ public class ProcessProxyBuilderTests
     public void ProcessProxyBuilderWillBuild()
     {
         // Arrange
-        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName);
+        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName, null);
 
-        ProcessBuilder process = new(this._testProcessName);
+        ProcessBuilder process = new(this._testProcessName, null);
         ProcessStepBuilder stepSource = process.AddStepFromType<SimpleTestStep>();
         stepSource.OnFunctionResult().EmitExternalEvent(proxy, this._topicName1);
 
         // Act
-        var proxyInfo = proxy.BuildStep();
+        var proxyInfo = proxy.BuildStep(new ProcessBuilder("Test", null));
 
         // Assert
         Assert.NotNull(proxyInfo);
@@ -93,9 +93,9 @@ public class ProcessProxyBuilderTests
     public void ProcessProxyBuilderWillNotLinkDueMultipleLinkingToSameTopicThrows()
     {
         // Arrange
-        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName);
+        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName, null);
 
-        ProcessBuilder process = new(this._testProcessName);
+        ProcessBuilder process = new(this._testProcessName, null);
         ProcessStepBuilder stepSource1 = process.AddStepFromType<SimpleTestStep>("step1");
         ProcessStepBuilder stepSource2 = process.AddStepFromType<SimpleTestStep>("step2");
         stepSource1.OnFunctionResult().EmitExternalEvent(proxy, this._topicName1);
@@ -112,10 +112,10 @@ public class ProcessProxyBuilderTests
     public void ProcessProxyBuilderWillNotBuildDueMissingLinking()
     {
         // Arrange
-        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName);
+        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName, null);
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => proxy.BuildStep());
+        Assert.Throws<InvalidOperationException>(() => proxy.BuildStep(new ProcessBuilder("Test", null)));
     }
 
     private sealed class SimpleTestStep : KernelProcessStep

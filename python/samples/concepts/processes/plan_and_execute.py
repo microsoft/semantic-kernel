@@ -5,12 +5,12 @@ import logging
 from enum import Enum
 from typing import ClassVar
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from semantic_kernel import Kernel
 from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.kernel_process import (
     KernelProcess,
@@ -50,11 +50,11 @@ user queries and providing detailed outputs.
 # 1) Helper to run OpenAI agent
 #
 async def run_openai_agent(instructions: str, prompt: str, agent_name: str = "GenericAgent") -> str:
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
     agent_tools = [OpenAIResponsesAgent.configure_web_search_tool()]
 
     agent = OpenAIResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=OpenAISettings().responses_model_id,
         client=client,
         instructions=instructions,
         name=agent_name,
@@ -80,7 +80,7 @@ class PlanExecuteEvents(str, Enum):
 #
 # 3) Planner Step
 #
-class PlannerStepState:
+class PlannerStepState(BaseModel):
     times_called: int = 0
 
 
@@ -116,7 +116,7 @@ class PlannerStep(KernelProcessStep[PlannerStepState]):
 #
 # 4) Replan Step
 #
-class ReplanStepState:
+class ReplanStepState(BaseModel):
     times_called: int = 0
 
 
@@ -152,7 +152,7 @@ class ReplanStep(KernelProcessStep[ReplanStepState]):
 #
 # 5) Execute Step
 #
-class ExecuteStepState:
+class ExecuteStepState(BaseModel):
     current_index: int = 0
 
 
@@ -200,7 +200,7 @@ class ExecuteStep(KernelProcessStep[ExecuteStepState]):
 #
 # 6) Decision Step
 #
-class DecisionStepState(KernelBaseModel):
+class DecisionStepState(BaseModel):
     partials: list[str] = Field(default_factory=list)
     last_decision: str = ""
 
@@ -280,7 +280,7 @@ class DecisionStep(KernelProcessStep[DecisionStepState]):
 #
 # 7) Output Step
 #
-class OutputStepState(KernelBaseModel):
+class OutputStepState(BaseModel):
     debug_history: list[str] = Field(default_factory=list)
     final_answer: str = ""
 

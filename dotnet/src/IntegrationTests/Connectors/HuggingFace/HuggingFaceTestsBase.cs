@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -44,11 +45,17 @@ public abstract class HuggingFaceTestsBase
             apiKey: this.Config.ApiKey,
             httpClient: httpClient);
 
+    [Obsolete("Temporary for Obsoleted ITextEmbeddingGenerationService interface")]
     protected ITextEmbeddingGenerationService CreateEmbeddingService() =>
         new HuggingFaceTextEmbeddingGenerationService(
             model: this.Config.EmbeddingModelId,
             endpoint: new Uri(this.Config.EmbeddingEndpoint),
             apiKey: this.Config.ApiKey);
+
+    protected IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator() =>
+    new HuggingFaceEmbeddingGenerator(
+        endpoint: new Uri(this.Config.EmbeddingEndpoint),
+        apiKey: this.Config.ApiKey);
 
     protected Kernel CreateKernelWithChatCompletion() =>
         Kernel.CreateBuilder()

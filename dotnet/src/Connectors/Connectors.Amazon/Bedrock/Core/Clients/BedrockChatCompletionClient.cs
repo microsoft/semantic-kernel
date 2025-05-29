@@ -76,8 +76,8 @@ internal sealed class BedrockChatCompletionClient
             {
                 activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
-                activity.SetPromptTokenUsage(response?.Usage?.InputTokens ?? default);
-                activity.SetCompletionTokenUsage(response?.Usage?.OutputTokens ?? default);
+                activity.SetInputTokensUsage(response?.Usage?.InputTokens ?? default);
+                activity.SetOutputTokensUsage(response?.Usage?.OutputTokens ?? default);
             }
         }
         catch (Exception ex)
@@ -90,8 +90,8 @@ internal sealed class BedrockChatCompletionClient
                 {
                     activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                     activity.SetStatus(activityStatus);
-                    activity.SetPromptTokenUsage(response?.Usage?.InputTokens ?? default);
-                    activity.SetCompletionTokenUsage(response?.Usage?.OutputTokens ?? default);
+                    activity.SetInputTokensUsage(response?.Usage?.InputTokens ?? default);
+                    activity.SetOutputTokensUsage(response?.Usage?.OutputTokens ?? default);
                 }
                 else
                 {

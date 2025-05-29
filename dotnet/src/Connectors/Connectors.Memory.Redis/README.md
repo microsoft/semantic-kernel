@@ -22,19 +22,6 @@ Ways to get RediSearch:
 docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
 ```
 
-2. To use Redis as a semantic memory store:
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
+2. Create a Redis Vector Store using instructions on the [Microsoft Learn site](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/redis-connector).
 
-```csharp
-// ConnectionMultiplexer should be a singleton instance in your application, please consider to dispose of it when your application shuts down.
-// See https://stackexchange.github.io/StackExchange.Redis/Basics#basic-usage
-ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
-IDatabase database = connectionMultiplexer.GetDatabase();
-RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
-
-var embeddingGenerator = new OpenAITextEmbeddingGenerationService("text-embedding-ada-002", apiKey);
-
-SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
-
-var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
-```
+3. Use the [getting started instructions](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp#getting-started-with-vector-store-connectors) on the Microsoft Leearn site to learn more about using the vector store.

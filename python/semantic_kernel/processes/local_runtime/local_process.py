@@ -44,6 +44,9 @@ class LocalProcess(LocalStep):
     external_event_queue: Queue = Field(default_factory=Queue)
     process_task: asyncio.Task | None = None
     factories: dict[str, Callable] = Field(default_factory=dict)
+    max_supersteps: int = Field(
+        default=100, ge=1, description="Maximum number of supersteps to execute before stopping the process."
+    )
 
     def __init__(
         self,
@@ -51,6 +54,7 @@ class LocalProcess(LocalStep):
         kernel: Kernel,
         factories: dict[str, Callable] | None = None,
         parent_process_id: str | None = None,
+        max_supersteps: int | None = None,
     ):
         """Initializes the local process."""
         args: dict[str, Any] = {
@@ -61,6 +65,9 @@ class LocalProcess(LocalStep):
             "process": process,
             "initialize_task": False,
         }
+
+        if max_supersteps is not None:
+            args["max_supersteps"] = max_supersteps
 
         if factories:
             args["factories"] = factories
@@ -73,13 +80,23 @@ class LocalProcess(LocalStep):
             self.initialize_process()
             self.initialize_task = True
 
-    async def start(self, keep_alive: bool = True):
-        """Starts the process with an initial event."""
+    async def start(self, keep_alive: bool = True) -> None:
+        """Starts the process with an initial event.
+
+        Args:
+            keep_alive: Indicates if the process should wait for external events after it's finished processing.
+        """
         self.ensure_initialized()
-        self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
+        self.process_task = asyncio.create_task(
+            self.internal_execute(max_supersteps=self.max_supersteps, keep_alive=keep_alive)
+        )
 
     async def run_once(self, process_event: KernelProcessEvent):
-        """Starts the process with an initial event and waits for it to finish."""
+        """Starts the process with an initial event and waits for it to finish.
+
+        Args:
+            process_event: The KernelProcessEvent to start the process with.
+        """
         if process_event is None:
             raise ProcessEventUndefinedException("The process event must be specified.")
         self.external_event_queue.put(process_event)
@@ -175,6 +192,8 @@ class LocalProcess(LocalStep):
         """Internal execution logic for the process."""
         message_channel: Queue[LocalMessage] = Queue()
 
+        logger.debug(f"Running process for {max_supersteps} supersteps.")
+
         try:
             for _ in range(max_supersteps):
                 self.enqueue_external_messages(message_channel)
@@ -206,7 +225,7 @@ class LocalProcess(LocalStep):
         """Builds a KernelProcess from the current LocalProcess."""
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-        process_state = KernelProcessState(name=self.name, id=self.id)
+        process_state = KernelProcessState(name=self.name, version=self.step_state.version, id=self.id)
         step_tasks = [step.to_kernel_process_step_info() for step in self.steps]
         steps = await asyncio.gather(*step_tasks)
         return KernelProcess(state=process_state, steps=steps, edges=self.output_edges)

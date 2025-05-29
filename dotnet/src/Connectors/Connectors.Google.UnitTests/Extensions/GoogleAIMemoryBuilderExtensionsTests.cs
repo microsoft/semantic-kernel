@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
@@ -10,6 +11,7 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
 /// <summary>
 /// Unit tests for <see cref="GoogleAIMemoryBuilderExtensions"/> class.
 /// </summary>
+[Obsolete("Temporary for Obsolete MemoryBuilder extensions tests.")]
 public sealed class GoogleAIMemoryBuilderExtensionsTests
 {
     private readonly Mock<IMemoryStore> _mockMemoryStore = new();

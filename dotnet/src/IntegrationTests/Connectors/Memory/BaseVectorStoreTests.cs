@@ -10,10 +10,11 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for <see cref="IVectorStore"/> integration tests.
+/// Base class for <see cref="VectorStore"/> integration tests.
 /// </summary>
-public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorStore)
+public abstract class BaseVectorStoreTests<TKey, TRecord>(VectorStore vectorStore)
     where TKey : notnull
+    where TRecord : class
 {
     protected virtual IEnumerable<string> CollectionNames => ["listcollectionnames1", "listcollectionnames2", "listcollectionnames3"];
 
@@ -27,7 +28,7 @@ public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorSto
         {
             var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
 
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
         }
 
         // Act
@@ -44,7 +45,7 @@ public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorSto
         {
             var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
 
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 }

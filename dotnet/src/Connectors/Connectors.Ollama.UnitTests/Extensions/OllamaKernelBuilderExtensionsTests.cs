@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -50,6 +51,20 @@ public class OllamaKernelBuilderExtensionsTests
     }
 
     [Fact]
+    public void AddOllamaEmbeddingGeneratorCreatesService()
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.AddOllamaEmbeddingGenerator("model", new Uri("http://localhost:11434"));
+
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+        Assert.NotNull(kernel);
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public void AddOllamaTextEmbeddingGenerationCreatesService()
     {
         var builder = Kernel.CreateBuilder();
@@ -64,6 +79,109 @@ public class OllamaKernelBuilderExtensionsTests
 
     [Theory]
     [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public async Task AddOllamaApiClientEmbeddingGeneratorFromServiceCollectionAsync(ServiceCollectionRegistration registration)
+    {
+        using var myHttpClientHandler = new FakeHttpMessageHandler(File.ReadAllText("TestData/embeddings_test_response.json"));
+        using var httpClient = new HttpClient(myHttpClientHandler) { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        var services = builder.Services;
+
+        string? serviceId = null;
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                services.AddKeyedSingleton<OllamaApiClient>(serviceId = "model", client);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                services.AddKeyedSingleton<IOllamaApiClient>(serviceId = "model", client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                services.AddSingleton<OllamaApiClient>(client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                services.AddSingleton<IOllamaApiClient>(client);
+                break;
+        }
+
+        services.AddOllamaEmbeddingGenerator(serviceId: serviceId);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var kernel = builder.Build();
+
+        IEmbeddingGenerator<string, Embedding<float>> service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>(serviceId);
+
+        Assert.NotNull(service);
+
+        await service.GenerateAsync(["text"]);
+
+        Assert.Equal(1, myHttpClientHandler.InvokedCount);
+    }
+
+    [Theory]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaTextEmbeddingGenerationShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
+    {
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
+
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaTextEmbeddingGeneration("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        ITextEmbeddingGenerationService service = kernel.GetRequiredService<ITextEmbeddingGenerationService>(serviceId);
+        Assert.NotNull(service);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaEmbeddingGeneratorShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
+    {
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
+
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaEmbeddingGenerator("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>(serviceId);
+        Assert.NotNull(service);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public async Task AddOllamaApiClientEmbeddingsFromServiceCollectionAsync(ServiceCollectionRegistration registration)
     {
         using var myHttpClientHandler = new FakeHttpMessageHandler(File.ReadAllText("TestData/embeddings_test_response.json"));

@@ -34,8 +34,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         Consider suggestions when refining an idea.
         """;
 
-    [Fact]
-    public async Task UseKernelFunctionStrategiesWithAgentGroupChat()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseKernelFunctionStrategiesWithAgentGroupChat(bool useChatClient)
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -43,7 +45,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient1),
             };
 
         ChatCompletionAgent agentWriter =
@@ -51,7 +53,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             {
                 Instructions = CopyWriterInstructions,
                 Name = CopyWriterName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient2),
             };
 
         KernelFunction terminationFunction =
@@ -139,5 +141,8 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient1?.Dispose();
+        chatClient2?.Dispose();
     }
 }

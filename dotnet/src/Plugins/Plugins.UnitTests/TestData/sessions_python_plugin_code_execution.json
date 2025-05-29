@@ -1,8 +1,14 @@
 {
   "$id": "1",
-  "status": "Success",
-  "stdout": "Hello World!\n",
-  "stderr": "",
-  "result": "",
-  "executionTimeInMilliseconds": 16
+  "id": "23c580db-33ee-4d17-ace7-bbbee2047ffa",
+  "identifier": "93279bd8-d0ac-4fbe-a1a0-3132200cd70e",
+  "executionType": "Synchronous",
+  "status": "Succeeded",
+  "result": {
+    "$id": "2",
+    "stdout": "Hello World!\n",
+    "stderr": "",
+    "executionResult": "",
+    "executionTimeInMilliseconds": 7
+  }
 }

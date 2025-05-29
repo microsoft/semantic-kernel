@@ -16,12 +16,12 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// </summary>
 public sealed class KickoffStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessFunctions
     {
         public const string KickOff = nameof(KickOff);
     }
 
-    [KernelFunction(Functions.KickOff)]
+    [KernelFunction(ProcessFunctions.KickOff)]
     public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
     {
         await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });

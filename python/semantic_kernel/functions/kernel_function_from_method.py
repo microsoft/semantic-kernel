@@ -123,6 +123,10 @@ class KernelFunctionFromMethod(KernelFunction):
 
     def _parse_parameter(self, value: Any, param_type: Any) -> Any:
         """Parses the value into the specified param_type, including handling lists of types."""
+        # Handle Any or object type explicitly
+        if param_type in {Any, object, inspect._empty}:
+            return value
+
         if isinstance(param_type, type) and hasattr(param_type, "model_validate"):
             try:
                 return param_type.model_validate(value)

@@ -37,13 +37,15 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
     {
         // The RepairService OpenAPI plugin being imported below includes the following operations: `listRepairs`, `createRepair`, `updateRepair`, and `deleteRepair`.
         // However, to meet our business requirements, we need to restrict state-modifying operations such as creating, updating, and deleting repairs, allowing only non-state-modifying operations like listing repairs.
-        // To enforce this restriction, we will exclude the `createRepair`, `updateRepair`, and `deleteRepair` operations from the OpenAPI document prior to importing the plugin.  
+        // To enforce this restriction, we will exclude the `createRepair`, `updateRepair`, and `deleteRepair` operations from the OpenAPI document at the plugin import time.
+        List<string> operationsToExclude = ["createRepair", "updateRepair", "deleteRepair"];
+
         OpenApiFunctionExecutionParameters executionParameters = new()
         {
-            OperationsToExclude = ["createRepair", "updateRepair", "deleteRepair"]
+            OperationSelectionPredicate = (OperationSelectionPredicateContext context) => !operationsToExclude.Contains(context.Id!)
         };
 
-        // Import the RepairService OpenAPI plugin and filter out all operations except `listRepairs` one.
+        // Import the RepairService OpenAPI plugin
         await this._kernel.ImportPluginFromOpenApiAsync(
             pluginName: "RepairService",
             filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
@@ -70,25 +72,22 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
     [Fact]
     public async Task ImportOperationsBasedOnInclusionListAsync()
     {
-        OpenApiDocumentParser parser = new();
-        using StreamReader reader = System.IO.File.OpenText("Resources/Plugins/RepairServicePlugin/repair-service.json");
-
         // The RepairService OpenAPI plugin, parsed and imported below, has the following operations: `listRepairs`, `createRepair`, `updateRepair`, and `deleteRepair`.  
         // However, for our business scenario, we only want to permit the AI model to invoke the `createRepair` and `updateRepair` operations, excluding all others.
         // To accomplish this, we will define an inclusion list that specifies the allowed operations and filters out the rest.  
         List<string> operationsToInclude = ["createRepair", "updateRepair"];
 
         // The selection predicate is initialized to evaluate each operation in the OpenAPI document and include only those specified in the inclusion list. 
-        OpenApiDocumentParserOptions parserOptions = new()
+        OpenApiFunctionExecutionParameters executionParameters = new()
         {
             OperationSelectionPredicate = (OperationSelectionPredicateContext context) => operationsToInclude.Contains(context.Id!)
         };
 
-        // Parse the OpenAPI document.
-        RestApiSpecification specification = await parser.ParseAsync(stream: reader.BaseStream, options: parserOptions);
-
-        // Import the OpenAPI document specification.
-        this._kernel.ImportPluginFromOpenApi("RepairService", specification);
+        // Import the RepairService OpenAPI plugin
+        await this._kernel.ImportPluginFromOpenApiAsync(
+            pluginName: "RepairService",
+            filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
+            executionParameters: executionParameters);
 
         // Tell the AI model not to call any function and show the list of functions it can call instead.
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
@@ -114,23 +113,20 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
     [Fact]
     public async Task ImportOperationsBasedOnMethodAsync()
     {
-        OpenApiDocumentParser parser = new();
-        using StreamReader reader = System.IO.File.OpenText("Resources/Plugins/RepairServicePlugin/repair-service.json");
-
         // The parsed RepairService OpenAPI plugin includes operations such as `listRepairs`, `createRepair`, `updateRepair`, and `deleteRepair`.  
         // However, for our business requirements, we only permit non-state-modifying operations like listing repairs, excluding all others.  
         // To achieve this, we set up the selection predicate to evaluate each operation in the OpenAPI document, including only those with the `GET` method.  
         // Note: The selection predicate can assess operations based on operation ID, method, path, and description.  
-        OpenApiDocumentParserOptions parserOptions = new()
+        OpenApiFunctionExecutionParameters executionParameters = new()
         {
             OperationSelectionPredicate = (OperationSelectionPredicateContext context) => context.Method == "Get"
         };
 
-        // Parse the OpenAPI document.
-        RestApiSpecification specification = await parser.ParseAsync(stream: reader.BaseStream, options: parserOptions);
-
-        // Import the OpenAPI document specification.
-        this._kernel.ImportPluginFromOpenApi("RepairService", specification);
+        // Import the RepairService OpenAPI plugin
+        await this._kernel.ImportPluginFromOpenApiAsync(
+            pluginName: "RepairService",
+            filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
+            executionParameters: executionParameters);
 
         // Tell the AI model not to call any function and show the list of functions it can call instead.
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };

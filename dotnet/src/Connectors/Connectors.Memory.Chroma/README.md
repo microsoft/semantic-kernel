@@ -21,8 +21,6 @@ docker-compose up -d --build
 
 3. Use Semantic Kernel with Chroma, using server local endpoint `http://localhost:8000`:
 
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
-
 ```csharp
 const string endpoint = "http://localhost:8000";
 

@@ -263,7 +263,7 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
-        ProcessStepBuilder countStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessMapResultWithTargetInvalidAsync));
+        ProcessStepBuilder countStep = process.AddStepFromType<CommonSteps.CountStep>(id: nameof(ProcessMapResultWithTargetInvalidAsync));
         mapStep.MapOperation
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
@@ -297,7 +297,7 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
         const string CounterName = nameof(ProcessMapResultWithTargetExtraAsync);
-        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CommonSteps.CountStep>(name: CounterName);
+        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CommonSteps.CountStep>(id: CounterName);
         computeStep
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));

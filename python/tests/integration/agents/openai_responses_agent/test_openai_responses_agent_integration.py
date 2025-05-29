@@ -7,6 +7,7 @@ import pytest
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureResponsesAgent, OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings, OpenAISettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -48,10 +49,12 @@ class TestOpenAIResponsesAgentIntegration:
         tools, plugins, text = [], [], None
 
         if agent_type == "azure":
-            client, model = AzureResponsesAgent.setup_resources()
+            client = AzureResponsesAgent.create_client()
+            model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureResponsesAgent
         else:  # agent_type == "openai"
-            client, model = OpenAIResponsesAgent.setup_resources()
+            client = OpenAIResponsesAgent.create_client()
+            model = OpenAISettings().chat_model_id
             AgentClass = OpenAIResponsesAgent
 
         if params.get("enable_web_search"):
@@ -102,6 +105,7 @@ class TestOpenAIResponsesAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_get_response_with_thread(

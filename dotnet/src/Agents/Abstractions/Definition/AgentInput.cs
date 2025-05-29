@@ -11,6 +11,14 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentInput
 {
     /// <summary>
+    /// Gets or sets the type of the input.
+    /// </summary>
+    /// <remarks>
+    /// This can be either a string, number, array, object, or boolean.
+    /// </remarks>
+    public string? Type { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the input.
     /// </summary>
     public string? Name { get; set; }
@@ -39,16 +47,20 @@ public sealed class AgentInput
     public string? JsonSchema { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to handle the input value as potential dangerous content.
+    /// Gets or sets a value indicating whether the input can contain structural text.
     /// </summary>
     /// <remarks>
     /// The default is true.
-    /// When set to false the value of the input is treated as safe content.
+    /// When set to false the value of the input is treated as safe content i.e. the input can emit structural text.
     /// </remarks>
     public bool Strict { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a sample value for the input.
     /// </summary>
+    /// <remarks>
+    /// This is used to provide examples to the user of the agent.
+    /// This can also be used by developer tooling as the value to use without needing to prompt the developer to enter a value.
+    /// </remarks>
     public object? Sample { get; set; }
 }
