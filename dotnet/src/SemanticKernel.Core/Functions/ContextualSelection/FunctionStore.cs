@@ -160,5 +160,22 @@ internal sealed class FunctionStore
         }
     }
 
-    internal record FunctionVectorizationInfo(string Name, string VectorizationSource);
+    internal readonly struct FunctionVectorizationInfo
+    {
+        public string Name { get; }
+
+        public string VectorizationSource { get; }
+
+        public FunctionVectorizationInfo(string name, string vectorizationSource)
+        {
+            this.Name = name;
+            this.VectorizationSource = vectorizationSource;
+        }
+
+        public void Deconstruct(out string name, out string vectorizationSource)
+        {
+            name = this.Name;
+            vectorizationSource = this.VectorizationSource;
+        }
+    }
 }
