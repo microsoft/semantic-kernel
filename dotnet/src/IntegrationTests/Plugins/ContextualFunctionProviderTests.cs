@@ -45,7 +45,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
         this._vectorStore = new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
 
         var builder = Kernel.CreateBuilder();
-        builder.AddAzureOpenAIChatCompletion(chatConfig.DeploymentName, chatConfig.Endpoint, new AzureCliCredential());
+        builder.AddAzureOpenAIChatCompletion(chatConfig.ChatDeploymentName!, chatConfig.Endpoint, new AzureCliCredential());
         this._kernel = builder.Build();
     }
 
