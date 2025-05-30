@@ -25,7 +25,7 @@ class ApprovalTerminationStrategy(TerminationStrategy):
 
     async def should_agent_terminate(self, agent, history):
         """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
+        return "approved" in history[-1].content.lower() and "not approved" not in history[-1].content.lower()
 
 
 REVIEWER_NAME = "ArtDirector"
