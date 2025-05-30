@@ -69,21 +69,21 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Adds a step to the process from a <see cref="PersistentAgent"/>.
     /// </summary>
-    /// <param name="persistantAgent">The <see cref="AgentDefinition"/></param>
+    /// <param name="persistentAgent">The <see cref="AgentDefinition"/></param>
     /// <param name="stepId">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(PersistentAgent persistantAgent, string? stepId = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(PersistentAgent persistentAgent, string? stepId = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
     {
-        Verify.NotNull(persistantAgent);
+        Verify.NotNull(persistentAgent);
 
         var agentDefinition = new AgentDefinition
         {
-            Id = persistantAgent.Id,
+            Id = persistentAgent.Id,
             Type = AzureAIAgentFactory.AzureAIAgentType,
-            Name = persistantAgent.Name,
-            Description = persistantAgent.Description
+            Name = persistentAgent.Name,
+            Description = persistentAgent.Description
         };
 
         return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, stepId, aliases, defaultThread, humanInLoopMode);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -121,7 +123,9 @@ internal static class FoundryWorkflowHelperExtensions
                 {
                     matchIndexes[i]++;
                     if (matchIndexes[i] == patterns[i].Length)
+                    {
                         return true;
+                    }
                 }
                 else
                 {
