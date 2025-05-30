@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import uuid
 from collections.abc import AsyncIterable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
@@ -31,6 +32,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -719,6 +721,51 @@ class ResponsesAgentThreadActions:
                             "call_id": content.call_id,
                         }
                         response_inputs.append(rfrc_dict)
+                    case BinaryContent() if content.can_read:
+                        # Generate filename with appropriate extension based on mime type
+                        extension = ""
+                        if content.mime_type == "application/pdf":
+                            extension = ".pdf"
+                        elif content.mime_type.startswith("text/"):
+                            extension = ".txt"
+                        elif content.mime_type.startswith("image/"):
+                            # For image content, warn that ImageContent class should be used instead
+                            logger.warning(
+                                f"Using BinaryContent for image type '{content.mime_type}'. "
+                                "Use ImageContent for handling of images."
+                            )
+                            extension = f".{content.mime_type.split('/')[-1]}"
+                        elif content.mime_type.startswith("audio/"):
+                            # For audio content, warn that AudioContent class should be used instead
+                            logger.warning(
+                                f"Use BinaryContent for audio type '{content.mime_type}'. "
+                                "Use AudioContent for handling of audio."
+                            )
+                            extension = f".{content.mime_type.split('/')[-1]}"
+                        else:
+                            # For other binary types, use generic extension based on MIME type
+                            # or fallback to .bin for application/octet-stream
+                            mime_subtype = (
+                                content.mime_type.split("/")[-1]
+                                if "/" in content.mime_type
+                                else "application/octet-stream"
+                            )
+                            extension = f".{mime_subtype}"
+                            logger.warning(
+                                f"Using binary content with mime type '{content.mime_type}' "
+                                f"which may not be supported by the OpenAI Responses API"
+                            )
+
+                        filename = f"{uuid.uuid4()}{extension}"
+
+                        # Format according to OpenAI Responses API specification
+                        file_data_uri = f"data:{content.mime_type};base64,{content.data_string}"
+                        contents.append({
+                            "type": "input_file",
+                            "filename": filename,
+                            "file_data": file_data_uri,
+                        })
+                        response_inputs.append({"role": original_role, "content": contents})
 
         return response_inputs
 

@@ -165,6 +165,47 @@ class BinaryContent(KernelContent):
         if self._data_uri:
             self._data_uri.mime_type = value
 
+    @property
+    def can_read(self) -> bool:
+        """Get whether the content can be read.
+
+        Returns True if the content has data available for reading.
+        """
+        return self._data_uri is not None
+
+    @classmethod
+    def from_file(
+        cls: type[_T],
+        file_path: str | Path,
+        mime_type: str | None = None,
+    ) -> _T:
+        """Create a BinaryContent from a file.
+
+        Args:
+            file_path: Path to the file to read
+            mime_type: The mime type of the file content
+
+        Returns:
+            A BinaryContent instance with the file data
+
+        Raises:
+            FileNotFoundError: If the file does not exist
+            ContentInitializationError: If the file cannot be read
+        """
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        if not path.is_file():
+            raise ContentInitializationError(f"Path is not a file: {file_path}")
+
+        try:
+            with open(path, "rb") as file:
+                data = file.read()
+        except Exception as e:
+            raise ContentInitializationError(f"Failed to read file: {e}") from e
+
+        return cls(data=data, mime_type=mime_type, data_format="base64", uri=str(path))
+
     def __str__(self) -> str:
         """Return the string representation of the content."""
         return self.data_uri if self._data_uri else str(self.uri)
