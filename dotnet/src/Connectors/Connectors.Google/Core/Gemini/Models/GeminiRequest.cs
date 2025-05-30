@@ -46,6 +46,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
 
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Labels { get; set; }
+
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
@@ -430,6 +434,7 @@ internal sealed class GeminiRequest
     private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.CachedContent = executionSettings.CachedContent;
+        request.Labels = executionSettings.Labels;
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
