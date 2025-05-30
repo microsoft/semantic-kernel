@@ -80,7 +80,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         var providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
         if (providersContext.AIFunctions is { Count: > 0 })
         {
-            //TODO: Add a plugin name collision handling mechanism to address cases when a plugin with the name "Tools" is already registered in the kernel.
             kernel.Plugins.AddFromAIContext(providersContext, "Tools");
         }
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -175,7 +174,10 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+        if (providersContext.AIFunctions is { Count: > 0 })
+        {
+            kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+        }
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
