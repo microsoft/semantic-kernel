@@ -51,6 +51,12 @@ class VectorStoreOperationException(VectorStoreException):
     pass
 
 
+class VectorStoreOperationNotSupportedException(VectorStoreOperationException):
+    """An error occurred while performing an operation on the vector store record collection."""
+
+    pass
+
+
 class VectorSearchExecutionException(VectorStoreOperationException):
     """Raised when there is an error executing a VectorSearch function."""
 
@@ -75,4 +81,5 @@ __all__ = [
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
     "VectorStoreOperationException",
+    "VectorStoreOperationNotSupportedException",
 ]
