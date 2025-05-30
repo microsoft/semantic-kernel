@@ -106,10 +106,10 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             description (str | None): The description of the orchestration. If None, use a default description.
             input_transform (Callable | None): A function that transforms the external input message.
             output_transform (Callable | None): A function that transforms the internal output message.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
+            agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
-            streaming_agent_response_callback (Callable | None): A function that is called when a response is produced
-                by the agents. The response will be a streaming chunk in this case.
+            streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
+                is produced by the agents.
         """
         if not members:
             raise ValueError("The members list cannot be empty.")

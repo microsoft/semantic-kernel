@@ -52,10 +52,10 @@ class AgentActorBase(ActorBase):
         Args:
             agent (Agent): An agent to be run in the container.
             internal_topic_type (str): The topic type of the internal topic.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
+            agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
-            streaming_agent_response_callback (Callable | None): A function that is called when a response is produced
-                by the agents. The response will be a streaming chunk in this case.
+            streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
+                is produced by the agents.
         """
         self._agent = agent
         self._internal_topic_type = internal_topic_type
