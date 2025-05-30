@@ -208,7 +208,8 @@ public sealed class OpenAIChatMessageContentTests
         var args = JsonSerializer.Serialize(new Dictionary<string, object?> { { "location", "Seattle" }, { "unit", "celsius" } });
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("tool-call-1", "get_weather", BinaryData.FromString(args)),
-            ChatToolCall.CreateFunctionToolCall("tool-call-2", "get_time", BinaryData.FromString("{\"timezone\":\"PST\"}"))
+            ChatToolCall.CreateFunctionToolCall("tool-call-2", "get_time", BinaryData.FromString("{\"timezone\":\"PST\"}")),
+            ChatToolCall.CreateFunctionToolCall("tool-call-3", "get_current_user", BinaryData.FromString("{}")) // No arguments
         ];
 
         var originalContent = new OpenAIChatMessageContent(AuthorRole.Assistant, "I'll get the weather and time for you.", "gpt-4", toolCalls)
@@ -232,17 +233,58 @@ public sealed class OpenAIChatMessageContentTests
 
         // ToolCalls should be properly deserialized
         Assert.NotNull(deserializedContent.ToolCalls);
-        Assert.Equal(2, deserializedContent.ToolCalls.Count);
+        Assert.Equal(3, deserializedContent.ToolCalls.Count);
 
-        // Verify first tool call
+        // Verify first tool call (with arguments)
         Assert.Equal("tool-call-1", deserializedContent.ToolCalls[0].Id);
         Assert.Equal("get_weather", deserializedContent.ToolCalls[0].FunctionName);
         Assert.Equal(args, deserializedContent.ToolCalls[0].FunctionArguments.ToString());
 
-        // Verify second tool call
+        // Verify second tool call (with arguments)
         Assert.Equal("tool-call-2", deserializedContent.ToolCalls[1].Id);
         Assert.Equal("get_time", deserializedContent.ToolCalls[1].FunctionName);
         Assert.Equal("{\"timezone\":\"PST\"}", deserializedContent.ToolCalls[1].FunctionArguments.ToString());
+
+        // Verify third tool call (without arguments)
+        Assert.Equal("tool-call-3", deserializedContent.ToolCalls[2].Id);
+        Assert.Equal("get_current_user", deserializedContent.ToolCalls[2].FunctionName);
+        Assert.Equal("{}", deserializedContent.ToolCalls[2].FunctionArguments.ToString());
+    }
+
+    [Fact]
+    public void SerializationWithToolCallsEdgeCasesWorksCorrectly()
+    {
+        // Arrange - Test edge cases for tool call serialization
+        List<ChatToolCall> toolCalls = [
+            ChatToolCall.CreateFunctionToolCall("tool-1", "no_args_function", BinaryData.FromString("{}")), // Empty object
+            ChatToolCall.CreateFunctionToolCall("tool-2", "minimal_function", BinaryData.FromString("")), // Empty string
+            ChatToolCall.CreateFunctionToolCall("tool-3", "null_args_function", BinaryData.FromString("null")) // Null value
+        ];
+
+        var originalContent = new OpenAIChatMessageContent(AuthorRole.Assistant, "Calling functions with various argument types.", "gpt-4", toolCalls);
+
+        // Act
+        var json = JsonSerializer.Serialize(originalContent);
+        var deserializedContent = JsonSerializer.Deserialize<OpenAIChatMessageContent>(json);
+
+        // Assert
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(3, deserializedContent.ToolCalls.Count);
+
+        // Verify empty object arguments
+        Assert.Equal("tool-1", deserializedContent.ToolCalls[0].Id);
+        Assert.Equal("no_args_function", deserializedContent.ToolCalls[0].FunctionName);
+        Assert.Equal("{}", deserializedContent.ToolCalls[0].FunctionArguments.ToString());
+
+        // Verify empty string arguments
+        Assert.Equal("tool-2", deserializedContent.ToolCalls[1].Id);
+        Assert.Equal("minimal_function", deserializedContent.ToolCalls[1].FunctionName);
+        Assert.Equal("", deserializedContent.ToolCalls[1].FunctionArguments.ToString());
+
+        // Verify null arguments
+        Assert.Equal("tool-3", deserializedContent.ToolCalls[2].Id);
+        Assert.Equal("null_args_function", deserializedContent.ToolCalls[2].FunctionName);
+        Assert.Equal("null", deserializedContent.ToolCalls[2].FunctionArguments.ToString());
     }
 
     [Fact]
