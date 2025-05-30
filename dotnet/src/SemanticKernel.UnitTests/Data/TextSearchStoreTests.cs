@@ -16,11 +16,13 @@ public class TextSearchStoreTests
 {
     private readonly Mock<VectorStore> _vectorStoreMock;
     private readonly Mock<VectorStoreCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>> _recordCollectionMock;
+    private readonly Mock<IKeywordHybridSearchable<TextSearchStore<string>.TextRagStorageDocument<string>>> _keywordHybridSearchableMock;
 
     public TextSearchStoreTests()
     {
         this._vectorStoreMock = new Mock<VectorStore>();
         this._recordCollectionMock = new Mock<VectorStoreCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>>();
+        this._keywordHybridSearchableMock = new Mock<IKeywordHybridSearchable<TextSearchStore<string>.TextRagStorageDocument<string>>>();
 
         this._vectorStoreMock
             .Setup(v => v.GetCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>("testCollection", It.IsAny<VectorStoreCollectionDefinition>()))
@@ -236,6 +238,39 @@ public class TextSearchStoreTests
 
         // Act
         var actualResults = await store.SearchAsync("query");
+
+        // Assert
+        var actualResultsList = await actualResults.Results.ToListAsync();
+        Assert.Single(actualResultsList);
+        Assert.Equal("Sample text", actualResultsList[0]);
+    }
+
+    [Fact]
+    public async Task SearchAsyncWithHybridReturnsSearchResults()
+    {
+        // Arrange
+        this._recordCollectionMock
+            .Setup(r => r.GetService(typeof(IKeywordHybridSearchable<TextSearchStore<string>.TextRagStorageDocument<string>>), null))
+            .Returns(this._keywordHybridSearchableMock.Object);
+
+        var mockResults = new List<VectorSearchResult<TextSearchStore<string>.TextRagStorageDocument<string>>>
+        {
+            new(new TextSearchStore<string>.TextRagStorageDocument<string> { Text = "Sample text" }, 0.9f)
+        };
+
+        this._keywordHybridSearchableMock
+            .Setup(r => r.HybridSearchAsync(
+                "query word1 wordtwo",
+                It.Is<ICollection<string>>(x => x.Contains("query") && x.Contains("word") && x.Contains("wordtwo")),
+                3,
+                It.IsAny<HybridSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(mockResults.ToAsyncEnumerable());
+
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
+
+        // Act
+        var actualResults = await store.SearchAsync("query word1 wordtwo");
 
         // Assert
         var actualResultsList = await actualResults.Results.ToListAsync();

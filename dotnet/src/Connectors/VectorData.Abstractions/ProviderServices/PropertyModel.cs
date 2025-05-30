@@ -115,5 +115,19 @@ public abstract class PropertyModel(string modelName, Type type)
         }
     }
 
-    // TODO: implement the generic accessors to avoid boxing, and make use of them in connectors
+    /// <summary>
+    /// Reads the property from the given <paramref name="record"/>.
+    /// </summary>
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    public virtual T GetValue<T>(object record)
+        => (T)(object)this.GetValueAsObject(record)!;
+
+    /// <summary>
+    /// Writes the property from the given <paramref name="record"/>.
+    /// </summary>s
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    public virtual void SetValue<T>(object record, T value)
+    {
+        this.SetValueAsObject(record, value);
+    }
 }

@@ -6,6 +6,7 @@ import json
 from pydantic import BaseModel
 
 from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -34,11 +35,11 @@ class Reasoning(BaseModel):
 async def main():
     # 1. Create the client using OpenAI resources and configuration
     # Note: the Azure OpenAI Responses API does not yet support structured outputs.
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=OpenAISettings().responses_model_id,
         client=client,
         instructions="Answer the user's questions.",
         name="StructuredOutputsAgent",

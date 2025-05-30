@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
-    from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+    from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
