@@ -19,7 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/azure/Policies/GeneratedActionPipelinePolicy.cs" Link="%(RecursiveDir)Azure/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/planning/Schema/JsonSchemaFunctionParameters.cs" Link="%(RecursiveDir)Schema/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/*" Link="%(RecursiveDir)Http/%(Filename)%(Extension)" />
@@ -31,6 +30,10 @@
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/agents/AgentUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/azure/AzureAIUtilities.props" />
+  <ItemGroup>
+    <Compile Remove="C:\src\alliscode-semantic-kernel\dotnet\src\InternalUtilities\azure\workflow\Ext.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />

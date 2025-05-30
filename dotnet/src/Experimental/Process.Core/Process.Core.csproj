@@ -20,6 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\InternalUtilities\azure\workflow\Ext.cs" Link="Extensions\Ext.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
@@ -36,6 +40,10 @@
     <PackageReference Include="JsonSchema.Net.Generation" />
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Text.RegularExpressions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

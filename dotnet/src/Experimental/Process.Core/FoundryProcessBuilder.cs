@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.SemanticKernel.Agents;
@@ -50,11 +51,11 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
-    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="stepId">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? stepId = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -62,7 +63,30 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, id, aliases, defaultThread, humanInLoopMode);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, stepId, aliases, defaultThread, humanInLoopMode);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a <see cref="PersistentAgent"/>.
+    /// </summary>
+    /// <param name="persistantAgent">The <see cref="AgentDefinition"/></param>
+    /// <param name="stepId">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(PersistentAgent persistantAgent, string? stepId = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
+    {
+        Verify.NotNull(persistantAgent);
+
+        var agentDefinition = new AgentDefinition
+        {
+            Id = persistantAgent.Id,
+            Type = AzureAIAgentFactory.AzureAIAgentType,
+            Name = persistantAgent.Name,
+            Description = persistantAgent.Description
+        };
+
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, stepId, aliases, defaultThread, humanInLoopMode);
     }
 
     /// <summary>
