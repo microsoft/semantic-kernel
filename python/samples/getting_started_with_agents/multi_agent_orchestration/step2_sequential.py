@@ -6,6 +6,7 @@ from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchest
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 """
 The following sample demonstrates how to create a sequential orchestration for
@@ -60,6 +61,21 @@ def agent_response_callback(message: ChatMessageContent) -> None:
     print(f"# {message.name}\n{message.content}")
 
 
+is_new_message = True
+
+
+def streaming_agent_response_callback(message: StreamingChatMessageContent, is_final: bool) -> None:
+    """Observer function to print the messages from the agents."""
+    global is_new_message
+    if is_new_message:
+        print(f"# {message.name}")
+        is_new_message = False
+    print(message.content, end="", flush=True)
+    if is_final:
+        print()
+        is_new_message = True
+
+
 async def main():
     """Main function to run the agents."""
     # 1. Create a sequential orchestration with multiple agents and an agent
@@ -67,7 +83,7 @@ async def main():
     agents = get_agents()
     sequential_orchestration = SequentialOrchestration(
         members=agents,
-        agent_response_callback=agent_response_callback,
+        streaming_agent_response_callback=streaming_agent_response_callback,
     )
 
     # 2. Create a runtime and start it
