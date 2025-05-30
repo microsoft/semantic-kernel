@@ -78,10 +78,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        if (providersContext.AIFunctions is { Count: > 0 })
-        {
-            kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-        }
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -174,10 +171,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        if (providersContext.AIFunctions is { Count: > 0 })
-        {
-            kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-        }
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
