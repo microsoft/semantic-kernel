@@ -146,4 +146,7 @@ class AgentActorBase(ActorBase):
         if not streaming_message_buffer:
             raise RuntimeError(f'Agent "{self._agent.name}" did not return any response.')
 
-        return sum(streaming_message_buffer[1:], streaming_message_buffer[0])
+        full_response = sum(streaming_message_buffer[1:], streaming_message_buffer[0])
+        await self._call_agent_response_callback(full_response)
+
+        return full_response
