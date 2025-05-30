@@ -24,6 +24,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 {
     private readonly VectorStore _vectorStore;
     private readonly Kernel _kernel;
+    private readonly int _modelDimensions = 1536;
 
     public ContextualFunctionProviderTests(ITestOutputHelper output)
     {
@@ -34,17 +35,17 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
             .AddUserSecrets<ContextualFunctionProviderTests>()
             .Build();
 
-        var azureOpenAIEmbeddingsConfiguration = configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>()!;
-        var azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+        var embeddingsConfig = configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>()!;
+        var chatConfig = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
 
-        var embeddingGenerator = new AzureOpenAIClient(new Uri(azureOpenAIEmbeddingsConfiguration.Endpoint), new AzureCliCredential())
-            .GetEmbeddingClient(azureOpenAIEmbeddingsConfiguration.DeploymentName)
-            .AsIEmbeddingGenerator(1536);
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(embeddingsConfig.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(embeddingsConfig.DeploymentName)
+            .AsIEmbeddingGenerator(this._modelDimensions);
 
         this._vectorStore = new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
 
         var builder = Kernel.CreateBuilder();
-        builder.AddAzureOpenAIChatCompletion(azureOpenAIConfiguration.DeploymentName, azureOpenAIConfiguration.Endpoint, new AzureCliCredential());
+        builder.AddAzureOpenAIChatCompletion(chatConfig.DeploymentName, chatConfig.Endpoint, new AzureCliCredential());
         this._kernel = builder.Build();
     }
 
@@ -70,7 +71,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 
         ContextualFunctionProvider provider = new(
             vectorStore: this._vectorStore,
-            vectorDimensions: 1536,
+            vectorDimensions: this._modelDimensions,
             functions: GetAvailableFunctions(),
             maxNumberOfFunctions: 3
         );
@@ -110,7 +111,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 
         ContextualFunctionProvider provider = new(
             vectorStore: this._vectorStore,
-            vectorDimensions: 1536,
+            vectorDimensions: this._modelDimensions,
             functions: GetAvailableFunctions(),
             maxNumberOfFunctions: 1, // Instruct the provider to return only one relevant function
             options: new ContextualFunctionProviderOptions
