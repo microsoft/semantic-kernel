@@ -40,7 +40,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 
         var embeddingGenerator = new AzureOpenAIClient(new Uri(embeddingsConfig.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(embeddingsConfig.DeploymentName)
-            .AsIEmbeddingGenerator(this._modelDimensions);
+            .AsIEmbeddingGenerator();
 
         this._vectorStore = new InMemoryVectorStore(new InMemoryVectorStoreOptions() { EmbeddingGenerator = embeddingGenerator });
 
@@ -129,7 +129,6 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
         // Assert
         Assert.NotNull(relevantFunctions);
         Assert.Single(relevantFunctions, f => f.Name == "ProvisionVM");
-        relevantFunctions.Clear();
 
         // Act: Ask agent to deploy the VM provisioned in the previous invocation
         await agent.InvokeAsync("Deploy it", agentThread).FirstAsync();
