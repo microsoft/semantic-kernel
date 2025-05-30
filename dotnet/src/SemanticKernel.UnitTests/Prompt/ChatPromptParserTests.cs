@@ -318,43 +318,43 @@ public sealed class ChatPromptParserTests
                     },
                     o =>
                     {
-                        Assert.IsType<PdfContent>(o);
-                        var x = (PdfContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.Equal($"data:application/pdf;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/pdf", x.MimeType);
                     },
                     o =>
                     {
-                        Assert.IsType<PdfContent>(o);
-                        var x = (PdfContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.NotNull(x.Uri);
                         Assert.Equal("https://fake-link-to-pdf/", x.Uri.AbsoluteUri);
                     },
                     o =>
                     {
-                        Assert.IsType<DocContent>(o);
-                        var x = (DocContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.Equal($"data:application/msword;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/msword", x.MimeType);
                     },
                     o =>
                     {
-                        Assert.IsType<DocContent>(o);
-                        var x = (DocContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.NotNull(x.Uri);
                         Assert.Equal("https://fake-link-to-doc/", x.Uri.AbsoluteUri);
                     },
                     o =>
                     {
-                        Assert.IsType<DocxContent>(o);
-                        var x = (DocxContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.Equal($"data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document", x.MimeType);
                     },
                     o =>
                     {
-                        Assert.IsType<DocxContent>(o);
-                        var x = (DocxContent)o;
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
                         Assert.NotNull(x.Uri);
                         Assert.Equal("https://fake-link-to-docx/", x.Uri.AbsoluteUri);
                     },
@@ -557,16 +557,16 @@ public sealed class ChatPromptParserTests
               <message role='user'>
                   This part will be discarded upon parsing
                   <text>Make sense of this random assortment of stuff.</text>
-                  <image>https://fake-link-to-image/</image>
+                  <image mimetype="image/png">https://fake-link-to-image/</image>
                   <audio>data:audio/wav;base64,{s_FakeContent}</audio>
-                  <pdf>data:application/pdf;base64,{s_FakeContent}</pdf>
-                  <pdf>https://fake-link-to-pdf/</pdf>
-                  <doc>data:application/msword;base64,{s_FakeContent}</doc>
-                  <doc>https://fake-link-to-doc/</doc>
-                  <docx>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}</docx>
-                  <docx>https://fake-link-to-docx/</docx>
-                  <file>data:application/octet-stream;base64,{s_FakeContent}</file>
-                  <file>https://fake-link-to-binary/</file>
+                  <binary>data:application/pdf;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/pdf">https://fake-link-to-pdf/</binary>
+                  <binary>data:application/msword;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/msword">https://fake-link-to-doc/</binary>
+                  <binary>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document">https://fake-link-to-docx/</binary>
+                  <binary>data:application/octet-stream;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/octet-stream">https://fake-link-to-binary/</binary>
                   This part will also be discarded upon parsing
               </message>
               """;

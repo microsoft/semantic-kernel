@@ -17,34 +17,29 @@ internal static class ChatPromptParser
     private const string ImageTagName = "IMAGE";
     private const string TextTagName = "TEXT";
     private const string AudioTagName = "AUDIO";
-    private const string PdfTagName = "PDF";
-    private const string DocxTagName = "DOCX";
-    private const string DocTagName = "DOC";
-    private const string BinaryTagName = "FILE";
+    private const string BinaryTagName = "BINARY";
 
     /// <summary>
     /// Creates a new instance of <typeparamref name="T"/> from a data URI.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="content"></param>
+    /// <param name="content">Base64 encoded content or URI.</param>
+    /// <param name="mimeType">Optional MIME type of the content.</param>
     /// <returns>A new instance of <typeparamref name="T"/> with <paramref name="content"/></returns>
-    private static T s_NewBinaryContent<T>(string content) where T : BinaryContent, new()
+    private static T CreateBinaryContent<T>(string content, string? mimeType) where T : BinaryContent, new()
     {
-        return (content.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) ? new T { DataUri = content } : new T { Uri = new Uri(content) };
+        return (content.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) ? new T { DataUri = content } : new T { Uri = new Uri(content), MimeType = mimeType };
     }
 
     /// <summary>
     /// Factory for creating a <see cref="KernelContent"/> instance based on the tag name.
     /// </summary>
-    private static readonly Dictionary<string, Func<string, KernelContent>> s_contentFactory = new()
+    private static readonly Dictionary<string, Func<string, string?, KernelContent>> s_contentFactoryMapping = new()
     {
-        { TextTagName, content => new TextContent(content) },
-        { ImageTagName, content => s_NewBinaryContent<ImageContent>(content) },
-        { AudioTagName, content => s_NewBinaryContent<AudioContent>(content) },
-        { PdfTagName, content => s_NewBinaryContent<PdfContent>(content) },
-        { DocxTagName, content => s_NewBinaryContent<DocxContent>(content) },
-        { DocTagName, content => s_NewBinaryContent<DocContent>(content) },
-        { BinaryTagName, content => s_NewBinaryContent<BinaryContent>(content) }
+        { TextTagName, (content, _) => new TextContent(content) },
+        { ImageTagName, CreateBinaryContent<ImageContent> },
+        { AudioTagName, CreateBinaryContent<AudioContent> },
+        { BinaryTagName, CreateBinaryContent<BinaryContent> }
     };
 
     /// <summary>
@@ -103,11 +98,11 @@ internal static class ChatPromptParser
         ChatMessageContentItemCollection items = [];
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
-            if (!s_contentFactory.TryGetValue(childNode.TagName.ToUpperInvariant(), out var create))
+            if (s_contentFactoryMapping.TryGetValue(childNode.TagName.ToUpperInvariant(), out var createBinaryContent))
             {
-                throw new NotSupportedException($"Unsupported node type: {childNode.TagName}");
+                childNode.Attributes.TryGetValue("mimetype", out var mimeType);
+                items.Add(createBinaryContent(childNode.Content!, mimeType));
             }
-            items.Add(create(childNode.Content!));
         }
 
         if (items.Count == 1 && items[0] is TextContent textContent)
