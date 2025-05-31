@@ -14,8 +14,33 @@ internal static class ChatPromptParser
 {
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";
-    private const string ImageTagName = "image";
-    private const string TextTagName = "text";
+    private const string ImageTagName = "IMAGE";
+    private const string TextTagName = "TEXT";
+    private const string AudioTagName = "AUDIO";
+    private const string BinaryTagName = "BINARY";
+
+    /// <summary>
+    /// Creates a new instance of <typeparamref name="T"/> from a data URI.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="content">Base64 encoded content or URI.</param>
+    /// <param name="mimeType">Optional MIME type of the content.</param>
+    /// <returns>A new instance of <typeparamref name="T"/> with <paramref name="content"/></returns>
+    private static T CreateBinaryContent<T>(string content, string? mimeType) where T : BinaryContent, new()
+    {
+        return (content.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) ? new T { DataUri = content } : new T { Uri = new Uri(content), MimeType = mimeType };
+    }
+
+    /// <summary>
+    /// Factory for creating a <see cref="KernelContent"/> instance based on the tag name.
+    /// </summary>
+    private static readonly Dictionary<string, Func<string, string?, KernelContent>> s_contentFactoryMapping = new()
+    {
+        { TextTagName, (content, _) => new TextContent(content) },
+        { ImageTagName, CreateBinaryContent<ImageContent> },
+        { AudioTagName, CreateBinaryContent<AudioContent> },
+        { BinaryTagName, CreateBinaryContent<BinaryContent> }
+    };
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -73,20 +98,10 @@ internal static class ChatPromptParser
         ChatMessageContentItemCollection items = [];
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
-            if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
+            if (s_contentFactoryMapping.TryGetValue(childNode.TagName.ToUpperInvariant(), out var createBinaryContent))
             {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new ImageContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new ImageContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                items.Add(new TextContent(childNode.Content));
+                childNode.Attributes.TryGetValue("mimetype", out var mimeType);
+                items.Add(createBinaryContent(childNode.Content!, mimeType));
             }
         }
 
