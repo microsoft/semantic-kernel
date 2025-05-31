@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+    <ProjectReference Include="..\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
