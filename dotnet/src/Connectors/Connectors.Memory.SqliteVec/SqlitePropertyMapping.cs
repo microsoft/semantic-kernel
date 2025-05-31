@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -23,12 +22,6 @@ internal static class SqlitePropertyMapping
         MemoryMarshal.AsBytes(floatSpan).CopyTo(byteArray);
 
         return byteArray;
-    }
-
-    public static ReadOnlyMemory<float> MapVectorForDataModel(byte[] byteArray)
-    {
-        var array = MemoryMarshal.Cast<byte, float>(byteArray).ToArray();
-        return new ReadOnlyMemory<float>(array);
     }
 
     public static List<SqliteColumn> GetColumns(IReadOnlyList<PropertyModel> properties, bool data)
@@ -91,39 +84,10 @@ internal static class SqlitePropertyMapping
     {
         int propertyIndex = reader.GetOrdinal(propertyName);
 
-        if (reader.IsDBNull(propertyIndex))
-        {
-            return default;
-        }
-
-        return reader.GetFieldValue<TPropertyType>(propertyIndex);
-    }
-
-    public static object? GetPropertyValue(DbDataReader reader, string propertyName, Type propertyType)
-    {
-        int propertyIndex = reader.GetOrdinal(propertyName);
-
-        if (reader.IsDBNull(propertyIndex))
-        {
-            return null;
-        }
-
-        return (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
-        {
-            Type t when t == typeof(int) => reader.GetInt32(propertyIndex),
-            Type t when t == typeof(long) => reader.GetInt64(propertyIndex),
-            Type t when t == typeof(short) => reader.GetInt16(propertyIndex),
-            Type t when t == typeof(bool) => reader.GetBoolean(propertyIndex),
-            Type t when t == typeof(float) => reader.GetFloat(propertyIndex),
-            Type t when t == typeof(double) => reader.GetDouble(propertyIndex),
-            Type t when t == typeof(string) => reader.GetString(propertyIndex),
-            Type t when t == typeof(byte[]) => (byte[])reader[propertyIndex],
-            Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[propertyIndex],
-            Type t when t == typeof(Embedding<float>) => (byte[])reader[propertyIndex],
-            Type t when t == typeof(float[]) => (byte[])reader[propertyIndex],
-
-            _ => throw new NotSupportedException($"Unsupported type: {propertyType} for property: {propertyName}")
-        };
+        // TODO: Check this
+        return reader.IsDBNull(propertyIndex)
+            ? default
+            : reader.GetFieldValue<TPropertyType>(propertyIndex);
     }
 
     #region private

@@ -28,20 +28,6 @@ public sealed class SqlitePropertyMappingTests
         Assert.True(storageModelVector.Length > 0);
     }
 
-    [Fact]
-    public void MapVectorForDataModelReturnsReadOnlyMemory()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
-        var byteArray = SqlitePropertyMapping.MapVectorForStorageModel(vector);
-
-        // Act
-        var dataModelVector = SqlitePropertyMapping.MapVectorForDataModel(byteArray);
-
-        // Assert
-        Assert.Equal(vector.Span.ToArray(), dataModelVector.Span.ToArray());
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
