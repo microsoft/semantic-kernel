@@ -19,13 +19,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.CosmosNoSql\Connectors.Memory.CosmosNoSql.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\CosmosNoSql\CosmosNoSql.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\InMemory\InMemory.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\Qdrant\Qdrant.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\Redis\Redis.csproj" />
+    <ProjectReference Include="..\..\..\src\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
