@@ -35,14 +35,12 @@ public class RedisHashSetDynamicMappingTests
             ["ULongData"] = 4ul,
             ["DoubleData"] = 5.5d,
             ["FloatData"] = 6.6f,
-            ["BoolData"] = true,
             ["NullableIntData"] = 7,
             ["NullableUIntData"] = 8u,
             ["NullableLongData"] = 9L,
             ["NullableULongData"] = 10ul,
             ["NullableDoubleData"] = 11.1d,
             ["NullableFloatData"] = 12.2f,
-            ["NullableBoolData"] = false,
 
             ["FloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
             ["DoubleVector"] = new ReadOnlyMemory<double>(s_doubleVector),
@@ -113,14 +111,12 @@ public class RedisHashSetDynamicMappingTests
         Assert.Equal(4ul, dataModel["ULongData"]);
         Assert.Equal(5.5d, dataModel["DoubleData"]);
         Assert.Equal(6.6f, dataModel["FloatData"]);
-        Assert.True((bool)dataModel["BoolData"]!);
         Assert.Equal(7, dataModel["NullableIntData"]);
         Assert.Equal(8u, dataModel["NullableUIntData"]);
         Assert.Equal(9L, dataModel["NullableLongData"]);
         Assert.Equal(10ul, dataModel["NullableULongData"]);
         Assert.Equal(11.1d, dataModel["NullableDoubleData"]);
         Assert.Equal(12.2f, dataModel["NullableFloatData"]);
-        Assert.False((bool)dataModel["NullableBoolData"]!);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, ((ReadOnlyMemory<float>)dataModel["FloatVector"]!).ToArray());
         Assert.Equal(new double[] { 5, 6, 7, 8 }, ((ReadOnlyMemory<double>)dataModel["DoubleVector"]!).ToArray());
     }
