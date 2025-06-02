@@ -41,7 +41,7 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name
-        bing_connection = await client.connections.get(name="skbinggrounding")
+        bing_connection = await client.connections.get(name="<your-bing-grounding-connection-name>")
         conn_id = bing_connection.id
 
         # 2. Initialize agent bing tool and add the connection id
@@ -92,10 +92,17 @@ async def main() -> None:
         Sample Output:
         
         # User: 'Which team won the 2025 NCAA basketball championship?'
-        # BingGroundingAgent: The Florida Gators won the 2025 NCAA basketball championship, defeating the Houston Cougars 65-63 in the final to secure their third national title【3:5†source】【3:6†source】【3:9†source】.
-        Annotation :> https://www.usatoday.com/story/sports/ncaab/2025/04/07/houston-florida-live-updates-national-championship-score/82982004007/, source=【3:5†source】, with start_index=147 and end_index=159
-        Annotation :> https://bleacherreport.com/articles/25182096-winners-and-losers-2025-mens-ncaa-tournament, source=【3:6†source】, with start_index=159 and end_index=171
-        Annotation :> https://wtop.com/ncaa-basketball/2025/04/ncaa-basketball-champions/, source=【3:9†source】, with start_index=171 and end_index=183
+        Function Call:> bing_grounding with arguments: 
+            {
+                'requesturl': 'https://api.bing.microsoft.com/v7.0/search?q=search(query:2025 NCAA basketball championship winner)', 
+                'response_metadata': "{'market': 'en-US', 'num_docs_retrieved': 5, 'num_docs_actually_used': 5}"
+            }
+        # BingGroundingAgent: The team that won the 2025 NCAA men's basketball championship was the Florida Gators. They defeated the Houston Cougars with a final score of 65-63. 
+            The championship game took place in San Antonio, Texas, and the Florida team was coached by Todd Golden. This victory made Florida the national champion for the 2024-25 
+            NCAA Division I men's basketball season【3:0†source】【3:1†source】【3:2†source】.
+        Annotation :> https://en.wikipedia.org/wiki/2025_NCAA_Division_I_men%27s_basketball_championship_game, source=【3:0†source】, with start_index=357 and end_index=369
+        Annotation :> https://www.ncaa.com/history/basketball-men/d1, source=【3:1†source】, with start_index=369 and end_index=381
+        Annotation :> https://sports.yahoo.com/article/won-march-madness-2025-ncaa-100551421.html, source=【3:2†source】, with start_index=381 and end_index=393
         """  # noqa: E501
 
 

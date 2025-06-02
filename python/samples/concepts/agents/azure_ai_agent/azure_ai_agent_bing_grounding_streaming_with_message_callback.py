@@ -46,8 +46,7 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name
-        # <your-bing-grounding-connection-name>
-        bing_connection = await client.connections.get(name="skbinggrounding")
+        bing_connection = await client.connections.get(name="<your-bing-grounding-connection-name>")
         conn_id = bing_connection.id
 
         # 2. Initialize agent bing tool and add the connection id
