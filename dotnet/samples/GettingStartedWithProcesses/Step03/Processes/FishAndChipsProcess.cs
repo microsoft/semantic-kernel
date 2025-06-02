@@ -37,7 +37,8 @@ public static class FishAndChipsProcess
         processBuilder.ListenFor().AllOf([
             new(FriedFishProcess.ProcessEvents.FriedFishReady, makeFriedFishStep),
             new(PotatoFriesProcess.ProcessEvents.PotatoFriesReady, makePotatoFriesStep),
-        ]).SendEventTo(new ProcessStepTargetBuilder(addCondimentsStep, inputMapping: inputEvents => {
+        ]).SendEventTo(new ProcessStepTargetBuilder(addCondimentsStep, inputMapping: inputEvents =>
+        {
             return new() {
                 { "fishActions", inputEvents[makeFriedFishStep.GetFullEventId(FriedFishProcess.ProcessEvents.FriedFishReady)] },
                 { "potatoActions", inputEvents[makePotatoFriesStep.GetFullEventId(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)] },
