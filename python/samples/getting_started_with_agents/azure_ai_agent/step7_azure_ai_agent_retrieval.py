@@ -40,7 +40,7 @@ async def main() -> None:
         # Replace the "your-agent-id" with the actual agent ID
         # you want to use.
         agent_definition = await client.agents.get_agent(
-            agent_id="asst_qWFgavmbca0L39iwiKqQMCl9",
+            agent_id="<your-agent-id>",
         )
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
