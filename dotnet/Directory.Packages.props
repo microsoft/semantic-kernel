@@ -154,7 +154,7 @@
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="Fluid.Core" Version="2.11.1" />
+    <PackageVersion Include="Fluid.Core" Version="2.24.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.3.1" />
