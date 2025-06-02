@@ -331,12 +331,22 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
             .SendEventTo(new ProcessFunctionTargetBuilder(outputStep2, functionName: EmitterStep.PublicEventFunction));
         thirdStep
             .OnEvent(ProcessTestsEvents.OutputReadyPublic)
-            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "secondInput"))
             .SendEventTo(new ProcessFunctionTargetBuilder(outputStep3, functionName: EmitterStep.PublicEventFunction));
 
-        firstStep
-            .OnEvent(EmitterStep.EventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "firstInput"));
+        processBuilder.ListenFor().AllOf(
+            [
+                new(EmitterStep.EventId, firstStep),
+                new(ProcessTestsEvents.OutputReadyPublic, thirdStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(lastStep, inputMapping: (inputEvents) =>
+            {
+                // Map the inputs to the last step.
+                return new()
+                {
+                    { "firstInput", inputEvents[firstStep.GetFullEventId(EmitterStep.EventId)] },
+                    { "secondInput", inputEvents[thirdStep.GetFullEventId(ProcessTestsEvents.OutputReadyPublic)] }
+                };
+            }));
 
         KernelProcess process = processBuilder.Build();
 
@@ -451,9 +461,21 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         sixthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(seventhNestedStep, functionName: EmitterStep.InternalEventFunction));
         seventhNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(eighthNestedStep, functionName: EmitterStep.InternalEventFunction));
         eighthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(ninthNestedStep, functionName: EmitterStep.InternalEventFunction));
-        ninthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "secondInput"));
 
-        firstNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "firstInput"));
+        processBuilder.ListenFor().AllOf(
+            [
+                new(EmitterStep.EventId, firstNestedStep),
+                new(EmitterStep.EventId, ninthNestedStep),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(tenthNestedStep, inputMapping: (inputEvents) =>
+            {
+                // Map the input events to the parameters of the tenth step.
+                return new()
+                {
+                    { "firstInput", inputEvents[firstNestedStep.GetFullEventId(EmitterStep.EventId)] },
+                    { "secondInput", inputEvents[ninthNestedStep.GetFullEventId(EmitterStep.EventId)] }
+                };
+            }));
 
         return processBuilder;
     }
@@ -480,7 +502,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 
         echoStep
             .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep));
 
         return processBuilder;
     }
@@ -511,10 +533,22 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var fanInCStep = processBuilder.AddStepFromType<FanInStep>(id: nameof(FanInStep));
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
-        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep));
 
-        echoAStep.OnFunctionResult().SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
-        repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
+        processBuilder.ListenFor().AllOf(
+            [
+                new(echoAStep.GetFunctionResultEventId(), echoAStep),
+                new(ProcessTestsEvents.OutputReadyPublic, repeatBStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(fanInCStep, inputMapping: (inputEvents) =>
+            {
+                // Map the input events to the parameters of the fan-in step.
+                return new()
+                {
+                    { "firstInput", inputEvents[echoAStep.GetFullEventId(echoAStep.GetFunctionResultEventId())] },
+                    { "secondInput", inputEvents[repeatBStep.GetFullEventId(ProcessTestsEvents.OutputReadyPublic)] }
+                };
+            }));
 
         return processBuilder;
     }
@@ -543,7 +577,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var reportStep = processBuilder.AddStepFromType<ReportStep>("ReportStep");
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(errorStep));
-        errorStep.OnEvent(ProcessTestsEvents.ErrorStepSuccess).SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
+        errorStep.OnEvent(ProcessTestsEvents.ErrorStepSuccess).SendEventTo(new ProcessFunctionTargetBuilder(repeatStep));
         errorStep.OnFunctionError("ErrorWhenTrue").SendEventTo(new ProcessFunctionTargetBuilder(reportStep));
 
         return processBuilder;
