@@ -31,9 +31,6 @@
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/agents/AgentUtilities.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/azure/AzureAIUtilities.props" />
-  <ItemGroup>
-    <Compile Remove="C:\src\alliscode-semantic-kernel\dotnet\src\InternalUtilities\azure\workflow\Ext.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />

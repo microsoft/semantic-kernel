@@ -229,6 +229,16 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         return WorkflowSerializer.SerializeToJson(workflow);
     }
 
+    /// <summary>
+    /// Serializes the process to YAML.
+    /// </summary>
+    public async Task<string> ToYamlAsync()
+    {
+        var process = this.Build();
+        var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
+        return WorkflowSerializer.SerializeToYaml(workflow);
+    }
+
     private class FoundryWorkflow
     {
         [JsonPropertyName("id")]

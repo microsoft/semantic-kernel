@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Extensions for managing Foundry Workflows
 /// </summary>
-public static class Ext
+public static class FoundryWorkflowExtensions
 {
     /// <summary>
     /// Publishes a workflow using a <see cref="ClientPipeline"/> and a <see cref="FoundryProcessBuilder{T}"/>.
