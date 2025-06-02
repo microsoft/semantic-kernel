@@ -134,6 +134,7 @@ internal sealed class HandoffActor :
             if (this.InteractiveCallback != null && this._taskSummary == null)
             {
                 ChatMessageContent input = await this.InteractiveCallback().ConfigureAwait(false);
+                await this.PublishMessageAsync(new HandoffMessages.Response { Message = input }, this.Context.Topic, messageId: null, messageContext.CancellationToken).ConfigureAwait(false);
                 this._cache.Add(input);
                 continue;
             }
@@ -151,7 +152,7 @@ internal sealed class HandoffActor :
             yield return KernelFunctionFactory.CreateFromMethod(
                 this.EndAsync,
                 functionName: "end_task_with_summary",
-                description: "End the task with a summary when there is no further action to take.");
+                description: "Complete the task with a summary when no further requests are given.");
 
             foreach (KeyValuePair<string, (AgentType _, string Description)> handoff in this._handoffs)
             {

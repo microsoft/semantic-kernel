@@ -44,7 +44,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     /// <remarks>
     /// If not set, embedding generation will be performed in the database, if supported by your connector.
-    /// Otherwise, if your database does not support embedding generation, only pre-generated embeddings can be used (e.g. <c>ReadOnlyMemory&lt;float&gt;</c>).
+    /// Otherwise, if your database does not support embedding generation, only pregenerated embeddings can be used (for example, <c>ReadOnlyMemory&lt;float&gt;</c>).
     /// </remarks>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
@@ -89,7 +89,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     public string? DistanceFunction { get; set; }
 
     /// <summary>
-    /// Gets or sets the desired embedding type (e.g. <c>Embedding&lt;Half&gt;</c>, for cases where the default (typically <c>Embedding&lt;float&gt;</c>) isn't suitable.
+    /// Gets or sets the desired embedding type (for example, <c>Embedding&lt;Half&gt;</c>) for cases where the default (typically <c>Embedding&lt;float&gt;</c>) isn't suitable.
     /// </summary>
     public Type? EmbeddingType { get; set; }
 

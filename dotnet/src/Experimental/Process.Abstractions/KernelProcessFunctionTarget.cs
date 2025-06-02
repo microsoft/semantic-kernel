@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the target for an edge in a Process
 /// </summary>
+[DataContract]
 public record KernelProcessTarget
 {
     /// <summary>
@@ -29,6 +30,7 @@ public record KernelProcessTarget
 /// <summary>
 /// Represents a state operations target for an edge in a Process
 /// </summary>
+[DataContract]
 public record KernelProcessStateTarget : KernelProcessTarget
 {
     /// <summary>
@@ -42,12 +44,14 @@ public record KernelProcessStateTarget : KernelProcessTarget
     /// <summary>
     /// The associated <see cref="VariableUpdate"/>.
     /// </summary>
+    [DataMember]
     public VariableUpdate VariableUpdate { get; init; }
 }
 
 /// <summary>
 /// Represents a state operations target for an edge in a Process
 /// </summary>
+[DataContract]
 public record KernelProcessEmitTarget : KernelProcessTarget
 {
     /// <summary>
@@ -65,17 +69,20 @@ public record KernelProcessEmitTarget : KernelProcessTarget
     /// <summary>
     /// The name or type of the event to be emitted.
     /// </summary>
+    [DataMember]
     public string EventName { get; init; }
 
     /// <summary>
     /// /// The payload to be sent with the event.
     /// </summary>
+    [DataMember]
     public Dictionary<string, string>? Payload { get; init; }
 }
 
 /// <summary>
 /// Represents an agent invocation target for an edge in a Process
 /// </summary>
+[DataContract]
 public record KernelProcessAgentInvokeTarget : KernelProcessTarget
 {
     /// <summary>
@@ -99,21 +106,25 @@ public record KernelProcessAgentInvokeTarget : KernelProcessTarget
     /// <summary>
     /// The unique identifier of the Step being targeted.
     /// </summary>
+    [DataMember]
     public string StepId { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the thread to run on.
     /// </summary>
+    [DataMember]
     public string? ThreadEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the messages to send to the target.
     /// </summary>
+    [DataMember]
     public List<string>? MessagesInEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the inputs to send to the target.
     /// </summary>
+    [DataMember]
     public Dictionary<string, string> InputEvals { get; init; }
 }
 

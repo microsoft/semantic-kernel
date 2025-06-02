@@ -10,8 +10,8 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
-/// A model builder that performs logic specific to connectors which use System.Text.Json for serialization.
-/// This is an internal support type meant for use by connectors only, and not for use by applications.
+/// Represents a model builder that performs logic specific to connectors that use System.Text.Json for serialization.
+/// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
@@ -27,7 +27,7 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
+    /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
@@ -43,7 +43,7 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
+    /// Builds and returns a <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
     public virtual CollectionModel BuildDynamic(
         VectorStoreCollectionDefinition definition,

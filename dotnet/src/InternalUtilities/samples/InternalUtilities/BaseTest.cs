@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ClientModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -46,10 +50,21 @@ public abstract class BaseTest : TextWriter
     protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
 
     protected Kernel CreateKernelWithChatCompletion(string? modelName = null)
+        => this.CreateKernelWithChatCompletion(useChatClient: false, out _, modelName);
+
+    protected Kernel CreateKernelWithChatCompletion(bool useChatClient, out IChatClient? chatClient, string? modelName = null)
     {
         var builder = Kernel.CreateBuilder();
 
-        AddChatCompletionToKernel(builder, modelName);
+        if (useChatClient)
+        {
+            chatClient = AddChatClientToKernel(builder);
+        }
+        else
+        {
+            chatClient = null;
+            AddChatCompletionToKernel(builder, modelName);
+        }
 
         return builder.Build();
     }
@@ -76,6 +91,39 @@ public abstract class BaseTest : TextWriter
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
         }
+    }
+
+    protected IChatClient AddChatClientToKernel(IKernelBuilder builder)
+    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        IChatClient chatClient;
+        if (this.UseOpenAIConfig)
+        {
+            chatClient = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+                .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                .AsIChatClient();
+        }
+        else if (!string.IsNullOrEmpty(this.ApiKey))
+        {
+            chatClient = new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
+        }
+        else
+        {
+            chatClient = new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new AzureCliCredential())
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
+        }
+
+        var functionCallingChatClient = chatClient!.AsBuilder().UseKernelFunctionInvocation().Build();
+        builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
+        return functionCallingChatClient;
+#pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)

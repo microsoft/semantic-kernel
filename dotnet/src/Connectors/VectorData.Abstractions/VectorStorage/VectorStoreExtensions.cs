@@ -9,7 +9,7 @@ public static class VectorStoreExtensions
 {
     /// <summary>
     /// Asks the <see cref="VectorStore"/> for an object of the specified type <paramref name="serviceType"/>
-    /// and throw an exception if one isn't available.
+    /// and throws an exception if one isn't available.
     /// </summary>
     /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
     /// <param name="vectorStore">The vector store.</param>

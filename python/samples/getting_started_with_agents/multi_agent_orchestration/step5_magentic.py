@@ -10,7 +10,7 @@ from semantic_kernel.agents import (
     StandardMagenticManager,
 )
 from semantic_kernel.agents.runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAISettings
 from semantic_kernel.contents import ChatMessageContent
 
 """
@@ -47,10 +47,10 @@ async def agents() -> list[Agent]:
     )
 
     # Create an OpenAI Assistant agent with code interpreter capability
-    client, model = OpenAIAssistantAgent.setup_resources()
+    client = OpenAIAssistantAgent.create_client()
     code_interpreter_tool, code_interpreter_tool_resources = OpenAIAssistantAgent.configure_code_interpreter_tool()
     definition = await client.beta.assistants.create(
-        model=model,
+        model=OpenAISettings().chat_model_id,
         name="CoderAgent",
         description="A helpful assistant that writes and executes code to process and analyze data.",
         instructions="You solve questions using code. Please provide detailed analysis and computation process.",

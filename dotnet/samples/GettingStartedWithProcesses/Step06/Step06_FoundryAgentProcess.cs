@@ -98,10 +98,12 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnEvent(teacher, "correct_answer")
             .StopProcess();
 
-        /**************************** Build and Deploy ***************************/
+        // Verify that the process can be built and serialized to json
+        var processJson = await processBuilder.ToJsonAsync();
+        Assert.NotEmpty(processJson);
 
-        var process = processBuilder.Build();
-        var foundryWorkflowId = await processBuilder.DeployToFoundryAsync(process, TestConfiguration.AzureAI.WorkflowEndpoint);
+        var foundryWorkflowId = await processBuilder.DeployToFoundryAsync(TestConfiguration.AzureAI.WorkflowEndpoint);
+        Assert.NotEmpty(foundryWorkflowId);
     }
 
     /// <summary>

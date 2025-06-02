@@ -28,6 +28,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private string? _responseMimeType;
     private object? _responseSchema;
     private string? _cachedContent;
+    private string? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
     private GeminiThinkingConfig? _thinkingConfig;
@@ -144,6 +145,22 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._safetySettings = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the labels.
+    /// </summary>
+    /// <value>
+    /// Metadata that can be added to the API call in the format of key-value pairs.
+    /// </value>
+    public string? Labels
+    {
+        get => this._labels;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._labels = value;
         }
     }
 

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <summary>
 /// Defines options for calling <see cref="VectorStoreCollection{TKey, TRecord}.GetAsync(Expression{Func{TRecord, bool}}, int, FilteredRecordRetrievalOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
-/// <typeparam name="TRecord">Type of the record.</typeparam>
+/// <typeparam name="TRecord">The type of the record.</typeparam>
 public sealed class FilteredRecordRetrievalOptions<TRecord>
 {
     private int _skip = 0;
@@ -18,7 +18,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The value is less than 0.</exception>
     public int Skip
     {
         get => this._skip;
@@ -47,7 +47,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     public bool IncludeVectors { get; set; }
 
     /// <summary>
-    /// A builder for sorting.
+    /// Represents a builder for sorting.
     /// </summary>
     // This type does not derive any collection in order to avoid Intellisense suggesting LINQ methods.
     public sealed class OrderByDefinition
@@ -101,13 +101,16 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
             }
 
             /// <summary>
-            /// The expression to select the property to sort by.
+            /// Gets the expression to select the property to sort by.
             /// </summary>
             public Expression<Func<TRecord, object?>> PropertySelector { get; }
 
             /// <summary>
-            /// True if the sort is ascending; otherwise, false.
+            /// Gets a value that indicates whether the sort is ascending; otherwise, false.
             /// </summary>
+            /// <value>
+            /// <see langword="true"/> if the sort is ascending; otherwise, <see langword="false"/>.
+            /// </value>
             public bool Ascending { get; }
         }
     }

@@ -30,7 +30,7 @@ public class ServiceConversionExtensionsTests
     public void ChatCompletionInvalidArgumentsThrow()
     {
         Assert.Throws<ArgumentNullException>("service", () => ChatCompletionServiceExtensions.AsChatClient(null!));
-        Assert.Throws<ArgumentNullException>("client", () => ChatCompletionServiceExtensions.AsChatCompletionService(null!));
+        Assert.Throws<ArgumentNullException>("client", () => Microsoft.SemanticKernel.ChatCompletion.ChatClientExtensions.AsChatCompletionService(null!));
     }
 
     [Fact]
@@ -304,11 +304,11 @@ public class ServiceConversionExtensionsTests
             [
                 new NopAIFunction("AIFunc1"),
                 new NopAIFunction("AIFunc2"),
-                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction").AsAIFunction(),
+                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction"),
                 .. KernelPluginFactory.CreateFromFunctions("NiftyPlugin",
                 [
                     KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction")
-                ]).AsAIFunctions(),
+                ]),
             ],
             ToolMode = mode,
         });

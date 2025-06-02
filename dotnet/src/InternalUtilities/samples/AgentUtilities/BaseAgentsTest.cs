@@ -48,6 +48,16 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             { SampleMetadataKey, bool.TrueString }
         });
 
+    protected (string? pluginName, string functionName) ParseFunctionName(string functionName)
+    {
+        string[] parts = functionName.Split("-", 2);
+        if (parts.Length == 1)
+        {
+            return (null, parts[0]);
+        }
+        return (parts[0], parts[1]);
+    }
+
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
