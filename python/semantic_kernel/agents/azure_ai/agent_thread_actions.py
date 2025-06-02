@@ -19,7 +19,9 @@ from azure.ai.agents.models import (
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
+    RunStepFileSearchToolCall,
     RunStepMessageCreationDetails,
+    RunStepOpenAPIToolCall,
     RunStepToolCallDetails,
     RunStepType,
     SubmitToolOutputsAction,
@@ -34,14 +36,18 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_azure_ai_search_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
+    generate_file_search_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
+    generate_openapi_content,
     generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
+    generate_streaming_file_search_content,
     generate_streaming_message_content,
+    generate_streaming_openapi_content,
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
@@ -301,6 +307,27 @@ class AgentThreadActions:
                                     content = generate_azure_ai_search_content(
                                         agent_name=agent.name, azure_ai_search_tool_call=azure_ai_search_call
                                     )
+                                case AgentsNamedToolChoiceType.FILE_SEARCH:
+                                    logger.debug(
+                                        f"Entering tool_calls (file_search) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    file_search_call: RunStepFileSearchToolCall = cast(
+                                        RunStepFileSearchToolCall, tool_call
+                                    )
+                                    content = generate_file_search_content(
+                                        agent_name=agent.name, file_search_tool_call=file_search_call
+                                    )
+                                case "openapi":
+                                    logger.debug(
+                                        f"Entering tool_calls (openapi) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    openapi_tool_call: RunStepOpenAPIToolCall = cast(RunStepOpenAPIToolCall, tool_call)
+                                    content = generate_openapi_content(
+                                        agent_name=agent.name,
+                                        openapi_tool_call=openapi_tool_call,
+                                    )
 
                             if content:
                                 message_count += 1
@@ -490,6 +517,10 @@ class AgentThreadActions:
                     if isinstance(details, RunStepDeltaToolCallObject) and details.tool_calls:
                         content_is_visible = False
                         for tool_call in details.tool_calls:
+                            logger.debug(
+                                f"Generating content for tool call type `{tool_call.type}`, agent `{agent.name}` and "
+                                f"thread `{thread_id}` with tool call details: {details}"
+                            )
                             content = None
                             match tool_call.type:
                                 # Function Calling-related content is emitted as a single message
@@ -505,6 +536,16 @@ class AgentThreadActions:
                                     content = generate_streaming_azure_ai_search_content(
                                         agent_name=agent.name, step_details=details
                                     )
+                                case AgentsNamedToolChoiceType.FILE_SEARCH:
+                                    content = generate_streaming_file_search_content(
+                                        agent_name=agent.name, step_details=details
+                                    )
+                                case "openapi":
+                                    # There's no enum for OpenAPI tool calls as part of `AgentsNamedToolChoiceType`
+                                    # so we handle it separately.
+                                    content = generate_streaming_openapi_content(
+                                        agent_name=agent.name, step_details=details
+                                    )
                             if content:
                                 if output_messages is not None:
                                     output_messages.append(content)
@@ -512,6 +553,10 @@ class AgentThreadActions:
                                     yield content
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_REQUIRES_ACTION:
+                    logger.debug(
+                        f"Entering step type {event_type}, agent `{agent.name}` and "
+                        f"thread `{thread_id}` with event data: {event_data}"
+                    )
                     run = cast(ThreadRun, event_data)
                     action_result = await cls._handle_streaming_requires_action(
                         agent_name=agent.name,
@@ -541,10 +586,19 @@ class AgentThreadActions:
                         event_handler=handler,
                     )
                     # Pass the handler to the stream to continue processing
-                    stream = handler
+                    stream = handler  # type: ignore
+
+                    logger.debug(
+                        f"Submitted tool outputs stream for agent `{agent.name}` and "
+                        f"thread `{thread_id}` and run id `{run.id}`"
+                    )
                     break
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
+                    logger.debug(
+                        f"Entering step type {event_type}, agent `{agent.name}` and "
+                        f"thread `{thread_id}` and run id `{run.id}`"
+                    )
                     run = cast(ThreadRun, event_data)
                     logger.info(f"Run completed with ID: {run.id}")
                     if active_messages:
@@ -881,7 +935,7 @@ class AgentThreadActions:
             tool_call.id: tool_call
             for message in chat_history.messages
             for tool_call in message.items
-            if isinstance(tool_call, FunctionResultContent)
+            if isinstance(tool_call, FunctionResultContent) and tool_call.id is not None
         }
         return [
             {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}

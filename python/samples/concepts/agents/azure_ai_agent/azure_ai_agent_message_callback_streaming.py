@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions import kernel_function
 
@@ -22,6 +22,8 @@ In this example, the agent is configured with a plugin that provides menu specia
 As the user interacts with the agent, tool messages (like function calls) are emitted via the callback,
 while assistant replies stream back incrementally through the main response loop.
 """
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 # Define a sample plugin for the sample

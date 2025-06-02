@@ -6,7 +6,12 @@ from azure.ai.agents.models import BingGroundingTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import AnnotationContent
+from semantic_kernel.contents import (
+    AnnotationContent,
+    ChatMessageContent,
+    FunctionCallContent,
+    FunctionResultContent,
+)
 
 """
 The following sample demonstrates how to create an Azure AI agent that
@@ -20,13 +25,23 @@ https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-gro
 TASK = "Which team won the 2025 NCAA basketball championship?"
 
 
+async def handle_intermediate_steps(message: ChatMessageContent) -> None:
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
+
+
 async def main() -> None:
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name
-        bing_connection = await client.connections.get(connection_name="<your-bing-grounding-connection-name>")
+        bing_connection = await client.connections.get(name="skbinggrounding")
         conn_id = bing_connection.id
 
         # 2. Initialize agent bing tool and add the connection id
@@ -54,7 +69,9 @@ async def main() -> None:
         try:
             print(f"# User: '{TASK}'")
             # 6. Invoke the agent for the specified thread for response
-            async for response in agent.invoke(messages=TASK, thread=thread):
+            async for response in agent.invoke(
+                messages=TASK, thread=thread, on_intermediate_message=handle_intermediate_steps
+            ):
                 print(f"# {response.name}: {response}")
                 thread = response.thread
 
