@@ -1,40 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 using Resources;
 
-namespace GettingStarted.OpenAIAssistants;
+namespace GettingStarted.AzureAgents;
 
 /// <summary>
-/// Demonstrate providing image input to <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTest(output)
+public class Step03_AzureAIAgent_Vision(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
-    /// <summary>
-    /// Azure currently only supports message of type=text.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     [Fact]
-    public async Task UseImageContentWithAssistant()
+    public async Task UseImageContentWithAgent()
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                metadata: SampleMetadata);
-
-        // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
-
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
-        string fileId = await this.Client.UploadAssistantFileAsync(imageStream, "cat.jpg");
+        PersistentAgentFileInfo fileInfo = await this.Client.Files.UploadFileAsync(imageStream, PersistentAgentFilePurpose.Agents, "cat.jpg");
+
+        // Define the agent
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(TestConfiguration.AzureAI.ChatModelId);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        OpenAIAssistantAgentThread thread = new(this.AssistantClient, metadata: SampleMetadata);
+        AzureAIAgentThread thread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -43,21 +33,21 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
             await InvokeAgentAsync(CreateMessageWithImageUrl("Describe this image.", "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/New_york_times_square-terabass.jpg/1200px-New_york_times_square-terabass.jpg"));
             await InvokeAgentAsync(CreateMessageWithImageUrl("What are is the main color in this image?", "https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg"));
             // Refer to uploaded image by file-id.
-            await InvokeAgentAsync(CreateMessageWithImageReference("Is there an animal in this image?", fileId));
+            await InvokeAgentAsync(CreateMessageWithImageReference("Is there an animal in this image?", fileInfo.Id));
         }
         finally
         {
             await thread.DeleteAsync();
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
-            await this.Client.DeleteFileAsync(fileId);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+            await this.Client.Files.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAgentAsync(ChatMessageContent message)
+        async Task InvokeAgentAsync(ChatMessageContent input)
         {
-            this.WriteAgentChatMessage(message);
+            this.WriteAgentChatMessage(input);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(input, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

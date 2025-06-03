@@ -21,6 +21,9 @@ public static class AIContextExtensions
     /// <param name="pluginName">The name to give to the plugin.</param>
     public static void AddFromAIContext(this ICollection<KernelPlugin> plugins, AIContext aiContext, string pluginName)
     {
-        plugins.AddFromFunctions(pluginName, aiContext.AIFunctions.Select(x => x.AsKernelFunction()));
+        if (aiContext.AIFunctions is { Count: > 0 })
+        {
+            plugins.AddFromFunctions(pluginName, aiContext.AIFunctions.Select(x => x.AsKernelFunction()));
+        }
     }
 }

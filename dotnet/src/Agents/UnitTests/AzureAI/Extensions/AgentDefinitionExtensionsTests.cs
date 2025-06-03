@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Linq;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Xunit;
@@ -35,7 +36,7 @@ public class AgentDefinitionExtensionsTests
         };
 
         // Act
-        var toolDefinitions = agentDefinition.GetAzureToolDefinitions();
+        var toolDefinitions = agentDefinition.GetAzureToolDefinitions(new Kernel());
 
         // Assert
         Assert.NotNull(toolDefinitions);

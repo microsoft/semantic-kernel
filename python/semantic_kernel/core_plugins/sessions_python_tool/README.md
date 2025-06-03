@@ -6,8 +6,6 @@ Please follow the [Azure Container Apps Documentation](https://learn.microsoft.c
 
 ## Configuring the Python Plugin
 
-To successfully use the Python Plugin in Semantic Kernel, you must install the `azure` extras by running `uv sync --extra azure` or `pip install semantic-kernel[azure]`.
-
 Next, as an environment variable or in the .env file, add the `poolManagementEndpoint` value from above to the variable `ACA_POOL_MANAGEMENT_ENDPOINT`. The `poolManagementEndpoint` should look something like:
 
 ```html
