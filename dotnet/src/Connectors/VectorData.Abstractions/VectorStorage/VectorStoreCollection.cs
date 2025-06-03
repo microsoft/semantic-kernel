@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Represents a named collection of records in a vector store, which can be used to search and manage records, and to create or delete the collection itself.
+/// Represents a named collection of records in a vector store, and can be used to search and manage records, and to create or delete the collection itself.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the store.</typeparam>
@@ -155,7 +155,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// </para>
     /// <para>
     /// Similarly, the error behavior can vary across databases: where possible, the batch should be upserted atomically, so that any errors cause the entire batch to be rolled
-    /// back. Where not supported, some records may be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
+    /// back. Where not supported, some records might be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
     /// and can simply be retried again if an error occurs. However, if store-generated keys are in use, the upsert operation is no longer idempotent; in that case, if the
     /// database doesn't guarantee atomicity, retrying could cause duplicate records to be created.
     /// </para>
@@ -174,7 +174,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <param name="top">The maximum number of results to return.</param>
     /// <param name="options">Options for retrieving the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The records matching given predicate.</returns>
+    /// <returns>The records that match the given predicate.</returns>
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 
@@ -188,7 +188,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <summary>
     /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
     /// </summary>
-    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    /// <param name="disposing"><see langword="true"/> if called from <see cref="Dispose()"/>; <see langword="false"/> if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
     {
     }

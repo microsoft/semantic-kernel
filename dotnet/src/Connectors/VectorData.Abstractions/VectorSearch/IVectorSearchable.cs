@@ -9,7 +9,7 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// An interface for performing vector searches on a vector store.
+/// Defines an interface for performing vector searches on a vector store.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public interface IVectorSearchable<TRecord>
@@ -41,13 +41,13 @@ public interface IVectorSearchable<TRecord>
     ///   </item>
     ///   <item>
     ///     To work with embeddings directly, pass in a <see cref="ReadOnlyMemory{T}"/> or a .NET array of the appropriate type. Most providers support at least <c>ReadOnlyMemory&lt;float&gt;</c> and <c>float[]</c>,
-    ///     but some support other types (e.g. <c>ReadOnlyMemory&lt;Half&gt;</c>, <see cref="BitArray"/>). Some providers may also support their own custom types as well, e.g. to represent sparse embeddings.
+    ///     but some support other types (for example, <c>ReadOnlyMemory&lt;Half&gt;</c>, <see cref="BitArray"/>). Some providers might also support their own custom types as well, for example, to represent sparse embeddings.
     ///     Consult your provider's documentation for supported types.
     ///   </item>
     ///   <item>
-    ///     If you're using <see cref="IEmbeddingGenerator"/> directly in your code, that type returns an <see cref="Embedding"/> (e.g. <c>Embedding{float}</c>),
+    ///     If you're using <see cref="IEmbeddingGenerator"/> directly in your code, that type returns an <see cref="Embedding"/> (for example, <c>Embedding{float}</c>),
     ///     which can also be passed in directly, as long as the provider supports the specific embedding type. However, consider registering your <see cref="IEmbeddingGenerator"/> with the provider
-    ///     instead and pass in the input type (e.g. <see cref="string"/>).
+    ///     instead and pass in the input type (for example, <see cref="string"/>).
     ///   </item>
     /// </list>
     /// </remarks>
@@ -64,9 +64,9 @@ public interface IVectorSearchable<TRecord>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="IVectorSearchable{TRecord}"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IVectorSearchable{TRecord}"/>,
     /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreCollectionMetadata"/> for the instance,
-    /// <see cref="GetService"/> may be used to request it.
+    /// <see cref="GetService"/> can be used to request it.
     /// </remarks>
     object? GetService(Type serviceType, object? serviceKey = null);
 }

@@ -16,12 +16,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>Provides a <see cref="KernelFunction"/> that wraps an <see cref="AIFunction"/>.</summary>
 internal sealed class AIFunctionKernelFunction : KernelFunction
 {
-    private readonly string? _pluginName;
     private readonly AIFunction _aiFunction;
-
-    public override string Name => ((AIFunction)this).Name;
-
-    public override string? PluginName => (this._pluginName is null && this._aiFunction is KernelFunction kf) ? kf.PluginName : this._pluginName;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
         base(
@@ -40,21 +35,22 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         this._aiFunction = aiFunction;
     }
 
-    private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
+    private AIFunctionKernelFunction(AIFunctionKernelFunction other, string? pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
-        this._pluginName = pluginName;
         this._aiFunction = other._aiFunction;
     }
 
     public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName);
+        // Should allow null but not empty or whitespace
+        if (pluginName is not null)
+        {
+            Verify.NotNullOrWhiteSpace(pluginName);
+        }
 
         return new AIFunctionKernelFunction(this, pluginName);
     }
-
-    public override string ToString() => this.Name;
 
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)

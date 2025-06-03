@@ -36,7 +36,7 @@ public abstract class VectorStoreProperty
     }
 
     /// <summary>
-    /// Gets the name of the property on the data model.
+    /// Gets or sets the name of the property on the data model.
     /// </summary>
     public string Name { get; set; }
 
@@ -45,14 +45,14 @@ public abstract class VectorStoreProperty
     /// </summary>
     /// <remarks>
     /// For example, the property name might be "MyProperty" and the storage name might be "my_property".
-    /// This property is only respected by implementations that do not support a well-known
+    /// This property is only respected by implementations that don't support a well-known
     /// serialization mechanism like JSON, in which case the attributes used by that serialization system will
     /// be used.
     /// </remarks>
     public string? StorageName { get; set; }
 
     /// <summary>
-    /// Gets the type of the property.
+    /// Gets or sets the type of the property.
     /// </summary>
     public Type? Type { get; set; }
 }

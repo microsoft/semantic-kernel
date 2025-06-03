@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -35,7 +34,7 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
         string fileId = await this.Client.UploadAssistantFileAsync(imageStream, "cat.jpg");
 
         // Create a thread for the agent conversation.
-        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient, metadata: SampleMetadata);
+        OpenAIAssistantAgentThread thread = new(this.AssistantClient, metadata: SampleMetadata);
 
         // Respond to user input
         try

@@ -33,16 +33,16 @@ public class VectorStoreException : Exception
     {
     }
 
-    /// <summary>The name of the vector store system.</summary>
+    /// <summary>Gets or sets the name of the vector store system.</summary>
     /// <remarks>
-    /// Where possible, this maps to the "db.system.name" attribute defined in the
-    /// OpenTelemetry Semantic Conventions for database calls and systems, see <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
+    /// Where possible, this value maps to the "db.system.name" attribute defined in the
+    /// OpenTelemetry Semantic Conventions for database calls and systems; see <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
     /// Example: redis, sqlite, mysql.
     /// </remarks>
     public string? VectorStoreSystemName { get; init; }
 
     /// <summary>
-    /// The name of the vector store (database).
+    /// Gets or sets the name of the vector store (database).
     /// </summary>
     public string? VectorStoreName { get; init; }
 
