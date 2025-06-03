@@ -14,7 +14,17 @@ This way, you can create any amount of agents in Copilot Studio and interact wit
 
 ## Implementation
 
-The implementation is quite simple, since Copilot Studio can publish agents over DirectLine API, which we can use in Semantic Kernel to define a new subclass of `Agent` named [`DirectLineAgent`](src/direct_line_agent.py).
+The implementation enables seamless integration with Copilot Studio agents via the DirectLine API. Several key components work together to provide this functionality:
+
+- [`DirectLineClient`](src/agents/copilot_studio/directline_client.py): A utility module that handles all Direct Line API operations including authentication, conversation management, posting user activities, and retrieving bot responses using watermark-based polling.
+
+- [`CopilotAgent`](src/agents/copilot_studio/copilot_agent.py): Implements `CopilotAgent`, which orchestrates interactions with a Copilot Studio bot. It serializes user messages, handles asynchronous polling for responses, and converts bot activities into structured message content.
+
+- [`CopilotAgentThread`](src/agents/copilot_studio/copilot_agent_thread.py): Provides a specialized thread implementation for Copilot Studio conversations, managing Direct Line-specific context such as conversation ID and watermark.
+
+- [`CopilotAgentChannel`](src/agents/copilot_studio/copilot_agent_channel.py): Adds `CopilotStudioAgentChannel`, allowing Copilot Studio agents to participate in multi-agent group chats via the channel-based invocation system.
+
+- [`CopilotMessageContent`](src/agents/copilot_studio/copilot_message_content.py): Introduces `CopilotMessageContent`, an extension of `ChatMessageContent` that can represent rich message types from Copilot Studio—including plain text, adaptive cards, and suggested actions.
 
 Additionally, we do enforce [authentication to the DirectLine API](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-web-security).
 
@@ -23,18 +33,28 @@ Additionally, we do enforce [authentication to the DirectLine API](https://learn
 > [!NOTE]
 > Working with Copilot Studio Agents requires a [subscription](https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-licensing-subscriptions) to Microsoft Copilot Studio.
 
-> [!TIP]
-> In this case, we suggest to start with a simple Q&A Agent and supply a PDF to answer some questions. You can find a free sample like [Microsoft Surface Pro 4 User Guide](https://download.microsoft.com/download/2/9/B/29B20383-302C-4517-A006-B0186F04BE28/surface-pro-4-user-guide-EN.pdf)
+For this sample, we have created two agents in Copilot Studio:
+- The **TaglineGenerator agent** creates taglines for products based on descriptions
+- The **BrandAuditor agent** evaluates and approves/rejects taglines based on brand guidelines
+
+The TaglineGenerator is used in the single agent chat example, allowing you to interact with it directly. In the group chat example, both the TaglineGenerator and the BrandAuditor agents collaborate to create and refine taglines that meet brand requirements.
+
+### Setting Up Copilot Studio Agents
+Follow these steps to set up your Copilot Studio agents:
 
 1. [Create a new agent](https://learn.microsoft.com/en-us/microsoft-copilot-studio/fundamentals-get-started?tabs=web) in Copilot Studio
 2. [Publish the agent](https://learn.microsoft.com/en-us/microsoft-copilot-studio/publication-fundamentals-publish-channels?tabs=web)
 3. Turn off default authentication under the agent Settings > Security
 4. [Setup web channel security](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-web-security) and copy the secret value
 
-Once you're done with the above steps, you can use the following code to interact with the Copilot Studio Agent:
+### Setting Up Environment
 
-1. Copy the `.env.sample` file to `.env` and set the `BOT_SECRET` environment variable to the secret value
-2. Run the following code:
+1. Copy the `.env.sample` file to `.env` and add the agent secrets to your `.env` file:
+```
+AUDITOR_AGENT_SECRET=your_tagline_agent_secret
+BRAND_AGENT_SECRET=your_brand_auditor_agent_secret
+```
+2. Set up your environment:
 
 ```bash
 python -m venv .venv
@@ -45,6 +65,20 @@ source .venv/bin/activate
 .venv\Scripts\Activate.ps1
 
 pip install -r requirements.txt
+```
 
+### Running the Single Agent Chat
+
+```bash
 chainlit run --port 8081 .\chat.py
 ```
+
+The chat.py file demonstrates a web-based chat interface that allows for multi-turn conversations with a single agent.
+
+### Running the Agent Group Chat
+
+```bash
+python group_chat.py
+```
+
+The agents will collaborate automatically, with the TaglineGenerator creating taglines and the BrandAuditor providing feedback until a satisfactory tagline is approved.
