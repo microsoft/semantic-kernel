@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from functools import reduce
 
 from azure.ai.agents.models import BingGroundingTool
 from azure.identity.aio import DefaultAzureCredential
@@ -10,8 +9,8 @@ from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAg
 from semantic_kernel.contents import (
     ChatMessageContent,
     FunctionCallContent,
+    FunctionResultContent,
     StreamingAnnotationContent,
-    StreamingChatMessageContent,
 )
 
 """
@@ -32,7 +31,13 @@ intermediate_steps: list[ChatMessageContent] = []
 
 
 async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main() -> None:
@@ -41,8 +46,7 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name
-        # <your-bing-grounding-connection-name>
-        bing_connection = await client.connections.get(connection_name="skbinggrounding")
+        bing_connection = await client.connections.get(name="<your-bing-grounding-connection-name>")
         conn_id = bing_connection.id
 
         # 2. Initialize agent bing tool and add the connection id
@@ -94,41 +98,18 @@ async def main() -> None:
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
-        print("====================================================")
-        print("\nResponse complete:\n")
-        # Combine the intermediate `StreamingChatMessageContent` chunks into a single message
-        filtered_steps = [step for step in intermediate_steps if isinstance(step, StreamingChatMessageContent)]
-        streaming_full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, filtered_steps)
-        # Grab the other messages that are not `StreamingChatMessageContent`
-        other_steps = [s for s in intermediate_steps if not isinstance(s, StreamingChatMessageContent)]
-        final_msgs = [streaming_full_completion] + other_steps
-        for msg in final_msgs:
-            if any(isinstance(item, FunctionCallContent) for item in msg.items):
-                for item in msg.items:
-                    if isinstance(item, FunctionCallContent):
-                        # Note: the AI Projects SDK is not returning a `requesturl` for streaming events
-                        # The issue was raised with the AI Projects team
-                        print(f"Function call: {item.function_name} with arguments: {item.arguments}")
-
-            print(f"{msg.content}")
-
         """
         Sample Output:
         
         # User: 'Which team won the 2025 NCAA basketball championship?'
-        # BingGroundingAgent: The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston Cougars 65-63. It marked Florida's third national title and their first since back-to-back wins in 2006-2007【5:0†source】
-        Annotation :> https://www.usatoday.com/story/sports/ncaab/2025/04/07/houston-florida-live-updates-national-championship-score/82982004007/, source=Florida vs Houston final score: Gators win 2025 NCAA championship, with start_index=198 and end_index=210
-        【5:5†source】
-        Annotation :> https://www.nbcsports.com/mens-college-basketball/live/florida-vs-houston-live-score-updates-game-news-stats-highlights-for-2025-ncaa-march-madness-mens-national-championship, source=Houston vs. Florida RECAP: Highlights, stats, box score, results as ..., with start_index=210 and end_index=222
-        .
-        ====================================================
-
-        Response complete:
-
-        Function call: bing_grounding with arguments: None
-        Function call: bing_grounding with arguments: None
-
-        The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston Cougars 65-63. It marked Florida's third national title and their first since back-to-back wins in 2006-2007【5:0†source】【5:5†source】.
+        Function Call:> bing_grounding with arguments: {'requesturl': 'https://api.bing.microsoft.com/v7.0/search?q=search(query: 2025 NCAA basketball championship winner)'}
+        Function Call:> bing_grounding with arguments: {'response_metadata': "{'market': 'en-US', 'num_docs_retrieved': 5, 'num_docs_actually_used': 5}"}
+        # BingGroundingAgent: The Florida Gators won the 2025 NCAA men's basketball championship. They defeated the Houston Cougars with a close score of 65-63 in the championship game held in San Antonio, Texas. This victory marked their third national title. Florida overcame a 12-point deficit during the game to claim the championship【3:0†source】
+        Annotation :> https://en.wikipedia.org/wiki/2025_NCAA_Division_I_men%27s_basketball_championship_game, source=None, with start_index=308 and end_index=320
+        【3:1†source】
+        Annotation :> https://www.ncaa.com/history/basketball-men/d1, source=None, with start_index=320 and end_index=332
+        【3:2†source】
+        Annotation :> https://sports.yahoo.com/article/florida-gators-win-2025-ncaa-034021303.html, source=None, with start_index=332 and end_index=344.
         """  # noqa: E501
 
 
