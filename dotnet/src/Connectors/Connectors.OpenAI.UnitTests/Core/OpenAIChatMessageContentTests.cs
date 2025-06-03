@@ -296,13 +296,13 @@ public sealed class OpenAIChatMessageContentTests
         var chatHistory = new List<OpenAIChatMessageContent>
         {
             // User message
-            new OpenAIChatMessageContent(AuthorRole.User, "What's the weather like?", "gpt-4", []),
+            new(AuthorRole.User, "What's the weather like?", "gpt-4", []),
 
             // Assistant message without tool calls (most common case for serialization)
-            new OpenAIChatMessageContent(AuthorRole.Assistant, "I'll check the weather for you.", "gpt-4", []),
+            new(AuthorRole.Assistant, "I'll check the weather for you.", "gpt-4", []),
 
             // Tool message (result of a tool call)
-            new OpenAIChatMessageContent(AuthorRole.Tool, "Weather data: 72°F, sunny", "gpt-4", [])
+            new(AuthorRole.Tool, "Weather data: 72°F, sunny", "gpt-4", [])
         };
 
         // Act
@@ -328,7 +328,7 @@ public sealed class OpenAIChatMessageContentTests
     }
 
     [Fact]
-    public void Issue11820_ToolRoleMessageSerializationScenario()
+    public void ToolRoleMessageSerializationScenario()
     {
         // Arrange - This test specifically addresses the scenario described in issue #11820
         // where Tool role messages with ToolCalls need to be serialized/deserialized for chat history persistence
