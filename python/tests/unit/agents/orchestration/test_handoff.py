@@ -371,6 +371,10 @@ async def test_invoke():
             await runtime.stop_when_idle()
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke_with_list():
     """Test the invoke method of the HandoffOrchestration with a list of messages."""
     with (
@@ -509,6 +513,10 @@ async def test_invoke_with_human_response_function():
         assert user_input_count == 1
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke_with_handoff_function_call():
     """Test the invoke method of the HandoffOrchestration with a handoff function call."""
     agent_b = MockAgent()
