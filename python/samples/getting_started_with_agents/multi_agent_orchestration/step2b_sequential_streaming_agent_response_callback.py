@@ -107,51 +107,51 @@ async def main():
     """
     Sample output:
     # ConceptExtractorAgent
-**Key Features:**
-- Made from eco-friendly stainless steel
-- Insulation technology that keeps drinks cold for up to 24 hours
-- Reusable design, promoting sustainability
-- Possible variations in sizes and colors
+    **Key Features:**
+    - Made from eco-friendly stainless steel
+    - Insulation technology that keeps drinks cold for up to 24 hours
+    - Reusable design, promoting sustainability
+    - Possible variations in sizes and colors
 
-**Target Audience:**
-- Environmentally conscious consumers
-- Active individuals and outdoor enthusiasts
-- Health-conscious individuals looking to stay hydrated
-- Students and professionals looking for stylish and functional drinkware
+    **Target Audience:**
+    - Environmentally conscious consumers
+    - Active individuals and outdoor enthusiasts
+    - Health-conscious individuals looking to stay hydrated
+    - Students and professionals looking for stylish and functional drinkware
 
-**Unique Selling Points:**
-- Combines eco-friendliness with high performance in temperature retention
-- Durable and reusable, reducing reliance on single-use plastics
-- Sleek design that appeals to modern aesthetics while being functional
-- Supporting sustainability initiatives through responsible manufacturing practices
-# WriterAgent
-Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
-both performance and aesthetics. Our bottles feature advanced insulation technology that keeps your drinks icy cold
-for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office. Choose
-from various sizes and stunning colors to match your personal style while making a positive impact on the planet.
-Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world. Join the movement toward
-sustainability without compromising on style or functionality. Stay hydrated, look great, and make a difference—get
-your eco-friendly water bottle today!
-# FormatProofAgent
-Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
-both performance and aesthetics. Our bottles utilize advanced insulation technology to keep your beverages icy cold
-for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office. 
+    **Unique Selling Points:**
+    - Combines eco-friendliness with high performance in temperature retention
+    - Durable and reusable, reducing reliance on single-use plastics
+    - Sleek design that appeals to modern aesthetics while being functional
+    - Supporting sustainability initiatives through responsible manufacturing practices
+    # WriterAgent
+    Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
+    both performance and aesthetics. Our bottles feature advanced insulation technology that keeps your drinks icy cold
+    for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office. Choose
+    from various sizes and stunning colors to match your personal style while making a positive impact on the planet.
+    Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world. Join the movement toward
+    sustainability without compromising on style or functionality. Stay hydrated, look great, and make a difference—get
+    your eco-friendly water bottle today!
+    # FormatProofAgent
+    Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
+    both performance and aesthetics. Our bottles utilize advanced insulation technology to keep your beverages icy cold
+    for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office. 
 
-Choose from a variety of sizes and stunning colors to match your personal style while positively impacting the planet.
-Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world. 
+    Choose from a variety of sizes and stunning colors to match your personal style while positively impacting the
+    planet. Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world. 
 
-Join the movement towards sustainability without compromising on style or functionality. Stay hydrated, look great,
-and make a difference—get your eco-friendly water bottle today!
-***** Final Result *****
-Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
-both performance and aesthetics. Our bottles utilize advanced insulation technology to keep your beverages icy cold
-for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office.
+    Join the movement towards sustainability without compromising on style or functionality. Stay hydrated, look great,
+    and make a difference—get your eco-friendly water bottle today!
+    ***** Final Result *****
+    Sip sustainably with our eco-friendly stainless steel water bottles, designed for the conscious consumer who values
+    both performance and aesthetics. Our bottles utilize advanced insulation technology to keep your beverages icy cold
+    for up to 24 hours, making them perfect for outdoor adventures, gym sessions, or a busy day at the office.
 
-Choose from a variety of sizes and stunning colors to match your personal style while positively impacting the planet.
-Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world.
+    Choose from a variety of sizes and stunning colors to match your personal style while positively impacting the
+    planet. Each reusable bottle helps reduce single-use plastics, supporting a cleaner, greener world.
 
-Join the movement towards sustainability without compromising on style or functionality. Stay hydrated, look great,
-and make a difference—get your eco-friendly water bottle today!
+    Join the movement towards sustainability without compromising on style or functionality. Stay hydrated, look great,
+    and make a difference—get your eco-friendly water bottle today!
     """
 
 
