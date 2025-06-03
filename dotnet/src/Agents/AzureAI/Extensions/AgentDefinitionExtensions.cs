@@ -47,15 +47,13 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        AIProjectClient projectClient = agentDefinition.GetProjectsClient(kernel);
-
         return agentDefinition.Tools?.Select<AgentToolDefinition, ToolDefinition>(tool =>
         {
             return tool.Type switch
             {
                 AzureAISearchType => CreateAzureAISearchToolDefinition(tool),
                 AzureFunctionType => CreateAzureFunctionToolDefinition(tool),
-                BingGroundingType => CreateBingGroundingToolDefinition(tool, projectClient),
+                BingGroundingType => CreateBingGroundingToolDefinition(tool, agentDefinition.GetProjectsClient(kernel)),
                 CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
                 FileSearchType => CreateFileSearchToolDefinition(tool),
                 FunctionType => CreateFunctionToolDefinition(tool),
