@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -18,6 +19,21 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<PersistentAgentsClient
     }
 
     protected override PersistentAgentsClient Client { get; }
+
+    protected AIProjectClient CreateFoundryProjectClient()
+    {
+        return new AIProjectClient(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureCliCredential());
+    }
+
+    protected async Task<string> GetConnectionId(string connectionName)
+    {
+        AIProjectClient client = CreateFoundryProjectClient();
+        Connections connectionClient = client.GetConnectionsClient();
+        Connection connection =
+            await connectionClient.GetConnectionsAsync().Where(connection => connection.Name == connectionName).FirstOrDefaultAsync() ??
+            throw new InvalidOperationException($"Connection '{connectionName}' not found in project '{TestConfiguration.AzureAI.Endpoint}'.");
+        return connection.Id;
+    }
 
     protected async Task DownloadContentAsync(ChatMessageContent message)
     {
