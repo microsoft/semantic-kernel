@@ -159,6 +159,7 @@ class ExtraBody(KernelBaseModel):
     data_sources: list[DataSource] | None = None
     input_language: Annotated[str | None, Field(serialization_alias="inputLanguage")] = None
     output_language: Annotated[str | None, Field(serialization_alias="outputLanguage")] = None
+    user_security_context: Annotated[str | None, Field()] = None
 
     def __getitem__(self, item):
         """Get an item from the ExtraBody."""
