@@ -81,6 +81,35 @@ public sealed class VertexAIGeminiChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("key:value")]
+    [InlineData("")]
+    public async Task RequestLabelsWorksCorrectlyAsync(string? labels)
+    {
+        // Arrange
+        string model = "fake-model";
+        var sut = new GoogleAIGeminiChatCompletionService(model, "key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = labels });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        if (labels is not null)
+        {
+            Assert.Contains($"\"labels\":\"{labels}\"", requestBody);
+        }
+        else
+        {
+            // Then no quality is provided, it should not be included in the request body
+            Assert.DoesNotContain("labels", requestBody);
+        }
+    }
+
+    [Theory]
     [InlineData(null, false)]
     [InlineData(0, true)]
     [InlineData(500, true)]
