@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Resources;
@@ -74,7 +74,7 @@ public sealed class ResourceDefinition
     /// <param name="context">The MCP server context.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the invocation.</returns>
-    public async Task<ReadResourceResult> InvokeHandlerAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
+    public async ValueTask<ReadResourceResult> InvokeHandlerAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
     {
         if (this._kernelFunction == null)
         {

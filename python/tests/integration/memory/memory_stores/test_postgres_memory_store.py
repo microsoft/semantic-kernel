@@ -42,7 +42,7 @@ def wait_between_tests():
 @pytest.fixture(scope="session")
 def connection_string():
     try:
-        postgres_settings = PostgresSettings.create()
+        postgres_settings = PostgresSettings()
         if postgres_settings.connection_string is not None:
             return postgres_settings.connection_string.get_secret_value()
     except ValidationError:

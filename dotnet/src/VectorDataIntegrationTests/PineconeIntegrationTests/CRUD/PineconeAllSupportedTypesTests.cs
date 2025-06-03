@@ -13,7 +13,7 @@ public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFix
     public async Task AllTypesBatchGetAsync()
     {
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<string, PineconeAllTypes>("all-types", PineconeAllTypes.GetRecordDefinition());
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         List<PineconeAllTypes> records =
         [
@@ -61,9 +61,9 @@ public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFix
             }
         ];
 
-        await collection.UpsertBatchAsync(records).ToArrayAsync();
+        await collection.UpsertAsync(records);
 
-        var allTypes = await collection.GetBatchAsync(records.Select(r => r.Id), new GetRecordOptions { IncludeVectors = true }).ToListAsync();
+        var allTypes = await collection.GetAsync(records.Select(r => r.Id), new RecordRetrievalOptions { IncludeVectors = true }).ToListAsync();
 
         var allTypes1 = allTypes.Single(x => x.Id == records[0].Id);
         var allTypes2 = allTypes.Single(x => x.Id == records[1].Id);

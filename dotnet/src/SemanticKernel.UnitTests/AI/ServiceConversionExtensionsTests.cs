@@ -19,16 +19,22 @@ namespace SemanticKernel.UnitTests.AI;
 public class ServiceConversionExtensionsTests
 {
     [Fact]
-    public void InvalidArgumentsThrow()
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
+    public void EmbeddingGenerationInvalidArgumentsThrow()
     {
         Assert.Throws<ArgumentNullException>("service", () => EmbeddingGenerationExtensions.AsEmbeddingGenerator<string, float>(null!));
         Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGenerationExtensions.AsEmbeddingGenerationService<string, float>(null!));
-
-        Assert.Throws<ArgumentNullException>("service", () => ChatCompletionServiceExtensions.AsChatClient(null!));
-        Assert.Throws<ArgumentNullException>("client", () => ChatCompletionServiceExtensions.AsChatCompletionService(null!));
     }
 
     [Fact]
+    public void ChatCompletionInvalidArgumentsThrow()
+    {
+        Assert.Throws<ArgumentNullException>("service", () => ChatCompletionServiceExtensions.AsChatClient(null!));
+        Assert.Throws<ArgumentNullException>("client", () => Microsoft.SemanticKernel.ChatCompletion.ChatClientExtensions.AsChatCompletionService(null!));
+    }
+
+    [Fact]
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
     public void AsEmbeddingGeneratorMetadataReturnsExpectedData()
     {
         IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerationService()
@@ -43,11 +49,12 @@ public class ServiceConversionExtensionsTests
         Assert.NotNull(generator);
         var metadata = Assert.IsType<EmbeddingGeneratorMetadata>(generator.GetService(typeof(EmbeddingGeneratorMetadata)));
         Assert.Equal(nameof(TestEmbeddingGenerationService), metadata.ProviderName);
-        Assert.Equal("examplemodel", metadata.ModelId);
+        Assert.Equal("examplemodel", metadata.DefaultModelId);
         Assert.Equal("https://example.com/", metadata.ProviderUri?.ToString());
     }
 
     [Fact]
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
     public void AsEmbeddingGenerationServiceReturnsExpectedAttributes()
     {
         using var generator = new TestEmbeddingGenerator()
@@ -77,7 +84,7 @@ public class ServiceConversionExtensionsTests
         Assert.NotNull(client);
         var metadata = Assert.IsType<ChatClientMetadata>(client.GetService(typeof(ChatClientMetadata)));
         Assert.Equal(nameof(TestChatCompletionService), metadata.ProviderName);
-        Assert.Equal("examplemodel", metadata.ModelId);
+        Assert.Equal("examplemodel", metadata.DefaultModelId);
         Assert.Equal("https://example.com/", metadata.ProviderUri?.ToString());
     }
 
@@ -97,6 +104,7 @@ public class ServiceConversionExtensionsTests
     }
 
     [Fact]
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
     public async Task AsEmbeddingGeneratorConvertedAsExpected()
     {
         IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerationService()
@@ -110,11 +118,12 @@ public class ServiceConversionExtensionsTests
             },
         }.AsEmbeddingGenerator();
 
-        ReadOnlyMemory<float> embedding = await generator.GenerateEmbeddingVectorAsync("some text");
+        ReadOnlyMemory<float> embedding = await generator.GenerateVectorAsync("some text");
         Assert.Equal([1f, 2f, 3f], embedding.ToArray());
     }
 
     [Fact]
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
     public async Task AsEmbeddingGenerationServiceConvertedAsExpected()
     {
         using IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerator()
@@ -295,11 +304,11 @@ public class ServiceConversionExtensionsTests
             [
                 new NopAIFunction("AIFunc1"),
                 new NopAIFunction("AIFunc2"),
-                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction").AsAIFunction(),
+                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction"),
                 .. KernelPluginFactory.CreateFromFunctions("NiftyPlugin",
                 [
                     KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction")
-                ]).AsAIFunctions(),
+                ]),
             ],
             ToolMode = mode,
         });
@@ -349,9 +358,9 @@ public class ServiceConversionExtensionsTests
     private sealed class NopAIFunction(string name) : AIFunction
     {
         public override string Name => name;
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<object?>(null);
+            return ValueTask.FromResult<object?>(null);
         }
     }
 
@@ -688,6 +697,7 @@ public class ServiceConversionExtensionsTests
         }
     }
 
+    [Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
     private sealed class TestEmbeddingGenerationService : IEmbeddingGenerationService<string, float>
     {
         public IReadOnlyDictionary<string, object?> Attributes { get; set; } = new Dictionary<string, object?>();

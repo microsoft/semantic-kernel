@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CosmosMongoDBIntegrationTests.Collections;
 
-public class CosmosMongoDBCollectionConformanceTests(CosmosMongoDBFixture fixture)
-    : CollectionConformanceTests<string>(fixture), IClassFixture<CosmosMongoDBFixture>
+public class CosmosMongoDBCollectionConformanceTests(CosmosMongoFixture fixture)
+    : CollectionConformanceTests<string>(fixture), IClassFixture<CosmosMongoFixture>
 {
 }

@@ -16,7 +16,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
     /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
     /// </summary>
     [Fact]
-    public async Task ChatCompletionAgentWithKernelAsync()
+    public async Task ChatCompletionAgentWithKernel()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
@@ -41,7 +41,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
     /// Demonstrates creating and using a Chat Completion Agent with functions.
     /// </summary>
     [Fact]
-    public async Task ChatCompletionAgentWithFunctionsAsync()
+    public async Task ChatCompletionAgentWithFunctions()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -76,7 +76,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
     /// Demonstrates creating and using a Chat Completion Agent with templated instructions.
     /// </summary>
     [Fact]
-    public async Task ChatCompletionAgentWithTemplateAsync()
+    public async Task ChatCompletionAgentWithTemplate()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
@@ -96,7 +96,8 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;
@@ -115,7 +116,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             }
         };
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync([], options: options))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(Array.Empty<ChatMessageContent>(), options: options))
         {
             this.WriteAgentChatMessage(response);
         }

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
-using Amazon.Runtime.EventStreams.Internal;
+using Amazon.Runtime.EventStreams;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;

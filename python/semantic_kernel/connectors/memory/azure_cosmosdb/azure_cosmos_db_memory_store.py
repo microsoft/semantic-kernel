@@ -94,7 +94,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         api_store: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            cosmosdb_settings = AzureCosmosDBSettings.create(
+            cosmosdb_settings = AzureCosmosDBSettings(
                 env_file_path=env_file_path,
                 connection_string=cosmos_connstr,
             )

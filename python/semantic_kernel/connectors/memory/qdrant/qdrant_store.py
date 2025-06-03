@@ -81,7 +81,7 @@ class QdrantStore(VectorStore):
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
         try:
-            settings = QdrantSettings.create(
+            settings = QdrantSettings(
                 url=url,
                 api_key=api_key,
                 host=host,

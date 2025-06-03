@@ -39,7 +39,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
     /// Demonstrates how to use a <see cref="BedrockAgent"/> with file search.
     /// </summary>
     [Fact(Skip = "This test is skipped because it requires a valid KnowledgeBaseId.")]
-    public async Task UseAgentWithFileSearchAsync()
+    public async Task UseAgentWithFileSearch()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step05_BedrockAgent_FileSearch");

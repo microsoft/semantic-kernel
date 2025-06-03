@@ -17,13 +17,21 @@ public sealed class ModelDefinition
     private const string DefaultApi = "chat";
 
     /// <summary>
-    /// Gets or sets the ID of the model.
+    /// Gets or sets the unique identifier of the model.
     /// </summary>
+    /// <remarks>
+    /// This is typically a short string, but can be any string that is compatible with the agent.
+    /// Typically, depending on the provider, this can replace the entire connection settings if
+    /// the provider has a way to resolve the model connection from the id.
+    /// </remarks>
     public string? Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the type of API supported by the model.
+    /// Gets or sets the type of API used by the agent.
     /// </summary>
+    /// <remarks>
+    /// This is typically a chat or completion API, but can be any API that is compatible with the agent.
+    /// </remarks>
     public string Api
     {
         get => this._api ?? DefaultApi;
@@ -35,13 +43,23 @@ public sealed class ModelDefinition
     }
 
     /// <summary>
-    /// Gets or sets the options used by the model.
+    /// Gets or sets the options used by the agent.
     /// </summary>
+    /// <remarks>
+    /// This is typically a set of options that are compatible with the API and connection used by the agent.
+    /// This optional section is used to specify the options to be used when executing the agent.
+    /// If this section is not included, the runtime will use the default options for the API and connection used by the agent.
+    /// </remarks>
     public IDictionary<string, object>? Options { get; set; }
 
     /// <summary>
-    /// Gets or sets the connection used by the model.
+    /// Gets or sets the connection used by the agent.
     /// </summary>
+    /// <remarks>
+    /// This is typically a type and deployment, but can be any connection that is compatible with the agent.
+    /// The type parameter is used to tell the runtime how to load and execute the agent.
+    /// The deployment parameter, in this example, is used to tell the runtime which deployment to use when executing against Azure OpenAI.
+    /// </remarks>
     public ModelConnection? Connection { get; set; }
 
     #region

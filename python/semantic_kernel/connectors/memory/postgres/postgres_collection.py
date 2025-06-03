@@ -105,9 +105,7 @@ class PostgresCollection(
             managed_client=connection_pool is None,
         )
 
-        self._settings = settings or PostgresSettings.create(
-            env_file_path=env_file_path, env_file_encoding=env_file_encoding
-        )
+        self._settings = settings or PostgresSettings(env_file_path=env_file_path, env_file_encoding=env_file_encoding)
 
     @override
     def model_post_init(self, __context: object | None = None) -> None:

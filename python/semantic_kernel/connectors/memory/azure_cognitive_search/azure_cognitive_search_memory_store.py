@@ -79,7 +79,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         )
 
         try:
-            acs_memory_settings = AzureAISearchSettings.create(
+            acs_memory_settings = AzureAISearchSettings(
                 env_file_path=env_file_path,
                 endpoint=search_endpoint,
                 api_key=admin_key,

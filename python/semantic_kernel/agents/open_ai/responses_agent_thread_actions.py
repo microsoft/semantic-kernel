@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from openai.types.responses.tool_param import ToolParam
 
     from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
+    from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
@@ -94,6 +95,7 @@ class ResponsesAgentThreadActions:
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: "RunPollingOptions | None" = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
@@ -118,6 +120,8 @@ class ResponsesAgentThreadActions:
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: The parallel tool calls.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -196,7 +200,7 @@ class ResponsesAgentThreadActions:
 
             try:
                 response = await asyncio.wait_for(
-                    cls._poll_until_completed(agent, response),
+                    cls._poll_until_completed(agent, response, polling_options or agent.polling_options),
                     timeout=agent.polling_options.run_polling_timeout.total_seconds(),
                 )
             except asyncio.TimeoutError:
@@ -424,8 +428,9 @@ class ResponsesAgentThreadActions:
                 return
 
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-            # Yield FunctionCallContent
-            yield full_completion
+            if output_messages is not None:
+                # Append the content with function call content to the msgs used for the callback
+                output_messages.append(full_completion)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
@@ -514,10 +519,17 @@ class ResponsesAgentThreadActions:
         return response
 
     @classmethod
-    async def _poll_until_completed(cls: type[_T], agent: "OpenAIResponsesAgent", response: Response):
+    async def _poll_until_completed(
+        cls: type[_T],
+        agent: "OpenAIResponsesAgent",
+        response: Response,
+        polling_options: "RunPollingOptions",
+    ):
+        count = 0
         while response.status != "completed":
-            await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             response = await agent.client.responses.retrieve(response.id)
+            count += 1
         return response
 
     @classmethod
@@ -586,7 +598,9 @@ class ResponsesAgentThreadActions:
         )
 
     @classmethod
-    def _yield_function_result_messages(cls: type[_T], function_result_messages: list) -> bool:
+    def _yield_function_result_messages(
+        cls: type[_T], function_result_messages: Sequence[ChatMessageContent | StreamingChatMessageContent]
+    ) -> bool:
         """Determine if the function result messages should be yielded.
 
         If there are messages and if the first message has items, then yield the messages.
@@ -709,22 +723,24 @@ class ResponsesAgentThreadActions:
         return response_inputs
 
     @classmethod
-    def _get_tool_calls_from_output(cls: type[_T], output: list[ResponseFunctionToolCall]) -> list[FunctionCallContent]:
+    def _get_tool_calls_from_output(
+        cls: type[_T], output: list[ResponseOutputItem | ResponseOutputMessage]
+    ) -> list[FunctionCallContent]:
         """Get tool calls from a response output."""
         function_calls: list[FunctionCallContent] = []
-        if not any(isinstance(i, ResponseFunctionToolCall) for i in output):
-            return []
-        for tool in cast(list[ResponseFunctionToolCall], output):
-            content = tool if isinstance(tool, ResponseFunctionToolCall) else tool.delta
-            function_calls.append(
-                FunctionCallContent(
-                    id=content.id,
-                    call_id=content.call_id,
-                    index=getattr(content, "index", None),
-                    name=content.name,
-                    arguments=content.arguments,
+
+        # Filter to only process ResponseFunctionToolCall objects
+        for item in output:
+            if isinstance(item, ResponseFunctionToolCall):
+                function_calls.append(
+                    FunctionCallContent(
+                        id=item.id,
+                        call_id=item.call_id,
+                        index=getattr(item, "index", None),
+                        name=item.name,
+                        arguments=item.arguments,
+                    )
                 )
-            )
         return function_calls
 
     @classmethod
@@ -775,7 +791,7 @@ class ResponsesAgentThreadActions:
             name=name,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status),
+            status=Status(response.status) if hasattr(response, "status") else None,
         )
 
     @classmethod
@@ -798,7 +814,7 @@ class ResponsesAgentThreadActions:
             metadata=metadata,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status),
+            status=Status(response.status) if hasattr(response, "status") else None,
         )
 
     @classmethod
@@ -886,7 +902,7 @@ class ResponsesAgentThreadActions:
             tool_call.id: tool_call
             for message in chat_history.messages
             for tool_call in message.items
-            if isinstance(tool_call, FunctionResultContent)
+            if isinstance(tool_call, FunctionResultContent) and tool_call.id is not None
         }
         return [
             {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}

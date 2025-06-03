@@ -78,7 +78,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(
+            bedrock_settings = BedrockSettings(
                 chat_model_id=model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -321,6 +321,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 FunctionCallContent(
                     id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
                     name=event["contentBlockStart"]["start"]["toolUse"]["name"],
+                    index=event["contentBlockStart"]["contentBlockIndex"],
                 )
             )
 
@@ -350,6 +351,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             else FunctionCallContent(
                 arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
                 inner_content=event,
+                index=event["contentBlockDelta"]["contentBlockIndex"],
             )
         ]
 

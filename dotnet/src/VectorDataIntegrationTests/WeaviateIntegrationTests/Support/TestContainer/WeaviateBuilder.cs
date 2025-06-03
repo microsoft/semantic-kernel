@@ -8,7 +8,7 @@ namespace WeaviateIntegrationTests.Support.TestContainer;
 
 public sealed class WeaviateBuilder : ContainerBuilder<WeaviateBuilder, WeaviateContainer, WeaviateConfiguration>
 {
-    public const string WeaviateImage = "semitechnologies/weaviate:1.26.4";
+    public const string WeaviateImage = "semitechnologies/weaviate:1.28.12";
     public const ushort WeaviateHttpPort = 8080;
     public const ushort WeaviateGrpcPort = 50051;
 

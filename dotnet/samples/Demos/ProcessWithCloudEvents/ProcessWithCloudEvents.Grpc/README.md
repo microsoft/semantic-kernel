@@ -50,12 +50,19 @@ sequenceDiagram
 
 - Have Dapr setup ready
 - Build and Run the app
-- Install and run `gRPCui` listening to the address `localhost:58640`:
-    ```
-    ./grpcui.exe -plaintext localhost:58641
-    ```
+- Interact with the server by:
+    - Install and run `gRPCui` listening to the address `localhost:58641`:
+        ```
+        ./grpcui.exe -plaintext localhost:58641
+        ```
 
-### Usage
+        or
+
+    - Use the `ProcessWithCloudEvents.Client` App and use it to interact with the server. This app uses gRPC Web, which interacts with the server through `localhost:58640`.
+
+### Usage without UI
+
+For interacting with the gRPC server, the
 
 1. Build and run the app
 2. Open 2 windows of `gRPCui` with the following methods:
@@ -120,5 +127,5 @@ or
 
 - Set the `ProcessWithCloudEvents.Grpc` as startup app, run and attach the Visual Studio debugger:
 ```
-dapr run --app-id processwithcloudevents-grpc --app-port 58641 --app-protocol h2c -- dotnet run --no-build
+dapr run --app-id processwithcloudevents-grpc --app-port 58640 --app-protocol http -- dotnet run --no-build
 ```

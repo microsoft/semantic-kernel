@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,17 +13,17 @@ namespace GettingStarted.AzureAgents;
 public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseFileSearchToolWithAgentAsync()
+    public async Task UseFileSearchToolWithAgent()
     {
         // Define the agent
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
 
-        AgentFile fileInfo = await this.AgentsClient.UploadFileAsync(stream, AgentFilePurpose.Agents, "employees.pdf");
-        VectorStore fileStore =
-            await this.AgentsClient.CreateVectorStoreAsync(
+        PersistentAgentFileInfo fileInfo = await this.Client.Files.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "employees.pdf");
+        PersistentAgentsVectorStore fileStore =
+            await this.Client.VectorStores.CreateVectorStoreAsync(
                 [fileInfo.Id],
                 metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
-        Agent agentModel = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent agentModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new FileSearchToolDefinition()],
             toolResources: new()
@@ -34,10 +34,10 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
                 }
             },
             metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
-        AzureAIAgent agent = new(agentModel, this.AgentsClient);
+        AzureAIAgent agent = new(agentModel, this.Client);
 
         // Create a thread associated for the agent conversation.
-        Microsoft.SemanticKernel.Agents.AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        Microsoft.SemanticKernel.Agents.AgentThread thread = new AzureAIAgentThread(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -49,9 +49,9 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
-            await this.AgentsClient.DeleteVectorStoreAsync(fileStore.Id);
-            await this.AgentsClient.DeleteFileAsync(fileInfo.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+            await this.Client.VectorStores.DeleteVectorStoreAsync(fileStore.Id);
+            await this.Client.Files.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

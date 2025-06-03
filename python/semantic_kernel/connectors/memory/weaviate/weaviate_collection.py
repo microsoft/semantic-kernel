@@ -104,7 +104,7 @@ class WeaviateCollection(
         managed_client: bool = False
         if not async_client:
             managed_client = True
-            weaviate_settings = WeaviateSettings.create(
+            weaviate_settings = WeaviateSettings(
                 url=url,
                 api_key=api_key,
                 local_host=local_host,

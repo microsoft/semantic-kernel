@@ -59,7 +59,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             service_id (str): Service ID for the model. (optional)
         """
         try:
-            nvidia_settings = NvidiaSettings.create(
+            nvidia_settings = NvidiaSettings(
                 api_key=api_key,
                 base_url=base_url,
                 embedding_model_id=ai_model_id,

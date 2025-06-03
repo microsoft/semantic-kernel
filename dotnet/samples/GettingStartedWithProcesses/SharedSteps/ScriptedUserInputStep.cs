@@ -15,7 +15,7 @@ namespace SharedSteps;
 /// </summary>
 public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string GetUserInput = nameof(GetUserInput);
     }
@@ -76,7 +76,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
     /// used to emit events from within a KernelFunction.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    [KernelFunction(Functions.GetUserInput)]
+    [KernelFunction(ProcessStepFunctions.GetUserInput)]
     public virtual async ValueTask GetUserInputAsync(KernelProcessStepContext context)
     {
         var userMessage = this.GetNextUserMessage();

@@ -2144,4 +2144,85 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
         // The ExpiresAt value is converted to a DateTime object, so we can't directly compare it to the Unix timestamp
     }
+
+    [Fact]
+    public async Task GetChatMessageContentsThrowsExceptionWithEmptyBinaryContentAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o-mini", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage([new Microsoft.SemanticKernel.BinaryContent()]);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => chatCompletion.GetChatMessageContentsAsync(chatHistory));
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsThrowsExceptionUriOnlyReferenceBinaryContentAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o-mini", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage([new Microsoft.SemanticKernel.BinaryContent(new Uri("file://testfile.pdf"))]);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => chatCompletion.GetChatMessageContentsAsync(chatHistory));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItSendsBinaryContentCorrectlyAsync(bool useUriData)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o-mini", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var mimeType = "application/pdf";
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage([
+            new TextContent("What's in this file?"),
+            useUriData
+                ? new Microsoft.SemanticKernel.BinaryContent($"data:{mimeType};base64,{PdfBase64Data}")
+                : new Microsoft.SemanticKernel.BinaryContent(Convert.FromBase64String(PdfBase64Data), mimeType)
+        ]);
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(1, messages.GetArrayLength());
+
+        var contentItems = messages[0].GetProperty("content");
+        Assert.Equal(2, contentItems.GetArrayLength());
+
+        Assert.Equal("text", contentItems[0].GetProperty("type").GetString());
+        Assert.Equal("What's in this file?", contentItems[0].GetProperty("text").GetString());
+
+        Assert.Equal("file", contentItems[1].GetProperty("type").GetString());
+
+        // Check for the file data
+        Assert.True(contentItems[1].TryGetProperty("file", out var fileData));
+        Assert.Equal(JsonValueKind.Object, fileData.ValueKind);
+        Assert.True(fileData.TryGetProperty("file_data", out var dataProperty));
+        var dataUriFile = dataProperty.GetString();
+
+        Assert.NotNull(dataUriFile);
+        Assert.Equal($"data:{mimeType};base64,{PdfBase64Data}", dataUriFile);
+    }
+
+    /// <summary>
+    /// Sample PDF data URI for testing.
+    /// </summary>
+    private const string PdfBase64Data = "JVBERi0xLjQKMSAwIG9iago8PC9UeXBlIC9DYXRhbG9nCi9QYWdlcyAyIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagozIDAgb2JqCjw8L1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA1OTUgODQyXQovQ29udGVudHMgNSAwIFIKL1Jlc291cmNlcyA8PC9Qcm9jU2V0IFsvUERGIC9UZXh0XQovRm9udCA8PC9GMSA0IDAgUj4+Cj4+Cj4+CmVuZG9iago0IDAgb2JqCjw8L1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9OYW1lIC9GMQovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL01hY1JvbWFuRW5jb2RpbmcKPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDUzCj4+CnN0cmVhbQpCVAovRjEgMjAgVGYKMjIwIDQwMCBUZAooRHVtbXkgUERGKSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZgowMDAwMDAwMDA5IDAwMDAwIG4KMDAwMDAwMDA2MyAwMDAwMCBuCjAwMDAwMDAxMjQgMDAwMDAgbgowMDAwMDAwMjc3IDAwMDAwIG4KMDAwMDAwMDM5MiAwMDAwMCBuCnRyYWlsZXIKPDwvU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgo0OTUKJSVFT0YK";
 }

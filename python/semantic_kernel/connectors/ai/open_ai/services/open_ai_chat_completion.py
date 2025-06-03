@@ -51,7 +51,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             instruction_role (str | None): The role to use for 'instruction' messages, for example,
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 chat_model_id=ai_model_id,

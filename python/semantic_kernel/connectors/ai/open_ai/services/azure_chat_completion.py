@@ -82,7 +82,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 prompts could use `developer` or `system`. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 api_key=api_key,
                 base_url=base_url,
                 endpoint=endpoint,

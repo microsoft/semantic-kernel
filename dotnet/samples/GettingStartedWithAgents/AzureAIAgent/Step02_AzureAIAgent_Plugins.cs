@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -14,7 +15,7 @@ namespace GettingStarted.AzureAgents;
 public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseAzureAgentWithPluginAsync()
+    public async Task UseAzureAgentWithPlugin()
     {
         // Define the agent
         AzureAIAgent agent = await CreateAzureAgentAsync(
@@ -23,7 +24,7 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
                 name: "Host");
 
         // Create a thread for the agent conversation.
-        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -36,18 +37,18 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
     [Fact]
-    public async Task UseAzureAgentWithPluginEnumParameterAsync()
+    public async Task UseAzureAgentWithPluginEnumParameter()
     {
         // Define the agent
         AzureAIAgent agent = await CreateAzureAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
 
         // Create a thread for the agent conversation.
-        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -57,20 +58,20 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
     private async Task<AzureAIAgent> CreateAzureAgentAsync(KernelPlugin plugin, string? instructions = null, string? name = null)
     {
         // Define the agent
-        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             name,
             null,
             instructions);
 
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Add to the agent's Kernel
         if (plugin != null)

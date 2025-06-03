@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI;
 /// <summary>
 /// Mistral text embedding service.
 /// </summary>
+[Obsolete("Use MistralAIEmbeddingGenerator instead.")]
 public sealed class MistralAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     /// <summary>

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
@@ -50,7 +51,7 @@ async def create_chat_message(
     client: AsyncOpenAI,
     thread_id: str,
     message: "ChatMessageContent",
-    allowed_message_roles: list[str] = [AuthorRole.USER, AuthorRole.ASSISTANT],
+    allowed_message_roles: Sequence[str] | None = None,
 ) -> "Message":
     """Class method to add a chat message, callable from class or instance.
 
@@ -59,10 +60,15 @@ async def create_chat_message(
         thread_id: The thread id.
         message: The chat message.
         allowed_message_roles: The allowed message roles.
+            Defaults to [AuthorRole.USER, AuthorRole.ASSISTANT] if None.
+            Providing an empty list will disallow all message roles.
 
     Returns:
         Message: The message.
     """
+    # Set the default allowed message roles if not provided
+    if allowed_message_roles is None:
+        allowed_message_roles = [AuthorRole.USER, AuthorRole.ASSISTANT]
     if message.role.value not in allowed_message_roles and message.role != AuthorRole.TOOL:
         raise AgentExecutionException(
             f"Invalid message role `{message.role.value}`. Allowed roles are {allowed_message_roles}."

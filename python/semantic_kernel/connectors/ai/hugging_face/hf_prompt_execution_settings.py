@@ -1,16 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any
+import importlib
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
-try:
+if TYPE_CHECKING:
     from transformers import GenerationConfig
 
-    ready = True
-except ImportError:
-    GenerationConfig = Any
-    ready = False
+
+imported = importlib.import_module("transformers")
+ready = imported is not None and hasattr(imported, "GenerationConfig")
 
 
 class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
@@ -29,6 +29,8 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
         """Get the generation config."""
         if not ready:
             raise ImportError("transformers is not installed.")
+        from transformers import GenerationConfig
+
         return GenerationConfig(
             **self.model_dump(
                 include={"max_new_tokens", "pad_token_id", "eos_token_id", "temperature", "top_p"},

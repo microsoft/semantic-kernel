@@ -282,6 +282,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse
     /// </summary>
+    [JsonPropertyName("user")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? User
     {
         get => this._user;
@@ -299,6 +301,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Logprobs
     {
         get => this._logprobs;
@@ -347,6 +350,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("store")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Store
     {
         get => this._store;

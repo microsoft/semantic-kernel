@@ -15,7 +15,7 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
     /// </summary>
     [Fact]
-    public async Task CreatePromptFromYamlAsync()
+    public async Task CreatePromptFromYaml()
     {
         // Create a kernel with OpenAI chat completion
         Kernel kernel = Kernel.CreateBuilder()

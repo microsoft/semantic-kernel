@@ -14,7 +14,7 @@ public class FileReferenceContent : KernelContent
     /// <summary>
     /// The file identifier.
     /// </summary>
-    public string FileId { get; init; } = string.Empty;
+    public string FileId { get; }
 
     /// <summary>
     /// An optional tool association.
@@ -28,24 +28,12 @@ public class FileReferenceContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
     /// </summary>
-    [JsonConstructor]
-    public FileReferenceContent()
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
-    /// </summary>
     /// <param name="fileId">The identifier of the referenced file.</param>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    public FileReferenceContent(
-        string fileId,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+    [JsonConstructor]
+    public FileReferenceContent(string fileId)
     {
+        Verify.NotNullOrWhiteSpace(fileId, nameof(fileId));
+
         this.FileId = fileId;
     }
 }

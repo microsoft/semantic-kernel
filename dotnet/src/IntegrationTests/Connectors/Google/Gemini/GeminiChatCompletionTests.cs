@@ -578,4 +578,26 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         this.Output.WriteLine($"ResponseSafetyRatings: {JsonSerializer.Serialize(geminiMetadata.ResponseSafetyRatings)}");
         Assert.NotNull(geminiMetadata.ResponseSafetyRatings);
     }
+
+    [RetryFact(Skip = "This test is for manual verification.")]
+    public async Task GoogleAIChatReturnsResponseWorksWithThinkingBudgetAsync()
+    {
+        // Arrange
+        var modelId = "gemini-2.5-pro-exp-03-25";
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Call me by my name and expand this abbreviation: LLM");
+
+        var sut = this.GetChatService(ServiceType.GoogleAI, isBeta: true, overrideModelId: modelId);
+        var settings = new GeminiPromptExecutionSettings { ThinkingConfig = new() { ThinkingBudget = 2000 } };
+
+        // Act
+        var streamResponses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, settings).ToListAsync();
+        var responses = await sut.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(streamResponses[0].Content);
+        Assert.NotNull(responses[0].Content);
+    }
 }

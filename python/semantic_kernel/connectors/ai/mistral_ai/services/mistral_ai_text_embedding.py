@@ -56,7 +56,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             ServiceInitializationError: If an error occurs during initialization.
         """
         try:
-            mistralai_settings = MistralAISettings.create(
+            mistralai_settings = MistralAISettings(
                 api_key=api_key,
                 embedding_model_id=ai_model_id,
                 env_file_path=env_file_path,

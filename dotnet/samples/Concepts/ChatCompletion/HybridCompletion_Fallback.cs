@@ -104,7 +104,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
             )
         };
 
-        IChatClient openAiClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential(), options).AsChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        IChatClient openAiClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential(), options).GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName).AsIChatClient();
 
         return new ChatClientBuilder(openAiClient)
             .UseFunctionInvocation()
@@ -113,7 +113,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
 
     private static IChatClient CreateAzureOpenAIChatClient()
     {
-        IChatClient chatClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential()).AsChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        IChatClient chatClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential()).GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName).AsIChatClient();
 
         return new ChatClientBuilder(chatClient)
             .UseFunctionInvocation()

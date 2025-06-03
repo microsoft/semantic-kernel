@@ -17,16 +17,10 @@ public class QdrantKeywordVectorizedHybridSearchTests_NamedVectors(
     public new class VectorAndStringFixture : KeywordVectorizedHybridSearchComplianceTests<ulong>.VectorAndStringFixture
     {
         public override TestStore TestStore => QdrantTestStore.NamedVectorsInstance;
-
-        // Qdrant doesn't support the default Flat index kind
-        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Hnsw;
     }
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<ulong>.MultiTextFixture
     {
         public override TestStore TestStore => QdrantTestStore.NamedVectorsInstance;
-
-        // Qdrant doesn't support the default Flat index kind
-        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Hnsw;
     }
 }

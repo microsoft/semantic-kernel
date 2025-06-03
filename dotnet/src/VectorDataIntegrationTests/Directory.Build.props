@@ -6,7 +6,9 @@
     <NoWarn>$(NoWarn);CA1707</NoWarn> <!-- Remove the underscores from member name -->
     <NoWarn>$(NoWarn);CA1716</NoWarn> <!-- Rename virtual/interface member so that it no longer conflicts with the reserved language keyword -->
     <NoWarn>$(NoWarn);CA1720</NoWarn> <!-- Identifier contains type name -->
+    <NoWarn>$(NoWarn);CA1721</NoWarn> <!-- The property name X is confusing given the existence of method Y. Rename or remove one of these members. -->
     <NoWarn>$(NoWarn);CA1861</NoWarn> <!-- Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array -->
+    <NoWarn>$(NoWarn);CA1863</NoWarn> <!-- Cache a 'CompositeFormat' for repeated use in this formatting operation -->
     <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn> <!-- Consider calling ConfigureAwait on the awaited task -->
     <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Missing XML comment for publicly visible type or member -->
     <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->

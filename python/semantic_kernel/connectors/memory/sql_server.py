@@ -301,7 +301,7 @@ class SqlServerCollection(
         settings = None
         if not connection:
             try:
-                settings = SqlSettings.create(
+                settings = SqlSettings(
                     connection_string=connection_string,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,
@@ -614,7 +614,7 @@ class SqlServerStore(VectorStore):
         settings = None
         if not connection:
             try:
-                settings = SqlSettings.create(
+                settings = SqlSettings(
                     connection_string=connection_string,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,

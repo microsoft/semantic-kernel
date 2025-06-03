@@ -37,15 +37,28 @@ builder.Services.AddActors(static options =>
     options.AddProcessActors();
 });
 
+// Enabling CORS for grpc-web when using webApp as client, remove if not needed
+builder.Services.AddCors(o => o.AddPolicy("AllowAll", builder =>
+{
+    builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+}));
+
 // Add grpc related services.
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
 var app = builder.Build();
 
+app.UseCors();
+
 // Grpc services mapping
-app.MapGrpcReflectionService();
-app.MapGrpcService<DocumentGenerationService>();
+// Enabling grpc-web, remove if not needed
+app.UseGrpcWeb();
+// Enabling CORS for grpc-web, remove if not needed
+app.MapGrpcReflectionService().RequireCors("AllowAll");
+app.MapGrpcService<DocumentGenerationService>().EnableGrpcWeb().RequireCors("AllowAll");
 
 // Dapr actors related mapping
 app.MapActorsHandlers();

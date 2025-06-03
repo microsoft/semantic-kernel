@@ -14,7 +14,7 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
     /// them in a sequence, passing the output from one as input to the next.
     /// </summary>
     [Fact]
-    public async Task CreateFunctionPipelineAsync()
+    public async Task CreateFunctionPipeline()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(

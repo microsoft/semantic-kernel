@@ -901,7 +901,7 @@ async def test_receive_yields_realtime_events(mocked_open_ai_realtime_webrtc, mo
     mocked_open_ai_realtime_webrtc._receive_buffer.put_nowait(mocked_realtime_event)
 
     event_generator = mocked_open_ai_realtime_webrtc.receive(mocked_audio_output_callback)
-    event = await event_generator.asend(None)  # noqa: TYPO_IGNORE
+    event = await event_generator.asend(None)
 
     assert event is mocked_realtime_event
 

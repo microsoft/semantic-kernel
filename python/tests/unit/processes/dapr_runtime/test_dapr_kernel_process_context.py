@@ -21,9 +21,9 @@ class DummyInnerStepType:
 
 @pytest.fixture
 def process_context():
-    state = KernelProcessState(name="TestProcess", id=str(uuid.uuid4()))
+    state = KernelProcessState(name="TestProcess", version="1.0", id=str(uuid.uuid4()))
 
-    step_state = KernelProcessStepState(name="TestStep", id="step1")
+    step_state = KernelProcessStepState(name="TestStep", version="1.0", id="step1")
 
     step = KernelProcessStepInfo(
         state=step_state,
@@ -54,6 +54,7 @@ async def test_start_with_event(process_context):
     expected_payload = {
         "process_info": dapr_process_info.model_dump_json(),
         "parent_process_id": None,
+        "max_supersteps": context.max_supersteps,
     }
     mock_dapr_process.initialize_process.assert_awaited_once_with(expected_payload)
 

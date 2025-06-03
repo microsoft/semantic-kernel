@@ -20,7 +20,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
     /// Demonstrates how to inspect the thought process of a <see cref="BedrockAgent"/> by enabling trace.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithTraceAsync()
+    public async Task UseAgentWithTrace()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step04_BedrockAgent_Trace");

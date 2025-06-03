@@ -1,5 +1,7 @@
 # Setting errors for SDK projects under samples folder
 [*.cs]
+indent_style = space
+indent_size = 4
 dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
 dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
 dotnet_diagnostic.IDE1006.severity = error # Naming rule violations

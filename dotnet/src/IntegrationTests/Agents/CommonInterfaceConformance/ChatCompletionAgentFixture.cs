@@ -36,6 +36,11 @@ public class ChatCompletionAgentFixture : AgentFixture
 
     public override AgentThread CreatedServiceFailingAgentThread => null!;
 
+    public override AgentThread GetNewThread()
+    {
+        return new ChatHistoryAgentThread();
+    }
+
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();

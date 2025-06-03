@@ -15,7 +15,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
     /// Shows how to load an Open API <see cref="KernelPlugin"/> instance.
     /// </summary>
     [Fact]
-    public async Task AddOpenAPIPluginsAsync()
+    public async Task AddOpenAPIPlugins()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -36,7 +36,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
     /// Shows how to transform an Open API <see cref="KernelPlugin"/> instance to support dependency injection.
     /// </summary>
     [Fact]
-    public async Task TransformOpenAPIPluginsAsync()
+    public async Task TransformOpenAPIPlugins()
     {
         // Create a kernel with OpenAI chat completion
         var serviceProvider = BuildServiceProvider();

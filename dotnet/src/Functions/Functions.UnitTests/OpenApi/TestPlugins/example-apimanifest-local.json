@@ -1,0 +1,34 @@
+{
+  "applicationName": "My Application",
+  "publisher": {
+    "name": "Alice",
+    "contactEmail": "alice@example.org"
+  },
+  "apiDependencies": {
+    "repairservice": {
+      "apiDescriptionUrl": "../TestPlugins/example-apimanifest-repair-service.json",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/repairs"
+        }
+      ]
+    },
+    "MicrosoftGraph": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-sdk-powershell/dev/openApiDocs/v1.0/DirectoryObjects.yml",
+      "auth": {
+        "clientIdentifier": "some-uuid-here",
+        "access": [
+          "resourceA.ReadWrite",
+          "resourceB.Read"
+        ]
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/directoryObjects/{directoryObject-id}"
+        }
+      ]
+    }
+  }
+}

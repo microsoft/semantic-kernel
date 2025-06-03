@@ -74,9 +74,8 @@ async def test_upsert():
             assert many[0]._id == id
             assert one._id == id
             assert one._text == rec._text
-        except:
+        finally:
             await memory_store.delete_collection(collection)
-            raise
 
         await memory_store.delete_collection(collection)
 
@@ -98,24 +97,19 @@ async def test_record_not_found():
                 embedding=np.array([0.2, 0.1, 0.2, 0.7]),
             )
             id = await memory_store.upsert(collection, rec)
-        except:
-            await memory_store.delete_collection(collection)
-            raise
-
-        try:
+            await asyncio.sleep(1)
             await memory_store.remove(collection, id)
             await asyncio.sleep(1)
 
             # KeyError exception should occur
             await memory_store.get(collection, id)
 
-            # Clean up and fail
-            await memory_store.delete_collection(collection)
+            # Fail when no exception is raised
             assert False
         except MemoryConnectorResourceNotFound:
             pass
-
-        await memory_store.delete_collection(collection)
+        finally:
+            await memory_store.delete_collection(collection)
 
 
 async def test_search():
@@ -138,8 +132,5 @@ async def test_search():
             await asyncio.sleep(1)
             result = await memory_store.get_nearest_match(collection, np.array([0.1, 0.2, 0.3, 0.38]))
             assert result[0]._id == rec._id
-        except:
+        finally:
             await memory_store.delete_collection(collection)
-            raise
-
-        await memory_store.delete_collection(collection)

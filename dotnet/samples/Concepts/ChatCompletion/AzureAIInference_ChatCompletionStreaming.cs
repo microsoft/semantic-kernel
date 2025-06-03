@@ -26,7 +26,7 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         var chatService = new ChatCompletionsClient(
                 endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
                 credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey!))
-            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsIChatClient(TestConfiguration.AzureAIInference.ChatModelId)
             .AsChatCompletionService();
 
         return this.StartStreamingChatAsync(chatService);
@@ -76,7 +76,7 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         var chatService = new ChatCompletionsClient(
                 endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
                 credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey!))
-            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsIChatClient(TestConfiguration.AzureAIInference.ChatModelId)
             .AsChatCompletionService();
 
         // Create chat history with initial system and user messages

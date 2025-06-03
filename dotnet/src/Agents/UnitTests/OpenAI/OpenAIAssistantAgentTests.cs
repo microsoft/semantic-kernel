@@ -309,7 +309,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestProvider(),
+                this.CreateTestClient(),
                 "#id",
                 this._emptyKernel);
 
@@ -330,7 +330,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestProvider(),
+                this.CreateTestClient(),
                 "#id",
                 this._emptyKernel,
                 [],
@@ -748,7 +748,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Act
         var messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestProvider()).ToArrayAsync();
+                this.CreateTestClient()).ToArrayAsync();
         // Assert
         Assert.Equal(7, messages.Length);
 
@@ -761,7 +761,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Act
         messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestProvider()).ToArrayAsync();
+                this.CreateTestClient()).ToArrayAsync();
         // Assert
         Assert.Equal(4, messages.Length);
     }
@@ -823,7 +823,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestProvider(),
+                this.CreateTestClient(),
                 definition,
                 this._emptyKernel);
 
@@ -839,7 +839,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateFromTemplateAsync(
-                this.CreateTestProvider(),
+                this.CreateTestClient(),
                 capabilities,
                 this._emptyKernel,
                 [],
@@ -938,12 +938,12 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         return
             OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestProvider(),
+                this.CreateTestClient(),
                 definition,
                 this._emptyKernel);
     }
 
-    private OpenAIClientProvider CreateTestProvider(bool targetAzure = false)
+    private OpenAIClientProvider CreateTestClient(bool targetAzure = false)
         => targetAzure ?
             OpenAIClientProvider.ForAzureOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: new Uri("https://localhost"), this._httpClient) :
             OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);

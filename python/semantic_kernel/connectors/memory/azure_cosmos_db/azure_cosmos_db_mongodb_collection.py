@@ -91,7 +91,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         )
 
         try:
-            settings = AzureCosmosDBforMongoDBSettings.create(
+            settings = AzureCosmosDBforMongoDBSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,

@@ -43,7 +43,7 @@ class HttpPlugin(KernelBaseModel):
     async def post(
         self,
         url: Annotated[str, "The URI to send the request to."],
-        body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
+        body: Annotated[dict[str, Any] | None, "The body of the request"] = None,
     ) -> str:
         """Sends an HTTP POST request to the specified URI and returns the response body as a string.
 
@@ -57,7 +57,7 @@ class HttpPlugin(KernelBaseModel):
             raise FunctionExecutionException("url cannot be `None` or empty")
 
         headers = {"Content-Type": "application/json"}
-        data = json.dumps(body)
+        data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
             session.post(url, headers=headers, data=data, raise_for_status=True) as response,
@@ -68,7 +68,7 @@ class HttpPlugin(KernelBaseModel):
     async def put(
         self,
         url: Annotated[str, "The URI to send the request to."],
-        body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
+        body: Annotated[dict[str, Any] | None, "The body of the request"] = None,
     ) -> str:
         """Sends an HTTP PUT request to the specified URI and returns the response body as a string.
 
@@ -83,7 +83,7 @@ class HttpPlugin(KernelBaseModel):
             raise FunctionExecutionException("url cannot be `None` or empty")
 
         headers = {"Content-Type": "application/json"}
-        data = json.dumps(body)
+        data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
             session.put(url, headers=headers, data=data, raise_for_status=True) as response,

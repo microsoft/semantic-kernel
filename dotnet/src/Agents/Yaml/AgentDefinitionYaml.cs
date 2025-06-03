@@ -59,6 +59,14 @@ public static class AgentDefinitionYaml
             }
         }
 
+        if (agentDefinition?.Outputs is not null)
+        {
+            foreach (var keyValuePair in agentDefinition.Outputs)
+            {
+                keyValuePair.Value.Name = keyValuePair.Key;
+            }
+        }
+
         if (configuration is not null)
         {
             agentDefinition!.Normalize(configuration);

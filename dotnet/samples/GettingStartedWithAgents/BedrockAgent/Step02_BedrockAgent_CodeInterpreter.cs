@@ -26,7 +26,7 @@ Dolphin  2";
     /// The output of the code interpreter will be a file containing the bar chart, which will be returned to the user.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithCodeInterpreterAsync()
+    public async Task UseAgentWithCodeInterpreter()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step02_BedrockAgent_CodeInterpreter");

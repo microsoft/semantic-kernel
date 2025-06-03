@@ -58,7 +58,7 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
             env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(
+            bedrock_settings = BedrockSettings(
                 text_model_id=model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

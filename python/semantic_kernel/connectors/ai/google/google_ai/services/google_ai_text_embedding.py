@@ -52,7 +52,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
             ServiceInitializationError: If an error occurs during initialization.
         """
         try:
-            google_ai_settings = GoogleAISettings.create(
+            google_ai_settings = GoogleAISettings(
                 embedding_model_id=embedding_model_id,
                 api_key=api_key,
                 env_file_path=env_file_path,

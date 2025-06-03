@@ -12,7 +12,13 @@ public abstract class TestStore
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
+    private VectorStore? _defaultVectorStore;
 
+    /// <summary>
+    /// Some databases modify vectors on upsert, e.g. normalizing them, so vectors
+    /// returned cannot be compared with the original ones.
+    /// </summary>
+    public virtual bool VectorsComparable => true;
     public virtual string DefaultDistanceFunction => DistanceFunction.CosineSimilarity;
     public virtual string DefaultIndexKind => IndexKind.Flat;
 
@@ -21,7 +27,11 @@ public abstract class TestStore
     protected virtual Task StopAsync()
         => Task.CompletedTask;
 
-    public abstract IVectorStore DefaultVectorStore { get; }
+    public VectorStore DefaultVectorStore
+    {
+        get => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+        set => this._defaultVectorStore = value;
+    }
 
     public virtual async Task ReferenceCountingStartAsync()
     {
@@ -47,6 +57,7 @@ public abstract class TestStore
             if (--this._referenceCount == 0)
             {
                 await this.StopAsync();
+                this._defaultVectorStore?.Dispose();
             }
         }
         finally
@@ -70,33 +81,35 @@ public abstract class TestStore
     /// <summary>Loops until the expected number of records is visible in the given collection.</summary>
     /// <remarks>Some databases upsert asynchronously, meaning that our seed data may not be visible immediately to tests.</remarks>
     public virtual async Task WaitForDataAsync<TKey, TRecord>(
-        IVectorStoreRecordCollection<TKey, TRecord> collection,
+        VectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
-        int vectorSize = 3)
+        int? vectorSize = null,
+        object? dummyVector = null)
         where TKey : notnull
+        where TRecord : class
     {
-        var vector = new float[vectorSize];
-        for (var i = 0; i < vectorSize; i++)
+        if (vectorSize is not null && dummyVector is not null)
         {
-            vector[i] = 1.0f;
+            throw new ArgumentException("vectorSize or dummyVector can't both be set");
         }
+
+        var vector = dummyVector ?? new ReadOnlyMemory<float>(Enumerable.Range(0, vectorSize ?? 3).Select(i => (float)i).ToArray());
 
         for (var i = 0; i < 20; i++)
         {
-            var results = await collection.VectorizedSearchAsync(
-                new ReadOnlyMemory<float>(vector),
-                new()
-                {
-                    Top = recordCount,
-                    // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
-                    // so filtered searches show empty results. Add a filter to the seed data check below.
-                    Filter = filter
-                });
-            var count = await results.Results.CountAsync();
+            var results = collection.SearchAsync(
+                vector,
+                top: recordCount,
+                new() { Filter = filter });
+            var count = await results.CountAsync();
             if (count == recordCount)
             {
                 return;
+            }
+            if (count > recordCount)
+            {
+                throw new InvalidOperationException($"Expected at most {recordCount} records, but found {count}.");
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

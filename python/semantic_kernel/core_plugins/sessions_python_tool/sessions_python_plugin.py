@@ -50,7 +50,7 @@ class SessionsPythonTool(KernelBaseModel):
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
         try:
-            aca_settings = ACASessionsSettings.create(
+            aca_settings = ACASessionsSettings(
                 env_file_path=env_file_path,
                 pool_management_endpoint=pool_management_endpoint,
                 token_endpoint=token_endpoint,

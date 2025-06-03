@@ -7,10 +7,8 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateCollectionSchemaVectorConfig
 {
-    private const string DefaultVectorizer = "none";
-
     [JsonPropertyName("vectorizer")]
-    public Dictionary<string, object?> Vectorizer { get; set; } = new() { [DefaultVectorizer] = null };
+    public Dictionary<string, object?> Vectorizer { get; set; } = new() { [WeaviateConstants.DefaultVectorizer] = null };
 
     [JsonPropertyName("vectorIndexType")]
     public string? VectorIndexType { get; set; }

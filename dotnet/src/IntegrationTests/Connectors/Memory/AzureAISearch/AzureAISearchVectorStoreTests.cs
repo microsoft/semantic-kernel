@@ -13,6 +13,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 [Collection("AzureAISearchVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "Requires Azure AI Search Service instance up and running")]
 public class AzureAISearchVectorStoreTests(AzureAISearchVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, AzureAISearchHotel>(new AzureAISearchVectorStore(fixture.SearchIndexClient))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
 }

@@ -83,6 +83,19 @@ jobs:
           for solution in $SOLUTIONS; do
             dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
           done
+      - name: Package install check
+        shell: bash
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          for solution in $SOLUTIONS; do
+            dotnet pack $solution -c ${{ matrix.configuration }} --no-build --no-restore --output ./artifacts
+          done
+          dotnet new console --name packcheck --output consoleapp
+          dotnet add consoleapp/packcheck.csproj package Microsoft.SemanticKernel --source ./artifacts
+          dotnet build consoleapp/packcheck.csproj
+          rm -rf ./artifacts
+          rm -rf ./consoleapp
 
       - name: Run Unit Tests
         shell: bash
@@ -156,7 +169,7 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"

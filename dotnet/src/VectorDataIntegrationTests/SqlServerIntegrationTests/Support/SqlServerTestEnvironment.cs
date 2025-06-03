@@ -17,7 +17,7 @@ internal static class SqlServerTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<SqlServerMemoryStore>()
+            .AddUserSecrets<SqlServerVectorStore>()
             .Build();
 
         return configuration.GetSection("SqlServer")["ConnectionString"];

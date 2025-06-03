@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
@@ -910,7 +911,7 @@ public sealed class KernelFunctionFromMethodTests1
         functionName: "Test");
 
         await function.InvokeAsync(this._kernel, arguments);
-        await function.AsAIFunction().InvokeAsync(arguments);
+        await function.InvokeAsync(new AIFunctionArguments(arguments));
     }
 
     [Fact]
@@ -940,7 +941,7 @@ public sealed class KernelFunctionFromMethodTests1
         functionName: "Test");
 
         await function.InvokeAsync(this._kernel, arguments);
-        await function.AsAIFunction().InvokeAsync(arguments);
+        await function.InvokeAsync(new AIFunctionArguments(arguments));
     }
 
     [Fact]

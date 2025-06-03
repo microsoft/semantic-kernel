@@ -76,8 +76,8 @@ internal sealed class BedrockChatCompletionClient
             {
                 activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
-                activity.SetPromptTokenUsage(response?.Usage?.InputTokens ?? default);
-                activity.SetCompletionTokenUsage(response?.Usage?.OutputTokens ?? default);
+                activity.SetInputTokensUsage(response?.Usage?.InputTokens ?? default);
+                activity.SetOutputTokensUsage(response?.Usage?.OutputTokens ?? default);
             }
         }
         catch (Exception ex)
@@ -90,8 +90,8 @@ internal sealed class BedrockChatCompletionClient
                 {
                     activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                     activity.SetStatus(activityStatus);
-                    activity.SetPromptTokenUsage(response?.Usage?.InputTokens ?? default);
-                    activity.SetCompletionTokenUsage(response?.Usage?.OutputTokens ?? default);
+                    activity.SetInputTokensUsage(response?.Usage?.InputTokens ?? default);
+                    activity.SetOutputTokensUsage(response?.Usage?.OutputTokens ?? default);
                 }
                 else
                 {
@@ -130,7 +130,11 @@ internal sealed class BedrockChatCompletionClient
             {
                 Role = BedrockClientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
                 Items = CreateChatMessageContentItemCollection(message.Content),
-                InnerContent = response
+                InnerContent = response,
+                Metadata = new Dictionary<string, object?>
+                {
+                    { "Usage", response.Usage }
+                }
             }
         ];
     }
@@ -198,6 +202,18 @@ internal sealed class BedrockChatCompletionClient
                 // Convert output to semantic kernel's StreamingChatMessageContent
                 var c = deltaEvent?.Delta.Text;
                 var content = new StreamingChatMessageContent(AuthorRole.Assistant, c, deltaEvent);
+                streamedContents?.Add(content);
+                yield return content;
+            }
+
+            if (chunk is ConverseStreamMetadataEvent metadataEvent)
+            {
+                var metadata = new Dictionary<string, object?>
+                {
+                    ["Usage"] = metadataEvent.Usage
+                };
+
+                var content = new StreamingChatMessageContent(AuthorRole.Assistant, string.Empty, metadataEvent, metadata: metadata);
                 streamedContents?.Add(content);
                 yield return content;
             }

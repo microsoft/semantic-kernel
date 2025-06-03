@@ -61,7 +61,7 @@ public static class DocumentGenerationProcess
         var docsProofreadStep = processBuilder.AddStepFromType<ProofReadDocumentationStep>();
         var docsPublishStep = processBuilder.AddStepFromType<PublishDocumentationStep>();
 
-        var proxyStep = processBuilder.AddProxyStep([DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
+        var proxyStep = processBuilder.AddProxyStep(id: processName, [DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
 
         // Orchestrate the external input events
         processBuilder
@@ -70,7 +70,7 @@ public static class DocumentGenerationProcess
 
         processBuilder
             .OnInputEvent(DocGenerationEvents.UserRejectedDocument)
-            .SendEventTo(new(docsGenerationStep, functionName: GenerateDocumentationStep.Functions.ApplySuggestions));
+            .SendEventTo(new(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.ApplySuggestions));
 
         processBuilder
             .OnInputEvent(DocGenerationEvents.UserApprovedDocument)
@@ -79,22 +79,22 @@ public static class DocumentGenerationProcess
         // Hooking up the rest of the process steps
         infoGatheringStep
             .OnFunctionResult()
-            .SendEventTo(new(docsGenerationStep, functionName: GenerateDocumentationStep.Functions.GenerateDocs));
+            .SendEventTo(new ProcessFunctionTargetBuilder(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.GenerateDocs));
 
         docsGenerationStep
             .OnEvent(GenerateDocumentationStep.OutputEvents.DocumentationGenerated)
-            .SendEventTo(new(docsProofreadStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(docsProofreadStep));
 
         docsProofreadStep
             .OnEvent(ProofReadDocumentationStep.OutputEvents.DocumentationRejected)
-            .SendEventTo(new(docsGenerationStep, functionName: GenerateDocumentationStep.Functions.ApplySuggestions));
+            .SendEventTo(new ProcessFunctionTargetBuilder(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.ApplySuggestions));
 
         // When the proofreader approves the documentation, send it to the 'docs' parameter of the docsPublishStep
         // Additionally, the generated document is emitted externally for user approval using the pre-configured proxyStep
         docsProofreadStep
             .OnEvent(ProofReadDocumentationStep.OutputEvents.DocumentationApproved)
             .EmitExternalEvent(proxyStep, DocGenerationTopics.RequestUserReview)
-            .SendEventTo(new(docsPublishStep, parameterName: "document"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(docsPublishStep, parameterName: "document"));
 
         // When event is approved by user, it gets published externally too
         docsPublishStep

@@ -88,7 +88,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             env_file_encoding (str): The encoding of the environment file.
         """
         try:
-            vertex_ai_settings = VertexAISettings.create(
+            vertex_ai_settings = VertexAISettings(
                 project_id=project_id,
                 region=region,
                 gemini_model_id=gemini_model_id,

@@ -15,7 +15,7 @@ public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgents
     protected override bool ForceOpenAI { get; } = true;
 
     [Fact]
-    public async Task SalesAssistantAgentAsync()
+    public async Task SalesAssistantAgent()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
         kernel.Plugins.AddFromType<OrderPlugin>();
@@ -40,7 +40,7 @@ public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgents
     }
 
     [Fact]
-    public async Task RefundAgentAsync()
+    public async Task RefundAgent()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
         kernel.Plugins.AddFromType<RefundPlugin>();
@@ -65,7 +65,7 @@ public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgents
     }
 
     [Fact]
-    public async Task MultipleAgentsAsync()
+    public async Task MultipleAgents()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
         var agentPlugin = KernelPluginFactory.CreateFromFunctions("AgentPlugin",

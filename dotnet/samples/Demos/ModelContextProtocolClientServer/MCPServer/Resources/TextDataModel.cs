@@ -12,18 +12,18 @@ public class TextDataModel
     /// <summary>
     /// Unique identifier for the record.
     /// </summary>
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public required Guid Key { get; init; }
 
     /// <summary>
     /// The text content of the record.
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string Text { get; init; }
 
     /// <summary>
     /// The embedding for the record.
     /// </summary>
-    [VectorStoreRecordVector(1536)]
+    [VectorStoreVector(1536)]
     public required ReadOnlyMemory<float> Embedding { get; init; }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -105,7 +106,7 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
         // Act
         KernelProcessContext processContext =
             await this._fixture.StartProcessAsync(
-                processInstance,
+                processInstance with { State = processInstance.State with { Id = Guid.NewGuid().ToString() } },
                 kernel,
                 new KernelProcessEvent()
                 {

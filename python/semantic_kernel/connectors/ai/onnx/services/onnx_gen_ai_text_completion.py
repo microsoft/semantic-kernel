@@ -46,7 +46,7 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
             env_file_encoding : The encoding of the environment settings file.
         """
         try:
-            settings = OnnxGenAISettings.create(
+            settings = OnnxGenAISettings(
                 text_model_folder=ai_model_path,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

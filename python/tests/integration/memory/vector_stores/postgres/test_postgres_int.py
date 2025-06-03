@@ -34,7 +34,7 @@ try:
 except ImportError:
     psycopg_pool_installed = False
 
-pg_settings: PostgresSettings = PostgresSettings.create()
+pg_settings: PostgresSettings = PostgresSettings()
 try:
     connection_params_present = any(pg_settings.get_connection_args().values())
 except MemoryConnectorInitializationError:

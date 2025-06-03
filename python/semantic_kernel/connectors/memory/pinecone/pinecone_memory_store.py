@@ -63,7 +63,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 f"Dimensionality of {default_dimensionality} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         try:
-            pinecone_settings = PineconeSettings.create(
+            pinecone_settings = PineconeSettings(
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

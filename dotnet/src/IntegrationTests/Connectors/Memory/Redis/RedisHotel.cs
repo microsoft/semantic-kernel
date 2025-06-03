@@ -13,40 +13,40 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 /// </summary>
 public class RedisHotel
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public string HotelId { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string HotelName { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public int HotelCode { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public string Description { get; init; }
 
-    [VectorStoreRecordVector(4)]
+    [VectorStoreVector(4)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
 
 #pragma warning disable CA1819 // Properties should not return arrays
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string[] Tags { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public string[] FTSTags { get; init; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; init; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public DateTimeOffset LastRenovationDate { get; init; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public double Rating { get; init; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public RedisHotelAddress Address { get; init; }
 }
 
@@ -64,26 +64,26 @@ public class RedisHotelAddress
 /// </summary>
 public class RedisBasicHotel<TVectorElement>
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public string HotelId { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string HotelName { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public int HotelCode { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public string Description { get; init; }
 
-    [VectorStoreRecordVector(4)]
+    [VectorStoreVector(4)]
     public ReadOnlyMemory<TVectorElement>? DescriptionEmbedding { get; init; }
 
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; init; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public double Rating { get; init; }
 }
 

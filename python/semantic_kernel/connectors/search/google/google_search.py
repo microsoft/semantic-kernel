@@ -56,7 +56,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             env_file_encoding: The optional encoding of the .env file.
         """
         try:
-            settings = GoogleSearchSettings.create(
+            settings = GoogleSearchSettings(
                 api_key=api_key,
                 engine_id=search_engine_id,
                 env_file_path=env_file_path,

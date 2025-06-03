@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 
 namespace SemanticKernel.Agents.UnitTests;
 
@@ -27,6 +28,11 @@ internal sealed class MockAgent : ChatHistoryAgent
         CancellationToken cancellationToken = default)
     {
         this.InvokeCount++;
+        if (thread == null)
+        {
+            Mock<AgentThread> mockThread = new();
+            thread = mockThread.Object;
+        }
         return this.Response.Select(x => new AgentResponseItem<ChatMessageContent>(x, thread!)).ToAsyncEnumerable();
     }
 

@@ -19,14 +19,14 @@ public class ManagerAgentStep : KernelProcessStep
     public const string AgentServiceKey = $"{nameof(ManagerAgentStep)}:{nameof(AgentServiceKey)}";
     public const string ReducerServiceKey = $"{nameof(ManagerAgentStep)}:{nameof(ReducerServiceKey)}";
 
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string InvokeAgent = nameof(InvokeAgent);
         public const string InvokeGroup = nameof(InvokeGroup);
         public const string ReceiveResponse = nameof(ReceiveResponse);
     }
 
-    [KernelFunction(Functions.InvokeAgent)]
+    [KernelFunction(ProcessStepFunctions.InvokeAgent)]
     public async Task InvokeAgentAsync(KernelProcessStepContext context, Kernel kernel, string userInput, ILogger logger)
     {
         // Get the chat history
@@ -60,7 +60,7 @@ public class ManagerAgentStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = intentEventId });
     }
 
-    [KernelFunction(Functions.InvokeGroup)]
+    [KernelFunction(ProcessStepFunctions.InvokeGroup)]
     public async Task InvokeGroupAsync(KernelProcessStepContext context, Kernel kernel)
     {
         // Get the chat history
@@ -73,7 +73,7 @@ public class ManagerAgentStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.GroupInput, Data = summary });
     }
 
-    [KernelFunction(Functions.ReceiveResponse)]
+    [KernelFunction(ProcessStepFunctions.ReceiveResponse)]
     public async Task ReceiveResponseAsync(KernelProcessStepContext context, Kernel kernel, string response)
     {
         // Get the chat history

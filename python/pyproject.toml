@@ -23,6 +23,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+    # azure agents
+    "azure-ai-projects >= 1.0.0b11",
+    "azure-ai-agents >= 1.0.0",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -42,7 +45,7 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance ~= 23.6.21.0",
+    "prance >= 23.6.21,< 25.4.9",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
@@ -50,16 +53,25 @@ dependencies = [
     "scipy>=1.15.1",
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
 [project.optional-dependencies]
+anthropic = [
+    "anthropic ~= 0.32"
+]
 autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
+aws = [
+    "boto3>=1.36.4,<1.39.0",
+]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects >= 1.0.0b7",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-cosmos ~= 4.7"
@@ -67,27 +79,25 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
-google = [
-    "google-cloud-aiplatform == 1.87.0",
-    "google-generativeai ~= 0.8"
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
 ]
+google = [
+    "google-cloud-aiplatform == 1.93.0",
+    "google-generativeai ~= 0.8"
+]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.6.0"
+    "torch == 2.7.0"
 ]
 mcp = [
-    "mcp ~= 1.6"
-]
-mongo = [
-    "pymongo >= 4.8.0, < 4.12",
-    "motor >= 3.3.2,< 3.8.0"
-]
-notebooks = [
-    "ipykernel ~= 6.29"
+    "mcp>=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -96,14 +106,21 @@ milvus = [
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
+mongo = [
+    "pymongo >= 4.8.0, < 4.13",
+    "motor >= 3.3.2,< 3.8.0"
+]
+notebooks = [
+    "ipykernel ~= 6.29"
+]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5; python_version < '3.13'"
+    "onnxruntime-genai ~= 0.7"
 ]
-anthropic = [
-    "anthropic ~= 0.32"
+pandas = [
+    "pandas ~= 2.2"
 ]
 pinecone = [
     "pinecone[asyncio, grpc] ~= 6.0"
@@ -115,27 +132,9 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] ~= 5.0",
+    "redis[hiredis] >= 5,< 6",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
-]
-usearch = [
-    "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 20.0"
-]
-weaviate = [
-    "weaviate-client>=4.10,<4.13",
-]
-pandas = [
-    "pandas ~= 2.2"
-]
-aws = [
-    "boto3>=1.36.4,<1.38.0",
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0"
 ]
 realtime = [
     "websockets >= 13, < 16",
@@ -143,6 +142,13 @@ realtime = [
 ]
 sql = [
     "pyodbc >= 5.2"
+]
+usearch = [
+    "usearch ~= 2.16",
+    "pyarrow >= 12.0,< 21.0"
+]
+weaviate = [
+    "weaviate-client>=4.10,<5.0",
 ]
 
 [tool.uv]
@@ -202,7 +208,7 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]

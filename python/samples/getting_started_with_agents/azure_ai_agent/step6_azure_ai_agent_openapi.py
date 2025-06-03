@@ -4,11 +4,11 @@ import asyncio
 import json
 import os
 
-from azure.ai.projects.models import OpenApiAnonymousAuthDetails, OpenApiTool
+from azure.ai.agents.models import OpenApiAnonymousAuthDetails, OpenApiTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import AuthorRole
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 
 """
 The following sample demonstrates how to create a simple, Azure AI agent that
@@ -23,9 +23,17 @@ USER_INPUTS = [
 ]
 
 
-async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
+
+async def main() -> None:
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
@@ -58,7 +66,7 @@ async def main() -> None:
 
         # 3. Create an agent on the Azure AI agent service with the OpenAPI tools
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=openapi_weather.definitions + openapi_countries.definitions,
         )
 
@@ -78,12 +86,11 @@ async def main() -> None:
                 print(f"# User: '{user_input}'")
                 # 7. Invoke the agent for the specified thread for response
                 async for response in agent.invoke(messages=user_input, thread=thread):
-                    if response.role != AuthorRole.TOOL:
-                        print(f"# Agent: {response}")
+                    print(f"# Agent: {response}")
                     thread = response.thread
         finally:
             # 8. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
+            await client.agents.threads.delete(thread.id) if thread else None
             await client.agents.delete_agent(agent.id)
 
         """

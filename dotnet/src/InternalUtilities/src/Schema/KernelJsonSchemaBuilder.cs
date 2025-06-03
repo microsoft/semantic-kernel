@@ -24,13 +24,7 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static JsonSerializerOptions? s_options;
-    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
-    {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = false,
-        DisallowAdditionalProperties = false,
-    };
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new();
 
     private static readonly JsonElement s_trueSchemaAsObject = JsonDocument.Parse("{}").RootElement;
     private static readonly JsonElement s_falseSchemaAsObject = JsonDocument.Parse("""{"not":true}""").RootElement;
@@ -49,7 +43,9 @@ internal static class KernelJsonSchemaBuilder
         AIJsonSchemaCreateOptions? configuration = null)
     {
         configuration ??= s_schemaOptions;
-        JsonElement schemaDocument = AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
+        // To be compatible with the previous behavior of MEAI 9.3.0 (when description is empty, should not be included in the schema)
+        string? schemaDescription = string.IsNullOrEmpty(description) ? null : description;
+        JsonElement schemaDocument = AIJsonUtilities.CreateJsonSchema(type, schemaDescription, serializerOptions: options, inferenceOptions: configuration);
         switch (schemaDocument.ValueKind)
         {
             case JsonValueKind.False:

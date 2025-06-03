@@ -1,0 +1,1 @@
+Semantic Kernel is a software development kit (SDK) that seamlessly combines Large Language Models (LLMs) such as OpenAI, Azure OpenAI, and Hugging Face with traditional programming languages like C#, Python, and Java. It enables the creation of plugins that can be linked together with minimal code, facilitating efficient integration.

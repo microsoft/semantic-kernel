@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Prompts;
@@ -92,7 +92,7 @@ public sealed class PromptDefinition
         // Render the prompt
         string renderedPrompt = await promptTemplate.RenderAsync(
             kernel: kernel,
-            arguments: context.Params?.Arguments is { } args ? new KernelArguments(args!) : null,
+            arguments: context.Params?.Arguments is { } args ? new KernelArguments(args.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value)) : null,
             cancellationToken: cancellationToken);
 
         // Create prompt result

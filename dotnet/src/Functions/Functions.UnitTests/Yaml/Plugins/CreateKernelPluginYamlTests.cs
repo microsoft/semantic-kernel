@@ -42,6 +42,11 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
             File.WriteAllText(yamlFile1Path, YAML);
             File.WriteAllText(yamlFile2Path, YAMLWithCustomSettings);
             File.WriteAllText(yamlFile3Path, YAMLNoExecutionSettings);
+
+            // Add .yml file to plugin2 to ensure both extensions are supported
+            string ymlFile1Path = Path.Combine(plugin2Directory, $"{nameof(YAML)}.yml");
+
+            File.WriteAllText(ymlFile1Path, YAML);
         }
         catch (Exception)
         {
@@ -112,7 +117,7 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
         Assert.NotNull(kernel.Plugins[expectedPlugin2]);
 
         Assert.Equal(2, kernel.Plugins[expectedPlugin1].Count());
-        Assert.Single(kernel.Plugins[expectedPlugin2]);
+        Assert.Equal(2, kernel.Plugins[expectedPlugin2].Count());
     }
 
     private const string YAML = """

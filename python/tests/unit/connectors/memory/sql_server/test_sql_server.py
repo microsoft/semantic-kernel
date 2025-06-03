@@ -276,7 +276,7 @@ async def test_get_mssql_connection(connection_string):
         credential.__aenter__.return_value = credential
         credential.get_token.return_value = token
 
-        settings = SqlSettings.create(connection_string=connection_string)
+        settings = SqlSettings(connection_string=connection_string)
         with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
             connection = await _get_mssql_connection(settings)
             assert connection is not None

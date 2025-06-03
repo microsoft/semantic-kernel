@@ -60,7 +60,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
         try:
-            ollama_settings = OllamaSettings.create(
+            ollama_settings = OllamaSettings(
                 text_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,

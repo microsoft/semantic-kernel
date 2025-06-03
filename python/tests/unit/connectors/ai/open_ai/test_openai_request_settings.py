@@ -228,7 +228,7 @@ def test_create_options_azure_data():
 
 
 def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
-    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings())
     extra = ExtraBody(data_sources=[az_source])
     assert extra["data_sources"] is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)

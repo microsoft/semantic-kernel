@@ -111,7 +111,7 @@ class RedisCollection(
         try:
             from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 
-            redis_settings = RedisSettings.create(
+            redis_settings = RedisSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

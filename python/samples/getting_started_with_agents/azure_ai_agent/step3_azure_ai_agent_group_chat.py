@@ -45,7 +45,7 @@ TASK = "a slogan for a new line of electric cars."
 
 
 async def main():
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,

@@ -12,7 +12,7 @@ def test_initialization_with_name_and_id():
     step_id = "5678"
 
     # Act
-    step_state = KernelProcessStepState(name=name, id=step_id)
+    step_state = KernelProcessStepState(name=name, id=step_id, version="1.0")
 
     # Assert
     assert step_state.name == name
@@ -25,7 +25,7 @@ def test_initialization_with_name_only():
     name = "step_state_without_id"
 
     # Act
-    step_state = KernelProcessStepState(name=name)
+    step_state = KernelProcessStepState(name=name, version="1.0")
 
     # Assert
     assert step_state.name == name
@@ -39,7 +39,7 @@ def test_setting_step_state_value():
     state_value = {"status": "in_progress"}
 
     # Act
-    step_state = KernelProcessStepState(name=name)
+    step_state = KernelProcessStepState(name=name, version="1.0")
     step_state.state = state_value
 
     # Assert

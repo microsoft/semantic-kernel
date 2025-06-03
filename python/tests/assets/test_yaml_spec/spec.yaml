@@ -1,0 +1,8 @@
+type: chat_completion_agent
+name: FunctionCallingAgent
+description: This agent uses the provided functions to answer questions about the menu.
+instructions: Use the provided functions to answer questions about the menu.
+model:
+  id: "gpt-4.1"
+  options:
+    temperature: 0.4

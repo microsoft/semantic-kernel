@@ -6,9 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using ModelContextProtocol;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Protocol.Types;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -22,26 +20,12 @@ if (config["OpenAI:ApiKey"] is not { } apiKey)
 }
 
 // Create an MCPClient for the GitHub server
-await using var mcpClient = await McpClientFactory.CreateAsync(
-    new McpServerConfig()
-    {
-        Id = "github",
-        Name = "GitHub",
-        TransportType = "stdio",
-        TransportOptions = new Dictionary<string, string>
-        {
-            ["command"] = "npx",
-            ["arguments"] = "-y @modelcontextprotocol/server-github",
-        }
-    },
-    new McpClientOptions()
-    {
-        ClientInfo = new Implementation()
-        {
-            Name = "GitHub",
-            Version = "1.0.0"
-        }
-    }).ConfigureAwait(false);
+await using var mcpClient = await McpClientFactory.CreateAsync(new StdioClientTransport(new()
+{
+    Name = "MCPServer",
+    Command = "npx",
+    Arguments = ["-y", "@modelcontextprotocol/server-github"],
+}));
 
 // Retrieve the list of tools available on the GitHub server
 var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
@@ -78,7 +62,7 @@ ChatCompletionAgent agent = new()
     Instructions = "Answer questions about GitHub repositories.",
     Name = "GitHubAgent",
     Kernel = kernel,
-    Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+    Arguments = new KernelArguments(executionSettings),
 };
 
 // Respond to user input, invoking functions where appropriate.

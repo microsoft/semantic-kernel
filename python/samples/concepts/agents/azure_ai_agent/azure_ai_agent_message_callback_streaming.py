@@ -1,23 +1,29 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an Azure AI Agent
-and use it with streaming responses. Additionally, the invoke_stream
-configures a message callback to receive fully formed messages once
-the streaming invocation is complete. The agent is configured to use
-a plugin that provides a list of specials from the menu and the price
-of the requested menu item.
+This sample demonstrates how to create an Azure AI Agent and use it with the streaming `invoke_stream()` method.
+
+The agent returns assistant messages as a stream of incremental chunks. In addition, you can specify
+an `on_intermediate_message` callback to receive fully-formed tool-related messages — such as function
+calls and their results — while the assistant response is still being streamed.
+
+In this example, the agent is configured with a plugin that provides menu specials and item pricing.
+As the user interacts with the agent, tool messages (like function calls) are emitted via the callback,
+while assistant replies stream back incrementally through the main response loop.
 """
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 # Define a sample plugin for the sample
@@ -39,38 +45,39 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
+# This callback function will be called for each intermediate message,
+# which will allow one to handle FunctionCallContent and FunctionResultContent.
+# If the callback is not provided, the agent will return the final response
+# with no intermediate tool call steps.
 async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
-        AGENT_NAME = "Host"
-        AGENT_INSTRUCTIONS = "Answer questions about the menu."
-
         # Create agent definition
         agent_definition = await client.agents.create_agent(
             model=ai_agent_settings.model_deployment_name,
-            name=AGENT_NAME,
-            instructions=AGENT_INSTRUCTIONS,
+            name="Host",
+            instructions="Answer questions from the user using your provided functions. You must invoke multiple functions to answer the user's questions. ",  # noqa: E501
         )
 
         # Create the AzureAI Agent
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
-            plugins=[MenuPlugin()],  # add the sample plugin to the agent
+            plugins=[MenuPlugin(), MathPlugin()],
         )
 
         # Create a thread for the agent
@@ -79,10 +86,7 @@ async def main() -> None:
         thread: AzureAIAgentThread = None
 
         user_inputs = [
-            "Hello",
-            "What is the special soup?",
-            "How much does that cost?",
-            "Thank you",
+            "What is the price of the special drink and the special food item added together?",
         ]
 
         try:
@@ -105,44 +109,25 @@ async def main() -> None:
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
-        # Print the intermediate steps
-        print("\nIntermediate Steps:")
-        for msg in intermediate_steps:
-            if any(isinstance(item, FunctionResultContent) for item in msg.items):
-                for fr in msg.items:
-                    if isinstance(fr, FunctionResultContent):
-                        print(f"Function Result:> {fr.result} for function: {fr.name}")
-            elif any(isinstance(item, FunctionCallContent) for item in msg.items):
-                for fcc in msg.items:
-                    if isinstance(fcc, FunctionCallContent):
-                        print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
-            else:
-                print(f"{msg.role}: {msg.content}")
+        """
+        Sample Output:
 
-    # Sample output:
-    # User: 'Hello'
-    # AuthorRole.ASSISTANT: Hello! How can I assist you today?
-    # User: 'What is the special soup?'
-    # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about the menu or any
-    #                       specific items?
-    # User: 'How much does that cost?'
-    # AuthorRole.ASSISTANT: The Clam Chowder costs $9.99. Would you like to explore anything else on the menu?
-    # User: 'Thank you'
-    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions or need assistance in the future, feel
-    #                       free to ask. Have a great day!
-    #
-    # Intermediate Steps:
-    # AuthorRole.ASSISTANT: Hello! How can I assist you today?
-    # Function Call:> MenuPlugin-get_specials with arguments: {}
-    # Function Result:>
-    #         Special Soup: Clam Chowder
-    #         Special Salad: Cobb Salad
-    #         Special Drink: Chai Tea
-    #          for function: MenuPlugin-get_specials
-    # Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
-    # Function Result:> $9.99 for function: MenuPlugin-get_item_price
-    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions or need assistance in the future, feel
-    #                       free to ask. Have a great day!
+        # User: 'What is the price of the special drink and then special food item added together?'
+        Function Call:> MenuPlugin-get_specials with arguments: {}
+        Function Result:> 
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                for function: MenuPlugin-get_specials
+        Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item": "Chai Tea"}
+        Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item": "Clam Chowder"}
+        Function Result:> $9.99 for function: MenuPlugin-get_item_price
+        Function Result:> $9.99 for function: MenuPlugin-get_item_price
+        Function Call:> MathPlugin-Add with arguments: {"input":9.99,"amount":9.99}
+        Function Result:> 19.98 for function: MathPlugin-Add
+        # AuthorRole.ASSISTANT: The price of the special drink, Chai Tea, is $9.99 and the price of the special food 
+            item, Clam Chowder, is $9.99. Added together, the total price is $19.98.
+        """
 
 
 if __name__ == "__main__":

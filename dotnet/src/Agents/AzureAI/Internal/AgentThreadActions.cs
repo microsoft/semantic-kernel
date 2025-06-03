@@ -9,13 +9,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
-using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -44,9 +43,9 @@ internal static class AgentThreadActions
     /// <param name="client">The assistant client</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public static async Task<string> CreateThreadAsync(AgentsClient client, CancellationToken cancellationToken = default)
+    public static async Task<string> CreateThreadAsync(PersistentAgentsClient client, CancellationToken cancellationToken = default)
     {
-        AAIP.AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        PersistentAgentThread thread = await client.Threads.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -59,24 +58,18 @@ internal static class AgentThreadActions
     /// <param name="message">The message to add</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
-    public static async Task CreateMessageAsync(AgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
+    public static async Task CreateMessageAsync(PersistentAgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
         if (message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
 
-        string? content = message.Content;
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
-        await client.CreateMessageAsync(
+        await client.Messages.CreateMessageAsync(
             threadId,
             role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
-            content,
-            attachments: AgentMessageFactory.GetAttachments(message).ToArray(),
+            contentBlocks: AgentMessageFactory.GetMessageContent(message),
+            attachments: AgentMessageFactory.GetAttachments(message),
             metadata: AgentMessageFactory.GetMetadata(message),
             cancellationToken).ConfigureAwait(false);
     }
@@ -89,39 +82,35 @@ internal static class AgentThreadActions
     /// <param name="messageOrder">The order to return messages in.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(PersistentAgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
         string? lastId = null;
-        PageableList<ThreadMessage>? messages = null;
-        do
+        AsyncPageable<PersistentThreadMessage>? messages = client.Messages.GetMessagesAsync(threadId, runId: null, limit: null, messageOrder ?? ListSortOrder.Descending, after: lastId, before: null, cancellationToken);
+        await foreach (PersistentThreadMessage message in messages.ConfigureAwait(false))
         {
-            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, messageOrder ?? ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
-            foreach (ThreadMessage message in messages)
+            lastId = message.Id;
+            string? assistantName = null;
+            if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
+                !agentNames.TryGetValue(message.AssistantId, out assistantName))
             {
-                lastId = message.Id;
-                string? assistantName = null;
-                if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
-                    !agentNames.TryGetValue(message.AssistantId, out assistantName))
+                PersistentAgent assistant = await client.Administration.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(assistant.Name))
                 {
-                    Azure.AI.Projects.Agent assistant = await client.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(assistant.Name))
-                    {
-                        agentNames.Add(assistant.Id, assistant.Name);
-                    }
-                }
-
-                assistantName ??= message.AssistantId;
-
-                ChatMessageContent content = GenerateMessageContent(assistantName, message);
-
-                if (content.Items.Count > 0)
-                {
-                    yield return content;
+                    agentNames.Add(assistant.Id, assistant.Name);
                 }
             }
-        } while (messages?.HasMore ?? false);
+
+            assistantName ??= message.AssistantId;
+
+            ChatMessageContent content = GenerateMessageContent(assistantName, message);
+
+            if (content.Items.Count > 0)
+            {
+                yield return content;
+            }
+        }
     }
 
     /// <summary>
@@ -140,7 +129,7 @@ internal static class AgentThreadActions
     /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         AzureAIAgent agent,
-        AgentsClient client,
+        PersistentAgentsClient client,
         string threadId,
         AzureAIInvocationOptions? invocationOptions,
         ILogger logger,
@@ -153,8 +142,8 @@ internal static class AgentThreadActions
         List<ToolDefinition> tools = new(agent.Definition.Tools);
 
         // Add unique functions from the Kernel which are not already present in the agent's tools
-        var functionToolNames = new HashSet<string>(tools.OfType<FunctionToolDefinition>().Select(t => t.Name));
-        var functionTools = kernel.Plugins
+        HashSet<string> functionToolNames = new(tools.OfType<FunctionToolDefinition>().Select(t => t.Name));
+        IEnumerable<FunctionToolDefinition> functionTools = kernel.Plugins
             .SelectMany(kp => kp.Select(kf => kf.ToToolDefinition(kp.Name)))
             .Where(tool => !functionToolNames.Contains(tool.Name));
         tools.AddRange(functionTools);
@@ -186,7 +175,7 @@ internal static class AgentThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken: cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -194,7 +183,7 @@ internal static class AgentThreadActions
                 logger.LogAzureAIAgentProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = [.. steps.SelectMany(step => ParseFunctionStep(agent, step))];
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -220,7 +209,7 @@ internal static class AgentThreadActions
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
 
-                    await client.SubmitToolOutputsToRunAsync(run, toolOutputs, cancellationToken).ConfigureAwait(false);
+                    await client.Runs.SubmitToolOutputsToRunAsync(run, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
 
                 logger.LogAzureAIAgentProcessedRunSteps(nameof(InvokeAsync), functionCalls.Length, run.Id, threadId);
@@ -270,11 +259,11 @@ internal static class AgentThreadActions
                 {
                     // Retrieve the message
                     RunStepMessageCreationDetails messageDetails = (RunStepMessageCreationDetails)completedStep.StepDetails;
-                    ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageDetails.MessageCreation.MessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+                    PersistentThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageDetails.MessageCreation.MessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message is not null)
                     {
-                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep, logger);
 
                         if (content.Items.Count > 0)
                         {
@@ -315,7 +304,7 @@ internal static class AgentThreadActions
 
                 try
                 {
-                    run = await client.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
+                    run = await client.Runs.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
                 }
                 // The presence of a `Status` code means the server responded with error...always fail in that case
                 catch (ClientResultException clientException) when (clientException.Status <= 0)
@@ -371,7 +360,7 @@ internal static class AgentThreadActions
     /// </remarks>
     public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         AzureAIAgent agent,
-        AgentsClient client,
+        PersistentAgentsClient client,
         string threadId,
         IList<ChatMessageContent>? messages,
         AzureAIInvocationOptions? invocationOptions,
@@ -415,7 +404,7 @@ internal static class AgentThreadActions
                     switch (contentUpdate.UpdateKind)
                     {
                         case StreamingUpdateReason.MessageUpdated:
-                            yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                            yield return GenerateStreamingMessageContent(agent.GetName(), run!, contentUpdate, logger);
                             break;
                     }
                 }
@@ -426,13 +415,14 @@ internal static class AgentThreadActions
                     {
                         yield return toolContent;
                     }
-                    else if (detailsUpdate.FunctionOutput != null)
+                    else if (detailsUpdate.FunctionArguments != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
                             {
                                 AuthorName = agent.Name,
-                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments, detailsUpdate.ToolCallIndex ?? 0)],
+                                InnerContent = detailsUpdate,
                             };
                     }
                 }
@@ -479,7 +469,7 @@ internal static class AgentThreadActions
                 }
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = activeSteps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = [.. activeSteps.SelectMany(step => ParseFunctionStep(agent, step))];
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -497,11 +487,11 @@ internal static class AgentThreadActions
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
-                    asyncUpdates = client.SubmitToolOutputsToStreamAsync(run, toolOutputs, cancellationToken);
+                    asyncUpdates = client.Runs.SubmitToolOutputsToStreamAsync(run, toolOutputs, cancellationToken);
 
                     foreach (RunStep step in activeSteps)
                     {
-                        stepFunctionResults.Add(step.Id, functionResults.Where(result => step.Id == toolMap[result.CallId!]).ToArray());
+                        stepFunctionResults.Add(step.Id, [.. functionResults.Where(result => step.Id == toolMap[result.CallId!])]);
                     }
                 }
             }
@@ -514,7 +504,7 @@ internal static class AgentThreadActions
                 {
                     if (step.StepDetails is RunStepMessageCreationDetails messageDetails)
                     {
-                        ThreadMessage? message =
+                        PersistentThreadMessage? message =
                             await RetrieveMessageAsync(
                                 client,
                                 threadId,
@@ -524,7 +514,7 @@ internal static class AgentThreadActions
 
                         if (message != null)
                         {
-                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step);
+                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step, logger);
                             messages?.Add(content);
                         }
                     }
@@ -555,17 +545,17 @@ internal static class AgentThreadActions
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
     }
 
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, PersistentThreadMessage message, RunStep? completedStep = null, ILogger? logger = null)
     {
         AuthorRole role = new(message.Role.ToString());
 
         Dictionary<string, object?>? metadata =
             new()
             {
-                { nameof(ThreadMessage.CreatedAt), message.CreatedAt },
-                { nameof(ThreadMessage.AssistantId), message.AssistantId },
-                { nameof(ThreadMessage.ThreadId), message.ThreadId },
-                { nameof(ThreadMessage.RunId), message.RunId },
+                { nameof(PersistentThreadMessage.CreatedAt), message.CreatedAt },
+                { nameof(PersistentThreadMessage.AssistantId), message.AssistantId },
+                { nameof(PersistentThreadMessage.ThreadId), message.ThreadId },
+                { nameof(PersistentThreadMessage.RunId), message.RunId },
                 { nameof(MessageContentUpdate.MessageId), message.Id },
             };
 
@@ -591,7 +581,15 @@ internal static class AgentThreadActions
 
                 foreach (MessageTextAnnotation annotation in textContent.Annotations)
                 {
-                    content.Items.Add(GenerateAnnotationContent(annotation));
+                    AnnotationContent? annotationItem = GenerateAnnotationContent(annotation);
+                    if (annotationItem != null)
+                    {
+                        content.Items.Add(annotationItem);
+                    }
+                    else
+                    {
+                        logger?.LogAzureAIAgentUnknownAnnotation(nameof(GenerateMessageContent), message.RunId, message.ThreadId, annotation.GetType());
+                    }
                 }
             }
             // Process image content
@@ -604,7 +602,7 @@ internal static class AgentThreadActions
         return content;
     }
 
-    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
+    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, ThreadRun run, MessageContentUpdate update, ILogger? logger)
     {
         StreamingChatMessageContent content =
             new(AuthorRole.Assistant, content: null)
@@ -625,7 +623,15 @@ internal static class AgentThreadActions
         // Process annotations
         else if (update.TextAnnotation != null)
         {
-            content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
+            StreamingAnnotationContent? annotationItem = GenerateStreamingAnnotationContent(update.TextAnnotation);
+            if (annotationItem != null)
+            {
+                content.Items.Add(annotationItem);
+            }
+            else
+            {
+                logger?.LogAzureAIAgentUnknownAnnotation(nameof(GenerateStreamingMessageContent), run.Id, run.ThreadId, update.TextAnnotation.GetType());
+            }
         }
 
         if (update.Role.HasValue && update.Role.Value != MessageRole.User)
@@ -665,46 +671,85 @@ internal static class AgentThreadActions
         return content.Items.Count > 0 ? content : null;
     }
 
-    private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
+    private static AnnotationContent? GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
-        string? fileId = null;
-
         if (annotation is MessageTextFileCitationAnnotation fileCitationAnnotation)
         {
-            fileId = fileCitationAnnotation.FileId;
+            return
+                new AnnotationContent(
+                    kind: AnnotationKind.FileCitation,
+                    label: annotation.Text,
+                    referenceId: fileCitationAnnotation.FileId)
+                {
+                    InnerContent = annotation,
+                    StartIndex = fileCitationAnnotation.StartIndex,
+                    EndIndex = fileCitationAnnotation.EndIndex,
+                };
+        }
+        if (annotation is MessageTextUriCitationAnnotation urlCitationAnnotation)
+        {
+            return
+                new AnnotationContent(
+                    kind: AnnotationKind.UrlCitation,
+                    label: annotation.Text,
+                    referenceId: urlCitationAnnotation.UriCitation.Uri)
+                {
+                    InnerContent = annotation,
+                    Title = urlCitationAnnotation.UriCitation.Title,
+                    StartIndex = urlCitationAnnotation.StartIndex,
+                    EndIndex = urlCitationAnnotation.EndIndex,
+                };
         }
         else if (annotation is MessageTextFilePathAnnotation filePathAnnotation)
         {
-            fileId = filePathAnnotation.FileId;
+            return
+                new AnnotationContent(
+                    label: annotation.Text,
+                    kind: AnnotationKind.TextCitation,
+                    referenceId: filePathAnnotation.FileId)
+                {
+                    InnerContent = annotation,
+                    StartIndex = filePathAnnotation.StartIndex,
+                    EndIndex = filePathAnnotation.EndIndex,
+                };
         }
 
-        return
-            new(annotation.Text)
-            {
-                Quote = annotation.Text,
-                FileId = fileId,
-            };
+        return null;
     }
 
-    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
+    private static StreamingAnnotationContent? GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
-        string? fileId = null;
+        string? referenceId = null;
+        AnnotationKind kind;
 
         if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
-            fileId = annotation.OutputFileId;
+            referenceId = annotation.OutputFileId;
+            kind = AnnotationKind.TextCitation;
         }
         else if (!string.IsNullOrEmpty(annotation.InputFileId))
         {
-            fileId = annotation.InputFileId;
+            referenceId = annotation.InputFileId;
+            kind = AnnotationKind.FileCitation;
+        }
+        else if (!string.IsNullOrEmpty(annotation.Url))
+        {
+            referenceId = annotation.Url;
+            kind = AnnotationKind.UrlCitation;
+        }
+        else
+        {
+            return null;
         }
 
         return
-            new(annotation.TextToReplace)
+            new StreamingAnnotationContent(kind, referenceId)
             {
-                StartIndex = annotation.StartIndex ?? 0,
-                EndIndex = annotation.EndIndex ?? 0,
-                FileId = fileId,
+                Label = annotation.TextToReplace,
+                InnerContent = annotation,
+                Title = annotation.Title,
+                StartIndex = annotation.StartIndex,
+                EndIndex = annotation.EndIndex,
             };
     }
 
@@ -752,9 +797,9 @@ internal static class AgentThreadActions
 
         if (!string.IsNullOrWhiteSpace(functionArguments))
         {
-            foreach (var argumentKvp in JsonSerializer.Deserialize<Dictionary<string, object>>(functionArguments!)!)
+            foreach (KeyValuePair<string, object> argumentKvp in JsonSerializer.Deserialize<Dictionary<string, object>>(functionArguments!) ?? [])
             {
-                arguments[argumentKvp.Key] = argumentKvp.Value.ToString();
+                arguments[argumentKvp.Key] = argumentKvp.Value?.ToString();
             }
         }
 
@@ -828,9 +873,9 @@ internal static class AgentThreadActions
         return toolOutputs;
     }
 
-    private static async Task<ThreadMessage?> RetrieveMessageAsync(AgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
+    private static async Task<PersistentThreadMessage?> RetrieveMessageAsync(PersistentAgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
     {
-        ThreadMessage? message = null;
+        PersistentThreadMessage? message = null;
 
         bool retry = false;
         int count = 0;
@@ -838,7 +883,7 @@ internal static class AgentThreadActions
         {
             try
             {
-                message = await client.GetMessageAsync(threadId, messageId, cancellationToken).ConfigureAwait(false);
+                message = await client.Messages.GetMessageAsync(threadId, messageId, cancellationToken).ConfigureAwait(false);
             }
             catch (RequestFailedException exception)
             {

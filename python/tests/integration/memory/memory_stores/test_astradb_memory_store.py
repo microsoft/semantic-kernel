@@ -30,7 +30,7 @@ def slow_down_tests():
 @pytest.fixture(scope="session")
 def get_astradb_config():
     try:
-        astradb_settings = AstraDBSettings.create()
+        astradb_settings = AstraDBSettings()
         app_token = astradb_settings.app_token.get_secret_value()
         db_id = astradb_settings.db_id
         region = astradb_settings.region

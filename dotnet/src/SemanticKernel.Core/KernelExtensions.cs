@@ -929,6 +929,7 @@ public static class KernelExtensions
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
+    [ExcludeFromCodeCoverage]
     private static KernelPlugin CreatePluginFromPromptDirectory(
         string pluginDirectory,
         string? pluginName = null,

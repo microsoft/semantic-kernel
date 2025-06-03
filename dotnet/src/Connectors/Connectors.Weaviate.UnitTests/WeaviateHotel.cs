@@ -12,38 +12,38 @@ namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 public sealed record WeaviateHotel
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public Guid HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public string Description { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public DateTimeOffset Timestamp { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.Hnsw)]
+    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.Hnsw)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

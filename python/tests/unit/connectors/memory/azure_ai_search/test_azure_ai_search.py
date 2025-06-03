@@ -276,7 +276,7 @@ def test_get_collection(vector_store, data_model_definition):
 def test_get_search_index_client(azure_ai_search_unit_test_env):
     from azure.core.credentials import AzureKeyCredential, TokenCredential
 
-    settings = AzureAISearchSettings.create(**azure_ai_search_unit_test_env, env_file_path="test.env")
+    settings = AzureAISearchSettings(**azure_ai_search_unit_test_env, env_file_path="test.env")
 
     azure_credential = MagicMock(spec=AzureKeyCredential)
     client = get_search_index_client(settings, azure_credential=azure_credential)
