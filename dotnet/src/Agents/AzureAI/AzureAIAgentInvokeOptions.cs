@@ -54,6 +54,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     /// <summary>
     /// Gets or sets the AI model targeted by the agent.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelName { get; init; }
 
     /// <summary>
@@ -68,31 +69,43 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     /// <remarks>
     /// Only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or Assistant</see>.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ChatMessageContent>? AdditionalMessages { get; init; }
 
     /// <summary>
     /// Gets or sets a value that indicates whether the code_interpreter tool is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableCodeInterpreter { get; init; }
+
+    /// <summary>
+    /// Gets or sets the additional uploaded files for use with the code-interpe.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? CodeInterpreterFiles { get; init; }
 
     /// <summary>
     /// Gets or sets a value that indicates whether the file_search tool is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableFileSearch { get; init; }
 
     /// <summary>
     /// Gets or sets a value that indicates whether the JSON response format is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? EnableJsonResponse { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of completion tokens that can be used over the course of the run.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxCompletionTokens { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of prompt tokens that can be used over the course of the run.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxPromptTokens { get; init; }
 
     /// <summary>
@@ -101,16 +114,19 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     /// <value>
     /// <see langword="true"/> if parallel function calling is enabled during tool use; otherwise, <see langword="false"/>. The default is <see langword="true"/>.
     /// </value>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? ParallelToolCallsEnabled { get; init; }
 
     /// <summary>
     /// Gets or sets the number of recent messages that the thread will be truncated to.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TruncationMessageCount { get; init; }
 
     /// <summary>
     /// Gets or sets the sampling temperature to use, between 0 and 2.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
 
     /// <summary>
@@ -123,6 +139,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     /// considers the results of the tokens with <see cref="TopP"/> probability mass.
     /// For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? TopP { get; init; }
 
     /// <summary>
@@ -132,6 +149,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     /// <remarks>
     /// Keys can be up to 64 characters in length, and values can be up to 512 characters in length.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
     /// <summary>

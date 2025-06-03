@@ -21,6 +21,7 @@
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[2.2.0-beta.4]" />
+    <PackageVersion Include="Azure.AI.Projects" Version="1.0.0-beta.9" />
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.6.0" />

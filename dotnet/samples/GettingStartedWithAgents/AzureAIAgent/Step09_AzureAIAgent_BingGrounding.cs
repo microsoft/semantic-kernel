@@ -16,7 +16,8 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithAgent()
     {
         // Access the BingGrounding connection
-        BingGroundingSearchConfiguration bingToolConfiguration = new(TestConfiguration.AzureAI.BingConnectionId);
+        string connectionId = await this.GetConnectionId(TestConfiguration.AzureAI.BingConnectionId);
+        BingGroundingSearchConfiguration bingToolConfiguration = new(connectionId);
         BingGroundingSearchToolParameters bingToolParameters = new([bingToolConfiguration]);
         PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
@@ -55,7 +56,8 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithStreaming()
     {
         // Access the BingGrounding connection
-        BingGroundingSearchConfiguration bingToolConfiguration = new(TestConfiguration.AzureAI.BingConnectionId);
+        string connectionId = await this.GetConnectionId(TestConfiguration.AzureAI.BingConnectionId);
+        BingGroundingSearchConfiguration bingToolConfiguration = new(connectionId);
         BingGroundingSearchToolParameters bingToolParameters = new([bingToolConfiguration]);
 
         // Define the agent
