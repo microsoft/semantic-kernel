@@ -6,13 +6,34 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.agents.orchestration.group_chat import GroupChatOrchestration, RoundRobinGroupChatManager
+from semantic_kernel.agents.orchestration.group_chat import (
+    BooleanResult,
+    GroupChatOrchestration,
+    RoundRobinGroupChatManager,
+)
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationResult
 from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+
+class RoundRobinGroupChatManagerWithUserInput(RoundRobinGroupChatManager):
+    @override
+    async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
+        """Check if the group chat should request user input."""
+        return BooleanResult(
+            result=True,
+            reason="Allow user input for testing purposes.",
+        )
+
 
 # region GroupChatOrchestration
 
@@ -141,6 +162,75 @@ async def test_invoke_with_response_callback():
     assert len(responses) == 3
     assert all(isinstance(item, ChatMessageContent) for item in responses)
     assert all(item.content == "mock_response" for item in responses)
+
+
+async def test_invoke_with_streaming_response_callback():
+    """Test the invoke method of the GroupChatOrchestration with a streaming_response callback."""
+    agent_a = MockAgent(description="test agent")
+    agent_b = MockAgent(description="test agent")
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    responses: dict[str, list[StreamingChatMessageContent]] = {}
+    try:
+        orchestration = GroupChatOrchestration(
+            members=[agent_a, agent_b],
+            manager=RoundRobinGroupChatManager(max_rounds=3),
+            streaming_agent_response_callback=lambda x, _: responses.setdefault(x.name, []).append(x),
+        )
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+        await orchestration_result.get(1.0)
+    finally:
+        await runtime.stop_when_idle()
+
+    assert len(responses[agent_a.name]) == 4  # Invoke twice, each with 2 chunks
+    assert len(responses[agent_b.name]) == 2  # Invoke once, with 2 chunks
+
+    assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_a.name])
+    assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_b.name])
+
+    agent_a_response = sum(responses[agent_a.name][1:2], responses[agent_a.name][0])
+    assert agent_a_response.content == "mock_response"
+    agent_b_response = sum(responses[agent_b.name][1:], responses[agent_b.name][0])
+    assert agent_b_response.content == "mock_response"
+
+
+async def test_invoke_with_human_response_function():
+    """Test the invoke method of the GroupChatOrchestration with a human response function."""
+    agent_a = MockAgent(description="test agent")
+    agent_b = MockAgent(description="test agent")
+
+    user_input_count = 0
+
+    def human_response_function(chat_history: ChatHistory) -> ChatMessageContent:
+        # Simulate user input
+        nonlocal user_input_count
+        user_input_count += 1
+        return ChatMessageContent(
+            role=AuthorRole.USER,
+            content=f"user_input_{user_input_count}",
+        )
+
+    orchestration_manager = RoundRobinGroupChatManagerWithUserInput(
+        max_rounds=3,
+        human_response_function=human_response_function,
+    )
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    try:
+        orchestration = GroupChatOrchestration(
+            members=[agent_a, agent_b],
+            manager=orchestration_manager,
+        )
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+        await orchestration_result.get(1.0)
+    finally:
+        await runtime.stop_when_idle()
+
+    assert user_input_count == 4  # 3 rounds + 1 initial user input
 
 
 @pytest.mark.skipif(

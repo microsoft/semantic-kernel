@@ -71,6 +71,7 @@ class MockAgent(Agent):
         yield AgentResponseItem[StreamingChatMessageContent](
             message=StreamingChatMessageContent(
                 role=AuthorRole.ASSISTANT,
+                name=self.name,
                 content="mock",
                 choice_index=0,
             ),
@@ -81,6 +82,7 @@ class MockAgent(Agent):
         yield AgentResponseItem[StreamingChatMessageContent](
             message=StreamingChatMessageContent(
                 role=AuthorRole.ASSISTANT,
+                name=self.name,
                 content="_response",
                 choice_index=0,
             ),

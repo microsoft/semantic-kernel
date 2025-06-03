@@ -74,7 +74,6 @@ class AgentActorBase(ActorBase):
         Args:
             message (DefaultTypeAlias): The message to be sent to the agent_response_callback.
         """
-        # TODO(@taochen): Support streaming
         if self._agent_response_callback:
             if inspect.iscoroutinefunction(self._agent_response_callback):
                 await self._agent_response_callback(message)

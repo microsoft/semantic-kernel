@@ -10,6 +10,7 @@ from semantic_kernel.agents.orchestration.concurrent import ConcurrentOrchestrat
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationResult
 from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
 
 
@@ -76,6 +77,37 @@ async def test_invoke_with_response_callback():
         assert len(responses) == 2
         assert all(isinstance(item, ChatMessageContent) for item in responses)
         assert all(item.content == "mock_response" for item in responses)
+    finally:
+        await runtime.stop_when_idle()
+
+
+async def test_invoke_with_streaming_response_callback():
+    """Test the invoke method of the ConcurrentOrchestration with a streaming response callback."""
+    agent_a = MockAgent()
+    agent_b = MockAgent()
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    responses: dict[str, list[StreamingChatMessageContent]] = {}
+    try:
+        orchestration = ConcurrentOrchestration(
+            members=[agent_a, agent_b],
+            streaming_agent_response_callback=lambda x, _: responses.setdefault(x.name, []).append(x),
+        )
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+        await orchestration_result.get(1.0)
+
+        assert len(responses[agent_a.name]) == 2
+        assert len(responses[agent_b.name]) == 2
+
+        assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_a.name])
+        assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_b.name])
+
+        agent_a_response = sum(responses[agent_a.name][1:], responses[agent_a.name][0])
+        assert agent_a_response.content == "mock_response"
+        agent_b_response = sum(responses[agent_b.name][1:], responses[agent_b.name][0])
+        assert agent_b_response.content == "mock_response"
     finally:
         await runtime.stop_when_idle()
 

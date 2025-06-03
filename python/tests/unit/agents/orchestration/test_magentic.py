@@ -29,6 +29,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
 
@@ -256,7 +257,6 @@ async def test_invoke_with_response_callback():
 
     responses: list[DefaultTypeAlias] = []
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True),
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
@@ -286,6 +286,57 @@ async def test_invoke_with_response_callback():
         assert len(responses) == 2
         assert all(isinstance(item, ChatMessageContent) for item in responses)
         assert all(item.content == "mock_response" for item in responses)
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
+async def test_invoke_with_streaming_response_callback():
+    """Test the invoke method of the MagenticOrchestration with a streaming response callback."""
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    responses: dict[str, list[StreamingChatMessageContent]] = {}
+
+    with (
+        patch.object(
+            MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
+        ) as mock_get_chat_message_content,
+        patch.object(
+            StandardMagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
+        ),
+    ):
+        mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
+
+        agent_a = MockAgent(name="agent_a", description="test agent")
+        agent_b = MockAgent(name="agent_b", description="test agent")
+
+        try:
+            orchestration = MagenticOrchestration(
+                members=[agent_a, agent_b],
+                manager=StandardMagenticManager(
+                    chat_completion_service=MockChatCompletionService(ai_model_id="test"),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
+                ),
+                streaming_agent_response_callback=lambda x, _: responses.setdefault(x.name, []).append(x),
+            )
+            orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+            await orchestration_result.get(1.0)
+        finally:
+            await runtime.stop_when_idle()
+
+        assert len(responses[agent_a.name]) == 2
+        assert len(responses[agent_b.name]) == 2
+
+        assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_a.name])
+        assert all(isinstance(item, StreamingChatMessageContent) for item in responses[agent_b.name])
+
+        agent_a_response = sum(responses[agent_a.name][1:], responses[agent_a.name][0])
+        assert agent_a_response.content == "mock_response"
+        agent_b_response = sum(responses[agent_b.name][1:], responses[agent_b.name][0])
+        assert agent_b_response.content == "mock_response"
 
 
 @pytest.mark.skipif(
@@ -437,7 +488,6 @@ async def test_invoke_with_unknown_speaker():
     runtime.start()
 
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True),
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
