@@ -111,7 +111,7 @@ class AgentActorBase(ActorBase):
         streaming_message_buffer: list[StreamingChatMessageContent] = []
         messages = self._create_messages(additional_messages)
 
-        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):
+        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):  # type: ignore[arg-type]
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:

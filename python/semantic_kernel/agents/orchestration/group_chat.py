@@ -489,12 +489,12 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
             GroupChatAgentActor.register(
                 runtime,
                 self._get_agent_actor_type(agent, internal_topic_type),
-                lambda agent=agent: GroupChatAgentActor(
+                lambda agent=agent: GroupChatAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,
-                ),  # type: ignore[misc]
+                ),
             )
             for agent in self._members
         ])
