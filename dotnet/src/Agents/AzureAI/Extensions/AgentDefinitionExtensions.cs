@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 using Azure.AI.Projects;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
