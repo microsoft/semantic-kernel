@@ -173,7 +173,7 @@ ManagerProgressListUnknownSpeaker = [
 async def test_invoke():
     """Test the invoke method of the MagenticOrchestration."""
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
@@ -208,7 +208,7 @@ async def test_invoke():
         assert result.role == AuthorRole.ASSISTANT
         assert result.content == "mock_response"
 
-        assert mock_get_response.call_count == 2
+        assert mock_invoke_stream.call_count == 2
         assert mock_get_chat_message_content.call_count == 3
 
 
@@ -298,7 +298,7 @@ async def test_invoke_with_max_stall_count_exceeded():
     runtime.start()
 
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
@@ -328,7 +328,7 @@ async def test_invoke_with_max_stall_count_exceeded():
         finally:
             await runtime.stop_when_idle()
 
-        assert mock_get_response.call_count == 3
+        assert mock_invoke_stream.call_count == 3
         # Exceeding max stall count will trigger replanning, which will recreate the facts and plan,
         # resulting in two additional calls to get_chat_message_content compared to the `test_invoke` test.
         assert mock_get_chat_message_content.call_count == 5
@@ -344,7 +344,7 @@ async def test_invoke_with_max_round_count_exceeded():
     runtime.start()
 
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
@@ -375,7 +375,7 @@ async def test_invoke_with_max_round_count_exceeded():
             await runtime.stop_when_idle()
 
         assert result.content == "Max round count reached."
-        assert mock_get_response.call_count == 1
+        assert mock_invoke_stream.call_count == 1
         # Planning will be called once, so the facts and plan will be created once.
         assert mock_get_chat_message_content.call_count == 2
 
@@ -390,7 +390,7 @@ async def test_invoke_with_max_reset_count_exceeded():
     runtime.start()
 
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
         patch.object(
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
@@ -422,7 +422,7 @@ async def test_invoke_with_max_reset_count_exceeded():
             await runtime.stop_when_idle()
 
         assert result.content == "Max reset count reached."
-        assert mock_get_response.call_count == 1
+        assert mock_invoke_stream.call_count == 1
         # Planning and replanning will be each called once, so the facts and plan will be created twice.
         assert mock_get_chat_message_content.call_count == 4
 

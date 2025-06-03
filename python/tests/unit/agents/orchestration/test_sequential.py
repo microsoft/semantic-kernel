@@ -85,7 +85,7 @@ async def test_invoke_with_response_callback():
 async def test_invoke_cancel_before_completion():
     """Test the invoke method of the SequentialOrchestration with cancellation before completion."""
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
     ):
         agent_a = MockAgent()
         agent_b = MockAgent()
@@ -103,7 +103,7 @@ async def test_invoke_cancel_before_completion():
         finally:
             await runtime.stop_when_idle()
 
-        assert mock_get_response.call_count == 1
+        assert mock_invoke_stream.call_count == 1
 
 
 async def test_invoke_cancel_after_completion():

@@ -88,7 +88,7 @@ class ConcurrentAgentActor(AgentActorBase):
 
         target_actor_id = await self.runtime.get(self._collection_agent_type)
         await self.send_message(
-            ConcurrentResponseMessage(body=response.message),
+            ConcurrentResponseMessage(body=response),
             target_actor_id,
             cancellation_token=ctx.cancellation_token,
         )

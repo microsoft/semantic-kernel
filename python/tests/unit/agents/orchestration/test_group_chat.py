@@ -55,7 +55,7 @@ async def test_prepare():
 async def test_invoke():
     """Test the invoke method of the GroupChatOrchestration."""
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
     ):
         agent_a = MockAgent(description="test agent")
         agent_b = MockAgent(description="test agent")
@@ -78,7 +78,7 @@ async def test_invoke():
         assert result.role == AuthorRole.ASSISTANT
         assert result.content == "mock_response"
 
-        assert mock_get_response.call_count == 3
+        assert mock_invoke_stream.call_count == 3
 
 
 @pytest.mark.skipif(
@@ -88,7 +88,7 @@ async def test_invoke():
 async def test_invoke_with_list():
     """Test the invoke method of the GroupChatOrchestration with a list of messages."""
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
     ):
         agent_a = MockAgent(description="test agent")
         agent_b = MockAgent(description="test agent")
@@ -111,11 +111,11 @@ async def test_invoke_with_list():
         finally:
             await runtime.stop_when_idle()
 
-        assert mock_get_response.call_count == 2
+        assert mock_invoke_stream.call_count == 2
         # Two messages + one message added internally to steer the conversation
-        assert len(mock_get_response.call_args_list[0][1]["messages"]) == 3
+        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 3
         # Two messages + two message added internally to steer the conversation + response from agent A
-        assert len(mock_get_response.call_args_list[1][1]["messages"]) == 5
+        assert len(mock_invoke_stream.call_args_list[1][1]["messages"]) == 5
 
 
 async def test_invoke_with_response_callback():
@@ -150,7 +150,7 @@ async def test_invoke_with_response_callback():
 async def test_invoke_cancel_before_completion():
     """Test the invoke method of the GroupChatOrchestration with cancellation before completion."""
     with (
-        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(MockAgent, "invoke_stream", wraps=MockAgent.invoke_stream, autospec=True) as mock_invoke_stream,
     ):
         agent_a = MockAgent(description="test agent")
         agent_b = MockAgent(description="test agent")
@@ -171,7 +171,7 @@ async def test_invoke_cancel_before_completion():
         finally:
             await runtime.stop_when_idle()
 
-        assert mock_get_response.call_count == 2
+        assert mock_invoke_stream.call_count == 2
 
 
 async def test_invoke_cancel_after_completion():
