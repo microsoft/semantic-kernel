@@ -98,55 +98,55 @@ class AgentActorBase(ActorBase):
             else:
                 self._streaming_agent_response_callback(message_chunk, is_final)
 
-    async def _invoke_agent(self, additional_messages: DefaultTypeAlias | None = None) -> ChatMessageContent:
+    async def _invoke_agent(self, additional_messages: DefaultTypeAlias | None = None, **kwargs) -> ChatMessageContent:
         """Invoke the agent with the current chat history or thread and optionally additional messages.
 
         Args:
             additional_messages (DefaultTypeAlias | None): Additional messages to be sent to the agent.
+            **kwargs: Additional keyword arguments to be passed to the agent's invoke method:
+                - kernel: The kernel to use for the agent invocation.
 
         Returns:
             DefaultTypeAlias: The response from the agent.
         """
         streaming_message_buffer: list[StreamingChatMessageContent] = []
+        messages = self._create_messages(additional_messages)
 
-        if self._agent_thread is None:
-            messages = self._chat_history.messages[:]
-            if additional_messages:
-                messages.extend(additional_messages if isinstance(additional_messages, list) else [additional_messages])
+        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):
+            # Buffer message chunks and stream them with correct is_final flag.
+            streaming_message_buffer.append(response_item.message)
+            if len(streaming_message_buffer) > 1:
+                await self._call_streaming_agent_response_callback(streaming_message_buffer[-2], is_final=False)
+            if self._agent_thread is None:
+                self._agent_thread = response_item.thread
 
-            async for response_item in self._agent.invoke_stream(messages=messages):
-                # Buffer message chunks and stream them with correct is_final flag.
-                streaming_message_buffer.append(response_item.message)
-                if len(streaming_message_buffer) > 1:
-                    await self._call_streaming_agent_response_callback(streaming_message_buffer[-2], is_final=False)
-                if self._agent_thread is None:
-                    self._agent_thread = response_item.thread
-            if streaming_message_buffer:
-                await self._call_streaming_agent_response_callback(streaming_message_buffer[-1], is_final=True)
-        else:
-            messages = (
-                []
-                if additional_messages is None
-                else additional_messages
-                if isinstance(additional_messages, list)
-                else [additional_messages]
-            )
-
-            async for response_item in self._agent.invoke_stream(
-                messages=messages,
-                thread=self._agent_thread,
-            ):
-                # Buffer message chunks and stream them with correct is_final flag.
-                streaming_message_buffer.append(response_item.message)
-                if len(streaming_message_buffer) > 1:
-                    await self._call_streaming_agent_response_callback(streaming_message_buffer[-2], is_final=False)
-            if streaming_message_buffer:
-                await self._call_streaming_agent_response_callback(streaming_message_buffer[-1], is_final=True)
+        if streaming_message_buffer:
+            # Call the callback for the last message chunk with is_final=True.
+            await self._call_streaming_agent_response_callback(streaming_message_buffer[-1], is_final=True)
 
         if not streaming_message_buffer:
             raise RuntimeError(f'Agent "{self._agent.name}" did not return any response.')
 
+        # Build the full response from the streaming messages
         full_response = sum(streaming_message_buffer[1:], streaming_message_buffer[0])
         await self._call_agent_response_callback(full_response)
 
         return full_response
+
+    def _create_messages(self, additional_messages: DefaultTypeAlias | None = None) -> list[ChatMessageContent]:
+        """Create a list of messages to be sent to the agent along with a potential thread.
+
+        Args:
+            additional_messages (DefaultTypeAlias | None): Additional messages to be sent to the agent.
+
+        Returns:
+            list[ChatMessageContent]: A list of messages to be sent to the agent.
+        """
+        base_messages = self._chat_history.messages[:] if self._agent_thread is None else []
+
+        if additional_messages is None:
+            return base_messages
+
+        if isinstance(additional_messages, list):
+            return base_messages + additional_messages
+        return [*base_messages, additional_messages]
