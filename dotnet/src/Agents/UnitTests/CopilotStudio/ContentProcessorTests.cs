@@ -18,7 +18,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_EmptyCollection_ReturnsEmptyEnumerable()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
 
         // Act
         IEnumerable<StreamingKernelContent> result = ContentProcessor.ConvertToStreaming(collection, NullLogger.Instance);
@@ -31,7 +31,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_TextContent_ReturnsStreamingTextContent()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
         TextContent textContent = new("Display text");
         collection.Add(textContent);
 
@@ -47,7 +47,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_ReasoningContent_ReturnsStreamingReasoningContent()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
         ReasoningContent reasoningContent = new("Reasoning text");
         collection.Add(reasoningContent);
 
@@ -63,7 +63,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_ActionContent_ReturnsStreamingActionContent()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
         ActionContent actionContent = new("Action text");
         collection.Add(actionContent);
 
@@ -79,7 +79,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_MixedContentTypes_ReturnsCorrespondingStreamingTypes()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
         TextContent textContent = new("Text content");
         ReasoningContent reasoningContent = new("Reasoning content");
         ActionContent actionContent = new("Action content");
@@ -88,7 +88,7 @@ public class ContentProcessorTests
         collection.Add(actionContent);
 
         // Act
-        List<StreamingKernelContent> result = ContentProcessor.ConvertToStreaming(collection, NullLogger.Instance).ToList();
+        List<StreamingKernelContent> result = [.. ContentProcessor.ConvertToStreaming(collection, NullLogger.Instance)];
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -101,7 +101,7 @@ public class ContentProcessorTests
     public void ConvertToStreaming_UnknownContentType_LogsWarningAndSkipsContent()
     {
         // Arrange
-        ChatMessageContentItemCollection collection = new();
+        ChatMessageContentItemCollection collection = [];
         KernelContent unknownContent = new TestUnknownContent();
         collection.Add(unknownContent);
 
@@ -118,9 +118,7 @@ public class ContentProcessorTests
     }
 
     // Test helper classes
-    private class TestUnknownContent : KernelContent
-    {
-    }
+    private class TestUnknownContent : KernelContent;
 
     private class TestLogger : ILogger
     {
@@ -132,7 +130,7 @@ public class ContentProcessorTests
         {
             if (logLevel == LogLevel.Warning)
             {
-                LoggedWarnings.Add(formatter(state, exception));
+                this.LoggedWarnings.Add(formatter(state, exception));
             }
         }
 
