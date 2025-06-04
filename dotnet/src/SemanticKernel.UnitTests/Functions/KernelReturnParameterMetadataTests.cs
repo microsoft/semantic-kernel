@@ -97,4 +97,128 @@ public class KernelReturnParameterMetadataTests
         Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async () => "42").Metadata.ReturnParameter.ParameterType);
         Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async ValueTask<string> () => "42").Metadata.ReturnParameter.ParameterType);
     }
+
+    [Fact]
+    public void ItCanBeConstructedWithAllParameters()
+    {
+        // Test the new constructor that accepts all parameters
+        var schema = KernelJsonSchema.Parse("""{ "type": "string", "description": "test return schema" }""");
+        var m = new KernelReturnParameterMetadata(
+            description: "Return parameter description",
+            parameterType: typeof(string),
+            schema: schema);
+
+        Assert.Equal("Return parameter description", m.Description);
+        Assert.Equal(typeof(string), m.ParameterType);
+        Assert.Equal(JsonSerializer.Serialize(schema), JsonSerializer.Serialize(m.Schema));
+    }
+
+    [Fact]
+    public void ItCanBeConstructedWithAllParametersAndJsonSerializerOptions()
+    {
+        // Test the new constructor with JsonSerializerOptions
+        var jsos = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var schema = KernelJsonSchema.Parse("""{ "type": "integer" }""");
+        var m = new KernelReturnParameterMetadata(
+            description: "Return parameter",
+            parameterType: typeof(int),
+            schema: schema,
+            jsonSerializerOptions: jsos);
+
+        Assert.Equal("Return parameter", m.Description);
+        Assert.Equal(typeof(int), m.ParameterType);
+        Assert.Equal(JsonSerializer.Serialize(schema), JsonSerializer.Serialize(m.Schema));
+    }
+
+    [Fact]
+    public void ItUsesDefaultValuesInNewConstructor()
+    {
+        // Test that optional parameters have correct default values
+        var m = new KernelReturnParameterMetadata();
+
+        Assert.Empty(m.Description);
+        Assert.Null(m.ParameterType);
+        Assert.Null(m.Schema);
+    }
+
+    [Fact]
+    public void ItInfersSchemaWhenNotProvidedInNewConstructor()
+    {
+        // Test that schema is inferred from type when not explicitly provided
+        var m = new KernelReturnParameterMetadata(
+            description: "An integer return parameter",
+            parameterType: typeof(int));
+
+        Assert.NotNull(m.Schema);
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"An integer return parameter", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
+    }
+
+    [Fact]
+    public void ItHandlesNullDescriptionInNewConstructor()
+    {
+        // Test that null description is handled correctly
+        var m = new KernelReturnParameterMetadata(
+            description: null,
+            parameterType: typeof(string));
+
+        Assert.Empty(m.Description); // null description should become empty string
+        Assert.Equal(typeof(string), m.ParameterType);
+    }
+
+    [Fact]
+    public void ItHandlesNullSchemaInNewConstructor()
+    {
+        // Test that null schema parameter is handled correctly
+        var m = new KernelReturnParameterMetadata(
+            description: "Test return param",
+            parameterType: typeof(string),
+            schema: null);
+
+        Assert.Equal("Test return param", m.Description);
+        Assert.Equal(typeof(string), m.ParameterType);
+        // Schema should be inferred from type since explicit schema is null
+        Assert.NotNull(m.Schema);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItUsesJsonSerializerOptionsInNewConstructor(JsonSerializerOptions? jsos)
+    {
+        // Test that JsonSerializerOptions are used correctly in the new constructor
+        var m = jsos is not null ?
+            new KernelReturnParameterMetadata(
+                description: "Test return parameter",
+                parameterType: typeof(int),
+                jsonSerializerOptions: jsos) :
+            new KernelReturnParameterMetadata(
+                description: "Test return parameter",
+                parameterType: typeof(int));
+
+        Assert.Equal("Test return parameter", m.Description);
+        Assert.Equal(typeof(int), m.ParameterType);
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"Test return parameter", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
+    }
+
+    [Fact]
+    public void ItHandlesOnlyDescriptionInNewConstructor()
+    {
+        // Test constructor with only description parameter
+        var m = new KernelReturnParameterMetadata(description: "Only description provided");
+
+        Assert.Equal("Only description provided", m.Description);
+        Assert.Null(m.ParameterType);
+        Assert.Null(m.Schema);
+    }
+
+    [Fact]
+    public void ItHandlesOnlyParameterTypeInNewConstructor()
+    {
+        // Test constructor with only parameter type
+        var m = new KernelReturnParameterMetadata(parameterType: typeof(bool));
+
+        Assert.Empty(m.Description);
+        Assert.Equal(typeof(bool), m.ParameterType);
+        Assert.NotNull(m.Schema);
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"type":"boolean"}""")), JsonSerializer.Serialize(m.Schema));
+    }
 }

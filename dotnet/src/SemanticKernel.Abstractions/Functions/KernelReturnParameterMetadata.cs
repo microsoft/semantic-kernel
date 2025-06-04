@@ -45,6 +45,23 @@ public sealed class KernelReturnParameterMetadata
         this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
+    /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/> with all properties.</summary>
+    /// <param name="description">The description of the return parameter.</param>
+    /// <param name="parameterType">The .NET type of the return parameter.</param>
+    /// <param name="schema">The JSON schema describing the return parameter's type.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
+    public KernelReturnParameterMetadata(
+        string? description = null,
+        Type? parameterType = null,
+        KernelJsonSchema? schema = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+        : this(jsonSerializerOptions ?? null!)
+    {
+        this.Description = description;
+        this.ParameterType = parameterType;
+        this.Schema = schema;
+    }
+
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
