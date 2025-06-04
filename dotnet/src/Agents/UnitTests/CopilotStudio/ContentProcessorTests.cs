@@ -118,9 +118,9 @@ public class ContentProcessorTests
     }
 
     // Test helper classes
-    private class TestUnknownContent : KernelContent;
+    private sealed class TestUnknownContent : KernelContent;
 
-    private class TestLogger : ILogger
+    private sealed class TestLogger : ILogger
     {
         public List<string> LoggedWarnings { get; } = [];
 
