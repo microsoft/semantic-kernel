@@ -71,7 +71,7 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.2.0-preview.2" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.2.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
