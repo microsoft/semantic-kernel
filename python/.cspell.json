@@ -1,0 +1,81 @@
+{
+    "version": "0.2",
+    "languageSettings": [
+        {
+            "languageId": "py",
+            "allowCompoundWords": true,
+            "locale": "en-US"
+        }
+    ],
+    "language": "en-US",
+    "patterns": [
+        {
+            "name": "import",
+            "pattern": "import [a-zA-Z0-9_]+"
+        },
+        {
+            "name": "from import",
+            "pattern": "from [a-zA-Z0-9_]+ import [a-zA-Z0-9_]+"
+        }
+    ],
+    "ignorePaths": [
+        "samples/**",
+        "notebooks/**"
+    ],
+    "words": [
+        "aeiou",
+        "aiplatform",
+        "autogen",
+        "azuredocindex",
+        "azuredocs",
+        "boto",
+        "contentvector",
+        "contoso",
+        "datamodel",
+        "desync",
+        "dotenv",
+        "endregion",
+        "entra",
+        "faiss",
+        "genai",
+        "generativeai",
+        "hnsw",
+        "httpx",
+        "huggingface",
+        "Instrumentor",
+        "kernelfunction",
+        "logit",
+        "logprobs",
+        "lowlevel",
+        "Magentic",
+        "mistralai",
+        "mongocluster",
+        "nd",
+        "ndarray",
+        "nopep",
+        "NOSQL",
+        "ollama",
+        "Onnx",
+        "onyourdatatest",
+        "OPENAI",
+        "opentelemetry",
+        "OTEL",
+        "protos",
+        "pydantic",
+        "pytestmark",
+        "qdrant",
+        "retrywrites",
+        "scmc",
+        "SEMANTICKERNEL",
+        "serde",
+        "skprompt",
+        "templating",
+        "uninstrument",
+        "vectordb",
+        "vectorizable",
+        "vectorizer",
+        "vectorstoremodel",
+        "vertexai",
+        "Weaviate"
+    ]
+}

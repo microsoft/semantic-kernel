@@ -1,0 +1,46 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RestCountries.NET API",
+    "description": "Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.",
+    "version": "v3.1"
+  },
+  "servers": [
+    { "url": "https://restcountries.net" }
+  ],
+  "auth": [],
+  "paths": {
+    "/v3.1/currency": {
+      "get": {
+        "description": "Search by currency.",
+        "operationId": "LookupCountryByCurrency",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "The currency to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemes": {}
+  }
+}

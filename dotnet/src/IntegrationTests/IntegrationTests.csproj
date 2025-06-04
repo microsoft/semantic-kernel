@@ -1,0 +1,214 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IntegrationTests</AssemblyName>
+    <RootNamespace>SemanticKernel.IntegrationTests</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110,SKEXP0130,OPENAI001,MEVD9000</NoWarn>
+    <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Planners\SequentialPlanner\**" />
+    <Compile Remove="Planners\StepwisePlanner\**" />
+    <EmbeddedResource Remove="Planners\SequentialPlanner\**" />
+    <EmbeddedResource Remove="Planners\StepwisePlanner\**" />
+    <None Remove="Planners\SequentialPlanner\**" />
+    <None Remove="Planners\StepwisePlanner\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Planners\PlanTests.cs" />
+    <Compile Remove="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="CrossLanguage\Data\LightBulbApi.json" />
+    <None Remove="CrossLanguage\Data\LightBulbApiTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithChatRolesStreamingTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithChatRolesTest-HB.yaml" />
+    <None Remove="CrossLanguage\Data\PromptWithChatRolesTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithComplexObjectsStreamingTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithComplexObjectsTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsStreamingTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithSimpleVariableStreamingTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.yaml" />
+    <None Remove="CrossLanguage\Data\SimplePromptStreamingTest.json" />
+    <None Remove="CrossLanguage\Data\SimplePromptTest.json" />
+    <None Remove="CrossLanguage\Data\SimplePromptTest.yaml" />
+    <None Remove="prompts\GenerateStoryHandlebars.yaml" />
+    <None Remove="skills\FunSkill\Joke\config.json" />
+    <None Remove="skills\FunSkill\Joke\skprompt.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SecurityToken" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="System.Linq.Async" />
+    <PackageReference Include="xRetry" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Testcontainers.Milvus" />
+    <PackageReference Include="Testcontainers.MongoDB" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Agents\Yaml\Agents.Yaml.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
+    <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\Agents\Bedrock\Agents.Bedrock.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.CosmosNoSql\Connectors.Memory.CosmosNoSql.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
+    <ProjectReference Include="..\Experimental\Process.Core\Process.Core.csproj" />
+    <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
+    <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+    <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
+    <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
+    <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
+    <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+    <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
+    <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\SessionsPythonPlugin\file_to_upload_2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\SessionsPythonPlugin\file_to_upload_1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="testsettings.development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="testsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="CrossLanguage\Data\LightBulbApi.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\LightBulbApiTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithChatRolesStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithChatRolesTest-HB.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithChatRolesTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithComplexObjectsStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithComplexObjectsTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithSimpleVariableStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithSimpleVariableTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithSimpleVariableTest.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\SimplePromptStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\SimplePromptTest.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Plugins\OpenApi\instacart-service.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Plugins\OpenApi\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="prompts/GenerateStory.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="prompts\GenerateStoryHandlebars.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="skills\FunSkill\Joke\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CrossLanguage\Data\SimplePromptTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+    <ItemGroup>
+    <EmbeddedResource Include="Resources/gemini_cached_content.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

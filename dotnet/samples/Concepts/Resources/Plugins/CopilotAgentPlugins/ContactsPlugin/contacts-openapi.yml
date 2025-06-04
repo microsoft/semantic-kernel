@@ -1,0 +1,403 @@
+openapi: 3.0.1
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/v1.0
+  version: v1.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  /me/contacts:
+    get:
+      tags:
+        - me.contact
+      summary: List contacts
+      description: 'Get a contact collection from the default contacts folder of the signed-in user. There are two scenarios where an app can get contacts in another user''s contact folder:'
+      operationId: me_ListContacts
+      parameters:
+        - $ref: '#/components/parameters/top'
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/count'
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          $ref: '#/components/responses/microsoft.graph.contactCollectionResponse'
+      x-ms-pageable:
+        nextLinkName: '@odata.nextLink'
+        operationName: listMore
+        itemName: value
+components:
+  schemas:
+    microsoft.graph.contactCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        '@odata.count':
+          type: integer
+          format: int64
+          nullable: true
+        '@odata.nextLink':
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.contact'
+    microsoft.graph.contact:
+      title: contact
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The categories associated with the item
+        changeKey:
+          type: string
+          description: 'Identifies the version of the item. Every time the item is changed, changeKey changes as well. This allows Exchange to apply changes to the correct version of the object. Read-only.'
+          nullable: true
+        createdDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        assistantName:
+          type: string
+          description: The name of the contact's assistant.
+          nullable: true
+        birthday:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The contact''s birthday. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        businessAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        businessHomePage:
+          type: string
+          description: The business home page of the contact.
+          nullable: true
+        businessPhones:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's business phone numbers.
+        children:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The names of the contact's children.
+        companyName:
+          type: string
+          description: The name of the contact's company.
+          nullable: true
+        department:
+          type: string
+          description: The contact's department.
+          nullable: true
+        displayName:
+          type: string
+          description: 'The contact''s display name. You can specify the display name in a create or update operation. Note that later updates to other properties may cause an automatically generated value to overwrite the displayName value you have specified. To preserve a pre-existing value, always include it as displayName in an update operation.'
+          nullable: true
+        emailAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.emailAddress'
+          description: The contact's email addresses.
+        fileAs:
+          type: string
+          description: The name the contact is filed under.
+          nullable: true
+        generation:
+          type: string
+          description: The contact's suffix.
+          nullable: true
+        givenName:
+          type: string
+          description: The contact's given name.
+          nullable: true
+        homeAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        homePhones:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's home phone numbers.
+        imAddresses:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's instant messaging (IM) addresses.
+        initials:
+          type: string
+          description: The contact's initials.
+          nullable: true
+        jobTitle:
+          type: string
+          description: The contact’s job title.
+          nullable: true
+        manager:
+          type: string
+          description: The name of the contact's manager.
+          nullable: true
+        middleName:
+          type: string
+          description: The contact's middle name.
+          nullable: true
+        mobilePhone:
+          type: string
+          description: The contact's mobile phone number.
+          nullable: true
+        nickName:
+          type: string
+          description: The contact's nickname.
+          nullable: true
+        officeLocation:
+          type: string
+          description: The location of the contact's office.
+          nullable: true
+        otherAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        parentFolderId:
+          type: string
+          description: The ID of the contact's parent folder.
+          nullable: true
+        personalNotes:
+          type: string
+          description: The user's notes about the contact.
+          nullable: true
+        profession:
+          type: string
+          description: The contact's profession.
+          nullable: true
+        spouseName:
+          type: string
+          description: The name of the contact's spouse/partner.
+          nullable: true
+        surname:
+          type: string
+          description: The contact's surname.
+          nullable: true
+        title:
+          type: string
+          description: The contact's title.
+          nullable: true
+        yomiCompanyName:
+          type: string
+          description: The phonetic Japanese company name of the contact.
+          nullable: true
+        yomiGivenName:
+          type: string
+          description: The phonetic Japanese given name (first name) of the contact.
+          nullable: true
+        yomiSurname:
+          type: string
+          description: The phonetic Japanese surname (last name)  of the contact.
+          nullable: true
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.extension'
+          description: The collection of open extensions defined for the contact. Read-only. Nullable.
+        multiValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.multiValueLegacyExtendedProperty'
+          description: The collection of multi-value extended properties defined for the contact. Read-only. Nullable.
+        photo:
+          $ref: '#/components/schemas/microsoft.graph.profilePhoto'
+        singleValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.singleValueLegacyExtendedProperty'
+          description: The collection of single-value extended properties defined for the contact. Read-only. Nullable.
+    microsoft.graph.physicalAddress:
+      title: physicalAddress
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        city:
+          type: string
+          description: The city.
+          nullable: true
+        countryOrRegion:
+          type: string
+          description: 'The country or region. It''s a free-format string value, for example, ''United States''.'
+          nullable: true
+        postalCode:
+          type: string
+          description: The postal code.
+          nullable: true
+        state:
+          type: string
+          description: The state.
+          nullable: true
+        street:
+          type: string
+          description: The street.
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The contact's business address.
+    microsoft.graph.emailAddress:
+      title: emailAddress
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        address:
+          type: string
+          description: The email address of the person or entity.
+          nullable: true
+        name:
+          type: string
+          description: The display name of the person or entity.
+          nullable: true
+        '@odata.type':
+          type: string
+    microsoft.graph.extension:
+      title: extension
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+    microsoft.graph.multiValueLegacyExtendedProperty:
+      title: multiValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: A collection of property values.
+    microsoft.graph.profilePhoto:
+      description: Optional contact picture. You can get or set a photo for a contact.
+    microsoft.graph.singleValueLegacyExtendedProperty:
+      title: singleValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: string
+          description: A property value.
+          nullable: true
+  responses:
+    microsoft.graph.contactCollectionResponse:
+      description: Retrieved collection
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/microsoft.graph.contactCollectionResponse'
+  parameters:
+    top:
+      name: $top
+      in: query
+      description: Show only the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+      example: 50
+    skip:
+      name: $skip
+      in: query
+      description: Skip the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+    search:
+      name: $search
+      in: query
+      description: Search items by search phrases
+      style: form
+      explode: false
+      schema:
+        type: string
+    filter:
+      name: $filter
+      in: query
+      description: Filter items by property values
+      style: form
+      explode: false
+      schema:
+        type: string
+    count:
+      name: $count
+      in: query
+      description: Include count of items
+      style: form
+      explode: false
+      schema:
+        type: boolean

@@ -1,0 +1,52 @@
+openapi: 3.0.1
+info:
+  title: APOD - Subset
+  description: 'This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds; but generally help with discoverability of relevant imagery'
+  contact:
+    email: evan.t.yates@nasa.gov
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: https://api.nasa.gov/planetary
+  - url: http://api.nasa.gov/planetary
+paths:
+  /apod:
+    get:
+      tags:
+        - request tag
+      summary: Returns images
+      description: Returns the picture of the day
+      operationId: apod
+      parameters:
+        - name: date
+          in: query
+          description: The date of the APOD image to retrieve
+          style: form
+          explode: false
+          schema:
+            type: string
+        - name: hd
+          in: query
+          description: Retrieve the URL for the high resolution image
+          style: form
+          explode: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { }
+      security:
+        - api_key: [ ]
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: query

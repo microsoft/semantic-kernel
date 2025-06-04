@@ -1,0 +1,41 @@
+name: Python Code Quality Checks
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main", "feature*"]
+    paths:
+      - "python/**"
+
+jobs:
+  pre-commit:
+    if: "!cancelled()"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: python
+    env:
+      # Configure a constant location for the uv cache
+      UV_CACHE_DIR: /tmp/.uv-cache
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - uses: pre-commit/action@v3.0.1
+        name: Run Pre-Commit Hooks
+        with:
+          extra_args: --config python/.pre-commit-config.yaml --all-files
+      - name: Run Mypy
+        run: uv run mypy -p semantic_kernel --config-file mypy.ini

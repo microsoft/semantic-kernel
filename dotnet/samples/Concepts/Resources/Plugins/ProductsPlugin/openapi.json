@@ -1,0 +1,62 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "User Product API",
+    "version": "1.0.0",
+    "description": "API for managing products associated with users"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/{id}",
+      "variables": {
+        "id": {
+          "default": "eu",
+          "description": "Server variable representing the region of the API (e.g., 'us' for United States, 'eu' for Europe)"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/users/{id}/cart": {
+      "get": {
+        "operationId": "getProductFromCart",
+        "summary": "Retrieve a user's cart",
+        "description": "Retrieve the contents of the cart for the user ID provided in the query parameter.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "The ID of the subscription to retrieve products from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the user whose cart is being retrieved (query parameter)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "header",
+            "required": true,
+            "description": "The ID representing the session (header parameter)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the user's cart"
+          }
+        }
+      }
+    }
+  }
+}  

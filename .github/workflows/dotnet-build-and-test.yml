@@ -1,0 +1,229 @@
+#
+# This workflow will build and run all unit tests using dotnet docker containers,
+# each targeting a single version of the dotnet SDK.
+#
+
+name: dotnet-build-and-test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main", "feature*"]
+  merge_group:
+    branches: ["main"]
+
+env:
+  COVERAGE_THRESHOLD: 80
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: "write"
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      dotnetChanges: ${{ steps.filter.outputs.dotnet }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            dotnet:
+              - 'dotnet/**'
+              - '**/dotnet/**'
+              - '.github/workflows/check-coverage.ps1'
+              - '.github/workflows/dotnet-build-and-test.yml'
+      # run only if 'dotnet' files were changed
+      - name: dotnet tests
+        if: steps.filter.outputs.dotnet == 'true'
+        run: echo "Dotnet file"
+      # run only if not 'dotnet' files were changed
+      - name: not dotnet tests
+        if: steps.filter.outputs.dotnet != 'true'
+        run: echo "NOT dotnet file"
+  dotnet-build-and-test:
+    needs: paths-filter
+    if: needs.paths-filter.outputs.dotnetChanges == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {
+              dotnet: "8.0",
+              os: "ubuntu-latest",
+              configuration: Release,
+              integration-tests: true,
+              environment: "integration",
+            }
+          - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
+          - { dotnet: "8.0", os: "windows-latest", configuration: Release }
+
+    runs-on: ${{ matrix.os }}
+    environment: ${{ matrix.environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup dotnet ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - name: Build dotnet solutions
+        shell: bash
+        run: |
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          for solution in $SOLUTIONS; do
+            dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
+          done
+      - name: Package install check
+        shell: bash
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          for solution in $SOLUTIONS; do
+            dotnet pack $solution -c ${{ matrix.configuration }} --no-build --no-restore --output ./artifacts
+          done
+          dotnet new console --name packcheck --output consoleapp
+          dotnet add consoleapp/packcheck.csproj package Microsoft.SemanticKernel --source ./artifacts
+          dotnet build consoleapp/packcheck.csproj
+          rm -rf ./artifacts
+          rm -rf ./consoleapp
+
+      - name: Run Unit Tests
+        shell: bash
+        run: |
+          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
+          for project in $UT_PROJECTS; do
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
+          done
+
+      - name: Run AOT Unit Tests
+        shell: pwsh
+        run: .github/workflows/test-aot-compatibility.ps1 ${{ matrix.dotnet }}
+
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request' && matrix.integration-tests
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Integration Tests
+        shell: bash
+        if: github.event_name != 'pull_request' && matrix.integration-tests
+        run: |
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | grep -v "VectorDataIntegrationTests.csproj" | tr '\n' ' ')
+          for project in $INTEGRATION_TEST_PROJECTS; do
+            dotnet test -f net8.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+          done
+        env:
+          # Azure OpenAI Deployments
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAI__ChatDeploymentName: ${{ vars.AZUREOPENAI__CHATDEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAITextToAudio__Endpoint: ${{ secrets.AZUREOPENAITEXTTOAUDIO__ENDPOINT }}
+          AzureOpenAITextToAudio__DeploymentName: ${{ vars.AZUREOPENAITEXTTOAUDIO__DEPLOYMENTNAME }}
+          AzureOpenAIAudioToText__Endpoint: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__ENDPOINT }}
+          AzureOpenAIAudioToText__DeploymentName: ${{ vars.AZUREOPENAIAUDIOTOTEXT__DEPLOYMENTNAME }}
+          AzureOpenAITextToImage__Endpoint: ${{ secrets.AZUREOPENAITEXTTOIMAGE__ENDPOINT }}
+          AzureOpenAITextToImage__DeploymentName: ${{ vars.AZUREOPENAITEXTTOIMAGE__DEPLOYMENTNAME }}
+          Planners__AzureOpenAI__Endpoint: ${{ secrets.PLANNERS__AZUREOPENAI__ENDPOINT }}
+          Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}
+          # OpenAI Models
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
+          OpenAIEmbeddings__ApiKey: ${{ secrets.OPENAIEMBEDDINGS__APIKEY }}
+          OpenAIEmbeddings__ModelId: ${{ vars.OPENAIEMBEDDINGS__MODELID }}
+          OpenAITextToAudio__ApiKey: ${{ secrets.OPENAITEXTTOAUDIO__APIKEY }}
+          OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
+          OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
+          OpenAIAudioToText__ModelId: ${{ vars.OPENAIAUDIOTOTEXT__MODELID }}
+          OpenAITextToImage__ApiKey: ${{ secrets.OPENAITEXTTOIMAGE__APIKEY }}
+          OpenAITextToImage__ModelId: ${{ vars.OPENAITEXTTOIMAGE__MODELID }}
+          Planners__OpenAI__ApiKey: ${{ secrets.PLANNERS__OPENAI__APIKEY }}
+          Planners__OpenAI__ModelId: ${{ vars.PLANNERS__OPENAI__MODELID }}
+          # Bing Web Search
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          # Google Web Search
+          Google__SearchEngineId: ${{ secrets.GOOGLE__SEARCHENGINEID }}
+          Google__ApiKey: ${{ secrets.GOOGLE__APIKEY }}
+          # Azure AI Inference Endpoint
+          AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
+          AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
+          AzureAIInference__ChatModelId: ${{ vars.AZUREAIINFERENCE__CHATMODELID }}
+          # Azure AI Foundry
+          AzureAI__Endpoint: ${{ secrets.AZUREAI__ENDPOINT }}
+          AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
+          AzureAI__ChatModelId: ${{ vars.AZUREAI__CHATMODELID }}
+
+      # Generate test reports and check coverage
+      - name: Generate test reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
+        with:
+          reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
+          targetdir: "./TestResults/Reports"
+          reporttypes: "HtmlInline;JsonSummary"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
+          path: ./TestResults/Reports # Directory containing files to upload
+
+      - name: Check coverage
+        shell: pwsh
+        run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  dotnet-build-and-test-check:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [dotnet-build-and-test]
+    steps:
+      - name: Get Date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
+
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
+
+      - name: Run Type is ${{ github.event_name }}
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
+        shell: bash
+        run: |
+          echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+      - name: Fail workflow if tests failed
+        id: check_tests_failed
+        if: contains(join(needs.*.result, ','), 'failure')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')

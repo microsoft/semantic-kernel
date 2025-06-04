@@ -1,0 +1,73 @@
+name: Label title prefix
+on:
+  issues:
+    types: [labeled]
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  add_title_prefix:
+    name: "Issue/PR: add title prefix"
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/github-script@v6
+        name: "Issue/PR: update title"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            let prefixLabels = {
+              "python": "Python",
+              "java": "Java",
+              ".NET": ".Net"
+            };
+
+            function addTitlePrefix(title, prefix)
+            {
+              // Update the title based on the label and prefix
+              // Check if the title starts with the prefix (case-sensitive)
+              if (!title.startsWith(prefix + ": ")) {
+                // If not, check if the first word is the label (case-insensitive)
+                if (title.match(new RegExp(`^${prefix}`, 'i'))) {
+                  // If yes, replace it with the prefix (case-sensitive)
+                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix);
+                } else {
+                  // If not, prepend the prefix to the title
+                  title = prefix + ": " + title;
+                }
+              }
+
+              return title;
+            }
+
+            labelAdded = context.payload.label.name
+
+            // Check if the issue or PR has the label
+            if (labelAdded in prefixLabels) {
+              let prefix = prefixLabels[labelAdded];
+              switch(context.eventName) {
+                case 'issues':
+                  github.rest.issues.update({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: addTitlePrefix(context.payload.issue.title, prefix)
+                  });
+                  break
+
+                case 'pull_request_target':
+                  github.rest.pulls.update({
+                    pull_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: addTitlePrefix(context.payload.pull_request.title, prefix)
+                  });
+                  break
+                default:
+                  core.setFailed('Unrecognited eventName: ' + context.eventName);
+              }
+            }

@@ -1,0 +1,30 @@
+{
+    "schema": 1,
+    "description": "Gets the intent of the user.",
+    "execution_settings": {
+        "default": {
+            "max_tokens": 200,
+            "temperature": 0.5,
+            "top_p": 0.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0
+        }
+    },
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "The user's request.",
+            "default": ""
+        },
+        {
+            "name": "history",
+            "description": "The history of the conversation.",
+            "default": ""
+        },
+        {
+            "name": "options",
+            "description": "The options to choose from.",
+            "default": ""
+        }
+    ]
+}

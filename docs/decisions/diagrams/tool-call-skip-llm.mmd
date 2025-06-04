@@ -1,0 +1,22 @@
+---
+title: Tool Call with Auto Invoke Kernel Functions and Skip LLM
+---
+sequenceDiagram
+    participant Client
+    participant Plugin
+    participant Kernel
+    participant AI Service
+    participant LLM
+    Client->>+AI Service: Invoke Chat Completion with Auto Function Call
+    AI Service->>+LLM: Chat Completion
+    LLM->>-AI Service: Tool Call Request
+    AI Service->>AI Service: Update Chat History
+    loop For Each Tool in Tool Call request
+    AI Service->>+Kernel: Function Call
+    Kernel->>+Plugin: Invoke Function
+    Plugin->>-Kernel: Function Result
+    Kernel->>-AI Service: Final Function Call Result
+    end
+    AI Service->>AI Service: Update Chat History
+    AI Service->>AI Service: Skip LLM because Final Function
+    AI Service->>-Client: Final Function Call Result

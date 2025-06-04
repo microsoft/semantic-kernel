@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: Todo List API
+  version: 1.0.0
+  description: API for managing todo lists
+paths:
+  /list:
+    get:
+      summary: Get todo list
+      operationId: get_todo_list
+      description: get todo list from specific group
+      parameters:
+        - name: listName
+          in: query
+          required: true
+          description: todo list group name description
+          schema:
+            type: string
+            description: todo list group name
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    task:
+                      type: string
+                    listName:
+                      type: string
+
+  /add:
+    post:
+      summary: Add a task to a list
+      operationId: add_todo_list
+      description: add todo to specific group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task
+              properties:
+                task:
+                  type: string
+                  description: task name
+                listName:
+                  type: string
+                  description: task group name
+      responses:
+        "201":
+          description: Task added successfully

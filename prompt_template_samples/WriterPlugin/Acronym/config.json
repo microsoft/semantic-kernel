@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Generate an acronym for the given concept or phrase",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 100,
+      "temperature": 0.5,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  }
+}

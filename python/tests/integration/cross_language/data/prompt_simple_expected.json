@@ -1,0 +1,10 @@
+{
+  "messages": [
+    {
+      "content": "Can you help me tell the time in Seattle right now?",
+      "role": "user"
+    }
+  ],
+  "stream": false,
+  "model": "gpt-4.1-nano"
+}

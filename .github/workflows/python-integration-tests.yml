@@ -1,0 +1,564 @@
+#
+# This workflow will run all python integrations tests.
+#
+
+name: Python Integration Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+  merge_group:
+    branches: ["main"]
+  schedule:
+    - cron: "0 0 * * *" # Run at midnight UTC daily
+
+permissions:
+  contents: read
+  id-token: "write"
+
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
+  Python_Integration_Tests: Python_Integration_Tests
+  INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION: ${{ true }}
+  AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+  AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+  AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
+  AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
+  AZURE_AI_AGENT_ENDPOINT: ${{ secrets.AZURE_AI_AGENT_ENDPOINT }}
+  AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME: ${{ secrets.AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME }}
+  BING_API_KEY: ${{ secrets.BING_API_KEY }}
+  OPENAI_RESPONSES_MODEL_ID: ${{ vars.OPENAI_RESPONSES_MODEL_ID }}
+  OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+  OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+  OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+  OPENAI_AUDIO_TO_TEXT_MODEL_ID: ${{ vars.OPENAI_AUDIO_TO_TEXT_MODEL_ID }}
+  OPENAI_TEXT_TO_AUDIO_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_AUDIO_MODEL_ID }}
+  OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+  POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+  POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
+  AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+  AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+  MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+  AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+  AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+  AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+  ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
+  MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
+  MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+  MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
+  ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+  ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
+  OLLAMA_CHAT_MODEL_ID: "${{ vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llama3.2:1b
+  OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # moondream
+  OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2:1b
+  OLLAMA_TEXT_MODEL_ID: "${{ vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llama3.2:1b
+  OLLAMA_EMBEDDING_MODEL_ID: "${{ vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
+  GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+  GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+  GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+  VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
+  VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
+  VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
+  REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+  AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+  AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
+  BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN: ${{ secrets.BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN }}
+  BEDROCK_AGENT_FOUNDATION_MODEL: ${{ vars.BEDROCK_AGENT_FOUNDATION_MODEL }}
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      pythonChanges: ${{ steps.filter.outputs.python}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'python/**'
+      # run only if 'python' files were changed
+      - name: python tests
+        if: steps.filter.outputs.python == 'true'
+        run: echo "Python file"
+      # run only if not 'python' files were changed
+      - name: not python tests
+        if: steps.filter.outputs.python != 'true'
+        run: echo "NOT python file"
+
+  python-merge-gate-ai-services:
+    name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Google auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests
+        id: run_tests_ai_services
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+
+  python-merge-gate-multi-modality:
+    name: Python Pre-Merge Integration Tests - Multi-Modality
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests
+        id: run_tests_multi_modality
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/audio_to_text ./tests/integration/text_to_audio ./tests/integration/text_to_image
+
+  python-merge-gate-agents:
+    name: Python Pre-Merge Integration Tests - Agents
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests
+        id: run_tests_agents
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+
+  python-merge-gate-ollama:
+    name: Python Pre-Merge Integration Tests - Ollama
+    needs: paths-filter
+    # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, this job is disabled for now.
+    if: false && github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
+      - name: Run Integration Tests
+        id: run_tests_ai_services
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal -m ollama --timeout=300 ./tests/integration/completions ./tests/integration/embeddings
+
+  python-merge-gate-memory:
+    name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      MEMORY_CONCEPT_SAMPLE: "true"
+    # Service containers to run with for the memory connectors, this only works on Ubuntu
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis/redis-stack-server:latest
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+      weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        ports:
+          - 8080:8080
+          - 50051:50051
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests
+        id: run_tests_memory
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
+
+  python-integration-tests:
+    name: Python Integration Tests - Scheduled run
+    needs: paths-filter
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      MEMORY_CONCEPT_SAMPLE: "true"
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    # Service containers to run with for the memory connectors, this only works on Ubuntu
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis/redis-stack-server:latest
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+      weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        ports:
+          - 8080:8080
+          - 50051:50051
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
+        if: false && matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
+      - name: Google auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests - Completions
+        id: run_tests_completions
+        timeout-minutes: 10
+        shell: bash
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions
+      - name: Run Integration Tests - Embeddings
+        id: run_tests_embeddings
+        timeout-minutes: 5
+        shell: bash
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/embeddings
+      - name: Run Integration Tests - Memory
+        id: run_tests_memory
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/memory
+      - name: Run Integration Tests - Cross Language
+        id: run_tests_cross_language
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language
+      - name: Run Integration Tests - Planning
+        id: run_tests_planning
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/planning
+      - name: Run Integration Tests - Samples
+        id: run_tests_samples
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/samples
+      - name: Run Integration Tests - Agents
+        id: run_tests_agents
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+      - name: Run Integration Tests - Multi-Modality
+        id: run_tests_multi_modality
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/audio_to_text ./tests/integration/text_to_audio ./tests/integration/text_to_image
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  python-integration-tests-check:
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+    needs:
+      [
+        python-merge-gate-ai-services,
+        python-merge-gate-ollama,
+        python-merge-gate-memory,
+        python-merge-gate-agents,
+        python-merge-gate-multi-modality,
+        python-integration-tests,
+      ]
+    steps:
+      - name: Get Date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
+
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
+
+      - name: Run Type is ${{ github.event_name }}
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
+        shell: bash
+        run: |
+          echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+      - name: Fail workflow if tests failed
+        id: check_tests_failed
+        if: contains(join(needs.*.result, ','), 'failure')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')
+
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@v1.0.9
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+
+      - name: Microsoft Teams Notification (Dry Run)
+        uses: skitionek/notify-microsoft-teams@v1.0.9
+        if: github.ref != 'refs/heads/main'
+        with:
+          webhook_url: NONE
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"

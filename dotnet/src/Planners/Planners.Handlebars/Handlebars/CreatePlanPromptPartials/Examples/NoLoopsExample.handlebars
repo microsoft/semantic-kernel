@@ -1,0 +1,33 @@
+{{#*inline "NoLoopsExample"}}
+{{#message role="user"}}## Goal
+What's the sum of 5+10+15?
+{{~/message}}
+
+{{#message role="assistant"}}Here's a Handlebars template that achieves the goal:
+```handlebars
+\{{!-- Step 0: Extract key values --}}
+\{{set
+  "num1"
+  5
+}}
+\{{set
+  "num2"
+  10
+}}
+\{{set
+  "num3"
+  15
+}}
+\{{!-- Step 1: Call the Example helper with the variables and store the result --}}
+\{{set
+  "sum"
+  (Example{{nameDelimiter}}AddNums
+    num1=num1
+    num2=num2
+    num3=num3
+  )
+}}
+\{{!-- Step 2: Print the result using the json helper --}}
+\{{json (concat "The sum of " num1 "+" num2 "+" num3 " " "is" " " sum)}}
+```{{/message}}
+{{/inline}}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json",
+  "schema_version": "v2.1",
+  "name_for_human": "OData Service for namespace microsoft.graph",
+  "description_for_human": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "description_for_model": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "contact_email": "publisher-email@example.com",
+  "namespace": "Contacts",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "text": "List contacts"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "me_ListContacts",
+      "description": "Get a contact collection from the default contacts folder of the signed-in user. There are two scenarios where an app can get contacts in another user\u0026apos;s contact folder:"
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "None"
+      },
+      "spec": {
+        "url": "contacts-openapi.yml"
+      },
+      "run_for_functions": [
+        "me_ListContacts"
+      ]
+    }
+  ]
+}

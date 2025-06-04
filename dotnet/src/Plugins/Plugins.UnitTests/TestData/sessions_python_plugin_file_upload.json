@@ -1,0 +1,8 @@
+{
+  "$id": "3",
+  "name": "test-file.txt",
+  "type": "file",
+  "contentType": "text/plain; charset=utf-8",
+  "sizeInBytes": 516,
+  "lastModifiedAt": "2024-08-06T14:50:38.4228269Z"
+}

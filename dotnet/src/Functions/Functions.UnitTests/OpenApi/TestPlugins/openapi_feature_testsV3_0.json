@@ -1,0 +1,164 @@
+﻿{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Test Schema",
+    "version": "0"
+  },
+  "paths": {
+    "/fooBarAllOf": {
+      "get": {
+        "operationId": "allOfGet",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fooBarAllOf"
+                }
+              }
+            },
+            "description": "response"
+          }
+        }
+      },
+      "post": {
+        "operationId": "allOfPost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fooBarAllOf"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/fooBarAnyOf": {
+      "get": {
+        "operationId": "anyOfGet",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fooBarAnyOf"
+                }
+              }
+            },
+            "description": "response"
+          }
+        }
+      },
+      "post": {
+        "operationId": "anyOfPost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fooBarAnyOf"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/fooBarOneOf": {
+      "get": {
+        "operationId": "oneOfGet",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fooBarOneOf"
+                }
+              }
+            },
+            "description": "response"
+          }
+        }
+      },
+      "post": {
+        "operationId": "oneOfPost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fooBarOneOf"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "foo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "extra": {
+            "type": "string"
+          }
+        }
+      },
+      "bar": {
+        "type": "string"
+      },
+      "fooBarAllOf": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/foo"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "extra1": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "fooBarAnyOf": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/foo"
+          },
+          {
+            "$ref": "#/components/schemas/bar"
+          }
+        ]
+      },
+      "fooBarOneOf": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/foo"
+          },
+          {
+            "$ref": "#/components/schemas/bar"
+          }
+        ]
+      }
+    }
+  }
+}

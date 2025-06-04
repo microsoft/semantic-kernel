@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>SemanticKernel.Process.IntegrationTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Process.IntegrationTestHost.Dapr</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110</NoWarn>
+    <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapr.Actors" />
+    <PackageReference Include="Dapr.Actors.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
+    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
+    <ProjectReference Include="..\Process.IntegrationTests.Resources\Process.IntegrationTests.Resources.csproj" />
+    <ProjectReference Include="..\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
+  </ItemGroup>
+
+</Project>

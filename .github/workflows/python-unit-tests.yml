@@ -1,0 +1,57 @@
+name: Python Unit Tests
+
+on:
+  pull_request:
+    branches: ["main", "feature*"]
+    paths:
+      - "python/**"
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
+
+jobs:
+  python-unit-tests:
+    name: Python Unit Tests
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        experimental: [false]
+        include:
+          - python-version: "3.13"
+            os: "ubuntu-latest"
+            experimental: true
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
+      - name: Install the project
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+      - name: Test with pytest
+        env:
+          PYTHON_GIL: ${{ matrix.gil }}
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
+      - name: Surface failing tests
+        if: ${{ !matrix.experimental }}
+        uses: pmeier/pytest-results-action@v0.7.1
+        with:
+          path: python/pytest.xml
+          summary: true
+          display-options: fEX
+          fail-on-empty: true
+          title: Test results

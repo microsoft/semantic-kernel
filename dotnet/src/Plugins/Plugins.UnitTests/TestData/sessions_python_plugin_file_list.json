@@ -1,0 +1,21 @@
+{
+  "$id": "1",
+  "value": [
+    {
+      "$id": "2",
+      "name": "test-file.txt",
+      "type": "file",
+      "contentType": "text/plain; charset=utf-8",
+      "sizeInBytes": 516,
+      "lastModifiedAt": "2024-08-06T16:21:22.2423944Z"
+    },
+    {
+      "$id": "3",
+      "name": "test-file2.txt",
+      "type": "file",
+      "contentType": "text/plain; charset=utf-8",
+      "sizeInBytes": 211,
+      "lastModifiedAt": "2024-08-06T16:21:22.2423944Z"
+    }
+  ]
+}

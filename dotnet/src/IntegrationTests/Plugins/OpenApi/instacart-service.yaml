@@ -1,0 +1,53 @@
+openapi: 3.0.1
+info:
+  title: Instacart
+  description: Order from your favorite local grocery stores.
+  version: 'v2.1'
+servers:
+  - url: https://www.instacart.com
+paths:
+  /rest/llm_integration/openapi/v2_1/recipes:
+    post:
+      operationId: create
+      summary: Create an Instacart link to the shopping list of ingredients.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createRequest'
+      responses:
+        "200":
+          description: Instacart link to the shopping list of ingredients.
+        "400":
+          description: Could not create an Instacart link to the shopping list of ingredients.
+components:
+  schemas:
+    createRequest:
+      type: object
+      required:
+        - title
+        - ingredients
+        - instructions
+        - question
+        - partner_name
+      properties:
+        title:
+          type: string
+          description: Recipe title (e.g. "Vanilla Yogurt Parfait")
+        ingredients:
+          type: array
+          items:
+            type: string
+          description: List of strings where each element is a recipe ingredient (e.g. ["2 cups of greek yogurt", "2 tablespoons of honey", "1 teaspoon of vanilla extract"]). Don't include items in the list that the user already mentioned they have.
+        instructions:
+          type: array
+          items:
+            type: string
+          description: List of strings where each element is a recipe instruction
+        question:
+          type: string
+          description: This field stores the question asked by the user about recipe or mealplan in the current chat session. For instance, a user can ask "recipe for chocolate cookies" and the assistant responds by listing the ingredients needed to make chocolate cookies. In this chat interaction, we need to return "recipe for chocolate cookies" as the value in this field
+        partner_name:
+          type: string
+          description: The value used to populate this field should always be "OpenAI"

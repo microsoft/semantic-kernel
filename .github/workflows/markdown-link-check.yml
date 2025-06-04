@@ -1,0 +1,27 @@
+name: Check .md links
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-22.04
+    # check out the latest version of the code
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Checks the status of hyperlinks in all files
+      - name: Run linkspector
+        uses: umbrelladocs/action-linkspector@v1
+        with:
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: true
+          config_file: ".github/.linkspector.yml"

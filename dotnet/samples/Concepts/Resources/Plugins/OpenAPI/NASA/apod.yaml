@@ -1,0 +1,73 @@
+openapi: 3.0.0
+servers:
+  - url: https://api.nasa.gov/planetary
+  - url: http://api.nasa.gov/planetary
+info:
+  contact:
+    email: evan.t.yates@nasa.gov
+  description: This endpoint structures the APOD imagery and associated metadata
+    so that it can be repurposed for other applications. In addition, if the
+    concept_tags parameter is set to True, then keywords derived from the image
+    explanation are returned. These keywords could be used as auto-generated
+    hashtags for twitter or instagram feeds; but generally help with
+    discoverability of relevant imagery
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: APOD
+  version: 1.0.0
+  x-apisguru-categories:
+    - media
+    - open_data
+  x-origin:
+    - format: swagger
+      url: https://raw.githubusercontent.com/nasa/api-docs/gh-pages/assets/json/APOD
+      version: "2.0"
+  x-providerName: nasa.gov
+  x-serviceName: apod
+tags:
+  - description: An example tag
+    externalDocs:
+      description: Here's a link
+      url: https://example.com
+    name: request tag
+paths:
+  /apod:
+    get:
+      description: Returns the picture of the day
+      parameters:
+        - description: The date of the APOD image to retrieve
+          in: query
+          name: date
+          required: false
+          schema:
+            type: string
+        - description: Retrieve the URL for the high resolution image
+          in: query
+          name: hd
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  x-thing: ok
+                type: array
+          description: successful operation
+        "400":
+          description: Date must be between Jun 16, 1995 and Mar 28, 2019.
+      security:
+        - api_key: []
+      summary: Returns images
+      tags:
+        - request tag
+      operationId: apod
+components:
+  securitySchemes:
+    api_key:
+      in: query
+      name: api_key
+      type: apiKey

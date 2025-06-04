@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Process.Runtime.Dapr</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/RuntimeUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel Process - Dapr Runtime</Title>
+    <Description>Semantic Kernel Process Dapr Runtime. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\..\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Process.Runtime.Dapr.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Process.IntegrationTestHost.Dapr" />
+    <InternalsVisibleTo Include="SemanticKernel.Process.IntegrationTestRunner.Dapr" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Dapr.Actors" />
+  </ItemGroup>
+
+</Project>

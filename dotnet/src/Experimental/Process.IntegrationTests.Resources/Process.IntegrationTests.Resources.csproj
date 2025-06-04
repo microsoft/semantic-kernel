@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SemanticKernel.Process.IntegrationTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Process.IntegrationTests.Resources</AssemblyName>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <NoWarn>
+      $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001
+    </NoWarn>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/TestsSharedComponents.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
+    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
+  </ItemGroup>
+
+</Project>

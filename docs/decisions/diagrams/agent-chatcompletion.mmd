@@ -1,0 +1,16 @@
+classDiagram
+
+    Agent
+    Agent <|-- KernelAgent
+    KernelAgent <|-- ChatHistoryKernelAgent
+    IChatHistoryHandler <|-- ChatHistoryKernelAgent
+    ChatHistoryKernelAgent --> ChatHistoryChannel
+    AgentChannel
+    AgentChannel <|-- ChatHistoryChannel
+    
+    ChatHistoryKernelAgent <|-- ChatCompletionAgent
+    class ChatCompletionAgent {
+        <<Final>>
+        +PromptExecutionSettings? ExecutionSettings
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)
+    }

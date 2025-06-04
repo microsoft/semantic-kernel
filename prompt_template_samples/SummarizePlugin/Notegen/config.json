@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Automatically generate compact notes for any text or text document.",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  }
+}

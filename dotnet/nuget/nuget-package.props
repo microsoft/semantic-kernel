@@ -1,0 +1,70 @@
+<Project>
+  <PropertyGroup>
+    <!-- Central version prefix - applies to all nuget packages. -->
+    <VersionPrefix>1.55.0</VersionPrefix>
+    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
+
+    <Configurations>Debug;Release;Publish</Configurations>
+    <IsPackable>true</IsPackable>
+
+    <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
+    <PackageValidationBaselineVersion>1.54.0</PackageValidationBaselineVersion>
+    <!-- Validate assembly attributes only for Publish builds -->
+    <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
+    <!-- Do not validate reference assemblies -->
+    <NoWarn>$(NoWarn);CP1002</NoWarn>
+
+    <!-- Enable NuGet package auditing -->
+    <NuGetAudit>true</NuGetAudit>
+
+    <!-- Audit direct and transitive packages -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+
+    <!-- Report low, moderate, high and critical advisories -->
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    
+    <!-- Default description and tags. Packages can override. -->
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Product>Semantic Kernel</Product>
+    <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
+    <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
+    <PackageId>$(AssemblyName)</PackageId>
+
+    <!-- Required license, copyright, and repo information. Packages can override. -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://aka.ms/semantic-kernel</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/semantic-kernel</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Use icon and NUGET readme from dotnet/nuget folder -->
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>icon.png</PackageIconUrl>
+    <PackageReadmeFile>NUGET.md</PackageReadmeFile>
+
+    <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Include the XML documentation file in the NuGet package. -->
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
+    <!-- https://github.com/dotnet/sourcelink -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include icon.png and NUGET.md in the project. -->
+    <None Include="$(RepoRoot)/dotnet/nuget/icon.png" Link="icon.png" Pack="true" PackagePath="." />
+    <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

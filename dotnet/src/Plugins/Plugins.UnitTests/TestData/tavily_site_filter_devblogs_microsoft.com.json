@@ -1,0 +1,37 @@
+{
+  "query": "What is the Semantic Kernel?",
+  "follow_up_questions": null,
+  "answer": null,
+  "images": [],
+  "results": [
+    {
+      "title": "Hello, Semantic Kernel! | Semantic Kernel - devblogs.microsoft.com",
+      "url": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+      "content": "Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in Large Language Model (LLM) AI \"prompts\" with prompt templating, chaining, and planning capabilities. This enables you to build new experiences into your apps to bring unparalleled productivity for your users",
+      "score": 0.944878,
+      "raw_content": null
+    },
+    {
+      "title": "Building Generative AI apps with .NET 8 and Semantic Kernel",
+      "url": "https://devblogs.microsoft.com/semantic-kernel/building-generative-ai-apps-with-net-8-and-semantic-kernel/",
+      "content": "What is Semantic Kernel and why should I use it? In many of our samples, you'll see us using Semantic Kernel (SK) - SK is an open-source library that lets you easily build AI solutions that can call your existing code. As a highly extensible SDK, you can use Semantic Kernel to work with models from OpenAI, Azure OpenAI, Hugging Face, and",
+      "score": 0.8412138,
+      "raw_content": null
+    },
+    {
+      "title": "Semantic Kernel and AutoGen Part 2 - devblogs.microsoft.com",
+      "url": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-and-autogen-part-2/",
+      "content": "Following on from our blog post a couple months ago: Microsoft's Agentic AI Frameworks: AutoGen and Semantic Kernel, Microsoft's agentic AI story is evolving at a steady pace.Both Azure AI Foundry's Semantic Kernel and AI Frontier's AutoGen are designed to empower developers to build advanced multi-agent systems. The AI Frontier's team is charging ahead pushing the boundaries of",
+      "score": 0.78631157,
+      "raw_content": null
+    },
+    {
+      "title": "Introducing Semantic Kernel for Java | Semantic Kernel",
+      "url": "https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kernel-for-java/",
+      "content": "Semantic Kernel for Java is an open source library that empowers developers to harness the power of AI while coding in Java. It is compatible with Java 8 and above, ensuring flexibility and accessibility to a wide range of Java developers. By integrating AI services into your Java applications, you can unlock the full potential of artificial",
+      "score": 0.7703443,
+      "raw_content": null
+    }
+  ],
+  "response_time": 3.16
+}

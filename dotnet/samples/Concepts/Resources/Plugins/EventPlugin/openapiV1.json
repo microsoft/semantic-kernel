@@ -1,0 +1,103 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Event Utils API",
+    "version": "1.0.0",
+    "description": "API for managing events."
+  },
+  "servers": [
+    {
+      "url": "https://api.yourdomain.com"
+    }
+  ],
+  "paths": {
+    "/meetings": {
+      "put": {
+        "summary": "Create a meeting",
+        "description": "Creates a new meeting.",
+        "operationId": "createMeeting",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "description": "The subject or title of the meeting."
+                  },
+                  "start": {
+                    "type": "object",
+                    "properties": {
+                      "dateTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The start date and time of the meeting in ISO 8601 format."
+                      },
+                      "timeZone": {
+                        "type": "string",
+                        "description": "The time zone in which the meeting is scheduled."
+                      }
+                    },
+                    "required": [
+                      "dateTime",
+                      "timeZone"
+                    ]
+                  },
+                  "duration": {
+                    "type": "string",
+                    "description": "Duration of the meeting in ISO 8601 format (e.g., 'PT1H' for 1 hour)."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "A tag associated with the meeting for categorization."
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "description": "A list of tags to help categorize the meeting."
+                  }
+                },
+                "required": [
+                  "subject",
+                  "start",
+                  "duration",
+                  "tags"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meeting created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The unique identifier for the meeting."
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

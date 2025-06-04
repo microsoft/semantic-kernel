@@ -1,0 +1,67 @@
+#
+# This workflow will run all dotnet integrations tests.
+#
+
+name: dotnet-integration-tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+  merge_group:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        configuration: [Debug]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          clean: true
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Find projects
+        shell: bash
+        if: ${{ github.event_name != 'pull_request' }}
+        run: echo "projects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+
+      - name: Integration Tests
+        shell: bash
+        if: ${{ github.event_name != 'pull_request' }}
+        env: # Set Azure credentials secret as an input
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+        run: |
+          for project in ${{ env.projects }}; do
+            dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+          done
+
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-testresults-${{ matrix.configuration }}
+          path: ./TestResults
+        if: ${{ github.event_name != 'pull_request' && always() }}

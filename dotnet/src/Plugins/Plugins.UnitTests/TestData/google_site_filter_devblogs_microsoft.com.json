@@ -1,0 +1,295 @@
+﻿{
+  "kind": "customsearch#search",
+  "url": {
+    "type": "application/json",
+    "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&num={count?}&start={startIndex?}&lr={language?}&safe={safe?}&cx={cx?}&sort={sort?}&filter={filter?}&gl={gl?}&cr={cr?}&googlehost={googleHost?}&c2coff={disableCnTwTranslation?}&hq={hq?}&hl={hl?}&siteSearch={siteSearch?}&siteSearchFilter={siteSearchFilter?}&exactTerms={exactTerms?}&excludeTerms={excludeTerms?}&linkSite={linkSite?}&orTerms={orTerms?}&dateRestrict={dateRestrict?}&lowRange={lowRange?}&highRange={highRange?}&searchType={searchType}&fileType={fileType?}&rights={rights?}&imgSize={imgSize?}&imgType={imgType?}&imgColorType={imgColorType?}&imgDominantColor={imgDominantColor?}&alt=json"
+  },
+  "queries": {
+    "request": [
+      {
+        "title": "Google Custom Search - What is the Semantic Kernel?",
+        "totalResults": "15500",
+        "searchTerms": "What is the Semantic Kernel?",
+        "count": 4,
+        "startIndex": 1,
+        "inputEncoding": "utf8",
+        "outputEncoding": "utf8",
+        "safe": "off",
+        "cx": "1285518abfd4e4677",
+        "siteSearch": "devblogs.microsoft.com",
+        "siteSearchFilter": "i"
+      }
+    ],
+    "nextPage": [
+      {
+        "title": "Google Custom Search - What is the Semantic Kernel?",
+        "totalResults": "15500",
+        "searchTerms": "What is the Semantic Kernel?",
+        "count": 4,
+        "startIndex": 5,
+        "inputEncoding": "utf8",
+        "outputEncoding": "utf8",
+        "safe": "off",
+        "cx": "1285518abfd4e4677",
+        "siteSearch": "devblogs.microsoft.com",
+        "siteSearchFilter": "i"
+      }
+    ]
+  },
+  "context": {
+    "title": "Semantic Kernel Search"
+  },
+  "searchInformation": {
+    "searchTime": 0.28099,
+    "formattedSearchTime": "0.28",
+    "totalResults": "15500",
+    "formattedTotalResults": "15,500"
+  },
+  "items": [
+    {
+      "kind": "customsearch#result",
+      "title": "Hello, Semantic Kernel! | Semantic Kernel",
+      "htmlTitle": "Hello, \u003cb\u003eSemantic Kernel\u003c/b\u003e! | \u003cb\u003eSemantic Kernel\u003c/b\u003e",
+      "link": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+      "displayLink": "devblogs.microsoft.com",
+      "snippet": "Mar 17, 2023 ... Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in LLM ...",
+      "htmlSnippet": "Mar 17, 2023 \u003cb\u003e...\u003c/b\u003e \u003cb\u003eSemantic Kernel\u003c/b\u003e (SK) is a lightweight SDK that lets you mix conventional \u003cb\u003eprogramming\u003c/b\u003e languages, like C# and \u003cb\u003ePython\u003c/b\u003e, with the latest in LLM&nbsp;...",
+      "formattedUrl": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+      "htmlFormattedUrl": "https://devblogs.microsoft.com/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/hello-world/",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokRIauv66UrH6Lz3fqyG0wySSJCQRkTxRjTDjYv1Yol0k-ZFR3YlApT4&s",
+            "width": "300",
+            "height": "168"
+          }
+        ],
+        "organization": [
+          {
+            "name": "Microsoft",
+            "logo": "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31",
+            "url": "Microsoft"
+          }
+        ],
+        "metatags": [
+          {
+            "og:image": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/02/sk-blog.001.new_.png",
+            "og:type": "article",
+            "article:published_time": "2023-03-17T13:00:23+00:00",
+            "og:image:width": "1920",
+            "twitter:card": "summary_large_image",
+            "og:site_name": "Semantic Kernel",
+            "author": "John Maeda",
+            "apple-mobile-web-app-title": "Semantic Kernel - The latest news from the Semantic Kernel team for developers",
+            "og:title": "Hello, Semantic Kernel! | Semantic Kernel",
+            "awa-pagetype": "post",
+            "og:image:height": "1080",
+            "og:image:type": "image/png",
+            "color-scheme": "dark light",
+            "og:description": "Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in LLM AI \"prompts\" with prompt templating, chaining, and planning capabilities.",
+            "twitter:creator": "@https://twitter.com/semantic_kernel",
+            "awa-product": "Semantic Kernel",
+            "article:modified_time": "2023-03-17T13:57:33+00:00",
+            "viewport": "width=device-width, initial-scale=1, shrink-to-fit=no",
+            "apple-mobile-web-app-capable": "yes",
+            "mobile-web-app-capable": "yes",
+            "og:locale": "en_US",
+            "awa-ver": "light",
+            "og:url": "https://devblogs.microsoft.com/semantic-kernel/hello-world/"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/02/sk-blog.001.new_.png"
+          }
+        ],
+        "hatomfeed": [
+          {}
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "Semantic Kernel Planners: Action Planner | Semantic Kernel",
+      "htmlTitle": "\u003cb\u003eSemantic Kernel\u003c/b\u003e Planners: Action Planner | \u003cb\u003eSemantic Kernel\u003c/b\u003e",
+      "link": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-actionplanner/",
+      "displayLink": "devblogs.microsoft.com",
+      "snippet": "Jul 24, 2023 ... In conclusion, Action Planner is an essential planning object within Semantic Kernel .Net that leverages an Intent Detection pattern to ...",
+      "htmlSnippet": "Jul 24, 2023 \u003cb\u003e...\u003c/b\u003e In conclusion, Action Planner is an essential planning object within \u003cb\u003eSemantic Kernel\u003c/b\u003e .Net that leverages an Intent Detection pattern to&nbsp;...",
+      "formattedUrl": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-a...",
+      "htmlFormattedUrl": "https://devblogs.microsoft.com/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e-planners-a...",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRMRuNZnd_Bv2oi-ylXKasBOccWxuNZn9eQxqiPExIlQbV5m16qfKtp-d6&s",
+            "width": "225",
+            "height": "225"
+          }
+        ],
+        "organization": [
+          {
+            "name": "Microsoft",
+            "logo": "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31",
+            "url": "Microsoft"
+          }
+        ],
+        "metatags": [
+          {
+            "og:image": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/07/planner-icon.jpg",
+            "og:type": "article",
+            "article:published_time": "2023-07-24T18:10:49+00:00",
+            "og:image:width": "1024",
+            "twitter:card": "summary_large_image",
+            "og:site_name": "Semantic Kernel",
+            "author": "Nilesh Acharya",
+            "apple-mobile-web-app-title": "Semantic Kernel - The latest news from the Semantic Kernel team for developers",
+            "og:title": "Semantic Kernel Planners: Action Planner | Semantic Kernel",
+            "awa-pagetype": "post",
+            "og:image:height": "1024",
+            "og:image:type": "image/jpeg",
+            "color-scheme": "dark light",
+            "og:description": "The Action Planner is no longer supported. See how to migrate legacy code away from it. This will be the first of a series of blog posts which will ‘step through’ (no pun intended) the generation and evolution of planners available in Semantic Kernel;",
+            "awa-product": "Semantic Kernel",
+            "article:modified_time": "2024-01-12T06:01:24+00:00",
+            "viewport": "width=device-width, initial-scale=1, shrink-to-fit=no",
+            "apple-mobile-web-app-capable": "yes",
+            "mobile-web-app-capable": "yes",
+            "og:locale": "en_US",
+            "awa-ver": "light",
+            "og:url": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-actionplanner/"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/07/planner-icon.jpg"
+          }
+        ],
+        "hatomfeed": [
+          {}
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "Semantic Kernel Office Hours Recordings | Semantic Kernel",
+      "htmlTitle": "\u003cb\u003eSemantic Kernel\u003c/b\u003e Office Hours Recordings | \u003cb\u003eSemantic Kernel\u003c/b\u003e",
+      "link": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-office-hours-recordings/",
+      "displayLink": "devblogs.microsoft.com",
+      "snippet": "Apr 15, 2024 ... During the Semantic Kernel community office hours, you can bring all of your burning questions to the Semantic Kernel team to get them answered.",
+      "htmlSnippet": "Apr 15, 2024 \u003cb\u003e...\u003c/b\u003e During the \u003cb\u003eSemantic Kernel\u003c/b\u003e community office hours, you can bring all of your burning questions to the \u003cb\u003eSemantic Kernel\u003c/b\u003e team to get them answered.",
+      "formattedUrl": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-office-hou...",
+      "htmlFormattedUrl": "https://devblogs.microsoft.com/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e-office-hou...",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXNIDoQ664F3evZFf9teJ48_3Eu5_KUhbopdVMPaYACuUFH5YEOClVEPc&s",
+            "width": "302",
+            "height": "167"
+          }
+        ],
+        "organization": [
+          {
+            "name": "Microsoft",
+            "logo": "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31",
+            "url": "Microsoft"
+          }
+        ],
+        "metatags": [
+          {
+            "og:image": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2024/04/office-hours-blog-image.png",
+            "og:type": "article",
+            "article:published_time": "2024-04-15T20:15:55+00:00",
+            "og:image:width": "819",
+            "twitter:card": "summary_large_image",
+            "og:site_name": "Semantic Kernel",
+            "author": "Sophia Lagerkrans-Pandey",
+            "apple-mobile-web-app-title": "Semantic Kernel - The latest news from the Semantic Kernel team for developers",
+            "og:title": "Semantic Kernel Office Hours Recordings | Semantic Kernel",
+            "awa-pagetype": "post",
+            "og:image:height": "452",
+            "og:image:type": "image/png",
+            "color-scheme": "dark light",
+            "og:description": "Microsoft Semantic Kernel Office Hour Recordings We are excited to update you on our new location for all Semantic Kernel Office Hours Recordings here: Semantic Kernel Office Hours – YouTube. Recordings from our Semantic Kernel Office Hours will be posted here one week after the session: Semantic Kernel Office Hours –",
+            "awa-product": "Semantic Kernel",
+            "viewport": "width=device-width, initial-scale=1, shrink-to-fit=no",
+            "apple-mobile-web-app-capable": "yes",
+            "mobile-web-app-capable": "yes",
+            "og:locale": "en_US",
+            "awa-ver": "light",
+            "og:url": "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-office-hours-recordings/"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2024/04/office-hours-blog-image.png"
+          }
+        ],
+        "hatomfeed": [
+          {}
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "Introducing Semantic Kernel for Java | Semantic Kernel",
+      "htmlTitle": "Introducing \u003cb\u003eSemantic Kernel\u003c/b\u003e for Java | \u003cb\u003eSemantic Kernel\u003c/b\u003e",
+      "link": "https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kernel-for-java/",
+      "displayLink": "devblogs.microsoft.com",
+      "snippet": "Jul 19, 2023 ... Semantic Kernel for Java is an open source library that empowers developers to harness the power of AI while coding in Java. It is compatible ...",
+      "htmlSnippet": "Jul 19, 2023 \u003cb\u003e...\u003c/b\u003e \u003cb\u003eSemantic Kernel\u003c/b\u003e for Java is an open source library that empowers developers to harness the power of AI while coding in Java. It is compatible&nbsp;...",
+      "formattedUrl": "https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kerne...",
+      "htmlFormattedUrl": "https://devblogs.microsoft.com/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/introducing-\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekerne\u003c/b\u003e...",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokRIauv66UrH6Lz3fqyG0wySSJCQRkTxRjTDjYv1Yol0k-ZFR3YlApT4&s",
+            "width": "300",
+            "height": "168"
+          }
+        ],
+        "organization": [
+          {
+            "name": "Microsoft",
+            "logo": "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31",
+            "url": "Microsoft"
+          }
+        ],
+        "metatags": [
+          {
+            "og:image": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/02/sk-blog.001.new_.png",
+            "og:type": "article",
+            "article:published_time": "2023-07-19T20:17:48+00:00",
+            "og:image:width": "1920",
+            "twitter:card": "summary_large_image",
+            "og:site_name": "Semantic Kernel",
+            "author": "Bruno Borges",
+            "apple-mobile-web-app-title": "Semantic Kernel - The latest news from the Semantic Kernel team for developers",
+            "og:title": "Introducing Semantic Kernel for Java | Semantic Kernel",
+            "awa-pagetype": "post",
+            "og:image:height": "1080",
+            "og:image:type": "image/png",
+            "color-scheme": "dark light",
+            "og:description": "Hello Java developers! We are thrilled to announce the first release of the Microsoft Semantic Kernel for Java! This Java library opens up new developer possibilities by seamlessly integrating AI services like OpenAI and Azure OpenAI with conventional and idiomatic programming.",
+            "twitter:creator": "@https://twitter.com/brunoborges",
+            "awa-product": "Semantic Kernel",
+            "article:modified_time": "2023-08-21T18:09:41+00:00",
+            "viewport": "width=device-width, initial-scale=1, shrink-to-fit=no",
+            "apple-mobile-web-app-capable": "yes",
+            "mobile-web-app-capable": "yes",
+            "og:locale": "en_US",
+            "awa-ver": "light",
+            "og:url": "https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kernel-for-java/"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://devblogs.microsoft.com/semantic-kernel/wp-content/uploads/sites/78/2023/02/sk-blog.001.new_.png"
+          }
+        ],
+        "hatomfeed": [
+          {}
+        ]
+      }
+    }
+  ]
+}

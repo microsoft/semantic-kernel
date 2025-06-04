@@ -1,0 +1,102 @@
+[
+  {
+    "Name": "Introduction to Semantic Kernel | Microsoft Learn",
+    "Link": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+    "Value": "Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your C#, Python, or Java codebase. It serves as an efficient middleware that enables rapid delivery of enterprise-grade solutions."
+  },
+  {
+    "Name": "Semantic Kernel: What It Is and Why It Matters",
+    "Link": "https://techcommunity.microsoft.com/t5/microsoft-developer-community/semantic-kernel-what-it-is-and-why-it-matters/ba-p/3877022",
+    "Value": "Semantic Kernel is a new AI SDK, and a simple and yet powerful programming model that lets you add large language capabilities to your app in just a matter of minutes. It uses natural language prompting to create and execute semantic kernel AI tasks across multiple languages and platforms."
+  },
+  {
+    "Name": "How to quickly start with Semantic Kernel | Microsoft Learn",
+    "Link": "https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide",
+    "Value": "In this guide, you learned how to quickly get started with Semantic Kernel by building a simple AI agent that can interact with an AI service and run your code. To see more examples and learn how to build more complex AI agents, check out our in-depth samples."
+  },
+  {
+    "Name": "Understanding the kernel in Semantic Kernel | Microsoft Learn",
+    "Link": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+    "Value": "The kernel is the central component of Semantic Kernel. At its simplest, the kernel is a Dependency Injection container that manages all of the services and plugins necessary to run your AI application."
+  },
+  {
+    "Name": "Hello, Semantic Kernel! | Semantic Kernel - devblogs.microsoft.com",
+    "Link": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+    "Value": "Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in Large Language Model (LLM) AI \u201Cprompts\u201D with prompt templating, chaining, and planning capabilities."
+  },
+  {
+    "Name": "GitHub - microsoft/semantic-kernel: Integrate cutting-edge LLM ...",
+    "Link": "https://github.com/microsoft/semantic-kernel",
+    "Value": "The Semantic Kernel extension for Visual Studio Code makes it easy to design and test semantic functions. The extension provides an interface for designing semantic functions and allows you to test them with the push of a button with your existing models and data."
+  },
+  {
+    "Name": "Semantic Kernel: A bridge between large language models and ... - InfoWorld",
+    "Link": "https://www.infoworld.com/article/2338321/semantic-kernel-a-bridge-between-large-language-models-and-your-code.html",
+    "Value": "Semantic Kernel distinguishes between semantic functions, templated prompts, and native functions, i.e. the native computer code that processes data for use in the LLM\u2019s semantic functions."
+  },
+  {
+    "Name": "Architecting AI Apps with Semantic Kernel | Semantic Kernel",
+    "Link": "https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel/",
+    "Value": "With Semantic Kernel, you can easily build agents that can call your existing code. This power lets you automate your business processes with models from OpenAI, Azure OpenAI, Hugging Face, and more! We often get asked though, \u201CHow do I architect my solution?\u201D and \u201CHow does it actually work?\u201D"
+  },
+  {
+    "Name": "semantic-kernel/README.md at main \u00B7 microsoft/semantic-kernel - GitHub",
+    "Link": "https://github.com/microsoft/semantic-kernel/blob/main/README.md",
+    "Value": "Semantic Kernel is an SDK that integrates Large Language Models (LLMs) like OpenAI, Azure OpenAI, and Hugging Face with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this by allowing you to define plugins that can be chained together in just a few lines of code."
+  },
+  {
+    "Name": "Introducing Semantic Kernel for Java | Semantic Kernel",
+    "Link": "https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kernel-for-java/",
+    "Value": "Semantic Kernel for Java is an open source library that empowers developers to harness the power of AI while coding in Java. It is compatible with Java 8 and above, ensuring flexibility and accessibility to a wide range of Java developers."
+  },
+  {
+    "Name": "Semantic Kernel: The New Way to Create Artificial Intelligence ... - Medium",
+    "Link": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+    "Value": "Semantic Kernel enables developers to easily blend cutting-edge AI with native code, opening up a world of new possibilities for AI applications. This article could go on to discuss..."
+  },
+  {
+    "Name": "How to Get Started using Semantic Kernel .NET",
+    "Link": "https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/",
+    "Value": "Prompt Templates. Chat Prompting. Filtering. Dependency Injection. A Glimpse into the Getting Started Steps: In the guide below we\u2019ll start from scratch and navigate with you through each of the example steps, clarifying the code, details and running them in real time."
+  },
+  {
+    "Name": "What is Semantic Kernel? - Introducing Semantic Kernel: Building AI ...",
+    "Link": "https://www.linkedin.com/learning/introducing-semantic-kernel-building-ai-based-apps/what-is-semantic-kernel",
+    "Value": "After watching this video, you\u0027ll be able to explain what Semantic Kernel is and how it changes the way that developers are currently working."
+  },
+  {
+    "Name": "Semantic Kernel - AI Hub",
+    "Link": "https://azure.github.io/aihub/docs/concepts/semantic-kernel/",
+    "Value": "Semantic Kernel is an open-source SDK that lets you easily combine AI services like OpenAI, Azure OpenAI, and Hugging Face with conventional programming languages like C# and Python. By doing so, you can create AI apps that combine the best of both worlds. Microsoft powers its Copilot system with a stack of AI models and plugins."
+  },
+  {
+    "Name": "Semantic Kernel documentation | Microsoft Learn",
+    "Link": "https://learn.microsoft.com/en-us/semantic-kernel/",
+    "Value": "Semantic Kernel documentation. Learn to build robust, future-proof AI solutions that evolve with technological advancements."
+  },
+  {
+    "Name": "Unlock the Potential of AI in Your Apps with Semantic Kernel: A ...",
+    "Link": "https://techcommunity.microsoft.com/t5/educator-developer-blog/unlock-the-potential-of-ai-in-your-apps-with-semantic-kernel-a/ba-p/3773847",
+    "Value": "Semantic Kernel (SK) is an innovative and lightweight Software Development Kit (SDK) designed to integrate Artificial Intelligence (AI) Large Language Models (LLMs) with conventional programming languages."
+  },
+  {
+    "Name": "Microsoft Semantic Kernel and AutoGen: Open Source Frameworks for AI ...",
+    "Link": "https://techcommunity.microsoft.com/t5/educator-developer-blog/microsoft-semantic-kernel-and-autogen-open-source-frameworks-for/ba-p/4051305",
+    "Value": "Semantic Kernel is an open-source Software Development Kit (SDK) that allows developers to build AI agents that can call existing code. It\u0027s designed to work with models from various AI providers like OpenAI, Azure OpenAI, and Hugging Face."
+  },
+  {
+    "Name": "Getting started with Microsoft Semantic Kernel - C# Corner",
+    "Link": "https://www.c-sharpcorner.com/article/getting-started-with-microsoft-semantic-kernel/",
+    "Value": "Microsoft Semantic Kernel is an Open Source lightweight SDK for consuming Large Language Models (LLMs) in normal programming languages like C# and Python. We can use OpenAI, Azure OpenAI, and Hugging Face language models in our existing apps to extend our app\u0027s capabilities without needing to train or fine-tune a model from scratch."
+  },
+  {
+    "Name": "Zero To AI Hero Pt 3: Agents in Semantic Kernel - DZone",
+    "Link": "https://dzone.com/articles/zero-to-ai-hero-part-three-power-of-agents",
+    "Value": "Agents in Semantic Kernel are not just tools; they\u2019re dynamic assistants that combine the power of AI, plugins, and orchestrated plans to solve complex problems. By understanding their building ..."
+  },
+  {
+    "Name": "Semantic Kernel overview for .NET - .NET | Microsoft Learn",
+    "Link": "https://learn.microsoft.com/en-us/dotnet/ai/semantic-kernel-dotnet-overview",
+    "Value": "Semantic Kernel is a powerful and recommended choice for working with AI in .NET applications. In the sections ahead, you learn: How to add semantic kernel to your project. Semantic Kernel core concepts. The sections ahead serve as an introductory overview of Semantic Kernel specifically in the context of .NET."
+  }
+]

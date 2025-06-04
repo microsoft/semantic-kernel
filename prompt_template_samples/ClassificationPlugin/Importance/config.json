@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Tell you the urgency level of the given text",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 64,
+      "temperature": 0.0,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  }
+}

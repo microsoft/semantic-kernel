@@ -1,0 +1,51 @@
+{
+  "solution": {
+    "path": "SK-dotnet.sln",
+    "projects":
+    [
+      "src/Connectors/Connectors.Memory.AzureAISearch/Connectors.Memory.AzureAISearch.csproj",
+      "src/Connectors/Connectors.Memory.CosmosMongoDB/Connectors.Memory.CosmosMongoDB.csproj",
+      "src/Connectors/Connectors.Memory.CosmosNoSql/Connectors.Memory.CosmosNoSql.csproj",
+      "src/Connectors/Connectors.Memory.Chroma/Connectors.Memory.Chroma.csproj",
+      "src/Connectors/Connectors.Memory.DuckDB/Connectors.Memory.DuckDB.csproj",
+      "src/Connectors/Connectors.Memory.InMemory/Connectors.Memory.InMemory.csproj",
+      "src/Connectors/Connectors.Memory.Kusto/Connectors.Memory.Kusto.csproj",
+      "src/Connectors/Connectors.Memory.Milvus/Connectors.Memory.Milvus.csproj",
+      "src/Connectors/Connectors.Memory.MongoDB/Connectors.Memory.MongoDB.csproj",
+      "src/Connectors/Connectors.Memory.Pinecone/Connectors.Memory.Pinecone.csproj",
+      "src/Connectors/Connectors.Memory.PgVector/Connectors.Memory.PgVector.csproj",
+      "src/Connectors/Connectors.Memory.Qdrant/Connectors.Memory.Qdrant.csproj",
+      "src/Connectors/Connectors.Memory.Redis/Connectors.Memory.Redis.csproj",
+      "src/Connectors/Connectors.Memory.SqliteVec/Connectors.Memory.SqliteVec.csproj",
+      "src/Connectors/Connectors.Memory.SqlServer/Connectors.Memory.SqlServer.csproj",
+      "src/Connectors/Connectors.Memory.Weaviate/Connectors.Memory.Weaviate.csproj",
+
+      "src/Connectors/Connectors.AzureAISearch.UnitTests/Connectors.AzureAISearch.UnitTests.csproj",
+      "src/Connectors/Connectors.CosmosMongoDB.UnitTests/Connectors.CosmosMongoDB.UnitTests.csproj",
+      "src/Connectors/Connectors.CosmosNoSql.UnitTests/Connectors.CosmosNoSql.UnitTests.csproj",
+      "src/Connectors/Connectors.InMemory.UnitTests/Connectors.InMemory.UnitTests.csproj",
+      "src/Connectors/Connectors.MongoDB.UnitTests/Connectors.MongoDB.UnitTests.csproj",
+      "src/Connectors/Connectors.Pinecone.UnitTests/Connectors.Pinecone.UnitTests.csproj",
+      "src/Connectors/Connectors.PgVector.UnitTests/Connectors.PgVector.UnitTests.csproj",
+      "src/Connectors/Connectors.Qdrant.UnitTests/Connectors.Qdrant.UnitTests.csproj",
+      "src/Connectors/Connectors.Redis.UnitTests/Connectors.Redis.UnitTests.csproj",
+      "src/Connectors/Connectors.SqliteVec.UnitTests/Connectors.SqliteVec.UnitTests.csproj",
+      "src/Connectors/Connectors.Weaviate.UnitTests/Connectors.Weaviate.UnitTests.csproj",
+
+      "src/VectorDataIntegrationTests/AzureAISearchIntegrationTests/AzureAISearchIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/CosmosMongoDBIntegrationTests/CosmosMongoDBIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/CosmosNoSqlIntegrationTests/CosmosNoSqlIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/InMemoryIntegrationTests/InMemoryIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/MongoDBIntegrationTests/MongoDBIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/PineconeIntegrationTests/PineconeIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/PgVectorIntegrationTests/PgVectorIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/QdrantIntegrationTests/QdrantIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/RedisIntegrationTests/RedisIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/SqliteVecIntegrationTests/SqliteVecIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/SqlServerIntegrationTests/SqlServerIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/WeaviateIntegrationTests/WeaviateIntegrationTests.csproj",
+
+      "src/VectorDataIntegrationTests/VectorDataIntegrationTests/VectorDataIntegrationTests.csproj"
+    ]
+  }
+}

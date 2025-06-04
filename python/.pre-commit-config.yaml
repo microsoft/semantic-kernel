@@ -1,0 +1,54 @@
+files: ^python/
+fail_fast: true
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-toml
+        files: \.toml$
+      - id: check-yaml
+        files: \.yaml$
+      - id: check-json
+        files: \.json$
+        exclude: ^python\/\.vscode\/.*
+      - id: end-of-file-fixer
+        files: \.py$
+      - id: mixed-line-ending
+        files: \.py$
+      - id: debug-statements
+        files: ^python\/semantic_kernel\/.*\.py$
+      - id: check-ast
+        name: Check Valid Python Samples
+        types: ["python"]
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
+    hooks:
+      - id: nbqa-check-ast
+        name: Check Valid Python Notebooks
+        types: ["jupyter"]
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.17.0
+    hooks:
+    - id: pyupgrade
+      args: [--py310-plus]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
+      - id: ruff-format
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.5.30
+    hooks:
+      # Update the uv lockfile
+      - id: uv-lock
+        files: python/pyproject.toml
+        args: [--project, python]
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["-c", "python/pyproject.toml"]
+        additional_dependencies: [ "bandit[toml]" ]
+        

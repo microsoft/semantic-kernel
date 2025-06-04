@@ -1,0 +1,90 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Pets API",
+    "version": "1.0.0",
+    "description": "API for managing pets."
+  },
+  "servers": [
+    {
+      "url": "https://api.yourdomain.com"
+    }
+  ],
+  "paths": {
+    "/pets": {
+      "patch": {
+        "summary": "Update a pet. Call this with either details for a dog or a cat but not both.",
+        "description": "Update a pet. Call this with either details for a dog or a cat but not both.",
+        "operationId": "updatePet",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/PetByAge" },
+                  { "$ref": "#/components/schemas/PetByType" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      },
+      "put": {
+        "summary": "Create a pet. Call this with either details for a dog or a cat but not both.",
+        "description": "Create a pet. Call this with either details for a dog or a cat but not both.",
+        "operationId": "createPet",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/PetByAge" },
+                  { "$ref": "#/components/schemas/PetByType" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PetByAge": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "integer"
+          },
+          "nickname": {
+            "type": "string"
+          }
+        },
+        "required": [ "age" ]
+      },
+      "PetByType": {
+        "type": "object",
+        "properties": {
+          "pet_type": {
+            "type": "string",
+            "enum": [ "Cat", "Dog" ]
+          },
+          "hunts": {
+            "type": "boolean"
+          }
+        },
+        "required": [ "pet_type" ]
+      }
+    }
+  }
+}
