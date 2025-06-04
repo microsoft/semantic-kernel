@@ -33,7 +33,7 @@ public sealed class ActionContent : KernelContent
     [JsonConstructor]
     public ActionContent(string text)
     {
-        Verify.NotNull(text, nameof(text));
+        Verify.NotNullOrWhiteSpace(text, nameof(text));
 
         this._text = text;
     }
