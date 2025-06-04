@@ -43,15 +43,7 @@ class MockAgent(Agent):
         thread: AgentThread | None = None,
         **kwargs,
     ) -> AgentResponseItem[ChatMessageContent]:
-        # Simulate some processing time
-        await asyncio.sleep(0.1)
-        return AgentResponseItem[ChatMessageContent](
-            message=ChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                content="mock_response",
-            ),
-            thread=thread or MockAgentThread(),
-        )
+        pass
 
     @override
     async def invoke(
@@ -73,7 +65,29 @@ class MockAgent(Agent):
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
-        pass
+        """Simulate streaming response from the agent."""
+        # Simulate some processing time
+        await asyncio.sleep(0.05)
+        yield AgentResponseItem[StreamingChatMessageContent](
+            message=StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                name=self.name,
+                content="mock",
+                choice_index=0,
+            ),
+            thread=thread or MockAgentThread(),
+        )
+        # Simulate some processing time before sending the next part of the response
+        await asyncio.sleep(0.05)
+        yield AgentResponseItem[StreamingChatMessageContent](
+            message=StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                name=self.name,
+                content="_response",
+                choice_index=0,
+            ),
+            thread=thread or MockAgentThread(),
+        )
 
 
 class MockRuntime(CoreRuntime):
