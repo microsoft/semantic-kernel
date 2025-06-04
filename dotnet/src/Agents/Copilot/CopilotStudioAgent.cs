@@ -98,15 +98,19 @@ public sealed partial class CopilotStudioAgent : Agent
         await foreach (ChatMessageContent result in invokeResults.ConfigureAwait(false))
         {
             await this.NotifyThreadOfNewMessage(agentThread, result, cancellationToken).ConfigureAwait(false);
+
             if (options?.OnIntermediateMessage is not null)
             {
                 await options.OnIntermediateMessage(result).ConfigureAwait(false);
             }
-            StreamingChatMessageContent streamedResult = new(result.Role, result.Content)
+
+            StreamingChatMessageContent streamedResult = new(result.Role, content: null)
             {
+                Items = [.. ContentProcessor.ConvertToStreaming(result.Items, this.Logger)],
                 InnerContent = result.InnerContent,
                 Metadata = result.Metadata,
             };
+
             yield return new(streamedResult, agentThread);
         }
     }
