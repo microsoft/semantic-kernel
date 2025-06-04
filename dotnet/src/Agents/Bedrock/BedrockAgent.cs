@@ -94,7 +94,7 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(messages, thread, options as AgentInvokeOptions, cancellationToken);
+        return this.InvokeAsync(messages, thread, (AgentInvokeOptions?)options, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -111,14 +111,14 @@ public sealed class BedrockAgent : Agent
         }
 
         // Create a thread if needed
-        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
+        BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
         // Ensure that the last message provided is a user message
-        string? message = this.ExtractUserMessage(messages.Last());
+        string message = this.ExtractUserMessage(messages.Last());
 
         // Build session state with conversation history if needed
         SessionState sessionState = this.ExtractSessionState(messages);
@@ -161,7 +161,7 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(invokeAgentRequest, thread, options as AgentInvokeOptions, cancellationToken);
+        return this.InvokeAsync(invokeAgentRequest, thread, (AgentInvokeOptions?)options, cancellationToken);
     }
 
     /// <summary>
@@ -530,6 +530,7 @@ public sealed class BedrockAgent : Agent
     #endregion
 
     #endregion
+
     #endregion
 
     /// <inheritdoc/>

@@ -44,7 +44,7 @@ public abstract class AgentThread
             return;
         }
 
-        this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        this.Id = await this.CreateInternalAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
