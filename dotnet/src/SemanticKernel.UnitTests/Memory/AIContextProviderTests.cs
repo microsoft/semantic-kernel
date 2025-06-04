@@ -80,11 +80,13 @@ public class AIContextProviderTests
             }
         };
 
-        plugins.AddFromAIContext(aiContext, "TestPlugin");
-        plugins.AddFromAIContext(aiContext, "TestPlugin");
+        Assert.Equal("TestPlugin", plugins.AddFromAIContext(aiContext, "TestPlugin"));
+        Assert.Equal("TestPlugin_1", plugins.AddFromAIContext(aiContext, "TestPlugin"));
+        Assert.Equal("TestPlugin_2", plugins.AddFromAIContext(aiContext, "TestPlugin"));
 
-        Assert.Equal(2, plugins.Count);
+        Assert.Equal(3, plugins.Count);
         Assert.Contains(plugins, p => p.Name == "TestPlugin");
         Assert.Contains(plugins, p => p.Name == "TestPlugin_1");
+        Assert.Contains(plugins, p => p.Name == "TestPlugin_2");
     }
 }
