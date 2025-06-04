@@ -2,43 +2,51 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
-/// An implementation of <see cref="IVectorStore"/> backed by a SQL Server or Azure SQL database.
+/// An implementation of <see cref="VectorStore"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
-public sealed class SqlServerVectorStore : IVectorStore
+public sealed class SqlServerVectorStore : VectorStore
 {
     private readonly string _connectionString;
-    private readonly SqlServerVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>The database schema.</summary>
+    private readonly string? _schema;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
     /// </summary>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="options">Optional configuration options.</param>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public SqlServerVectorStore(string connectionString, SqlServerVectorStoreOptions? options = null)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
         this._connectionString = connectionString;
-        // We need to create a copy, so any changes made to the option bag after
-        // the ctor call do not affect this instance.
-        this._options = options is not null
-            ? new() { Schema = options.Schema, EmbeddingGenerator = options.EmbeddingGenerator }
-            : SqlServerVectorStoreOptions.Defaults;
+
+        options ??= SqlServerVectorStoreOptions.Defaults;
+        this._schema = options.Schema;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
@@ -49,64 +57,85 @@ public sealed class SqlServerVectorStore : IVectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc/>
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-        where TRecord : notnull
-    {
-        Verify.NotNull(name);
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
+#else
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
+#endif
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new SqlServerCollection<TKey, TRecord>(
+                this._connectionString,
+                name,
+                new()
+                {
+                    Schema = this._schema,
+                    Definition = definition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
-        return new SqlServerVectorStoreRecordCollection<TKey, TRecord>(
+    /// <inheritdoc />
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
+#endif
+        => new SqlServerDynamicCollection(
             this._connectionString,
             name,
             new()
             {
-                Schema = this._options.Schema,
-                RecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
-            });
-    }
+                Schema = this._schema,
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator,
+            }
+        );
+#pragma warning restore IDE0090
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._options.Schema);
+        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._schema);
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(
-            connection,
-            command,
-            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+        using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._metadata,
             operationName: "ListCollectionNames",
-            vectorStoreName: this._metadata.VectorStoreName,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
 
-        while (await ExceptionWrapper.WrapReadAsync(
-            reader,
+        while (await reader.ReadWithErrorHandlingAsync(
+            this._metadata,
             operationName: "ListCollectionNames",
-            vectorStoreName: this._metadata.VectorStoreName,
-            cancellationToken: cancellationToken).ConfigureAwait(false))
+            cancellationToken).ConfigureAwait(false))
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
-        return collection.DeleteCollectionAsync(cancellationToken);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

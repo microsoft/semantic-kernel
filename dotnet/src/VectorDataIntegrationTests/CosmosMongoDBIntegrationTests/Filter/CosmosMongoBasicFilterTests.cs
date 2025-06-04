@@ -33,6 +33,9 @@ public class CosmosMongoBasicFilterTests(CosmosMongoBasicFilterTests.Fixture fix
     public override Task NotEqual_with_null_captured()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.NotEqual_with_null_captured());
 
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_int_property_with_null_nullable_int());
+
     #endregion
 
     #region Not
@@ -64,7 +67,7 @@ public class CosmosMongoBasicFilterTests(CosmosMongoBasicFilterTests.Fixture fix
 
     public new class Fixture : BasicFilterTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
 
         protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;
         protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;

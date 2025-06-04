@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
     <!-- temporarily disabled due to mysterious build issue -->
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
@@ -11,10 +12,10 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <PackageVersion>9.0.0-preview.1.25229.1</PackageVersion>
+    <PackageVersion>9.5.0</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
-    <PackageValidationBaselineVersion>9.0.0-preview.1.25161.1</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>9.0.0-preview.1.25229.1</PackageValidationBaselineVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
@@ -51,31 +52,20 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="Shared/System/IndexRange.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Shared/Diagnostics/CompilerServicesAttributes.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" Link="Shared/Diagnostics/DynamicallyAccessedMembersAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Shared/Diagnostics/ExperimentalAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Shared/Diagnostics/IsExternalInit.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Shared/Diagnostics/NullableAttributes.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresDynamicCodeAttribute.cs" Link="Shared/Diagnostics/RequiresDynamicCodeAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" Link="Shared/Diagnostics/RequiresUnreferencedCodeAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/UnreachableException.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="Shared/System/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresDynamicCodeAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\VectorDataStrings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>VectorDataStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\VectorDataStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VectorDataStrings.resx</DependentUpon>
-      <NoWarn>$(NoWarn);1591</NoWarn>
-    </Compile>
-  </ItemGroup>
 </Project>

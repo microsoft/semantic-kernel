@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -20,6 +21,25 @@ public static class LocalKernelProcessFactory
     public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         Verify.NotNull(initialEvent, nameof(initialEvent));
+
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
+        await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
+        return processContext;
+    }
+
+    /// <summary>
+    /// Starts the specified process and runs it to completion.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="kernel"></param>
+    /// <param name="initialEvent"></param>
+    /// <param name="timeout"></param>
+    /// <param name="externalMessageChannel"></param>
+    /// <returns></returns>
+    public static async Task<LocalKernelProcessContext> RunToEndAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, TimeSpan? timeout = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    {
+        Verify.NotNull(initialEvent, nameof(initialEvent));
+        TimeSpan timeoutValue = timeout ?? TimeSpan.FromSeconds(60);
 
         LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);

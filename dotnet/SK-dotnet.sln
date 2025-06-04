@@ -54,9 +54,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.SqliteVec", "src\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Postgres", "src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.PgVector", "src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Redis", "src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
 EndProject
@@ -85,8 +85,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "InternalUtilities", "{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Weaviate", "src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj", "{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.DuckDB", "src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj", "{50FAE231-6F24-4779-9D02-12ABBC9A49E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D794-4EC3-8E8F-F90D4D166420}"
 	ProjectSection(SolutionItems) = preProject
@@ -126,6 +124,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Linq\AsyncEnumerable.cs = src\InternalUtilities\src\Linq\AsyncEnumerable.cs
+		src\InternalUtilities\src\Linq\EnumerableExtensions.cs = src\InternalUtilities\src\Linq\EnumerableExtensions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3573-4477-BF07-40180FCDE1BD}"
@@ -159,8 +158,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Model", "Model", "{1DBA09D6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Core", "src\Plugins\Plugins.Core\Plugins.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.UnitTests", "src\Plugins\Plugins.UnitTests\Plugins.UnitTests.csproj", "{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}"
@@ -177,7 +174,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.OpenAI", "src\Plan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{6009CC87-32F1-4282-88BB-8E5A7BA12925}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBMongoDB", "src\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj", "{8B62C632-9D70-4DC1-AEAB-82D057A09A19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosMongoDB", "src\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj", "{8B62C632-9D70-4DC1-AEAB-82D057A09A19}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Handlebars", "src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj", "{B0646036-0C50-4F66-B479-ADA9C1166816}"
 EndProject
@@ -322,7 +319,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QualityCheckWithFilters", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos\TimePlugin\TimePlugin.csproj", "{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosNoSql", "src\Connectors\Connectors.Memory.CosmosNoSql\Connectors.Memory.CosmosNoSql.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Amazon", "src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj", "{E059E9B0-1302-474D-B1B5-10A6E0F1A769}"
 EndProject
@@ -336,7 +333,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama", "src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj", "{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBMongoDB.UnitTests", "src\Connectors\Connectors.AzureCosmosDBMongoDB.UnitTests\Connectors.AzureCosmosDBMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.CosmosMongoDB.UnitTests", "src\Connectors\Connectors.CosmosMongoDB.UnitTests\Connectors.CosmosMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
 EndProject
@@ -344,7 +341,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.CosmosNoSql.UnitTests", "src\Connectors\Connectors.CosmosNoSql.UnitTests\Connectors.CosmosNoSql.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
 EndProject
@@ -378,7 +375,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Sqlite.UnitTests", "src\Connectors\Connectors.Sqlite.UnitTests\Connectors.Sqlite.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.SqliteVec.UnitTests", "src\Connectors\Connectors.SqliteVec.UnitTests\Connectors.SqliteVec.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VectorData.Abstractions", "src\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj", "{CF09AE39-67BA-4FE0-A0CD-A49BED956311}"
 EndProject
@@ -433,8 +430,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OllamaFunctionCalling", "sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAIRealtime", "samples\Demos\OpenAIRealtime\OpenAIRealtime.csproj", "{6154129E-7A35-44A5-998E-B7001B5EDE14}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CreateChatGpt", "CreateChatGpt", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VectorDataIntegrationTests", "VectorDataIntegrationTests", "{4F381919-F1BE-47D8-8558-3187ED04A84F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QdrantIntegrationTests", "src\VectorDataIntegrationTests\QdrantIntegrationTests\QdrantIntegrationTests.csproj", "{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707}"
@@ -443,13 +438,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorDataIntegrationTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisIntegrationTests", "src\VectorDataIntegrationTests\RedisIntegrationTests\RedisIntegrationTests.csproj", "{F7EA82A4-A626-4316-AA47-EAC3A0E85870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgresIntegrationTests", "src\VectorDataIntegrationTests\PostgresIntegrationTests\PostgresIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgVectorIntegrationTests", "src\VectorDataIntegrationTests\PgVectorIntegrationTests\PgVectorIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemoryIntegrationTests", "src\VectorDataIntegrationTests\InMemoryIntegrationTests\InMemoryIntegrationTests.csproj", "{F5126690-0FD1-4777-9EDF-B3F5B7B3730B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosNoSQLIntegrationTests", "src\VectorDataIntegrationTests\CosmosNoSQLIntegrationTests\CosmosNoSQLIntegrationTests.csproj", "{E200425C-E501-430C-8A8B-BC0088BD94DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosNoSqlIntegrationTests", "src\VectorDataIntegrationTests\CosmosNoSqlIntegrationTests\CosmosNoSqlIntegrationTests.csproj", "{E200425C-E501-430C-8A8B-BC0088BD94DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteIntegrationTests", "src\VectorDataIntegrationTests\SqliteIntegrationTests\SqliteIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteVecIntegrationTests", "src\VectorDataIntegrationTests\SqliteVecIntegrationTests\SqliteVecIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeaviateIntegrationTests", "src\VectorDataIntegrationTests\WeaviateIntegrationTests\WeaviateIntegrationTests.csproj", "{E3CECC65-1B00-4E3A-90B6-FC7A2C64E41F}"
 EndProject
@@ -465,7 +460,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI.UnitTests", "src\Plugins\Plugins.AI.UnitTests\Plugins.AI.UnitTests.csproj", "{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.PgVector.UnitTests", "src\Connectors\Connectors.PgVector.UnitTests\Connectors.PgVector.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Yaml", "src\Agents\Yaml\Agents.Yaml.csproj", "{29DF6278-06FC-4F1D-8555-D3E880AF3204}"
 EndProject
@@ -549,6 +544,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess.UnitTests", "src\Agents\Runtime\InProcess.Tests\Runtime.InProcess.UnitTests.csproj", "{DA6B4ED4-ED0B-D25C-889C-9F940E714891}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData.UnitTests", "src\Connectors\VectorData.UnitTests\VectorData.UnitTests.csproj", "{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Orchestration", "src\Agents\Orchestration\Agents.Orchestration.csproj", "{D1A02387-FA60-22F8-C2ED-4676568B6CC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Magentic", "src\Agents\Magentic\Agents.Magentic.csproj", "{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.CopilotStudio", "src\Agents\Copilot\Agents.CopilotStudio.csproj", "{84BA9026-E05E-9B6A-C177-C04BDAA1714F}"
 EndProject
@@ -703,24 +702,12 @@ Global
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1513,6 +1500,18 @@ Global
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
@@ -1544,7 +1543,7 @@ Global
 		{AFA81EB7-F869-467D-8A90-744305D80AAC} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{627742DB-1E52-468A-99BD-6FF1A542D25B} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{E3299033-EB81-4C4C-BCD9-E8DC40937969} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
-		{078F96B4-09E1-4E0E-B214-F71A4F4BF633} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
+		{078F96B4-09E1-4E0E-B214-F71A4F4BF633} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{F51017A9-15C8-472D-893C-080046D710A6} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{4D226C2F-AE9F-4EFB-AF2D-45C8FE5CB34E} = {24503383-A8C4-4255-9998-28D70FE8E99A}
@@ -1553,7 +1552,6 @@ Global
 		{FBEB24A0-E4E9-44D7-B56C-48D91D39A3F9} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4} = {24503383-A8C4-4255-9998-28D70FE8E99A}
-		{50FAE231-6F24-4779-9D02-12ABBC9A49E2} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{5C246969-D794-4EC3-8E8F-F90D4D166420} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{314A2705-0F70-44B6-8988-C6DF77BDFD42} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{C7299F56-3A55-471E-B10E-B1FBE101C625} = {314A2705-0F70-44B6-8988-C6DF77BDFD42}
@@ -1565,7 +1563,6 @@ Global
 		{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{1DBA09D6-0506-4AFA-9DF0-0A0E8D6586B1} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
-		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{A21FAC7C-0C09-4EAD-843B-926ACEF73C80} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
@@ -1673,7 +1670,6 @@ Global
 		{B35B1DEB-04DF-4141-9163-01031B22C5D1} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{481A680F-476A-4627-83DE-2F56C484525E} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{6154129E-7A35-44A5-998E-B7001B5EDE14} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
-		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{4F381919-F1BE-47D8-8558-3187ED04A84F} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{B29A972F-A774-4140-AECF-6B577C476627} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
@@ -1724,6 +1720,8 @@ Global
 		{CCC909E4-5269-A31E-0BFD-4863B4B29BBB} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
+		{D1A02387-FA60-22F8-C2ED-4676568B6CC3} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
+		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 		{84BA9026-E05E-9B6A-C177-C04BDAA1714F} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

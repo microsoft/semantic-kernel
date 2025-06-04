@@ -13,9 +13,9 @@ from semantic_kernel.utils.logging import setup_logging
 
 """
 This sample demonstrates how to build a conversational chatbot
-using Semantic Kernel, 
+using Semantic Kernel,
 it creates a Plugin from a MCP server config and adds it to the kernel.
-The chatbot is designed to interact with the user, call MCP tools 
+The chatbot is designed to interact with the user, call MCP tools
 as needed, and return responses.
 
 To run this sample, make sure to run:
@@ -96,7 +96,7 @@ async def main() -> None:
     # The MCP server plugin is defined using the MCPStdioPlugin class.
     # The command and args are specific to the MCP server you want to run.
     # For example, the Github MCP Server uses `npx` to run the server.
-    # There is also a MCPSsePlugin, which takes a URL.
+    # There are also MCPSsePlugin and MCPStreamableHttpPlugin, which take a URL.
     async with MCPStdioPlugin(
         name="Github",
         description="Github Plugin",

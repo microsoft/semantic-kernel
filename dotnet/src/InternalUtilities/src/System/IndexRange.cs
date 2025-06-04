@@ -9,9 +9,15 @@
 
 #pragma warning disable RCS1168
 #pragma warning disable RCS1211
+#pragma warning disable RCS1220
 #pragma warning disable IDE0009
 #pragma warning disable IDE0011
+#pragma warning disable IDE0038
+#pragma warning disable IDE0046
+#pragma warning disable IDE0048
 #pragma warning disable IDE0090
+#pragma warning disable IDE0301
+#pragma warning disable CS8604
 
 using System.Runtime.CompilerServices;
 

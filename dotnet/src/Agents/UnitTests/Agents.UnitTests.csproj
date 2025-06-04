@@ -3,19 +3,13 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Agents.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.Agents.UnitTests</AssemblyName>
-    <TargetFrameworks>net8.0</TargetFrameworks>    <!-- ;net48 -->
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>$(NoWarn);CA1707;CA2007;CA1812;CA1861;CA1063;CS0618;VSTHRD111;SKEXP0001;SKEXP0050;SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1812;CA1861;CA1063;CS0618;IDE1006;VSTHRD111;SKEXP0001;SKEXP0050;SKEXP0110;SKEXP0130;OPENAI001</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="OpenAI\Azure\**" />
-    <EmbeddedResource Remove="OpenAI\Azure\**" />
-    <None Remove="OpenAI\Azure\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
@@ -46,21 +40,21 @@
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Copilot\Agents.CopilotStudio.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
-    <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Magentic\Agents.Magentic.csproj" />
+    <ProjectReference Include="..\Orchestration\Agents.Orchestration.csproj" />
+    <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
+    <ProjectReference Include="..\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\Yaml\Agents.Yaml.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="CopilotStudio\" />
   </ItemGroup>
 
 </Project>

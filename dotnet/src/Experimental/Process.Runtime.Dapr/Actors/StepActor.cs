@@ -446,8 +446,12 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         bool foundEdge = false;
         foreach (KernelProcessEdge edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
+            if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
+            {
+                throw new KernelException("The target for the edge is not a function target.").Log(this._logger);
+            }
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.SourceId, daprEvent.Data);
-            ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+            ActorId scopedStepId = this.ScopedActorId(new ActorId(functionTarget.StepId));
             IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
             foundEdge = true;

@@ -73,35 +73,20 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
 
     validation_error = ValidationError.from_exception_data("DummyModel", [error])
 
-    with patch.object(
-        cosmos_settings.AzureCosmosDBforMongoDBSettings,
-        "create",
-        side_effect=validation_error,
+    with (
+        patch.object(
+            cosmos_settings.AzureCosmosDBforMongoDBSettings,
+            "__init__",
+            side_effect=validation_error,
+        ),
+        pytest.raises(VectorStoreInitializationException),
     ):
-        with pytest.raises(VectorStoreInitializationException) as exc_info:
-            cosmos_collection.AzureCosmosDBforMongoDBCollection(
-                collection_name="test_collection",
-                data_model_type=dict,
-                data_model_definition=mock_data_model_definition,
-                database_name="",
-            )
-        assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
-
-
-async def test_constructor_raises_exception_if_no_connection_string() -> None:
-    """
-    Ensure that a VectorStoreInitializationException is raised if the
-    AzureCosmosDBforMongoDBSettings.connection_string is None.
-    """
-    # Mock settings without a connection string
-    mock_settings = AsyncMock(spec=cosmos_settings.AzureCosmosDBforMongoDBSettings)
-    mock_settings.connection_string = None
-    mock_settings.database_name = "some_database"
-
-    with patch.object(cosmos_settings.AzureCosmosDBforMongoDBSettings, "create", return_value=mock_settings):
-        with pytest.raises(VectorStoreInitializationException) as exc_info:
-            cosmos_collection.AzureCosmosDBforMongoDBCollection(collection_name="test_collection", data_model_type=dict)
-        assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
+        cosmos_collection.AzureCosmosDBforMongoDBCollection(
+            collection_name="test_collection",
+            data_model_type=dict,
+            data_model_definition=mock_data_model_definition,
+            database_name="",
+        )
 
 
 async def test_create_collection_calls_database_methods() -> None:

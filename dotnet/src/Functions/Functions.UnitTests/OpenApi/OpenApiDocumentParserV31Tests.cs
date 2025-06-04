@@ -122,6 +122,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
+        Assert.Equal("Create or update secret value", putOperation.Summary);
         Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Servers[0].Url);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
@@ -174,6 +175,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var operation = restApi.Operations.Single(o => o.Id == "Excuses");
         Assert.NotNull(operation);
         Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
+        Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Summary);
     }
 
     [Fact]

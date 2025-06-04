@@ -31,8 +31,7 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
-        OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(endpoint: null, httpClient: this._httpClient);
-        OpenAIClient openAIClient = new(new ApiKeyCredential("fakekey"), clientOptions);
+        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), httpClient: this._httpClient);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<OpenAIClient>(openAIClient);

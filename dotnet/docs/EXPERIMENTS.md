@@ -25,6 +25,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
 | SKEXP0120 | Native-AOT |
+| SKEXP0130 | AI Context Providers |
 | MEVD9000 | Microsoft.Extensions.VectorData experimental user-facing APIs |
 | MEVD9001 | Microsoft.Extensions.VectorData experimental connector-facing APIs |
 
@@ -83,6 +84,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Amazon AI connector | | | | | |
 | | | | | | | |
 | SKEXP0080 | Process Framework |
+| SKEXP0081 | Process Framework - Foundry Process
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants |
 | SKEXP0101 | Experiment with Flow Orchestration |

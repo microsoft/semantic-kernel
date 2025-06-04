@@ -10,12 +10,12 @@ namespace Step02.Steps;
 /// </summary>
 public class NewMarketingEntryStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string CreateNewMarketingEntry = nameof(CreateNewMarketingEntry);
     }
 
-    [KernelFunction(Functions.CreateNewMarketingEntry)]
+    [KernelFunction(ProcessStepFunctions.CreateNewMarketingEntry)]
     public async Task CreateNewMarketingEntryAsync(KernelProcessStepContext context, MarketingNewEntryDetails userDetails, Kernel _kernel)
     {
         Console.WriteLine($"[MARKETING ENTRY CREATION] New Account {userDetails.AccountId} created");

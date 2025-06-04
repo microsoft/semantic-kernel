@@ -19,37 +19,37 @@ public class InMemoryVectorStoreTests
     public void GetCollectionReturnsCollection()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
+        Assert.IsType<InMemoryCollection<string, SinglePropsModel<string>>>(actual);
     }
 
     [Fact]
     public void GetCollectionReturnsCollectionWithNonStringKey()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
 
         // Act.
         var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<int, SinglePropsModel<int>>>(actual);
+        Assert.IsType<InMemoryCollection<int, SinglePropsModel<int>>>(actual);
     }
 
     [Fact]
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
         var stringKeyCollection = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
-        await stringKeyCollection.CreateCollectionAsync();
+        await stringKeyCollection.EnsureCollectionExistsAsync();
 
         // Act and assert.
         var exception = Assert.Throws<InvalidOperationException>(() => sut.GetCollection<string, SecondModel>(TestCollectionName));
@@ -59,13 +59,13 @@ public class InMemoryVectorStoreTests
 #pragma warning disable CA1812 // Classes are used as generic arguments
     private sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
@@ -73,10 +73,10 @@ public class InMemoryVectorStoreTests
 
     private sealed class SecondModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
     }
 #pragma warning restore CA1812

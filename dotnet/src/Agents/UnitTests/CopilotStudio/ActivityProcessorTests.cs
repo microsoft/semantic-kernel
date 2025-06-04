@@ -36,7 +36,7 @@ public class ActivityProcessorTests
         Mock<ILogger> loggerMock = new();
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
             .ToArrayAsync();
 
         // Assert
@@ -60,11 +60,10 @@ public class ActivityProcessorTests
         };
 
         IAsyncEnumerable<IActivity> activities = CreateAsyncEnumerable(new[] { typingActivity });
-        Mock<ILogger> loggerMock = new();
+        Mock<ILogger> loggerMock = new(MockBehavior.Strict);
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
-            .ToArrayAsync();
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object).ToArrayAsync();
 
         // Assert
         Assert.Single(results);
@@ -88,11 +87,10 @@ public class ActivityProcessorTests
         };
 
         IAsyncEnumerable<IActivity> activities = CreateAsyncEnumerable(new[] { eventActivity });
-        Mock<ILogger> loggerMock = new();
+        Mock<ILogger> loggerMock = new(MockBehavior.Strict);
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
-            .ToArrayAsync();
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object).ToArrayAsync();
 
         // Assert
         Assert.Empty(results);
@@ -114,8 +112,7 @@ public class ActivityProcessorTests
         Mock<ILogger> loggerMock = new();
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
-            .ToArrayAsync();
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object).ToArrayAsync();
 
         // Assert
         Assert.Empty(results);
@@ -151,11 +148,10 @@ public class ActivityProcessorTests
         };
 
         IAsyncEnumerable<IActivity> activities = CreateAsyncEnumerable(new[] { messageActivity });
-        Mock<ILogger> loggerMock = new();
+        Mock<ILogger> loggerMock = new(MockBehavior.Strict);
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
-            .ToArrayAsync();
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object).ToArrayAsync();
 
         // Assert
         Assert.Single(results);
@@ -194,15 +190,14 @@ public class ActivityProcessorTests
         };
 
         IAsyncEnumerable<IActivity> activities = CreateAsyncEnumerable(
-            new[] { messageActivity, typingActivity, eventActivity });
-        Mock<ILogger> loggerMock = new();
+            [messageActivity, typingActivity, eventActivity]);
+        Mock<ILogger> loggerMock = new(MockBehavior.Strict);
 
         // Act
-        IList<ChatMessageContent> results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object)
-            .ToArrayAsync();
+        ChatMessageContent[] results = await ActivityProcessor.ProcessActivity(activities, loggerMock.Object).ToArrayAsync();
 
         // Assert
-        Assert.Equal(2, results.Count);
+        Assert.Equal(2, results.Length);
         Assert.Equal("Hello", results[0].Content);
         Assert.IsType<ReasoningContent>(results[1].Items[0]);
     }
@@ -212,11 +207,5 @@ public class ActivityProcessorTests
     /// </summary>
     /// <param name="activities">The activities to yield.</param>
     /// <returns>An async enumerable of IActivity.</returns>
-    private static async IAsyncEnumerable<IActivity> CreateAsyncEnumerable(IEnumerable<IActivity> activities)
-    {
-        foreach (IActivity activity in activities)
-        {
-            yield return activity;
-        }
-    }
+    private static IAsyncEnumerable<IActivity> CreateAsyncEnumerable(IEnumerable<IActivity> activities) => activities.ToAsyncEnumerable();
 }

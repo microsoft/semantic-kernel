@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="9.0.1" />
@@ -47,6 +48,9 @@
     <ProjectReference Include="..\..\src\Agents\Copilot\Agents.CopilotStudio.csproj" />
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Orchestration\Agents.Orchestration.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Magentic\Agents.Magentic.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\..\src\Agents\Yaml\Agents.Yaml.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
@@ -19,24 +19,19 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 internal static class AgentRunExtensions
 {
     public static async IAsyncEnumerable<RunStep> GetStepsAsync(
-        this AgentsClient client,
-        ThreadRun run,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+           this PersistentAgentsClient client,
+           ThreadRun run,
+           [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        PageableList<RunStep>? steps = null;
-        do
+        AsyncPageable<RunStep>? steps = client.Runs.GetRunStepsAsync(run, cancellationToken: cancellationToken);
+        await foreach (RunStep step in steps.ConfigureAwait(false))
         {
-            steps = await client.GetRunStepsAsync(run, after: steps?.LastId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            foreach (RunStep step in steps)
-            {
-                yield return step;
-            }
+            yield return step;
         }
-        while (steps?.HasMore ?? false);
     }
 
     public static async Task<ThreadRun> CreateAsync(
-        this AgentsClient client,
+        this PersistentAgentsClient client,
         string threadId,
         AzureAIAgent agent,
         string? instructions,
@@ -44,16 +39,16 @@ internal static class AgentRunExtensions
         AzureAIInvocationOptions? invocationOptions,
         CancellationToken cancellationToken)
     {
-        TruncationObject? truncationStrategy = GetTruncationStrategy(invocationOptions);
+        Truncation? truncationStrategy = GetTruncationStrategy(invocationOptions);
         BinaryData? responseFormat = GetResponseFormat(invocationOptions);
         return
-            await client.CreateRunAsync(
+            await client.Runs.CreateRunAsync(
                 threadId,
-                agent.Definition.Id,
+                agent.Id,
                 overrideModelName: invocationOptions?.ModelName,
                 overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
                 additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages).ToArray(),
+                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
                 overrideTools: tools,
                 stream: false,
                 temperature: invocationOptions?.Temperature,
@@ -72,11 +67,16 @@ internal static class AgentRunExtensions
     private static BinaryData? GetResponseFormat(AzureAIInvocationOptions? invocationOptions)
     {
         return invocationOptions?.EnableJsonResponse == true ?
-            BinaryData.FromString(ResponseFormat.JsonObject.ToString()) :
+            BinaryData.FromString(
+                """
+                {
+                    "type": "json_object"
+                }                        
+                """) :
             null;
     }
 
-    private static TruncationObject? GetTruncationStrategy(AzureAIInvocationOptions? invocationOptions)
+    private static Truncation? GetTruncationStrategy(AzureAIInvocationOptions? invocationOptions)
     {
         return invocationOptions?.TruncationMessageCount == null ?
             null :
@@ -87,7 +87,7 @@ internal static class AgentRunExtensions
     }
 
     public static IAsyncEnumerable<StreamingUpdate> CreateStreamingAsync(
-        this AgentsClient client,
+        this PersistentAgentsClient client,
         string threadId,
         AzureAIAgent agent,
         string? instructions,
@@ -95,16 +95,16 @@ internal static class AgentRunExtensions
         AzureAIInvocationOptions? invocationOptions,
         CancellationToken cancellationToken)
     {
-        TruncationObject? truncationStrategy = GetTruncationStrategy(invocationOptions);
+        Truncation? truncationStrategy = GetTruncationStrategy(invocationOptions);
         BinaryData? responseFormat = GetResponseFormat(invocationOptions);
         return
-            client.CreateRunStreamingAsync(
+            client.Runs.CreateRunStreamingAsync(
                 threadId,
-                agent.Definition.Id,
+                agent.Id,
                 overrideModelName: invocationOptions?.ModelName,
                 overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
                 additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages).ToArray(),
+                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
                 overrideTools: tools,
                 temperature: invocationOptions?.Temperature,
                 topP: invocationOptions?.TopP,

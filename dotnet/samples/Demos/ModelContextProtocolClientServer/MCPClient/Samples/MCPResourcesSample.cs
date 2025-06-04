@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 
 namespace MCPClient.Samples;
 
@@ -32,7 +32,7 @@ internal sealed class MCPResourcesSample : BaseSample
         await using IMcpClient mcpClient = await CreateMcpClientAsync();
 
         // Retrieve list of resources provided by the MCP server and display them
-        IList<Resource> resources = await mcpClient.ListResourcesAsync();
+        IList<McpClientResource> resources = await mcpClient.ListResourcesAsync();
         DisplayResources(resources);
 
         // Create a kernel
@@ -69,7 +69,7 @@ internal sealed class MCPResourcesSample : BaseSample
     /// Displays the list of resources provided by the MCP server.
     /// </summary>
     /// <param name="resources">The list of resources to display.</param>
-    private static void DisplayResources(IList<Resource> resources)
+    private static void DisplayResources(IList<McpClientResource> resources)
     {
         Console.WriteLine("Available MCP resources:");
         foreach (var resource in resources)

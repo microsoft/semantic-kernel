@@ -49,8 +49,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
-        TKey key = await collection.UpsertAsync(inserted);
-        Assert.Equal(expectedKey, key);
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
         inserted.AssertEqual(received);
@@ -75,8 +74,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
         };
 
         Assert.NotNull(await collection.GetAsync(existingRecord.Id));
-        TKey key = await collection.UpsertAsync(updated);
-        Assert.Equal(existingRecord.Id, key);
+        await collection.UpsertAsync(updated);
 
         var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
         updated.AssertEqual(received);
@@ -100,10 +98,10 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     {
         public const int DimensionCount = 3;
 
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreRecordData(StoragePropertyName = "text")]
+        [VectorStoreData(StorageName = "text")]
         public string? Text { get; set; }
 
         public void AssertEqual(NoVectorRecord? other)
@@ -143,13 +141,13 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
             }
         ];
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true, StoragePropertyName = "text" },
+                    new VectorStoreKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)) { StorageName = "key" },
+                    new VectorStoreDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true, StorageName = "text" },
                 ]
             };
 

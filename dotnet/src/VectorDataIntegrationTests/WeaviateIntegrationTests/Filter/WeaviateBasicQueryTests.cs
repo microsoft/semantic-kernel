@@ -5,7 +5,6 @@ using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support;
 using Xunit;
-using Xunit.Sdk;
 
 namespace WeaviateIntegrationTests.Filter;
 
@@ -18,16 +17,19 @@ public class WeaviateBasicQueryTests(WeaviateBasicQueryTests.Fixture fixture)
     // We could interact with Weaviate directly (not via the abstraction) to do this.
 
     public override Task Equal_with_null_reference_type()
-        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.Equal_with_null_reference_type());
+        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_with_null_reference_type());
 
     public override Task Equal_with_null_captured()
-        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.Equal_with_null_captured());
+        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_with_null_captured());
 
     public override Task NotEqual_with_null_captured()
-        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_captured());
+        => Assert.ThrowsAsync<VectorStoreException>(() => base.NotEqual_with_null_captured());
 
     public override Task NotEqual_with_null_reference_type()
-        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_reference_type());
+        => Assert.ThrowsAsync<VectorStoreException>(() => base.NotEqual_with_null_reference_type());
+
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_int_property_with_null_nullable_int());
 
     #endregion
 
@@ -57,11 +59,6 @@ public class WeaviateBasicQueryTests(WeaviateBasicQueryTests.Fixture fixture)
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_inline_string_array_with_weird_chars());
 
     #endregion
-
-    // In Weaviate, string equality on multi-word textual properties depends on tokenization
-    // (https://weaviate.io/developers/weaviate/api/graphql/filters#multi-word-queries-in-equal-filters)
-    public override Task Equal_with_string_is_not_Contains()
-        => Assert.ThrowsAsync<FailException>(() => base.Equal_with_string_is_not_Contains());
 
     public new class Fixture : BasicQueryTests<Guid>.QueryFixture
     {

@@ -18,7 +18,6 @@ set the required environment variables for the Azure AI Foundry service:
 - AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
 - Optionally: AZURE_OPENAI_API_KEY 
 If this is not set, it will try to use DefaultAzureCredential.
-
 """
 
 

@@ -17,7 +17,7 @@ namespace Step02.Steps;
 /// </summary>
 public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormState>
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string NewAccountProcessUserInfo = nameof(NewAccountProcessUserInfo);
         public const string NewAccountWelcome = nameof(NewAccountWelcome);
@@ -60,7 +60,7 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
         return ValueTask.CompletedTask;
     }
 
-    [KernelFunction(Functions.NewAccountWelcome)]
+    [KernelFunction(ProcessStepFunctions.NewAccountWelcome)]
     public async Task NewAccountWelcomeMessageAsync(KernelProcessStepContext context, Kernel _kernel)
     {
         _state?.conversation.Add(new ChatMessageContent { Role = AuthorRole.Assistant, Content = _welcomeMessage });
@@ -84,7 +84,7 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
         return kernel;
     }
 
-    [KernelFunction(Functions.NewAccountProcessUserInfo)]
+    [KernelFunction(ProcessStepFunctions.NewAccountProcessUserInfo)]
     public async Task CompleteNewCustomerFormAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
     {
         // Keeping track of all user interactions

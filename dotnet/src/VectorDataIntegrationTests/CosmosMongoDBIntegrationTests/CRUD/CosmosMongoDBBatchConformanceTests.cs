@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CosmosMongoDBIntegrationTests.CRUD;
 
-public class CosmosMongoDBBatchConformanceTests(CosmosMongoDBSimpleModelFixture fixture)
-    : BatchConformanceTests<string>(fixture), IClassFixture<CosmosMongoDBSimpleModelFixture>
+public class CosmosMongoDBBatchConformanceTests(CosmosMongoSimpleModelFixture fixture)
+    : BatchConformanceTests<string>(fixture), IClassFixture<CosmosMongoSimpleModelFixture>
 {
 }

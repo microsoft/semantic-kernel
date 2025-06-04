@@ -7,27 +7,18 @@ To set up the required resources, follow the "Quickstart: Create a new agent" gu
 You will need to install the optional Semantic Kernel `azure` dependencies if you haven't already via:
 
 ```bash
-pip install semantic-kernel[azure]
+pip install semantic-kernel
 ```
 
 Before running an Azure AI Agent, modify your .env file to include:
 
 ```bash
-AZURE_AI_AGENT_PROJECT_CONNECTION_STRING = "<example-connection-string>"
-AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME = "<example-model-deployment-name>"
+AZURE_AI_AGENT_ENDPOINT = "<example-endpoint-string>"
+AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME = "<example-deployment-name>"
+AZURE_AI_AGENT_API_VERSION = "<example-api-version>"
 ```
 
-or
-
-```bash
-AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME = "<example-model-deployment-name>"
-AZURE_AI_AGENT_ENDPOINT = "<example-endpoint>"
-AZURE_AI_AGENT_SUBSCRIPTION_ID = "<example-subscription-id>"
-AZURE_AI_AGENT_RESOURCE_GROUP_NAME = "<example-resource-group-name>"
-AZURE_AI_AGENT_PROJECT_NAME = "<example-project-name>"
-```
-
-The project connection string is of the following format: `<HostName>;<AzureSubscriptionId>;<ResourceGroup>;<ProjectName>`. See [here](https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=programming-language-python-azure#configure-and-run-an-agent) for information on obtaining the values to populate the connection string.
+The endpoint can be found listed as part of the Azure Foundry [portal](https://ai.azure.com) in the format of: `https://<resource>.services.ai.azure.com/api/projects/<project-name>`.
 
 The .env should be placed in the root directory.
 
@@ -38,11 +29,11 @@ Ensure that your Azure AI Agent resources are configured with at least a Basic o
 To begin, create the project client as follows:
 
 ```python
-async with DefaultAzureCredential() as credential:
-    client = await AzureAIAgent.create_client(credential=credential)
-
-    async with client:
-        # Your operational code here
+async with (
+    DefaultAzureCredential() as creds,
+    AzureAIAgent.create_client(credential=creds) as client,
+):
+    # Your operational code here
 ```
 
 ### Required Imports
@@ -55,14 +46,18 @@ from azure.identity.aio import DefaultAzureCredential
 
 ### Initializing the Agent
 
-You can pass in a connection string (shown above) to create the client:
+You can pass in an endpoint, along with an optional api-version, to create the client:
 
 ```python
+
+ai_agent_settings = AzureAIAgentSettings()
+
 async with (
     DefaultAzureCredential() as creds,
     AzureAIAgent.create_client(
         credential=creds,
-        conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
+        endpoint=ai_agent_settings.endpoint,
+        api_version=ai_agent_settings.api_version,
     ) as client,
 ):
     # operational logic

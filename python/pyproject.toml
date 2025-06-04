@@ -23,6 +23,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+    # azure agents
+    "azure-ai-projects >= 1.0.0b11",
+    "azure-ai-agents >= 1.0.0",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -52,6 +55,8 @@ dependencies = [
     "aiortc>=1.9.0",
     # Protobuf
     "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
@@ -63,23 +68,16 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.38.0",
+    "boto3>=1.36.4,<1.39.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects >= 1.0.0b7",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
     "chromadb >= 0.5,< 1.1"
-]
-# Temporary: use direct Test PyPI links until packages are published to Public PyPI
-# Once published, these will simplify to just "microsoft-agents-core" and "microsoft-agents-copilotstudio-client"
-copilot_studio = [
-  "microsoft-agents-core @ https://test-files.pythonhosted.org/packages/17/ae/c87bfb943e75fac50522e2598232fc386b0d7f09a2dd462bbdc63cb83602/microsoft_agents_core-0.0.0a2-py3-none-any.whl",
-  "microsoft-agents-copilotstudio-client @ https://test-files.pythonhosted.org/packages/47/de/9f9e0a0c57132363154dcf197bf2ce0ed33e9c986a8df8573091bcc79b54/microsoft_agents_copilotstudio_client-0.0.0a2-py3-none-any.whl"
 ]
 dapr = [
     "dapr>=1.14.0",
@@ -90,7 +88,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.91.0",
+    "google-cloud-aiplatform == 1.93.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -99,7 +97,7 @@ hugging_face = [
     "torch == 2.7.0"
 ]
 mcp = [
-    "mcp ~= 1.6"
+    "mcp>=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -119,7 +117,7 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5; python_version < '3.13'"
+    "onnxruntime-genai ~= 0.7"
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -134,7 +132,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] ~= 5.0",
+    "redis[hiredis] >= 5,< 6",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -210,7 +208,7 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
