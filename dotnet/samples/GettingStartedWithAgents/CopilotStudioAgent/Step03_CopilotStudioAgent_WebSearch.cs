@@ -11,7 +11,7 @@ namespace GettingStarted.CopilotStudioAgents;
 /// Demonstrates how to use a Copilot Studio Agent with a persistent conversation thread
 /// to perform web search queries and retrieve responses in a .NET test scenario.
 /// </summary>
-public sealed class Step04_CopilotStudioAgent_WebSearch(ITestOutputHelper output) : BaseAgentsTest(output)
+public sealed class Step03_CopilotStudioAgent_WebSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseCopilotStudioAgentThread()
