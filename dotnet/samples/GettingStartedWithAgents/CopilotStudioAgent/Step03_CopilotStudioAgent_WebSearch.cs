@@ -11,6 +11,10 @@ namespace GettingStarted.CopilotStudioAgents;
 /// Demonstrates how to use a Copilot Studio Agent with a persistent conversation thread
 /// to perform web search queries and retrieve responses in a .NET test scenario.
 /// </summary>
+/// <remarks>
+/// In Copilot Studio, for the specified agent, you must enable the "Web Search" capability.
+/// If not already enabled, make sure to(re-)publish the agent so the changes take effect.
+/// </remarks>
 public sealed class Step03_CopilotStudioAgent_WebSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
