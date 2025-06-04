@@ -27,8 +27,8 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     enable_payload_namespacing: bool = False
     operations_to_exclude: list[str] = Field(default_factory=list, description="The operationId(s) to exclude")
     operation_selection_predicate: Callable[[OperationSelectionPredicateContext], bool] | None = None
-    timeout: float = Field(
-        10.0, description="Default timeout in seconds for HTTP requests if not overridden by run options"
+    timeout: float | None = Field(
+        None, description="Default timeout in seconds for HTTP requests. Uses httpx default (5 seconds) if None."
     )
 
     def model_post_init(self, __context: Any) -> None:

@@ -14,6 +14,6 @@ class RestApiRunOptions:
             api_host_url: The API host URL, if any.
             timeout: The timeout for the operation, if any.
         """
-        self.server_url_override: str = server_url_override
-        self.api_host_url: str = api_host_url
+        self.server_url_override: str | None = server_url_override
+        self.api_host_url: str | None = api_host_url
         self.timeout: float | None = timeout
