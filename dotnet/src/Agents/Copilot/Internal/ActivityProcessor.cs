@@ -10,9 +10,9 @@ namespace Microsoft.SemanticKernel.Agents.CopilotStudio.Internal;
 
 internal static class ActivityProcessor
 {
-    public static async IAsyncEnumerable<ChatMessageContent> ProcessActivity(IAsyncEnumerable<IActivity> activies, ILogger logger)
+    public static async IAsyncEnumerable<ChatMessageContent> ProcessActivity(IAsyncEnumerable<IActivity> activities, ILogger logger)
     {
-        await foreach (IActivity activity in activies.ConfigureAwait(false))
+        await foreach (IActivity activity in activities.ConfigureAwait(false))
         {
             switch (activity.Type)
             {

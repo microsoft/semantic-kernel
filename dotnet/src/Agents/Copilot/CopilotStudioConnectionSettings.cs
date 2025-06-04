@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 namespace Microsoft.SemanticKernel.Agents.Copilot;
 
 /// <summary>
-/// <see cref="ConnectionSettings"/> with additional properties to specifiy Application (Client) Id,
+/// <see cref="ConnectionSettings"/> with additional properties to specify Application (Client) Id,
 /// Tenant Id, and optionally the Application Client secret.
 /// </summary>
 public sealed class CopilotStudioConnectionSettings : ConnectionSettings
