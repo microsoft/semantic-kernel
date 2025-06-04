@@ -31,7 +31,9 @@ public sealed class KernelParameterMetadata
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
-    public KernelParameterMetadata(string name) => this.Name = name;
+    public KernelParameterMetadata(string name)
+        : this(name, null!)
+    { }
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -42,6 +44,33 @@ public sealed class KernelParameterMetadata
     {
         this.Name = name;
         this._jsonSerializerOptions = jsonSerializerOptions;
+    }
+
+    /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with all properties.</summary>
+    /// <param name="name">The name of the parameter.</param>
+    /// <param name="description">The description of the parameter.</param>
+    /// <param name="defaultValue">The default value of the parameter.</param>
+    /// <param name="isRequired">Whether the parameter is required.</param>
+    /// <param name="parameterType">The .NET type of the parameter.</param>
+    /// <param name="schema">The JSON schema describing the parameter's type.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
+    /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
+    public KernelParameterMetadata(
+        string name,
+        string? description = null,
+        object? defaultValue = null,
+        bool isRequired = false,
+        Type? parameterType = null,
+        KernelJsonSchema? schema = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+        : this(name, jsonSerializerOptions ?? null!)
+    {
+        this.Description = description;
+        this.DefaultValue = defaultValue;
+        this.IsRequired = isRequired;
+        this.ParameterType = parameterType;
+        this.Schema = schema;
     }
 
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
