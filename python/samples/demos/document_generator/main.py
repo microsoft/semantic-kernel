@@ -17,6 +17,15 @@ from samples.demos.document_generator.custom_termination_strategy import CustomT
 from semantic_kernel.agents import AgentGroupChat
 from semantic_kernel.contents import AuthorRole, ChatMessageContent
 
+"""
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
+"""
+
 TASK = """
 Create a blog post to share technical details about the Semantic Kernel AI connectors.
 The content of the blog post should include the following:
