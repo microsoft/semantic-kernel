@@ -116,13 +116,14 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
         const string RowIdentifier = "Id";
 
-        PropertyModel[] properties =
+        var model = BuildModel(
         [
-            new KeyPropertyModel("Id", typeof(string)),
-            new DataPropertyModel("Name", typeof(string)),
-            new DataPropertyModel("Age", typeof(int)),
-            new DataPropertyModel("Address", typeof(string)),
-        ];
+            new VectorStoreKeyProperty("Id", typeof(string)),
+            new VectorStoreDataProperty("Name", typeof(string)),
+            new VectorStoreDataProperty("Age", typeof(string)),
+            new VectorStoreDataProperty("Address", typeof(string)),
+        ]);
+
         var records = new List<Dictionary<string, object?>>
         {
             new() { ["Id"] = "IdValue1", ["Name"] = "NameValue1", ["Age"] = "AgeValue1", ["Address"] = "AddressValue1" },
@@ -134,8 +135,9 @@ public sealed class SqliteCommandBuilderTests : IDisposable
             this._connection,
             TableName,
             RowIdentifier,
-            properties,
+            model,
             records,
+            generatedEmbeddings: null,
             data: true,
             replaceIfExists);
 

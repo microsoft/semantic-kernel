@@ -15,6 +15,15 @@ The following sample demonstrates how to configure an Agent Group Chat, and invo
 agent with only a single turn.A custom termination strategy is provided where the model
 is to rate the user input on creativity and expressiveness and end the chat when a score
 of 70 or higher is provided.
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
 
 
