@@ -227,6 +227,7 @@ public sealed record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
     /// Initializes a new instance of the <see cref="ProcessStepTargetBuilder"/> class.
     /// </summary>
     /// <param name="stepBuilder"></param>
+    /// <param name="functionName"></param>
     /// <param name="inputMapping"></param>
     public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, string? functionName = null, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder, functionName, null)
     {
