@@ -34,6 +34,37 @@ public sealed class KernelFunctionMetadata
         this.Name = name;
     }
 
+    /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> with all properties.</summary>
+    /// <param name="name">The name of the function.</param>
+    /// <param name="pluginName">The name of the plugin containing the function.</param>
+    /// <param name="description">The description of the function.</param>
+    /// <param name="parameters">The metadata for the parameters to the function.</param>
+    /// <param name="returnParameter">The metadata for the return parameter.</param>
+    /// <param name="additionalProperties">Optional metadata in addition to the named properties.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
+    /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
+    public KernelFunctionMetadata(
+        string name,
+        string? pluginName = null,
+        string? description = null,
+        IReadOnlyList<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null,
+        ReadOnlyDictionary<string, object?>? additionalProperties = null)
+        : this(name)
+    {
+        this.PluginName = pluginName;
+        this.Description = description;
+        this.Parameters = parameters ?? [];
+        if (returnParameter is not null)
+        {
+            this.ReturnParameter = returnParameter;
+        }
+        if (additionalProperties is not null)
+        {
+            this.AdditionalProperties = additionalProperties;
+        }
+    }
+
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <remarks>
