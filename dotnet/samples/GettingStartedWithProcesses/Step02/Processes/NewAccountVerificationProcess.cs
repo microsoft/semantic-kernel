@@ -25,14 +25,24 @@ public static class NewAccountVerificationProcess
         process
             .OnInputEvent(AccountOpeningEvents.NewCustomerFormCompleted)
             // The information gets passed to the core system record creation step
-            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.ProcessStepFunctions.DetermineCreditScore, parameterName: "customerDetails"))
-            // The information gets passed to the fraud detection step for validation
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "customerDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.ProcessStepFunctions.DetermineCreditScore));
 
-        // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
-        customerCreditCheckStep
-            .OnEvent(AccountOpeningEvents.CreditScoreCheckApproved)
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "previousCheckSucceeded"));
+        process.ListenFor().AllOf(
+            [
+                // When the newCustomerForm is completed the information gets passed to the fraud detection step for validation
+                new(AccountOpeningEvents.NewCustomerFormCompleted, process),
+                // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
+                new(AccountOpeningEvents.CreditScoreCheckApproved, customerCreditCheckStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(fraudDetectionCheckStep, inputMapping: (inputEvents) =>
+            {
+                // The fraud detection step needs the customer details and the credit score check result
+                return new()
+                {
+                    { "customerDetails", inputEvents[process.GetFullEventId(AccountOpeningEvents.NewCustomerFormCompleted)] },
+                    { "previousCheckSucceeded", inputEvents[customerCreditCheckStep.GetFullEventId(AccountOpeningEvents.CreditScoreCheckApproved)] }
+                };
+            }));
 
         return process;
     }

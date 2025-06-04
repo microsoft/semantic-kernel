@@ -150,6 +150,7 @@ public sealed class EmitterStep : KernelProcessStep<StepState>
     public const string InternalEventFunction = "SomeInternalFunctionName";
     public const string PublicEventFunction = "SomePublicFunctionName";
     public const string DualInputPublicEventFunction = "SomeDualInputPublicEventFunctionName";
+    public const string QuadInputPublicEventFunction = "SomeQuadInputPublicEventFunctionName";
 
     private readonly int _sleepDurationMs = 150;
 
@@ -166,7 +167,7 @@ public sealed class EmitterStep : KernelProcessStep<StepState>
     {
         Thread.Sleep(this._sleepDurationMs);
 
-        Console.WriteLine($"[EMIT_INTERNAL] {data}");
+        Console.WriteLine($"[EMIT_INTERNAL-{this.StepName}] {data}");
         this._state!.LastMessage = data;
         await context.EmitEventAsync(new() { Id = EventId, Data = data });
     }
@@ -176,7 +177,7 @@ public sealed class EmitterStep : KernelProcessStep<StepState>
     {
         Thread.Sleep(this._sleepDurationMs);
 
-        Console.WriteLine($"[EMIT_PUBLIC] {data}");
+        Console.WriteLine($"[EMIT_PUBLIC-{this.StepName}] {data}");
         this._state!.LastMessage = data;
         await context.EmitEventAsync(new() { Id = PublicEventId, Data = data, Visibility = KernelProcessEventVisibility.Public });
     }
@@ -187,9 +188,20 @@ public sealed class EmitterStep : KernelProcessStep<StepState>
         Thread.Sleep(this._sleepDurationMs);
 
         string outputText = $"{firstInput}-{secondInput}";
-        Console.WriteLine($"[EMIT_PUBLIC_DUAL] {outputText}");
+        Console.WriteLine($"[EMIT_PUBLIC_DUAL-{this.StepName}] {outputText}");
         this._state!.LastMessage = outputText;
         await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = outputText, Visibility = KernelProcessEventVisibility.Public });
+    }
+
+    [KernelFunction(QuadInputPublicEventFunction)]
+    public async Task QuadInputPublicEventFunctionAsync(KernelProcessStepContext context, string firstInput, string secondInput, string thirdInput = "thirdInput", string fourthInput = "fourthInput")
+    {
+        Thread.Sleep(this._sleepDurationMs * 2);
+
+        string outputText = $"{firstInput}-{secondInput}-{thirdInput}-{fourthInput}";
+        Console.WriteLine($"[EMIT_PUBLIC_QUAD-{this.StepName}] {outputText}");
+        this._state!.LastMessage = outputText;
+        await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadySecondaryPublic, Data = outputText, Visibility = KernelProcessEventVisibility.Public });
     }
 }
 
@@ -322,6 +334,7 @@ public static class ProcessTestsEvents
     public const string StartProcess = "StartProcess";
     public const string StartInnerProcess = "StartInnerProcess";
     public const string OutputReadyPublic = "OutputReadyPublic";
+    public const string OutputReadySecondaryPublic = "OutputReadySecondaryPublic";
     public const string OutputReadyInternal = "OutputReadyInternal";
     public const string ErrorStepSuccess = "ErrorStepSuccess";
 }

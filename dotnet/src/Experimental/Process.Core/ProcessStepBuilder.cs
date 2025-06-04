@@ -179,6 +179,17 @@ public abstract class ProcessStepBuilder
         edges.Add(edgeBuilder);
     }
 
+    internal static bool FilterSupportedParameterTypes(Type? parameterType, bool hasDefaultValue = false)
+    {
+        if (parameterType != typeof(KernelProcessStepContext) &&
+            parameterType != typeof(KernelProcessStepExternalContext))
+        {
+            return !hasDefaultValue;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
     /// This is used to simplify the process of creating a <see cref="KernelProcessFunctionTarget"/> by making it possible
@@ -203,7 +214,7 @@ public abstract class ProcessStepBuilder
         {
             if (this.FunctionsDict.Count > 1)
             {
-                throw new KernelException("The target step has more than one function, so a function name must be provided.");
+                throw new KernelException($"The target step {this.StepId} has more than one function, so a function name must be provided.");
             }
 
             verifiedFunctionName = this.FunctionsDict.Keys.First();
@@ -218,7 +229,7 @@ public abstract class ProcessStepBuilder
         // If the parameter name is null or whitespace, then the function must have 0 or 1 parameters
         if (string.IsNullOrWhiteSpace(verifiedParameterName))
         {
-            var undeterminedParameters = kernelFunctionMetadata.Parameters.Where(p => p.ParameterType != typeof(KernelProcessStepContext)).ToList();
+            var undeterminedParameters = kernelFunctionMetadata.Parameters.Where(p => FilterSupportedParameterTypes(p.ParameterType, hasDefaultValue: p.DefaultValue != null)).ToList();
 
             if (undeterminedParameters.Count > 1)
             {

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents;
 
@@ -165,7 +166,10 @@ internal static class StepExtensions
 
         foreach (var kvp in edges)
         {
-            var newKey = kvp.Key.Replace(originalSourceName, newSourceName);
+            // Ensuring only replacing the first occurrence of the original source name in case it is also used in event name or other parts of the event name.
+            var regex = new Regex($"^{originalSourceName}");
+            var newKey = regex.Replace(kvp.Key, newSourceName, 1);
+
             updatedEdges[newKey] = kvp.Value;
         }
 
