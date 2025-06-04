@@ -16,15 +16,16 @@ namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : TestsBase(output)
 {
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType)
+    private const string SkipMessage = "Tests for manual verification only";
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>(nameof(CustomerPlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -44,15 +45,15 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
             item.FullyQualifiedName == $"{nameof(CustomerPlugin)}{GeminiFunction.NameSeparator}{nameof(CustomerPlugin.GetCustomers)}");
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>(nameof(CustomerPlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -74,15 +75,15 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
             item.FullyQualifiedName == $"{nameof(CustomerPlugin)}{GeminiFunction.NameSeparator}{nameof(CustomerPlugin.GetCustomers)}");
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -101,15 +102,15 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("Steve Smith", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -130,15 +131,15 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("Steve Smith", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers first and next return age of Anna customer?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -155,15 +156,15 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("28", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, could you show me list of customers first and next return age of Anna customer?");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -182,16 +183,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("28", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
         kernel.ImportPluginFromType<MathPlugin>("MathPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(
             "Get list of customers and next get customers ages and at the end calculate the sum of ages of all customers.");
@@ -209,16 +210,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("105", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
         kernel.ImportPluginFromType<MathPlugin>("MathPlugin");
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(
             "Get list of customers and next get customers ages and at the end calculate the sum of ages of all customers.");
@@ -238,14 +239,14 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("105", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeNullablePropertiesWorksAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeNullablePropertiesWorksAsync(ServiceType serviceType, bool isBeta)
     {
         var kernel = new Kernel();
         kernel.ImportPluginFromType<NullableTestPlugin>();
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
 
         var executionSettings = new GeminiPromptExecutionSettings()
         {
@@ -260,16 +261,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.NotNull(response);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<TaskPlugin>(nameof(TaskPlugin));
         kernel.ImportPluginFromType<DatePlugin>(nameof(DatePlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many tasks I have to do today? Show me count of tasks for today and date.");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -286,16 +287,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("5", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
         kernel.ImportPluginFromType<TaskPlugin>(nameof(TaskPlugin));
         kernel.ImportPluginFromType<DatePlugin>(nameof(DatePlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many tasks I have to do today? Show me count of tasks for today and date.");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -314,10 +315,10 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("5", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatGenerationAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatGenerationAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
@@ -325,7 +326,7 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         timeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2024, 4, 24))); // Wednesday
         var timePlugin = new TimePlugin(timeProvider);
         kernel.ImportPluginFromObject(timePlugin, nameof(TimePlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("When was last friday? Show the date in format DD.MM.YYYY for example: 15.07.2019");
         var executionSettings = new GeminiPromptExecutionSettings()
@@ -342,10 +343,10 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("19.04.2024", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
-    public async Task ChatStreamingAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType)
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
         var kernel = new Kernel();
@@ -353,7 +354,7 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         timeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2024, 4, 24))); // Wednesday
         var timePlugin = new TimePlugin(timeProvider);
         kernel.ImportPluginFromObject(timePlugin, nameof(TimePlugin));
-        var sut = this.GetChatService(serviceType);
+        var sut = this.GetChatService(serviceType, isBeta);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("When was last friday? Show the date in format DD.MM.YYYY for example: 15.07.2019");
         var executionSettings = new GeminiPromptExecutionSettings()
