@@ -16,7 +16,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : TestsBase(output)
 {
-    private const string SkipMessage = "Tests for manual verification only";
+    private const string SkipMessage = "This test is for manual verification.";
+
     [RetryTheory(Skip = SkipMessage)]
     [InlineData(ServiceType.GoogleAI, true)]
     [InlineData(ServiceType.VertexAI, false)]

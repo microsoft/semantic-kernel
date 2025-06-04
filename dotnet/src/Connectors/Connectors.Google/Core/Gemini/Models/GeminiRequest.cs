@@ -349,8 +349,7 @@ internal sealed class GeminiRequest
     /// </remarks>
     internal static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
     {
-        var rawText = jsonElement.GetRawText();
-        JsonNode? node = JsonNode.Parse(rawText);
+        JsonNode? node = JsonNode.Parse(jsonElement.GetRawText());
         if (node is JsonObject rootObject)
         {
             TransformOpenApi3Object(rootObject);

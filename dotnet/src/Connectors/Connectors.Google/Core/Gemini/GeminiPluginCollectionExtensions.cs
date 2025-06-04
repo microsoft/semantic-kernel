@@ -35,7 +35,6 @@ internal static class GeminiPluginCollectionExtensions
                 arguments = [];
                 foreach (var parameter in functionToolCall.Arguments)
                 {
-                    // Check if the parameter.Value is a JsonElement and create a switch expression to handle different types
                     arguments[parameter.Key] = parameter.Value switch
                     {
                         JsonElement jsonElement => jsonElement.ValueKind switch
