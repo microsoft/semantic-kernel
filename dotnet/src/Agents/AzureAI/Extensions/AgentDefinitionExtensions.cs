@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
@@ -39,8 +41,9 @@ internal static class AgentDefinitionExtensions
     /// Return the Azure AI tool definitions which corresponds with the provided <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
+    /// <param name="kernel">Kernel instance to associate with the agent.</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public static IEnumerable<ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition)
+    public static IEnumerable<ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition, Kernel kernel)
     {
         Verify.NotNull(agentDefinition);
 
@@ -50,7 +53,7 @@ internal static class AgentDefinitionExtensions
             {
                 AzureAISearchType => CreateAzureAISearchToolDefinition(tool),
                 AzureFunctionType => CreateAzureFunctionToolDefinition(tool),
-                BingGroundingType => CreateBingGroundingToolDefinition(tool),
+                BingGroundingType => CreateBingGroundingToolDefinition(tool, agentDefinition.GetProjectsClient(kernel)),
                 CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
                 FileSearchType => CreateFileSearchToolDefinition(tool),
                 FunctionType => CreateFunctionToolDefinition(tool),
@@ -127,7 +130,42 @@ internal static class AgentDefinitionExtensions
 
         // Return the client registered on the kernel
         var client = kernel.GetAllServices<PersistentAgentsClient>().FirstOrDefault();
-        return (PersistentAgentsClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
+        return client ?? throw new InvalidOperationException("AzureAI agents client not found.");
+    }
+
+    /// <summary>
+    /// Return the <see cref="PersistentAgentsClient"/> to be used with the specified <see cref="AgentDefinition"/>.
+    /// </summary>
+    /// <param name="agentDefinition">Agent definition which will be used to provide connection for the <see cref="PersistentAgentsClient"/>.</param>
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="PersistentAgentsClient"/>.</param>
+    public static AIProjectClient GetProjectsClient(this AgentDefinition agentDefinition, Kernel kernel)
+    {
+        Verify.NotNull(agentDefinition);
+
+        // Use the agent connection as the first option
+        var connection = agentDefinition?.Model?.Connection;
+        if (connection is not null)
+        {
+            if (connection.ExtensionData.TryGetValue(Endpoint, out var value) && value is string endpoint)
+            {
+#pragma warning disable CA2000 // Dispose objects before losing scope, not relevant because the HttpClient is created and may be used elsewhere
+                var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
+                AIProjectClientOptions options =
+                    new()
+                    {
+                        Transport = new HttpClientTransport(httpClient),
+                        RetryPolicy = new RetryPolicy(maxRetries: 0) // Disable retry policy if a custom HttpClient is provided.
+                    };
+                return new AIProjectClient(new Uri(endpoint), tokenCredential, options);
+            }
+        }
+
+        // Return the client registered on the kernel
+        var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
+        return client ?? throw new InvalidOperationException("AzureAI project client not found.");
     }
 
     #region private
@@ -226,11 +264,12 @@ internal static class AgentDefinitionExtensions
         return new AzureFunctionToolDefinition(name, description, inputBinding, outputBinding, parameters);
     }
 
-    private static BingGroundingToolDefinition CreateBingGroundingToolDefinition(AgentToolDefinition tool)
+    private static BingGroundingToolDefinition CreateBingGroundingToolDefinition(AgentToolDefinition tool, AIProjectClient projectClient)
     {
         Verify.NotNull(tool);
 
-        BingGroundingSearchToolParameters bingToolParameters = new(tool.GetToolConnections().Select(connectionId => new BingGroundingSearchConfiguration(connectionId)));
+        IEnumerable<string> connectionIds = projectClient.GetConnectionIds(tool);
+        BingGroundingSearchToolParameters bingToolParameters = new([new BingGroundingSearchConfiguration(connectionIds.Single())]);
 
         return new BingGroundingToolDefinition(bingToolParameters);
     }
@@ -275,6 +314,16 @@ internal static class AgentDefinitionExtensions
         OpenApiAuthDetails auth = tool.GetOpenApiAuthDetails();
 
         return new OpenApiToolDefinition(name, description, spec, auth);
+    }
+
+    private static IEnumerable<string> GetConnectionIds(this AIProjectClient projectClient, AgentToolDefinition tool)
+    {
+        HashSet<string> connections = [.. tool.GetToolConnections()];
+        Connections connectionClient = projectClient.GetConnectionsClient();
+        return
+            connectionClient.GetConnections()
+                .Where(connection => connections.Contains(connection.Name))
+                .Select(connection => connection.Id);
     }
     #endregion
 }
