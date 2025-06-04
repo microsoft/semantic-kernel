@@ -149,6 +149,7 @@ def _create_function_from_operation(
                     urlparse(execution_parameters.server_url_override) if execution_parameters else None
                 ),
                 api_host_url=Uri(document_uri).get_left_part() if document_uri is not None else None,
+                timeout=execution_parameters.timeout if execution_parameters else None,
             )
 
             return await runner.run_operation(operation, kernel_arguments, options)
