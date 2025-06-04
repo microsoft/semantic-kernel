@@ -2,6 +2,7 @@
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -86,6 +87,87 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 
         // Assert
         this.AssertStepState(processInfo, "cStep", (KernelProcessStepState<CStepState> state) => state.State?.CurrentCycle == 3);
+    }
+
+    /// <summary>
+    /// Tests a process with a WhenAll listener and a step that has multiple functions and parameters.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWithWhenAllListenerAndStepWithMultipleFunctionsAndParametersUsingOnlyOneMultiParamFunctionAsync()
+    {
+        // Arrange
+        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        this._kernelBuilder.AddOpenAIChatCompletion(
+            modelId: configuration.ModelId!,
+            apiKey: configuration.ApiKey);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        var processBuilder = this.CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParameters("testProcess");
+        var process = processBuilder.Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+
+        // Assert
+        var processInfo = await processHandle.GetStateAsync();
+        this.AssertStepStateLastMessage(processInfo, "emitterStep", expectedLastMessage: $"{testInput} {testInput}-{testInput}");
+    }
+
+    /// <summary>
+    /// Tests a process with a WhenAll listener and a step that has multiple functions and parameters.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWithWhenAllListenerAndStepWithMultipleFunctionsAndParametersUsingOnlyTwoMultiParamFunctionsFromStepsAndInputEventsAsync()
+    {
+        // Arrange
+        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        this._kernelBuilder.AddOpenAIChatCompletion(
+            modelId: configuration.ModelId!,
+            apiKey: configuration.ApiKey);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        var processBuilder = this.CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParametersSimultaneouslyFromStepsAndInputEvents("testProcess");
+        var process = processBuilder.Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+
+        // Assert
+        var processInfo = await processHandle.GetStateAsync();
+        this.AssertStepStateLastMessage(processInfo, "fanInStep", expectedLastMessage: $"{testInput}-{testInput}-{testInput} {testInput}-{testInput}-thirdInput-someFixedInputFromProcessDefinition");
+    }
+
+    /// <summary>
+    /// Tests a process with a WhenAll listener and a step that has multiple functions and parameters.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWithWhenAllListenerAndStepWithMultipleFunctionsAndParametersUsingOnlyTwoMultiParamFunctionsFromStepsOnlyAsync()
+    {
+        // Arrange
+        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        this._kernelBuilder.AddOpenAIChatCompletion(
+            modelId: configuration.ModelId!,
+            apiKey: configuration.ApiKey);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        var processBuilder = this.CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParametersSimultaneouslyFromStepsOnly("testProcess");
+        var process = processBuilder.Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+
+        // Assert
+        var processInfo = await processHandle.GetStateAsync();
+        this.AssertStepStateLastMessage(processInfo, "fanInStep", expectedLastMessage: $"{testInput} {testInput}-{testInput}-{testInput} {testInput}-{testInput}-thirdInput-someFixedInputFromProcessDefinition");
     }
 
     /// <summary>
@@ -425,6 +507,215 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
+    /// Sample process with a fan in step that takes the output of two steps and combines them.<br/>
+    /// Fan in step - emitter - has multiple functions and some have multiple parameters.<br/>
+    /// <code>
+    /// ┌────────┐
+    /// │ repeat ├───┐
+    /// └────────┘   │   ┌─────────┐
+    ///              └──►│         │
+    ///                  │ emitter │
+    ///              ┌──►│         │
+    /// ┌────────┐   │   └─────────┘
+    /// │  echo  ├───┘
+    /// └────────┘
+    /// </code>
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    private ProcessBuilder CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParameters(string name)
+    {
+        ProcessBuilder processBuilder = new(name);
+        ProcessStepBuilder repeatStep = processBuilder.AddStepFromType<RepeatStep>("repeatStep");
+        ProcessStepBuilder echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("echoStep");
+        ProcessStepBuilder emitterStep = processBuilder.AddStepFromType<EmitterStep>("emitterStep");
+
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep))
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.OutputReadyInternal, repeatStep),
+                new(echoStep.GetFunctionResultEventId(), echoStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(emitterStep, functionName: EmitterStep.DualInputPublicEventFunction, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[repeatStep.GetFullEventId(ProcessTestsEvents.OutputReadyInternal)] },
+                    { "secondInput", inputEvents[echoStep.GetFullEventId()] }
+                };
+            }));
+
+        return processBuilder;
+    }
+
+    /// <summary>
+    /// Sample process with a fan in step that takes the output of two steps from same step and combines them.<br/>
+    /// Fan in step - emitter - has multiple functions and some have multiple parameters.<br/>
+    /// This test is meant to test the ability to create multiple internal edgeGroups in the same step.<br/>
+    /// <code>
+    /// ┌────────┐
+    /// │ repeat ├───┐
+    /// └────────┘   │ ┌────────┐  ┌─────────┐     ┌─────────┐
+    ///              └►│ r_echo ├─►│         ├────►│         │
+    ///                └────────┘  │ emitter │     │  fanIn  │
+    ///              ┌-───────────►│         ├────►│         │
+    /// ┌────────┐   │             └─────────┘     └─────────┘
+    /// │  echo  ├───┘
+    /// └────────┘
+    /// </code>
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    private ProcessBuilder CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParametersSimultaneouslyFromStepsAndInputEvents(string name)
+    {
+        ProcessBuilder processBuilder = new(name);
+        ProcessStepBuilder repeatStep = processBuilder.AddStepFromType<RepeatStep>("repeatStep");
+        ProcessStepBuilder repeatEchoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("repeatEchoStep");
+        ProcessStepBuilder echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("echoStep");
+        ProcessStepBuilder emitterStep = processBuilder.AddStepFromType<EmitterStep>("emitterStep");
+        ProcessStepBuilder fanInStep = processBuilder.AddStepFromType<FanInStep>("fanInStep");
+
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep))
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
+
+        repeatStep
+            .OnEvent(ProcessTestsEvents.OutputReadyInternal)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatEchoStep));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.StartProcess, processBuilder),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(emitterStep, functionName: EmitterStep.DualInputPublicEventFunction, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[processBuilder.GetFullEventId(ProcessTestsEvents.StartProcess)]  },
+                    { "secondInput", inputEvents[processBuilder.GetFullEventId(ProcessTestsEvents.StartProcess)] }
+                };
+            }));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.OutputReadyInternal, repeatStep),
+                new(echoStep.GetFunctionResultEventId(), echoStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(emitterStep, functionName: EmitterStep.QuadInputPublicEventFunction, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[repeatStep.GetFullEventId(ProcessTestsEvents.OutputReadyInternal)] },
+                    { "secondInput", inputEvents[echoStep.GetFullEventId()] },
+                    { "fourthInput", "someFixedInputFromProcessDefinition" },
+                };
+            }));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.OutputReadyPublic, emitterStep),
+                new(ProcessTestsEvents.OutputReadySecondaryPublic, emitterStep),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(fanInStep, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[emitterStep.GetFullEventId(ProcessTestsEvents.OutputReadyPublic)] },
+                    { "secondInput", inputEvents[emitterStep.GetFullEventId(ProcessTestsEvents.OutputReadySecondaryPublic)] }
+                };
+            }));
+
+        return processBuilder;
+    }
+
+    /// <summary>
+    /// Sample process with a fan in step that takes the output of two steps from same step and combines them.<br/>
+    /// Fan in step - emitter - has multiple functions and some have multiple parameters.<br/>
+    /// This test is meant to test the ability to create multiple internal edgeGroups in the same step.<br/>
+    /// <code>
+    /// ┌────────┐
+    /// │ repeat ├───┐
+    /// └────────┘   │ ┌────────┐  ┌─────────┐     ┌─────────┐
+    ///              └►│ r_echo ├─►│         ├────►│         │
+    ///                └────────┘  │ emitter │     │  fanIn  │
+    ///              ┌-───────────►│         ├────►│         │
+    /// ┌────────┐   │             └─────────┘     └─────────┘
+    /// │  echo  ├───┘
+    /// └────────┘
+    /// </code>
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    private ProcessBuilder CreateProcessWithFanInUsingStepWithMultipleFunctionsAndParametersSimultaneouslyFromStepsOnly(string name)
+    {
+        ProcessBuilder processBuilder = new(name);
+        ProcessStepBuilder repeatStep = processBuilder.AddStepFromType<RepeatStep>("repeatStep");
+        ProcessStepBuilder repeatEchoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("repeatEchoStep");
+        ProcessStepBuilder echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("echoStep");
+        ProcessStepBuilder emitterStep = processBuilder.AddStepFromType<EmitterStep>("emitterStep");
+        ProcessStepBuilder fanInStep = processBuilder.AddStepFromType<FanInStep>("fanInStep");
+
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep))
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
+
+        repeatStep
+            .OnEvent(ProcessTestsEvents.OutputReadyInternal)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatEchoStep));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.StartProcess, processBuilder),
+                new(repeatEchoStep.GetFunctionResultEventId(), repeatEchoStep),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(emitterStep, functionName: EmitterStep.DualInputPublicEventFunction, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[repeatEchoStep.GetFullEventId()] },
+                    { "secondInput", inputEvents[processBuilder.GetFullEventId(ProcessTestsEvents.StartProcess)] }
+                };
+            }));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.OutputReadyInternal, repeatStep),
+                new(echoStep.GetFunctionResultEventId(), echoStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(emitterStep, functionName: EmitterStep.QuadInputPublicEventFunction, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[repeatStep.GetFullEventId(ProcessTestsEvents.OutputReadyInternal)] },
+                    { "secondInput", inputEvents[echoStep.GetFullEventId()] },
+                    { "fourthInput", "someFixedInputFromProcessDefinition" },
+                };
+            }));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(ProcessTestsEvents.OutputReadyPublic, emitterStep),
+                new(ProcessTestsEvents.OutputReadySecondaryPublic, emitterStep),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(fanInStep, inputMapping: inputEvents =>
+            {
+                return new()
+                {
+                    { "firstInput", inputEvents[emitterStep.GetFullEventId(ProcessTestsEvents.OutputReadyPublic)] },
+                    { "secondInput", inputEvents[emitterStep.GetFullEventId(ProcessTestsEvents.OutputReadySecondaryPublic)] }
+                };
+            }));
+
+        return processBuilder;
+    }
+
+    /// <summary>
     /// Sample long sequential process, each step has a delay.<br/>
     /// Input Event: <see cref="EmitterStep.InputEvent"/><br/>
     /// Output Event: <see cref="ProcessTestsEvents.OutputReadyPublic"/><br/>
@@ -467,7 +758,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
                 new(EmitterStep.EventId, firstNestedStep),
                 new(EmitterStep.EventId, ninthNestedStep),
             ])
-            .SendEventTo(new ProcessStepTargetBuilder(tenthNestedStep, inputMapping: (inputEvents) =>
+            .SendEventTo(new ProcessStepTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, inputMapping: (inputEvents) =>
             {
                 // Map the input events to the parameters of the tenth step.
                 return new()

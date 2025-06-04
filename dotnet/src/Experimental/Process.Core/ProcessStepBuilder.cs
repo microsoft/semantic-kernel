@@ -214,7 +214,7 @@ public abstract class ProcessStepBuilder
         {
             if (this.FunctionsDict.Count > 1)
             {
-                throw new KernelException("The target step has more than one function, so a function name must be provided.");
+                throw new KernelException($"The target step {this.StepId} has more than one function, so a function name must be provided.");
             }
 
             verifiedFunctionName = this.FunctionsDict.Keys.First();
