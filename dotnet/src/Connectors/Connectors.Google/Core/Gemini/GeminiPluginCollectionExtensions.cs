@@ -35,23 +35,7 @@ internal static class GeminiPluginCollectionExtensions
                 arguments = [];
                 foreach (var parameter in functionToolCall.Arguments)
                 {
-                    arguments[parameter.Key] = parameter.Value switch
-                    {
-                        JsonElement jsonElement => jsonElement.ValueKind switch
-                        {
-                            JsonValueKind.String => jsonElement.GetString(),
-                            JsonValueKind.Number => jsonElement.TryGetInt32(out int intValue) ? intValue :
-                                                                  jsonElement.TryGetInt64(out long longValue) ? longValue :
-                                                                  jsonElement.TryGetDouble(out double doubleValue) ? doubleValue :
-                                                                  jsonElement.GetRawText(),
-                            JsonValueKind.True => true,
-                            JsonValueKind.False => false,
-                            JsonValueKind.Null => null,
-                            // For arrays and objects, return the raw JSON which can be parsed by the function implementation
-                            _ => jsonElement.GetRawText()
-                        },
-                        _ => parameter.Value?.ToString()
-                    };
+                    arguments[parameter.Key] = parameter.Value;
                 }
             }
 
