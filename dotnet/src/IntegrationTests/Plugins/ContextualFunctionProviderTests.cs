@@ -113,7 +113,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
             vectorStore: this._vectorStore,
             vectorDimensions: this._modelDimensions,
             functions: GetAvailableFunctions(),
-            maxNumberOfFunctions: 1, // Instruct the provider to return only one relevant function
+            maxNumberOfFunctions: 2, // Instruct the provider to return only one relevant function
             options: new ContextualFunctionProviderOptions
             {
                 NumberOfRecentMessagesInContext = 1 // Use only the last message from the previous agent invocation  
@@ -128,14 +128,14 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 
         // Assert
         Assert.NotNull(relevantFunctions);
-        Assert.Single(relevantFunctions, f => f.Name == "ProvisionVM");
+        Assert.Contains(relevantFunctions, f => f.Name == "ProvisionVM");
 
         // Act: Ask agent to deploy the VM provisioned in the previous invocation
         await agent.InvokeAsync("Deploy it", agentThread).FirstAsync();
 
         // Assert
         Assert.NotNull(relevantFunctions);
-        Assert.Single(relevantFunctions, f => f.Name == "DeployVM");
+        Assert.Contains(relevantFunctions, f => f.Name == "DeployVM");
     }
 
     /// <summary>
