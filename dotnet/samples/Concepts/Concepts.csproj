@@ -29,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" />
@@ -69,9 +70,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />

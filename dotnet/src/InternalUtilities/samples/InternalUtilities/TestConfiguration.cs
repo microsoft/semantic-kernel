@@ -54,8 +54,9 @@ public sealed class TestConfiguration
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockConfig Bedrock => LoadSection<BedrockConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
+    public static Mem0Config Mem0 => LoadSection<Mem0Config>();
 
-    public static IConfiguration GetSection(string caller)
+    public static IConfigurationSection GetSection(string caller)
     {
         return s_instance?._configRoot.GetSection(caller) ??
                throw new ConfigurationNotFoundException(section: caller);
@@ -356,5 +357,11 @@ public sealed class TestConfiguration
         public string AgentResourceRoleArn { get; set; }
         public string FoundationModel { get; set; }
         public string? KnowledgeBaseId { get; set; }
+    }
+
+    public class Mem0Config
+    {
+        public string? BaseAddress { get; set; }
+        public string ApiKey { get; set; }
     }
 }

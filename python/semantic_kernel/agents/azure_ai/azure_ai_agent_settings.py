@@ -20,4 +20,8 @@ class AzureAIAgentSettings(KernelBaseSettings):
 
     model_deployment_name: str
     endpoint: str | None = None
+    agent_id: str | None = None
+    bing_connection_id: str | None = None
+    azure_ai_search_connection_id: str | None = None
+    azure_ai_search_index_name: str | None = None
     api_version: str | None = None

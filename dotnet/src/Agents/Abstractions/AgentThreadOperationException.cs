@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Defines an exception that's thrown when an operation on an <see cref="AgentThread"/> fails, such as creating or deleting the thread.
 /// </summary>
-public class AgentThreadOperationException : Exception
+public class AgentThreadOperationException : KernelException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentThreadOperationException"/> class.

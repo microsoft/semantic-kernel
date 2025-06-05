@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Linq;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -24,7 +24,7 @@ public class AgentMessageFactoryTests
         ChatMessageContent message = new(AuthorRole.User, items: [new TextContent("test")]);
 
         // Act
-        ThreadMessageOptions[] contents = AgentMessageFactory.GetThreadMessages([message]).ToArray();
+        ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
 
         // Assert
         Assert.NotNull(contents);
@@ -42,7 +42,7 @@ public class AgentMessageFactoryTests
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new Uri("https://localhost/myimage.png"))]);
 
         // Act
-        ThreadMessageOptions[] contents = AgentMessageFactory.GetThreadMessages([message]).ToArray();
+        ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
 
         // Assert
         Assert.NotNull(contents);
@@ -59,7 +59,7 @@ public class AgentMessageFactoryTests
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
 
         // Act
-        ThreadMessageOptions[] contents = AgentMessageFactory.GetThreadMessages([message]).ToArray();
+        ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
 
         // Assert
         Assert.NotNull(contents);
@@ -76,7 +76,7 @@ public class AgentMessageFactoryTests
         ChatMessageContent message = new(AuthorRole.User, items: [new FileReferenceContent("file-id")]);
 
         // Act
-        ThreadMessageOptions[] contents = AgentMessageFactory.GetThreadMessages([message]).ToArray();
+        ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
 
         // Assert
         Assert.NotNull(contents);
@@ -97,11 +97,12 @@ public class AgentMessageFactoryTests
                 [
                     new TextContent("test"),
                     new ImageContent(new Uri("https://localhost/myimage.png")),
-                    new FileReferenceContent("file-id")
+                    new FileReferenceContent("file-id1"),
+                    new FileReferenceContent("file-id2") { Tools = [AzureAIAgent.Tools.CodeInterpreter] }
                 ]);
 
         // Act
-        ThreadMessageOptions[] contents = AgentMessageFactory.GetThreadMessages([message]).ToArray();
+        ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
 
         // Assert
         Assert.NotNull(contents);

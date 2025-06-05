@@ -65,17 +65,11 @@ internal static class AgentThreadActions
             return;
         }
 
-        string? content = message.Content;
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
         await client.Messages.CreateMessageAsync(
             threadId,
             role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
-            content,
-            attachments: AgentMessageFactory.GetAttachments(message).ToArray(),
+            contentBlocks: AgentMessageFactory.GetMessageContent(message),
+            attachments: AgentMessageFactory.GetAttachments(message),
             metadata: AgentMessageFactory.GetMetadata(message),
             cancellationToken).ConfigureAwait(false);
     }
@@ -148,8 +142,8 @@ internal static class AgentThreadActions
         List<ToolDefinition> tools = new(agent.Definition.Tools);
 
         // Add unique functions from the Kernel which are not already present in the agent's tools
-        var functionToolNames = new HashSet<string>(tools.OfType<FunctionToolDefinition>().Select(t => t.Name));
-        var functionTools = kernel.Plugins
+        HashSet<string> functionToolNames = new(tools.OfType<FunctionToolDefinition>().Select(t => t.Name));
+        IEnumerable<FunctionToolDefinition> functionTools = kernel.Plugins
             .SelectMany(kp => kp.Select(kf => kf.ToToolDefinition(kp.Name)))
             .Where(tool => !functionToolNames.Contains(tool.Name));
         tools.AddRange(functionTools);
@@ -189,7 +183,7 @@ internal static class AgentThreadActions
                 logger.LogAzureAIAgentProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = [.. steps.SelectMany(step => ParseFunctionStep(agent, step))];
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -421,13 +415,14 @@ internal static class AgentThreadActions
                     {
                         yield return toolContent;
                     }
-                    else if (detailsUpdate.FunctionOutput != null)
+                    else if (detailsUpdate.FunctionArguments != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
                             {
                                 AuthorName = agent.Name,
-                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments, detailsUpdate.ToolCallIndex ?? 0)],
+                                InnerContent = detailsUpdate,
                             };
                     }
                 }
@@ -474,7 +469,7 @@ internal static class AgentThreadActions
                 }
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = activeSteps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = [.. activeSteps.SelectMany(step => ParseFunctionStep(agent, step))];
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -496,7 +491,7 @@ internal static class AgentThreadActions
 
                     foreach (RunStep step in activeSteps)
                     {
-                        stepFunctionResults.Add(step.Id, functionResults.Where(result => step.Id == toolMap[result.CallId!]).ToArray());
+                        stepFunctionResults.Add(step.Id, [.. functionResults.Where(result => step.Id == toolMap[result.CallId!])]);
                     }
                 }
             }
@@ -802,9 +797,9 @@ internal static class AgentThreadActions
 
         if (!string.IsNullOrWhiteSpace(functionArguments))
         {
-            foreach (var argumentKvp in JsonSerializer.Deserialize<Dictionary<string, object>>(functionArguments!)!)
+            foreach (KeyValuePair<string, object> argumentKvp in JsonSerializer.Deserialize<Dictionary<string, object>>(functionArguments!) ?? [])
             {
-                arguments[argumentKvp.Key] = argumentKvp.Value.ToString();
+                arguments[argumentKvp.Key] = argumentKvp.Value?.ToString();
             }
         }
 

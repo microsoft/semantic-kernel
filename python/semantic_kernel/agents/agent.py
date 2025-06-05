@@ -19,7 +19,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInitializationException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -42,6 +41,21 @@ TThreadType = TypeVar("TThreadType", bound="AgentThread")
 
 
 # region Declarative Spec Definitions
+
+
+class InputSpec(KernelBaseModel):
+    """Class representing an input specification."""
+
+    description: str | None = None
+    required: bool = False
+    default: Any = None
+
+
+class OutputSpec(KernelBaseModel):
+    """Class representing an output specification."""
+
+    description: str | None = None
+    type: str | None = None
 
 
 class ModelConnection(KernelBaseModel):
@@ -83,6 +97,8 @@ class AgentSpec(KernelBaseModel):
     tools: list[ToolSpec] = Field(default_factory=list)
     template: dict[str, Any] | None = None
     extras: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, InputSpec] = Field(default_factory=dict)
+    outputs: dict[str, OutputSpec] = Field(default_factory=dict)
 
 
 # endregion
@@ -306,8 +322,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
@@ -336,8 +352,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -367,8 +383,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -642,6 +658,10 @@ _BUILTIN_AGENTS_LOCK = threading.Lock()
 _BUILTIN_AGENT_MODULES = [
     "semantic_kernel.agents.chat_completion.chat_completion_agent",
     "semantic_kernel.agents.azure_ai.azure_ai_agent",
+    "semantic_kernel.agents.open_ai.openai_assistant_agent",
+    "semantic_kernel.agents.open_ai.azure_assistant_agent",
+    "semantic_kernel.agents.open_ai.openai_responses_agent",
+    "semantic_kernel.agents.open_ai.azure_responses_agent",
 ]
 
 
@@ -754,6 +774,7 @@ class AgentRegistry:
         kernel: Kernel | None = None,
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
         **kwargs,
     ) -> _TAgent:
         """Create a single agent instance from a dictionary.
@@ -763,6 +784,7 @@ class AgentRegistry:
             kernel: The Kernel instance to use for tool resolution and agent initialization.
             plugins: The plugins to use for the agent.
             settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
             **kwargs: Additional parameters passed to the agent constructor if required.
 
         Returns:
@@ -794,7 +816,9 @@ class AgentRegistry:
         return await agent_cls.from_dict(
             data,
             kernel=kernel,
+            plugins=plugins,
             settings=settings,
+            extras=extras,
             **kwargs,
         )
 
@@ -895,12 +919,11 @@ class DeclarativeSpecMixin(ABC):
         **kwargs,
     ) -> _D:
         """Default implementation: call the protected _from_dict."""
-        # Compose `data` and extracted common fields for the subclass
         extracted, kernel = cls._normalize_spec_fields(data, kernel=kernel, plugins=plugins, **kwargs)
         return await cls._from_dict(
             {**data, **extracted},
             kernel=kernel,
-            prompt_template_config=prompt_template_config,
+            prompt_template_config=extracted.get("prompt_template"),
             settings=settings,
             **kwargs,
         )
@@ -959,11 +982,27 @@ class DeclarativeSpecMixin(ABC):
         if "tools" in data:
             cls._validate_tools(data["tools"], kernel)
 
+        model_options = data.get("model", {}).get("options", {}) if data.get("model") else {}
+
+        inputs = data.get("inputs", {})
+        input_defaults = {
+            k: v.get("default")
+            for k, v in (inputs.items() if isinstance(inputs, dict) else [])
+            if v.get("default") is not None
+        }
+
+        # Start with model options
+        arguments = KernelArguments(**model_options)
+        # Update with input defaults (only if not already provided by model options)
+        for k, v in input_defaults.items():
+            if k not in arguments:
+                arguments[k] = v
+
         fields = {
             "name": data.get("name"),
             "description": data.get("description"),
             "instructions": data.get("instructions"),
-            "arguments": KernelArguments(**(data.get("model", {}).get("options", {}))) if data.get("model") else None,
+            "arguments": arguments,
         }
 
         # Handle prompt_template if available
@@ -971,12 +1010,13 @@ class DeclarativeSpecMixin(ABC):
             template_data = data.get("prompt_template") or data.get("template")
             if isinstance(template_data, dict):
                 prompt_template_config = PromptTemplateConfig(**template_data)
-                fields["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
-                    prompt_template_config=prompt_template_config
-                )
-                # Overwrite instructions from prompt template if explicitly provided
-                if prompt_template_config.template is not None:
-                    fields["instructions"] = prompt_template_config.template
+                # If 'instructions' is set in YAML, override the template field in config
+                instructions = data.get("instructions")
+                if instructions is not None:
+                    prompt_template_config.template = instructions
+                fields["prompt_template"] = prompt_template_config
+                # Always set fields["instructions"] to the template being used
+                fields["instructions"] = prompt_template_config.template
 
         return fields, kernel
 
