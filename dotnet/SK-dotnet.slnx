@@ -303,6 +303,7 @@
   <Folder Name="/test/VectorData/">
     <Project Path="test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj" />
     <Project Path="test/VectorData/AzureAISearch.ConformanceTests/AzureAISearch.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
     <Project Path="test/VectorData/CosmosMongoDB.UnitTests/CosmosMongoDB.UnitTests.csproj" />
     <Project Path="test/VectorData/CosmosMongoDB.ConformanceTests/CosmosMongoDB.ConformanceTests.csproj" />
     <Project Path="test/VectorData/CosmosNoSql.UnitTests/CosmosNoSql.UnitTests.csproj" />
