@@ -35,6 +35,12 @@
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
 
+  <!-- Disable strong name verification to prevent assembly loading issues -->
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>false</DelaySign>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Add CLSCompliant=false to all projects by default. Projects can override. -->
     <AssemblyAttribute Include="System.CLSCompliantAttribute">
