@@ -549,6 +549,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Orchestration", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Magentic", "src\Agents\Magentic\Agents.Magentic.csproj", "{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.CopilotStudio", "src\Agents\Copilot\Agents.CopilotStudio.csproj", "{84BA9026-E05E-9B6A-C177-C04BDAA1714F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1510,6 +1512,12 @@ Global
 		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1714,6 +1722,7 @@ Global
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
 		{D1A02387-FA60-22F8-C2ED-4676568B6CC3} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 		{38059FCB-2CD7-C0DE-AE71-DA4D0245ECC7} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
+		{84BA9026-E05E-9B6A-C177-C04BDAA1714F} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
