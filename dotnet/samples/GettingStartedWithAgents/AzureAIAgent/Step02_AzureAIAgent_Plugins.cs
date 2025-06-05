@@ -83,6 +83,7 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
                 KernelPluginFactory.CreateFromFunctions("AgentPlugin", [promptFunction]),
                 instructions: "You job is to only and always analyze the vowels in the user input without confirmation.");
 
+        // Add a filter to the agent's kernel to log function invocations.
         agent.Kernel.FunctionInvocationFilters.Add(new PromptFunctionFilter());
 
         // Create the chat history thread to capture the agent interaction.
@@ -132,9 +133,9 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
-            System.Console.WriteLine($"INVOKING: {context.Function.Name}");
+            System.Console.WriteLine($"\nINVOKING: {context.Function.Name}");
             await next.Invoke(context);
-            System.Console.WriteLine($"RESULT: {context.Result}");
+            System.Console.WriteLine($"\nRESULT: {context.Result}");
         }
     }
 }

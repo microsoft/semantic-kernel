@@ -75,6 +75,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                 instructions: "You job is to only and always analyze the vowels in the user input without confirmation.",
                 useChatClient: useChatClient);
 
+        // Add a filter to the agent's kernel to log function invocations.
         agent.Kernel.FunctionInvocationFilters.Add(new PromptFunctionFilter());
 
         // Create the chat history thread to capture the agent interaction.
