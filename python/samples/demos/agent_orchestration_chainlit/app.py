@@ -86,7 +86,9 @@ async def streaming_agent_response_callback(message_chunk: StreamingChatMessageC
 async def human_response_function(chat_histoy: ChatHistory) -> ChatMessageContent:
     """Function to get user input."""
     user_input = await cl.AskUserMessage("Please provide your input", author="Group Manager").send()
-    return ChatMessageContent(role=AuthorRole.USER, content=user_input if user_input else "No input provided.")
+    return ChatMessageContent(
+        role=AuthorRole.USER, content=user_input["output"] if user_input else "No input provided."
+    )
 
 
 def get_orchestration() -> GroupChatOrchestration:
@@ -126,3 +128,23 @@ async def on_message(msg: cl.Message):
 
         result = await orchestration_result.get()
         await cl.Message(f"Orchestration completed with result: {result}").send()
+    else:
+        actions = [
+            cl.Action(
+                name="restart",
+                label="Start another task",
+                icon="mouse-pointer-click",
+            )
+        ]
+
+        await cl.Message(
+            content="The previous task has completed. Please start a new chat before continueing",
+            actions=actions,
+        ).send()
+
+
+@cl.action_callback("restart")
+async def on_restart_action():
+    """Handle the restart action."""
+    cl.chat_context.clear()
+    cl.user_session.set("orchestration", None)
