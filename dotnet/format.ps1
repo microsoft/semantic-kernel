@@ -31,7 +31,7 @@ $targets =
 popd
 
 if (-not $targets) {
-#    $targets = Get-ChildItem $repoRoot -Recurse -Filter *.sln |
+#    $targets = Get-ChildItem $repoRoot -Recurse -Filter *.slnx |
 #               Select-Object -Expand FullName
   Write-Host "No code changes found"
 }
