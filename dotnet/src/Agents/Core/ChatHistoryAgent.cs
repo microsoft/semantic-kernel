@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -30,36 +29,6 @@ public abstract class ChatHistoryAgent : Agent
     /// </remarks>
     [Experimental("SKEXP0110")]
     public IChatHistoryReducer? HistoryReducer { get; init; }
-
-    /// <summary>
-    /// Invokes the assistant to respond to the provided history.
-    /// </summary>
-    /// <param name="history">The conversation history.</param>
-    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of response messages.</returns>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
-    public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        ChatHistory history,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Invokes the assistant to respond to the provided history with streaming response.
-    /// </summary>
-    /// <param name="history">The conversation history.</param>
-    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of response messages.</returns>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
-    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-        ChatHistory history,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Reduces the provided history.
