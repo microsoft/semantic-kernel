@@ -3,10 +3,9 @@
   <!-- using Central Package Management feature -->
   <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.1.3" />
-  <!-- Only run 'dotnet format' on dev machines, Release builds. Skip on GitHub Actions -->
-  <!-- as this runs in its own Actions job. -->
+  <!-- Only run 'dotnet format' on dev machines, Release builds. Skip on GitHub Actions and Azure DevOps. -->
   <Target Name="DotnetFormatOnBuild" BeforeTargets="Build"
-          Condition=" '$(Configuration)' == 'Release' AND '$(GITHUB_ACTIONS)' == '' ">
+          Condition=" '$(Configuration)' == 'Release' AND '$(GITHUB_ACTIONS)' == '' AND '$(TF_BUILD)' != 'true' ">
     <Message Text="Running dotnet format" Importance="high" />
     <Exec Command="dotnet format --no-restore -v diag $(ProjectFileName)" />
   </Target>

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -263,11 +262,9 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         translator.Translate(appendWhere: false);
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        DbCommand? command = null;
 
-        if (options.IncludeVectors)
-        {
-            command = SqliteCommandBuilder.BuildSelectInnerJoinCommand(
+        using var command = options.IncludeVectors
+            ? SqliteCommandBuilder.BuildSelectInnerJoinCommand(
                 connection,
                 this._vectorTableName,
                 this._dataTableName,
@@ -279,11 +276,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 translator.Clause.ToString(),
                 translator.Parameters,
                 top: top,
-                skip: options.Skip);
-        }
-        else
-        {
-            command = SqliteCommandBuilder.BuildSelectDataCommand(
+                skip: options.Skip)
+            : SqliteCommandBuilder.BuildSelectDataCommand(
                 connection,
                 this._dataTableName,
                 this._model,
@@ -293,28 +287,21 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 translator.Parameters,
                 top: top,
                 skip: options.Skip);
-        }
 
-        using (command)
+        const string OperationName = "Get";
+
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            OperationName,
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadWithErrorHandlingAsync(
+            this._collectionMetadata,
+            OperationName,
+            cancellationToken).ConfigureAwait(false))
         {
-            const string OperationName = "Get";
-
-            using var reader = await connection.ExecuteWithErrorHandlingAsync(
-                this._collectionMetadata,
-                OperationName,
-                () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken).ConfigureAwait(false);
-
-            while (await reader.ReadWithErrorHandlingAsync(
-                this._collectionMetadata,
-                OperationName,
-                cancellationToken).ConfigureAwait(false))
-            {
-                yield return this.GetAndMapRecord(
-                    reader,
-                    this._model.Properties,
-                    options.IncludeVectors);
-            }
+            yield return this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
         }
     }
 
@@ -363,7 +350,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     {
         Verify.NotNull(record);
 
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -382,8 +369,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             // and generate embeddings for them in a single batch. That's some more complexity though.
             if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
             {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
+                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>(vectorPropertyCount);
+                generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
             }
             else
             {
@@ -394,16 +381,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings);
-
-        var key = storageModel[this._keyStorageName];
-
-        Verify.NotNull(key);
-
-        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
-
-        await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
-            .ConfigureAwait(false);
+        await this.InternalUpsertBatchAsync(connection, [record], generatedEmbeddings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -414,7 +392,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         IReadOnlyList<TRecord>? recordsList = null;
 
         // If an embedding generator is defined, invoke it once per property for all records.
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -447,8 +425,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             // and generate embeddings for them in a single batch. That's some more complexity though.
             if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
+                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>(vectorPropertyCount);
+                generatedEmbeddings[vectorProperty] = await floatTask.ConfigureAwait(false);
             }
             else
             {
@@ -457,19 +435,9 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             }
         }
 
-        var storageModels = records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList();
-
-        if (storageModels.Count == 0)
-        {
-            return;
-        }
-
-        var keys = storageModels.Select(model => model[this._keyStorageName]!).ToList();
-
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
 
-        await this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false);
+        await this.InternalUpsertBatchAsync(connection, records, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -557,11 +525,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             if (recordCounter >= searchOptions.Skip)
             {
                 var score = SqlitePropertyMapping.GetPropertyValue<double>(reader, SqliteCommandBuilder.DistancePropertyName);
-
-                var record = this.GetAndMapRecord(
-                    reader,
-                    this._model.Properties,
-                    searchOptions.IncludeVectors);
+                var record = this._mapper.MapFromStorageToDataModel(reader, searchOptions.IncludeVectors);
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
@@ -632,69 +596,67 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         const string OperationName = "Select";
 
         bool includeVectors = options?.IncludeVectors is true && this._vectorPropertiesExist;
-
-        DbCommand command;
-
-        if (includeVectors)
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
-            if (this._model.EmbeddingGenerationRequired)
-            {
-                throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
-            }
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
-            command = SqliteCommandBuilder.BuildSelectInnerJoinCommand<TRecord>(
+        var command = includeVectors
+            ? SqliteCommandBuilder.BuildSelectInnerJoinCommand<TRecord>(
                 connection,
                 this._vectorTableName,
                 this._dataTableName,
                 this._keyStorageName,
                 this._model,
                 [condition],
-                includeDistance: false);
-        }
-        else
-        {
-            command = SqliteCommandBuilder.BuildSelectDataCommand<TRecord>(
+                includeDistance: false)
+            : SqliteCommandBuilder.BuildSelectDataCommand<TRecord>(
                 connection,
                 this._dataTableName,
                 this._model,
                 [condition]);
-        }
 
-        using (command)
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            OperationName,
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var reader = await connection.ExecuteWithErrorHandlingAsync(
-                this._collectionMetadata,
-                OperationName,
-                () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken).ConfigureAwait(false);
-
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                yield return this.GetAndMapRecord(
-                    reader,
-                    this._model.Properties,
-                    includeVectors);
-            }
+            yield return this._mapper.MapFromStorageToDataModel(reader, includeVectors);
         }
     }
 
-    private async Task<IReadOnlyList<TKey>> InternalUpsertBatchAsync(
+    private async Task InternalUpsertBatchAsync(
         SqliteConnection connection,
-        List<Dictionary<string, object?>> storageModels,
-        SqliteWhereCondition condition,
+        IEnumerable<TRecord> records,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(storageModels);
-        Verify.True(storageModels.Count > 0, "Number of provided records should be greater than zero.");
+        Verify.NotNull(records);
 
         if (this._vectorPropertiesExist)
         {
+            // We're going to have to traverse the records multiple times, so materialize the enumerable if needed.
+            var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+            if (recordsList.Count == 0)
+            {
+                return;
+            }
+
+            records = recordsList;
+
+            var keyProperty = this._model.KeyProperty;
+            var keys = recordsList.Select(r => keyProperty.GetValueAsObject(r)!).ToList();
+
             // Deleting vector records first since current version of vector search extension
             // doesn't support Upsert operation, only Delete/Insert.
             using var vectorDeleteCommand = SqliteCommandBuilder.BuildDeleteCommand(
                 connection,
                 this._vectorTableName,
-                [condition]);
+                [new SqliteWhereInCondition(this._keyStorageName, keys)]);
 
             await connection.ExecuteWithErrorHandlingAsync(
                 this._collectionMetadata,
@@ -706,8 +668,9 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 connection,
                 this._vectorTableName,
                 this._keyStorageName,
-                this._model.Properties,
-                storageModels,
+                this._model,
+                records,
+                generatedEmbeddings,
                 data: false);
 
             await connection.ExecuteWithErrorHandlingAsync(
@@ -721,8 +684,9 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             connection,
             this._dataTableName,
             this._keyStorageName,
-            this._model.Properties,
-            storageModels,
+            this._model,
+            records,
+            generatedEmbeddings,
             data: true,
             replaceIfExists: true);
 
@@ -732,18 +696,14 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             () => dataCommand.ExecuteReaderAsync(cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        var keys = new List<TKey>();
-
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var key = reader.GetFieldValue<TKey>(0);
 
-            keys.Add(key);
+            // TODO: Inject the generated keys into the record for autogenerated keys.
 
             await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        return keys;
     }
 
     private Task InternalDeleteBatchAsync(SqliteConnection connection, SqliteWhereCondition condition, CancellationToken cancellationToken)
@@ -776,25 +736,6 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             cancellationToken));
 
         return Task.WhenAll(tasks);
-    }
-
-    private TRecord GetAndMapRecord(
-        DbDataReader reader,
-        IReadOnlyList<PropertyModel> properties,
-        bool includeVectors)
-    {
-        var storageModel = new Dictionary<string, object?>();
-
-        foreach (var property in properties)
-        {
-            if (includeVectors || property is not VectorPropertyModel)
-            {
-                var propertyValue = SqlitePropertyMapping.GetPropertyValue(reader, property.StorageName, property.Type);
-                storageModel.Add(property.StorageName, propertyValue);
-            }
-        }
-
-        return this._mapper.MapFromStorageToDataModel(storageModel, includeVectors);
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
