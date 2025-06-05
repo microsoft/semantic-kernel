@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
