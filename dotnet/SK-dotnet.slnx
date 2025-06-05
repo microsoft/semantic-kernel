@@ -92,6 +92,7 @@
     <Project Path="src/Agents/OpenAI/Agents.OpenAI.csproj" />
     <Project Path="src/Agents/Orchestration/Agents.Orchestration.csproj" />
     <Project Path="src/Agents/Magentic/Agents.Magentic.csproj" />
+    <Project Path="src/Agents/Copilot/Agents.CopilotStudio.csproj" />
     <Project Path="src/Agents/UnitTests/Agents.UnitTests.csproj" />
     <Project Path="src/Agents/Yaml/Agents.Yaml.csproj" />
   </Folder>
