@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -101,37 +102,95 @@ internal static class SqliteCommandBuilder
         SqliteConnection connection,
         string tableName,
         string rowIdentifier,
-        IReadOnlyList<PropertyModel> properties,
-        IReadOnlyList<Dictionary<string, object?>> records,
+        CollectionModel model,
+        IEnumerable<object> records,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings,
         bool data,
         bool replaceIfExists = false)
     {
-        var builder = new StringBuilder();
+        var sql = new StringBuilder();
         var command = connection.CreateCommand();
 
-        var replacePlaceholder = replaceIfExists ? " OR REPLACE" : string.Empty;
+        var recordIndex = 0;
 
-        for (var recordIndex = 0; recordIndex < records.Count; recordIndex++)
+        var properties = model.KeyProperties.Concat(data ? model.DataProperties : (IEnumerable<PropertyModel>)model.VectorProperties);
+
+        foreach (var record in records)
         {
             var rowIdentifierParameterName = GetParameterName(rowIdentifier, recordIndex);
 
-            var (columns, parameters, values) = GetQueryParts(
-                properties,
-                records[recordIndex],
-                recordIndex,
-                data);
+            sql.Append("INSERT");
 
-            builder.AppendLine($"INSERT{replacePlaceholder} INTO \"{tableName}\" ({string.Join(", ", columns)})");
-            builder.AppendLine($"VALUES ({string.Join(", ", parameters)})");
-            builder.AppendLine($"RETURNING {rowIdentifier};");
-
-            for (var i = 0; i < parameters.Count; i++)
+            if (replaceIfExists)
             {
-                command.Parameters.Add(new SqliteParameter(parameters[i], values[i]));
+                sql.Append(" OR REPLACE");
             }
+
+            sql.Append(" INTO \"").Append(tableName).Append("\" (");  // TODO: Sanitize
+
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+            var propertyIndex = 0;
+            foreach (var property in properties)
+            {
+                if (propertyIndex++ > 0)
+                {
+                    sql.Append(", ");
+                }
+
+                sql.Append('"').Append(property.StorageName).Append('"'); // TODO: Sanitize
+            }
+
+            sql.AppendLine(")");
+
+            sql.Append("VALUES (");
+
+            propertyIndex = 0;
+            foreach (var property in properties)
+            {
+                var parameterName = GetParameterName(property.StorageName, recordIndex);
+
+                if (propertyIndex++ > 0)
+                {
+                    sql.Append(", ");
+                }
+
+                sql.Append(parameterName);
+
+                var value = property.GetValueAsObject(record);
+
+                if (property is VectorPropertyModel vectorProperty)
+                {
+                    if (generatedEmbeddings?[vectorProperty] is IReadOnlyList<Embedding> ge)
+                    {
+                        value = ((Embedding<float>)ge[recordIndex]).Vector;
+                    }
+
+                    value = value switch
+                    {
+                        ReadOnlyMemory<float> m => SqlitePropertyMapping.MapVectorForStorageModel(m),
+                        Embedding<float> e => SqlitePropertyMapping.MapVectorForStorageModel(e.Vector),
+                        float[] a => SqlitePropertyMapping.MapVectorForStorageModel(a),
+                        null => null,
+
+                        _ => throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a ReadOnlyMemory<float> ('{value?.GetType().Name}').")
+                    };
+                }
+
+                command.Parameters.Add(new SqliteParameter(parameterName, value ?? DBNull.Value));
+            }
+#pragma warning restore CA1851
+
+            sql.AppendLine(")");
+
+            sql
+                .Append("RETURNING ")
+                .AppendLine(rowIdentifier)
+                .AppendLine(";");
+
+            recordIndex++;
         }
 
-        command.CommandText = builder.ToString();
+        command.CommandText = sql.ToString();
 
         return command;
     }
@@ -402,37 +461,8 @@ internal static class SqliteCommandBuilder
         return (command, whereClause);
     }
 
-    private static (List<string> Columns, List<string> ParameterNames, List<object?> ParameterValues) GetQueryParts(
-        IReadOnlyList<PropertyModel> properties,
-        Dictionary<string, object?> record,
-        int index,
-        bool data)
-    {
-        var columns = new List<string>();
-        var parameterNames = new List<string>();
-        var parameterValues = new List<object?>();
-
-        foreach (var property in properties)
-        {
-            bool include = property is KeyPropertyModel // The Key column is included in both Vector and Data tables.
-                || (data == property is DataPropertyModel); // The Data column is included only in the Data table.
-
-            string propertyName = property.StorageName;
-            if (include && record.TryGetValue(propertyName, out var value))
-            {
-                columns.Add($"\"{propertyName}\"");
-                parameterNames.Add(GetParameterName(propertyName, index));
-                parameterValues.Add(value ?? DBNull.Value);
-            }
-        }
-
-        return (columns, parameterNames, parameterValues);
-    }
-
     private static string GetParameterName(string propertyName, int index)
-    {
-        return $"@{propertyName}{index}";
-    }
+        => $"@{propertyName}{index}";
 
     #endregion
 }
