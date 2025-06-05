@@ -1,12 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import datetime
 import os
-
-from azure.core.credentials import AccessToken
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -17,33 +12,6 @@ from semantic_kernel.core_plugins import SessionsPythonTool
 The following sample demonstrates how to create a chat completion agent with
 code interpreter capabilities using the Azure Container Apps session pool service.
 """
-
-auth_token: AccessToken | None = None
-
-ACA_TOKEN_ENDPOINT: str = "https://acasessions.io/.default"
-
-
-async def auth_callback() -> str:
-    """Auth callback for the SessionsPythonTool.
-
-    This is a sample auth callback that shows how to use Azure's DefaultAzureCredential
-    to get an access token.
-    """
-    global auth_token
-    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-
-    if not auth_token or auth_token.expires_on < current_utc_timestamp:
-        credential = DefaultAzureCredential()
-
-        try:
-            auth_token = credential.get_token(ACA_TOKEN_ENDPOINT)
-        except ClientAuthenticationError as cae:
-            err_messages = getattr(cae, "messages", [])
-            raise RuntimeError(
-                f"Failed to retrieve the client auth token with messages: {' '.join(err_messages)}"
-            ) from cae
-
-    return auth_token.token
 
 
 async def handle_intermediate_steps(message: ChatMessageContent) -> None:
@@ -58,7 +26,7 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
 
 async def main():
     # 1. Create the python code interpreter tool using the SessionsPythonTool
-    python_code_interpreter = SessionsPythonTool(auth_callback=auth_callback)
+    python_code_interpreter = SessionsPythonTool()
 
     # 2. Create the agent
     agent = ChatCompletionAgent(
