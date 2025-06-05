@@ -88,7 +88,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
         Assert.Contains(relevantFunctions, f => f.Name == "IdentifySentimentTrend");
     }
 
-    [Fact(Skip = "This test periodically fails. Disabling it for now until the root cause is identified.")]
+    [Fact]
     private async Task ItShouldSelectFunctionsBasedOnPreviousAndCurrentInvocationContextAsync()
     {
         // Arrange
