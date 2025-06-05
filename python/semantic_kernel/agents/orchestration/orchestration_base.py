@@ -16,6 +16,7 @@ from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -94,6 +95,8 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
         output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        | None = None,
     ) -> None:
         """Initialize the orchestration base.
 
@@ -103,8 +106,10 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             description (str | None): The description of the orchestration. If None, use a default description.
             input_transform (Callable | None): A function that transforms the external input message.
             output_transform (Callable | None): A function that transforms the internal output message.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
+            agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
+            streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
+                is produced by the agents.
         """
         if not members:
             raise ValueError("The members list cannot be empty.")
@@ -117,6 +122,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
         self._output_transform = output_transform or self._default_output_transform
 
         self._agent_response_callback = agent_response_callback
+        self._streaming_agent_response_callback = streaming_agent_response_callback
 
     def _set_types(self) -> None:
         """Set the external input and output types from the class arguments.
