@@ -154,7 +154,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] messages = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
+        Task OnIntermediateMessage(ChatMessageContent message)
+        {
+            // Assert intermediate messages
+            Assert.NotNull(message);
+            Assert.Equal("Hello, how can I help you?", message.Content);
+            return Task.CompletedTask;
+        }
+        AgentResponseItem<StreamingChatMessageContent>[] messages = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), options: new() { OnIntermediateMessage = OnIntermediateMessage }).ToArrayAsync();
 
         // Assert
         Assert.Equal(3, messages.Length);
