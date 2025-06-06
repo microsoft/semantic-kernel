@@ -9,18 +9,6 @@
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Planners\SequentialPlanner\**" />
-    <Compile Remove="Planners\StepwisePlanner\**" />
-    <EmbeddedResource Remove="Planners\SequentialPlanner\**" />
-    <EmbeddedResource Remove="Planners\StepwisePlanner\**" />
-    <None Remove="Planners\SequentialPlanner\**" />
-    <None Remove="Planners\StepwisePlanner\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Planners\PlanTests.cs" />
-    <Compile Remove="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="CrossLanguage\Data\LightBulbApi.json" />
     <None Remove="CrossLanguage\Data\LightBulbApiTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithChatRolesStreamingTest.json" />
@@ -99,7 +87,6 @@
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
-    <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
@@ -194,10 +181,6 @@
     <Content Include="CrossLanguage\Data\SimplePromptTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
