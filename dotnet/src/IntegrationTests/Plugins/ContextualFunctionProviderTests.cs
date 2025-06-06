@@ -113,10 +113,34 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
             vectorStore: this._vectorStore,
             vectorDimensions: this._modelDimensions,
             functions: GetAvailableFunctions(),
-            maxNumberOfFunctions: 2, // Instruct the provider to return only one relevant function
+            maxNumberOfFunctions: 1, // Instruct the provider to return only one relevant function
             options: new ContextualFunctionProviderOptions
             {
-                NumberOfRecentMessagesInContext = 1 // Use only the last message from the previous agent invocation  
+                NumberOfRecentMessagesInContext = 1, // Use only the last message from the previous agent invocation
+                ContextEmbeddingValueProvider = (recentMessages, newMessages, _) =>
+                {
+                    string context;
+
+                    // Provide a deterministic context for the VM deployment request instead of using the one assembled by the provider based on
+                    // the LLM's non-deterministic response for the VM provisioning request. This is done to ensure that the context is always
+                    // the same for the VM deployment request; otherwise, the non-deterministic context could lead to different function selection
+                    // results for the same VM deployment request, resulting in test flakiness.  
+                    if (newMessages.Any(m => m.Text.Contains("Deploy it")))
+                    {
+                        context = "A VM has been successfully provisioned with the ID: 40a2d11e-233b-409e-8638-9d4508623b93.\r\nDeploy it";
+                    }
+                    else
+                    {
+                        context = string.Join(
+                            Environment.NewLine,
+                            recentMessages
+                            .TakeLast(1)
+                            .Where(m => !string.IsNullOrWhiteSpace(m?.Text))
+                            .Select(m => m.Text));
+                    }
+
+                    return Task.FromResult(context);
+                },
             }
         );
 
@@ -128,14 +152,14 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
 
         // Assert
         Assert.NotNull(relevantFunctions);
-        Assert.Contains(relevantFunctions, f => f.Name == "ProvisionVM");
+        Assert.Single(relevantFunctions, f => f.Name == "ProvisionVM");
 
         // Act: Ask agent to deploy the VM provisioned in the previous invocation
         await agent.InvokeAsync("Deploy it", agentThread).FirstAsync();
 
         // Assert
         Assert.NotNull(relevantFunctions);
-        Assert.Contains(relevantFunctions, f => f.Name == "DeployVM");
+        Assert.Single(relevantFunctions, f => f.Name == "DeployVM");
     }
 
     /// <summary>
