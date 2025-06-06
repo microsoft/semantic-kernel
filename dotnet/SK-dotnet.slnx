@@ -71,6 +71,12 @@
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.SummaryAgent/ProcessFramework.Aspire.SummaryAgent.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.TranslatorAgent/ProcessFramework.Aspire.TranslatorAgent.csproj" />
   </Folder>
+  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/" />
+  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/src/">
+    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.AppHost/ProcessFramework.Aspire.SignalR.AppHost.csproj" />
+    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ProcessOrchestrator/ProcessFramework.Aspire.SignalR.ProcessOrchestrator.csproj" />
+    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ServiceDefaults/ProcessFramework.Aspire.SignalR.ServiceDefaults.csproj" />
+  </Folder>
   <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
     <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
