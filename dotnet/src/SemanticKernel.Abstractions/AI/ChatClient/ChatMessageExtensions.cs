@@ -15,7 +15,7 @@ internal static class ChatMessageExtensions
             ModelId = response?.ModelId,
             AuthorName = message.AuthorName,
             InnerContent = response?.RawRepresentation ?? message.RawRepresentation,
-            Metadata = message.AdditionalProperties,
+            Metadata = new AdditionalPropertiesDictionary(message.AdditionalProperties ?? []) { ["Usage"] = response?.Usage },
             Role = new AuthorRole(message.Role.Value),
         };
 

@@ -9,8 +9,8 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using OpenAI.Files;
-
 using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
+using UsageDetails = Microsoft.Extensions.AI.UsageDetails;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of host agents
@@ -124,6 +124,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             else if (usage is ChatTokenUsage chatUsage)
             {
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
+            }
+            else if (usage is UsageDetails usageDetails)
+            {
+                WriteUsage(usageDetails.TotalTokenCount ?? 0, usageDetails.InputTokenCount ?? 0, usageDetails.OutputTokenCount ?? 0);
             }
         }
 

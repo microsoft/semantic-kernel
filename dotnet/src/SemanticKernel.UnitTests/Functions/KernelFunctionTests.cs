@@ -3,10 +3,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.UnitTests.Functions;
 
 /// <summary>
 /// Tests for <see cref="KernelFunction"/> cloning with a <see cref="Kernel"/> instance.
