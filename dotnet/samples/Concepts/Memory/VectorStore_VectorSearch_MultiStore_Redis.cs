@@ -43,11 +43,12 @@ public class VectorStore_VectorSearch_MultiStore_Redis(ITestOutputHelper output,
         kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            credential: new AzureCliCredential());
+            credential: new AzureCliCredential(),
+            dimensions: 1536);
 
         // Initialize the Redis docker container via the fixtures and register the Redis VectorStore with the preferred storage type.
         await redisFixture.ManualInitializeAsync();
-        kernelBuilder.AddRedisVectorStore("localhost:6379", new() { StorageType = redisStorageType });
+        kernelBuilder.Services.AddRedisVectorStore("localhost:6379", new() { StorageType = redisStorageType });
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
@@ -75,7 +76,7 @@ public class VectorStore_VectorSearch_MultiStore_Redis(ITestOutputHelper output,
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Initialize the Redis docker container via the fixtures and construct the Redis VectorStore with the preferred storage type.
         await redisFixture.ManualInitializeAsync();

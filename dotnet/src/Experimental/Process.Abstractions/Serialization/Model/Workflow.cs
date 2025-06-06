@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Internal;
@@ -506,9 +507,9 @@ public sealed class Node
     /// Gets or sets the human-in-the-loop (HITL) mode for this node.
     /// HITL mode determines when and how human intervention is required during node execution.
     /// </summary>
-    [YamlMember(Alias = "human_in_loop_type")]
-    [JsonPropertyName("human_in_loop_type")]
-    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
+    [YamlMember(Alias = "human_in_loop_mode")]
+    [JsonPropertyName("human_in_loop_mode")]
+    public HITLMode? HumanInLoopType { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the input configuration for the node.
@@ -843,6 +844,7 @@ public enum HITLMode
 /// Represents an update operation to be performed on a workflow variable.
 /// Variable updates allow workflows to modify state based on conditions and execution flow.
 /// </summary>
+[DataContract]
 public sealed class VariableUpdate
 {
     /// <summary>
@@ -851,6 +853,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "path")]
     [JsonPropertyName("path")]
+    [DataMember]
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
@@ -859,6 +862,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "operation")]
     [JsonPropertyName("operation")]
+    [DataMember]
     public StateUpdateOperations Operation { get; set; }
 
     /// <summary>
@@ -867,6 +871,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "value")]
     [JsonPropertyName("value")]
+
     public object? Value { get; set; } = string.Empty;
 }
 

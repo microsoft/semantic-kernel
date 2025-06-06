@@ -209,8 +209,8 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         {
             if (deleteAgent)
             {
-                var openaiAgent = agent as OpenAIAssistantAgent;
-                await openaiAgent!.Client.DeleteAssistantAsync(openaiAgent.Id);
+                var openaiAgent = (OpenAIAssistantAgent)agent;
+                await openaiAgent.Client.DeleteAssistantAsync(openaiAgent.Id);
             }
 
             if (agentThread is not null)

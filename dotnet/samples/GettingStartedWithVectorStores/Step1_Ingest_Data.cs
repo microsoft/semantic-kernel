@@ -36,11 +36,11 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
     /// <param name="embeddingGenerator">The service to use for generating embeddings.</param>
     /// <returns>The keys of the upserted records.</returns>
     internal static async Task<IEnumerable<string>> IngestDataIntoVectorStoreAsync(
-        IVectorStoreRecordCollection<string, Glossary> collection,
+        VectorStoreCollection<string, Glossary> collection,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         // Create the collection if it doesn't exist.
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
@@ -51,8 +51,9 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        return await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
+
+        return glossaryEntries.Select(g => g.Key);
     }
 
     /// <summary>

@@ -28,8 +28,10 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
         Only respond with a single number that is the result of your calculation without explanation.
         """;
 
-    [Fact]
-    public async Task SerializeAndRestoreAgentGroupChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentTranslator =
@@ -37,7 +39,7 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
             {
                 Instructions = TranslatorInstructions,
                 Name = TranslatorName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Define the assistant
@@ -73,6 +75,8 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
         {
             this.WriteAgentChatMessage(content);
         }
+
+        chatClient?.Dispose();
 
         async Task InvokeAgents(AgentGroupChat chat)
         {

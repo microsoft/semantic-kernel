@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>VectorData.ConformanceTests</RootNamespace>
+    <NoWarn>$(NoWarn);MEVD9000</NoWarn> <!-- Microsoft.Extensions.VectorData experimental user-facing APIs -->
+    <NoWarn>$(NoWarn);MEVD9001</NoWarn> <!-- Microsoft.Extensions.VectorData experimental provider-facing APIs -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory.Data" />
+  </ItemGroup>
+
+</Project>

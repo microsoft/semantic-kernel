@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
+using OpenAI;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -75,10 +76,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         // Arrange
         this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var provider = this.CreateTestProvider();
-        var assistantClient = provider.AssistantClient;
+        var client = this.CreateTestClient();
 
-        var thread = new OpenAIAssistantAgentThread(assistantClient);
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
 
         // Act
         await thread.CreateAsync();
@@ -97,10 +97,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         // Arrange
         this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var provider = this.CreateTestProvider();
-        var assistantClient = provider.AssistantClient;
+        var client = this.CreateTestClient();
 
-        var thread = new OpenAIAssistantAgentThread(assistantClient, new ThreadCreationOptions());
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), new ThreadCreationOptions());
 
         // Act
         await thread.CreateAsync();
@@ -119,10 +118,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         // Arrange
         this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var provider = this.CreateTestProvider();
-        var assistantClient = provider.AssistantClient;
+        var client = this.CreateTestClient();
 
-        var thread = new OpenAIAssistantAgentThread(assistantClient, [new ChatMessageContent(AuthorRole.User, "Hello")]);
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), [new ChatMessageContent(AuthorRole.User, "Hello")]);
 
         // Act
         await thread.CreateAsync();
@@ -142,10 +140,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
         this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
 
-        var provider = this.CreateTestProvider();
-        var assistantClient = provider.AssistantClient;
+        var client = this.CreateTestClient();
 
-        var thread = new OpenAIAssistantAgentThread(assistantClient);
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
         await thread.CreateAsync();
 
         // Act
@@ -164,6 +161,6 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private OpenAIClientProvider CreateTestProvider()
-        => OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
+    private OpenAIClient CreateTestClient()
+        => OpenAIAssistantAgent.CreateOpenAIClient(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
 }

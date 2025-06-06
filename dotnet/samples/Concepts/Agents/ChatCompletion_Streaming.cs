@@ -14,8 +14,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
-    [Fact]
-    public async Task UseStreamingChatCompletionAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseStreamingChatCompletionAgent(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
@@ -23,7 +25,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             {
                 Name = ParrotName,
                 Instructions = ParrotInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         ChatHistoryAgentThread agentThread = new();
@@ -35,10 +37,14 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
         // Output the entire chat history
         await DisplayChatHistory(agentThread);
+
+        chatClient?.Dispose();
     }
 
-    [Fact]
-    public async Task UseStreamingChatCompletionAgentWithPluginAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseStreamingChatCompletionAgentWithPlugin(bool useChatClient)
     {
         const string MenuInstructions = "Answer questions about the menu.";
 
@@ -48,7 +54,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             {
                 Name = "Host",
                 Instructions = MenuInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -64,6 +70,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
         // Output the entire chat history
         await DisplayChatHistory(agentThread);
+
+        chatClient?.Dispose();
     }
 
     // Local function to invoke agent and display the conversation messages.

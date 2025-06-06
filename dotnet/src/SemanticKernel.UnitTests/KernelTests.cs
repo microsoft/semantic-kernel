@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
+using MEAI = Microsoft.Extensions.AI;
 
 #pragma warning disable CS0618 // Events are deprecated
 
@@ -258,6 +259,110 @@ public class KernelTests
     }
 
     [Fact]
+    public async Task InvokeStreamingAsyncCallsWithMEAIContentsAndChatCompletionApiAsync()
+    {
+        // Arrange
+        var mockChatCompletion = this.SetupStreamingChatCompletionMocks(
+            new StreamingChatMessageContent(AuthorRole.User, "chunk1"),
+            new StreamingChatMessageContent(AuthorRole.User, "chunk2"));
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<IChatCompletionService>(mockChatCompletion.Object);
+        Kernel kernel = builder.Build();
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var expectedPrompt = prompt.Replace("{{$input}}", "importance");
+        var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
+        var variables = new KernelArguments() { [InputParameterName] = "importance" };
+
+        var chunkCount = 0;
+
+        // Act & Assert
+        await foreach (var chunk in sut.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk.Text);
+            chunkCount++;
+        }
+
+        Assert.Equal(2, chunkCount);
+        mockChatCompletion.Verify(m => m.GetStreamingChatMessageContentsAsync(It.Is<ChatHistory>((m) => m[0].Content == expectedPrompt), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    [Fact]
+    public async Task InvokeStreamingAsyncGenericPermutationsCallsConnectorChatClientAsync()
+    {
+        // Arrange
+        var customRawItem = new MEAI.ChatOptions();
+        var mockChatClient = this.SetupStreamingChatClientMock(
+            new MEAI.ChatResponseUpdate(role: MEAI.ChatRole.Assistant, content: "chunk1") { RawRepresentation = customRawItem },
+            new MEAI.ChatResponseUpdate(role: null, content: "chunk2") { RawRepresentation = customRawItem });
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<MEAI.IChatClient>(mockChatClient.Object);
+        Kernel kernel = builder.Build();
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var expectedPrompt = prompt.Replace("{{$input}}", "importance");
+        var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
+        var variables = new KernelArguments() { [InputParameterName] = "importance" };
+
+        var totalChunksExpected = 0;
+        var totalInvocationTimesExpected = 0;
+
+        // Act & Assert
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<string>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk);
+            totalChunksExpected++;
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel, variables))
+        {
+            totalChunksExpected++;
+            Assert.Same(customRawItem, chunk.InnerContent);
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingChatMessageContent>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk.Content);
+            Assert.Same(customRawItem, chunk.InnerContent);
+            totalChunksExpected++;
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk.Text);
+            Assert.Same(customRawItem, chunk.RawRepresentation);
+            totalChunksExpected++;
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<MEAI.AIContent>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk.ToString());
+            totalChunksExpected++;
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<IList<MEAI.AIContent>>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk[0].ToString());
+            totalChunksExpected++;
+        }
+
+        totalInvocationTimesExpected++;
+        await foreach (var chunk in sut.InvokeStreamingAsync<MEAI.TextContent>(kernel, variables))
+        {
+            Assert.Contains("chunk", chunk.Text);
+            totalChunksExpected++;
+        }
+
+        Assert.Equal(totalInvocationTimesExpected * 2, totalChunksExpected);
+        mockChatClient.Verify(m => m.GetStreamingResponseAsync(It.Is<IList<MEAI.ChatMessage>>((m) => m[0].Text == expectedPrompt), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>()), Times.Exactly(totalInvocationTimesExpected));
+    }
+
+    [Fact]
     public async Task ValidateInvokeAsync()
     {
         // Arrange
@@ -316,12 +421,28 @@ public class KernelTests
         return (mockTextContent, mockTextCompletion);
     }
 
+    private Mock<IChatCompletionService> SetupStreamingChatCompletionMocks(params StreamingChatMessageContent[] streamingContents)
+    {
+        var mockChatCompletion = new Mock<IChatCompletionService>();
+        mockChatCompletion.Setup(m => m.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(streamingContents.ToAsyncEnumerable());
+        return mockChatCompletion;
+    }
+
     private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
     {
         var mockTextCompletion = new Mock<ITextGenerationService>();
         mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(streamingContents.ToAsyncEnumerable());
 
         return mockTextCompletion;
+    }
+
+    private Mock<MEAI.IChatClient> SetupStreamingChatClientMock(params MEAI.ChatResponseUpdate[] chatResponseUpdates)
+    {
+        var mockChatClient = new Mock<MEAI.IChatClient>();
+        mockChatClient.Setup(m => m.GetStreamingResponseAsync(It.IsAny<IList<MEAI.ChatMessage>>(), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>())).Returns(chatResponseUpdates.ToAsyncEnumerable());
+        mockChatClient.Setup(c => c.GetService(typeof(MEAI.ChatClientMetadata), It.IsAny<object?>())).Returns(new MEAI.ChatClientMetadata());
+
+        return mockChatClient;
     }
 
     private void AssertFilters(Kernel kernel1, Kernel kernel2)

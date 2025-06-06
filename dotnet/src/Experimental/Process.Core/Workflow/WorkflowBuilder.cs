@@ -329,7 +329,7 @@ internal class WorkflowBuilder
             Description = process.Description,
             FormatVersion = "1.0",
             Name = process.State.Name,
-            Nodes = [],
+            Nodes = [new Node { Id = "End", Type = "declarative", Version = "1.0", Description = "Terminal state" }],
             Variables = [],
         };
 

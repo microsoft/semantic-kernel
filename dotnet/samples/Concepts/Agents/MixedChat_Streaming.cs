@@ -34,8 +34,10 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
         Consider suggestions when refining an idea.
         """;
 
-    [Fact]
-    public async Task UseStreamingAgentChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseStreamingAgentChat(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -43,7 +45,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Define the assistant
@@ -112,6 +114,8 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient?.Dispose();
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

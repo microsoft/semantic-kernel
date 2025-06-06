@@ -4,8 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
@@ -24,7 +23,7 @@ description: This agent answers question about the weather.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    endpoint: ${AzureAI:Endpoint}
   options:
     temperature: 0.4
 tools:
@@ -153,7 +152,7 @@ tools:
           schemes: {}
 """
 
-settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from .env/env vars
+settings = AzureAIAgentSettings()  # ChatModelId & Endpoint come from .env/env vars
 
 
 async def main():

@@ -25,14 +25,14 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, Product>("skproducts");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create product records and generate embeddings for them.
         var productRecords = CreateProductRecords().ToList();
@@ -46,14 +46,13 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the product records into the collection and return their keys.
-        var upsertedKeysTasks = productRecords.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the product records into the collection.
+        await collection.UpsertAsync(productRecords);
 
         // Search the store using the description embedding.
         var searchString = "I am looking for a reasonably priced coffee maker";
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        var resultRecords = await collection.SearchEmbeddingAsync(
+        var resultRecords = await collection.SearchAsync(
             searchVector, top: 1, new()
             {
                 VectorProperty = r => r.DescriptionEmbedding
@@ -67,7 +66,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         // Search the store using the feature list embedding.
         searchString = "I am looking for a handheld vacuum cleaner that will remove pet hair";
         searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        resultRecords = await collection.SearchEmbeddingAsync(
+        resultRecords = await collection.SearchAsync(
             searchVector,
             top: 1,
             new()
@@ -125,19 +124,19 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
     /// </remarks>
     private sealed class Product
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public List<string> FeatureList { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FeatureListEmbedding { get; set; }
     }
 }

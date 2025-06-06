@@ -27,7 +27,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct the AzureAISearch VectorStore.
         var searchIndexClient = new SearchIndexClient(
@@ -37,8 +37,8 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
-        var hybridSearchCollection = (IKeywordHybridSearch<Glossary>)collection;
+        await collection.EnsureCollectionExistsAsync();
+        var hybridSearchCollection = (IKeywordHybridSearchable<Glossary>)collection;
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
@@ -49,8 +49,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
@@ -92,19 +91,19 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData(IsFullTextIndexed = true)]
+        [VectorStoreData(IsFullTextIndexed = true)]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

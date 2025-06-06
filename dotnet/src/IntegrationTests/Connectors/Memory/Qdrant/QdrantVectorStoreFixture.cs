@@ -48,29 +48,29 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     {
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._client = dockerClientConfiguration.CreateClient();
-        this.HotelVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.HotelVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreKeyProperty("HotelId", typeof(ulong)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StorageName = "parking_is_included" },
+                new VectorStoreDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
+                new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset)) { IsIndexed = true },
+                new VectorStoreDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
-        this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreKeyProperty("HotelId", typeof(Guid)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
@@ -91,10 +91,10 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Create / Recreate qdrant docker container and run it.
@@ -312,38 +312,38 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     public record HotelInfo()
     {
         /// <summary>The key of the record.</summary>
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
+        [VectorStoreData(IsIndexed = true, IsFullTextIndexed = true)]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public int HotelCode { get; set; }
 
         /// <summary>A  float metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public float? HotelRating { get; set; }
 
         /// <summary>A bool metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "parking_is_included")]
+        [VectorStoreData(IsIndexed = true, StorageName = "parking_is_included")]
         public bool ParkingIncluded { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public List<string> Tags { get; set; } = new List<string>();
 
         /// <summary>A datetime metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
         /// <summary>A data field.</summary>
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
+        [VectorStoreVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 
@@ -354,19 +354,19 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     public record HotelInfoWithGuidId()
     {
         /// <summary>The key of the record.</summary>
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
+        [VectorStoreData(IsIndexed = true, IsFullTextIndexed = true)]
         public string? HotelName { get; set; }
 
         /// <summary>A data field.</summary>
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
+        [VectorStoreVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 }

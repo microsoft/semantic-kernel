@@ -82,13 +82,13 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
     /// </summary>
     [Fact]
-    public async Task AzureCosmosDBMongoDBCacheAsync()
+    public async Task CosmosMongoDBCacheAsync()
     {
         var kernel = GetKernelWithCache(services =>
         {
-            services.AddAzureCosmosDBMongoDBVectorStore(
-                TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
-                TestConfiguration.AzureCosmosDbMongoDb.DatabaseName);
+            services.AddCosmosMongoVectorStore(
+                TestConfiguration.CosmosMongo.ConnectionString,
+                TestConfiguration.CosmosMongo.DatabaseName);
         });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
@@ -182,7 +182,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// </summary>
     public sealed class PromptCacheFilter(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        IVectorStore vectorStore)
+        VectorStore vectorStore)
         : CacheBaseFilter, IPromptRenderFilter
     {
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
@@ -196,10 +196,10 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             var promptEmbedding = await embeddingGenerator.GenerateAsync(prompt);
 
             var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Search for similar prompts in cache.
-            var searchResult = (await collection.SearchEmbeddingAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken)
+            var searchResult = (await collection.SearchAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken)
                 .FirstOrDefaultAsync())?.Record;
 
             // If result exists, return it.
@@ -219,7 +219,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// </summary>
     public sealed class FunctionCacheFilter(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        IVectorStore vectorStore)
+        VectorStore vectorStore)
         : CacheBaseFilter, IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
@@ -241,7 +241,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
                 // Cache rendered prompt and LLM result.
                 var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync();
+                await collection.EnsureCollectionExistsAsync();
 
                 var cacheRecord = new CacheRecord
                 {
@@ -284,16 +284,16 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
     private sealed class CacheRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Prompt { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Result { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1536)]
+        [VectorStoreVector(Dimensions: 1536)]
         public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 

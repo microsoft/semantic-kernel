@@ -8,14 +8,22 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1707,CA1063,CS0618,CS1591,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1812;CA1861;CA1063;CS0618;CS1591;IDE1006;VSTHRD111;SKEXP0001;SKEXP0050;SKEXP0110;SKEXP0130;OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.0.1" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -29,17 +37,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\Copilot\Agents.CopilotStudio.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\Magentic\Agents.Magentic.csproj" />
     <ProjectReference Include="..\Orchestration\Agents.Orchestration.csproj" />
     <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\Yaml\Agents.Yaml.csproj" />
-    <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
   </ItemGroup>
 
   <ItemGroup>

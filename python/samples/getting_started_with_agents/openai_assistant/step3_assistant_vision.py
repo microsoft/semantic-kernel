@@ -4,6 +4,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents import AssistantAgentThread, OpenAIAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
@@ -17,7 +18,7 @@ and answer questions about them. This sample uses non-streaming responses.
 async def main():
     # 1. Create the OpenAI Assistant Agent client
     # Note Azure OpenAI doesn't support vision files yet
-    client, model = OpenAIAssistantAgent.setup_resources()
+    client = OpenAIAssistantAgent.create_client()
 
     # 2. Load a sample image of a cat used for the assistant to describe
     file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg")
@@ -27,7 +28,7 @@ async def main():
 
     # 3. Create the assistant on the OpenAI service
     definition = await client.beta.assistants.create(
-        model=model,
+        model=OpenAISettings().chat_model_id,
         instructions="Answer questions about the provided images.",
         name="Vision",
     )
