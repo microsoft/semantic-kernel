@@ -204,7 +204,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
     /// for an agent with temperature defined.
     /// </summary>
     [Fact]
@@ -225,7 +225,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
     /// for an agent with topP defined.
     /// </summary>
     [Fact]
@@ -246,7 +246,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
     /// for an agent with execution settings and meta-data.
     /// </summary>
     [Fact]

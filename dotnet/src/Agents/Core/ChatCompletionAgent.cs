@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -136,22 +135,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        ChatHistory history,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        string agentName = this.GetDisplayName();
-
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeAsync(agentName, history, (m) => Task.CompletedTask, arguments, kernel, null, cancellationToken),
-            cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
@@ -203,29 +186,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         {
             yield return new(result, chatHistoryAgentThread);
         }
-    }
-
-    /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-        ChatHistory history,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        string agentName = this.GetDisplayName();
-
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeStreamingAsync(
-                agentName,
-                history,
-                (newMessage) => Task.CompletedTask,
-                arguments,
-                kernel,
-                null,
-                cancellationToken),
-            cancellationToken);
     }
 
     /// <inheritdoc/>

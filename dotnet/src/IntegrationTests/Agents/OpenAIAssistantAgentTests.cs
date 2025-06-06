@@ -2,7 +2,6 @@
 using System;
 using System.ClientModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,8 +16,6 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Assistants;
-using OpenAI.Files;
-using OpenAI.VectorStores;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
@@ -111,69 +108,6 @@ public sealed class OpenAIAssistantAgentTests
     }
 
     /// <summary>
-    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding a message with
-    /// function result contents.
-    /// </summary>
-    [RetryFact(typeof(HttpOperationException))]
-    [Obsolete("Test is testing obsolete method")]
-    public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
-    {
-        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
-        OpenAIClient client = CreateClient(azureOpenAIConfiguration);
-        AssistantClient assistantClient = client.GetAssistantClient();
-        Assistant definition = await assistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, assistantClient);
-
-        AssistantThread thread = await assistantClient.CreateThreadAsync();
-        ChatMessageContent functionResultMessage = new(AuthorRole.Assistant, [new FunctionResultContent("mock-function", result: "A result value")]);
-        try
-        {
-            await agent.AddChatMessageAsync(thread.Id, functionResultMessage);
-            var messages = await agent.GetThreadMessagesAsync(thread.Id).ToArrayAsync();
-            Assert.Single(messages);
-        }
-        finally
-        {
-            await assistantClient.DeleteThreadAsync(thread.Id);
-            await assistantClient.DeleteAssistantAsync(agent.Id);
-        }
-    }
-
-    /// <summary>
-    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
-    /// and targeting Azure OpenAI services.
-    /// </summary>
-    [RetryFact(typeof(HttpOperationException))]
-    [Obsolete("Test is testing obsolete method")]
-    public async Task AzureOpenAIAssistantAgentTokensAsync()
-    {
-        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
-        OpenAIClient client = CreateClient(azureOpenAIConfiguration);
-        AssistantClient assistantClient = client.GetAssistantClient();
-        Assistant definition = await assistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!, instructions: "Repeat the user all of the user messages");
-        OpenAIAssistantAgent agent = new(definition, assistantClient)
-        {
-            RunOptions = new()
-            {
-                MaxOutputTokenCount = 16,
-            }
-        };
-
-        AssistantThread thread = await assistantClient.CreateThreadAsync();
-        ChatMessageContent functionResultMessage = new(AuthorRole.User, "A long time ago there lived a king who was famed for his wisdom through all the land. Nothing was hidden from him, and it seemed as if news of the most secret things was brought to him through the air. But he had a strange custom; every day after dinner, when the table was cleared, and no one else was present, a trusty servant had to bring him one more dish. It was covered, however, and even the servant did not know what was in it, neither did anyone know, for the king never took off the cover to eat of it until he was quite alone.");
-        try
-        {
-            await agent.AddChatMessageAsync(thread.Id, functionResultMessage);
-            await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync(thread.Id).ToArrayAsync().AsTask());
-        }
-        finally
-        {
-            await assistantClient.DeleteThreadAsync(thread.Id);
-            await assistantClient.DeleteAssistantAsync(agent.Id);
-        }
-    }
-
-    /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> adding additional messages to a thread on invocation via custom options.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
@@ -220,103 +154,6 @@ public sealed class OpenAIAssistantAgentTests
         {
             await agentThread.DeleteAsync();
             await assistantClient.DeleteAssistantAsync(agent.Id);
-        }
-    }
-
-    /// <summary>
-    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding additional message to a thread.
-    /// function result contents.
-    /// </summary>
-    [RetryFact(typeof(HttpOperationException))]
-    [Obsolete("Test is testing obsolete method")]
-    public async Task AzureOpenAIAssistantAgentAdditionalMessagesAsync()
-    {
-        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
-        OpenAIClient client = CreateClient(azureOpenAIConfiguration);
-        AssistantClient assistantClient = client.GetAssistantClient();
-        Assistant definition = await assistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, assistantClient);
-
-        ThreadCreationOptions threadOptions = new()
-        {
-            InitialMessages =
-            {
-                new ChatMessageContent(AuthorRole.User, "Hello").ToThreadInitializationMessage(),
-                new ChatMessageContent(AuthorRole.User, "How may I help you?").ToThreadInitializationMessage(),
-            }
-        };
-        AssistantThread thread = await assistantClient.CreateThreadAsync(threadOptions);
-        try
-        {
-            var messages = await agent.GetThreadMessagesAsync(thread.Id).ToArrayAsync();
-            Assert.Equal(2, messages.Length);
-
-            RunCreationOptions invocationOptions = new()
-            {
-                AdditionalMessages = {
-                    new ChatMessageContent(AuthorRole.User, "This is my real question...in three parts:").ToThreadInitializationMessage(),
-                    new ChatMessageContent(AuthorRole.User, "Part 1").ToThreadInitializationMessage(),
-                    new ChatMessageContent(AuthorRole.User, "Part 2").ToThreadInitializationMessage(),
-                    new ChatMessageContent(AuthorRole.User, "Part 3").ToThreadInitializationMessage(),
-                }
-            };
-
-            messages = await agent.InvokeAsync(thread.Id, invocationOptions).ToArrayAsync();
-            Assert.Single(messages);
-
-            messages = await agent.GetThreadMessagesAsync(thread.Id).ToArrayAsync();
-            Assert.Equal(7, messages.Length);
-        }
-        finally
-        {
-            await assistantClient.DeleteThreadAsync(thread.Id);
-            await assistantClient.DeleteAssistantAsync(agent.Id);
-        }
-    }
-
-    /// <summary>
-    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
-    /// and targeting Open AI services.
-    /// </summary>
-    [Fact]
-    [Obsolete("Test is testing obsolete method")]
-    public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
-    {
-        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
-        OpenAIClient client = CreateClient(azureOpenAIConfiguration);
-        AssistantClient assistantClient = client.GetAssistantClient();
-        Assistant definition = await assistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, assistantClient);
-
-        // Upload file - Using a table of fictional employees.
-        OpenAIFileClient fileClient = client.GetOpenAIFileClient();
-        await using Stream stream = File.OpenRead("TestData/employees.pdf")!;
-        OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream, "employees.pdf", FileUploadPurpose.Assistants);
-
-        // Create a vector-store
-        VectorStoreClient vectorStoreClient = client.GetVectorStoreClient();
-        CreateVectorStoreOperation result =
-            await vectorStoreClient.CreateVectorStoreAsync(waitUntilCompleted: false,
-                new VectorStoreCreationOptions()
-                {
-                    FileIds = { fileInfo.Id }
-                });
-
-        AssistantThread thread = await assistantClient.CreateThreadAsync();
-        try
-        {
-            await agent.AddChatMessageAsync(thread.Id, new(AuthorRole.User, "Who works in sales?"));
-            ChatHistory messages = [];
-            var chunks = await agent.InvokeStreamingAsync(thread.Id, messages: messages).ToArrayAsync();
-            Assert.NotEmpty(chunks);
-            Assert.Single(messages);
-        }
-        finally
-        {
-            await assistantClient.DeleteThreadAsync(thread.Id);
-            await assistantClient.DeleteAssistantAsync(agent.Id);
-            await vectorStoreClient.DeleteVectorStoreAsync(result.VectorStoreId);
-            await fileClient.DeleteFileAsync(fileInfo.Id);
         }
     }
 
