@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planning;
 using StepwisePlannerMigration.Extensions;
 using StepwisePlannerMigration.Options;
 using StepwisePlannerMigration.Services;
@@ -31,7 +32,7 @@ builder.Services.AddTransient<IPlanProvider, PlanProvider>();
 builder.Services.AddKernel();
 builder.Services.AddOpenAIChatCompletion(openAIOptions.ChatModelId, openAIOptions.ApiKey);
 
-//builder.Services.AddTransient<FunctionCallingStepwisePlanner>();
+builder.Services.AddTransient<FunctionCallingStepwisePlanner>();
 
 var app = builder.Build();
 
