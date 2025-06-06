@@ -5,17 +5,16 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Extensions;
+namespace SemanticKernel.IntegrationTests.Plugins.OpenApiManifest;
+
 public sealed class ApiManifestKernelExtensionsTests
 {
-    private const string SkipReason = "Failing intermittently in the integration pipeline with a 429 HTTP status code. To be migrated to the integration tests project.";
-
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanCreatePluginFromApiManifestAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
 
         // Arrange
@@ -26,12 +25,12 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(3, plugin.FunctionCount);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanCreatePluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
         var description = "My plugin description";
 
@@ -43,12 +42,12 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(description, plugin.Description);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanCreatePluginFromApiManifestWithEmptyDescriptionParameterAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
 
         // Arrange
@@ -59,12 +58,12 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Empty(plugin.Description);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanImportPluginFromApiManifestAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
 
         // Arrange
@@ -76,12 +75,12 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Single(kernel.Plugins);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanImportPluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
         var description = "My plugin description";
 
@@ -93,12 +92,12 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(description, plugin.Description);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanImportPluginFromApiManifestWithLocalAndRemoteApiDescriptionUrlAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
 
         // Arrange
@@ -109,13 +108,13 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(2, plugin.FunctionCount);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     // Verify that functions are correctly imported
     public async Task VerifyPluginFunctionsFromApiManifestAsync()
     {
         // Act
         var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
         var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
 
         // Arrange
