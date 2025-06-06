@@ -9,16 +9,23 @@ namespace SemanticKernel.IntegrationTests.Plugins.OpenApiManifest;
 
 public sealed class ApiManifestKernelExtensionsTests
 {
+    private readonly string _testPluginsDir;
+    private readonly Kernel _kernel;
+
+    public ApiManifestKernelExtensionsTests()
+    {
+        this._testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
+        this._kernel = new Kernel();
+    }
+
     [Fact]
     public async Task ItCanCreatePluginFromApiManifestAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest.json");
 
         // Arrange
-        var plugin = await kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+        var plugin = await this._kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
 
         // Assert
         Assert.NotNull(plugin);
@@ -29,13 +36,11 @@ public sealed class ApiManifestKernelExtensionsTests
     public async Task ItCanCreatePluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest.json");
         var description = "My plugin description";
 
         // Arrange
-        var plugin = await kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description);
+        var plugin = await this._kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description);
 
         // Assert
         Assert.NotNull(plugin);
@@ -46,12 +51,10 @@ public sealed class ApiManifestKernelExtensionsTests
     public async Task ItCanCreatePluginFromApiManifestWithEmptyDescriptionParameterAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest.json");
 
         // Arrange
-        var plugin = await kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description: null);
+        var plugin = await this._kernel.CreatePluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description: null);
 
         // Assert
         Assert.NotNull(plugin);
@@ -62,30 +65,26 @@ public sealed class ApiManifestKernelExtensionsTests
     public async Task ItCanImportPluginFromApiManifestAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest.json");
 
         // Arrange
-        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+        var plugin = await this._kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
 
         // Assert
         Assert.NotNull(plugin);
         Assert.Equal(3, plugin.FunctionCount);
-        Assert.Single(kernel.Plugins);
+        Assert.Single(this._kernel.Plugins);
     }
 
     [Fact]
     public async Task ItCanImportPluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest.json");
         var description = "My plugin description";
 
         // Arrange
-        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description);
+        var plugin = await this._kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath, description);
 
         // Assert
         Assert.NotNull(plugin);
@@ -96,12 +95,10 @@ public sealed class ApiManifestKernelExtensionsTests
     public async Task ItCanImportPluginFromApiManifestWithLocalAndRemoteApiDescriptionUrlAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest-local.json");
 
         // Arrange
-        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+        var plugin = await this._kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
 
         // Assert
         Assert.NotNull(plugin);
@@ -113,12 +110,10 @@ public sealed class ApiManifestKernelExtensionsTests
     public async Task VerifyPluginFunctionsFromApiManifestAsync()
     {
         // Act
-        var kernel = new Kernel();
-        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "Plugins", "OpenApiManifest");
-        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
+        var manifestFilePath = Path.Combine(this._testPluginsDir, "example-apimanifest-local.json");
 
         // Arrange
-        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+        var plugin = await this._kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
 
         // Assert
         Assert.NotNull(plugin);
