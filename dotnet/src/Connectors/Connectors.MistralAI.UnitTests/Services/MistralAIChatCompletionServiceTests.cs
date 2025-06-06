@@ -138,6 +138,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
         Assert.Equal("ejOH4Z1A2", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
         Assert.Equal("WeatherPlugin-GetWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("function", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("type").GetString());
 
         var functionResult = messages[4];
         Assert.Equal("tool", functionResult.GetProperty("role").GetString());
@@ -211,6 +212,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
         Assert.Equal("u2ef3Udel", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
         Assert.Equal("WeatherPlugin-GetWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("function", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("type").GetString());
 
         var functionResult = messages[4];
         Assert.Equal("tool", functionResult.GetProperty("role").GetString());

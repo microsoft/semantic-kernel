@@ -359,6 +359,11 @@ internal sealed class GeminiRequest
 
         static void TransformOpenApi3Object(JsonObject obj)
         {
+            if (obj.TryGetPropertyValue("additionalProperties", out _))
+            {
+                obj.Remove("additionalProperties");
+            }
+
             if (obj.TryGetPropertyValue("properties", out JsonNode? propsNode) && propsNode is JsonObject properties)
             {
                 foreach (var property in properties)
@@ -386,7 +391,18 @@ internal sealed class GeminiRequest
                             {
                                 if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
                                 {
-                                    TransformOpenApi3Object(itemsObj);
+                                    // Ensure AnyOf array is considered
+                                    if (itemsObj.TryGetPropertyValue("anyOf", out JsonNode? anyOfNode) && anyOfNode is JsonArray anyOfArray)
+                                    {
+                                        foreach (var anyOfObj in anyOfArray.OfType<JsonObject>())
+                                        {
+                                            TransformOpenApi3Object(anyOfObj);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        TransformOpenApi3Object(itemsObj);
+                                    }
                                 }
                             }
                         }
