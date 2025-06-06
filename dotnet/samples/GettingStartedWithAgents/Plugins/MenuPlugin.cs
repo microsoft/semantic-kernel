@@ -15,7 +15,7 @@ public sealed class MenuPlugin
     [KernelFunction, Description("Provides a list of specials from the menu.")]
     public MenuItem[] GetSpecials()
     {
-        return s_menuItems.Where(i => i.IsSpecial).ToArray();
+        return [.. s_menuItems.Where(i => i.IsSpecial)];
     }
 
     [KernelFunction, Description("Provides the price of the requested menu item.")]
