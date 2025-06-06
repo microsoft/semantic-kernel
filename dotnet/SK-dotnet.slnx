@@ -88,11 +88,11 @@
     <Project Path="src/Agents/Abstractions/Agents.Abstractions.csproj" />
     <Project Path="src/Agents/AzureAI/Agents.AzureAI.csproj" />
     <Project Path="src/Agents/Bedrock/Agents.Bedrock.csproj" />
+    <Project Path="src/Agents/Copilot/Agents.CopilotStudio.csproj" />
     <Project Path="src/Agents/Core/Agents.Core.csproj" />
+    <Project Path="src/Agents/Magentic/Agents.Magentic.csproj" />
     <Project Path="src/Agents/OpenAI/Agents.OpenAI.csproj" />
     <Project Path="src/Agents/Orchestration/Agents.Orchestration.csproj" />
-    <Project Path="src/Agents/Magentic/Agents.Magentic.csproj" />
-    <Project Path="src/Agents/Copilot/Agents.CopilotStudio.csproj" />
     <Project Path="src/Agents/UnitTests/Agents.UnitTests.csproj" />
     <Project Path="src/Agents/Yaml/Agents.Yaml.csproj" />
   </Folder>
@@ -139,8 +139,8 @@
     <Project Path="src/VectorData/Redis/Redis.csproj" />
     <Project Path="src/VectorData/SqliteVec/SqliteVec.csproj" />
     <Project Path="src/VectorData/SqlServer/SqlServer.csproj" />
-    <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
     <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
+    <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
   </Folder>
   <Folder Name="/src/experimental/">
     <Project Path="src/Experimental/Orchestration.Flow.IntegrationTests/Experimental.Orchestration.Flow.IntegrationTests.csproj" />
@@ -284,11 +284,6 @@
   <Folder Name="/src/InternalUtilities/test/Linq/">
     <File Path="src/InternalUtilities/test/Linq/AsyncEnumerable.cs" />
   </Folder>
-  <Folder Name="/src/planners/">
-    <Project Path="src/Planners/Planners.Handlebars.UnitTests/Planners.Handlebars.UnitTests.csproj" />
-    <Project Path="src/Planners/Planners.Handlebars/Planners.Handlebars.csproj" />
-    <Project Path="src/Planners/Planners.OpenAI/Planners.OpenAI.csproj" />
-  </Folder>
   <Folder Name="/src/plugins/">
     <Project Path="src/Plugins/Plugins.AI.UnitTests/Plugins.AI.UnitTests.csproj" />
     <Project Path="src/Plugins/Plugins.AI/Plugins.AI.csproj" />
@@ -300,32 +295,33 @@
     <Project Path="src/Plugins/Plugins.UnitTests/Plugins.UnitTests.csproj" />
     <Project Path="src/Plugins/Plugins.Web/Plugins.Web.csproj" />
   </Folder>
+  <Folder Name="/test/" />
   <Folder Name="/test/VectorData/">
-    <Project Path="test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj" />
     <Project Path="test/VectorData/AzureAISearch.ConformanceTests/AzureAISearch.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj" />
     <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
-    <Project Path="test/VectorData/CosmosMongoDB.UnitTests/CosmosMongoDB.UnitTests.csproj" />
     <Project Path="test/VectorData/CosmosMongoDB.ConformanceTests/CosmosMongoDB.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/CosmosNoSql.UnitTests/CosmosNoSql.UnitTests.csproj" />
+    <Project Path="test/VectorData/CosmosMongoDB.UnitTests/CosmosMongoDB.UnitTests.csproj" />
     <Project Path="test/VectorData/CosmosNoSql.ConformanceTests/CosmosNoSql.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/InMemory.UnitTests/InMemory.UnitTests.csproj" />
+    <Project Path="test/VectorData/CosmosNoSql.UnitTests/CosmosNoSql.UnitTests.csproj" />
     <Project Path="test/VectorData/InMemory.ConformanceTests/InMemory.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/MongoDB.UnitTests/MongoDB.UnitTests.csproj" />
+    <Project Path="test/VectorData/InMemory.UnitTests/InMemory.UnitTests.csproj" />
     <Project Path="test/VectorData/MongoDB.ConformanceTests/MongoDB.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/PgVector.UnitTests/PgVector.UnitTests.csproj" />
+    <Project Path="test/VectorData/MongoDB.UnitTests/MongoDB.UnitTests.csproj" />
     <Project Path="test/VectorData/PgVector.ConformanceTests/PgVector.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Pinecone.UnitTests/Pinecone.UnitTests.csproj" />
+    <Project Path="test/VectorData/PgVector.UnitTests/PgVector.UnitTests.csproj" />
     <Project Path="test/VectorData/Pinecone.ConformanceTests/Pinecone.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Qdrant.UnitTests/Qdrant.UnitTests.csproj" />
+    <Project Path="test/VectorData/Pinecone.UnitTests/Pinecone.UnitTests.csproj" />
     <Project Path="test/VectorData/Qdrant.ConformanceTests/Qdrant.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Redis.UnitTests/Redis.UnitTests.csproj" />
+    <Project Path="test/VectorData/Qdrant.UnitTests/Qdrant.UnitTests.csproj" />
     <Project Path="test/VectorData/Redis.ConformanceTests/Redis.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
+    <Project Path="test/VectorData/Redis.UnitTests/Redis.UnitTests.csproj" />
     <Project Path="test/VectorData/SqliteVec.ConformanceTests/SqliteVec.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
     <Project Path="test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
-    <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
     <Project Path="test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
+    <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
   </Folder>
 </Solution>

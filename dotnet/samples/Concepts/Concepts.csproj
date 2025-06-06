@@ -88,8 +88,6 @@
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Prompty\Functions.Prompty.csproj" />
-    <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
-    <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.AI\Plugins.AI.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
