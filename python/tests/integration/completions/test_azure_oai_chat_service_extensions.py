@@ -26,7 +26,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 try:
-    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
+    from semantic_kernel.connectors.memory_stores.azure_cognitive_search.azure_cognitive_search_memory_store import (
         AzureCognitiveSearchMemoryStore,
     )
 
