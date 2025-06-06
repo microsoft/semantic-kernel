@@ -45,23 +45,6 @@ public sealed class KernelReturnParameterMetadata
         this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
-    /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/> with all properties.</summary>
-    /// <param name="description">The description of the return parameter.</param>
-    /// <param name="parameterType">The .NET type of the return parameter.</param>
-    /// <param name="schema">The JSON schema describing the return parameter's type.</param>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
-    public KernelReturnParameterMetadata(
-        string? description = null,
-        Type? parameterType = null,
-        KernelJsonSchema? schema = null,
-        JsonSerializerOptions? jsonSerializerOptions = null)
-        : this(jsonSerializerOptions ?? null!)
-    {
-        this.Description = description;
-        this.ParameterType = parameterType;
-        this.Schema = schema;
-    }
-
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
@@ -89,7 +72,7 @@ public sealed class KernelReturnParameterMetadata
     public string Description
     {
         get => this._description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
             if (value != this._description && this._schema?.Inferred is true)
@@ -104,7 +87,7 @@ public sealed class KernelReturnParameterMetadata
     public Type? ParameterType
     {
         get => this._parameterType;
-        init
+        set
         {
             if (value != this._parameterType && this._schema?.Inferred is true)
             {
@@ -120,6 +103,6 @@ public sealed class KernelReturnParameterMetadata
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        set => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 }

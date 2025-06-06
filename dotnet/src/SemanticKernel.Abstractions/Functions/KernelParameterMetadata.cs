@@ -46,33 +46,6 @@ public sealed class KernelParameterMetadata
         this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
-    /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with all properties.</summary>
-    /// <param name="name">The name of the parameter.</param>
-    /// <param name="description">The description of the parameter.</param>
-    /// <param name="defaultValue">The default value of the parameter.</param>
-    /// <param name="isRequired">Whether the parameter is required.</param>
-    /// <param name="parameterType">The .NET type of the parameter.</param>
-    /// <param name="schema">The JSON schema describing the parameter's type.</param>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
-    /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
-    public KernelParameterMetadata(
-        string name,
-        string? description = null,
-        object? defaultValue = null,
-        bool isRequired = false,
-        Type? parameterType = null,
-        KernelJsonSchema? schema = null,
-        JsonSerializerOptions? jsonSerializerOptions = null)
-        : this(name, jsonSerializerOptions ?? null!)
-    {
-        this.Description = description;
-        this.DefaultValue = defaultValue;
-        this.IsRequired = isRequired;
-        this.ParameterType = parameterType;
-        this.Schema = schema;
-    }
-
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <remarks>This creates a shallow clone of <paramref name="metadata"/>.</remarks>
@@ -111,7 +84,7 @@ public sealed class KernelParameterMetadata
     public string Name
     {
         get => this._name;
-        init
+        set
         {
             Verify.NotNullOrWhiteSpace(value);
             this._name = value;
@@ -123,7 +96,7 @@ public sealed class KernelParameterMetadata
     public string Description
     {
         get => this._description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
             if (value != this._description && this._schema?.Inferred is true)
@@ -138,7 +111,7 @@ public sealed class KernelParameterMetadata
     public object? DefaultValue
     {
         get => this._defaultValue;
-        init
+        set
         {
             if (value != this._defaultValue && this._schema?.Inferred is true)
             {
@@ -149,14 +122,14 @@ public sealed class KernelParameterMetadata
     }
 
     /// <summary>Gets whether the parameter is required.</summary>
-    public bool IsRequired { get; init; }
+    public bool IsRequired { get; set; }
 
     /// <summary>Gets the .NET type of the parameter.</summary>
     [JsonIgnore]
     public Type? ParameterType
     {
         get => this._parameterType;
-        init
+        set
         {
             if (value != this._parameterType && this._schema?.Inferred is true)
             {
@@ -172,7 +145,7 @@ public sealed class KernelParameterMetadata
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         get => (this._schema ??= InferSchema(this.ParameterType, this.DefaultValue, this.Description, this._jsonSerializerOptions)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        set => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 
     /// <summary>Infers a JSON schema from a <see cref="Type"/> and description.</summary>

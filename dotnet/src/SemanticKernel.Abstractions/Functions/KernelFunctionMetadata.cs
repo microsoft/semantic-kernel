@@ -34,37 +34,6 @@ public sealed class KernelFunctionMetadata
         this.Name = name;
     }
 
-    /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> with all properties.</summary>
-    /// <param name="name">The name of the function.</param>
-    /// <param name="pluginName">The name of the plugin containing the function.</param>
-    /// <param name="description">The description of the function.</param>
-    /// <param name="parameters">The metadata for the parameters to the function.</param>
-    /// <param name="returnParameter">The metadata for the return parameter.</param>
-    /// <param name="additionalProperties">Optional metadata in addition to the named properties.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
-    /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
-    public KernelFunctionMetadata(
-        string name,
-        string? pluginName = null,
-        string? description = null,
-        IReadOnlyList<KernelParameterMetadata>? parameters = null,
-        KernelReturnParameterMetadata? returnParameter = null,
-        ReadOnlyDictionary<string, object?>? additionalProperties = null)
-        : this(name)
-    {
-        this.PluginName = pluginName;
-        this.Description = description;
-        this.Parameters = parameters ?? [];
-        if (returnParameter is not null)
-        {
-            this.ReturnParameter = returnParameter;
-        }
-        if (additionalProperties is not null)
-        {
-            this.AdditionalProperties = additionalProperties;
-        }
-    }
-
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <remarks>
@@ -86,7 +55,7 @@ public sealed class KernelFunctionMetadata
     public string Name
     {
         get => this._name;
-        init
+        set
         {
             Verify.NotNull(value);
             KernelVerify.ValidFunctionName(value);
@@ -95,14 +64,14 @@ public sealed class KernelFunctionMetadata
     }
 
     /// <summary>Gets the name of the plugin containing the function.</summary>
-    public string? PluginName { get; init; }
+    public string? PluginName { get; set; }
 
     /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
     public string Description
     {
         get => this._description;
-        init => this._description = value ?? string.Empty;
+        set => this._description = value ?? string.Empty;
     }
 
     /// <summary>Gets the metadata for the parameters to the function.</summary>
@@ -110,7 +79,7 @@ public sealed class KernelFunctionMetadata
     public IReadOnlyList<KernelParameterMetadata> Parameters
     {
         get => this._parameters;
-        init
+        set
         {
             Verify.NotNull(value);
             this._parameters = value;
@@ -122,7 +91,7 @@ public sealed class KernelFunctionMetadata
     public KernelReturnParameterMetadata ReturnParameter
     {
         get => this._returnParameter ??= KernelReturnParameterMetadata.Empty;
-        init
+        set
         {
             Verify.NotNull(value);
             this._returnParameter = value;
@@ -133,7 +102,7 @@ public sealed class KernelFunctionMetadata
     public ReadOnlyDictionary<string, object?> AdditionalProperties
     {
         get => this._additionalProperties ??= s_emptyDictionary;
-        init
+        set
         {
             Verify.NotNull(value);
             this._additionalProperties = value;
