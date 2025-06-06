@@ -38,7 +38,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
-    ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
 from semantic_kernel.utils.async_utils import run_in_executor
@@ -127,11 +126,6 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        # Not all models support streaming: check if the model supports streaming before proceeding
-        model_info = await self.get_foundation_model_info(self.ai_model_id)
-        if not model_info.get("responseStreamingSupported"):
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
-
         if not isinstance(settings, BedrockChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
