@@ -114,10 +114,30 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         chatClient?.Dispose();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseChatCompletionWithManualFunctionCalling(bool useChatClient)
+    {
+        // Define the agent
+        ChatCompletionAgent agent = CreateAgentWithPlugin(
+                KernelPluginFactory.CreateFromType<MenuPlugin>(),
+                functionChoiceBehavior: FunctionChoiceBehavior.Auto(autoInvoke: false),
+                useChatClient: useChatClient);
+
+        /// Create the chat history thread to capture the agent interaction.
+        ChatHistoryAgentThread thread = new();
+
+        // Respond to user input, invoking functions where appropriate.
+        await InvokeAgentAsync(agent, thread, "What is the special soup and its price?");
+        await InvokeAgentAsync(agent, thread, "What is the special drink and its price?");
+    }
+
     private ChatCompletionAgent CreateAgentWithPlugin(
         KernelPlugin plugin,
         string? instructions = null,
         string? name = null,
+        FunctionChoiceBehavior? functionChoiceBehavior = null,
         bool useChatClient = false)
     {
         ChatCompletionAgent agent =
@@ -126,7 +146,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                 Instructions = instructions,
                 Name = name,
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out _),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = functionChoiceBehavior ?? FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -135,8 +155,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         return agent;
     }
 
-    // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, AgentThread thread, string input)
+    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistoryAgentThread thread, string input)
     {
         ChatMessageContent message = new(AuthorRole.User, input);
         this.WriteAgentChatMessage(message);
@@ -144,6 +163,22 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
         {
             this.WriteAgentChatMessage(response);
+
+            Task<FunctionResultContent>[] functionResults = await ProcessFunctionCalls(response, agent.Kernel).ToArrayAsync();
+            thread.ChatHistory.Add(response);
+            foreach (ChatMessageContent functionResult in functionResults.Select(result => result.Result.ToChatMessage()))
+            {
+                this.WriteAgentChatMessage(functionResult);
+                thread.ChatHistory.Add(functionResult);
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<Task<FunctionResultContent>> ProcessFunctionCalls(ChatMessageContent response, Kernel kernel)
+    {
+        foreach (FunctionCallContent functionCall in response.Items.OfType<FunctionCallContent>())
+        {
+            yield return functionCall.InvokeAsync(kernel);
         }
     }
 
