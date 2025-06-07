@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel;
 using ProcessFramework.Aspire.SignalR.ProcessOrchestrator.Steps;
 

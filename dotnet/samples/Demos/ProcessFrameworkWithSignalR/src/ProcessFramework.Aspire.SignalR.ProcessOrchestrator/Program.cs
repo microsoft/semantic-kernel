@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.SemanticKernel;

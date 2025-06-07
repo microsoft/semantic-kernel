@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,14 +11,22 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-// This project should be referenced by each service project in your solution.
-// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-public static class Extensions
+/// <summary>
+/// Provides extension methods for adding common .NET Aspire services, including service discovery,
+/// resilience, health checks, and OpenTelemetry.
+/// </summary>
+public static class CommonExtensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
+    /// <summary>s
+    /// Adds default services to the application, including OpenTelemetry, health checks,
+    /// service discovery, and HTTP client defaults with resilience and service discovery enabled.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <returns>The updated host application builder.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -43,9 +53,15 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Configures OpenTelemetry for the application, including logging, metrics, and tracing.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <returns>The updated host application builder.</returns>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        if(builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+        if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
             builder.Logging.AddTraceSource("Microsoft.SemanticKernel");
 
         builder.Logging.AddOpenTelemetry(logging =>
@@ -61,7 +77,7 @@ public static class Extensions
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
 
-                if(builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
                     metrics.AddMeter("Microsoft.SemanticKernel*");
             })
             .WithTracing(tracing =>
@@ -77,7 +93,7 @@ public static class Extensions
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
 
-                if(builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
                     tracing.AddSource("Microsoft.SemanticKernel*");
             });
 
@@ -105,6 +121,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds default health checks to the application, including a liveness check to ensure the app is responsive.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <returns>The updated host application builder.</returns>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
@@ -114,6 +136,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Maps default health check endpoints for the application.
+    /// Adds "/health" and "/alive" endpoints in development environments.
+    /// </summary>
+    /// <param name="app">The web application instance.</param>
+    /// <returns>The updated web application instance.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.

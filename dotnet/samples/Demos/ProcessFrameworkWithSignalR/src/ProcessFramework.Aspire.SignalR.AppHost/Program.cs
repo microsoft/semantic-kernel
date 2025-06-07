@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using CommunityToolkit.Aspire.Hosting.Dapr;
 
 var builder = DistributedApplication.CreateBuilder(args);
