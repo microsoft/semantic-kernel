@@ -1,25 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.SemanticKernel;
 
 namespace ProcessFramework.SignalR;
 
-internal class LocalEventProxyChannel : IExternalKernelProcessMessageChannel
+public sealed class LocalEventProxyChannel : IExternalKernelProcessMessageChannel
 {
     private HubConnection? _hubConnection;
 
-    public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
+    public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message)
     {
         if (this._hubConnection == null)
         {
             throw new InvalidOperationException("Hub connection is not initialized.");
         }
 
-        return this._hubConnection.InvokeAsync(externalTopicEvent, eventData);
+        return this._hubConnection.InvokeAsync(externalTopicEvent, message);
     }
 
     public async ValueTask Initialize()

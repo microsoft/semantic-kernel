@@ -3,7 +3,7 @@
 namespace ProcessFramework.Aspire.SignalR.ProcessOrchestrator.Models;
 
 /// <summary>
-/// Object used in the <see cref="GatherProductInfoStep"/>
+/// Object used in the <see cref="ProcessFramework.Aspire.SignalR.ProcessOrchestrator.Steps.GatherProductInfoStep"/>
 /// </summary>
 public class ProductInfo
 {

@@ -116,10 +116,10 @@ public class MyHub : Hub
 #pragma warning disable IDE1006
     public async Task RequestUserReview(KernelProcessProxyMessage eventData)
     {
-        var requestDocument = eventData.EventData.ToObject() as DocumentInfo;
+        var requestDocument = eventData.EventData!.ToObject() as DocumentInfo;
         await Clients.All.SendAsync("RequestUserReview", new
         {
-            Title = requestDocument.Title,
+            Title = requestDocument!.Title,
             AssistantMessage = "Document ready for user revision. Approve or reject document",
             Content = requestDocument.Content,
             ProcessData = new { ProcessId = eventData.ProcessId }
@@ -128,10 +128,10 @@ public class MyHub : Hub
 
     public async Task PublishDocumentation(KernelProcessProxyMessage eventData)
     {
-        var publishedDocument = eventData.EventData.ToObject() as DocumentInfo;
+        var publishedDocument = eventData.EventData!.ToObject() as DocumentInfo;
         await Clients.All.SendAsync("PublishDocumentation", new
         {
-            Title = publishedDocument.Title,
+            Title = publishedDocument!.Title,
             AssistantMessage = "Published Document Ready",
             Content = publishedDocument.Content,
             ProcessData = new { ProcessId = eventData.ProcessId }
