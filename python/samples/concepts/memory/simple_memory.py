@@ -8,30 +8,15 @@ from uuid import uuid4
 
 from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIEmbeddingPromptExecutionSettings,
-    OpenAITextEmbedding,
-)
-from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
-from semantic_kernel.data import (
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.vector_search import add_vector_to_records
+from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
+from semantic_kernel.connectors.in_memory import InMemoryCollection
+from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 
 # This is the most basic example of a vector store and collection
 # For a more complex example, using different collection types, see "complex_memory.py"
 # This sample uses openai text embeddings, so make sure to have your environment variables set up
 # it needs openai api key and embedding model id
-kernel = Kernel()
 embedder = OpenAITextEmbedding(service_id="embedding")
-kernel.add_service(embedder)
 
 # Next, you need to define your data structure
 # In this case, we are using a dataclass to define our data structure
@@ -41,36 +26,22 @@ kernel.add_service(embedder)
 # This has been done in constants here for simplicity, but you can also define them in the model itself
 # Next we create three records using that model
 
-DISTANCE_FUNCTION = DistanceFunction.COSINE_SIMILARITY
-# The in memory collection does not actually use a index, so this variable is not relevant, here for completeness
-INDEX_KIND = IndexKind.IVF_FLAT
 
-
-@vectorstoremodel
+@vectorstoremodel(collection_name="test")
 @dataclass
 class DataModel:
+    content: Annotated[str, VectorStoreField("data")]
+    id: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
     vector: Annotated[
-        list[float] | None,
-        VectorStoreRecordVectorField(
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings()},
-            index_kind=INDEX_KIND,
-            dimensions=1536,
-            distance_function=DISTANCE_FUNCTION,
-            property_type="float",
-        ),
+        list[float] | str | None,
+        VectorStoreField("vector", dimensions=1536),
     ] = None
-    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-    content: Annotated[
-        str,
-        VectorStoreRecordDataField(
-            has_embedding=True,
-            embedding_property_name="vector",
-            property_type="str",
-            is_full_text_searchable=True,
-        ),
-    ] = "content1"
-    title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
-    tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+    title: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)] = "title"
+    tag: Annotated[str, VectorStoreField("data", is_indexed=True)] = "tag"
+
+    def __post_init__(self):
+        if self.vector is None:
+            self.vector = self.content
 
 
 records = [
@@ -102,26 +73,23 @@ async def main():
     # we also use the async with to open and close the connection
     # for the in memory collection, this is just a no-op
     # but for other collections, like Azure AI Search, this will open and close the connection
-    async with InMemoryVectorCollection[str, DataModel](
-        collection_name="test",
-        data_model_type=DataModel,
+    async with InMemoryCollection[str, DataModel](
+        record_type=DataModel,
+        embedding_generator=embedder,
     ) as record_collection:
         # Create the collection after wiping it
         print_with_color("Creating test collection!", Colors.CGREY)
-        await record_collection.delete_collection()
-        await record_collection.create_collection_if_not_exists()
+        await record_collection.delete_create_collection()
 
         # First add vectors to the records
         print_with_color("Adding records!", Colors.CBLUE)
-        records_with_embedding = await add_vector_to_records(kernel, records, data_model_type=DataModel)
-        # Next upsert them to the store.
-        keys = await record_collection.upsert_batch(records_with_embedding)
+        keys = await record_collection.upsert(records)
         print(f"    Upserted {keys=}")
         print("-" * 30)
 
         # Now we can get the records back
         print_with_color("Getting records!", Colors.CBLUE)
-        results = await record_collection.get_batch([records[0].id, records[1].id, records[2].id])
+        results = await record_collection.get([records[0].id, records[1].id, records[2].id])
         if results and isinstance(results, Sequence):
             [print_record(record=result) for result in results]
         else:
@@ -133,22 +101,19 @@ async def main():
         # The most important option is the vector_field_name, which is the name of the field that contains the vector
         # The other options are optional, but can be useful
         # The filter option is used to filter the results based on the tag field
-        options = VectorSearchOptions(
-            vector_field_name="vector",
-            include_vectors=True,
-            filter=VectorSearchFilter.equal_to("tag", "general"),
-        )
+        options = {
+            "vector_property_name": "vector",
+            "filter": lambda x: x.tag == "general",
+        }
         query = "python"
         print_with_color(f"Searching for '{query}', with filter 'tag == general'", Colors.CBLUE)
         print_with_color(
-            f"Using vectorized search, for {DISTANCE_FUNCTION.value}, "
-            f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[DISTANCE_FUNCTION](1, 0) else 'lower'} the score the better"  # noqa: E501
-            f"",
+            "Using vectorized search, the lower the score the better",
             Colors.CBLUE,
         )
-        search_results = await record_collection.vectorized_search(
-            vector=(await embedder.generate_raw_embeddings([query]))[0],
-            options=options,
+        search_results = await record_collection.search(
+            values=query,
+            **options,
         )
         if search_results.total_count == 0:
             print("\nNothing found...\n")
@@ -158,7 +123,7 @@ async def main():
 
         # lets cleanup!
         print_with_color("Deleting collection!", Colors.CBLUE)
-        await record_collection.delete_collection()
+        await record_collection.ensure_collection_deleted()
         print_with_color("Done!", Colors.CGREY)
 
 

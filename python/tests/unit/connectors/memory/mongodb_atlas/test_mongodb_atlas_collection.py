@@ -7,15 +7,14 @@ from pymongo.asynchronous.cursor import AsyncCursor
 from pymongo.results import UpdateResult
 from pytest import mark, raises
 
-from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
+from semantic_kernel.connectors.mongodb import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME, MongoDBAtlasCollection
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 
-def test_mongodb_atlas_collection_initialization(mongodb_atlas_unit_test_env, data_model_definition, mock_mongo_client):
+def test_mongodb_atlas_collection_initialization(mongodb_atlas_unit_test_env, definition, mock_mongo_client):
     collection = MongoDBAtlasCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         collection_name="test_collection",
         mongo_client=mock_mongo_client,
     )
@@ -24,30 +23,30 @@ def test_mongodb_atlas_collection_initialization(mongodb_atlas_unit_test_env, da
 
 
 @mark.parametrize("exclude_list", [["MONGODB_ATLAS_CONNECTION_STRING"]], indirect=True)
-def test_mongodb_atlas_collection_initialization_fail(mongodb_atlas_unit_test_env, data_model_definition):
+def test_mongodb_atlas_collection_initialization_fail(mongodb_atlas_unit_test_env, definition):
     with raises(VectorStoreInitializationException):
         MongoDBAtlasCollection(
             collection_name="test_collection",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
         )
 
 
 @mark.parametrize("exclude_list", [["MONGODB_ATLAS_DATABASE_NAME", "MONGODB_ATLAS_INDEX_NAME"]], indirect=True)
-def test_mongodb_atlas_collection_initialization_defaults(mongodb_atlas_unit_test_env, data_model_definition):
+def test_mongodb_atlas_collection_initialization_defaults(mongodb_atlas_unit_test_env, definition):
     collection = MongoDBAtlasCollection(
         collection_name="test_collection",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
     )
     assert collection.database_name == DEFAULT_DB_NAME
     assert collection.index_name == DEFAULT_SEARCH_INDEX_NAME
 
 
-async def test_mongodb_atlas_collection_upsert(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
+async def test_mongodb_atlas_collection_upsert(mongodb_atlas_unit_test_env, definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         collection_name="test_collection",
     )
     with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
@@ -58,10 +57,10 @@ async def test_mongodb_atlas_collection_upsert(mongodb_atlas_unit_test_env, data
         assert result == ["test_id"]
 
 
-async def test_mongodb_atlas_collection_get(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
+async def test_mongodb_atlas_collection_get(mongodb_atlas_unit_test_env, definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         collection_name="test_collection",
     )
     with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
@@ -72,10 +71,10 @@ async def test_mongodb_atlas_collection_get(mongodb_atlas_unit_test_env, data_mo
         assert result == [{"_id": "test_id", "data": "test_data"}]
 
 
-async def test_mongodb_atlas_collection_delete(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
+async def test_mongodb_atlas_collection_delete(mongodb_atlas_unit_test_env, definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         collection_name="test_collection",
     )
     with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
@@ -83,12 +82,10 @@ async def test_mongodb_atlas_collection_delete(mongodb_atlas_unit_test_env, data
         mock_get.return_value.delete_many.assert_called_with({"_id": {"$in": ["test_id"]}})
 
 
-async def test_mongodb_atlas_collection_collection_exists(
-    mongodb_atlas_unit_test_env, data_model_definition, mock_get_database
-):
+async def test_mongodb_atlas_collection_collection_exists(mongodb_atlas_unit_test_env, definition, mock_get_database):
     collection = MongoDBAtlasCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         collection_name="test_collection",
     )
     with patch.object(collection, "_get_database", new=mock_get_database) as mock_get:

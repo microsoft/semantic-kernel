@@ -80,7 +80,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             name="foo",
             description="bar",
             default_value="baz",
-            type_="string",
+            type="string",
             is_required=True,
             schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
         ),
@@ -93,7 +93,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                     name="qux",
                     description="bar",
                     default_value="baz",
-                    type_="str",
+                    type="str",
                     schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
                 )
             ],

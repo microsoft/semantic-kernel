@@ -1,14 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from abc import ABC, abstractmethod
 
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental
+@deprecated("This class will be removed in a future version.")
 class MemoryStoreBase(ABC):
     """Base class for memory store."""
 
