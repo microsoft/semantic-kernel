@@ -6,10 +6,16 @@
 
 ## 运行测试
 
-您可以使用 IDE 或命令行运行这些测试。要使用命令行运行测试，请从 Concepts 项目的根目录运行以下命令：
+```text
 dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=NameSpace.TestClass.TestMethod"
-以 `ChatCompletion/OpenAI_ChatCompletion.cs` 文件为例，目标是 `ChatPromptSync` 测试：
+```
+
+Example for `ChatCompletion/OpenAI_ChatCompletion.cs` file, targeting the `ChatPromptSync` test:
+
+```powershell
 dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCompletion.OpenAI_ChatCompletion.ChatPromptAsync"
+```
+
 ## 目录
 
 ### Agents - 不同方式使用 [`Agents`](./Agents/README.md)
