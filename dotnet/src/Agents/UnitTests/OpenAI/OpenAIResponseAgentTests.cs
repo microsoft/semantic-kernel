@@ -237,7 +237,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     [
         """
                 {
-          "id": "resp_6846bee002d0819f9c3c95e51652c3f80de9f0bba6ed706c",
+          "id": "resp_6846bee002d0819f9c3c95e51652c3f80de9f0bbe6ed706c",
           "object": "response",
           "created_at": 1749466848,
           "status": "completed",
@@ -249,7 +249,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
           "model": "gpt-4o-mini-2024-07-18",
           "output": [
             {
-              "id": "fc_6846bee12900819f9f9c786bc348a2140de9f0bba6ed706c",
+              "id": "fc_6846bee12900819f9f9c786bc348a2140de9f0bbe6ed706c",
               "type": "function_call",
               "status": "completed",
               "arguments": "{}",
@@ -257,7 +257,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
               "name": "MenuPlugin-GetSpecials"
             },
             {
-              "id": "fc_6846bee15ae8819f9f698662b9e43aed0de9f0bba6ed706c",
+              "id": "fc_6846bee15ae8819f9f698662b9e43aed0de9f0bbe6ed706c",
               "type": "function_call",
               "status": "completed",
               "arguments": "{\"menuItem\":\"special soup\"}",
@@ -329,7 +329,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         """,
         """
                 {
-          "id": "resp_6846bee1abdc819f8c00a1ba6b75b9930de9f0bba6ed706c",
+          "id": "resp_6846bee1abdc819f8c00a1be6b75b9930de9f0bbe6ed706c",
           "object": "response",
           "created_at": 1749466849,
           "status": "completed",
@@ -341,7 +341,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
           "model": "gpt-4o-mini-2024-07-18",
           "output": [
             {
-              "id": "msg_6846bee29858819f898d07fae89f686e0de9f0bba6ed706c",
+              "id": "msg_6846bee29858819f898d07fae89f686e0de9f0bbe6ed706c",
               "type": "message",
               "status": "completed",
               "content": [
@@ -355,7 +355,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             }
           ],
           "parallel_tool_calls": true,
-          "previous_response_id": "resp_6846bee002d0819f9c3c95e51652c3f80de9f0bba6ed706c",
+          "previous_response_id": "resp_6846bee002d0819f9c3c95e51652c3f80de9f0bbe6ed706c",
           "reasoning": {
             "effort": null,
             "summary": null
