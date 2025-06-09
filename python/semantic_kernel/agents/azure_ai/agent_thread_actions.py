@@ -285,7 +285,10 @@ class AgentThreadActions:
                                         function_step=function_step,
                                         tool_call=tool_call,  # type: ignore
                                     )
-                                case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                case (
+                                    AgentsNamedToolChoiceType.BING_GROUNDING
+                                    | AgentsNamedToolChoiceType.BING_CUSTOM_SEARCH
+                                ):
                                     logger.debug(
                                         f"Entering tool_calls (bing_grounding) for run [{run.id}], agent "
                                         f" `{agent.name}` and thread `{thread_id}`"
@@ -528,7 +531,10 @@ class AgentThreadActions:
                                 case AgentsNamedToolChoiceType.CODE_INTERPRETER:
                                     content = generate_streaming_code_interpreter_content(agent.name, details)
                                     content_is_visible = True
-                                case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                case (
+                                    AgentsNamedToolChoiceType.BING_GROUNDING
+                                    | AgentsNamedToolChoiceType.BING_CUSTOM_SEARCH
+                                ):
                                     content = generate_streaming_bing_grounding_content(
                                         agent_name=agent.name, step_details=details
                                     )
