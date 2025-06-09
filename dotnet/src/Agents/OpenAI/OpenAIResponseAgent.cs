@@ -3,11 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 
@@ -49,8 +48,8 @@ public sealed class OpenAIResponseAgent : Agent
         // Invoke responses with the updated chat history.
         var chatHistory = new ChatHistory();
         chatHistory.AddRange(messages);
-        var invokeResults = this.InternalInvokeAsync(
-            this.Name,
+        var invokeResults = ResponseThreadActions.InvokeAsync(
+            this,
             chatHistory,
             agentThread,
             options,
@@ -75,8 +74,8 @@ public sealed class OpenAIResponseAgent : Agent
         var chatHistory = new ChatHistory();
         chatHistory.AddRange(messages);
         int messageCount = chatHistory.Count;
-        var invokeResults = this.InternalInvokeStreamingAsync(
-            this.Name,
+        var invokeResults = ResponseThreadActions.InvokeStreamingAsync(
+            this,
             chatHistory,
             agentThread,
             options,
@@ -133,121 +132,6 @@ public sealed class OpenAIResponseAgent : Agent
         }
 
         return await this.EnsureThreadExistsWithMessagesAsync(messages, thread, () => new ChatHistoryAgentThread(), cancellationToken).ConfigureAwait(false);
-    }
-
-    private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
-        string? agentName,
-        ChatHistory history,
-        AgentThread agentThread,
-        AgentInvokeOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var kernel = options?.Kernel ?? this.Kernel;
-
-        var overrideHistory = history;
-        if (!this.StoreEnabled)
-        {
-            // Use the thread chat history
-            overrideHistory = [.. this.GetChatHistory(agentThread), .. history];
-        }
-
-        var inputItems = overrideHistory.Select(c => c.ToResponseItem());
-        var creationOptions = new ResponseCreationOptions()
-        {
-            EndUserId = this.GetDisplayName(),
-            Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
-            StoredOutputEnabled = this.StoreEnabled,
-        };
-        if (this.StoreEnabled && agentThread.Id != null)
-        {
-            creationOptions.PreviousResponseId = agentThread.Id;
-        }
-
-        var clientResult = await this.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
-        var response = clientResult.Value;
-
-        if (this.StoreEnabled)
-        {
-            this.UpdateResponseId(agentThread, response.Id);
-        }
-
-        var messages = response.OutputItems.Select(o => o.ToChatMessageContent());
-
-        foreach (ChatMessageContent message in messages)
-        {
-            message.AuthorName = this.Name;
-
-            yield return message;
-        }
-    }
-
-    private async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
-        string? agentName,
-        ChatHistory history,
-        AgentThread agentThread,
-        AgentInvokeOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var kernel = options?.Kernel ?? this.Kernel;
-
-        var overrideHistory = history;
-        if (!this.StoreEnabled)
-        {
-            // Use the thread chat history
-            overrideHistory = [.. this.GetChatHistory(agentThread), .. history];
-        }
-
-        var inputItems = overrideHistory.Select(c => c.ToResponseItem());
-        var creationOptions = new ResponseCreationOptions()
-        {
-            EndUserId = this.GetDisplayName(),
-            Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
-            StoredOutputEnabled = this.StoreEnabled,
-        };
-        if (this.StoreEnabled && agentThread.Id != null)
-        {
-            creationOptions.PreviousResponseId = agentThread.Id;
-        }
-
-        await foreach (StreamingResponseUpdate update in this.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
-        {
-            if (update is StreamingResponseOutputTextDeltaUpdate outputTextUpdate)
-            {
-                yield return outputTextUpdate.ToStreamingChatMessageContent();
-            }
-            else if (update is StreamingResponseCompletedUpdate responseCompletedUpdate)
-            {
-                if (this.StoreEnabled)
-                {
-                    this.UpdateResponseId(agentThread, responseCompletedUpdate.Response.Id);
-                }
-                foreach (var item in responseCompletedUpdate.Response.OutputItems)
-                {
-                    history.Add(item.ToChatMessageContent());
-                }
-            }
-        }
-    }
-
-    private ChatHistory GetChatHistory(AgentThread agentThread)
-    {
-        if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
-        {
-            return chatHistoryAgentThread.ChatHistory;
-        }
-
-        throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
-    }
-
-    private void UpdateResponseId(AgentThread agentThread, string id)
-    {
-        if (agentThread is OpenAIResponseAgentThread openAIResponseAgentThread)
-        {
-            openAIResponseAgentThread.ResponseId = id;
-            return;
-        }
-
-        throw new InvalidOperationException("The agent thread is not an OpenAIResponseAgentThread.");
     }
     #endregion
 }

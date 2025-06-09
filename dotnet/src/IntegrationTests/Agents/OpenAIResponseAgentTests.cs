@@ -59,7 +59,6 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     {
         // Arrange
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
-        Kernel kernel = new();
         OpenAIResponseAgent agent = new(client)
         {
             Instructions = "Answer all queries in English and French."
@@ -80,6 +79,10 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
                 builder.Append(responseItem.Message.Content);
                 thread = responseItem.Thread;
             }
+
+            // Assert
+            Assert.NotNull(thread);
+            Assert.Contains(expectedAnswerContains, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
@@ -89,6 +92,49 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
             // Copy of the thread that doesn't have the deleted state
             thread = new OpenAIResponseAgentThread(client, thread.Id!);
             await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await thread.DeleteAsync());
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIResponseAgent"/> using a function calling.
+    /// </summary>
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false)]
+    public async Task OpenAIResponseAgentInvokeWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    {
+        // Arrange
+        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer questions about the menu."
+        };
+        agent.Kernel.Plugins.Add(plugin);
+
+        // Act & Assert
+        AgentThread? thread = null;
+        try
+        {
+            StringBuilder builder = new();
+            await foreach (var responseItem in agent.InvokeAsync(input))
+            {
+                Assert.NotNull(responseItem);
+                Assert.NotNull(responseItem.Message);
+                Assert.NotNull(responseItem.Thread);
+
+                builder.Append(responseItem.Message.Content);
+                thread = responseItem.Thread;
+            }
+
+            // Assert
+            Assert.NotNull(thread);
+            Assert.Contains(expectedAnswerContains, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            Assert.NotNull(thread);
+            await thread.DeleteAsync();
         }
     }
 
@@ -150,11 +196,52 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         Assert.Contains("Computer says no", responseText);
     }
 
+    /// <summary>
+    /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
+    /// </summary>
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false)]
+    public async Task OpenAIResponseAgentInvokeStreamingWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    {
+        // Arrange
+        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        OpenAIResponseAgent agent = new(client)
+        {
+            Instructions = "Answer questions about the menu."
+        };
+        agent.Kernel.Plugins.Add(plugin);
+
+        // Act
+        StringBuilder builder = new();
+        AgentThread? agentThread = null;
+        try
+        {
+            var message = new ChatMessageContent(AuthorRole.User, input);
+            await foreach (var responseItem in agent.InvokeStreamingAsync(input))
+            {
+                builder.Append(responseItem.Message.Content);
+                agentThread = responseItem.Thread;
+            }
+        }
+        finally
+        {
+            Assert.NotNull(agentThread);
+            // TODO  agentThread.DeleteAsync();
+        }
+
+        // Assert
+        var responseText = builder.ToString();
+        Assert.NotNull(responseText);
+        Assert.Contains(expectedAnswerContains, responseText);
+    }
+
     #region private
     /// <summary>
     /// Enable or disable logging for the tests.
     /// </summary>
-    private bool EnableLogging { get; set; } = false;
+    private bool EnableLogging { get; set; } = true;
 
     private async Task ExecuteAgentAsync(
         OpenAIResponseClient client,
@@ -162,7 +249,6 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         string expected)
     {
         // Arrange
-        Kernel kernel = new();
         OpenAIResponseAgent agent = new(client)
         {
             Instructions = "Answer all queries in English and French."
@@ -193,7 +279,6 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         string expected)
     {
         // Arrange
-        Kernel kernel = new();
         OpenAIResponseAgent agent = new(client)
         {
             Instructions = "Answer all queries in English and French."

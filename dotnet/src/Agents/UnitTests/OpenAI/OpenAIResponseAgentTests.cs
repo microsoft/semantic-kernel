@@ -107,6 +107,36 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Contains("Computer says no", responseText);
     }
 
+    /// <summary>
+    /// Tests that the OpenAIResponseAgent.InvokeAsync.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VerifyInvokeWithFunctionCallingAsync(bool storeEnabled)
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        );
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            Name = "ResponseAgent",
+            Instructions = "Answer all queries in English and French.",
+            StoreEnabled = storeEnabled
+        };
+        agent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<MyPlugin>());
+
+        // Act
+        var responseItems = agent.InvokeAsync("What is the capital of France?");
+
+        // Assert
+        Assert.NotNull(responseItems);
+        var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
+        Assert.Single(items);
+        Assert.Equal("The capital of France is Paris.\n\nLa capitale de la France est Paris.", items[0].Message.Content);
+    }
+
     #region private
     private const string InvokeResponse =
         """
@@ -198,5 +228,20 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         content block 6: event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":8,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"  \n"}
         """;
+
+    private sealed class MyPlugin
+    {
+        [KernelFunction]
+        public void MyFunction1()
+        { }
+
+        [KernelFunction]
+        public void MyFunction2(int index)
+        { }
+
+        [KernelFunction]
+        public void MyFunction3(string value, int[] indices)
+        { }
+    }
     #endregion
 }

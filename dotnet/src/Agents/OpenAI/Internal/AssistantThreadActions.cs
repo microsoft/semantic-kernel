@@ -19,7 +19,7 @@ using OpenAI.Assistants;
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
 /// <summary>
-/// Actions associated with an Open Assistant thread.
+/// Actions associated with an OpenAI Assistant thread.
 /// </summary>
 internal static class AssistantThreadActions
 {
