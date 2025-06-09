@@ -5,7 +5,7 @@ from typing import Annotated
 
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import kernel_function
 
 """
@@ -36,7 +36,7 @@ class MenuPlugin:
 
 async def main() -> None:
     agent = ChatCompletionAgent(
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         name="Assistant",
         instructions="Answer questions about the menu.",
         plugins=[MenuPlugin()],
