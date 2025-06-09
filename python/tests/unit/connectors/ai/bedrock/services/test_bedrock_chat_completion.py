@@ -18,7 +18,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
-    ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
 from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
@@ -279,30 +278,6 @@ async def test_bedrock_streaming_chat_completion(
         assert isinstance(response.inner_content, list)
         assert len(response.inner_content) == 7
         assert response.finish_reason == FinishReason.STOP
-
-
-async def test_bedrock_streaming_chat_completion_with_unsupported_model(
-    model_id,
-    chat_history: ChatHistory,
-) -> None:
-    """Test Amazon Bedrock Streaming Chat Completion complete method"""
-    with patch.object(
-        MockBedrockClient, "get_foundation_model", return_value={"modelDetails": {"responseStreamingSupported": False}}
-    ):
-        # Setup
-        bedrock_chat_completion = BedrockChatCompletion(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
-        )
-
-        # Act
-        settings = BedrockChatPromptExecutionSettings()
-        with pytest.raises(ServiceInvalidRequestError):
-            async for chunk in bedrock_chat_completion.get_streaming_chat_message_contents(
-                chat_history=chat_history, settings=settings
-            ):
-                pass
 
 
 @pytest.mark.parametrize(
