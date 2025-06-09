@@ -32,7 +32,7 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread), .. history];
+            overrideHistory = [.. GetChatHistory(agentThread, history)];
         }
 
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
@@ -48,15 +48,10 @@ internal static class ResponseThreadActions
             ThrowIfIncompleteOrFailed(agent, response);
 
             // Update the response ID in the creation options
-            creationOptions.PreviousResponseId = response.Id;
             if (responseAgentThread is not null)
             {
+                creationOptions.PreviousResponseId = response.Id;
                 responseAgentThread.ResponseId = response.Id;
-            }
-
-            if (agent.StoreEnabled)
-            {
-                UpdateResponseId(agentThread, response.Id);
             }
             else
             {
@@ -131,10 +126,10 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread), .. history];
+            overrideHistory = [.. GetChatHistory(agentThread, history)];
         }
 
-        var inputItems = overrideHistory.Select(c => c.ToResponseItem()).ToList();
+        var inputItems = overrideHistory.Select(m => m.ToResponseItem()).ToList();
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
 
         FunctionCallsProcessor functionProcessor = new();
@@ -150,6 +145,7 @@ internal static class ResponseThreadActions
             Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
             Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
             StreamingFunctionCallUpdateContent? functionCallUpdateContent = null;
+            OpenAIResponse? response = null;
             await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)
@@ -161,6 +157,7 @@ internal static class ResponseThreadActions
                         break;
 
                     case StreamingResponseCompletedUpdate completedUpdate:
+                        response = completedUpdate.Response;
                         message = completedUpdate.Response.ToChatMessageContent();
                         break;
 
@@ -231,10 +228,14 @@ internal static class ResponseThreadActions
             }
 
             // Update the response ID in the creation options
-            creationOptions.PreviousResponseId = responseId;
             if (responseAgentThread is not null)
             {
+                creationOptions.PreviousResponseId = responseId;
                 responseAgentThread.ResponseId = responseId;
+            }
+            else if (response is not null)
+            {
+                inputItems.AddRange(response.OutputItems);
             }
 
             // Reached maximum auto invocations
@@ -285,7 +286,7 @@ internal static class ResponseThreadActions
         }
     }
 
-    private static ChatHistory GetChatHistory(AgentThread agentThread)
+    private static ChatHistory GetChatHistory(AgentThread agentThread, ChatHistory history)
     {
         if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
         {

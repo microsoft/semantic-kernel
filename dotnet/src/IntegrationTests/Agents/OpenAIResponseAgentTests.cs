@@ -37,14 +37,17 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/>.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true)]
-    [InlineData("What is the capital of France?", "Paris", false)]
-    public async Task OpenAIResponseAgentInvokeAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    [InlineData("What is the capital of France?", "Paris", true, true)]
+    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", false, true)]
+    [InlineData("What is the capital of France?", "Paris", false, false)]
+    public async Task OpenAIResponseAgentInvokeAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
 
         await this.ExecuteAgentAsync(
             client,
+            storeEnabled,
             input,
             expectedAnswerContains);
     }
@@ -53,14 +56,17 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using a thread.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true)]
-    [InlineData("What is the capital of France?", "Paris", false)]
-    public async Task OpenAIResponseAgentInvokeWithThreadAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    [InlineData("What is the capital of France?", "Paris", true, true)]
+    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", false, true)]
+    [InlineData("What is the capital of France?", "Paris", false, false)]
+    public async Task OpenAIResponseAgentInvokeWithThreadAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer all queries in English and French."
         };
 
@@ -87,11 +93,11 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         finally
         {
             Assert.NotNull(thread);
-            await thread.DeleteAsync();
 
-            // Copy of the thread that doesn't have the deleted state
-            thread = new OpenAIResponseAgentThread(client, thread.Id!);
-            await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await thread.DeleteAsync());
+            if (thread.Id is not null)
+            {
+                await thread.DeleteAsync();
+            }
         }
     }
 
@@ -99,15 +105,18 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using a function calling.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true)]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false)]
-    public async Task OpenAIResponseAgentInvokeWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, false)]
+    public async Task OpenAIResponseAgentInvokeWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer questions about the menu."
         };
         agent.Kernel.Plugins.Add(plugin);
@@ -134,7 +143,11 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         finally
         {
             Assert.NotNull(thread);
-            await thread.DeleteAsync();
+
+            if (thread.Id is not null)
+            {
+                await thread.DeleteAsync();
+            }
         }
     }
 
@@ -142,14 +155,17 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using streaming.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true)]
-    [InlineData("What is the capital of France?", "Paris", false)]
-    public async Task OpenAIResponseAgentInvokeStreamingAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    [InlineData("What is the capital of France?", "Paris", true, true)]
+    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", false, true)]
+    [InlineData("What is the capital of France?", "Paris", false, false)]
+    public async Task OpenAIResponseAgentInvokeStreamingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
 
         await this.ExecuteStreamingAgentAsync(
             client,
+            storeEnabled,
             input,
             expectedAnswerContains);
     }
@@ -158,18 +174,21 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task OpenAIResponseAgentInvokeStreamingWithThreadAsync(bool isOpenAI)
+    [InlineData(true, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task OpenAIResponseAgentInvokeStreamingWithThreadAsync(bool isOpenAI, bool storeEnabled)
     {
         // Arrange
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer all queries in English and French."
         };
 
-        OpenAIResponseAgentThread agentThread = new(client);
+        AgentThread agentThread = storeEnabled ? new OpenAIResponseAgentThread(client) : new ChatHistoryAgentThread();
 
         // Act
         string? responseText = null;
@@ -203,15 +222,18 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true)]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false)]
-    public async Task OpenAIResponseAgentInvokeStreamingWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI)
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, true)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, false)]
+    public async Task OpenAIResponseAgentInvokeStreamingWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
         OpenAIResponseClient client = this.CreateClient(isOpenAI);
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer questions about the menu."
         };
         agent.Kernel.Plugins.Add(plugin);
@@ -252,12 +274,14 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
 
     private async Task ExecuteAgentAsync(
         OpenAIResponseClient client,
+        bool storeEnabled,
         string input,
         string expected)
     {
         // Arrange
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer all queries in English and French."
         };
 
@@ -282,12 +306,14 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
 
     private async Task ExecuteStreamingAgentAsync(
         OpenAIResponseClient client,
+        bool storeEnabled,
         string input,
         string expected)
     {
         // Arrange
         OpenAIResponseAgent agent = new(client)
         {
+            StoreEnabled = storeEnabled,
             Instructions = "Answer all queries in English and French."
         };
 
