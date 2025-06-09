@@ -699,7 +699,9 @@ class ResponsesAgentThreadActions:
                             image_url = str(content.uri)
 
                         if not image_url:
-                            raise ValueError("ImageContent must have either a data_uri or uri set to be used in the request.")
+                            raise ValueError(
+                                "ImageContent must have either a data_uri or uri set to be used in the request."
+                            )
 
                         contents.append({"type": "input_image", "image_url": image_url})
                         response_inputs.append({"role": original_role, "content": contents})
