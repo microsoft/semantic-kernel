@@ -157,6 +157,7 @@ public class OpenAIResponseExtensionsTests
     #region private
     private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems)
     {
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
         return this.CreateMockOpenAIResponse(
             "id",
             DateTimeOffset.Now,
@@ -172,6 +173,7 @@ public class OpenAIResponseExtensionsTests
             outputItems,
             false,
             ResponseToolChoice.CreateAutoChoice());
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
     }
     private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
     {
