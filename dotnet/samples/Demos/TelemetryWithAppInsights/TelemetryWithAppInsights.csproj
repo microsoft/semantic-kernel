@@ -24,7 +24,6 @@
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
-    <ProjectReference Include="..\..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />

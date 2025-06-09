@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+
+import re
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -10,6 +12,24 @@ from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
+
+
+@pytest.fixture
+def list_tool_calls_with_slash() -> ListToolsResult:
+    return ListToolsResult(
+        tools=[
+            Tool(
+                name="nasa/get-astronomy-picture",
+                description="func with slash",
+                inputSchema={"properties": {}, "required": []},
+            ),
+            Tool(
+                name="weird\\name with spaces",
+                description="func with backslash and spaces",
+                inputSchema={"properties": {}, "required": []},
+            ),
+        ]
+    )
 
 
 @pytest.fixture
@@ -230,3 +250,44 @@ async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function,
     assert types.ListToolsRequest in server.request_handlers
     assert types.CallToolRequest in server.request_handlers
     assert server.name == "Semantic Kernel MCP Server"
+
+
+@patch("semantic_kernel.connectors.mcp.sse_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_mcp_tool_name_normalization(mock_session, mock_client, list_tool_calls_with_slash, kernel: "Kernel"):
+    """Test that MCP tool names with illegal characters are normalized."""
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write)
+    mock_client.return_value = mock_generator
+    mock_session.return_value.__aenter__.return_value.list_tools.return_value = list_tool_calls_with_slash
+
+    async with MCPSsePlugin(
+        name="TestMCPPlugin",
+        description="Test MCP Plugin",
+        url="http://localhost:8080/sse",
+    ) as plugin:
+        loaded_plugin = kernel.add_plugin(plugin)
+        # The normalized names:
+        assert "nasa-get-astronomy-picture" in loaded_plugin.functions
+        assert "weird-name-with-spaces" in loaded_plugin.functions
+        # They should not exist with their original (invalid) names:
+        assert "nasa/get-astronomy-picture" not in loaded_plugin.functions
+        assert "weird\\name with spaces" not in loaded_plugin.functions
+
+        normalized_names = list(loaded_plugin.functions.keys())
+        for name in normalized_names:
+            assert re.match(r"^[A-Za-z0-9_.-]+$", name)
+
+
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_mcp_normalization_function(mock_session, list_tool_calls_with_slash):
+    """Unit test for the normalize_mcp_name function (should exist in codebase)."""
+    from semantic_kernel.connectors.mcp import _normalize_mcp_name
+
+    assert _normalize_mcp_name("nasa/get-astronomy-picture") == "nasa-get-astronomy-picture"
+    assert _normalize_mcp_name("weird\\name with spaces") == "weird-name-with-spaces"
+    assert _normalize_mcp_name("simple_name") == "simple_name"
+    assert _normalize_mcp_name("Name-With.Dots_And-Hyphens") == "Name-With.Dots_And-Hyphens"
