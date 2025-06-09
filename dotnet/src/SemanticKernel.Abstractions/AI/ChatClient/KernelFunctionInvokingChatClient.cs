@@ -102,8 +102,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
                 // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                 // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                 // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                result = await autoContext.AIFunction.InvokeAsync(autoContext.Arguments, cancellationToken).ConfigureAwait(false);
-                ctx.Result = new FunctionResult(ctx.Function, result);
+                ctx.Result = await autoContext.Function.InvokeAsync(kernelChatOptions.Kernel, autoContext.Arguments, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
         result = autoContext.Result.GetValue<object>();
 

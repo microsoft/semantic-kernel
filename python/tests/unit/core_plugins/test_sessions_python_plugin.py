@@ -181,8 +181,9 @@ async def test_empty_call_to_container_fails_raises_exception(aca_python_session
         await plugin.execute_code(code="")
 
 
+@patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessions_unit_test_env):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
@@ -196,8 +197,18 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         patch("builtins.open", mock_open(read_data=b"file data")),
     ):
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
-
         mock_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [],
+            },
+            request=mock_request,
+        )
+        mock_post.return_value = await async_return(mock_response)
+
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
             status_code=200,
             json={
                 "$id": "1",
@@ -213,9 +224,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
                     },
                 ],
             },
-            request=mock_request,
+            request=mock_get_request,
         )
-        mock_post.return_value = await async_return(mock_response)
+        mock_get.return_value = await async_return(mock_get_response)
 
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
@@ -229,8 +240,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         mock_post.assert_awaited_once()
 
 
+@patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path_and_no_remote(mock_post, mock_get, aca_python_sessions_unit_test_env):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
@@ -243,9 +255,19 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         ),
         patch("builtins.open", mock_open(read_data=b"file data")),
     ):
-        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_post_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_post_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [],
+            },
+            request=mock_post_request,
+        )
+        mock_post.return_value = await async_return(mock_post_response)
 
-        mock_response = httpx.Response(
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
             status_code=200,
             json={
                 "$id": "1",
@@ -261,9 +283,9 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
                     },
                 ],
             },
-            request=mock_request,
+            request=mock_get_request,
         )
-        mock_post.return_value = await async_return(mock_response)
+        mock_get.return_value = await async_return(mock_get_response)
 
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
@@ -313,9 +335,15 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
         ("./file.py", "/mnt/data/input.py", "/mnt/data/input.py"),
     ],
 )
+@patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
 async def test_upload_file_with_buffer(
-    mock_post, local_file_path, input_remote_file_path, expected_remote_file_path, aca_python_sessions_unit_test_env
+    mock_post,
+    mock_get,
+    local_file_path,
+    input_remote_file_path,
+    expected_remote_file_path,
+    aca_python_sessions_unit_test_env,
 ):
     """Test upload_file when providing file data as a BufferedReader."""
 
@@ -330,8 +358,18 @@ async def test_upload_file_with_buffer(
         patch("builtins.open", mock_open(read_data="print('hello, world~')")),
     ):
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
-
         mock_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [],
+            },
+            request=mock_request,
+        )
+        mock_post.return_value = await async_return(mock_response)
+
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
             status_code=200,
             json={
                 "$id": "1",
@@ -347,9 +385,9 @@ async def test_upload_file_with_buffer(
                     },
                 ],
             },
-            request=mock_request,
+            request=mock_get_request,
         )
-        mock_post.return_value = await async_return(mock_response)
+        mock_get.return_value = await async_return(mock_get_response)
 
         plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
