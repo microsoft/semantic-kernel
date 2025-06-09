@@ -62,7 +62,9 @@ public static class CommonExtensions
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+        {
             builder.Logging.AddTraceSource("Microsoft.SemanticKernel");
+        }
 
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -78,7 +80,9 @@ public static class CommonExtensions
                     .AddRuntimeInstrumentation();
 
                 if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                {
                     metrics.AddMeter("Microsoft.SemanticKernel*");
+                }
             })
             .WithTracing(tracing =>
             {
@@ -94,7 +98,9 @@ public static class CommonExtensions
                     .AddHttpClientInstrumentation();
 
                 if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                {
                     tracing.AddSource("Microsoft.SemanticKernel*");
+                }
             });
 
         builder.AddOpenTelemetryExporters();
