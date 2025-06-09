@@ -1,26 +1,18 @@
-# Semantic Kernel concepts by feature
+# 按功能划分的 Semantic Kernel 概念
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-Down below you can find the code snippets that demonstrate the usage of many Semantic Kernel features.
+下方是一些代码片段，展示了许多 Semantic Kernel 功能的使用方法。
 
-## Running the Tests
+## 运行测试
 
-You can run those tests using the IDE or the command line. To run the tests using the command line run the following command from the root of Concepts project:
-
-```text
+您可以使用 IDE 或命令行运行这些测试。要使用命令行运行测试，请从 Concepts 项目的根目录运行以下命令：
 dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=NameSpace.TestClass.TestMethod"
-```
-
-Example for `ChatCompletion/OpenAI_ChatCompletion.cs` file, targeting the `ChatPromptSync` test:
-
-```powershell
+以 `ChatCompletion/OpenAI_ChatCompletion.cs` 文件为例，目标是 `ChatPromptSync` 测试：
 dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCompletion.OpenAI_ChatCompletion.ChatPromptAsync"
-```
+## 目录
 
-## Table of Contents
-
-### Agents - Different ways of using [`Agents`](./Agents/README.md)
+### Agents - 不同方式使用 [`Agents`](./Agents/README.md)
 
 - [ComplexChat_NestedShopper](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/ComplexChat_NestedShopper.cs)
 - [MixedChat_Agents](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/MixedChat_Agents.cs)
@@ -30,11 +22,11 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [ChatCompletion_Whiteboard: Shows how to add short term Whiteboarding memory to an agent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/ChatCompletion_Whiteboard.cs)
 - [ChatCompletion_ContextualFunctionSelection: Shows how to add contextual function selection capabilities to an agent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/ChatCompletion_ContextualFunctionSelection.cs)
 
-### AudioToText - Different ways of using [`AudioToText`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/AudioToText/IAudioToTextService.cs) services to extract text from audio
+### AudioToText - 使用 [`AudioToText`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/AudioToText/IAudioToTextService.cs) 服务从音频中提取文本的不同方式
 
 - [OpenAI_AudioToText](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AudioToText/OpenAI_AudioToText.cs)
 
-### FunctionCalling - Examples on `Function Calling` with function call capable models
+### FunctionCalling - 使用支持函数调用的模型进行 `Function Calling` 的示例
 
 - [FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling.cs)
 - [FunctionCalling_ReturnMetadata](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling_ReturnMetadata.cs)
@@ -44,11 +36,11 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [MultipleFunctionsVsParameters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/MultipleFunctionsVsParameters.cs)
 - [FunctionCalling_SharedState](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling_SharedState.cs)
 
-### Caching - Examples of caching implementations
+### Caching - 缓存实现的示例
 
 - [SemanticCachingWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Caching/SemanticCachingWithFilters.cs)
 
-### ChatCompletion - Examples using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/IChatCompletionService.cs) messaging capable service with models
+### ChatCompletion - 使用 [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/IChatCompletionService.cs) 消息服务的示例
 
 - [AzureAIInference_ChatCompletion](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/AzureAIInference_ChatCompletion.cs)
 - [AzureAIInference_ChatCompletionStreaming](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/AzureAIInference_ChatCompletionStreaming.cs)
@@ -99,14 +91,14 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [OpenAI_StructuredOutputs](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_StructuredOutputs.cs)
 - [OpenAI_UsingLogitBias](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_UsingLogitBias.cs)
 
-### DependencyInjection - Examples on using `DI Container`
+### DependencyInjection - 使用 `DI 容器` 的示例
 
 - [HttpClient_Registration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/DependencyInjection/HttpClient_Registration.cs)
 - [HttpClient_Resiliency](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/DependencyInjection/HttpClient_Resiliency.cs)
 - [Kernel_Building](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/DependencyInjection/Kernel_Building.cs)
 - [Kernel_Injecting](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/DependencyInjection/Kernel_Injecting.cs)
 
-### Filtering - Different ways of filtering
+### Filtering - 不同的过滤方式
 
 - [AutoFunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/AutoFunctionInvocationFiltering.cs)
 - [FunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/FunctionInvocationFiltering.cs)
@@ -117,7 +109,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [TelemetryWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/TelemetryWithFilters.cs)
 - [AzureOpenAI_DeploymentSwitch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/AzureOpenAI_DeploymentSwitch.cs)
 
-### Functions - Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromPrompt.cs) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Kernel.cs)
+### Functions - 使用 [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromMethod.cs) 或 [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Core/Functions/KernelFunctionFromPrompt.cs) 函数通过 [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Kernel.cs) 调用
 
 - [Arguments](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Functions/Arguments.cs)
 - [FunctionResult_Metadata](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Functions/FunctionResult_Metadata.cs)
@@ -129,11 +121,11 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [PromptFunctions_Inline](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Functions/PromptFunctions_Inline.cs)
 - [PromptFunctions_MultipleArguments](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Functions/PromptFunctions_MultipleArguments.cs)
 
-### ImageToText - Using [`ImageToText`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ImageToText/IImageToTextService.cs) services to describe images
+### ImageToText - 使用 [`ImageToText`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ImageToText/IImageToTextService.cs) 服务描述图像
 
 - [HuggingFace_ImageToText](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ImageToText/HuggingFace_ImageToText.cs)
 
-### Memory - Using AI [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) concepts
+### Memory - 使用 AI [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) 概念
 
 - [AWSBedrock_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/AWSBedrock_EmbeddingGeneration.cs)
 - [OpenAI_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/OpenAI_EmbeddingGeneration.cs)
@@ -156,18 +148,18 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [VectorStore_ConsumeFromMemoryStore_Redis: An example that shows how you can use the RedisVectorStore to consume data that was ingested using the RedisMemoryStore.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_ConsumeFromMemoryStore_Redis.cs)
 - [VectorStore_Langchain_Interop: An example that shows how you can use various Vector Store to consume data that was ingested using Langchain.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_Langchain_Interop.cs)
 
-### Optimization - Examples of different cost and performance optimization techniques
+### Optimization - 不同成本和性能优化技术的示例
 
 - [FrugalGPTWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Optimization/FrugalGPTWithFilters.cs)
 - [PluginSelectionWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Optimization/PluginSelectionWithFilters.cs)
 
-### Planners - Examples on using `Planners`
+### Planners - 使用 `Planners` 的示例
 
 - [AutoFunctionCallingPlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/AutoFunctionCallingPlanning.cs)
 - [FunctionCallStepwisePlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/FunctionCallStepwisePlanning.cs)
 - [HandlebarsPlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/HandlebarsPlanning.cs)
 
-### Plugins - Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Functions/KernelPlugin.cs)
+### Plugins - 创建和使用 [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Functions/KernelPlugin.cs) 的不同方式
 
 - [ApiManifestBasedPlugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/ApiManifestBasedPlugins.cs)
 - [ConversationSummaryPlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/ConversationSummaryPlugin.cs)
@@ -191,7 +183,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [CopilotAgentBasedPlugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/CopilotAgentBasedPlugins.cs)
 - [WebPlaugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/WebPlugins.cs)
 
-### PromptTemplates - Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/PromptTemplate/IPromptTemplate.cs) with parametrization for `Prompt` rendering
+### PromptTemplates - 使用 [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/PromptTemplate/IPromptTemplate.cs) 进行 `Prompt` 渲染的参数化
 
 - [ChatCompletionPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/ChatCompletionPrompts.cs)
 - [ChatLoopWithPrompt](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/ChatLoopWithPrompt.cs)
@@ -207,47 +199,42 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [SafeChatPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/SafeChatPrompts.cs)
 - [TemplateLanguage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/TemplateLanguage.cs)
 
-### RAG - Retrieval-Augmented Generation
+### RAG - 检索增强生成
 
 - [WithFunctionCallingStepwisePlanner](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/RAG/WithFunctionCallingStepwisePlanner.cs)
 - [WithPlugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/RAG/WithPlugins.cs)
 
-### Search - Search services information
+### Search - 搜索服务信息
 
 - [BingAndGooglePlugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/BingAndGooglePlugins.cs)
 - [MyAzureAISearchPlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/MyAzureAISearchPlugin.cs)
 - [WebSearchQueriesPlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/WebSearchQueriesPlugin.cs)
 
-### TextGeneration - [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextGeneration/ITextGenerationService.cs) capable service with models
+### TextGeneration - 使用 [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextGeneration/ITextGenerationService.cs) 服务的模型
 
 - [Custom_TextGenerationService](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextGeneration/Custom_TextGenerationService.cs)
 - [HuggingFace_TextGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextGeneration/HuggingFace_TextGeneration.cs)
 - [OpenAI_TextGenerationStreaming](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextGeneration/OpenAI_TextGenerationStreaming.cs)
 
-### TextToAudio - Using [`TextToAudio`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextToAudio/ITextToAudioService.cs) services to generate audio
+### TextToAudio - 使用 [`TextToAudio`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextToAudio/ITextToAudioService.cs) 服务生成音频
 
 - [OpenAI_TextToAudio](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToAudio/OpenAI_TextToAudio.cs)
 
-### TextToImage - Using [`TextToImage`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextToImage/ITextToImageService.cs) services to generate images
+### TextToImage - 使用 [`TextToImage`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextToImage/ITextToImageService.cs) 服务生成图像
 
 - [OpenAI_TextToImage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/OpenAI_TextToImage.cs)
 - [OpenAI_TextToImageLegacy](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/OpenAI_TextToImageLegacy.cs)
 - [AzureOpenAI_TextToImage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/AzureOpenAI_TextToImage.cs)
 
-## Configuration
+## 配置
 
-### Option 1: Use Secret Manager
+### 选项 1：使用 Secret Manager
 
-Concept samples will require secrets and credentials, to access OpenAI, Azure OpenAI,
-Bing and other resources.
+概念示例需要秘密和凭据来访问 OpenAI、Azure OpenAI、Bing 和其他资源。
 
-We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
-to avoid the risk of leaking secrets into the repository, branches and pull requests.
-You can also use environment variables if you prefer.
+我们建议使用 .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) 来避免秘密泄露到存储库、分支和拉取请求中。如果您愿意，也可以使用环境变量。
 
-To set your secrets with Secret Manager:
-
-```
+使用 Secret Manager 设置您的秘密：
 cd dotnet/src/samples/Concepts
 dotnet user-secrets init
 dotnet user-secrets set "OpenAI:ServiceId" "gpt-3.5-turbo-instruct"
@@ -255,17 +242,12 @@ dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo-instruct"
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 ...
-```
+### 选项 2：使用配置文件
 
-### Option 2: Use Configuration File
+1. 在 `Concepts.csproj` 文件旁边创建一个 `appsettings.Development.json` 文件。此文件将被 git 忽略，其内容不会出现在拉取请求中，因此对于个人设置是安全的。请妥善保管此文件。
+2. 编辑 `appsettings.Development.json` 并为您运行的示例设置适当的配置。
 
-1. Create a `appsettings.Development.json` file next to the `Concepts.csproj` file. This file will be ignored by git,
-   the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
-2. Edit `appsettings.Development.json` and set the appropriate configuration for the samples you are running.
-
-For example:
-
-```json
+例如：
 {
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
@@ -282,38 +264,22 @@ For example:
   }
   // etc.
 }
-```
+### 选项 3：使用环境变量
 
-### Option 3: Use Environment Variables
+您还可以在环境变量中设置设置。环境变量将覆盖 `appsettings.Development.json` 文件中的设置。
 
-You may also set the settings in your environment variables. The environment variables will override the settings in the `appsettings.Development.json` file.
-
-When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
+设置环境变量时，使用双下划线（即 "\_\_"）来区分父属性和子属性。例如：
 
 - bash:
-
-  ```bash
-  export OpenAI__ApiKey="sk-...."
-  export AzureOpenAI__ApiKey="...."
-  export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
-  export AzureOpenAI__ChatDeploymentName="gpt-4"
-  export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
-  export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
-  export HuggingFace__ApiKey="...."
-  export Bing__ApiKey="...."
-  export Postgres__ConnectionString="...."
-  ```
-
+export OpenAI__ApiKey="sk-...."
+export AzureOpenAI__ApiKey="...."
+export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
+export AzureOpenAI__ChatDeploymentName="gpt-4"
+export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
+export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
+export HuggingFace__ApiKey="...."
+export Bing__ApiKey="...."
+export Postgres__ConnectionString="...."
 - PowerShell:
-
-  ```ps
-  $env:OpenAI__ApiKey = "sk-...."
+$env:OpenAI__ApiKey = "sk-...."
   $env:AzureOpenAI__ApiKey = "...."
-  $env:AzureOpenAI__DeploymentName = "gpt-35-turbo-instruct"
-  $env:AzureOpenAI__ChatDeploymentName = "gpt-4"
-  $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
-  $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
-  $env:HuggingFace__ApiKey = "...."
-  $env:Bing__ApiKey = "...."
-  $env:Postgres__ConnectionString = "...."
-  ```
