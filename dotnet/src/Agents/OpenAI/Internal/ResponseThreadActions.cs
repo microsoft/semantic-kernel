@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 /// <summary>
 /// Actions associated with an OpeAI Responses thread.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ResponseThreadActions
 {
     internal static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
