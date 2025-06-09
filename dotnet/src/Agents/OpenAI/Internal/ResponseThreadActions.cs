@@ -26,6 +26,7 @@ internal static class ResponseThreadActions
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var kernel = options?.Kernel ?? agent.Kernel;
+        var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
         if (!agent.StoreEnabled)
@@ -48,6 +49,10 @@ internal static class ResponseThreadActions
 
             // Update the response ID in the creation options
             creationOptions.PreviousResponseId = response.Id;
+            if (responseAgentThread is not null)
+            {
+                responseAgentThread.ResponseId = response.Id;
+            }
 
             if (agent.StoreEnabled)
             {
@@ -120,6 +125,7 @@ internal static class ResponseThreadActions
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var kernel = options?.Kernel ?? agent.Kernel;
+        var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
         if (!agent.StoreEnabled)
@@ -226,6 +232,10 @@ internal static class ResponseThreadActions
 
             // Update the response ID in the creation options
             creationOptions.PreviousResponseId = responseId;
+            if (responseAgentThread is not null)
+            {
+                responseAgentThread.ResponseId = responseId;
+            }
 
             // Reached maximum auto invocations
             if (requestIndex == MaximumAutoInvokeAttempts)

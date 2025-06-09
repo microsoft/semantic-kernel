@@ -52,7 +52,7 @@ public sealed class OpenAIResponseAgent : Agent
             this,
             chatHistory,
             agentThread,
-            options,
+            options ?? new OpenAIAssistantAgentInvokeOptions(),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.

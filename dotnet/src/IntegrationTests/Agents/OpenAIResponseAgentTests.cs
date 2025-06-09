@@ -188,7 +188,10 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         }
         finally
         {
-            await agentThread.DeleteAsync();
+            if (agentThread.Id is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
         }
 
         // Assert
@@ -228,7 +231,11 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         finally
         {
             Assert.NotNull(agentThread);
-            // TODO  agentThread.DeleteAsync();
+
+            if (agentThread.Id is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
         }
 
         // Assert
