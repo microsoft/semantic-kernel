@@ -5,6 +5,7 @@ from typing import Annotated
 import pytest
 
 from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -86,10 +87,15 @@ class TestChatCompletionAgentIntegration:
         """Test invoke of the agent."""
         responses = await agent_test_base.get_invoke_with_retry(chat_completion_agent, messages="Hello")
         assert len(responses) > 0
+        usage: CompletionUsage = CompletionUsage()
         for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+            if response.metadata.get("usage"):
+                usage += response.metadata["usage"]
+        assert usage.prompt_tokens > 0
+        assert usage.completion_tokens > 0
 
     @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_invoke_with_thread(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
@@ -115,10 +121,15 @@ class TestChatCompletionAgentIntegration:
         """Test invoke stream of the agent."""
         responses = await agent_test_base.get_invoke_stream_with_retry(chat_completion_agent, messages="Hello")
         assert len(responses) > 0
+        usage: CompletionUsage = CompletionUsage()
         for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+            if response.metadata.get("usage"):
+                usage += response.metadata["usage"]
+        assert usage.prompt_tokens > 0
+        assert usage.completion_tokens > 0
 
     @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_invoke_stream_with_thread(
