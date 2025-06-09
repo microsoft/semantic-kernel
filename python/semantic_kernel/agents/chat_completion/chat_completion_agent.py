@@ -452,7 +452,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
 
                 if (
                     role == AuthorRole.ASSISTANT
-                    and response.items
+                    and (response.items or response.metadata.get("usage"))
                     and not any(
                         isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in response.items
                     )
