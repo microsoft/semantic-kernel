@@ -52,10 +52,9 @@ internal static class OpenAIResponseExtensions
         }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
-            // TODO What is the correct role for function calls?
             return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: functionCallResponseItem);
         }
-        throw new NotImplementedException($"Unsupported response item: {item.GetType()}");
+        throw new NotSupportedException($"Unsupported response item: {item.GetType()}");
     }
 
     /// <summary>
