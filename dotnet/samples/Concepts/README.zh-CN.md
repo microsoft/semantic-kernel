@@ -241,6 +241,8 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 我们建议使用 .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) 来避免秘密泄露到存储库、分支和拉取请求中。如果您愿意，也可以使用环境变量。
 
 使用 Secret Manager 设置您的秘密：
+
+```
 cd dotnet/src/samples/Concepts
 dotnet user-secrets init
 dotnet user-secrets set "OpenAI:ServiceId" "gpt-3.5-turbo-instruct"
@@ -248,12 +250,16 @@ dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo-instruct"
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 ...
+```
+
 ### 选项 2：使用配置文件
 
 1. 在 `Concepts.csproj` 文件旁边创建一个 `appsettings.Development.json` 文件。此文件将被 git 忽略，其内容不会出现在拉取请求中，因此对于个人设置是安全的。请妥善保管此文件。
 2. 编辑 `appsettings.Development.json` 并为您运行的示例设置适当的配置。
 
 例如：
+
+```json
 {
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
@@ -270,6 +276,8 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
   }
   // etc.
 }
+```
+
 ### 选项 3：使用环境变量
 
 您还可以在环境变量中设置设置。环境变量将覆盖 `appsettings.Development.json` 文件中的设置。
@@ -277,15 +285,29 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
 设置环境变量时，使用双下划线（即 "\_\_"）来区分父属性和子属性。例如：
 
 - bash:
-export OpenAI__ApiKey="sk-...."
-export AzureOpenAI__ApiKey="...."
-export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
-export AzureOpenAI__ChatDeploymentName="gpt-4"
-export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
-export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
-export HuggingFace__ApiKey="...."
-export Bing__ApiKey="...."
-export Postgres__ConnectionString="...."
+
+```bash
+  export OpenAI__ApiKey="sk-...."
+  export AzureOpenAI__ApiKey="...."
+  export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
+  export AzureOpenAI__ChatDeploymentName="gpt-4"
+  export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
+  export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
+  export HuggingFace__ApiKey="...."
+  export Bing__ApiKey="...."
+  export Postgres__ConnectionString="...."
+  ```
+
 - PowerShell:
-$env:OpenAI__ApiKey = "sk-...."
+
+   ```ps
+  $env:OpenAI__ApiKey = "sk-...."
   $env:AzureOpenAI__ApiKey = "...."
+  $env:AzureOpenAI__DeploymentName = "gpt-35-turbo-instruct"
+  $env:AzureOpenAI__ChatDeploymentName = "gpt-4"
+  $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
+  $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
+  $env:HuggingFace__ApiKey = "...."
+  $env:Bing__ApiKey = "...."
+  $env:Postgres__ConnectionString = "...."
+  ```
