@@ -1,6 +1,6 @@
 # Semantic Kernel concepts by feature
 
-[English](README.md) | [¼òÌåÖĞÎÄ](README.zh-CN.md)
+[English](README.md) | [Chinese](README.zh-CN.md)
 
 Down below you can find the code snippets that demonstrate the usage of many Semantic Kernel features.
 
