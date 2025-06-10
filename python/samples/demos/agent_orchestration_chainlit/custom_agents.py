@@ -39,7 +39,7 @@ class AgentFactory:
         for agent in self._agents:
             if isinstance(agent, AzureAIAgent):
                 try:
-                    await agent.client.agents.delete_agent(agent.definition.name)
+                    await agent.client.agents.delete_agent(agent.definition.id)
                 except Exception as e:
                     print(f"Failed to delete agent {agent.definition.name}: {e}")
 

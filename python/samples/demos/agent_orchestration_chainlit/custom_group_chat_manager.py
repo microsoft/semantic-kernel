@@ -51,6 +51,9 @@ class CustomGroupChatManager(GroupChatManager):
         if len(chat_history) == 0:
             return BooleanResult(result=False, reason="Chat history is empty.")
 
+        if chat_history.messages[-1].role == AuthorRole.USER:
+            return BooleanResult(result=False, reason="Last message is from the user, no need to request input.")
+
         messages = [ChatMessageContent(role=AuthorRole.SYSTEM, content=self.REQUEST_USER_INPUT_INSTRUCTION)]
         messages.extend(chat_history.messages)
         messages.append(ChatMessageContent(role=AuthorRole.USER, content="Do you need input from a human? "))

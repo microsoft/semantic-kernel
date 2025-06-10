@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import chainlit as cl
 
 from samples.demos.agent_orchestration_chainlit.custom_agents import AgentFactory
@@ -11,6 +10,8 @@ from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProce
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+
+SAMPLE_TASK = "A link where I can directly download the latest Microsoft 10k pdf file"
 
 
 async def streaming_agent_response_callback(message_chunk: StreamingChatMessageContent, is_final: bool) -> None:
@@ -65,6 +66,8 @@ async def setup_runnable():
     runtime.start()
     cl.user_session.set("runtime", runtime)
 
+    print("Group chat orchestration setup complete.")
+
 
 @cl.password_auth_callback
 def auth_callback(username: str, password: str):
@@ -90,6 +93,8 @@ async def on_chat_end():
     runtime: InProcessRuntime = cl.user_session.get("runtime")
     if runtime:
         await runtime.close()
+
+    print("Chat ended, resources cleaned up.")
 
 
 @cl.on_message
