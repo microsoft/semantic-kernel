@@ -1,0 +1,15 @@
+type: openai_responses
+name: Host
+description: This agent uses the provided functions to answer questions about the menu.
+instructions: Use the provided functions to answer questions about the menu.
+model:
+  id: ${OpenAI:ChatModelId}
+  connection:
+    api_key: ${OpenAI:ApiKey}
+  options:
+    temperature: 0.4
+tools:
+  - id: MenuPlugin.get_specials
+    type: function
+  - id: MenuPlugin.get_item_price
+    type: function

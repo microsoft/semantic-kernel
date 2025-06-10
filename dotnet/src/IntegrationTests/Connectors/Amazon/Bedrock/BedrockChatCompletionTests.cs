@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -39,9 +40,9 @@ public class BedrockChatCompletionTests
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Act
-        var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+        var messages = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
         string output = "";
-        foreach (var message in response)
+        foreach (var message in messages)
         {
             output += message.Content;
             Assert.NotNull(message.InnerContent);
@@ -50,9 +51,17 @@ public class BedrockChatCompletionTests
 
         // Assert
         Assert.NotNull(output);
-        Assert.True(response.Count > 0);
+        Assert.True(messages.Count > 0);
         Assert.Equal(4, chatHistory.Count);
-        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
+
+        var assistantMessage = messages[0];
+        Assert.Equal(AuthorRole.Assistant, assistantMessage.Role);
+        var response = Assert.IsType<ConverseResponse>(messages[0].InnerContent);
+        Assert.NotNull(assistantMessage.Metadata?["Usage"] as TokenUsage);
+        Assert.Equal(response.Usage, assistantMessage.Metadata["Usage"]);
+        Assert.NotEqual(0, response.Usage.InputTokens);
+        Assert.NotEqual(0, response.Usage.OutputTokens);
+        Assert.NotEqual(0, response.Usage.TotalTokens);
     }
 
     [Theory(Skip = "For manual verification only")]
@@ -91,6 +100,17 @@ public class BedrockChatCompletionTests
         {
             output += message.Content;
             Assert.NotNull(message.InnerContent);
+            if (message.Metadata != null)
+            {
+                Assert.NotEmpty(message.Metadata);
+                Assert.Contains("Usage", message.Metadata.Keys);
+                var metadataChunk = Assert.IsType<ConverseStreamMetadataEvent>(message.InnerContent);
+                var tokenUsage = Assert.IsType<TokenUsage>(message.Metadata["Usage"]);
+                Assert.Same(metadataChunk.Usage, tokenUsage);
+                Assert.NotEqual(0, tokenUsage.InputTokens);
+                Assert.NotEqual(0, tokenUsage.OutputTokens);
+                Assert.NotEqual(0, tokenUsage.TotalTokens);
+            }
         }
         chatHistory.AddAssistantMessage(output);
 

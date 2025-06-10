@@ -8,7 +8,7 @@ from azure.ai.agents.models import OpenApiAnonymousAuthDetails, OpenApiTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import AuthorRole
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 
 """
 The following sample demonstrates how to create a simple, Azure AI agent that
@@ -21,6 +21,16 @@ USER_INPUTS = [
     "What is the name and population of the country that uses currency with abbreviation THB",
     "What is the current weather in the capital city of the country?",
 ]
+
+
+async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main() -> None:
@@ -76,12 +86,11 @@ async def main() -> None:
                 print(f"# User: '{user_input}'")
                 # 7. Invoke the agent for the specified thread for response
                 async for response in agent.invoke(messages=user_input, thread=thread):
-                    if response.role != AuthorRole.TOOL:
-                        print(f"# Agent: {response}")
+                    print(f"# Agent: {response}")
                     thread = response.thread
         finally:
             # 8. Cleanup: Delete the thread and agent
-            await client.agents.threads.delete(thread.id)
+            await client.agents.threads.delete(thread.id) if thread else None
             await client.agents.delete_agent(agent.id)
 
         """

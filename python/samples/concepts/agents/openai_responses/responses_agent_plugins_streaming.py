@@ -3,6 +3,7 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AzureResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.functions import kernel_function
 
 """
@@ -49,11 +50,11 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using OpenAI resources and configuration
-    client, model = AzureResponsesAgent.setup_resources()
+    client = AzureResponsesAgent.create_client()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = AzureResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=AzureOpenAISettings().chat_deployment_name,
         client=client,
         instructions="Answer questions about the menu.",
         name="Host",

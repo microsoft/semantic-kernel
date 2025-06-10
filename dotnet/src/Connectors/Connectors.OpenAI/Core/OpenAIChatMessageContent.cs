@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
 using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
@@ -22,6 +23,17 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Gets the metadata key for the list of <see cref="ChatToolCall"/>.
     /// </summary>
     internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
+    /// This constructor is for internal use and JSON deserialization.
+    /// </summary>
+    [JsonConstructor]
+    internal OpenAIChatMessageContent()
+    {
+        this.Role = AuthorRole.User; // Default role
+        this.ToolCalls = [];
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
@@ -69,7 +81,8 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<ChatToolCall> ToolCalls { get; }
+    [JsonConverter(typeof(ChatToolCallListJsonConverter))]
+    public IReadOnlyList<ChatToolCall> ToolCalls { get; set; }
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.

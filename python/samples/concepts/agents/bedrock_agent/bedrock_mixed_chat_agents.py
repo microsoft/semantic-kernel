@@ -16,6 +16,15 @@ This sample uses the following main component(s):
 - an AgentGroupChat
 You will learn how to create a new or connect to an existing Bedrock agent and put it in a group chat with
 another agent.
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
 
 # This will be a chat completion agent

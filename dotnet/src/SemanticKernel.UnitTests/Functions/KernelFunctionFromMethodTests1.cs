@@ -1556,6 +1556,28 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("""{"type":"object","properties":{"Result":{"type":"integer"}}}""", metadata.ReturnParameter.Schema!.ToString());
     }
 
+    [InlineData("f_1", true)]
+    [InlineData("f-1", true)]
+    [InlineData("f+1", false)]
+    [InlineData("f?1", false)]
+    [Theory]
+    public void ItShouldValidateFunctionName(string name, bool allowed)
+    {
+        // Arrange & Act & Assert
+        if (allowed)
+        {
+            // Should not throw
+            KernelFunctionFactory.CreateFromMethod(() => { }, functionName: name);
+            KernelFunctionFactory.CreateFromMethod(() => { }, new KernelFunctionFromMethodOptions() { FunctionName = name });
+        }
+        else
+        {
+            // Should throw
+            Assert.Throws<ArgumentException>(() => KernelFunctionFactory.CreateFromMethod(() => { }, functionName: name));
+            Assert.Throws<ArgumentException>(() => KernelFunctionFactory.CreateFromMethod(() => { }, new KernelFunctionFromMethodOptions() { FunctionName = name }));
+        }
+    }
+
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class CustomTypeForJsonTests
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes

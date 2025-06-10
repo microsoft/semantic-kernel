@@ -55,7 +55,7 @@ public sealed class KernelFunctionMetadata
     public string Name
     {
         get => this._name;
-        init
+        set
         {
             Verify.NotNull(value);
             KernelVerify.ValidFunctionName(value);
@@ -64,14 +64,14 @@ public sealed class KernelFunctionMetadata
     }
 
     /// <summary>Gets the name of the plugin containing the function.</summary>
-    public string? PluginName { get; init; }
+    public string? PluginName { get; set; }
 
     /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
     public string Description
     {
         get => this._description;
-        init => this._description = value ?? string.Empty;
+        set => this._description = value ?? string.Empty;
     }
 
     /// <summary>Gets the metadata for the parameters to the function.</summary>
@@ -79,7 +79,7 @@ public sealed class KernelFunctionMetadata
     public IReadOnlyList<KernelParameterMetadata> Parameters
     {
         get => this._parameters;
-        init
+        set
         {
             Verify.NotNull(value);
             this._parameters = value;
@@ -91,7 +91,7 @@ public sealed class KernelFunctionMetadata
     public KernelReturnParameterMetadata ReturnParameter
     {
         get => this._returnParameter ??= KernelReturnParameterMetadata.Empty;
-        init
+        set
         {
             Verify.NotNull(value);
             this._returnParameter = value;
@@ -102,7 +102,7 @@ public sealed class KernelFunctionMetadata
     public ReadOnlyDictionary<string, object?> AdditionalProperties
     {
         get => this._additionalProperties ??= s_emptyDictionary;
-        init
+        set
         {
             Verify.NotNull(value);
             this._additionalProperties = value;

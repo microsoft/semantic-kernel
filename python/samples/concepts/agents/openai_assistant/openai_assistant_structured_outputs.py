@@ -4,6 +4,7 @@ import asyncio
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -36,7 +37,7 @@ json_schema = {
 
 # Create the assistant definition
 definition = await client.beta.assistants.create(
-    model=model,
+    model=AzureOpenAISettings().chat_deployment_name
     name="Assistant",
     instructions="You are a helpful assistant answering questions about the world in one sentence.",
     response_format=json_schema,
@@ -52,11 +53,11 @@ class ResponseModel(BaseModel):
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="Assistant",
         instructions="You are a helpful assistant answering questions about the world in one sentence.",
         response_format=AzureAssistantAgent.configure_response_format(ResponseModel),

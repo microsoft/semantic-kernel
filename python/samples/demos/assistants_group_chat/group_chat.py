@@ -8,12 +8,19 @@ from semantic_kernel.agents import AgentGroupChat, OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
-#####################################################################
-# The following sample demonstrates how to create a Semantic Kernel #
-# OpenAIAssistantAgent, and leverage the assistant's                #
-# code interpreter or file search capabilities. The user interacts  #
-# with the AI assistant by uploading files and chatting.            #
-#####################################################################
+"""
+The following sample demonstrates how to create a Semantic Kernel
+OpenAIAssistantAgent, and leverage the assistant's
+code interpreter or file search capabilities. The user interacts
+with the AI assistant by uploading files and chatting.
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
+"""
 
 
 # region Helper Functions

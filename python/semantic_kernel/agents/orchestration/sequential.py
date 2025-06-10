@@ -12,6 +12,7 @@ from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
 from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -48,6 +49,8 @@ class SequentialAgentActor(AgentActorBase):
         internal_topic_type: str,
         next_agent_type: str,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        | None = None,
     ) -> None:
         """Initialize the agent actor."""
         self._next_agent_type = next_agent_type
@@ -55,6 +58,7 @@ class SequentialAgentActor(AgentActorBase):
             agent=agent,
             internal_topic_type=internal_topic_type,
             agent_response_callback=agent_response_callback,
+            streaming_agent_response_callback=streaming_agent_response_callback,
         )
 
     @message_handler
@@ -62,15 +66,13 @@ class SequentialAgentActor(AgentActorBase):
         """Handle a message."""
         logger.debug(f"Sequential actor (Actor ID: {self.id}; Agent name: {self._agent.name}) started processing...")
 
-        response = await self._agent.get_response(messages=message.body)  # type: ignore[arg-type]
+        response = await self._invoke_agent(additional_messages=message.body)
 
         logger.debug(f"Sequential actor (Actor ID: {self.id}; Agent name: {self._agent.name}) finished processing.")
 
-        await self._call_agent_response_callback(response.message)
-
         target_actor_id = await self.runtime.get(self._next_agent_type)
         await self.send_message(
-            SequentialRequestMessage(body=response.message),
+            SequentialRequestMessage(body=response),
             target_actor_id,
             cancellation_token=ctx.cancellation_token,
         )
@@ -155,6 +157,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
                     internal_topic_type,
                     next_agent_type=next_actor_type,
                     agent_response_callback=self._agent_response_callback,
+                    streaming_agent_response_callback=self._streaming_agent_response_callback,
                 ),
             )
             logger.debug(f"Registered agent actor of type {self._get_agent_actor_type(agent, internal_topic_type)}")

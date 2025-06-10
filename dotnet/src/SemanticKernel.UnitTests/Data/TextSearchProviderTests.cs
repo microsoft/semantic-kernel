@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
@@ -16,14 +18,30 @@ namespace SemanticKernel.UnitTests.Data;
 /// </summary>
 public class TextSearchProviderTests
 {
+    private readonly Mock<ILogger<TextSearchProvider>> _loggerMock;
+    private readonly Mock<ILoggerFactory> _loggerFactoryMock;
+
+    public TextSearchProviderTests()
+    {
+        this._loggerMock = new();
+        this._loggerFactoryMock = new();
+        this._loggerFactoryMock
+            .Setup(f => f.CreateLogger(It.IsAny<string>()))
+            .Returns(this._loggerMock.Object);
+        this._loggerFactoryMock
+            .Setup(f => f.CreateLogger(typeof(TextSearchProvider).FullName!))
+            .Returns(this._loggerMock.Object);
+    }
+
     [Theory]
-    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document with document name and link if document name and link is available.")]
-    [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
+    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document with document name and link if document name and link is available.", true)]
+    [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt", false)]
     public async Task ModelInvokingShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,
         string? overrideCitationsPrompt,
         string expectedContextPrompt,
-        string expectedCitationsPrompt)
+        string expectedCitationsPrompt,
+        bool withLogging)
     {
         // Arrange
         var mockTextSearch = new Mock<ITextSearch>();
@@ -63,7 +81,10 @@ public class TextSearchProviderTests
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(
+            mockTextSearch.Object,
+            withLogging ? this._loggerFactoryMock.Object : null,
+            options: options);
 
         // Act
         var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
@@ -77,6 +98,27 @@ public class TextSearchProviderTests
         Assert.Contains("SourceDocLink: http://example.com/doc2", result.Instructions);
         Assert.Contains("Contents: Content of Doc2", result.Instructions);
         Assert.Contains(expectedCitationsPrompt, result.Instructions);
+
+        if (withLogging)
+        {
+            this._loggerMock.Verify(
+                l => l.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("TextSearchBehavior: Retrieved 2 search results.")),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.AtLeastOnce);
+
+            this._loggerMock.Verify(
+                l => l.Log(
+                    LogLevel.Trace,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("TextSearchBehavior:\nInput Messages:Sample user question?\nOutput context instructions:") && v.ToString()!.Contains("SourceDocName: Doc1") && v.ToString()!.Contains("SourceDocName: Doc2")),
+                    It.IsAny<Exception?>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.AtLeastOnce);
+        }
     }
 
     [Theory]
@@ -97,7 +139,7 @@ public class TextSearchProviderTests
             PluginFunctionDescription = overridePluginFunctionDescription
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var aiContextAdditions = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
@@ -157,7 +199,7 @@ public class TextSearchProviderTests
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var result = await component.SearchAsync("Sample user question?", CancellationToken.None);
@@ -213,7 +255,7 @@ public class TextSearchProviderTests
             ContextFormatter = results => $"Custom formatted context with {results.Count} results."
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);

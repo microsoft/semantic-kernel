@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -31,6 +32,7 @@ public sealed class WhiteboardProvider : AIContextProvider
     private readonly string _maintenancePrompt;
 
     private readonly IChatClient _chatClient;
+    private readonly ILogger? _logger;
 
     private List<string> _currentWhiteboardContent = [];
 
@@ -42,8 +44,9 @@ public sealed class WhiteboardProvider : AIContextProvider
     /// Initializes a new instance of the <see cref="WhiteboardProvider"/> class.
     /// </summary>
     /// <param name="chatClient">A <see cref="IChatClient"/> to use for making chat completion calls.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="options">Options for configuring the provider.</param>
-    public WhiteboardProvider(IChatClient chatClient, WhiteboardProviderOptions? options = default)
+    public WhiteboardProvider(IChatClient chatClient, ILoggerFactory? loggerFactory = default, WhiteboardProviderOptions? options = default)
     {
         Verify.NotNull(chatClient);
 
@@ -52,6 +55,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
         this._maintenancePrompt = options?.MaintenancePromptTemplate ?? MaintenancePromptTemplate;
+        this._logger = loggerFactory?.CreateLogger<WhiteboardProvider>();
     }
 
     /// <summary>
@@ -94,16 +98,26 @@ public sealed class WhiteboardProvider : AIContextProvider
     /// <inheritdoc/>
     public override Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        if (this._currentWhiteboardContent.Count == 0)
+        // Take a reference to the current whiteboard to avoid inconsistent logging and results
+        // if it's updated during this method's execution.
+        var currentWhiteboard = this._currentWhiteboardContent;
+
+        if (currentWhiteboard.Count == 0)
         {
+            this._logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", this._whiteboardEmptyPrompt);
             return Task.FromResult(new AIContext() { Instructions = this._whiteboardEmptyPrompt });
         }
 
-        var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
+        var numberedMessages = currentWhiteboard.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
+        var context = $"{this._contextPrompt}\n{joinedMessages}";
+
+        this._logger?.LogInformation("WhiteboardBehavior: Whiteboard contains {Count} messages.", currentWhiteboard.Count);
+        this._logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", context);
+
         return Task.FromResult(new AIContext()
         {
-            Instructions = $"{this._contextPrompt}\n{joinedMessages}"
+            Instructions = context
         });
     }
 
@@ -155,6 +169,12 @@ public sealed class WhiteboardProvider : AIContextProvider
         // Update the current whiteboard content with the LLM result.
         var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardProviderSourceGenerationContext.Default.NewWhiteboardResponse);
         this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
+
+        this._logger?.LogTrace(
+            "WhiteboardBehavior: Updated whiteboard.\nInputMessages:\n{InputMessagesJson}\nCurrentWhiteboard:\n{CurrentWhiteboardJson}\nNew Whiteboard:\n{NewWhiteboard}",
+            inputMessagesJson,
+            currentWhiteboardJson,
+            result);
     }
 
     private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)

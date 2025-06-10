@@ -6,25 +6,20 @@ import os
 from azure.ai.agents.models import VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the file search tool.
-
-The agent is used to answer user questions that require file search to help ground 
-answers from the model.
+user questions using the file search tool from a declarative spec.
 """
 
 # Define the YAML string for the sample
 spec = """
 type: foundry_agent
 name: FileSearchAgent
-description: Agent with code interpreter tool.
+description: Agent with file search tool.
 instructions: >
-  Use the code interpreter tool to answer questions that require code to be generated
-  and executed.
+  Use the file search tool to answer questions from the user.
 model:
   id: ${AzureAI:ChatModelId}
   connection:

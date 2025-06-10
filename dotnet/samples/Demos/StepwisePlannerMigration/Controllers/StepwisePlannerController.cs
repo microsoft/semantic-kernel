@@ -16,7 +16,7 @@ using StepwisePlannerMigration.Services;
 namespace StepwisePlannerMigration.Controllers;
 
 /// <summary>
-/// This controller shows the old way how to use planning capability by using <see cref="FunctionCallingStepwisePlanner"/>.
+/// This controller shows the old way how to use planning capability by using FunctionCallingStepwisePlanner.
 /// A new recommended approach is demonstrated in <see cref="AutoFunctionCallingController"/>.
 /// </summary>
 [ApiController]

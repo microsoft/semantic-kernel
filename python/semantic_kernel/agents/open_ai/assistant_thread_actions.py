@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
-    from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+    from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -681,7 +681,7 @@ class AssistantThreadActions:
             tool_call.id: tool_call
             for message in chat_history.messages
             for tool_call in message.items
-            if isinstance(tool_call, FunctionResultContent)
+            if isinstance(tool_call, FunctionResultContent) and tool_call.id is not None
         }
         return [
             {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}

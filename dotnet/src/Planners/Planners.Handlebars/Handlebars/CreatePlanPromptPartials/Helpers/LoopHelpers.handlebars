@@ -1,9 +1,0 @@
-{{! Built-in system helpers from Semantic Kernel}}
-{{#*inline "LoopHelpers"}}
-## Loop helpers
-If you need to loop through a list of values with `\{{#each}}`, you can use the following helpers:
-- `\{{range}}` – Generates a list of integral numbers within a specified range, inclusive of the first and last value.
-- `\{{array}}` – Generates an array of values from the given values (zero-indexed).
-
-IMPORTANT: `range` and `array` are the only supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures.
-{{/inline}}

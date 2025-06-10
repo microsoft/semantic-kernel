@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from functools import partial
 from typing import Any, ClassVar
 
 import boto3
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.async_utils import run_in_executor
 
 
 class BedrockBase(KernelBaseModel, ABC):
@@ -40,15 +38,3 @@ class BedrockBase(KernelBaseModel, ABC):
             bedrock_client=client or boto3.client("bedrock"),
             **kwargs,
         )
-
-    async def get_foundation_model_info(self, model_id: str) -> dict[str, Any]:
-        """Get the foundation model information."""
-        response = await run_in_executor(
-            None,
-            partial(
-                self.bedrock_client.get_foundation_model,
-                modelIdentifier=model_id,
-            ),
-        )
-
-        return response.get("modelDetails")

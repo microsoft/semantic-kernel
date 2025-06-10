@@ -1,0 +1,9 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);Moq1400</NoWarn> <!-- Explicitly choose a mocking behavior instead of relying on the default (Loose) behavior -->
+  </PropertyGroup>
+
+</Project>

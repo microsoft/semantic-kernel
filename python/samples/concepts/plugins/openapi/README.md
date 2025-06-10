@@ -2,7 +2,7 @@
 
 For more generic setup instructions, including how to install the `uv` tool, see the [main README](../../../../DEV_SETUP.md).
 
-1. In a terminal, navigate to `semantic_kernel/python/samples/kernel-syntax-examples/openapi_example`.
+1. In a terminal, navigate to `semantic_kernel/python/samples/concepts/plugins/openapi`.
 
 2. Run `uv sync` followed by `source .venv/bin/activate` to enter the virtual environment (depending on the os, the activate script may be in a different location).
 

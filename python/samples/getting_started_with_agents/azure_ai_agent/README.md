@@ -7,7 +7,7 @@ To set up the required resources, follow the "Quickstart: Create a new agent" gu
 You will need to install the optional Semantic Kernel `azure` dependencies if you haven't already via:
 
 ```bash
-pip install semantic-kernel[azure]
+pip install semantic-kernel
 ```
 
 Before running an Azure AI Agent, modify your .env file to include:

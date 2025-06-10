@@ -2,6 +2,7 @@
 import asyncio
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -15,14 +16,14 @@ TASK = "Use code to determine the values in the Fibonacci sequence that that are
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # 2. Configure the code interpreter tool and resources for the Assistant
     code_interpreter_tool, code_interpreter_tool_resources = AzureAssistantAgent.configure_code_interpreter_tool()
 
     # 3. Create the assistant on the Azure OpenAI service
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="CodeRunner",
         instructions="Run the provided request as code and return the result.",
         tools=code_interpreter_tool,

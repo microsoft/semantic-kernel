@@ -13,6 +13,15 @@ The following sample demonstrates how to create a simple, agent group chat that
 utilizes An Art Director Chat Completion Agent along with a Copy Writer Chat
 Completion Agent to complete a task. The main point of this sample is to note
 how to enable logging to view all interactions between the agents and the model.
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
 
 # 0. Enable logging

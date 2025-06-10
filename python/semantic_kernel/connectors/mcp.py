@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
@@ -175,6 +176,12 @@ def _get_parameter_dicts_from_mcp_tool(tool: types.Tool) -> list[dict[str, Any]]
             "schema_data": prop_details,
         })
     return params
+
+
+@experimental
+def _normalize_mcp_name(name: str) -> str:
+    """Normalize MCP tool/prompt names to allowed identifier pattern (A-Za-z0-9_.-)."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "-", name)
 
 
 # region: MCP Plugin
@@ -366,11 +373,12 @@ class MCPPluginBase:
         except Exception:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
-            func = kernel_function(name=prompt.name, description=prompt.description)(
+            local_name = _normalize_mcp_name(prompt.name)
+            func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
             func.__kernel_function_parameters__ = _get_parameter_dict_from_mcp_prompt(prompt)
-            setattr(self, prompt.name, func)
+            setattr(self, local_name, func)
 
     async def load_tools(self):
         """Load tools from the MCP server."""
@@ -380,9 +388,10 @@ class MCPPluginBase:
             tool_list = None
             # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
-            func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
+            local_name = _normalize_mcp_name(tool.name)
+            func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
-            setattr(self, tool.name, func)
+            setattr(self, local_name, func)
 
     async def close(self) -> None:
         """Disconnect from the MCP server."""

@@ -12,11 +12,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 internal static class ChatPromptParser
 {
-    private const string MessageTagName = "message";
-    private const string RoleAttributeName = "role";
-    private const string ImageTagName = "image";
-    private const string TextTagName = "text";
-
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
     /// </summary>
@@ -73,20 +68,10 @@ internal static class ChatPromptParser
         ChatMessageContentItemCollection items = [];
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
-            if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
+            if (s_contentFactoryMapping.TryGetValue(childNode.TagName.ToUpperInvariant(), out var createBinaryContent))
             {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new ImageContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new ImageContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                items.Add(new TextContent(childNode.Content));
+                childNode.Attributes.TryGetValue("mimetype", out var mimeType);
+                items.Add(createBinaryContent(childNode.Content!, mimeType));
             }
         }
 
@@ -104,15 +89,42 @@ internal static class ChatPromptParser
     }
 
     /// <summary>
+    /// Creates a new instance of <typeparamref name="T"/> from a data URI.
+    /// </summary>
+    /// <typeparam name="T">Type of <see cref="BinaryContent"/> to create.</typeparam>
+    /// <param name="content">Base64 encoded content or URI.</param>
+    /// <param name="mimeType">Optional MIME type of the content.</param>
+    /// <returns>A new instance of <typeparamref name="T"/> with <paramref name="content"/></returns>
+    private static T CreateBinaryContent<T>(string content, string? mimeType) where T : BinaryContent, new()
+    {
+        return (content.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) ? new T { DataUri = content } : new T { Uri = new Uri(content), MimeType = mimeType };
+    }
+
+    /// <summary>
+    /// Factory for creating a <see cref="KernelContent"/> instance based on the tag name.
+    /// </summary>
+    private static readonly Dictionary<string, Func<string, string?, KernelContent>> s_contentFactoryMapping = new()
+    {
+        { TextTagName, (content, _) => new TextContent(content) },
+        { ImageTagName, CreateBinaryContent<ImageContent> },
+        { AudioTagName, CreateBinaryContent<AudioContent> },
+        { BinaryTagName, CreateBinaryContent<BinaryContent> }
+    };
+
+    /// <summary>
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
     /// <param name="node">Instance of <see cref="PromptNode"/>.</param>
     /// <remarks>
-    /// A valid chat message is a node with the following structure:<br/>
-    /// TagName = "message"<br/>
-    /// Attributes = { "role" : "..." }<br/>
-    /// optional one or more child nodes <image>...</image><br/>
-    /// optional one or more child nodes <text>...</text>
+    /// A valid chat message is a node with the following structure:
+    /// <list type="bullet">
+    /// <item><description>TagName = "message"</description></item>
+    /// <item><description>Attributes = { "role" : "..." }</description></item>
+    /// <item><description>optional one or more child nodes &lt;image&gt;...&lt;/image&gt;</description></item>
+    /// <item><description>optional one or more child nodes &lt;text&gt;...&lt;/text&gt;</description></item>
+    /// <item><description>optional one or more child nodes &lt;audio&gt;...&lt;/audio&gt;</description></item>
+    /// <item><description>optional one or more child nodes &lt;binary&gt;...&lt;/binary&gt;</description></item>
+    /// </list>
     /// </remarks>
     private static bool IsValidChatMessage(PromptNode node)
     {
@@ -120,4 +132,11 @@ internal static class ChatPromptParser
             node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
             node.Attributes.ContainsKey(RoleAttributeName);
     }
+
+    private const string MessageTagName = "message";
+    private const string RoleAttributeName = "role";
+    private const string ImageTagName = "IMAGE";
+    private const string TextTagName = "TEXT";
+    private const string AudioTagName = "AUDIO";
+    private const string BinaryTagName = "BINARY";
 }

@@ -61,7 +61,7 @@ public sealed class AzureAIAgentFactory : AgentFactory
                 name: agentDefinition.Name,
                 description: agentDefinition.Description,
                 instructions: agentDefinition.Instructions,
-                tools: agentDefinition.GetAzureToolDefinitions(),
+                tools: agentDefinition.GetAzureToolDefinitions(kernel),
                 toolResources: agentDefinition.GetAzureToolResources(),
                 metadata: agentDefinition.GetMetadata(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);

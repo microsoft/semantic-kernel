@@ -4,6 +4,9 @@
       "content": {
         "parts": [
           {
+            "text": "Running the TimePlugin.Now function..."
+          },
+          {
             "functionCall": {
               "name": "TimePlugin%nameSeparator%Now",
               "args": {

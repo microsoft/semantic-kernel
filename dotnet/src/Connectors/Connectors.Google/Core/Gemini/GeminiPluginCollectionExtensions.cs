@@ -34,7 +34,7 @@ internal static class GeminiPluginCollectionExtensions
                 arguments = [];
                 foreach (var parameter in functionToolCall.Arguments)
                 {
-                    arguments[parameter.Key] = parameter.Value?.ToString();
+                    arguments[parameter.Key] = parameter.Value;
                 }
             }
 

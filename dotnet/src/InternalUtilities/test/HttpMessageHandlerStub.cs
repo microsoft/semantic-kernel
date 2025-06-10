@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated; this class is compiled in tests projects
-internal sealed class HttpMessageHandlerStub : DelegatingHandler
+internal sealed class HttpMessageHandlerStub : HttpMessageHandler
 #pragma warning restore CA1812 // Internal class that is apparently never instantiated
 {
     public HttpRequestHeaders? RequestHeaders { get; private set; }
@@ -37,7 +37,12 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         };
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+    protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken) =>
+        this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+
+    protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
@@ -56,6 +61,6 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
                 this.ResponseToReturn :
                 this.ResponseToReturn = this.ResponseQueue.Dequeue();
 
-        return await Task.FromResult(response);
+        return response;
     }
 }

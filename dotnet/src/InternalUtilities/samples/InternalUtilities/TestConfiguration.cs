@@ -56,7 +56,7 @@ public sealed class TestConfiguration
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
     public static Mem0Config Mem0 => LoadSection<Mem0Config>();
 
-    public static IConfiguration GetSection(string caller)
+    public static IConfigurationSection GetSection(string caller)
     {
         return s_instance?._configRoot.GetSection(caller) ??
                throw new ConfigurationNotFoundException(section: caller);

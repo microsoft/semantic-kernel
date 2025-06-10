@@ -255,8 +255,10 @@ class SessionsPythonTool(KernelBaseModel):
                 files = {"file": (remote_file_path, data, "application/octet-stream")}
                 response = await self.http_client.post(url=url, files=files)
                 response.raise_for_status()
-                response_json = response.json()
-                return SessionsRemoteFileMetadata.from_dict(response_json["value"][0]["properties"])
+                uploaded_files = await self.list_files()
+                return next(
+                    file_metadata for file_metadata in uploaded_files if file_metadata.full_path == remote_file_path
+                )
         except HTTPStatusError as e:
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(

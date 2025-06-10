@@ -56,10 +56,6 @@ Not all models in Bedrock support tools. Refer to the [AWS documentation](https:
 
 Not all models in Bedrock support streaming. You can use the boto3 client to check if a model supports streaming. Refer to the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html) and the [Boto3 documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock/client/get_foundation_model.html) for more information.
 
-You can also directly call the `get_foundation_model_info("model_id")` method from the Bedrock connector to check if a model supports streaming.
-
-> Note: The bedrock connector will check if a model supports streaming before making a streaming request to the model.
-
 ## Model specific parameters
 
 Foundation models can have specific parameters that are unique to the model or the model provider. You can refer to this [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html) for more information.

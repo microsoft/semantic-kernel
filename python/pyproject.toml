@@ -23,6 +23,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+    # azure agents
+    "azure-ai-projects >= 1.0.0b11",
+    "azure-ai-agents >= 1.1.0b1",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -67,10 +70,7 @@ autogen = [
 aws = [
     "boto3>=1.36.4,<1.39.0",
 ]
-# This is temporary to get the PR reviewed, and will be replaced when their new version is public.
 azure = [
-    "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.0.0",
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
@@ -88,7 +88,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.93.0",
+    "google-cloud-aiplatform == 1.95.1",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -132,7 +132,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 5,< 7",
+    "redis[hiredis] >= 5,< 6",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]

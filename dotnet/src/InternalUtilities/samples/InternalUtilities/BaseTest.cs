@@ -120,8 +120,8 @@ public abstract class BaseTest : TextWriter
                 .AsIChatClient();
         }
 
-        var functionCallingChatClient = chatClient!.AsBuilder().UseKernelFunctionInvocation().Build();
-        builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
+        IChatClient functionCallingChatClient = chatClient.AsBuilder().UseKernelFunctionInvocation().Build();
+        builder.Services.AddSingleton(functionCallingChatClient);
         return functionCallingChatClient;
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }

@@ -204,6 +204,8 @@ public class ChatMessageContentTests
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
             new FileReferenceContent(fileId: "file-id-2") { Tools = ["a", "b", "c"] },
             new AnnotationContent(AnnotationKind.TextCitation, "quote-8", "file-id-3") { ModelId = "model-8", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
+            new ReasoningContent("thinking"),
+            new ActionContent("Yes"),
         ];
 
         // Act
@@ -328,6 +330,14 @@ public class ChatMessageContentTests
         Assert.NotNull(annotationContent.Metadata);
         Assert.Single(annotationContent.Metadata);
         Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.ToString());
+
+        var reasoningContent = deserializedMessage.Items[11] as ReasoningContent;
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("thinking", reasoningContent.Text);
+
+        var actionContent = deserializedMessage.Items[12] as ActionContent;
+        Assert.NotNull(actionContent);
+        Assert.Equal("Yes", actionContent.Text);
     }
 
     [Fact]
