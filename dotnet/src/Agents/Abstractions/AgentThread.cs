@@ -91,7 +91,7 @@ public abstract class AgentThread
             return;
         }
 
-        this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        this.Id = await this.CreateInternalAsync(cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.AIContextProviders.ConversationCreatedAsync(this.Id, cancellationToken).ConfigureAwait(false);
