@@ -21,7 +21,7 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
     /// <param name="ownsDataSource">A value indicating whether the data source should be disposed when the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresDynamicCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions options)
-        : this(() => new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
+        : this(dataSource, ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null, name, options)
     {
     }
 
@@ -32,13 +32,14 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresDynamicCollection(string connectionString, string name, PostgresCollectionOptions options)
-        : this(() => new PostgresDbClient(PostgresUtils.CreateDataSource(connectionString), options?.Schema, ownsDataSource: true), name, options)
+        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
     {
     }
 
-    internal PostgresDynamicCollection(Func<PostgresDbClient> clientFactory, string name, PostgresCollectionOptions options)
+    internal PostgresDynamicCollection(NpgsqlDataSource dataSource, NpgsqlDataSourceArc? dataSourceArc, string name, PostgresCollectionOptions options)
         : base(
-            clientFactory,
+            dataSource,
+            dataSourceArc,
             name,
             static options => new PostgresModelBuilder().BuildDynamic(
                 options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),

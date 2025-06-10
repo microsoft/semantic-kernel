@@ -622,7 +622,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             () => command.ExecuteReaderAsync(cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        while (await reader.ReadWithErrorHandlingAsync(this._collectionMetadata, OperationName, cancellationToken).ConfigureAwait(false))
         {
             yield return this._mapper.MapFromStorageToDataModel(reader, includeVectors);
         }
