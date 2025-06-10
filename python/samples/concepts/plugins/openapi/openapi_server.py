@@ -2,7 +2,7 @@
 
 from aiohttp import web
 
-"""Server"""
+"""OpenAPI Sample Server"""
 routes = web.RouteTableDef()
 
 
