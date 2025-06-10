@@ -386,7 +386,7 @@ public abstract class Agent
     }
 
     /// <summary>
-    /// Default formating for additional instructions for the AI agent based on the provided context and invocation options.
+    /// Default formatting for additional instructions for the AI agent based on the provided context and invocation options.
     /// </summary>
     /// <param name="context">The context containing relevant information for the AI agent's operation.</param>
     /// <param name="options">Optional parameters that influence the invocation behavior. Can be <see langword="null"/>.</param>
