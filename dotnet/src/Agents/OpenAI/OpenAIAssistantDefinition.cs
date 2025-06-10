@@ -32,7 +32,6 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 
     /// <summary>
     /// Gets the captured template format for the assistant if needed for agent retrieval
-    /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>).
     /// </summary>
     [JsonIgnore]
     public string? TemplateFactoryFormat

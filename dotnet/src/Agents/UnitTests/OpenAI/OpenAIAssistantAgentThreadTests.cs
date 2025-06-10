@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -150,6 +151,69 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
 
         // Assert
         Assert.Empty(this._messageHandlerStub.ResponseQueue);
+    }
+
+    /// <summary>
+    /// Tests that the GetMessagesAsync method invokes the client.
+    /// </summary>
+    [Fact]
+    public async Task GetMessagesShouldInvokeClientAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
+        var client = this.CreateTestClient();
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), "thread_abc123");
+
+        // Act
+        var messages = await thread.GetMessagesAsync().ToListAsync();
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Single(messages);
+        Assert.Equal("How does AI work? Explain it in simple terms.", messages[0].Content);
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+    }
+
+    /// <summary>
+    /// Tests that the GetMessagesAsync method creates a thread if it does not exist yet.
+    /// </summary>
+    [Fact]
+    public async Task GetMessagesShouldCreateThreadAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
+        var client = this.CreateTestClient();
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
+
+        // Act
+        var messages = await thread.GetMessagesAsync().ToListAsync();
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Single(messages);
+        Assert.Equal("How does AI work? Explain it in simple terms.", messages[0].Content);
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+    }
+
+    /// <summary>
+    /// Tests that the GetMessagesAsync method throws for a deleted thread.
+    /// </summary>
+    [Fact]
+    public async Task GetMessagesShouldThrowForDeletedThreadAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
+
+        var client = this.CreateTestClient();
+
+        var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
+        await thread.CreateAsync();
+        await thread.DeleteAsync();
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await thread.GetMessagesAsync().ToListAsync());
     }
 
     /// <inheritdoc/>
