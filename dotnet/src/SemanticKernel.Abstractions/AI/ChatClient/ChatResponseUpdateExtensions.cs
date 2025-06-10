@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -34,8 +35,17 @@ internal static class ChatResponseUpdateExtensions
 
             if (resultContent is not null)
             {
+                resultContent.InnerContent = item.RawRepresentation;
                 resultContent.ModelId = update.ModelId;
                 content.Items.Add(resultContent);
+            }
+
+            if (item is Microsoft.Extensions.AI.UsageContent uc)
+            {
+                content.Metadata = new Dictionary<string, object?>(update.AdditionalProperties ?? [])
+                {
+                    ["Usage"] = uc
+                };
             }
         }
 
