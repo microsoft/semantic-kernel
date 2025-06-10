@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using OpenAI.Responses;
+
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
@@ -33,4 +35,9 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
     {
         Verify.NotNull(options);
     }
+
+    /// <summary>
+    /// Gets or initializes the options used for creating a response.
+    /// </summary>
+    public ResponseCreationOptions? ResponseCreationOptions { get; init; }
 }

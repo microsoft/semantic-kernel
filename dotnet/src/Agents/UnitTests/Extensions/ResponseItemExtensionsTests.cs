@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 
 /// <summary>
-/// Unit testing of <see cref="Microsoft.SemanticKernel.Agents.OpenAI.ResponseItemExtensions"/>.
+/// Unit testing of <see cref="Microsoft.SemanticKernel.Agents.OpenAI.OpenAIResponseExtensions"/>.
 /// </summary>
 public class ResponseItemExtensionsTests
 {
