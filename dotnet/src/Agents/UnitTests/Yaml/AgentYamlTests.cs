@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
 using Azure.AI.Projects;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,17 +40,22 @@ public class AgentYamlTests : IDisposable
         var builder = Kernel.CreateBuilder();
 
         // Add OpenAI client
-        OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(endpoint: null, httpClient: this._httpClient);
-        OpenAIClient openAIClient = new(new ApiKeyCredential("fakekey"), clientOptions);
-        builder.Services.AddSingleton<OpenAIClient>(openAIClient);
+        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new System.ClientModel.ApiKeyCredential("fakekey"), httpClient: this._httpClient);
+        builder.Services.AddSingleton(openAIClient);
 
         // Add Azure AI agents client
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
+        var client = new PersistentAgentsClient(
+            "https://endpoint",
             new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+            new PersistentAgentsAdministrationClientOptions
+            {
+                Transport = new HttpClientTransport(this._httpClient)
+            });
+        builder.Services.AddSingleton(client);
+        var projectClient = new AIProjectClient(
+            new Uri("https://test"),
+            new FakeTokenCredential());
+        builder.Services.AddSingleton(projectClient);
 
         this._kernel = builder.Build();
     }
@@ -100,7 +105,8 @@ public class AgentYamlTests : IDisposable
                     default: input2 default
                     sample: input2 sample
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: liquid
                 parser: semantic-kernel
@@ -172,7 +178,7 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -206,7 +212,7 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });

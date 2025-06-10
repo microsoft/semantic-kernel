@@ -140,6 +140,7 @@ public static class HuggingFaceServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Obsolete("Use AddHuggingFaceEmbeddingGenerator instead.")]
     public static IServiceCollection AddHuggingFaceTextEmbeddingGeneration(
         this IServiceCollection services,
         string model,
@@ -169,6 +170,7 @@ public static class HuggingFaceServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Obsolete("Use AddHuggingFaceEmbeddingGenerator instead.")]
     public static IServiceCollection AddHuggingFaceTextEmbeddingGeneration(
         this IServiceCollection services,
         Uri endpoint,

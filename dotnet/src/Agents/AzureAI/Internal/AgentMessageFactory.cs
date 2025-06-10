@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 internal static class AgentMessageFactory
 {
     /// <summary>
-    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// <see cref="ThreadMessageOptions"/>.
     /// </summary>
     /// <param name="message">The message content.</param>
@@ -25,7 +25,7 @@ internal static class AgentMessageFactory
     }
 
     /// <summary>
-    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// </summary>
     /// <param name="message">The message content.</param>
     public static IEnumerable<MessageAttachment> GetAttachments(ChatMessageContent message)
@@ -33,9 +33,57 @@ internal static class AgentMessageFactory
         return
             message.Items
                 .OfType<FileReferenceContent>()
+                .Where(fileContent => fileContent.Tools?.Any() ?? false)
                 .Select(
                     fileContent =>
-                        new MessageAttachment(fileContent.FileId, GetToolDefinition(fileContent.Tools).ToList()));
+                        new MessageAttachment(fileContent.FileId, [.. GetToolDefinition(fileContent.Tools!)]));
+
+        static IEnumerable<ToolDefinition> GetToolDefinition(IEnumerable<string> tools)
+        {
+            foreach (string tool in tools)
+            {
+                if (s_toolMetadata.TryGetValue(tool, out ToolDefinition? toolDefinition))
+                {
+                    yield return toolDefinition;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Translates a set of <see cref="ChatMessageContent"/> to a set of <see cref="MessageInputContentBlock"/>.
+    /// </summary>
+    /// <param name="message">A <see cref="ChatMessageContent"/> object/</param>
+    public static IEnumerable<MessageInputContentBlock> GetMessageContent(ChatMessageContent? message)
+    {
+        if (message is not null)
+        {
+            foreach (KernelContent content in message.Items)
+            {
+                if (content is TextContent textContent)
+                {
+                    yield return new MessageInputTextBlock(content.ToString());
+                }
+                else if (content is ImageContent imageContent)
+                {
+                    if (imageContent.Uri != null)
+                    {
+                        MessageImageUriParam imageUrlParam = new(uri: imageContent.Uri.ToString());
+                        yield return new MessageInputImageUriBlock(imageUrlParam);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(imageContent.DataUri))
+                    {
+                        MessageImageUriParam imageUrlParam = new(uri: imageContent.DataUri!);
+                        yield return new MessageInputImageUriBlock(imageUrlParam);
+                    }
+                }
+                else if (content is FileReferenceContent fileContent)
+                {
+                    MessageImageFileParam fileParam = new(fileContent.FileId);
+                    yield return new MessageInputImageFileBlock(fileParam);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -58,7 +106,7 @@ internal static class AgentMessageFactory
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
                     content: message.Content)
                 {
-                    Attachments = GetAttachments(message).ToArray(),
+                    Attachments = [.. GetAttachments(message)],
                 };
 
                 if (message.Metadata != null)
@@ -74,25 +122,10 @@ internal static class AgentMessageFactory
         }
     }
 
-    private static readonly Dictionary<string, ToolDefinition> s_toolMetadata = new()
-    {
-        { AzureAIAgent.Tools.CodeInterpreter, new CodeInterpreterToolDefinition() },
-        { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() },
-    };
-
-    private static IEnumerable<ToolDefinition> GetToolDefinition(IEnumerable<string>? tools)
-    {
-        if (tools is null)
+    private static readonly Dictionary<string, ToolDefinition> s_toolMetadata =
+        new()
         {
-            yield break;
-        }
-
-        foreach (string tool in tools)
-        {
-            if (s_toolMetadata.TryGetValue(tool, out ToolDefinition? toolDefinition))
-            {
-                yield return toolDefinition;
-            }
-        }
-    }
+            { AzureAIAgent.Tools.CodeInterpreter, new CodeInterpreterToolDefinition() },
+            { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() },
+        };
 }

@@ -3,10 +3,12 @@
 import asyncio
 import json
 import logging
+import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager, suppress
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
+from datetime import timedelta
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
@@ -14,6 +16,7 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
+from mcp.client.streamable_http import streamablehttp_client
 from mcp.client.websocket import websocket_client
 from mcp.server.lowlevel import Server
 from mcp.shared.context import RequestContext
@@ -31,8 +34,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import FunctionExecutionException, KernelPluginInvalidConfigurationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel_types import OptionalOneOrMany
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -173,6 +178,12 @@ def _get_parameter_dicts_from_mcp_tool(tool: types.Tool) -> list[dict[str, Any]]
     return params
 
 
+@experimental
+def _normalize_mcp_name(name: str) -> str:
+    """Normalize MCP tool/prompt names to allowed identifier pattern (A-Za-z0-9_.-)."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "-", name)
+
+
 # region: MCP Plugin
 
 
@@ -184,15 +195,21 @@ class MCPPluginBase:
         self,
         name: str,
         description: str | None = None,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         session: ClientSession | None = None,
         kernel: Kernel | None = None,
+        request_timeout: int | None = None,
     ) -> None:
         """Initialize the MCP Plugin Base."""
         self.name = name
         self.description = description
+        self.load_tools_flag = load_tools
+        self.load_prompts_flag = load_prompts
         self._exit_stack = AsyncExitStack()
         self.session = session
         self.kernel = kernel or None
+        self.request_timeout = request_timeout
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
@@ -209,6 +226,7 @@ class MCPPluginBase:
                     ClientSession(
                         read_stream=transport[0],
                         write_stream=transport[1],
+                        read_timeout_seconds=timedelta(seconds=self.request_timeout) if self.request_timeout else None,
                         message_handler=self.message_handler,
                         logging_callback=self.logging_callback,
                         sampling_callback=self.sampling_callback,
@@ -225,12 +243,10 @@ class MCPPluginBase:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
         logger.debug("Connected to MCP server: %s", self.session)
-        with suppress(Exception):
-            logger.debug("Resources: %s", await self.session.list_resources())
-        with suppress(Exception):
-            logger.debug("Resource templates: %s", await self.session.list_resource_templates())
-        await self.load_tools()
-        await self.load_prompts()
+        if self.load_tools_flag:
+            await self.load_tools()
+        if self.load_prompts_flag:
+            await self.load_prompts()
 
         if logger.level != logging.NOTSET:
             try:
@@ -357,11 +373,12 @@ class MCPPluginBase:
         except Exception:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
-            func = kernel_function(name=prompt.name, description=prompt.description)(
+            local_name = _normalize_mcp_name(prompt.name)
+            func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
             func.__kernel_function_parameters__ = _get_parameter_dict_from_mcp_prompt(prompt)
-            setattr(self, prompt.name, func)
+            setattr(self, local_name, func)
 
     async def load_tools(self):
         """Load tools from the MCP server."""
@@ -371,9 +388,10 @@ class MCPPluginBase:
             tool_list = None
             # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
-            func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
+            local_name = _normalize_mcp_name(tool.name)
+            func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
-            setattr(self, tool.name, func)
+            setattr(self, local_name, func)
 
     async def close(self) -> None:
         """Disconnect from the MCP server."""
@@ -391,6 +409,10 @@ class MCPPluginBase:
             raise KernelPluginInvalidConfigurationError(
                 "MCP server not connected, please call connect() before using this method."
             )
+        if not self.load_tools_flag:
+            raise KernelPluginInvalidConfigurationError(
+                "Tools are not loaded for this server, please set load_tools=True in the constructor."
+            )
         try:
             return _mcp_call_tool_result_to_kernel_contents(await self.session.call_tool(tool_name, arguments=kwargs))
         except McpError:
@@ -403,6 +425,10 @@ class MCPPluginBase:
         if not self.session:
             raise KernelPluginInvalidConfigurationError(
                 "MCP server not connected, please call connect() before using this method."
+            )
+        if not self.load_prompts_flag:
+            raise KernelPluginInvalidConfigurationError(
+                "Prompts are not loaded for this server, please set load_prompts=True in the constructor."
             )
         try:
             prompt_result = await self.session.get_prompt(prompt_name, arguments=kwargs)
@@ -444,6 +470,10 @@ class MCPStdioPlugin(MCPPluginBase):
         self,
         name: str,
         command: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         args: list[str] | None = None,
@@ -462,6 +492,9 @@ class MCPStdioPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             command: The command to run the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             args: The arguments to pass to the command.
@@ -471,7 +504,15 @@ class MCPStdioPlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
-        super().__init__(name, description, session, kernel)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.command = command
         self.args = args or []
         self.env = env
@@ -480,7 +521,7 @@ class MCPStdioPlugin(MCPPluginBase):
 
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
         """Get an MCP stdio client."""
-        args = {
+        args: dict[str, Any] = {
             "command": self.command,
             "args": self.args,
             "env": self.env,
@@ -499,6 +540,10 @@ class MCPSsePlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         headers: dict[str, Any] | None = None,
@@ -518,6 +563,9 @@ class MCPSsePlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             headers: The headers to send with the request.
@@ -527,7 +575,15 @@ class MCPSsePlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the sse client.
 
         """
-        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -550,6 +606,83 @@ class MCPSsePlugin(MCPPluginBase):
         return sse_client(**args)
 
 
+class MCPStreamableHttpPlugin(MCPPluginBase):
+    """MCP streamable http server configuration."""
+
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
+        request_timeout: int | None = None,
+        session: ClientSession | None = None,
+        description: str | None = None,
+        headers: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        sse_read_timeout: float | None = None,
+        terminate_on_close: bool | None = None,
+        kernel: Kernel | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the MCP streamable http plugin.
+
+        The arguments are used to create a streamable http client.
+        see mcp.client.streamable_http.streamablehttp_client for more details.
+
+        Any extra arguments passed to the constructor will be passed to the
+        streamable http client constructor.
+
+        Args:
+            name: The name of the plugin.
+            url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            request_timeout: The default timeout used for all requests.
+            session: The session to use for the MCP connection.
+            description: The description of the plugin.
+            headers: The headers to send with the request.
+            timeout: The timeout for the request.
+            sse_read_timeout: The timeout for reading from the SSE stream.
+            terminate_on_close: Close the transport when the MCP client is terminated.
+            kernel: The kernel instance with one or more Chat Completion clients.
+            kwargs: Any extra arguments to pass to the sse client.
+        """
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
+        self.url = url
+        self.headers = headers or {}
+        self.timeout = timeout
+        self.sse_read_timeout = sse_read_timeout
+        self.terminate_on_close = terminate_on_close
+        self._client_kwargs = kwargs
+
+    def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
+        """Get an MCP streamable http client."""
+        args: dict[str, Any] = {
+            "url": self.url,
+        }
+        if self.headers:
+            args["headers"] = self.headers
+        if self.timeout:
+            args["timeout"] = self.timeout
+        if self.sse_read_timeout:
+            args["sse_read_timeout"] = self.sse_read_timeout
+        if self.terminate_on_close is not None:
+            args["terminate_on_close"] = self.terminate_on_close
+        if self._client_kwargs:
+            args.update(self._client_kwargs)
+        return streamablehttp_client(**args)
+
+
 class MCPWebsocketPlugin(MCPPluginBase):
     """MCP websocket server configuration."""
 
@@ -557,6 +690,10 @@ class MCPWebsocketPlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         kernel: Kernel | None = None,
@@ -573,13 +710,24 @@ class MCPWebsocketPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             kernel: The kernel instance with one or more Chat Completion clients.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
-        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.url = url
         self._client_kwargs = kwargs
 
@@ -594,6 +742,68 @@ class MCPWebsocketPlugin(MCPPluginBase):
 
 
 # region: Kernel as MCP Server
+
+
+@experimental
+def create_mcp_server_from_functions(
+    functions: OneOrMany[KernelFunction | KernelPlugin | object],
+    *,
+    prompts: list[PromptTemplateBase] | None = None,
+    server_name: str = "SK",
+    version: str | None = None,
+    instructions: str | None = None,
+    lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    plugin_name: str = "mcp",
+    **kwargs: Any,
+) -> Server["LifespanResultT"]:
+    """Create an MCP server from a function(s) or plugin(s).
+
+    This function automatically creates a MCP server from single or multiple functions or plugins,
+    all functions are added under the plugin_name that can be set by using the `plugin_name` argument.
+    It further uses the provided arguments to
+    configure the server and expose functions as tools, see the mcp documentation for more details.
+
+    Args:
+        functions: The function(s) or plugin(s) instance to use.
+            This can be a mix of functions, plugins or agents.
+            Or any object that can be parsed to a plugin.
+        prompts: The list of prompts to expose as prompts.
+        server_name: The name of the server.
+        version: The version of the server.
+        instructions: The instructions to use for the server.
+        lifespan: The lifespan of the server.
+        plugin_name: The name of the plugin to use.
+        kwargs: Any extra arguments to pass to the server creation.
+
+    Returns:
+        The MCP server instance, it is a instance of
+        mcp.server.lowlevel.Server
+
+    """
+    kernel = Kernel()
+    if not isinstance(functions, list):
+        functions = [functions]
+    for func in functions:
+        if isinstance(func, KernelFunction):
+            kernel.add_function(plugin_name, func)
+        else:
+            try:
+                kernel.add_plugin(func, plugin_name)
+            except ValueError as ex:
+                logger.warning(
+                    "Failed to add plugin %s to kernel: %s",
+                    func.__class__.__name__,
+                    ex,
+                )
+    return create_mcp_server_from_kernel(
+        kernel=kernel,
+        prompts=prompts,
+        server_name=server_name,
+        version=version,
+        instructions=instructions,
+        lifespan=lifespan,
+        **kwargs,
+    )
 
 
 @experimental

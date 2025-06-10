@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 
 namespace Plugins;
@@ -63,8 +64,8 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
         /// <summary>Adds a function to the plugin.</summary>
         /// <param name="function">The function to add.</param>
         /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="function"/>'s <see cref="KernelFunction.Name"/> is null.</exception>
-        /// <exception cref="ArgumentException">A function with the same <see cref="KernelFunction.Name"/> already exists in this plugin.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="function"/>'s <see cref="AITool.Name"/> is null.</exception>
+        /// <exception cref="ArgumentException">A function with the same <see cref="AITool.Name"/> already exists in this plugin.</exception>
         public void AddFunction(KernelFunction function)
         {
             ArgumentNullException.ThrowIfNull(function);

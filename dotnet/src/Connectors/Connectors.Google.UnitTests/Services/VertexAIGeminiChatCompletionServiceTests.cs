@@ -80,6 +80,73 @@ public sealed class VertexAIGeminiChatCompletionServiceTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("key:value")]
+    [InlineData("")]
+    public async Task RequestLabelsWorksCorrectlyAsync(string? labels)
+    {
+        // Arrange
+        string model = "fake-model";
+        var sut = new GoogleAIGeminiChatCompletionService(model, "key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = labels });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        if (labels is not null)
+        {
+            Assert.Contains($"\"labels\":\"{labels}\"", requestBody);
+        }
+        else
+        {
+            // Then no quality is provided, it should not be included in the request body
+            Assert.DoesNotContain("labels", requestBody);
+        }
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(0, true)]
+    [InlineData(500, true)]
+    [InlineData(2048, true)]
+    public async Task RequestBodyIncludesThinkingConfigWhenSetAsync(int? thinkingBudget, bool shouldContain)
+    {
+        // Arrange
+        string model = "gemini-2.5-pro";
+        var sut = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project", httpClient: this._httpClient);
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ThinkingConfig = thinkingBudget.HasValue
+                ? new GeminiThinkingConfig { ThinkingBudget = thinkingBudget.Value }
+                : null
+        };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", executionSettings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+
+        if (shouldContain)
+        {
+            Assert.Contains("thinkingConfig", requestBody);
+            Assert.Contains($"\"thinkingBudget\":{thinkingBudget}", requestBody);
+        }
+        else
+        {
+            Assert.DoesNotContain("thinkingConfig", requestBody);
+        }
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

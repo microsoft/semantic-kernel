@@ -101,6 +101,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             description="Adjusts reasoning effort (low/medium/high). Lower values reduce response time and token usage."
         ),
     ] = None
+    extra_body: dict[str, Any] | None = None
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod

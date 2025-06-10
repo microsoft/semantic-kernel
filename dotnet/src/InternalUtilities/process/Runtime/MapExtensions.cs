@@ -109,7 +109,7 @@ internal static class MapExtensions
     {
         // Fails when zero or multiple candidate edges exist.  No reason a map-operation should be irrational.
         return
-            mapOperation.Edges.SingleOrDefault(kvp => kvp.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)).Key ??
+            mapOperation.Edges.SingleOrDefault(kvp => kvp.Value.Any(e => (e.OutputTarget as KernelProcessFunctionTarget)!.FunctionName == message.FunctionName)).Key ??
             throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.Name}/{mapOperation.State.Id}.");
     }
 

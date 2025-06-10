@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// </summary>
 public sealed class BedrockAgentThread : AgentThread
 {
-    private readonly AmazonBedrockAgentRuntimeClient _runtimeClient;
+    private readonly IAmazonBedrockAgentRuntime _runtimeClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BedrockAgentThread"/> class.
@@ -19,7 +19,7 @@ public sealed class BedrockAgentThread : AgentThread
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     /// <param name="sessionId">An optional session Id to continue an existing session.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public BedrockAgentThread(AmazonBedrockAgentRuntimeClient runtimeClient, string? sessionId = null)
+    public BedrockAgentThread(IAmazonBedrockAgentRuntime runtimeClient, string? sessionId = null)
     {
         this._runtimeClient = runtimeClient ?? throw new ArgumentNullException(nameof(runtimeClient));
         this.Id = sessionId;

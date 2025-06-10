@@ -6,6 +6,7 @@ from typing import Annotated
 import pytest
 
 from semantic_kernel.agents import AzureAssistantAgent, OpenAIAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings, OpenAISettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -37,10 +38,12 @@ class TestOpenAIAssistantAgentIntegration:
         tools, tool_resources, plugins = [], {}, []
 
         if agent_type == "azure":
-            client, model = AzureAssistantAgent.setup_resources()
+            client = AzureAssistantAgent.create_client()
+            model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureAssistantAgent
         else:  # agent_type == "openai"
-            client, model = OpenAIAssistantAgent.setup_resources()
+            client = OpenAIAssistantAgent.create_client()
+            model = OpenAISettings().chat_model_id
             AgentClass = OpenAIAssistantAgent
 
         if params.get("enable_code_interpreter"):
@@ -101,6 +104,8 @@ class TestOpenAIAssistantAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
+        assert "run_id" in response.message.metadata
 
     @pytest.mark.parametrize("assistant_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_get_response_with_thread(

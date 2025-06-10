@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -54,6 +54,6 @@ internal sealed class GeminiTool
         /// </summary>
         [JsonPropertyName("parameters")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonNode? Parameters { get; set; }
+        public JsonElement? Parameters { get; set; }
     }
 }

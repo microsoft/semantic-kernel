@@ -88,7 +88,7 @@ public static class GrpcKernelExtensions
     {
         const string ProtoFile = "grpc.proto";
 
-        Verify.ValidPluginName(pluginDirectoryName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginDirectoryName, kernel.Plugins);
 
         var pluginDir = Path.Combine(parentDirectory, pluginDirectoryName);
         Verify.DirectoryExists(pluginDir);
@@ -151,7 +151,7 @@ public static class GrpcKernelExtensions
         string pluginName)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
         // Parse
         var parser = new ProtoDocumentParser();

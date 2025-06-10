@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -37,6 +36,24 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         var agent = await factory.CreateAgentFromYamlAsync(text, configuration: TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
+    }
+
+    /// <summary>
+    /// Demonstrates loading an existing Bedrock Agent.
+    /// </summary>
+    [Fact]
+    public async Task BedrockAgentWithId()
+    {
+        var text =
+            """
+            id: ${BedrockAgent:AgentId}
+            type: bedrock_agent
+            """;
+        BedrockAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, configuration: TestConfiguration.ConfigurationRoot);
+
+        await InvokeAgentAsync(agent!, "What is Semantic Kernel?", false);
     }
 
     /// <summary>
@@ -175,12 +192,12 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(Agent agent, string input)
+    private async Task InvokeAgentAsync(Agent agent, string input, bool deleteAgent = true)
     {
         AgentThread? agentThread = null;
         try
         {
-            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(input))
             {
                 agentThread = response.Thread;
                 WriteAgentChatMessage(response);
@@ -192,9 +209,11 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         }
         finally
         {
-            var bedrockAgent = agent as BedrockAgent;
-            Assert.NotNull(bedrockAgent);
-            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            if (deleteAgent)
+            {
+                var bedrockAgent = agent as BedrockAgent;
+                await bedrockAgent!.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            }
 
             if (agentThread is not null)
             {

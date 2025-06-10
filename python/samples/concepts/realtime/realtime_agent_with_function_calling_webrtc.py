@@ -8,9 +8,9 @@ from random import randint
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeWebRTC,
     ListenEvents,
     OpenAIRealtimeExecutionSettings,
-    OpenAIRealtimeWebRTC,
     TurnDetection,
 )
 from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
@@ -26,11 +26,11 @@ logger.setLevel(logging.INFO)
 This simple sample demonstrates how to use the OpenAI Realtime API to create
 a agent that can listen and respond directly through audio.
 It requires installing:
-- semantic-kernel[realtime]
+- semantic-kernel
 - pyaudio
 - sounddevice
 - pydub
-e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
+e.g. pip install pyaudio sounddevice pydub semantic-kernel
 
 For more details of the exact setup, see the README.md in the realtime folder.
 """
@@ -79,7 +79,11 @@ async def main() -> None:
     # and can also be passed in the receive method
     # You can also pass in kernel, plugins, chat_history or settings here.
     # For WebRTC the audio_track is required
-    realtime_agent = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC(), plugins=[Helpers()])
+    realtime_agent = AzureRealtimeWebRTC(
+        audio_track=AudioRecorderWebRTC(),
+        region="swedencentral",
+        plugins=[Helpers()],
+    )
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
@@ -109,12 +113,12 @@ async def main() -> None:
 
     # the context manager calls the create_session method on the client and starts listening to the audio stream
     async with (
-        audio_player,
         realtime_agent(
             settings=settings,
             chat_history=chat_history,
             create_response=True,
         ),
+        audio_player,
     ):
         async for event in realtime_agent.receive(audio_output_callback=audio_player.client_callback):
             match event:

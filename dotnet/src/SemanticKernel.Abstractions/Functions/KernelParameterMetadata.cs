@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -30,7 +31,9 @@ public sealed class KernelParameterMetadata
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
-    public KernelParameterMetadata(string name) => this.Name = name;
+    public KernelParameterMetadata(string name)
+        : this(name, null!)
+    { }
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -81,7 +84,7 @@ public sealed class KernelParameterMetadata
     public string Name
     {
         get => this._name;
-        init
+        set
         {
             Verify.NotNullOrWhiteSpace(value);
             this._name = value;
@@ -93,7 +96,7 @@ public sealed class KernelParameterMetadata
     public string Description
     {
         get => this._description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
             if (value != this._description && this._schema?.Inferred is true)
@@ -108,7 +111,7 @@ public sealed class KernelParameterMetadata
     public object? DefaultValue
     {
         get => this._defaultValue;
-        init
+        set
         {
             if (value != this._defaultValue && this._schema?.Inferred is true)
             {
@@ -119,13 +122,14 @@ public sealed class KernelParameterMetadata
     }
 
     /// <summary>Gets whether the parameter is required.</summary>
-    public bool IsRequired { get; init; }
+    public bool IsRequired { get; set; }
 
     /// <summary>Gets the .NET type of the parameter.</summary>
+    [JsonIgnore]
     public Type? ParameterType
     {
         get => this._parameterType;
-        init
+        set
         {
             if (value != this._parameterType && this._schema?.Inferred is true)
             {
@@ -141,7 +145,7 @@ public sealed class KernelParameterMetadata
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         get => (this._schema ??= InferSchema(this.ParameterType, this.DefaultValue, this.Description, this._jsonSerializerOptions)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        set => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 
     /// <summary>Infers a JSON schema from a <see cref="Type"/> and description.</summary>

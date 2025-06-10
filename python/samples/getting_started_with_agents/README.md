@@ -22,16 +22,17 @@ The getting started with agents examples include:
 
 Example|Description
 ---|---
-[step1_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step1_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
-[step2_chat_completion_agent_thread_management](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_thread_management.py)|How to create and use a chat completion with a thread.
-[step3_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
-[step4_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step4_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
-[step5_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
-[step6_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step6_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
-[step7_kernel_function_strategies](../getting_started_with_agents/chat_completion/step7_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
-[step8_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step8_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
-[step9_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step9_chat_completion_agent_logging.py)|How to enable logging for agents.
+[step01_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step01_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
+[step02_chat_completion_agent_thread_management](../getting_started_with_agents/chat_completion/step02_chat_completion_agent_thread_management.py)|How to create and use a chat completion with a thread.
+[step03_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step03_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
+[step04_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step04_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
+[step05_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step05_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
+[step06_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step06_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
+[step07_kernel_function_strategies](../getting_started_with_agents/chat_completion/step07_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
+[step08_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step08_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
+[step09_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step09_chat_completion_agent_logging.py)|How to enable logging for agents.
 [step10_chat_completion_agent_structured_outputs](../getting_started_with_agents/chat_completion/step10_chat_completion_agent_structured_outputs.py)|How to use have a chat completion agent use structured outputs
+[step11_chat_completion_agent_declarative](../getting_started_with_agents/chat_completion/step11_chat_completion_agent_declarative.py)|How to create a chat compltion agent from a declarative spec.
 
 ## Azure AI Agent
 
@@ -42,9 +43,12 @@ Example|Description
 [step3_azure_ai_agent_group_chat](../getting_started_with_agents/azure_ai_agent/step3_azure_ai_agent_group_chat.py)|How to create an agent group chat with Azure AI Agents.
 [step4_azure_ai_agent_code_interpreter](../getting_started_with_agents/azure_ai_agent/step4_azure_ai_agent_code_interpreter.py)|How to use the code-interpreter tool for an Azure AI agent.
 [step5_azure_ai_agent_file_search](../getting_started_with_agents/azure_ai_agent/step5_azure_ai_agent_file_search.py)|How to use the file-search tool for an Azure AI agent.
-[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI  agent.
+[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI agent.
+[step7_azure_ai_agent_retrieval](../getting_started_with_agents/azure_ai_agent/step7_azure_ai_agent_retrieval.py)|How to reference an existing Azure AI Agent.
+[step8_azure_ai_agent_declarative](../getting_started_with_agents/azure_ai_agent/step8_azure_ai_agent_declarative.py)|How to create an Azure AI Agent from a declarative spec.
 
 _Note: For details on configuring an Azure AI Agent, please see [here](../getting_started_with_agents/azure_ai_agent/README.md)._
+
 
 ## OpenAI Assistant Agent
 
@@ -55,6 +59,7 @@ Example|Description
 [step3_assistant_vision](../getting_started_with_agents/openai_assistant/step3_assistant_vision.py)|How to provide an image as input to an OpenAI Assistant agent.
 [step4_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step4_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an OpenAI Assistant agent.
 [step5_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step5_assistant_tool_file_search.py)|How to use the file-search tool for an OpenAI Assistant agent.
+[step6_assistant](../getting_started_with_agents/openai_assistant/step6_assistant_declarative.py)|How to create an Assistant Agent from a declarative spec.
 
 ## OpenAI Responses Agent
 
@@ -67,6 +72,22 @@ Example|Description
 [step5_responses_agent_file_search](../getting_started_with_agents/openai_responses/step5_responses_agent_file_search.py)|How to use the file-search tool with an OpenAI Responses agent.
 [step6_responses_agent_vision](../getting_started_with_agents/openai_responses/step6_responses_agent_vision.py)|How to provide an image as input to an OpenAI Responses agent.
 [step7_responses_agent_structured_outputs](../getting_started_with_agents/openai_responses/step7_responses_agent_structured_outputs.py)|How to use have an OpenAI Responses agent use structured outputs.
+[step8_assistant](../getting_started_with_agents/openai_responses/step8_responses_agent_declarative.py)|How to create a Responses Agent from a declarative spec.
+
+## Multi-Agent Orchestration
+
+Example|Description
+---|---
+[step1_concurrent](../getting_started_with_agents/multi_agent_orchestration/step1_concurrent.py)|How to run agents in parallel on the same task.
+[step1a_concurrent_structure_output](../getting_started_with_agents/multi_agent_orchestration/step1a_concurrent_structure_output.py)|How to run agents in parallel on the same task and return structured output.
+[step2_sequential](../getting_started_with_agents/multi_agent_orchestration/step2_sequential.py)|How to run agents in sequence to complete a task.
+[step2a_sequential_cancellation_token](../getting_started_with_agents/multi_agent_orchestration/step2a_sequential_cancellation_token.py)|How to cancel an invocation while it is in progress.
+[step3_group_chat](../getting_started_with_agents/multi_agent_orchestration/step3_group_chat.py)|How to run agents in a group chat to complete a task.
+[step3a_group_chat_human_in_the_loop](../getting_started_with_agents/multi_agent_orchestration/step3a_group_chat_human_in_the_loop.py)|How to run agents in a group chat with human in the loop.
+[step3b_group_chat_with_chat_completion_manager](../getting_started_with_agents/multi_agent_orchestration/step3b_group_chat_with_chat_completion_manager.py)|How to run agents in a group chat with a more dynamic manager.
+[step4_handoff](../getting_started_with_agents/multi_agent_orchestration/step4_handoff.py)|How to run agents in a handoff orchestration to complete a task.
+[step4a_handoff_structure_input](../getting_started_with_agents/multi_agent_orchestration/step4a_handoff_structure_input.py)|How to run agents in a handoff orchestration to complete a task with structured input.
+[step5_magentic](../getting_started_with_agents/multi_agent_orchestration/step5_magentic.py)|How to run agents in a Magentic orchestration to complete a task.
 
 ## Configuring the Kernel
 

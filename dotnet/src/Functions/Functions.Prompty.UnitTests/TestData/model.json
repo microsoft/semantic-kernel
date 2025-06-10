@@ -1,11 +1,12 @@
 {
   "api": "chat",
-  "configuration": {
+  "id": "gpt-35-turbo",
+  "connection": {
     "type": "azure_openai",
     "api_version": "2023-07-01-preview"
   },
-  "parameters": {
-    "model_id": "gpt-35-turbo"
+  "options": {
+    "temperature": 0.5
   }
 }
 

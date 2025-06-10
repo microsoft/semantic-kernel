@@ -2,14 +2,12 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API payload.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiPayload
 {
     /// <summary>

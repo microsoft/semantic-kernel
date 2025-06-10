@@ -33,18 +33,39 @@ public sealed class BedrockAgentFactory : AgentFactory
     public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
-        Verify.NotNull(agentDefinition.Name);
-        Verify.NotNull(agentDefinition.Description);
-        Verify.NotNull(agentDefinition.Instructions);
-        Verify.NotNull(agentDefinition.Model);
-        Verify.NotNull(agentDefinition.Model.Id);
 
         if (agentDefinition.Type?.Equals(BedrockAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            // create the agent
-            var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
             var agentClient = new AmazonBedrockAgentClient();
             var runtimeClient = new AmazonBedrockAgentRuntimeClient();
+
+            if (!string.IsNullOrEmpty(agentDefinition.Id))
+            {
+                // Get an existing agent
+                var agentResponse = await agentClient.GetAgentAsync(
+                    new()
+                    {
+                        AgentId = agentDefinition.Id,
+                    },
+                    cancellationToken
+                ).ConfigureAwait(false);
+
+                return new BedrockAgent(agentResponse.Agent, agentClient, runtimeClient)
+                {
+                    Kernel = kernel,
+                    Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
+                    Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
+                    Instructions = agentDefinition.Instructions,
+                };
+            }
+
+            // create the agent
+            Verify.NotNull(agentDefinition.Name);
+            Verify.NotNull(agentDefinition.Description);
+            Verify.NotNull(agentDefinition.Instructions);
+            Verify.NotNull(agentDefinition.Model);
+            Verify.NotNull(agentDefinition.Model.Id);
+            var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
             var agentModel = await agentClient.CreateAgentAndWaitAsync(
                 new()
                 {

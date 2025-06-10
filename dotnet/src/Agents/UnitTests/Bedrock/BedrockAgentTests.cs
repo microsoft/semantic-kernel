@@ -233,22 +233,10 @@ public class BedrockAgentTests
         });
     }
 
-    private (Mock<AmazonBedrockAgentClient>, Mock<AmazonBedrockAgentRuntimeClient>) CreateMockClients()
+    private (Mock<IAmazonBedrockAgent>, Mock<IAmazonBedrockAgentRuntime>) CreateMockClients()
     {
-#pragma warning disable Moq1410 // Moq: Set MockBehavior to Strict
-        Mock<AmazonBedrockAgentConfig> mockClientConfig = new();
-        Mock<AmazonBedrockAgentRuntimeConfig> mockRuntimeClientConfig = new();
-        mockClientConfig.Setup(x => x.Validate()).Verifiable();
-        mockRuntimeClientConfig.Setup(x => x.Validate()).Verifiable();
-        Mock<AmazonBedrockAgentClient> mockClient = new(
-            "fakeAccessId",
-            "fakeSecretKey",
-            mockClientConfig.Object);
-        Mock<AmazonBedrockAgentRuntimeClient> mockRuntimeClient = new(
-            "fakeAccessId",
-            "fakeSecretKey",
-            mockRuntimeClientConfig.Object);
-#pragma warning restore Moq1410 // Moq: Set MockBehavior to Strict
+        Mock<IAmazonBedrockAgent> mockClient = new();
+        Mock<IAmazonBedrockAgentRuntime> mockRuntimeClient = new();
 
         mockClient.Setup(x => x.CreateAgentAsync(
             It.IsAny<CreateAgentRequest>(),

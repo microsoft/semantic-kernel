@@ -15,6 +15,10 @@ public sealed class AgentToolDefinition
     /// <summary>
     /// The id of the tool.
     /// </summary>
+    /// <remarks>
+    /// This is typically a short string, but can be any string that is compatible with the agent.
+    /// The id is used to identify the tool in the agent and must be unique in the collection of tools.
+    /// </remarks>
     public string? Id { get; set; }
 
     /// <summary>

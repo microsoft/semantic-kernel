@@ -15,15 +15,9 @@ namespace Microsoft.SemanticKernel;
 internal static partial class Verify
 {
 #if NET
-    [GeneratedRegex("^[0-9A-Za-z_]*$")]
-    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
-
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
     private static partial Regex FilenameRegex();
 #else
-    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
-
     private static Regex FilenameRegex() => s_filenameRegex;
     private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
 #endif
@@ -75,29 +69,6 @@ internal static partial class Verify
         }
     }
 
-    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
-    {
-        NotNullOrWhiteSpace(pluginName);
-        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(pluginName))
-        {
-            ThrowArgumentInvalidName("plugin name", pluginName, paramName);
-        }
-
-        if (plugins is not null && plugins.Contains(pluginName))
-        {
-            throw new ArgumentException($"A plugin with the name '{pluginName}' already exists.");
-        }
-    }
-
-    internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
-    {
-        NotNullOrWhiteSpace(functionName);
-        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(functionName))
-        {
-            ThrowArgumentInvalidName("function name", functionName, paramName);
-        }
-    }
-
     internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
     {
         NotNullOrWhiteSpace(filename);
@@ -146,42 +117,8 @@ internal static partial class Verify
         }
     }
 
-    /// <summary>
-    /// Make sure every function parameter name is unique
-    /// </summary>
-    /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
-    {
-        int count = parameters.Count;
-        if (count > 0)
-        {
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < count; i++)
-            {
-                KernelParameterMetadata p = parameters[i];
-                if (string.IsNullOrWhiteSpace(p.Name))
-                {
-                    string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
-                    if (p.Name is null)
-                    {
-                        ThrowArgumentNullException(paramName);
-                    }
-                    else
-                    {
-                        ThrowArgumentWhiteSpaceException(paramName);
-                    }
-                }
-
-                if (!seen.Add(p.Name))
-                {
-                    throw new ArgumentException($"The function has two or more parameters with the same name '{p.Name}'");
-                }
-            }
-        }
-    }
-
     [DoesNotReturn]
-    private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
+    internal static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
 
     [DoesNotReturn]
@@ -236,6 +173,14 @@ internal static partial class Verify
         if (!System.Text.RegularExpressions.Regex.IsMatch(hostNameSegment, @"^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$"))
         {
             throw new ArgumentException($"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
+        }
+    }
+
+    internal static void NotLessThan(int value, int limit, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value < limit)
+        {
+            throw new ArgumentOutOfRangeException(paramName, $"{paramName} must be greater than or equal to {limit}.");
         }
     }
 }

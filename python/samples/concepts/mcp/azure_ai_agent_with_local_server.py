@@ -6,11 +6,7 @@ from pathlib import Path
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import (
-    AzureAIAgent,
-    AzureAIAgentSettings,
-    AzureAIAgentThread,
-)
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.functions import KernelArguments
 
@@ -64,7 +60,7 @@ async def main():
             description="SK Release Notes Plugin",
             command="uv",
             args=[
-                f"--directory={str(Path(os.path.dirname(__file__)).parent.parent.joinpath('demos', 'sk_mcp_server'))}",
+                f"--directory={str(Path(os.path.dirname(__file__)).parent.parent.joinpath('demos', 'mcp_server'))}",
                 "run",
                 "mcp_server_with_prompts.py",
             ],

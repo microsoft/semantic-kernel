@@ -1,10 +1,12 @@
 ﻿---
 name: TestRelativeFileReference
 description: A test prompt for relative file references
-authors:
-  - Test Author
+metadata:
+  authors:
+    - markwallace
+  tags:
+    - basic
 model: ${file:model.json}
-
 ---
 
 # This is a test prompt for relative file references

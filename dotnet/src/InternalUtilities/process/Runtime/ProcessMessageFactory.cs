@@ -15,23 +15,44 @@ internal static class ProcessMessageFactory
     /// <param name="edge">An instance of <see cref="KernelProcessEdge"/></param>
     /// <param name="sourceEventId">id of the source steps generating the event</param>
     /// <param name="data">A data object.</param>
+    /// <param name="writtenToThread">Optional thread id where the event was written</param>
     /// <returns>An instance of <see cref="ProcessMessage"/></returns>
-    internal static ProcessMessage CreateFromEdge(KernelProcessEdge edge, string sourceEventId, object? data)
+    internal static ProcessMessage CreateFromEdge(KernelProcessEdge edge, string sourceEventId, object? data, string? writtenToThread = null)
     {
-        KernelProcessFunctionTarget target = edge.OutputTarget;
-        Dictionary<string, object?> parameterValue = [];
-        if (!string.IsNullOrWhiteSpace(target.ParameterName))
+        if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
         {
-            parameterValue.Add(target.ParameterName!, data);
+            Dictionary<string, object?> parameterValue = [];
+            if (!string.IsNullOrWhiteSpace(functionTarget.ParameterName))
+            {
+                parameterValue.Add(functionTarget.ParameterName!, data);
+            }
+
+            ProcessMessage newMessage = new(edge.SourceStepId, functionTarget.StepId, functionTarget.FunctionName, parameterValue)
+            {
+                SourceEventId = sourceEventId,
+                TargetEventId = functionTarget.TargetEventId,
+                TargetEventData = data,
+                GroupId = edge.GroupId,
+                writtenToThread = writtenToThread
+            };
+
+            return newMessage;
+        }
+        else if (edge.OutputTarget is KernelProcessAgentInvokeTarget agentTarget)
+        {
+            return new ProcessMessage(sourceEventId, agentTarget.StepId, "", [])
+            {
+                SourceEventId = sourceEventId,
+                TargetEventId = null,
+                TargetEventData = data,
+                GroupId = edge.GroupId,
+                writtenToThread = writtenToThread,
+                MessagesInEval = agentTarget.MessagesInEval,
+                InputEvals = agentTarget.InputEvals,
+                ThreadEval = agentTarget.ThreadEval
+            };
         }
 
-        ProcessMessage newMessage = new(edge.SourceStepId, target.StepId, target.FunctionName, parameterValue)
-        {
-            SourceEventId = sourceEventId,
-            TargetEventId = target.TargetEventId,
-            TargetEventData = data
-        };
-
-        return newMessage;
+        throw new KernelException($"Unsupported target type: {edge.OutputTarget.GetType().Name}");
     }
 }

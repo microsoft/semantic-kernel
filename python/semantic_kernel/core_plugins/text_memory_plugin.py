@@ -24,14 +24,14 @@ class TextMemoryPlugin(KernelBaseModel):
     memory: SemanticTextMemoryBase
     embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] | None = None) -> None:
         """Initialize a new instance of the TextMemoryPlugin.
 
         Args:
             memory (SemanticTextMemoryBase): the underlying Semantic Text Memory to use
             embeddings_kwargs (Optional[Dict[str, Any]]): the keyword arguments to pass to the embedding generator
         """
-        super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
+        super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs if embeddings_kwargs is not None else {})
 
     @kernel_function(
         description="Recall a fact from the long term memory",

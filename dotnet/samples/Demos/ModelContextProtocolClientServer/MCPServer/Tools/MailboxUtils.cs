@@ -2,7 +2,7 @@
 
 using MCPServer.ProjectResources;
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Tools;
@@ -52,7 +52,7 @@ internal sealed class MailboxUtils
         };
 
         // Send the sampling request to the client to summarize the emails
-        CreateMessageResult result = await server.RequestSamplingAsync(request, cancellationToken: CancellationToken.None);
+        CreateMessageResult result = await server.SampleAsync(request, cancellationToken: CancellationToken.None);
 
         // Assuming the response is a text message
         return result.Content.Text!;

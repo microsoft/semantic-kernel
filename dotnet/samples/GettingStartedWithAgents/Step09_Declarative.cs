@@ -96,7 +96,8 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;
@@ -115,7 +116,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             }
         };
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync([], options: options))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(Array.Empty<ChatMessageContent>(), options: options))
         {
             this.WriteAgentChatMessage(response);
         }

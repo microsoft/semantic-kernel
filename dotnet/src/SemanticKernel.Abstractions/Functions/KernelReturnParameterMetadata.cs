@@ -72,7 +72,7 @@ public sealed class KernelReturnParameterMetadata
     public string Description
     {
         get => this._description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
             if (value != this._description && this._schema?.Inferred is true)
@@ -87,7 +87,7 @@ public sealed class KernelReturnParameterMetadata
     public Type? ParameterType
     {
         get => this._parameterType;
-        init
+        set
         {
             if (value != this._parameterType && this._schema?.Inferred is true)
             {
@@ -103,6 +103,6 @@ public sealed class KernelReturnParameterMetadata
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        set => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 }
