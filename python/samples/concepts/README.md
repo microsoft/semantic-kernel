@@ -44,11 +44,13 @@
 
 - [Chat Completion Agent as Kernel Function](./agents/chat_completion_agent/chat_completion_agent_as_kernel_function.py)
 - [Chat Completion Agent Function Termination](./agents/chat_completion_agent/chat_completion_agent_function_termination.py)
-- [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
 - [Chat Completion Agent Message Callback Streaming](./agents/chat_completion_agent/chat_completion_agent_message_callback_streaming.py)
 - [Chat Completion Agent Message Callback](./agents/chat_completion_agent/chat_completion_agent_message_callback.py)
+- [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
+- [Chat Completion Agent Streaming Token Usage](./agents/chat_completion_agent/chat_completion_agent_streaming_token_usage.py)
 - [Chat Completion Agent Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_agent_chat.py)
 - [Chat Completion Agent Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_single_agent.py)
+- [Chat Completion Agent Token Usage](./agents/chat_completion_agent/chat_completion_agent_token_usage.py)
 - [Chat Completion Agent Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_agent_chat.py)
 - [Chat Completion Agent Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_single_agent.py)
 
@@ -95,6 +97,7 @@
 - [OpenAI Responses Agent Declarative File Search](./agents/openai_responses/openai_responses_agent_declarative_file_search.py)
 - [OpenAI Responses Agent Declarative Function Calling From File](./agents/openai_responses/openai_responses_agent_declarative_function_calling_from_file.py)
 - [OpenAI Responses Agent Declarative Web Search](./agents/openai_responses/openai_responses_agent_declarative_web_search.py)
+- [OpenAI Responses Binary Content Upload](./agents/openai_responses/responses_agent_binary_content_upload.py)
 - [OpenAI Responses Message Callback Streaming](./agents/openai_responses/responses_agent_message_callback_streaming.py)
 - [OpenAI Responses Message Callback](./agents/openai_responses/responses_agent_message_callback.py)
 - [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)
