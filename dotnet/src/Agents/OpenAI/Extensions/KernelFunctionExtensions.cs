@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using OpenAI.Assistants;
+using OpenAI.Responses;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -33,4 +34,38 @@ public static class KernelFunctionExtensions
             Description = function.Description
         };
     }
+
+    /// <summary>
+    /// Converts a <see cref="KernelFunction"/> into a <see cref="ResponseTool"/> representation.
+    /// </summary>
+    /// <remarks>If the <paramref name="function"/> has parameters, they are included in the resulting <see
+    /// cref="ResponseTool"/>  as a serialized parameter specification. Otherwise, the parameters are set to <see
+    /// langword="null"/>.</remarks>
+    /// <param name="function">The <see cref="KernelFunction"/> to convert.</param>
+    /// <param name="pluginName">An optional plugin name to associate with the function. If not provided, the function's default plugin name is
+    /// used.</param>
+    /// <param name="functionSchemaIsStrict">A value indicating whether the function's schema should be treated as strict.  If <see langword="true"/>, the
+    /// schema will enforce stricter validation rules.</param>
+    /// <returns>A <see cref="ResponseTool"/> that represents the specified <see cref="KernelFunction"/>.</returns>
+    public static ResponseTool ToResponseTool(this KernelFunction function, string? pluginName = null, bool functionSchemaIsStrict = false)
+    {
+        if (function.Metadata.Parameters.Count > 0)
+        {
+            BinaryData parameterData = function.Metadata.CreateParameterSpec();
+            return ResponseTool.CreateFunctionTool(
+                functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+                functionDescription: function.Description,
+                functionParameters: parameterData,
+                functionSchemaIsStrict: functionSchemaIsStrict);
+        }
+
+        return ResponseTool.CreateFunctionTool(
+            functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+            functionDescription: function.Description,
+            functionParameters: s_emptyFunctionParameters);
+    }
+
+    #region private
+    private static readonly BinaryData s_emptyFunctionParameters = BinaryData.FromString("{}");
+    #endregion
 }

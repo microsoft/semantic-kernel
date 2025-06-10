@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -160,7 +161,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        ChatMessageContent[] result = await agent.InvokeAsync([]).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -198,7 +199,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        ChatMessageContent[] result = await agent.InvokeAsync([]).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -242,7 +243,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        StreamingChatMessageContent[] result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -286,7 +287,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        StreamingChatMessageContent[] result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);

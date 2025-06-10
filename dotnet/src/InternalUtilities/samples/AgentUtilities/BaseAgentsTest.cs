@@ -135,6 +135,29 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+    /// <summary>
+    /// Common method to write formatted agent streaming chat content to the console.
+    /// </summary>
+    protected async Task<AgentThread?> WriteAgentStreamMessageAsync(IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> responseItems)
+    {
+        var first = true;
+        AgentThread? thread = null;
+        await foreach (var responseItem in responseItems)
+        {
+            var message = responseItem.Message;
+            if (first)
+            {
+                Console.Write($"# {message.AuthorName ?? message.Role.ToString()}> ");
+                first = false;
+            }
+            Console.Write(message.Content);
+            thread = responseItem.Thread;
+        }
+        Console.WriteLine();
+
+        return thread;
+    }
+
     protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)

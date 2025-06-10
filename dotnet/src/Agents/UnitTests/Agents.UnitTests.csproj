@@ -54,7 +54,8 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />    
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/MultipleHttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
