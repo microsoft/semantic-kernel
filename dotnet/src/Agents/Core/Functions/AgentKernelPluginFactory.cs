@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods for creating KernelPlugin instances from agents.
 /// </summary>
+[Experimental("SKEXP0110")]
 public static class AgentKernelPluginFactory
 {
     /// <summary>
