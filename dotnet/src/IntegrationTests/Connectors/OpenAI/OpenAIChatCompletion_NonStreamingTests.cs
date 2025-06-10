@@ -154,7 +154,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         };
 
         // Act
-        var result = await chatService.GetChatMessageContentAsync("What are the top 3 trending news currently", settings, kernel);
+        var result = await chatService.GetChatMessageContentAsync("What are the top 3 trending news items from the web today?", settings, kernel);
 
         // Assert
         var chatCompletion = Assert.IsType<ChatCompletion>(result.InnerContent);
