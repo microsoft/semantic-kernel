@@ -25,7 +25,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 )
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.async_utils import run_in_executor
 
 if TYPE_CHECKING:
@@ -80,13 +80,6 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> ndarray:
-        model_info = await self.get_foundation_model_info(self.ai_model_id)
-        if "TEXT" not in model_info.get("inputModalities", []):
-            # Image embedding is not supported yet in SK
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support text input.")
-        if "EMBEDDING" not in model_info.get("outputModalities", []):
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support embedding output.")
-
         if not settings:
             settings = BedrockEmbeddingPromptExecutionSettings()
         elif not isinstance(settings, BedrockEmbeddingPromptExecutionSettings):

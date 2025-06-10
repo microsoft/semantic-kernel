@@ -11,7 +11,6 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_embedding import BedrockTextEmbedding
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
-    ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
 from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
@@ -147,40 +146,6 @@ async def test_bedrock_text_embedding(model_id, mock_bedrock_text_embedding_resp
         assert mock_model_invoke.call_count == 2
 
         assert len(response) == 2
-
-
-async def test_bedrock_text_embedding_with_unsupported_model_input_modality(model_id) -> None:
-    """Test Bedrock text embedding generation with unsupported model"""
-    with patch.object(
-        MockBedrockClient, "get_foundation_model", return_value={"modelDetails": {"inputModalities": ["IMAGE"]}}
-    ):
-        # Setup
-        bedrock_text_embedding = BedrockTextEmbedding(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
-        )
-
-        with pytest.raises(ServiceInvalidRequestError):
-            await bedrock_text_embedding.generate_embeddings(["hello", "world"])
-
-
-async def test_bedrock_text_embedding_with_unsupported_model_output_modality(model_id) -> None:
-    """Test Bedrock text embedding generation with unsupported model"""
-    with patch.object(
-        MockBedrockClient,
-        "get_foundation_model",
-        return_value={"modelDetails": {"inputModalities": ["TEXT"], "outputModalities": ["TEXT"]}},
-    ):
-        # Setup
-        bedrock_text_embedding = BedrockTextEmbedding(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
-        )
-
-        with pytest.raises(ServiceInvalidRequestError):
-            await bedrock_text_embedding.generate_embeddings(["hello", "world"])
 
 
 @pytest.mark.parametrize(

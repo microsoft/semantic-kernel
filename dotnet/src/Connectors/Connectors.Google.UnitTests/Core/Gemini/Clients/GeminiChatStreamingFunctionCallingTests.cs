@@ -273,6 +273,35 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
     }
 
     [Fact]
+    public async Task IfAutoInvokeShouldReturnAssistantToolCallMessagesWithTextAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        var messages =
+            await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
+                .ToListAsync();
+
+        // Assert
+        var firstMessage = (GeminiStreamingChatMessageContent?)messages.FirstOrDefault();
+        Assert.NotNull(firstMessage?.ToolCalls);
+        Assert.Single(firstMessage.ToolCalls,
+            item => item.FullyQualifiedName == this._timePluginNow.FullyQualifiedName);
+        Assert.False(string.IsNullOrWhiteSpace(firstMessage.Content));
+    }
+
+    [Fact]
     public async Task IfAutoInvokeShouldPassToolsToEachRequestAsync()
     {
         // Arrange

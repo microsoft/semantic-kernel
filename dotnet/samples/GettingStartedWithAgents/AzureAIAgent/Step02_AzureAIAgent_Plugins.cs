@@ -62,6 +62,37 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         }
     }
 
+    [Fact]
+    public async Task UseAzureAgentWithPromptFunction()
+    {
+        // Define prompt function
+        KernelFunction promptFunction =
+            KernelFunctionFactory.CreateFromPrompt(
+                promptTemplate:
+                    """
+                    Count the number of vowels in INPUT and report as a markdown table.
+
+                    INPUT:
+                    {{$input}}
+                    """,
+                description: "Counts the number of vowels");
+
+        // Define the agent
+        AzureAIAgent agent =
+            await CreateAzureAgentAsync(
+                KernelPluginFactory.CreateFromFunctions("AgentPlugin", [promptFunction]),
+                instructions: "You job is to only and always analyze the vowels in the user input without confirmation.");
+
+        // Add a filter to the agent's kernel to log function invocations.
+        agent.Kernel.FunctionInvocationFilters.Add(new PromptFunctionFilter());
+
+        // Create the chat history thread to capture the agent interaction.
+        AzureAIAgentThread thread = new(agent.Client);
+
+        // Respond to user input, invoking functions where appropriate.
+        await InvokeAgentAsync(agent, thread, "Who would know naught of art must learn, act, and then take his ease.");
+    }
+
     private async Task<AzureAIAgent> CreateAzureAgentAsync(KernelPlugin plugin, string? instructions = null, string? name = null)
     {
         // Define the agent
@@ -71,7 +102,11 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
             null,
             instructions);
 
-        AzureAIAgent agent = new(definition, this.Client);
+        AzureAIAgent agent =
+            new(definition, this.Client)
+            {
+                Kernel = this.CreateKernelWithChatCompletion(),
+            };
 
         // Add to the agent's Kernel
         if (plugin != null)
@@ -91,6 +126,16 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
         {
             this.WriteAgentChatMessage(response);
+        }
+    }
+
+    private sealed class PromptFunctionFilter : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            System.Console.WriteLine($"\nINVOKING: {context.Function.Name}");
+            await next.Invoke(context);
+            System.Console.WriteLine($"\nRESULT: {context.Result}");
         }
     }
 }

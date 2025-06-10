@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.SqliteVec</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+    <VersionSuffix>preview</VersionSuffix>
+  </PropertyGroup>
+
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/RestrictedInternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - SQLite Connector</Title>
+    <Description>SQLite connector for Semantic Kernel plugins and semantic memory</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="sqlite-vec" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.SqliteVec.UnitTests" />
+  </ItemGroup>
+
+</Project>
