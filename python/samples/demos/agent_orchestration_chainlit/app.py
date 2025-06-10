@@ -1,73 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
 import chainlit as cl
 
-from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration
-from semantic_kernel.agents.orchestration.group_chat import BooleanResult, RoundRobinGroupChatManager
+from samples.demos.agent_orchestration_chainlit.custom_agents import AgentFactory
+from samples.demos.agent_orchestration_chainlit.custom_group_chat_manager import CustomGroupChatManager
+from semantic_kernel.agents import Agent, GroupChatOrchestration
+from semantic_kernel.agents.orchestration.orchestration_base import OrchestrationResult
 from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-
-class CustomRoundRobinGroupChatManager(RoundRobinGroupChatManager):
-    """Custom round robin group chat manager to enable user input."""
-
-    @override
-    async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
-        """Override the default behavior to request user input after the reviewer's message.
-
-        The manager will check if input from human is needed after each agent message.
-        """
-        if len(chat_history.messages) == 0:
-            return BooleanResult(
-                result=False,
-                reason="No agents have spoken yet.",
-            )
-        last_message = chat_history.messages[-1]
-        if last_message.name == "Reviewer":
-            return BooleanResult(
-                result=True,
-                reason="User input is needed after the reviewer's message.",
-            )
-
-        return BooleanResult(
-            result=False,
-            reason="User input is not needed if the last message is not from the reviewer.",
-        )
-
-
-def get_agents() -> list[Agent]:
-    """Return a list of agents that will participate in the group style discussion.
-
-    Feel free to add or remove agents.
-    """
-    writer = ChatCompletionAgent(
-        name="Writer",
-        description="A content writer.",
-        instructions=(
-            "You are an excellent content writer. You create new content and edit contents based on the feedback."
-        ),
-        service=AzureChatCompletion(),
-    )
-    reviewer = ChatCompletionAgent(
-        name="Reviewer",
-        description="A content reviewer.",
-        instructions=(
-            "You are an excellent content reviewer. You review the content and provide feedback to the writer."
-        ),
-        service=AzureChatCompletion(),
-    )
-
-    # The order of the agents in the list will be the order in which they will be picked by the round robin manager
-    return [writer, reviewer]
 
 
 async def streaming_agent_response_callback(message_chunk: StreamingChatMessageContent, is_final: bool) -> None:
@@ -76,9 +19,8 @@ async def streaming_agent_response_callback(message_chunk: StreamingChatMessageC
         streaming_handler = cl.Message("", author=message_chunk.name)
         cl.user_session.set("streaming_handler", streaming_handler)
 
-    if not is_final:
-        await streaming_handler.stream_token(message_chunk.content)
-    else:
+    await streaming_handler.stream_token(message_chunk.content)
+    if is_final:
         await streaming_handler.send()
         cl.user_session.set("streaming_handler", None)
 
@@ -91,13 +33,13 @@ async def human_response_function(chat_histoy: ChatHistory) -> ChatMessageConten
     )
 
 
-def get_orchestration() -> GroupChatOrchestration:
+async def get_group_chat_orchestration(agents: list[Agent]) -> GroupChatOrchestration:
     """Return a GroupChatOrchestration instance with the agents and custom manager."""
-    agents = get_agents()
     return GroupChatOrchestration(
         members=agents,
         # max_rounds is odd, so that the writer gets the last round
-        manager=CustomRoundRobinGroupChatManager(
+        manager=CustomGroupChatManager(
+            chat_completion_service=AzureChatCompletion(),
             max_rounds=5,
             human_response_function=human_response_function,
         ),
@@ -105,16 +47,58 @@ def get_orchestration() -> GroupChatOrchestration:
     )
 
 
+async def setup_runnable():
+    # Setup the user session with the orchestration and chat history
+    if cl.user_session.get("agent_factory") is None:
+        agent_factory = AgentFactory()
+        cl.user_session.set("agent_factory", agent_factory)
+
+    agent_factory: AgentFactory = cl.user_session.get("agent_factory")
+    azure_ai_search_agent = await agent_factory.create_azure_ai_search_agent()
+
+    orchestration = await get_group_chat_orchestration([
+        azure_ai_search_agent,
+    ])
+    cl.user_session.set("orchestration", orchestration)
+
+    runtime = InProcessRuntime()
+    runtime.start()
+    cl.user_session.set("runtime", runtime)
+
+
+@cl.password_auth_callback
+def auth_callback(username: str, password: str):
+    # Fetch the user matching username from your database
+    # and compare the hashed password with the value stored in the database
+    if (username, password) == ("admin", "admin"):
+        return cl.User(identifier="admin", metadata={"role": "admin", "provider": "credentials"})
+    return None
+
+
+@cl.on_chat_start
+async def on_chat_start():
+    await setup_runnable()
+
+
+@cl.on_chat_end
+async def on_chat_end():
+    """Cleanup resources when the chat ends."""
+    agent_factory: AgentFactory = cl.user_session.get("agent_factory")
+    if agent_factory:
+        await agent_factory.cleanup()
+
+    runtime: InProcessRuntime = cl.user_session.get("runtime")
+    if runtime:
+        await runtime.close()
+
+
 @cl.on_message
 async def on_message(msg: cl.Message):
     """Handle incoming messages."""
-    orchestration = cl.user_session.get("orchestration")
-    if orchestration is None:
-        orchestration = get_orchestration()
-
-        runtime = InProcessRuntime()
-        runtime.start()
-
+    orchestration: GroupChatOrchestration = cl.user_session.get("orchestration")
+    runtime = cl.user_session.get("runtime")
+    orchestration_result: OrchestrationResult = cl.user_session.get("orchestration_result")
+    if not orchestration_result:
         orchestration_result = await orchestration.invoke(
             ChatMessageContent(
                 role=AuthorRole.USER,
@@ -122,29 +106,22 @@ async def on_message(msg: cl.Message):
             ),
             runtime=runtime,
         )
-
-        cl.user_session.set("orchestration", orchestration)
         cl.user_session.set("orchestration_result", orchestration_result)
-
-        result = await orchestration_result.get()
-        await cl.Message(f"Orchestration completed with result: {result}").send()
     else:
-        actions = [
-            cl.Action(
-                name="restart",
-                label="Start another task",
-                icon="mouse-pointer-click",
-            )
-        ]
+        try:
+            result = await orchestration_result.get(0.1)
+        except TimeoutError:
+            await cl.Message(
+                content="The task is still in progress. Please wait for the agents to finish.",
+            ).send()
+            return
 
         await cl.Message(
-            content="The previous task has completed. Please start a new chat before continueing",
-            actions=actions,
+            content=f"Task already completed with result: {result}",
         ).send()
 
 
-@cl.action_callback("restart")
-async def on_restart_action():
-    """Handle the restart action."""
-    cl.chat_context.clear()
-    cl.user_session.set("orchestration", None)
+if __name__ == "__main__":
+    from chainlit.cli import run_chainlit
+
+    run_chainlit(__file__)
