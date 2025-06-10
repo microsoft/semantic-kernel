@@ -136,8 +136,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -206,8 +210,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
