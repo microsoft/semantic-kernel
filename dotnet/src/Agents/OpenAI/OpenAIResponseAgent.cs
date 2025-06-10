@@ -101,7 +101,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [Obsolete("This API will be removed in a future release. Use Microsoft.SemanticKernel.Agents.Orchestration.AgentOrchestration instead.", false)]
     [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
@@ -110,7 +109,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [Obsolete("This API will be removed in a future release. Use Microsoft.SemanticKernel.Agents.Orchestration.AgentOrchestration instead.", false)]
     [ExcludeFromCodeCoverage]
     protected override IEnumerable<string> GetChannelKeys()
     {
@@ -119,7 +117,6 @@ public sealed class OpenAIResponseAgent : Agent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    [Obsolete("This API will be removed in a future release. Use Microsoft.SemanticKernel.Agents.Orchestration.AgentOrchestration instead.", false)]
     [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
