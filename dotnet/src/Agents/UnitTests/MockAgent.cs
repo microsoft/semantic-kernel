@@ -36,6 +36,17 @@ internal sealed class MockAgent : ChatHistoryAgent
         return this.Response.Select(x => new AgentResponseItem<ChatMessageContent>(x, thread!)).ToAsyncEnumerable();
     }
 
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        this.InvokeCount++;
+
+        return this.Response.ToAsyncEnumerable();
+    }
+
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
@@ -45,6 +56,16 @@ internal sealed class MockAgent : ChatHistoryAgent
     {
         this.InvokeCount++;
         return this.Response.Select(m => new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(m.Role, m.Content), thread!)).ToAsyncEnumerable();
+    }
+
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        this.InvokeCount++;
+        return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
     }
 
     protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
