@@ -399,15 +399,21 @@ public abstract class Agent
 
         IEnumerable<string> ProcessInstructions()
         {
+            bool hasInstructions = false;
             if (options?.AdditionalInstructions is not null)
             {
-                yield return options.AdditionalInstructions;
+                yield return options!.AdditionalInstructions;
+                hasInstructions = true;
             }
 
             if (!string.IsNullOrWhiteSpace(context.Instructions))
             {
-                yield return Environment.NewLine;
-                yield return Environment.NewLine;
+                if (hasInstructions)
+                {
+                    yield return Environment.NewLine;
+                    yield return Environment.NewLine;
+                }
+
                 yield return context.Instructions!;
             }
         }
