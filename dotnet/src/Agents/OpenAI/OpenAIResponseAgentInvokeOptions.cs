@@ -39,5 +39,5 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
     /// <summary>
     /// Gets or initializes the options used for creating a response.
     /// </summary>
-    public ResponseCreationOptions? ResponseCreationOptions { get; init; }
+    public ResponseCreationOptions? ResponseCreationOptions { get; set; }
 }
