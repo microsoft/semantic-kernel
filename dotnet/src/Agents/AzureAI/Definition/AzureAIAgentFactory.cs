@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -33,14 +33,13 @@ public sealed class AzureAIAgentFactory : AgentFactory
 
         if (agentDefinition.Type?.Equals(AzureAIAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            var projectClient = agentDefinition.GetAIProjectClient(kernel);
+            var client = agentDefinition.GetAgentsClient(kernel);
 
-            AgentsClient client = projectClient.GetAgentsClient();
-            Azure.AI.Projects.Agent agent;
+            PersistentAgent agent;
             if (!string.IsNullOrEmpty(agentDefinition.Id))
             {
                 // Get an existing agent
-                agent = await client.GetAgentAsync(
+                agent = await client.Administration.GetAgentAsync(
                     agentDefinition.Id,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -57,12 +56,12 @@ public sealed class AzureAIAgentFactory : AgentFactory
             Verify.NotNull(agentDefinition.Model);
             Verify.NotNull(agentDefinition.Model.Id);
 
-            agent = await client.CreateAgentAsync(
+            agent = await client.Administration.CreateAgentAsync(
                 model: agentDefinition.Model.Id,
                 name: agentDefinition.Name,
                 description: agentDefinition.Description,
                 instructions: agentDefinition.Instructions,
-                tools: agentDefinition.GetAzureToolDefinitions(),
+                tools: agentDefinition.GetAzureToolDefinitions(kernel),
                 toolResources: agentDefinition.GetAzureToolResources(),
                 metadata: agentDefinition.GetMetadata(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);

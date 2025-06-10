@@ -13,16 +13,22 @@ internal static partial class KernelVerify
 {
 #if NET
     [GeneratedRegex("^[0-9A-Za-z_]*$")]
-    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
+    private static partial Regex AllowedPluginNameSymbolsRegex();
+
+    [GeneratedRegex("^[0-9A-Za-z_-]*$")]
+    private static partial Regex AllowedFunctionNameSymbolsRegex();
 #else
-    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
+    private static Regex AllowedPluginNameSymbolsRegex() => s_allowedPluginNameSymbolsRegex;
+    private static readonly Regex s_allowedPluginNameSymbolsRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
+
+    private static Regex AllowedFunctionNameSymbolsRegex() => s_allowedFunctionNameSymbolsRegex;
+    private static readonly Regex s_allowedFunctionNameSymbolsRegex = new("^[0-9A-Za-z_-]*$", RegexOptions.Compiled);
 #endif
 
     internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
     {
         Verify.NotNullOrWhiteSpace(pluginName);
-        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(pluginName))
+        if (!AllowedPluginNameSymbolsRegex().IsMatch(pluginName))
         {
             Verify.ThrowArgumentInvalidName("plugin name", pluginName, paramName);
         }
@@ -36,7 +42,7 @@ internal static partial class KernelVerify
     internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
     {
         Verify.NotNullOrWhiteSpace(functionName);
-        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(functionName))
+        if (!AllowedFunctionNameSymbolsRegex().IsMatch(functionName))
         {
             Verify.ThrowArgumentInvalidName("function name", functionName, paramName);
         }
@@ -46,7 +52,7 @@ internal static partial class KernelVerify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
+    internal static IReadOnlyList<KernelParameterMetadata> ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -74,5 +80,7 @@ internal static partial class KernelVerify
                 }
             }
         }
+
+        return parameters;
     }
 }

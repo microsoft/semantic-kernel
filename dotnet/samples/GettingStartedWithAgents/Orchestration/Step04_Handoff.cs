@@ -44,9 +44,20 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
                 description: "A customer support agent that handles order refund.");
         refundAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderRefundPlugin()));
 
-        // Define the orchestration
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
         OrchestrationMonitor monitor = new();
+        // Define user responses for InteractiveCallback (since sample is not interactive)
         Queue<string> responses = new();
+        string task = "I am a customer that needs help with my orders";
+        responses.Enqueue("I'd like to track the status of my order");
+        responses.Enqueue("My order ID is 123");
+        responses.Enqueue("I want to return another order of mine");
+        responses.Enqueue("Order ID 321");
+        responses.Enqueue("Broken item");
+        responses.Enqueue("No, bye");
+        // Define the orchestration
         HandoffOrchestration orchestration =
             new(OrchestrationHandoffs
                     .StartWith(triageAgent)
@@ -74,13 +85,6 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         await runtime.StartAsync();
 
         // Run the orchestration
-        string task = "I am a customer that needs help with my orders";
-        responses.Enqueue("I'd like to track the status of my order");
-        responses.Enqueue("My order ID is 123");
-        responses.Enqueue("I want to return another order of mine");
-        responses.Enqueue("Order ID 321");
-        responses.Enqueue("Broken item");
-        responses.Enqueue("No, bye");
         Console.WriteLine($"\n# INPUT:\n{task}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(task, runtime);
 

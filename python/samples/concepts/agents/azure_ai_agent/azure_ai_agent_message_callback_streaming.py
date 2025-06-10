@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions import kernel_function
 
 """
@@ -21,6 +22,8 @@ In this example, the agent is configured with a plugin that provides menu specia
 As the user interacts with the agent, tool messages (like function calls) are emitted via the callback,
 while assistant replies stream back incrementally through the main response loop.
 """
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 # Define a sample plugin for the sample
@@ -61,23 +64,20 @@ async def main() -> None:
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         # Create agent definition
         agent_definition = await client.agents.create_agent(
             model=ai_agent_settings.model_deployment_name,
             name="Host",
-            instructions="Answer questions about the menu.",
+            instructions="Answer questions from the user using your provided functions. You must invoke multiple functions to answer the user's questions. ",  # noqa: E501
         )
 
         # Create the AzureAI Agent
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
-            plugins=[MenuPlugin()],  # add the sample plugin to the agent
+            plugins=[MenuPlugin(), MathPlugin()],
         )
 
         # Create a thread for the agent
@@ -86,10 +86,7 @@ async def main() -> None:
         thread: AzureAIAgentThread = None
 
         user_inputs = [
-            "Hello",
-            "What is the special soup?",
-            "How much does that cost?",
-            "Thank you",
+            "What is the price of the special drink and the special food item added together?",
         ]
 
         try:
@@ -115,23 +112,21 @@ async def main() -> None:
         """
         Sample Output:
 
-        # User: 'Hello'
-        # AuthorRole.ASSISTANT: Hello! How can I assist you today?
-        # User: 'What is the special soup?'
+        # User: 'What is the price of the special drink and then special food item added together?'
         Function Call:> MenuPlugin-get_specials with arguments: {}
         Function Result:> 
                 Special Soup: Clam Chowder
                 Special Salad: Cobb Salad
                 Special Drink: Chai Tea
                 for function: MenuPlugin-get_specials
-        # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about it or anything 
-            else from the menu?
-        # User: 'How much does that cost?'
-        Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
+        Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item": "Chai Tea"}
+        Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item": "Clam Chowder"}
         Function Result:> $9.99 for function: MenuPlugin-get_item_price
-        # AuthorRole.ASSISTANT: The Clam Chowder costs $9.99. Would you like to order it?
-        # User: 'Thank you'
-        # AuthorRole.ASSISTANT: You're welcome! Let me know if you need anything else. Enjoy your day! 😊
+        Function Result:> $9.99 for function: MenuPlugin-get_item_price
+        Function Call:> MathPlugin-Add with arguments: {"input":9.99,"amount":9.99}
+        Function Result:> 19.98 for function: MathPlugin-Add
+        # AuthorRole.ASSISTANT: The price of the special drink, Chai Tea, is $9.99 and the price of the special food 
+            item, Clam Chowder, is $9.99. Added together, the total price is $19.98.
         """
 
 

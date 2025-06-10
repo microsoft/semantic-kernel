@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
 using Azure.AI.Projects;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,12 +33,18 @@ public class AzureAIAgentFactoryTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
         var builder = Kernel.CreateBuilder();
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
+        var client = new PersistentAgentsClient(
+            "https://test",
             new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+            new PersistentAgentsAdministrationClientOptions
+            {
+                Transport = new HttpClientTransport(this._httpClient)
+            });
+        builder.Services.AddSingleton(client);
+        var projectClient = new AIProjectClient(
+            new Uri("https://test"),
+            new FakeTokenCredential());
+        builder.Services.AddSingleton(projectClient);
         this._kernel = builder.Build();
     }
 
@@ -135,6 +142,28 @@ public class AzureAIAgentFactoryTests : IDisposable
           "tool_resources": {},
           "metadata": {},
           "response_format": "auto"
+        }
+        """;
+
+    /// <summary>
+    /// Azure AI Agent create response.
+    /// </summary>
+    public const string ProjectBingGroundingConnectionResponse =
+        """
+        {
+          "value": [
+            {
+              "name": "test_connection",
+              "id": "unique-id",
+              "type": "AzureOpenAI",
+              "target": "bbzo",
+              "isDefault": true,
+              "credentials": {
+                "type": "BaseCredentials"
+              },
+              "metadata": {}
+            }
+          ]
         }
         """;
 

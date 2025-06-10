@@ -11,12 +11,10 @@ from semantic_kernel.connectors.openapi_plugin.operation_selection_predicate_con
     OperationSelectionPredicateContext,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 
-@experimental
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 
@@ -29,6 +27,9 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     enable_payload_namespacing: bool = False
     operations_to_exclude: list[str] = Field(default_factory=list, description="The operationId(s) to exclude")
     operation_selection_predicate: Callable[[OperationSelectionPredicateContext], bool] | None = None
+    timeout: float | None = Field(
+        None, description="Default timeout in seconds for HTTP requests. Uses httpx default (5 seconds) if None."
+    )
 
     def model_post_init(self, __context: Any) -> None:
         """Post initialization method for the model."""

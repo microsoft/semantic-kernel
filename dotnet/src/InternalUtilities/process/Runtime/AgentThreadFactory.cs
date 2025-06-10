@@ -39,13 +39,13 @@ public static class AgentThreadFactory
     private static async Task<AgentThread> CreateAzureAIThreadAsync(string? id, Kernel kernel)
     {
         const string ErrorMessage = "The thread could not be created due to an error response from the service.";
-        var client = kernel.Services.GetService<Azure.AI.Projects.AgentsClient>() ?? throw new KernelException("The AzureAI thread type requires an AgentsClient to be registered in the kernel.");
+        var client = kernel.Services.GetService<Azure.AI.Agents.Persistent.PersistentAgentsClient>() ?? throw new KernelException("The AzureAI thread type requires an AgentsClient to be registered in the kernel.");
 
         if (string.IsNullOrWhiteSpace(id))
         {
             try
             {
-                var threadResponse = await client.CreateThreadAsync().ConfigureAwait(false);
+                var threadResponse = await client.Threads.CreateThreadAsync().ConfigureAwait(false);
                 id = threadResponse.Value.Id;
             }
             catch (RequestFailedException ex)

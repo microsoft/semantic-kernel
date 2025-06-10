@@ -37,13 +37,13 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
     /// <param name="searchString">The string to search matches for.</param>
     /// <param name="embeddingGenerator">The service to generate embeddings with.</param>
     /// <returns>The top search result.</returns>
-    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(IVectorStoreRecordCollection<string, Glossary> collection, string searchString, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
+    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(VectorStoreCollection<string, Glossary> collection, string searchString, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         // Generate an embedding from the search string.
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the store and get the single most relevant result.
-        var searchResultItems = await collection.SearchEmbeddingAsync(
+        var searchResultItems = await collection.SearchAsync(
             searchVector,
             top: 1).ToListAsync();
         return searchResultItems.First();
@@ -62,7 +62,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchVector = (await fixture.EmbeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the store with a filter and get the single most relevant result.
-        var searchResultItems = await collection.SearchEmbeddingAsync(
+        var searchResultItems = await collection.SearchAsync(
             searchVector,
             top: 1,
             new()
@@ -75,7 +75,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         Console.WriteLine(searchResultItems.First().Score);
     }
 
-    private async Task<IVectorStoreRecordCollection<string, Glossary>> GetVectorStoreCollectionWithDataAsync()
+    private async Task<VectorStoreCollection<string, Glossary>> GetVectorStoreCollectionWithDataAsync()
     {
         // Construct the vector store and get the collection.
         var vectorStore = new InMemoryVectorStore();

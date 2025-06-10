@@ -4,7 +4,7 @@ from xml.etree.ElementTree import Element
 
 import pytest
 
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.annotation_content import AnnotationContent, CitationType
 
 test_cases = [
     pytest.param(AnnotationContent(file_id="12345"), id="file_id"),
@@ -12,6 +12,17 @@ test_cases = [
     pytest.param(AnnotationContent(start_index=5, end_index=20), id="indices"),
     pytest.param(
         AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20), id="all_fields"
+    ),
+    pytest.param(
+        AnnotationContent(
+            file_id="abc",
+            type=CitationType.URL_CITATION.value,
+            url="http://example.com",
+            quote="q",
+            start_index=0,
+            end_index=2,
+        ),
+        id="citation_type_and_url",
     ),
 ]
 
@@ -72,8 +83,8 @@ def test_to_str():
     annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
     assert (
         str(annotation)
-        == "AnnotationContent(file_id=12345, url=None, quote=This is a quote., start_index=5, end_index=20)"
-    )  # noqa: E501
+        == "AnnotationContent(type=None, file_id=12345, url=None, quote=This is a quote., start_index=5, end_index=20)"
+    )
 
 
 def test_to_element():
@@ -101,9 +112,13 @@ def test_from_element():
 
 def test_to_dict():
     annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
+    expected_text = (
+        f"type={annotation.citation_type}, {annotation.file_id or annotation.url} {annotation.quote} "
+        f"(Start Index={annotation.start_index}->End Index={annotation.end_index})"
+    )
     assert annotation.to_dict() == {
         "type": "text",
-        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
+        "text": expected_text,
     }
 
 
@@ -116,8 +131,13 @@ def test_element_roundtrip(annotation):
 
 @pytest.mark.parametrize("annotation", test_cases)
 def test_to_dict_call(annotation):
+    ctype = annotation.citation_type.value if annotation.citation_type else None
+    expected_text = (
+        f"type={ctype}, {annotation.file_id or annotation.url} {annotation.quote} "
+        f"(Start Index={annotation.start_index}->End Index={annotation.end_index})"
+    )
     expected_dict = {
         "type": "text",
-        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
+        "text": expected_text,
     }
     assert annotation.to_dict() == expected_dict

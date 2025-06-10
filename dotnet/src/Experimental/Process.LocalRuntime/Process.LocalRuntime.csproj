@@ -41,7 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 

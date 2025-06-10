@@ -30,7 +30,7 @@ public static class McpServerBuilderExtensions
             {
                 foreach (var function in plugin)
                 {
-                    builder.Services.AddSingleton(McpServerTool.Create(function.AsAIFunction(kernel)));
+                    builder.Services.AddSingleton(McpServerTool.Create(function));
                 }
             }
 
@@ -41,7 +41,6 @@ public static class McpServerBuilderExtensions
         builder.Services.AddSingleton<IEnumerable<McpServerTool>>(services =>
         {
             IEnumerable<KernelPlugin> plugins = services.GetServices<KernelPlugin>();
-            Kernel kernel = services.GetRequiredService<Kernel>();
 
             List<McpServerTool> tools = new(plugins.Count());
 
@@ -49,7 +48,7 @@ public static class McpServerBuilderExtensions
             {
                 foreach (var function in plugin)
                 {
-                    tools.Add(McpServerTool.Create(function.AsAIFunction(kernel)));
+                    tools.Add(McpServerTool.Create(function));
                 }
             }
 

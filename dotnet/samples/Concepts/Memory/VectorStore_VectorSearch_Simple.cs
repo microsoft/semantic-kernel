@@ -25,14 +25,14 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
@@ -43,13 +43,12 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        var resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -58,7 +57,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -67,7 +66,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Number of results: " + resultRecords.Count);
@@ -86,19 +85,19 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

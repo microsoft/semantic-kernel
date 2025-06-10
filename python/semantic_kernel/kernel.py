@@ -418,6 +418,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments=args_cloned,
             is_streaming=is_streaming,
             chat_history=chat_history,
+            function_call_content=function_call,
             execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
             function_count=function_call_count or 0,
@@ -450,7 +451,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""
         try:
-            result = await context.function.invoke(context.kernel, context.arguments)
+            result = await context.function.invoke(
+                context.kernel,
+                context.arguments,
+                metadata=context.function_call_content.metadata | context.function_call_content.to_dict()
+                if context.function_call_content
+                else {},
+            )
             if result:
                 context.function_result = result
         except Exception as exc:

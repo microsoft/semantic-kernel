@@ -175,7 +175,7 @@ public static class Program
                         ? new DefaultAzureCredential()
                         : new AzureCliCredential()
                 );
-                builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Rag.CollectionName);
+                builder.Services.AddAzureAISearchCollection<TextSnippet<string>>(config.Rag.CollectionName);
                 builder.Services.AddVectorStoreTextSearch<TextSnippet<string>>();
                 break;
             }

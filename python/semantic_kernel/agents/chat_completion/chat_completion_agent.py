@@ -265,8 +265,8 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -317,8 +317,8 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -365,8 +365,8 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -452,7 +452,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
 
                 if (
                     role == AuthorRole.ASSISTANT
-                    and response.items
+                    and (response.items or response.metadata.get("usage"))
                     and not any(
                         isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in response.items
                     )
