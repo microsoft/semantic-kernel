@@ -159,6 +159,8 @@ class OpenApiRunner:
             )
             headers["Content-Type"] = self._get_first_response_media_type(responses)
 
+        timeout = options.timeout if options and hasattr(options, "timeout") and options.timeout is not None else None
+
         async def fetch():
             async def make_request(client: httpx.AsyncClient):
                 merged_headers = client.headers.copy()
@@ -174,7 +176,7 @@ class OpenApiRunner:
 
             if hasattr(self, "http_client") and self.http_client is not None:
                 return await make_request(self.http_client)
-            async with httpx.AsyncClient(timeout=5) as client:
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 return await make_request(client)
 
         return await fetch()

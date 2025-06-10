@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Plugins.Core;
 using xRetry;
 
 namespace Plugins;
@@ -65,59 +62,6 @@ her a beggar. My father came to her aid and two years later they married.
 
         Console.WriteLine("\n======== Excise Entities ========");
         Console.WriteLine(excisionResult.GetValue<string>());
-    }
-
-    [Fact]
-    public async Task PlanningWithGroundednessAsync()
-    {
-        var targetTopic = "people and places";
-        var samples = "John, Jane, mother, brother, Paris, Rome";
-        var ask = @$"Make a summary of the following text. Then make a list of entities
-related to {targetTopic} (such as {samples}) which are present in the summary.
-Take this list of entities, and from it make another list of those which are not
-grounded in the original input text. Finally, rewrite your summary to remove the entities
-which are not grounded in the original.";
-
-        Console.WriteLine("\n======== Planning - Groundedness Checks ========");
-
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
-
-        string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
-
-        kernel.ImportPluginFromType<TextPlugin>();
-
-        var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerOptions()
-            {
-                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
-                ExecutionSettings = new OpenAIPromptExecutionSettings()
-                {
-                    Temperature = 0.0,
-                    TopP = 0.1,
-                }
-            });
-
-        var initialArguments = new KernelArguments()
-        {
-            { "groundingText", GroundingText}
-        };
-        var plan = await planner.CreatePlanAsync(kernel, ask, initialArguments);
-
-        Console.WriteLine($"======== Goal: ========\n{ask}");
-        Console.WriteLine($"======== Plan ========\n{plan}");
-
-        var result = await plan.InvokeAsync(kernel, initialArguments);
-
-        Console.WriteLine("======== Result ========");
-        Console.WriteLine(result);
     }
 
     private const string GroundingText = """
@@ -183,32 +127,4 @@ misfortunes, moved to another city in poverty. My father was upset by his friend
 finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and
 his daughter. The daughter procured work to eek out a living, but after ten months her father died, leaving
 her a beggar. My father came to her aid and two years later they married.
-
-======== Planning - Groundedness Checks ========
-======== Goal: ========
-Make a summary of the following text. Then make a list of entities
-related to people and places (such as John, Jane, mother, brother, Paris, Rome) which are present in the summary.
-Take this list of entities, and from it make another list of those which are not
-grounded in the original input text. Finally, rewrite your summary to remove the entities
-which are not grounded in the original.
-======== Plan ========
-{{!-- Step 0: Extract key values --}}
-{{set "inputText" @root.groundingText}}
-
-{{!-- Step 1: Summarize the input text --}}
-{{set "summary" (SummarizePlugin-Summarize input=inputText)}}
-
-{{!-- Step 2: Extract entities related to people and places from the summary --}}
-{{set "extractedEntities" (GroundingPlugin-ExtractEntities input=summary topic="people and places" example_entities="John, Jane, mother, brother, Paris, Rome")}}
-
-{{!-- Step 3: Check if extracted entities are grounded in the original input text --}}
-{{set "notGroundedEntities" (GroundingPlugin-ReferenceCheckEntities input=extractedEntities reference_context=inputText)}}
-
-{{!-- Step 4: Remove the not grounded entities from the summary --}}
-{{set "finalSummary" (GroundingPlugin-ExciseEntities input=summary ungrounded_entities=notGroundedEntities)}}
-
-{{!-- Step 5: Output the final summary --}}
-{{json finalSummary}}
-======== Result ========
-Born in Geneva to a distinguished family, the narrator's father held various honorable public positions. He married late in life after helping his impoverished friend Beaufort and his daughter Caroline. Beaufort, once wealthy, fell into poverty and moved to another location, where the narrator's father found him after ten months. Beaufort eventually fell ill and died, leaving his daughter Caroline an orphan. The narrator's father took her in, and two years later, they married.
 */

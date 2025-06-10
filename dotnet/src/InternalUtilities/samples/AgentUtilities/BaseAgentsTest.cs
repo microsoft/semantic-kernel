@@ -64,7 +64,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected void WriteAgentChatMessage(ChatMessageContent message)
     {
         // Include ChatMessageContent.AuthorName in output, if present.
-        string authorExpression = message.Role == AuthorRole.User ? string.Empty : $" - {message.AuthorName ?? "*"}";
+        string authorExpression = message.Role == AuthorRole.User ? string.Empty : FormatAuthor();
         // Include TextContent (via ChatMessageContent.Content), if present.
         string contentExpression = string.IsNullOrWhiteSpace(message.Content) ? string.Empty : message.Content;
         bool isCode = message.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false;
@@ -84,6 +84,14 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 {
                     Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: File #{annotation.ReferenceId}");
                 }
+            }
+            else if (item is ActionContent action)
+            {
+                Console.WriteLine($"  [{item.GetType().Name}] {action.Text}");
+            }
+            else if (item is ReasoningContent reasoning)
+            {
+                Console.WriteLine($"  [{item.GetType().Name}] {reasoning.Text.DefaultIfEmpty("Thinking...")}");
             }
             else if (item is FileReferenceContent fileReference)
             {
@@ -118,6 +126,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
             }
         }
+
+        string FormatAuthor() => message.AuthorName is not null ? $" - {message.AuthorName ?? " * "}" : string.Empty;
 
         void WriteUsage(long totalTokens, long inputTokens, long outputTokens)
         {
