@@ -24,7 +24,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_text_completion,
@@ -108,11 +108,6 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        # Not all models support streaming: check if the model supports streaming before proceeding
-        model_info = await self.get_foundation_model_info(self.ai_model_id)
-        if not model_info.get("responseStreamingSupported"):
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
-
         if not isinstance(settings, BedrockTextPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockTextPromptExecutionSettings)  # nosec

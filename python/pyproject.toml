@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     # azure agents
     "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.0.0",
+    "azure-ai-agents >= 1.1.0b1",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -88,7 +88,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.93.0",
+    "google-cloud-aiplatform == 1.95.1",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
