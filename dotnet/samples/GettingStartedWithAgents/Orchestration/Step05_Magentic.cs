@@ -28,8 +28,10 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
     /// </summary>
     protected override bool ForceOpenAI => true;
 
-    [Fact]
-    public async Task MagenticTaskAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MagenticTaskAsync(bool streamedResponse)
     {
         // Define the agents
         Kernel researchKernel = CreateKernelWithOpenAIChatCompletion(ResearcherModel);
@@ -66,7 +68,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
             {
                 LoggerFactory = this.LoggerFactory,
                 ResponseCallback = monitor.ResponseCallback,
-                StreamingResponseCallback = monitor.StreamingResultCallback,
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime

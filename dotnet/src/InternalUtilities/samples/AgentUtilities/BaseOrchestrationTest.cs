@@ -2,6 +2,8 @@
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -12,7 +14,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected const int ResultTimeoutInSeconds = 30;
+    protected const int ResultTimeoutInSeconds = 60;
+
+    protected virtual bool EnableLogging => true;
+
+    protected new ILoggerFactory LoggerFactory => this.EnableLogging ? base.LoggerFactory : NullLoggerFactory.Instance;
 
     protected ChatCompletionAgent CreateAgent(string instructions, string? description = null, string? name = null, Kernel? kernel = null)
     {
@@ -26,18 +32,34 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
             };
     }
 
+    protected static void WriteResponse(ChatMessageContent response)
+    {
+        if (!string.IsNullOrEmpty(response.Content))
+        {
+            System.Console.WriteLine($"\n# RESPONSE {response.Role}{(response.AuthorName is not null ? $" - {response.AuthorName}" : string.Empty)}: {response}");
+        }
+    }
+
     protected static void WriteStreamedResponse(IEnumerable<StreamingChatMessageContent> streamedResponses)
     {
+        string? authorName = null;
+        AuthorRole? authorRole = null;
         StringBuilder builder = new();
         foreach (StreamingChatMessageContent response in streamedResponses)
         {
+            authorName ??= response.AuthorName;
+            authorRole ??= response.Role;
+
             if (!string.IsNullOrEmpty(response.Content))
             {
                 builder.Append($"({JsonSerializer.Serialize(response.Content)})");
             }
         }
 
-        System.Console.WriteLine($"\n# STREAMED: {builder}\n");
+        if (builder.Length > 0)
+        {
+            System.Console.WriteLine($"\n# STREAMED {authorRole ?? AuthorRole.Assistant}{(authorName is not null ? $" - {authorName}" : string.Empty)}: {builder}\n");
+        }
     }
 
     protected sealed class OrchestrationMonitor
@@ -49,6 +71,7 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
         public ValueTask ResponseCallback(ChatMessageContent response)
         {
             this.History.Add(response);
+            WriteResponse(response);
             return ValueTask.CompletedTask;
         }
 
