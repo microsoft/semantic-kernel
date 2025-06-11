@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -131,21 +130,21 @@ public sealed partial class AzureAIAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        AzureAIAgentThread azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
@@ -223,7 +222,7 @@ public sealed partial class AzureAIAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        AzureAIAgentThread azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
@@ -232,19 +231,19 @@ public sealed partial class AzureAIAgent : Agent
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
         // Invoke the Agent with the thread that we already added our message to, and with
         // a chat history to receive complete messages.
-        var newMessagesReceiver = new ChatHistory();
+        ChatHistory newMessagesReceiver = [];
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => AgentThreadActions.InvokeStreamingAsync(
@@ -324,19 +323,4 @@ public sealed partial class AzureAIAgent : Agent
 
         return new AzureAIChannel(this.Client, thread.Id);
     }
-
-    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string? extensionsContext) =>
-        (optionsAdditionalInstructions, extensionsContext) switch
-        {
-            (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(
-                ai,
-                Environment.NewLine,
-                Environment.NewLine,
-                ec),
-            (string ai, string ec) when string.IsNullOrWhiteSpace(ai) => ec,
-            (string ai, string ec) when string.IsNullOrWhiteSpace(ec) => ai,
-            (null, string ec) => ec,
-            (string ai, null) => ai,
-            _ => string.Empty
-        };
 }
