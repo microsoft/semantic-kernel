@@ -499,7 +499,7 @@ class TestSqlServerCollection:
             definition=definition,
             connection=mock_connection,
         )
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             (
                 "IF OBJECT_ID(N' [dbo].[test] ', N'U') IS NULL\nBEGIN\nCREATE TABLE [dbo].[test] \n (\"id\" nvarchar"
@@ -533,11 +533,11 @@ class TestSqlServerCollection:
             definition=definition,
         )
         with raises(VectorStoreOperationException):
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
         with raises(VectorStoreOperationException):
             await collection.ensure_collection_deleted()
         with raises(VectorStoreOperationException):
-            await collection.does_collection_exist()
+            await collection.collection_exists()
         with raises(VectorStoreOperationException):
             await collection.upsert({"id": "1", "content": "test", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]})
         with raises(VectorStoreOperationException):

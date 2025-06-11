@@ -478,7 +478,7 @@ class QdrantCollection(
         ]
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in Qdrant.
 
         Args:
@@ -521,7 +521,7 @@ class QdrantCollection(
         await self.qdrant_client.create_collection(**kwargs)
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         return await self.qdrant_client.collection_exists(self.collection_name, **kwargs)
 
     @override

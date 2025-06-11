@@ -112,7 +112,7 @@ async def create_simple_collection(
     collection_id = f"test_collection_{suffix}"
     collection = vector_store.get_collection(collection_name=collection_id, record_type=SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
     try:
         yield collection
     finally:

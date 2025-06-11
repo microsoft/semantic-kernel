@@ -218,7 +218,7 @@ async def test_weaviate_collection_create_collection(
         env_file_path="fake_env_file_path.env",
     )
 
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     mock_async_client.collections.create.assert_called_once_with(
         name=collection_name,
@@ -263,7 +263,7 @@ async def test_weaviate_collection_create_collection_fail(
     )
 
     with pytest.raises(VectorStoreOperationException):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
 async def test_weaviate_collection_delete_collection(
@@ -333,7 +333,7 @@ async def test_weaviate_collection_collection_exist(
         env_file_path="fake_env_file_path.env",
     )
 
-    await collection.does_collection_exist()
+    await collection.collection_exists()
 
     mock_async_client.collections.exists.assert_called_once_with(collection_name)
 
@@ -363,7 +363,7 @@ async def test_weaviate_collection_collection_exist_fail(
     )
 
     with pytest.raises(VectorStoreOperationException):
-        await collection.does_collection_exist()
+        await collection.collection_exists()
 
 
 async def test_weaviate_collection_serialize_data(

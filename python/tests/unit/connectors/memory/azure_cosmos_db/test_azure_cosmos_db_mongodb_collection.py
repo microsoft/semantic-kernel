@@ -84,7 +84,7 @@ async def test_create_collection_calls_database_methods(definition) -> None:
     )
 
     # Act
-    await collection.create_collection(customArg="customValue")
+    await collection.ensure_collection_exists(customArg="customValue")
 
     # Assert
     mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue")

@@ -258,7 +258,7 @@ class RedisCollection(
         return key
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new index in Redis.
 
         Args:
@@ -283,7 +283,7 @@ class RedisCollection(
         await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         try:
             await self.redis_database.ft(self.collection_name).info()
             return True
@@ -292,7 +292,7 @@ class RedisCollection(
 
     @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
-        exists = await self.does_collection_exist()
+        exists = await self.collection_exists()
         if exists:
             await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
         else:
