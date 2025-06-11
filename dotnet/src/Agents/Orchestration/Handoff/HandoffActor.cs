@@ -125,7 +125,7 @@ internal sealed class HandoffActor :
             if (this._handoffAgent != null)
             {
                 AgentType handoffType = this._handoffs[this._handoffAgent].AgentType;
-                await this.SendMessageAsync(new HandoffMessages.Request(), handoffType, messageContext.CancellationToken).ConfigureAwait(false);
+                await this.PublishMessageAsync(new HandoffMessages.Request(), handoffType, messageContext.CancellationToken).ConfigureAwait(false);
 
                 this._handoffAgent = null;
                 break;
@@ -183,6 +183,6 @@ internal sealed class HandoffActor :
     {
         this.Logger.LogHandoffSummary(this.Id, summary);
         this._taskSummary = summary;
-        await this.SendMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.Assistant, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
+        await this.PublishMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.Assistant, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
     }
 }
