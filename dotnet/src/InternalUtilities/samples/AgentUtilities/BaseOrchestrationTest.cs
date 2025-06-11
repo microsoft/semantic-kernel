@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected const int ResultTimeoutInSeconds = 60;
+    protected const int ResultTimeoutInSeconds = 30;
 
     protected virtual bool EnableLogging => true;
 
