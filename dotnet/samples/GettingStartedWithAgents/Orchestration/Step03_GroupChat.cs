@@ -62,8 +62,9 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
             writer,
             editor)
             {
-                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
+                StreamingResponseCallback = monitor.StreamingResultCallback,
             };
 
         // Start the runtime

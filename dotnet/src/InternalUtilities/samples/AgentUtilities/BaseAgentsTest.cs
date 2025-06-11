@@ -69,7 +69,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         string contentExpression = string.IsNullOrWhiteSpace(message.Content) ? string.Empty : message.Content;
         bool isCode = message.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false;
         string codeMarker = isCode ? "\n  [CODE]\n" : " ";
-        Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
+        System.Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
 
         // Provide visibility for inner content (that isn't TextContent).
         foreach (KernelContent item in message.Items)

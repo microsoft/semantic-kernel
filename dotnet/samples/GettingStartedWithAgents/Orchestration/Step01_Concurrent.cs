@@ -36,8 +36,9 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         ConcurrentOrchestration orchestration =
             new(physicist, chemist)
             {
-                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
+                StreamingResponseCallback = monitor.StreamingResultCallback,
             };
 
         // Start the runtime

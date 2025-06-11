@@ -59,7 +59,7 @@ internal sealed class HandoffActor :
     protected override bool ResponseCallbackFilter(ChatMessageContent response) => response.Role == AuthorRole.Tool;
 
     /// <inheritdoc/>
-    protected override AgentInvokeOptions? CreateInvokeOptions()
+    protected override AgentInvokeOptions CreateInvokeOptions(Func<ChatMessageContent, Task> messageHandler)
     {
         // Clone kernel to avoid modifying the original
         Kernel kernel = this.Agent.Kernel.Clone();
@@ -71,7 +71,8 @@ internal sealed class HandoffActor :
             new()
             {
                 Kernel = kernel,
-                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
+                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                OnIntermediateMessage = messageHandler,
             };
 
         return options;

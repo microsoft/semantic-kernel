@@ -58,8 +58,9 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
         SequentialOrchestration orchestration =
             new(analystAgent, writerAgent, editorAgent)
             {
+                LoggerFactory = this.LoggerFactory,
                 ResponseCallback = monitor.ResponseCallback,
-                LoggerFactory = this.LoggerFactory
+                StreamingResponseCallback = monitor.StreamingResultCallback,
             };
 
         // Start the runtime

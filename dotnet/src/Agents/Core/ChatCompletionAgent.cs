@@ -200,7 +200,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             kernel,
             options?.AdditionalInstructions == null ?
                 providersContext.Instructions :
-                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, providersContext),
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, providersContext.Instructions),
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))

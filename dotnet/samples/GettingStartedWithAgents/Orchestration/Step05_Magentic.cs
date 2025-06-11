@@ -64,8 +64,9 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
         MagenticOrchestration orchestration =
             new(manager, researchAgent, coderAgent)
             {
-                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
+                StreamingResponseCallback = monitor.StreamingResultCallback,
             };
 
         // Start the runtime
