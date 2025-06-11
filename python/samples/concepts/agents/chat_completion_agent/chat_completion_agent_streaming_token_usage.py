@@ -38,7 +38,7 @@ class MenuPlugin:
 completion_usage = CompletionUsage()
 
 
-async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
+async def handle_intermediate_messages(message: ChatMessageContent) -> None:
     global completion_usage
 
     if message.metadata.get("usage"):
@@ -76,7 +76,7 @@ async def main() -> None:
         async for response in agent.invoke_stream(
             messages=user_input,
             thread=thread,
-            on_intermediate_message=handle_streaming_intermediate_steps,
+            on_intermediate_message=handle_intermediate_messages,
         ):
             if response.content:
                 print(response.content, end="", flush=True)
