@@ -463,7 +463,7 @@ class AzureAISearchCollection(
         return records
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in Azure AI Search.
 
         Args:
@@ -489,7 +489,7 @@ class AzureAISearchCollection(
         )
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return self.collection_name in [

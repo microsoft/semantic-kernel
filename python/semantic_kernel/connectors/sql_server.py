@@ -449,7 +449,7 @@ class SqlServerCollection(
         return records
 
     @override
-    async def create_collection(
+    async def ensure_collection_exists(
         self, *, create_if_not_exists: bool = True, queries: list[str] | None = None, **kwargs: Any
     ) -> None:
         """Create a SQL table based on the data model.
@@ -495,7 +495,7 @@ class SqlServerCollection(
         return schema, table
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")

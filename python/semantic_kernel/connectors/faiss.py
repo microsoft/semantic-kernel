@@ -143,7 +143,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
                 self.indexes_key_map.setdefault(vector_field.name, {})
 
     @override
-    async def create_collection(
+    async def ensure_collection_exists(
         self, index: faiss.Index | None = None, indexes: dict[str, faiss.Index] | None = None, **kwargs: Any
     ) -> None:
         """Create a collection.
@@ -200,7 +200,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         await super().ensure_collection_deleted(**kwargs)
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         return bool(self.indexes)
 
     @override

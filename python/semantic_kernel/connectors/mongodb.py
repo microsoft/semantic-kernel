@@ -315,7 +315,7 @@ class MongoDBAtlasCollection(
         return [self._reset_key_field(record) for record in records]
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in MongoDB.
 
         This first creates a collection, with the kwargs.
@@ -328,7 +328,7 @@ class MongoDBAtlasCollection(
         await collection.create_search_indexes(models=_create_index_definitions(self.definition, self.index_name))
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         return bool(await self._get_database().list_collection_names(filter={"name": self.collection_name}))
 
     @override

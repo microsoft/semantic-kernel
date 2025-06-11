@@ -57,13 +57,13 @@ def DictVectorStoreRecordCollection() -> type[VectorSearch]:
         def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
             return records
 
-        async def create_collection(self, **kwargs: Any) -> None:
+        async def ensure_collection_exists(self, **kwargs: Any) -> None:
             pass
 
         async def ensure_collection_deleted(self, **kwargs: Any) -> None:
             self.inner_storage = {}
 
-        async def does_collection_exist(self, **kwargs: Any) -> bool:
+        async def collection_exists(self, **kwargs: Any) -> bool:
             return True
 
         async def _inner_search(

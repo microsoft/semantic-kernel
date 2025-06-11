@@ -146,7 +146,7 @@ class InMemoryCollection(
         return records
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         pass
 
     @override
@@ -154,7 +154,7 @@ class InMemoryCollection(
         self.inner_storage = {}
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         return True
 
     @override

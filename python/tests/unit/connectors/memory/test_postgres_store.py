@@ -100,7 +100,7 @@ def test_get_collection(vector_store: PostgresStore) -> None:
 async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    result = await collection.does_collection_exist()
+    result = await collection.collection_exists()
     assert result is True
 
 
@@ -130,7 +130,7 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
 
 async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     # 2 calls, once for the table creation and once for the index creation
     assert mock_cursor.execute.call_count == 2
@@ -163,7 +163,7 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithImplicitTypes)
 
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     assert mock_cursor.execute.call_count == 2
 

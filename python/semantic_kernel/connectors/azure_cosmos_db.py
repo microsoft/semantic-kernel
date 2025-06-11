@@ -360,7 +360,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
         )
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in Azure CosmosDB for MongoDB.
 
         This first creates a collection, with the kwargs.
@@ -965,7 +965,7 @@ class CosmosNoSqlCollection(
         return deserialized_records
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         indexing_policy = kwargs.pop("indexing_policy", _create_default_indexing_policy_nosql(self.definition))
         vector_embedding_policy = kwargs.pop(
             "vector_embedding_policy", _create_default_vector_embedding_policy(self.definition)
@@ -983,7 +983,7 @@ class CosmosNoSqlCollection(
             raise VectorStoreOperationException("Failed to create container.") from e
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         try:
             await container_proxy.read(**kwargs)

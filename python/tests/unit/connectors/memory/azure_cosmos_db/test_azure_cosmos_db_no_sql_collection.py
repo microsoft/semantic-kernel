@@ -226,7 +226,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    await vector_collection.create_collection()
+    await vector_collection.ensure_collection_exists()
 
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
@@ -256,7 +256,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    await vector_collection.create_collection(indexing_policy={"automatic": False})
+    await vector_collection.ensure_collection_exists(indexing_policy={"automatic": False})
 
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
@@ -286,7 +286,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    await vector_collection.create_collection(vector_embedding_policy={"vectorEmbeddings": []})
+    await vector_collection.ensure_collection_exists(vector_embedding_policy={"vectorEmbeddings": []})
 
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
@@ -323,7 +323,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
     with pytest.raises(VectorStoreModelException):
-        await vector_collection.create_collection()
+        await vector_collection.ensure_collection_exists()
 
 
 @patch("azure.cosmos.aio.DatabaseProxy")

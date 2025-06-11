@@ -153,7 +153,7 @@ async def main(collection: str, use_azure_openai: bool):
         # cleanup any existing collection
         await record_collection.ensure_collection_deleted()
         # create a new collection
-        await record_collection.create_collection()
+        await record_collection.ensure_collection_exists()
 
         record1 = DataModel(
             content="Semantic Kernel is awesome",
