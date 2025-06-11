@@ -279,14 +279,7 @@ class HandoffAgentActor(AgentActorBase):
             return
         logger.debug(f"{self.id}: Received handoff request message.")
 
-        persona_adoption_message = ChatMessageContent(
-            role=AuthorRole.USER,
-            content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-        )
-        response = await self._invoke_agent_with_potentially_no_response(
-            additional_messages=persona_adoption_message,
-            kernel=self._kernel,
-        )
+        response = await self._invoke_agent_with_potentially_no_response(kernel=self._kernel)
 
         while not self._task_completed:
             if self._handoff_agent_name:
