@@ -1571,7 +1571,7 @@ class VectorStore(KernelBaseModel):
         """Get the names of all collections."""
         ...  # pragma: no cover
 
-    async def does_collection_exist(self, collection_name: str) -> bool:
+    async def collection_exists(self, collection_name: str) -> bool:
         """Check if a collection exists.
 
         This is a wrapper around the get_collection method of a collection,
