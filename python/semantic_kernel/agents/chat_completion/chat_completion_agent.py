@@ -450,9 +450,22 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
                 response.name = self.name
                 response_builder.append(response.content)
 
+                # Divert usage-based responses to the intermediate message handler, if present
+                # Usage-based responses aren't part of the chat history, so need special handling
+                # here to make sure they're handled correctly.
                 if (
                     role == AuthorRole.ASSISTANT
-                    and (response.items or response.metadata.get("usage"))
+                    and response.metadata.get("usage")
+                    and not response.items
+                    and on_intermediate_message is not None
+                ):
+                    await thread.on_new_message(response)
+                    await on_intermediate_message(response)
+                    continue
+
+                if (
+                    role == AuthorRole.ASSISTANT
+                    and response.items
                     and not any(
                         isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in response.items
                     )

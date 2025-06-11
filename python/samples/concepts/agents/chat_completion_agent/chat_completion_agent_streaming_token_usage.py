@@ -6,6 +6,9 @@ from typing import Annotated
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -34,6 +37,22 @@ class MenuPlugin:
         return "$9.99"
 
 
+completion_usage = CompletionUsage()
+
+
+async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
+    global completion_usage
+
+    if message.metadata.get("usage"):
+        completion_usage += message.metadata["usage"]
+
+    for item in message.items or []:
+        if isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        elif isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+
+
 async def main() -> None:
     agent = ChatCompletionAgent(
         service=AzureChatCompletion(),
@@ -54,19 +73,15 @@ async def main() -> None:
         "Thank you",
     ]
 
-    completion_usage = CompletionUsage()
-
     for user_input in user_inputs:
         print(f"\n# User: '{user_input}'")
         async for response in agent.invoke_stream(
             messages=user_input,
             thread=thread,
+            on_intermediate_message=handle_streaming_intermediate_steps,
         ):
             if response.content:
                 print(response.content, end="", flush=True)
-            if response.metadata.get("usage"):
-                completion_usage += response.metadata["usage"]
-                print(f"\nStreaming Usage: {response.metadata['usage']}")
             thread = response.thread
         print()
 
@@ -77,25 +92,32 @@ async def main() -> None:
     Sample Output:
 
     # User: 'Hello'
-    Hello! How can I help you with the menu today?
+    Hello! How can I assist you today?
 
     # User: 'What is the special soup?'
-    The special soup today is Clam Chowder. Would you like more details or are you interested in something else from 
-        the menu?
+    Function Call:> MenuPlugin-get_specials with arguments: {}
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    The special soup is Clam Chowder. Would you like to know more about our specials or anything else on the menu?
 
     # User: 'How much does that cost?'
-    The Clam Chowder special soup costs $9.99. Would you like to add it to your order or ask about something else?
+    Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
+    Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    The Clam Chowder costs $9.99. If you have any other questions or need further assistance, feel free to ask!
 
     # User: 'Thank you'
-    You're welcome! If you have any more questions or need help with the menu, just let me know. Enjoy your meal!
+    You're welcome! If you have any more questions in the future, feel free to ask. Have a great day!
 
     Streaming Total Completion Usage: {
-        "prompt_tokens": 1150,
+        "prompt_tokens": 1512,
         "prompt_tokens_details": {
             "audio_tokens": 0,
             "cached_tokens": 0
         },
-        "completion_tokens": 134,
+        "completion_tokens": 164,
         "completion_tokens_details": {
             "accepted_prediction_tokens": 0,
             "audio_tokens": 0,
