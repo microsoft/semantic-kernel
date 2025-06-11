@@ -130,35 +130,26 @@ async def main():
 
     """
     **Writer**
-    "Electrify Your Drive: Affordable Fun for Everyone!"
+    "Electrify Your Journey: Affordable Adventure Awaits!"
     **Reviewer**
-    This slogan, "Electrify Your Drive: Affordable Fun for Everyone!" does a great job of conveying the core benefits
-    of an electric SUV. Here's some feedback to consider:
-
-    ...
-
-    Consider testing this slogan with focus groups or within your target market to gather insights on resonance and
-    perception. Overall, it is a compelling and engaging statement that successfully captures the essence of your
-    electric SUV.
-    User: Make it rhyme
+    Your slogan captures the essence of being both affordable and fun, which is great! However, you might want to ...
+    User: I'd like to also make it rhyme
     **Writer**
-    "Drive Electric, Feel the Thrill, Affordable Fun That Fits the Bill!"
+    Sure! Here are a few rhyming slogan options for your electric SUV:
+
+    1. "Zoom Through the Streets, Feel the Beats!"
+    2. "Charge and Drive, Feel the Jive!"
+    3. "Electrify Your Ride, Let Fun Be Your Guide!"
+    4. "Zoom in Style, Drive with a Smile!"
+
+    Let me know if you'd like more options or variations!
     **Reviewer**
-    The slogan, "Drive Electric, Feel the Thrill, Affordable Fun That Fits the Bill!" successfully incorporates rhyme,
-    adding a catchy and memorable element to your marketing message. Here's some detailed feedback on this version:
-
-    ...
-
-    Overall, this rhyming slogan is an improvement for making the tagline more memorable and appealing. It captures the
-    excitement and accessibility of the product effectively. Consider checking how it resonates with your target
-    demographic to ensure it aligns well with their preferences and expectations.
-    User: Nice!
+    These rhyming slogans are creative and energetic! They effectively capture the fun aspect while promoting ...
+    User: Please continue with the reviewer's suggestions
     **Writer**
-    Thank you! I'm glad you liked the feedback. If you need help with anything else, like tailoring the slogan for
-    specific platforms or audiences, just let me know!
+    Absolutely! Let's refine and expand on the reviewer's suggestions for a more polished and appealing set of rhym...
     ***** Result *****
-    Thank you! I'm glad you liked the feedback. If you need help with anything else, like tailoring the slogan for
-    specific platforms or audiences, just let me know!
+    Absolutely! Let's refine and expand on the reviewer's suggestions for a more polished and appealing set of rhym...
     """
 
 
