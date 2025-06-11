@@ -133,10 +133,10 @@ async def test_invoke_with_list():
             await runtime.stop_when_idle()
 
         assert mock_invoke_stream.call_count == 2
-        # Two messages + one message added internally to steer the conversation
-        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 3
-        # Two messages + two message added internally to steer the conversation + response from agent A
-        assert len(mock_invoke_stream.call_args_list[1][1]["messages"]) == 5
+        # Two messages
+        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 2
+        # Two messages + response from agent A
+        assert len(mock_invoke_stream.call_args_list[1][1]["messages"]) == 3
 
 
 async def test_invoke_with_response_callback():

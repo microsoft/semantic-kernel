@@ -402,8 +402,8 @@ async def test_invoke_with_list():
             await runtime.stop_when_idle()
 
         assert mock_invoke_stream.call_count == 1
-        # Two messages + one message added internally to steer the conversation
-        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 3
+        # Two messages
+        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 2
         # The kernel in the agent should not be modified
         assert len(agent_a.kernel.plugins) == 0
         assert len(agent_b.kernel.plugins) == 0
