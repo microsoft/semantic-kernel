@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -26,20 +27,19 @@ internal sealed class AzureAICurrencyAgent : A2AHostAgent, IDisposable
 
         if (this.Agent is AzureAIAgent azureAIAgent && azureAIAgent is not null)
         {
-            azureAIAgent.Client.DeleteAgent(azureAIAgent.Id);
+            azureAIAgent.Client.Administration.DeleteAgent(azureAIAgent.Id);
         }
     }
 
-    public async Task InitializeAgentAsync(string modelId, string connectionString)
+    public async Task InitializeAgentAsync(string modelId, string endpoint)
     {
         try
         {
             this._logger.LogInformation("Initializing Semantic Kernel agent with model {ModelId}", modelId);
 
             // Define the CurrencyAgent
-            var projectClient = AzureAIAgent.CreateAzureAIClient(connectionString, new AzureCliCredential());
-            var agentsClient = projectClient.GetAgentsClient();
-            Azure.AI.Projects.Agent definition = await agentsClient.CreateAgentAsync(
+            var agentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+            PersistentAgent definition = await agentsClient.Administration.CreateAgentAsync(
                 modelId,
                 "CurrencyAgent",
                 null,

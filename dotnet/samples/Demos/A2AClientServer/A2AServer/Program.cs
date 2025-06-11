@@ -20,28 +20,28 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
     .Build();
 
 string? apiKey = configuration["A2AServer:ApiKey"];
-string? connectionString = configuration["A2AServer:ConnectionString"];
+string? endpoint = configuration["A2AServer:Endpoint"];
 string modelId = configuration["A2AServer:ModelId"] ?? "gpt-4o-mini";
 
-if (!string.IsNullOrEmpty(connectionString))
+if (!string.IsNullOrEmpty(endpoint))
 {
     var invoiceAgent = new AzureAIInvoiceAgent(logger);
     var invoiceAgentId = configuration["A2AServer:InvoiceAgentId"] ?? throw new ArgumentException("A2AServer:InvoiceAgentId must be provided");
-    await invoiceAgent.InitializeAgentAsync(modelId, connectionString, invoiceAgentId);
+    await invoiceAgent.InitializeAgentAsync(modelId, endpoint, invoiceAgentId);
     var invoiceTaskManager = new TaskManager();
     invoiceAgent.Attach(invoiceTaskManager);
     app.MapA2A(invoiceTaskManager, "/invoice");
 
     var policyAgent = new AzureAIPolicyAgent(logger);
     var policyAgentId = configuration["A2AServer:PolicyAgentId"] ?? throw new ArgumentException("A2AServer:PolicyAgentId must be provided");
-    await policyAgent.InitializeAgentAsync(modelId, connectionString, policyAgentId);
+    await policyAgent.InitializeAgentAsync(modelId, endpoint, policyAgentId);
     var policyTaskManager = new TaskManager();
     policyAgent.Attach(policyTaskManager);
     app.MapA2A(policyTaskManager, "/policy");
 
     var logisticsAgent = new AzureAILogisticsAgent(logger);
     var logisticsAgentId = configuration["A2AServer:LogisticsAgentId"] ?? throw new ArgumentException("A2AServer:LogisticsAgentId must be provided");
-    await logisticsAgent.InitializeAgentAsync(modelId, connectionString, logisticsAgentId);
+    await logisticsAgent.InitializeAgentAsync(modelId, endpoint, logisticsAgentId);
     var logisticsTaskManager = new TaskManager();
     logisticsAgent.Attach(logisticsTaskManager);
     app.MapA2A(logisticsTaskManager, "/logistics");

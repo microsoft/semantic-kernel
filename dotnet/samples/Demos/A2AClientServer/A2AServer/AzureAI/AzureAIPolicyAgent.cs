@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.A2A;
@@ -14,16 +15,15 @@ internal sealed class AzureAIPolicyAgent : A2AHostAgent
         this._logger = logger;
     }
 
-    public async Task InitializeAgentAsync(string modelId, string connectionString, string assistantId)
+    public async Task InitializeAgentAsync(string modelId, string endpoint, string assistantId)
     {
         try
         {
             this._logger.LogInformation("Initializing AzureAIPolicyAgent {AssistantId}", assistantId);
 
             // Define the InvoiceAgent
-            var projectClient = AzureAIAgent.CreateAzureAIClient(connectionString, new AzureCliCredential());
-            var agentsClient = projectClient.GetAgentsClient();
-            Azure.AI.Projects.Agent definition = await agentsClient.GetAgentAsync(assistantId);
+            var agentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+            PersistentAgent definition = await agentsClient.Administration.GetAgentAsync(assistantId);
 
             this.Agent = new AzureAIAgent(definition, agentsClient);
         }

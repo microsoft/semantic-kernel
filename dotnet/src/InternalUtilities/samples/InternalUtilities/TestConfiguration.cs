@@ -364,7 +364,7 @@ public sealed class TestConfiguration
     {
         public Uri AgentUrl { get; set; } = new Uri("http://localhost:5000");
     }
-    
+
     public class Mem0Config
     {
         public string? BaseAddress { get; set; }
