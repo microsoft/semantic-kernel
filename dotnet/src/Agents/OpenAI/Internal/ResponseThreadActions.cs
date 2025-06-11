@@ -34,7 +34,7 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread, history)];
+            overrideHistory = [.. GetChatHistory(agentThread)];
         }
 
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
@@ -102,8 +102,7 @@ internal static class ResponseThreadActions
             }
 
             // Return the function results as a message
-            ChatMessageContentItemCollection items = new();
-            items.AddRange(functionResults);
+            ChatMessageContentItemCollection items = [.. functionResults];
             ChatMessageContent functionResultMessage = new()
             {
                 Role = AuthorRole.Tool,
@@ -128,7 +127,7 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread, history)];
+            overrideHistory = [.. GetChatHistory(agentThread)];
         }
 
         var inputItems = overrideHistory.Select(m => m.ToResponseItem()).ToList();
@@ -274,8 +273,7 @@ internal static class ResponseThreadActions
             }
 
             // Return the function results as a message
-            ChatMessageContentItemCollection items = new();
-            items.AddRange(functionResults);
+            ChatMessageContentItemCollection items = [.. functionResults];
             StreamingChatMessageContent functionResultMessage = new(
                 AuthorRole.Tool,
                 content: null)
@@ -288,7 +286,7 @@ internal static class ResponseThreadActions
         }
     }
 
-    private static ChatHistory GetChatHistory(AgentThread agentThread, ChatHistory history)
+    private static ChatHistory GetChatHistory(AgentThread agentThread)
     {
         if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
         {
@@ -296,17 +294,6 @@ internal static class ResponseThreadActions
         }
 
         throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
-    }
-
-    private static void UpdateResponseId(AgentThread agentThread, string id)
-    {
-        if (agentThread is OpenAIResponseAgentThread openAIResponseAgentThread)
-        {
-            openAIResponseAgentThread.ResponseId = id;
-            return;
-        }
-
-        throw new InvalidOperationException("The agent thread is not an OpenAIResponseAgentThread.");
     }
 
     private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, OpenAIResponse response)

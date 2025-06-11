@@ -43,16 +43,28 @@ public sealed class OpenAIResponseAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+        AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+
+        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
+        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = options is null ?
+            new() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
         // Invoke responses with the updated chat history.
-        var chatHistory = new ChatHistory();
-        chatHistory.AddRange(messages);
+        ChatHistory chatHistory = [.. messages];
         var invokeResults = ResponseThreadActions.InvokeAsync(
             this,
             chatHistory,
             agentThread,
-            options ?? new OpenAIAssistantAgentInvokeOptions(),
+            extensionsContextOptions,
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -68,11 +80,23 @@ public sealed class OpenAIResponseAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+        AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+
+        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
+        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = options is null ?
+            new() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
         // Invoke responses with the updated chat history.
-        var chatHistory = new ChatHistory();
-        chatHistory.AddRange(messages);
+        ChatHistory chatHistory = [.. messages];
         int messageCount = chatHistory.Count;
         var invokeResults = ResponseThreadActions.InvokeStreamingAsync(
             this,
@@ -104,7 +128,7 @@ public sealed class OpenAIResponseAgent : Agent
     [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException("API will be removed in a future release.");
+        throw new NotSupportedException($"{nameof(OpenAIResponseAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     /// <inheritdoc/>
@@ -112,7 +136,7 @@ public sealed class OpenAIResponseAgent : Agent
     [ExcludeFromCodeCoverage]
     protected override IEnumerable<string> GetChannelKeys()
     {
-        throw new NotImplementedException("API will be removed in a future release.");
+        throw new NotSupportedException($"{nameof(OpenAIResponseAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     /// <inheritdoc/>
@@ -120,7 +144,7 @@ public sealed class OpenAIResponseAgent : Agent
     [ExcludeFromCodeCoverage]
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException("API will be removed in a future release.");
+        throw new NotSupportedException($"{nameof(OpenAIResponseAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     #region private
