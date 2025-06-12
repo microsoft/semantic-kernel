@@ -318,7 +318,7 @@ def dataclass_vector_data_model(
     @dataclass
     class MyDataModel:
         vector: Annotated[
-            str | list[float] | None,
+            list[float] | str | None,
             VectorStoreField(
                 "vector",
                 index_kind=index_kind,

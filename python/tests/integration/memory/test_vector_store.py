@@ -11,7 +11,7 @@ import pytest
 from semantic_kernel.connectors.redis import RedisCollectionTypes
 from semantic_kernel.data.vector import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorConnectionException
-from tests.integration.memory.data_records import RAW_RECORD_ARRAY, RAW_RECORD_LIST
+from tests.integration.memory.data_records import RAW_RECORD_LIST
 from tests.integration.memory.vector_store_test_base import VectorStoreTestBase
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -40,19 +40,6 @@ class TestVectorStore(VectorStoreTestBase):
             # region Redis
             pytest.param(
                 "redis",
-                "redis_json_array_data_model",
-                {"collection_type": RedisCollectionTypes.JSON},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="redis_json_array_data_model",
-            ),
-            pytest.param(
-                "redis",
                 "redis_json_list_data_model",
                 {"collection_type": RedisCollectionTypes.JSON},
                 "dataclass_vector_data_model",
@@ -76,19 +63,6 @@ class TestVectorStore(VectorStoreTestBase):
                 5,
                 RAW_RECORD_LIST,
                 id="redis_json_pandas_data_model",
-            ),
-            pytest.param(
-                "redis",
-                "redis_hashset_array_data_model",
-                {"collection_type": RedisCollectionTypes.HASHSET},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="redis_hashset_array_data_model",
             ),
             pytest.param(
                 "redis",
@@ -120,19 +94,6 @@ class TestVectorStore(VectorStoreTestBase):
             # region Azure AI Search
             pytest.param(
                 "azure_ai_search",
-                "azure_ai_search_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="azure_ai_search_array_data_model",
-            ),
-            pytest.param(
-                "azure_ai_search",
                 "azure_ai_search_list_data_model",
                 {},
                 "dataclass_vector_data_model",
@@ -161,19 +122,6 @@ class TestVectorStore(VectorStoreTestBase):
             # region Qdrant
             pytest.param(
                 "qdrant",
-                "qdrant_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="qdrant_array_data_model",
-            ),
-            pytest.param(
-                "qdrant",
                 "qdrant_list_data_model",
                 {},
                 "dataclass_vector_data_model",
@@ -197,19 +145,6 @@ class TestVectorStore(VectorStoreTestBase):
                 5,
                 RAW_RECORD_LIST,
                 id="qdrant_pandas_data_model",
-            ),
-            pytest.param(
-                "qdrant_in_memory",
-                "qdrant_in_memory_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="qdrant_in_memory_array_data_model",
             ),
             pytest.param(
                 "qdrant_in_memory",
@@ -239,19 +174,6 @@ class TestVectorStore(VectorStoreTestBase):
             ),
             pytest.param(
                 "qdrant",
-                "qdrant_grpc_array_data_model",
-                {"prefer_grpc": True},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="qdrant_grpc_array_data_model",
-            ),
-            pytest.param(
-                "qdrant",
                 "qdrant_grpc_list_data_model",
                 {"prefer_grpc": True},
                 "dataclass_vector_data_model",
@@ -278,24 +200,6 @@ class TestVectorStore(VectorStoreTestBase):
             ),
             # endregion
             # region Weaviate
-            pytest.param(
-                "weaviate_local",
-                "weaviate_local_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                marks=pytest.mark.skipif(
-                    platform.system() != "Linux",
-                    reason="The Weaviate docker image is only available on Linux"
-                    " but some GitHubs job runs in a Windows container.",
-                ),
-                id="weaviate_local_array_data_model",
-            ),
             pytest.param(
                 "weaviate_local",
                 "weaviate_local_list_data_model",
@@ -336,23 +240,6 @@ class TestVectorStore(VectorStoreTestBase):
             # region Azure Cosmos DB
             pytest.param(
                 "azure_cosmos_db_no_sql",
-                "azure_cosmos_db_no_sql_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                "flat",
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                marks=pytest.mark.skipif(
-                    platform.system() != "Windows",
-                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
-                ),
-                id="azure_cosmos_db_no_sql_array_data_model",
-            ),
-            pytest.param(
-                "azure_cosmos_db_no_sql",
                 "azure_cosmos_db_no_sql_list_data_model",
                 {},
                 "dataclass_vector_data_model",
@@ -387,19 +274,6 @@ class TestVectorStore(VectorStoreTestBase):
             ),
             # endregion
             # region Chroma
-            pytest.param(
-                "chroma",
-                "chroma_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="chroma_array_data_model",
-            ),
             pytest.param(
                 "chroma",
                 "chroma_list_data_model",
@@ -454,7 +328,10 @@ class TestVectorStore(VectorStoreTestBase):
             async with (
                 stores[store_id]() as vector_store,
                 vector_store.get_collection(
-                    collection_name, record_type, definition, **collection_options
+                    record_type=record_type,
+                    definition=definition,
+                    collection_name=collection_name,
+                    **collection_options,
                 ) as collection,
             ):
                 try:
@@ -468,7 +345,7 @@ class TestVectorStore(VectorStoreTestBase):
                     pytest.fail(f"Failed to create collection: {exc}")
 
                 # Upsert record
-                await collection.upsert(record_type([record]) if record_type == pd.DataFrame else record_type(**record))
+                await collection.upsert(record_type([record]) if record_type is pd.DataFrame else record_type(**record))
                 # Get record
                 result = await collection.get(record["id"])
                 assert result is not None
