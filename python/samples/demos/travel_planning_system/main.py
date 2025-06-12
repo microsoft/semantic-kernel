@@ -21,8 +21,10 @@ def agent_response_callback(message: ChatMessageContent) -> None:
 
 def human_response_function() -> ChatMessageContent:
     """Observer function to print the messages from the agents."""
-    user_input = input("User: ")
-    return ChatMessageContent(role=AuthorRole.USER, content=user_input)
+    tracer = trace.get_tracer(__name__)
+    with tracer.start_as_current_span("human_in_the_loop"):
+        user_input = input("User: ")
+        return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
 async def main():
