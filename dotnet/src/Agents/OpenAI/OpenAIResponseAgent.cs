@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
@@ -45,18 +46,8 @@ public sealed class OpenAIResponseAgent : Agent
 
         AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
-
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = options is null ?
-            new() { AdditionalInstructions = mergedAdditionalInstructions } :
-            new(options) { AdditionalInstructions = mergedAdditionalInstructions };
+        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
 
         // Invoke responses with the updated chat history.
         ChatHistory chatHistory = [.. messages];
@@ -76,24 +67,14 @@ public sealed class OpenAIResponseAgent : Agent
     }
 
     /// <inheritdoc/>
-    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
         AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
-
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = options is null ?
-            new() { AdditionalInstructions = mergedAdditionalInstructions } :
-            new(options) { AdditionalInstructions = mergedAdditionalInstructions };
+        OpenAIAssistantAgentInvokeOptions extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
 
         // Invoke responses with the updated chat history.
         ChatHistory chatHistory = [.. messages];
@@ -102,7 +83,7 @@ public sealed class OpenAIResponseAgent : Agent
             this,
             chatHistory,
             agentThread,
-            options,
+            extensionsContextOptions,
             cancellationToken);
 
         // Return streaming chat message content to the caller.
@@ -147,7 +128,6 @@ public sealed class OpenAIResponseAgent : Agent
         throw new NotSupportedException($"{nameof(OpenAIResponseAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
-    #region private
     private async Task<AgentThread> EnsureThreadExistsWithMessagesAsync(ICollection<ChatMessageContent> messages, AgentThread? thread, CancellationToken cancellationToken)
     {
         if (this.StoreEnabled)
@@ -157,5 +137,29 @@ public sealed class OpenAIResponseAgent : Agent
 
         return await this.EnsureThreadExistsWithMessagesAsync(messages, thread, () => new ChatHistoryAgentThread(), cancellationToken).ConfigureAwait(false);
     }
-    #endregion
+
+    private async Task<OpenAIAssistantAgentInvokeOptions> FinalizeInvokeOptionsAsync(ICollection<ChatMessageContent> messages, AgentInvokeOptions? options, AgentThread agentThread, CancellationToken cancellationToken)
+    {
+        Kernel kernel = options.GetKernel(this).Clone();
+
+#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
+        OpenAIAssistantAgentInvokeOptions extensionsContextOptions =
+            options is null ?
+                new()
+                {
+                    AdditionalInstructions = mergedAdditionalInstructions,
+                    Kernel = kernel,
+                } :
+                new(options)
+                {
+                    AdditionalInstructions = mergedAdditionalInstructions,
+                    Kernel = kernel,
+                };
+        return extensionsContextOptions;
+    }
 }

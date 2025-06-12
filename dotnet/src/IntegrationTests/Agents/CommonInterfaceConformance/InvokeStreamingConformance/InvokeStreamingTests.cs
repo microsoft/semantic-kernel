@@ -70,7 +70,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults = agent.InvokeStreamingAsync();
+        var asyncResults = agent.InvokeStreamingAsync(string.Empty);
         var results = await asyncResults.ToListAsync();
 
         // Assert
