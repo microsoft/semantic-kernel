@@ -27,6 +27,73 @@ def human_response_function() -> ChatMessageContent:
         return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
+def get_agents_and_handoffs():
+    """Create agents and define handoffs for the travel planning system.
+
+    Note: prompts need further refinement to ensure they are suitable for the agents.
+    Note: the router agent seems unnecessary.
+    """
+    BASE_TRANSFER_DESCRIPTION = "Do not call this function in parallel with other functions."
+
+    conversation_manager, planner, router, destination_expert, flight_agent, hotel_agent = get_agents()
+    handoffs = (
+        OrchestrationHandoffs()
+        .add_many(
+            source_agent=conversation_manager,
+            target_agents={
+                planner.name: f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for trip planning.",
+                router.name: (
+                    f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for routing tasks to specialized agents."
+                ),
+                destination_expert.name: (
+                    f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for destination expertise."
+                ),
+                flight_agent.name: f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for flight-related tasks.",
+                hotel_agent.name: f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for hotel-related tasks.",
+            },
+        )
+        .add(
+            source_agent=planner,
+            target_agent=router,
+            description=f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for routing tasks to specialized agents.",
+        )
+        .add_many(
+            source_agent=router,
+            target_agents={
+                destination_expert.name: (
+                    f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for destination expertise."
+                ),
+                flight_agent.name: f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for flight-related tasks.",
+                hotel_agent.name: f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for hotel-related tasks.",
+            },
+        )
+        .add(
+            source_agent=destination_expert,
+            target_agent=conversation_manager,
+            description=f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for non-destination related questions.",
+        )
+        .add(
+            source_agent=flight_agent,
+            target_agent=conversation_manager,
+            description=f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for non-flight related questions.",
+        )
+        .add(
+            source_agent=hotel_agent,
+            target_agent=conversation_manager,
+            description=f"{BASE_TRANSFER_DESCRIPTION} Transfer to this agent for non-hotel related questions.",
+        )
+    )
+
+    return [
+        conversation_manager,
+        planner,
+        router,
+        destination_expert,
+        flight_agent,
+        hotel_agent,
+    ], handoffs
+
+
 async def main():
     """Main function to run the agents."""
     # 0. Set up logging and observability
@@ -34,58 +101,9 @@ async def main():
     set_up_tracing()
 
     # 1. Create a handoff orchestration with multiple agents
-    conversation_manager, planner, router, destination_expert, flight_agent, hotel_agent = get_agents()
-    handoffs = (
-        OrchestrationHandoffs()
-        .add_many(
-            source_agent=conversation_manager,
-            target_agents={
-                planner.name: "Transfer to this agent for trip planning",
-                router.name: "Transfer to this agent for routing tasks to specialized agents",
-                destination_expert.name: "Transfer to this agent for destination expertise",
-                flight_agent.name: "Transfer to this agent for flight-related tasks",
-                hotel_agent.name: "Transfer to this agent for hotel-related tasks",
-            },
-        )
-        .add(
-            source_agent=planner,
-            target_agent=router,
-            description="Transfer to this agent for routing tasks to specialized agents",
-        )
-        .add_many(
-            source_agent=router,
-            target_agents={
-                destination_expert.name: "Transfer to this agent for destination expertise",
-                flight_agent.name: "Transfer to this agent for flight-related tasks",
-                hotel_agent.name: "Transfer to this agent for hotel-related tasks",
-            },
-        )
-        .add(
-            source_agent=destination_expert,
-            target_agent=conversation_manager,
-            description="Transfer to this agent for non-destination related questions",
-        )
-        .add(
-            source_agent=flight_agent,
-            target_agent=conversation_manager,
-            description="Transfer to this agent for non-flight related questions",
-        )
-        .add(
-            source_agent=hotel_agent,
-            target_agent=conversation_manager,
-            description="Transfer to this agent for non-hotel related questions",
-        )
-    )
-
+    agents, handoffs = get_agents_and_handoffs()
     handoff_orchestration = HandoffOrchestration(
-        members=[
-            conversation_manager,
-            planner,
-            router,
-            destination_expert,
-            flight_agent,
-            hotel_agent,
-        ],
+        members=agents,
         handoffs=handoffs,
         agent_response_callback=agent_response_callback,
         human_response_function=human_response_function,
