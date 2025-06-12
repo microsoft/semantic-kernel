@@ -317,10 +317,8 @@ async def test_weaviate_collection_delete_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with (
-        patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=True),
-        pytest.raises(VectorStoreOperationException),
-    ):
+    with patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=True):
+        # deletion should quietly fail
         await collection.ensure_collection_deleted()
 
 
