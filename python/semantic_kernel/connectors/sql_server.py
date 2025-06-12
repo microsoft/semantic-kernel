@@ -480,6 +480,8 @@ class SqlServerCollection(
             vector_fields=self.definition.vector_fields,
             if_not_exists=False,
         )
+        if self.connection is None:
+            raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         with self.connection.cursor() as cursor:
             cursor.execute(*create_table_query.to_execute())
         logger.info(f"SqlServer table '{self.collection_name}' created successfully.")
@@ -489,6 +491,8 @@ class SqlServerCollection(
         if not await self.collection_exists():
             logger.debug(f"SqlServer table '{self.collection_name}' does not exist, nothing to delete.")
             return
+        if self.connection is None:
+            raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         with self.connection.cursor() as cur:
             cur.execute(*_build_delete_table_query(*self._get_schema_and_table()).to_execute())
             logger.debug(f"SqlServer table '{self.collection_name}' deleted successfully.")
