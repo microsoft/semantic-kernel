@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 
 from azure.monitor.opentelemetry.exporter import (
     AzureMonitorLogExporter,
@@ -12,10 +13,15 @@ from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry.trace import set_tracer_provider
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 load_dotenv()
 
@@ -62,6 +68,15 @@ def set_up_logging():
     logger.setLevel(logging.NOTSET)
 
 
+class CustomBatchSpanProcessor(BatchSpanProcessor):
+    @override
+    def on_end(self, span: ReadableSpan):
+        if span.name.startswith("agent_runtime"):
+            # Skip spans that are part of the agent runtime.
+            return
+        super().on_end(span)
+
+
 def set_up_tracing():
     exporters = []
     exporters.append(AzureMonitorTraceExporter(connection_string=APPINSIGHTS_CONNECTION_STRING))
@@ -71,6 +86,6 @@ def set_up_tracing():
     # Span processors are initialized with an exporter which is responsible
     # for sending the telemetry data to a particular backend.
     for exporter in exporters:
-        tracer_provider.add_span_processor(BatchSpanProcessor(exporter))
+        tracer_provider.add_span_processor(CustomBatchSpanProcessor(exporter))
     # Sets the global default tracer provider
     set_tracer_provider(tracer_provider)
