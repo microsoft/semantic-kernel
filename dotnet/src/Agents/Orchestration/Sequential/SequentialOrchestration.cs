@@ -31,7 +31,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
         {
             throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
         }
-        await runtime.SendMessageAsync(input.AsRequestMessage(), entryAgent.Value).ConfigureAwait(false);
+        await runtime.PublishMessageAsync(input.AsRequestMessage(), entryAgent.Value).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -52,11 +52,12 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
         return nextAgent;
 
         ValueTask<AgentType> RegisterAgentAsync(Agent agent, int index, AgentType nextAgent) =>
-            runtime.RegisterAgentFactoryAsync(
+            runtime.RegisterOrchestrationAgentAsync(
                 this.GetAgentType(context.Topic, index),
                 (agentId, runtime) =>
                 {
                     SequentialActor actor = new(agentId, runtime, context, agent, nextAgent, context.LoggerFactory.CreateLogger<SequentialActor>());
+
 #if !NETCOREAPP
                     return actor.AsValueTask<IHostableAgent>();
 #else
