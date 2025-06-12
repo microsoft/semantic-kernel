@@ -53,7 +53,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
         }
         await runtime.PublishMessageAsync(input.AsInputTaskMessage(), topic).ConfigureAwait(false);
-        await runtime.SendMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
+        await runtime.PublishMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -71,7 +71,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             HandoffLookup map = [];
             handoffMap[agent.Name ?? agent.Id] = map;
             agentType =
-                await runtime.RegisterAgentFactoryAsync(
+                await runtime.RegisterOrchestrationAgentAsync(
                     this.GetAgentType(context.Topic, index),
                     (agentId, runtime) =>
                     {
