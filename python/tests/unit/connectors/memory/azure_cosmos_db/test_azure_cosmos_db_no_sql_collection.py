@@ -223,17 +223,19 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
     )
 
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
+    with patch(
+        "semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=False
+    ):
+        mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
+        await vector_collection.ensure_collection_exists()
 
-    await vector_collection.create_collection()
-
-    mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
-        id=collection_name,
-        partition_key=vector_collection.partition_key,
-        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.definition),
-        vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.definition),
-    )
+        mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
+            id=collection_name,
+            partition_key=vector_collection.partition_key,
+            indexing_policy=_create_default_indexing_policy_nosql(vector_collection.definition),
+            vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.definition),
+        )
 
 
 @patch("azure.cosmos.aio.CosmosClient")
@@ -256,14 +258,17 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    await vector_collection.create_collection(indexing_policy={"automatic": False})
+    with patch(
+        "semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=False
+    ):
+        await vector_collection.ensure_collection_exists(indexing_policy={"automatic": False})
 
-    mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
-        id=collection_name,
-        partition_key=vector_collection.partition_key,
-        indexing_policy={"automatic": False},
-        vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.definition),
-    )
+        mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
+            id=collection_name,
+            partition_key=vector_collection.partition_key,
+            indexing_policy={"automatic": False},
+            vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.definition),
+        )
 
 
 @patch("azure.cosmos.aio.CosmosClient")
@@ -286,14 +291,17 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    await vector_collection.create_collection(vector_embedding_policy={"vectorEmbeddings": []})
+    with patch(
+        "semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=False
+    ):
+        await vector_collection.ensure_collection_exists(vector_embedding_policy={"vectorEmbeddings": []})
 
-    mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
-        id=collection_name,
-        partition_key=vector_collection.partition_key,
-        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.definition),
-        vector_embedding_policy={"vectorEmbeddings": []},
-    )
+        mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
+            id=collection_name,
+            partition_key=vector_collection.partition_key,
+            indexing_policy=_create_default_indexing_policy_nosql(vector_collection.definition),
+            vector_embedding_policy={"vectorEmbeddings": []},
+        )
 
 
 @patch("azure.cosmos.aio.CosmosClient")
@@ -322,8 +330,11 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    with pytest.raises(VectorStoreModelException):
-        await vector_collection.create_collection()
+    with (
+        patch("semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=False),
+        pytest.raises(VectorStoreModelException),
+    ):
+        await vector_collection.ensure_collection_exists()
 
 
 @patch("azure.cosmos.aio.DatabaseProxy")
@@ -343,9 +354,10 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
 
     mock_database_proxy.delete_container = AsyncMock()
 
-    await vector_collection.ensure_collection_deleted()
+    with patch("semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=True):
+        await vector_collection.ensure_collection_deleted()
 
-    mock_database_proxy.delete_container.assert_called_once_with(collection_name)
+        mock_database_proxy.delete_container.assert_called_once_with(collection_name)
 
 
 @patch("azure.cosmos.aio.DatabaseProxy")
@@ -364,7 +376,10 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
     mock_database_proxy.delete_container = AsyncMock(side_effect=CosmosHttpResponseError)
 
-    with pytest.raises(VectorStoreOperationException, match="Container could not be deleted."):
+    with (
+        patch("semantic_kernel.connectors.azure_cosmos_db.CosmosNoSqlCollection.collection_exists", return_value=True),
+        pytest.raises(VectorStoreOperationException, match="Container could not be deleted."),
+    ):
         await vector_collection.ensure_collection_deleted()
 
 

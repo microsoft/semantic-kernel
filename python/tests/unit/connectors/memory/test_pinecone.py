@@ -169,29 +169,31 @@ async def test_load_index_client(collection, mock_index_asyncio):
 
 
 async def test_create_collection(collection, mock_create_index):
-    await collection.create_collection()
-    assert collection.index is not None
-    assert collection.index_client is not None
-    mock_create_index.assert_awaited_once_with(
-        name=collection.collection_name,
-        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-        dimension=5,
-        metric=Metric.COSINE,
-        vector_type="dense",
-    )
+    with patch("semantic_kernel.connectors.pinecone.PineconeCollection.collection_exists", return_value=False):
+        await collection.ensure_collection_exists()
+        assert collection.index is not None
+        assert collection.index_client is not None
+        mock_create_index.assert_awaited_once_with(
+            name=collection.collection_name,
+            spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+            dimension=5,
+            metric=Metric.COSINE,
+            vector_type="dense",
+        )
 
 
 @mark.parametrize("embed", [{"model": "test-model"}])
 async def test_create_collection_integrated(collection, mock_create_index_for_model):
-    await collection.create_collection(embed={"model": "test-model"})
-    assert collection.index is not None
-    assert collection.index_client is not None
-    mock_create_index_for_model.assert_awaited_once_with(
-        name=collection.collection_name,
-        cloud="aws",
-        region="us-east-1",
-        embed={"model": "test-model", "metric": Metric.COSINE, "field_map": {"text": "vector"}},
-    )
+    with patch("semantic_kernel.connectors.pinecone.PineconeCollection.collection_exists", return_value=False):
+        await collection.ensure_collection_exists(embed={"model": "test-model"})
+        assert collection.index is not None
+        assert collection.index_client is not None
+        mock_create_index_for_model.assert_awaited_once_with(
+            name=collection.collection_name,
+            cloud="aws",
+            region="us-east-1",
+            embed={"model": "test-model", "metric": Metric.COSINE, "field_map": {"text": "vector"}},
+        )
 
 
 async def test_delete_collection(collection):

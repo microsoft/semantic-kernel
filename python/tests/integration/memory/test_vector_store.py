@@ -340,7 +340,7 @@ class TestVectorStore(VectorStoreTestBase):
                     logger.warning(f"Failed to delete collection: {exc}")
 
                 try:
-                    await collection.create_collection()
+                    await collection.ensure_collection_exists()
                 except Exception as exc:
                     pytest.fail(f"Failed to create collection: {exc}")
 

@@ -143,7 +143,11 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
                 self.indexes_key_map.setdefault(vector_field.name, {})
 
     @override
-    async def create_collection(
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        return bool(self.indexes)
+
+    @override
+    async def ensure_collection_exists(
         self, index: faiss.Index | None = None, indexes: dict[str, faiss.Index] | None = None, **kwargs: Any
     ) -> None:
         """Create a collection.
@@ -158,7 +162,19 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             indexes: A dictionary of indexes, the key is the name of the vector field.
             kwargs: Additional arguments.
         """
+        if self.indexes:
+            return
         self._create_indexes(index=index, indexes=indexes)
+
+    @override
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
+        if self.indexes:
+            for vector_field in self.definition.vector_field_names:
+                if vector_field in self.indexes:
+                    del self.indexes[vector_field]
+                if vector_field in self.indexes_key_map:
+                    del self.indexes_key_map[vector_field]
+        await super().ensure_collection_deleted(**kwargs)
 
     @override
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
@@ -189,19 +205,6 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
                     self.indexes[vector_field].remove_ids(np.array([vector_index]))
                     self.indexes_key_map[vector_field].pop(key, None)
         await super()._inner_delete(keys, **kwargs)
-
-    @override
-    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        for vector_field in self.definition.vector_field_names:
-            if vector_field in self.indexes:
-                del self.indexes[vector_field]
-            if vector_field in self.indexes_key_map:
-                del self.indexes_key_map[vector_field]
-        await super().ensure_collection_deleted(**kwargs)
-
-    @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        return bool(self.indexes)
 
     @override
     async def _inner_search(

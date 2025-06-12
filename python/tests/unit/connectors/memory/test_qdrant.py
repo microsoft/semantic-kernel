@@ -57,7 +57,7 @@ def mock_list_collection_names():
 
 
 @fixture(autouse=True)
-def mock_does_collection_exist():
+def mock_collection_exists():
     with patch(f"{BASE_PATH}.collection_exists") as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
@@ -234,8 +234,8 @@ async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-async def test_does_collection_exist(collection):
-    await collection.does_collection_exist()
+async def test_collection_exists(collection):
+    await collection.collection_exists()
 
 
 async def test_delete_collection(collection):
@@ -262,8 +262,9 @@ async def test_delete_collection(collection):
     ],
 )
 async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
-    await request.getfixturevalue(collection_to_use).create_collection()
-    mock_create_collection.assert_called_once_with(**results)
+    with patch("semantic_kernel.connectors.qdrant.QdrantCollection.collection_exists", return_value=False):
+        await request.getfixturevalue(collection_to_use).ensure_collection_exists()
+        mock_create_collection.assert_called_once_with(**results)
 
 
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
@@ -271,8 +272,11 @@ async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     for field in collection.definition.vector_fields:
         field.distance_function = DistanceFunction.HAMMING
-    with raises(VectorStoreOperationException):
-        await collection.create_collection()
+    with (
+        patch("semantic_kernel.connectors.qdrant.QdrantCollection.collection_exists", return_value=False),
+        raises(VectorStoreOperationException),
+    ):
+        await collection.ensure_collection_exists()
 
 
 async def test_search(collection, mock_search):

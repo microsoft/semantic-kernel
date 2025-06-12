@@ -1241,67 +1241,27 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         """
         ...  # pragma: no cover
 
-    async def delete_create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service, after first trying to delete it.
-
-        First uses does_collection_exist to check if it exists, if it does deletes it.
-        Then, creates the collection.
-
-        """
-        if await self.does_collection_exist(**kwargs):
-            await self.ensure_collection_deleted(**kwargs)
-        await self.create_collection(**kwargs)
-
-    async def ensure_collection_exists(self, **kwargs: Any) -> bool:
-        """Create the collection in the service if it does not exists.
-
-        First uses does_collection_exist to check if it exists, if it does returns False.
-        Otherwise, creates the collection and returns True.
-
-        Returns:
-            bool: True if the collection was created, False if it already exists.
-
-        """
-        if await self.does_collection_exist(**kwargs):
-            return False
-        await self.create_collection(**kwargs)
-        return True
-
     @abstractmethod
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        This should be overridden by the child class.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
-
-        """
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        """Check if the collection exists."""
         ...  # pragma: no cover
 
     @abstractmethod
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists.
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
+        """Create the collection in the service.
 
-        This should be overridden by the child class.
+        Should first check if the collection exists, if it does not, it should create the collection.
 
         Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
+            VectorStoreOperationException: If an error occurs during the creation of the collection.
+            VectorStoreModelException: If the data model is not valid for the collection.
+
         """
         ...  # pragma: no cover
 
     @abstractmethod
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the collection.
-
-        This should be overridden by the child class.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
-        """
+        """Delete the collection."""
         ...  # pragma: no cover
 
     async def upsert(
@@ -1596,7 +1556,7 @@ class VectorStore(KernelBaseModel):
         """Get the names of all collections."""
         ...  # pragma: no cover
 
-    async def does_collection_exist(self, collection_name: str) -> bool:
+    async def collection_exists(self, collection_name: str) -> bool:
         """Check if a collection exists.
 
         This is a wrapper around the get_collection method of a collection,
@@ -1605,7 +1565,7 @@ class VectorStore(KernelBaseModel):
         try:
             data_model = VectorStoreCollectionDefinition(fields=[VectorStoreField("key", name="id")])
             collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
-            return await collection.does_collection_exist()
+            return await collection.collection_exists()
         except VectorStoreOperationException:
             return False
 
@@ -2166,6 +2126,20 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
     supported_vector_types: ClassVar[set[str]]
     embedding_generator: EmbeddingGeneratorBase | None = None
 
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        """Check if the collection exists.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        Returns:
+            bool: True if the collection exists, False otherwise.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+        """
+        ...
+
     async def ensure_collection_exists(self, **kwargs: Any) -> bool:
         """Create the collection in the service if it does not exists.
 
@@ -2177,31 +2151,6 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
 
         Returns:
             bool: True if the collection was created, False if it already exists.
-        """
-        ...
-
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-        """
-        ...
-
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Returns:
-            bool: True if the collection exists, False otherwise.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
         """
         ...
 

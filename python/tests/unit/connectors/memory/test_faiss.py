@@ -56,7 +56,7 @@ async def test_create_collection(store, data_model_def, dist):
         if field.name == "vector":
             field.distance_function = dist
     collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
     assert collection.inner_storage == {}
     assert collection.indexes
     assert collection.indexes["vector"] is not None
@@ -68,13 +68,13 @@ async def test_create_collection_incompatible_dist(store, data_model_def):
             field.distance_function = "cosine_distance"
     collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     with raises(VectorStoreInitializationException):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
 async def test_create_collection_custom(store, data_model_def):
     index = faiss.IndexFlat(5)
     collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
-    await collection.create_collection(index=index)
+    await collection.ensure_collection_exists(index=index)
     assert collection.inner_storage == {}
     assert collection.indexes
     assert collection.indexes["vector"] is not None
@@ -87,14 +87,14 @@ async def test_create_collection_custom_untrained(store, data_model_def):
     index = faiss.IndexIVFFlat(faiss.IndexFlat(5), 5, 10)
     collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     with raises(VectorStoreInitializationException):
-        await collection.create_collection(index=index)
+        await collection.ensure_collection_exists(index=index)
     del index
 
 
 async def test_create_collection_custom_dict(store, data_model_def):
     index = faiss.IndexFlat(5)
     collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
-    await collection.create_collection(indexes={"vector": index})
+    await collection.ensure_collection_exists(indexes={"vector": index})
     assert collection.inner_storage == {}
     assert collection.indexes
     assert collection.indexes["vector"] is not None
@@ -103,7 +103,7 @@ async def test_create_collection_custom_dict(store, data_model_def):
 
 
 async def test_upsert(faiss_collection):
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     key = await faiss_collection.upsert(record)
     assert key == "testid"
@@ -112,7 +112,7 @@ async def test_upsert(faiss_collection):
 
 
 async def test_get(faiss_collection):
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await faiss_collection.upsert(record)
     result = await faiss_collection.get("testid")
@@ -122,14 +122,14 @@ async def test_get(faiss_collection):
 
 
 async def test_get_missing(faiss_collection):
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     result = await faiss_collection.get("testid")
     assert result is None
     await faiss_collection.ensure_collection_deleted()
 
 
 async def test_delete(faiss_collection):
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await faiss_collection.upsert(record)
     await faiss_collection.delete("testid")
@@ -137,15 +137,15 @@ async def test_delete(faiss_collection):
     await faiss_collection.ensure_collection_deleted()
 
 
-async def test_does_collection_exist(faiss_collection):
-    assert await faiss_collection.does_collection_exist() is False
-    await faiss_collection.create_collection()
-    assert await faiss_collection.does_collection_exist() is True
+async def test_collection_exists(faiss_collection):
+    assert await faiss_collection.collection_exists() is False
+    await faiss_collection.ensure_collection_exists()
+    assert await faiss_collection.collection_exists() is True
     await faiss_collection.ensure_collection_deleted()
 
 
 async def test_delete_collection(faiss_collection):
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await faiss_collection.upsert(record)
     assert faiss_collection.inner_storage == {"testid": record}
@@ -158,7 +158,7 @@ async def test_create_collection_and_search(faiss_collection, dist):
     for field in faiss_collection.definition.fields:
         if field.name == "vector":
             field.distance_function = dist
-    await faiss_collection.create_collection()
+    await faiss_collection.ensure_collection_exists()
     record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
     record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
     await faiss_collection.upsert([record1, record2])

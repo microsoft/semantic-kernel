@@ -90,4 +90,4 @@ async def test_mongodb_atlas_collection_collection_exists(mongodb_atlas_unit_tes
     )
     with patch.object(collection, "_get_database", new=mock_get_database) as mock_get:
         mock_get.return_value.list_collection_names.return_value = ["test_collection"]
-        assert await collection.does_collection_exist()
+        assert await collection.collection_exists()

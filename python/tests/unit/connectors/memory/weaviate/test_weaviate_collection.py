@@ -218,24 +218,25 @@ async def test_weaviate_collection_create_collection(
         env_file_path="fake_env_file_path.env",
     )
 
-    await collection.create_collection()
+    with patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=False):
+        await collection.ensure_collection_exists()
 
-    mock_async_client.collections.create.assert_called_once_with(
-        name=collection_name,
-        properties=[
-            Property(
-                name="content",
-                data_type=DataType.TEXT,
-            )
-        ],
-        vector_index_config=None,
-        vectorizer_config=[
-            Configure.NamedVectors.none(
-                name="vector",
-                vector_index_config=Configure.VectorIndex.hnsw(distance_metric=VectorDistances.COSINE),
-            )
-        ],
-    )
+        mock_async_client.collections.create.assert_called_once_with(
+            name=collection_name,
+            properties=[
+                Property(
+                    name="content",
+                    data_type=DataType.TEXT,
+                )
+            ],
+            vector_index_config=None,
+            vectorizer_config=[
+                Configure.NamedVectors.none(
+                    name="vector",
+                    vector_index_config=Configure.VectorIndex.hnsw(distance_metric=VectorDistances.COSINE),
+                )
+            ],
+        )
 
 
 @pytest.mark.parametrize(
@@ -262,8 +263,11 @@ async def test_weaviate_collection_create_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(VectorStoreOperationException):
-        await collection.create_collection()
+    with (
+        patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=False),
+        pytest.raises(VectorStoreOperationException),
+    ):
+        await collection.ensure_collection_exists()
 
 
 async def test_weaviate_collection_delete_collection(
@@ -283,9 +287,10 @@ async def test_weaviate_collection_delete_collection(
         env_file_path="fake_env_file_path.env",
     )
 
-    await collection.ensure_collection_deleted()
+    with patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=True):
+        await collection.ensure_collection_deleted()
 
-    mock_async_client.collections.delete.assert_called_once_with(collection_name)
+        mock_async_client.collections.delete.assert_called_once_with(collection_name)
 
 
 @pytest.mark.parametrize(
@@ -312,7 +317,8 @@ async def test_weaviate_collection_delete_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(VectorStoreOperationException):
+    with patch("semantic_kernel.connectors.weaviate.WeaviateCollection.collection_exists", return_value=True):
+        # deletion should quietly fail
         await collection.ensure_collection_deleted()
 
 
@@ -333,7 +339,7 @@ async def test_weaviate_collection_collection_exist(
         env_file_path="fake_env_file_path.env",
     )
 
-    await collection.does_collection_exist()
+    await collection.collection_exists()
 
     mock_async_client.collections.exists.assert_called_once_with(collection_name)
 
@@ -363,7 +369,7 @@ async def test_weaviate_collection_collection_exist_fail(
     )
 
     with pytest.raises(VectorStoreOperationException):
-        await collection.does_collection_exist()
+        await collection.collection_exists()
 
 
 async def test_weaviate_collection_serialize_data(

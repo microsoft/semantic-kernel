@@ -55,7 +55,7 @@ async def main() -> None:
 
         print("Creating index for memory...")
         await collection.ensure_collection_deleted()
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
         print("Populating memory...")
         # Add information to the collection

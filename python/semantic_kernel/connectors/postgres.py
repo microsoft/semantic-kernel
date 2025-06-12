@@ -556,14 +556,30 @@ class PostgresCollection(
         return records
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create a PostgreSQL table based on a dictionary of VectorStoreRecordField.
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        """Check if the collection exists."""
+        if self.connection_pool is None:
+            raise VectorStoreOperationException(
+                "Connection pool is not available, use the collection as a context manager."
+            )
 
-        Args:
-            table_name: Name of the table to be created
-            fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
-            **kwargs: Additional arguments
-        """
+        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+            await cur.execute(
+                """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = %s AND table_name = %s
+                """,
+                (self.db_schema, self.collection_name),
+            )
+            row = await cur.fetchone()
+            return bool(row)
+
+    @override
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
+        if await self.collection_exists():
+            logger.info(f"Postgres table '{self.collection_name}' already exists.")
+            return
         if self.connection_pool is None:
             raise VectorStoreOperationException(
                 "Connection pool is not available, use the collection as a context manager."
@@ -621,28 +637,11 @@ class PostgresCollection(
             await self._create_index(table_name, vector_field)
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists."""
-        if self.connection_pool is None:
-            raise VectorStoreOperationException(
-                "Connection pool is not available, use the collection as a context manager."
-            )
-
-        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
-            await cur.execute(
-                """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = %s AND table_name = %s
-                """,
-                (self.db_schema, self.collection_name),
-            )
-            row = await cur.fetchone()
-            return bool(row)
-
-    @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the collection."""
+        if not await self.collection_exists():
+            logger.info(f"Postgres table '{self.collection_name}' does not exist, nothing to delete.")
+            return
         if self.connection_pool is None:
             raise VectorStoreOperationException(
                 "Connection pool is not available, use the collection as a context manager."

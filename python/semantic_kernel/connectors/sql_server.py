@@ -449,53 +449,7 @@ class SqlServerCollection(
         return records
 
     @override
-    async def create_collection(
-        self, *, create_if_not_exists: bool = True, queries: list[str] | None = None, **kwargs: Any
-    ) -> None:
-        """Create a SQL table based on the data model.
-
-        Alternatively, you can pass a list of queries to execute.
-        If supplied, only the queries will be executed.
-
-        Args:
-            create_if_not_exists: Whether to create the table if it does not exist, default is True.
-                This means, that by default the table will only be created if it does not exist.
-                So if there is a existing table with the same name, it will not be created or modified.
-            queries: A list of SQL queries to execute.
-            **kwargs: Additional arguments.
-
-        """
-        if self.connection is None:
-            raise VectorStoreOperationException("Connection is not available, use the collection as a context manager.")
-
-        if queries:
-            with self.connection.cursor() as cursor:
-                for query in queries:
-                    cursor.execute(query)
-            return
-
-        create_table_query = _build_create_table_query(
-            *self._get_schema_and_table(),
-            key_field=self.definition.key_field,
-            data_fields=self.definition.data_fields,
-            vector_fields=self.definition.vector_fields,
-            if_not_exists=create_if_not_exists,
-        )
-        with self.connection.cursor() as cursor:
-            cursor.execute(*create_table_query.to_execute())
-        logger.info(f"SqlServer table '{self.collection_name}' created successfully.")
-
-    def _get_schema_and_table(self) -> tuple[str, str]:
-        """Get the schema and table name from the collection name."""
-        if "." in self.collection_name:
-            schema, table = self.collection_name.split(".", maxsplit=1)
-        else:
-            schema = "dbo"
-            table = self.collection_name
-        return schema, table
-
-    @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
@@ -506,14 +460,51 @@ class SqlServerCollection(
             return bool(row)
 
     @override
-    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the collection."""
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
+        """Create a SQL table based on the data model.
+
+        First checks if the table exists, if not, creates it.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        """
+        if await self.collection_exists():
+            logger.debug(f"SqlServer table '{self.collection_name}' already exists.")
+            return
+
+        create_table_query = _build_create_table_query(
+            *self._get_schema_and_table(),
+            key_field=self.definition.key_field,
+            data_fields=self.definition.data_fields,
+            vector_fields=self.definition.vector_fields,
+            if_not_exists=False,
+        )
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
+        with self.connection.cursor() as cursor:
+            cursor.execute(*create_table_query.to_execute())
+        logger.info(f"SqlServer table '{self.collection_name}' created successfully.")
 
+    @override
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
+        if not await self.collection_exists():
+            logger.debug(f"SqlServer table '{self.collection_name}' does not exist, nothing to delete.")
+            return
+        if self.connection is None:
+            raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         with self.connection.cursor() as cur:
             cur.execute(*_build_delete_table_query(*self._get_schema_and_table()).to_execute())
             logger.debug(f"SqlServer table '{self.collection_name}' deleted successfully.")
+
+    def _get_schema_and_table(self) -> tuple[str, str]:
+        """Get the schema and table name from the collection name."""
+        if "." in self.collection_name:
+            schema, table = self.collection_name.split(".", maxsplit=1)
+        else:
+            schema = "dbo"
+            table = self.collection_name
+        return schema, table
 
     @override
     async def _inner_search(

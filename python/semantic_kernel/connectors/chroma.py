@@ -127,8 +127,7 @@ class ChromaCollection(
             raise RuntimeError(f"Failed to get collection {self.collection_name}") from e
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists."""
+    async def collection_exists(self, **kwargs: Any) -> bool:
         try:
             self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
             return True
@@ -136,7 +135,7 @@ class ChromaCollection(
             return False
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the collection.
 
         Will create a metadata object with the hnsw arguments.
@@ -145,7 +144,7 @@ class ChromaCollection(
 
         For example:
         ```python
-        await collection.create_collection(
+        await collection.ensure_collection_exists(
             configuration={"hnsw": {"max_neighbors": 16, "ef_construction": 200, "ef_search": 200}}
         )
         ```
@@ -157,6 +156,9 @@ class ChromaCollection(
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
                 See the Chroma documentation for more details.
         """
+        if await self.collection_exists():
+            logger.info(f"Collection {self.collection_name} already exists.")
+            return
         if self.definition.vector_fields:
             configuration = kwargs.pop("configuration", {})
             configuration = CreateCollectionConfiguration(**configuration)
@@ -181,7 +183,9 @@ class ChromaCollection(
 
     @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the collection."""
+        if not await self.collection_exists():
+            logger.info(f"Collection {self.collection_name} does not exist, nothing to delete.")
+            return
         try:
             self.client.delete_collection(name=self.collection_name)
         except ValueError:

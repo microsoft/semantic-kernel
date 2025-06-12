@@ -187,7 +187,7 @@ class PineconeCollection(
             )
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the Pinecone collection.
 
         Args:
@@ -201,6 +201,9 @@ class PineconeCollection(
                 - cloud: The cloud provider to use. Default is "aws".
                 - region: The region to use. Default is "us-east-1".
         """
+        if await self.collection_exists():
+            logger.debug("Pinecone collection '%s' already exists.", self.collection_name)
+            return
         vector_field = self.definition.vector_fields[0] if self.definition.vector_fields else None
         await (
             self._create_index_with_integrated_embeddings(vector_field, **kwargs)
@@ -292,8 +295,7 @@ class PineconeCollection(
             )
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
-        """Check if the Pinecone collection exists."""
+    async def collection_exists(self, **kwargs) -> bool:
         exists = (
             await self.client.has_index(self.collection_name)
             if isinstance(self.client, PineconeAsyncio)
@@ -305,8 +307,7 @@ class PineconeCollection(
 
     @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the Pinecone collection."""
-        if not await self.does_collection_exist():
+        if not await self.collection_exists():
             if self.index or self.index_client:
                 self.index = None
                 self.index_client = None
