@@ -73,10 +73,17 @@ def moc_list_collection_names():
         yield mock_get_collections
 
 
-@fixture(autouse=True)
-def mock_collection_exists():
+@fixture
+def mock_collection_exists_true():
     with patch(f"{BASE_PATH_FT}.info", new=AsyncMock()) as mock_collection_exists:
         mock_collection_exists.return_value = True
+        yield mock_collection_exists
+
+
+@fixture
+def mock_collection_exists_false():
+    with patch(f"{BASE_PATH_FT}.info", new=AsyncMock()) as mock_collection_exists:
+        mock_collection_exists.return_value = False
         yield mock_collection_exists
 
 
@@ -276,32 +283,37 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
-async def test_collection_exists(collection_hash, mock_collection_exists):
-    await collection_hash.collection_exists()
+async def test_collection_exists(collection_hash, mock_collection_exists_true):
+    assert await collection_hash.collection_exists()
 
 
-async def test_collection_exists_false(collection_hash, mock_collection_exists):
-    mock_collection_exists.side_effect = Exception
-    exists = await collection_hash.collection_exists()
-    assert not exists
+async def test_collection_exists_false(collection_hash, mock_collection_exists_true):
+    mock_collection_exists_true.side_effect = Exception
+    assert not await collection_hash.collection_exists()
 
 
 async def test_delete_collection(collection_hash, mock_delete_collection):
-    await collection_hash.ensure_collection_deleted()
+    with patch("semantic_kernel.connectors.redis.RedisCollection.collection_exists", return_value=True):
+        await collection_hash.ensure_collection_deleted()
 
 
-async def test_create_index(collection_hash, mock_ensure_collection_exists):
-    await collection_hash.ensure_collection_exists()
+async def test_create_index(collection_hash):
+    with patch("semantic_kernel.connectors.redis.RedisCollection.collection_exists", return_value=False):
+        await collection_hash.ensure_collection_exists()
 
 
-async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
-    from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+async def test_create_index_manual(collection_hash):
+    from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
     index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
-    await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
+    with patch("semantic_kernel.connectors.redis.RedisCollection.collection_exists", return_value=False):
+        await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
 
 
-async def test_create_index_fail(collection_hash, mock_ensure_collection_exists):
-    with raises(VectorStoreOperationException, match="Invalid index type supplied."):
+async def test_create_index_fail(collection_hash):
+    with (
+        patch("semantic_kernel.connectors.redis.RedisCollection.collection_exists", return_value=False),
+        raises(VectorStoreOperationException, match="Invalid index type supplied."),
+    ):
         await collection_hash.ensure_collection_exists(index_definition="index_definition", fields="fields")
