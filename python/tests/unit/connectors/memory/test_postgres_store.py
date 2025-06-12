@@ -97,7 +97,7 @@ def test_get_collection(vector_store: PostgresStore) -> None:
     assert collection.collection_name == "test_collection"
 
 
-async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+async def test_collection_exists(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     result = await collection.collection_exists()

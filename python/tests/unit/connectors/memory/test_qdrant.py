@@ -57,7 +57,7 @@ def mock_list_collection_names():
 
 
 @fixture(autouse=True)
-def mock_does_collection_exist():
+def mock_collection_exists():
     with patch(f"{BASE_PATH}.collection_exists") as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
@@ -234,8 +234,8 @@ async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-async def test_does_collection_exist(collection):
-    await collection.does_collection_exist()
+async def test_collection_exists(collection):
+    await collection.collection_exists()
 
 
 async def test_delete_collection(collection):

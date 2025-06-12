@@ -50,9 +50,9 @@ def test_chroma_store_get_collection(chroma_store, mock_client, definition):
     assert isinstance(collection, ChromaCollection)
 
 
-async def test_chroma_collection_does_collection_exist(chroma_collection, mock_client):
+async def test_chroma_collection_collection_exists(chroma_collection, mock_client):
     mock_client.get_collection.return_value = "mock_collection"
-    exists = await chroma_collection.does_collection_exist()
+    exists = await chroma_collection.collection_exists()
     assert exists
 
 

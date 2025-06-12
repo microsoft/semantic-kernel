@@ -226,8 +226,8 @@ async def test_delete(collection, mock_delete):
     await collection._inner_delete(["id1"])
 
 
-async def test_does_collection_exist(collection, mock_list_collection_names):
-    await collection.does_collection_exist()
+async def test_collection_exists(collection, mock_list_collection_names):
+    await collection.collection_exists()
 
 
 async def test_delete_collection(collection, mock_delete_collection):
@@ -280,7 +280,7 @@ async def test_vector_store_list_collection_names(vector_store, mock_list_collec
 
 async def test_vector_store_does_collection_exists(vector_store, mock_list_collection_names):
     assert vector_store.search_index_client is not None
-    exists = await vector_store.does_collection_exist("test")
+    exists = await vector_store.collection_exists("test")
     assert exists
     mock_list_collection_names.assert_called_once()
 

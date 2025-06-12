@@ -52,8 +52,8 @@ async def test_delete(collection):
     assert collection.inner_storage == {}
 
 
-async def test_does_collection_exist(collection):
-    assert await collection.does_collection_exist() is True
+async def test_collection_exists(collection):
+    assert await collection.collection_exists() is True
 
 
 async def test_delete_collection(collection):

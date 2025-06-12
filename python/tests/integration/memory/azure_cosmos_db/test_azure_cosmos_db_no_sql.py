@@ -39,7 +39,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert collection_name in collection_names
 
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
             collection_names = await store.list_collection_names()
             assert collection_name not in collection_names
 
@@ -54,7 +54,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             collection_name = "collection_not_created"
             collection = store.get_collection(collection_name=collection_name, record_type=record_type)
 
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
 
             with pytest.raises(
                 MemoryConnectorException, match="The collection does not exist yet. Create the collection first."
@@ -105,7 +105,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             # Remove collection
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
 
     async def test_get_include_vector(
         self,
@@ -135,7 +135,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             # Remove collection
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
 
     async def test_get_not_include_vector(
         self,
@@ -165,7 +165,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             # Remove collection
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
 
     async def test_collection_with_key_as_key_field(
         self,
@@ -198,7 +198,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             # Remove collection
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
 
     async def test_custom_client(
         self,
@@ -226,6 +226,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert collection_name in collection_names
 
             await collection.ensure_collection_deleted()
-            assert await collection.does_collection_exist() is False
+            assert await collection.collection_exists() is False
             collection_names = await store.list_collection_names()
             assert collection_name not in collection_names

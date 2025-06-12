@@ -137,10 +137,10 @@ async def test_delete(faiss_collection):
     await faiss_collection.ensure_collection_deleted()
 
 
-async def test_does_collection_exist(faiss_collection):
-    assert await faiss_collection.does_collection_exist() is False
+async def test_collection_exists(faiss_collection):
+    assert await faiss_collection.collection_exists() is False
     await faiss_collection.ensure_collection_exists()
-    assert await faiss_collection.does_collection_exist() is True
+    assert await faiss_collection.collection_exists() is True
     await faiss_collection.ensure_collection_deleted()
 
 

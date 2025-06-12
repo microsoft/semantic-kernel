@@ -129,15 +129,15 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
 
     collection = vector_store.get_collection(collection_name=f"test_collection_{suffix}", record_type=SimpleDataModel)
 
-    does_exist_1 = await collection.does_collection_exist()
+    does_exist_1 = await collection.collection_exists()
     assert does_exist_1 is False
 
     await collection.ensure_collection_exists()
-    does_exist_2 = await collection.does_collection_exist()
+    does_exist_2 = await collection.collection_exists()
     assert does_exist_2 is True
 
     await collection.ensure_collection_deleted()
-    does_exist_3 = await collection.does_collection_exist()
+    does_exist_3 = await collection.collection_exists()
     assert does_exist_3 is False
 
 

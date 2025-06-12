@@ -59,7 +59,7 @@ def test_data_model_validation_vector_fail(record_type_vanilla, DictVectorStoreR
 # region Collection
 async def test_collection_operations(vector_store_record_collection):
     await vector_store_record_collection.ensure_collection_exists()
-    assert await vector_store_record_collection.does_collection_exist()
+    assert await vector_store_record_collection.collection_exists()
     record = {"id": "id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
