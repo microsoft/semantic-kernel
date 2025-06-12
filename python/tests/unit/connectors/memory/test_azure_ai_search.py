@@ -238,7 +238,7 @@ async def test_create_index_from_index(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     index = MagicMock(spec=SearchIndex)
-    await collection.create_collection(index=index)
+    await collection.ensure_collection_exists(index=index)
 
 
 async def test_create_index_from_definition(collection, mock_create_collection):
@@ -248,13 +248,13 @@ async def test_create_index_from_definition(collection, mock_create_collection):
         "semantic_kernel.connectors.azure_ai_search._definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
 async def test_create_index_from_index_fail(collection, mock_create_collection):
     index = Mock()
     with raises(VectorStoreOperationException):
-        await collection.create_collection(index=index)
+        await collection.ensure_collection_exists(index=index)
 
 
 @mark.parametrize("distance_function", [("cosine_distance")])

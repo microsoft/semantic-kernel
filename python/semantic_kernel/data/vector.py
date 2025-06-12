@@ -2126,6 +2126,20 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
     supported_vector_types: ClassVar[set[str]]
     embedding_generator: EmbeddingGeneratorBase | None = None
 
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        """Check if the collection exists.
+
+        Args:
+            **kwargs: Additional arguments.
+
+        Returns:
+            bool: True if the collection exists, False otherwise.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+        """
+        ...
+
     async def ensure_collection_exists(self, **kwargs: Any) -> bool:
         """Create the collection in the service if it does not exists.
 
@@ -2137,31 +2151,6 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
 
         Returns:
             bool: True if the collection was created, False if it already exists.
-        """
-        ...
-
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-        """
-        ...
-
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Returns:
-            bool: True if the collection exists, False otherwise.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
         """
         ...
 

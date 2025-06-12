@@ -64,8 +64,8 @@ async def test_chroma_store_list_collection_names(chroma_store, mock_client):
     assert collections == ["test_collection"]
 
 
-async def test_chroma_collection_create_collection(chroma_collection, mock_client):
-    await chroma_collection.create_collection()
+async def test_chroma_collection_ensure_collection_exists(chroma_collection, mock_client):
+    await chroma_collection.ensure_collection_exists()
     mock_client.create_collection.assert_called_once_with(
         name="test_collection", embedding_function=None, configuration={"hnsw": {"space": "cosine"}}, get_or_create=True
     )

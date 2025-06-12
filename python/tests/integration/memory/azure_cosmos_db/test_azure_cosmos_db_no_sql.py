@@ -33,7 +33,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             collection_name = "list_collection_names"
             collection = store.get_collection(collection_name, record_type)
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
 
             collection_names = await store.list_collection_names()
             assert collection_name in collection_names
@@ -93,7 +93,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             composite_key = CosmosNoSqlCompositeKey(key=data_record["id"], partition_key=data_record["product_type"])
 
             # Upsert
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
             await collection.upsert(record_type(**data_record))
 
             # Verify
@@ -122,7 +122,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             collection = store.get_collection(collection_name, record_type)
 
             # Upsert
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
             await collection.upsert(record_type(**data_record))
 
             # Verify
@@ -152,7 +152,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             collection = store.get_collection(collection_name, record_type)
 
             # Upsert
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
             await collection.upsert(record_type(**data_record))
 
             # Verify
@@ -182,7 +182,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             collection = store.get_collection(collection_name, record_type_with_key_as_key_field)
 
             # Upsert
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
             result = await collection.upsert(record_type_with_key_as_key_field(**data_record_with_key_as_key_field))
             assert data_record_with_key_as_key_field["key"] == result
 
@@ -221,7 +221,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
             collection_name = "list_collection_names"
             collection = store.get_collection(collection_name, record_type)
-            await collection.create_collection()
+            await collection.ensure_collection_exists()
 
             collection_names = await store.list_collection_names()
             assert collection_name in collection_names

@@ -64,8 +64,8 @@ async def test_delete_collection(collection):
     assert collection.inner_storage == {}
 
 
-async def test_create_collection(collection):
-    await collection.create_collection()
+async def test_ensure_collection_exists(collection):
+    await collection.ensure_collection_exists()
 
 
 @mark.parametrize(

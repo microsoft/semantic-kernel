@@ -78,8 +78,9 @@ async def main():
         embedding_generator=embedder,
     ) as record_collection:
         # Create the collection after wiping it
+        await record_collection.ensure_collection_deleted()
         print_with_color("Creating test collection!", Colors.CGREY)
-        await record_collection.delete_create_collection()
+        await record_collection.ensure_collection_exists()
 
         # First add vectors to the records
         print_with_color("Adding records!", Colors.CBLUE)

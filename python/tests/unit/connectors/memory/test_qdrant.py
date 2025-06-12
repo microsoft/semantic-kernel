@@ -262,7 +262,7 @@ async def test_delete_collection(collection):
     ],
 )
 async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
-    await request.getfixturevalue(collection_to_use).create_collection()
+    await request.getfixturevalue(collection_to_use).ensure_collection_exists()
     mock_create_collection.assert_called_once_with(**results)
 
 
@@ -272,7 +272,7 @@ async def test_create_index_fail(collection_to_use, request):
     for field in collection.definition.vector_fields:
         field.distance_function = DistanceFunction.HAMMING
     with raises(VectorStoreOperationException):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
 async def test_search(collection, mock_search):

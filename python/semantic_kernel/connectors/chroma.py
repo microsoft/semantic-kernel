@@ -144,7 +144,7 @@ class ChromaCollection(
 
         For example:
         ```python
-        await collection.create_collection(
+        await collection.ensure_collection_exists(
             configuration={"hnsw": {"max_neighbors": 16, "ef_construction": 200, "ef_search": 200}}
         )
         ```

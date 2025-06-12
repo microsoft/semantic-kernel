@@ -169,7 +169,7 @@ async def test_load_index_client(collection, mock_index_asyncio):
 
 
 async def test_create_collection(collection, mock_create_index):
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
     assert collection.index is not None
     assert collection.index_client is not None
     mock_create_index.assert_awaited_once_with(
@@ -183,7 +183,7 @@ async def test_create_collection(collection, mock_create_index):
 
 @mark.parametrize("embed", [{"model": "test-model"}])
 async def test_create_collection_integrated(collection, mock_create_index_for_model):
-    await collection.create_collection(embed={"model": "test-model"})
+    await collection.ensure_collection_exists(embed={"model": "test-model"})
     assert collection.index is not None
     assert collection.index_client is not None
     mock_create_index_for_model.assert_awaited_once_with(

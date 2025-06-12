@@ -133,7 +133,7 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     does_exist_1 = await collection.does_collection_exist()
     assert does_exist_1 is False
 
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
     does_exist_2 = await collection.does_collection_exist()
     assert does_exist_2 is True
 
@@ -185,7 +185,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
     collection = vector_store.get_collection(
         f"test_collection_{suffix}", record_type=pd.DataFrame, definition=definition
     )
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     try:
         result_before_upsert = await collection.get(1)
