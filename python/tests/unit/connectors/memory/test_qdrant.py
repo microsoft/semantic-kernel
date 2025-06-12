@@ -262,8 +262,9 @@ async def test_delete_collection(collection):
     ],
 )
 async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
-    await request.getfixturevalue(collection_to_use).ensure_collection_exists()
-    mock_create_collection.assert_called_once_with(**results)
+    with patch("semantic_kernel.connectors.qdrant.QdrantCollection.collection_exists", return_value=False):
+        await request.getfixturevalue(collection_to_use).ensure_collection_exists()
+        mock_create_collection.assert_called_once_with(**results)
 
 
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
@@ -271,7 +272,10 @@ async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     for field in collection.definition.vector_fields:
         field.distance_function = DistanceFunction.HAMMING
-    with raises(VectorStoreOperationException):
+    with (
+        patch("semantic_kernel.connectors.qdrant.QdrantCollection.collection_exists", return_value=False),
+        raises(VectorStoreOperationException),
+    ):
         await collection.ensure_collection_exists()
 
 

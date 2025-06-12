@@ -499,15 +499,17 @@ class TestSqlServerCollection:
             definition=definition,
             connection=mock_connection,
         )
-        await collection.ensure_collection_exists()
-        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
-            (
-                "IF OBJECT_ID(N' [dbo].[test] ', N'U') IS NULL\nBEGIN\nCREATE TABLE [dbo].[test] \n (\"id\" nvarchar"
-                '(255) NOT NULL,\n"content" nvarchar(max) NULL,\n"vector" VECTOR(5) NULL,\nPRIMARY KEY (id) \n) ;'
-                "\nEND\n"
-            ),
-            (),
-        )
+
+        with patch("semantic_kernel.connectors.sql_server.SqlServerCollection.collection_exists", return_value=False):
+            await collection.ensure_collection_exists()
+            mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+                (
+                    'BEGIN\nCREATE TABLE [dbo].[test] \n ("id" nvarchar'
+                    '(255) NOT NULL,\n"content" nvarchar(max) NULL,\n"vector" VECTOR(5) NULL,\nPRIMARY KEY (id) \n) ;'
+                    "\nEND\n"
+                ),
+                (),
+            )
 
     async def test_delete_collection(
         self,
@@ -521,10 +523,11 @@ class TestSqlServerCollection:
             definition=definition,
             connection=mock_connection,
         )
-        await collection.ensure_collection_deleted()
-        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
-            "DROP TABLE IF EXISTS [dbo].[test] ;", ()
-        )
+        with patch("semantic_kernel.connectors.sql_server.SqlServerCollection.collection_exists", return_value=True):
+            await collection.ensure_collection_deleted()
+            mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+                "DROP TABLE IF EXISTS [dbo].[test] ;", ()
+            )
 
     async def test_no_connection(self, sql_server_unit_test_env, definition):
         collection = SqlServerCollection(

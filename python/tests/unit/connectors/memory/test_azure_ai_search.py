@@ -231,29 +231,46 @@ async def test_collection_exists(collection, mock_list_collection_names):
 
 
 async def test_delete_collection(collection, mock_delete_collection):
-    await collection.ensure_collection_deleted()
+    with patch(
+        "semantic_kernel.connectors.azure_ai_search.AzureAISearchCollection.collection_exists", return_value=True
+    ):
+        await collection.ensure_collection_deleted()
 
 
 async def test_create_index_from_index(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     index = MagicMock(spec=SearchIndex)
-    await collection.ensure_collection_exists(index=index)
+    with patch(
+        "semantic_kernel.connectors.azure_ai_search.AzureAISearchCollection.collection_exists", return_value=False
+    ):
+        await collection.ensure_collection_exists(index=index)
 
 
 async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
-    with patch(
-        "semantic_kernel.connectors.azure_ai_search._definition_to_azure_ai_search_index",
-        return_value=MagicMock(spec=SearchIndex),
+    with (
+        patch(
+            "semantic_kernel.connectors.azure_ai_search._definition_to_azure_ai_search_index",
+            return_value=MagicMock(spec=SearchIndex),
+        ),
+        patch(
+            "semantic_kernel.connectors.azure_ai_search.AzureAISearchCollection.collection_exists", return_value=False
+        ),
     ):
         await collection.ensure_collection_exists()
+        assert mock_create_collection.call_count == 1
 
 
 async def test_create_index_from_index_fail(collection, mock_create_collection):
     index = Mock()
-    with raises(VectorStoreOperationException):
+    with (
+        patch(
+            "semantic_kernel.connectors.azure_ai_search.AzureAISearchCollection.collection_exists", return_value=False
+        ),
+        raises(VectorStoreOperationException),
+    ):
         await collection.ensure_collection_exists(index=index)
 
 
@@ -287,8 +304,11 @@ async def test_vector_store_does_collection_exists(vector_store, mock_list_colle
 
 async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
     assert vector_store.search_index_client is not None
-    await vector_store.ensure_collection_deleted("test")
-    mock_delete_collection.assert_called_once()
+    with patch(
+        "semantic_kernel.connectors.azure_ai_search.AzureAISearchCollection.collection_exists", return_value=True
+    ):
+        await vector_store.ensure_collection_deleted("test")
+        mock_delete_collection.assert_called_once()
 
 
 def test_get_collection(vector_store, definition):

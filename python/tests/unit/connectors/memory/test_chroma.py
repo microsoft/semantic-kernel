@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from chromadb.api import ClientAPI
@@ -65,15 +65,20 @@ async def test_chroma_store_list_collection_names(chroma_store, mock_client):
 
 
 async def test_chroma_collection_ensure_collection_exists(chroma_collection, mock_client):
-    await chroma_collection.ensure_collection_exists()
-    mock_client.create_collection.assert_called_once_with(
-        name="test_collection", embedding_function=None, configuration={"hnsw": {"space": "cosine"}}, get_or_create=True
-    )
+    with patch("semantic_kernel.connectors.chroma.ChromaCollection.collection_exists", return_value=False):
+        await chroma_collection.ensure_collection_exists()
+        mock_client.create_collection.assert_called_once_with(
+            name="test_collection",
+            embedding_function=None,
+            configuration={"hnsw": {"space": "cosine"}},
+            get_or_create=True,
+        )
 
 
 async def test_chroma_collection_delete_collection(chroma_collection, mock_client):
-    await chroma_collection.ensure_collection_deleted()
-    mock_client.delete_collection.assert_called_once_with(name="test_collection")
+    with patch("semantic_kernel.connectors.chroma.ChromaCollection.collection_exists", return_value=True):
+        await chroma_collection.ensure_collection_deleted()
+        mock_client.delete_collection.assert_called_once_with(name="test_collection")
 
 
 async def test_chroma_collection_upsert(chroma_collection, mock_client):

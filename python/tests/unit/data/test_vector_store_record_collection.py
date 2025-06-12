@@ -69,9 +69,9 @@ async def test_collection_operations(vector_store_record_collection):
 
 
 async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, definition):
-    DictVectorStoreRecordCollection.does_collection_exist = AsyncMock(return_value=False)
+    DictVectorStoreRecordCollection.collection_exists = AsyncMock(return_value=False)
     create_mock = AsyncMock()
-    DictVectorStoreRecordCollection.create_collection = create_mock
+    DictVectorStoreRecordCollection.ensure_collection_exists = create_mock
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
         record_type=dict,

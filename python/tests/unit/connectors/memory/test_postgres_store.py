@@ -106,14 +106,15 @@ async def test_collection_exists(vector_store: PostgresStore, mock_cursor: Mock)
 
 async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    await collection.ensure_collection_deleted()
+    with patch("semantic_kernel.connectors.postgres.PostgresCollection.collection_exists", return_value=True):
+        await collection.ensure_collection_deleted()
 
-    assert mock_cursor.execute.call_count == 1
-    execute_args, _ = mock_cursor.execute.call_args
-    statement = execute_args[0]
-    statement_str = statement.as_string()
+        assert mock_cursor.execute.call_count == 1
+        execute_args, _ = mock_cursor.execute.call_args
+        statement = execute_args[0]
+        statement_str = statement.as_string()
 
-    assert statement_str == 'DROP TABLE "public"."test_collection" CASCADE'
+        assert statement_str == 'DROP TABLE "public"."test_collection" CASCADE'
 
 
 async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
@@ -130,24 +131,27 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
 
 async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    await collection.ensure_collection_exists()
+    with patch("semantic_kernel.connectors.postgres.PostgresCollection.collection_exists", return_value=False):
+        await collection.ensure_collection_exists()
 
-    # 2 calls, once for the table creation and once for the index creation
-    assert mock_cursor.execute.call_count == 2
+        # 2 calls, once for the table creation and once for the index creation
+        assert mock_cursor.execute.call_count == 2
 
-    # Check the table creation statement
-    execute_args, _ = mock_cursor.execute.call_args_list[0]
-    statement = execute_args[0]
-    statement_str = statement.as_string()
-    assert statement_str == ('CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "data" VECTOR(1536))')
+        # Check the table creation statement
+        execute_args, _ = mock_cursor.execute.call_args_list[0]
+        statement = execute_args[0]
+        statement_str = statement.as_string()
+        assert statement_str == (
+            'CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "data" VECTOR(1536))'
+        )
 
-    # Check the index creation statement
-    execute_args, _ = mock_cursor.execute.call_args_list[1]
-    statement = execute_args[0]
-    statement_str = statement.as_string()
-    assert statement_str == (
-        'CREATE INDEX "test_collection_data_idx" ON "public"."test_collection" USING hnsw ("data" vector_cosine_ops)'
-    )
+        # Check the index creation statement
+        execute_args, _ = mock_cursor.execute.call_args_list[1]
+        statement = execute_args[0]
+        statement_str = statement.as_string()
+        assert statement_str == (
+            'CREATE INDEX "test_collection_data_idx" ON "public"."test_collection" USING hnsw ("data" vector_cosine_ops)'  # noqa: E501
+        )
 
 
 async def test_create_collection_model_with_python_types(vector_store: PostgresStore, mock_cursor: Mock) -> None:
@@ -163,28 +167,29 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithImplicitTypes)
 
-    await collection.ensure_collection_exists()
+    with patch("semantic_kernel.connectors.postgres.PostgresCollection.collection_exists", return_value=False):
+        await collection.ensure_collection_exists()
 
-    assert mock_cursor.execute.call_count == 2
+        assert mock_cursor.execute.call_count == 2
 
-    # Check the table creation statement
-    execute_args, _ = mock_cursor.execute.call_args_list[0]
-    statement = execute_args[0]
-    statement_str = statement.as_string()
-    assert statement_str == (
-        'CREATE TABLE "public"."test_collection" '
-        '("name" TEXT PRIMARY KEY, "age" INTEGER, "data" JSONB, '
-        '"embedding" VECTOR(20), "scores" DOUBLE PRECISION[], "tags" TEXT[])'
-    )
+        # Check the table creation statement
+        execute_args, _ = mock_cursor.execute.call_args_list[0]
+        statement = execute_args[0]
+        statement_str = statement.as_string()
+        assert statement_str == (
+            'CREATE TABLE "public"."test_collection" '
+            '("name" TEXT PRIMARY KEY, "age" INTEGER, "data" JSONB, '
+            '"embedding" VECTOR(20), "scores" DOUBLE PRECISION[], "tags" TEXT[])'
+        )
 
-    # Check the index creation statement
-    execute_args, _ = mock_cursor.execute.call_args_list[1]
-    statement = execute_args[0]
-    statement_str = statement.as_string()
-    assert statement_str == (
-        'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
-        'USING hnsw ("embedding" vector_cosine_ops)'
-    )
+        # Check the index creation statement
+        execute_args, _ = mock_cursor.execute.call_args_list[1]
+        statement = execute_args[0]
+        statement_str = statement.as_string()
+        assert statement_str == (
+            'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
+            'USING hnsw ("embedding" vector_cosine_ops)'
+        )
 
 
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
