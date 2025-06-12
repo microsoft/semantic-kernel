@@ -8,7 +8,7 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.Agen
 
 public class OpenAIResponseAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<OpenAIResponseAgentFixture>(() => new OpenAIResponseAgentFixture())
 {
-    [Fact(Skip = $"{nameof(OpenAIResponseAgent)} fails to recieve context messages - Issue #12469")]
+    [Fact(Skip = $"{nameof(OpenAIResponseAgent)} fails to receive context messages - Issue #12469")]
     public override Task StatePartReceivesMessagesFromAgentWhenStreamingAsync()
     {
         return base.StatePartReceivesMessagesFromAgentWhenStreamingAsync();
