@@ -132,7 +132,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         logger.LogOrchestrationInvoke(this.OrchestrationLabel, topic);
 
-        Task task = runtime.SendMessageAsync(input, orchestrationType, cancellationToken).AsTask();
+        Task task = runtime.PublishMessageAsync(input, orchestrationType, cancellationToken).AsTask();
 
         logger.LogOrchestrationYield(this.OrchestrationLabel, topic);
 
@@ -186,7 +186,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         // Register actor for orchestration entry-point
         AgentType orchestrationEntry =
-            await runtime.RegisterAgentFactoryAsync(
+            await runtime.RegisterOrchestrationAgentAsync(
                 this.FormatAgentType(context.Topic, "Boot"),
                     (agentId, runtime) =>
                     {
@@ -228,8 +228,8 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         public async ValueTask<AgentType> RegisterResultTypeAsync<TResult>(OrchestrationResultTransform<TResult> resultTransform)
         {
             // Register actor for final result
-            return
-                await runtime.RegisterAgentFactoryAsync(
+            AgentType registeredType =
+                await runtime.RegisterOrchestrationAgentAsync(
                     agentType,
                     (agentId, runtime) =>
                     {
@@ -247,6 +247,8 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                         return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
                     }).ConfigureAwait(false);
+
+            return registeredType;
         }
     }
 }
