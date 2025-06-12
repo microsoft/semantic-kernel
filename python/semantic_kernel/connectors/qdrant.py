@@ -478,15 +478,21 @@ class QdrantCollection(
         ]
 
     @override
-    async def ensure_collection_exists(self, **kwargs) -> None:
+    async def collection_exists(self, **kwargs) -> bool:
+        return await self.qdrant_client.collection_exists(self.collection_name, **kwargs)
+
+    @override
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create a new collection in Qdrant.
 
         Args:
             **kwargs: Additional keyword arguments.
                 You can supply all keyword arguments supported by the QdrantClient.create_collection method.
                 This method creates the vectors_config automatically when not supplied, other params are not set.
-                Collection name will be set to the collection_name property, cannot be overridden.
         """
+        if await self.collection_exists(**kwargs):
+            logger.debug("Collection '%s' already exists, skipping creation.", self.collection_name)
+            return
         if "vectors_config" not in kwargs:
             if self.named_vectors:
                 vectors_config: MutableMapping[str, VectorParams] = {}
@@ -516,16 +522,14 @@ class QdrantCollection(
                     distance=DISTANCE_FUNCTION_MAP[vector.distance_function],
                     datatype=TYPE_MAPPER_VECTOR[vector.type_ or "default"],
                 )
-        if "collection_name" not in kwargs:
-            kwargs["collection_name"] = self.collection_name
+        kwargs["collection_name"] = self.collection_name
         await self.qdrant_client.create_collection(**kwargs)
 
     @override
-    async def collection_exists(self, **kwargs) -> bool:
-        return await self.qdrant_client.collection_exists(self.collection_name, **kwargs)
-
-    @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
+        if not await self.collection_exists(**kwargs):
+            logger.debug("Collection '%s' does not exist, skipping deletion.", self.collection_name)
+            return
         await self.qdrant_client.delete_collection(self.collection_name, **kwargs)
 
     def _validate_data_model(self):

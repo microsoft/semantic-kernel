@@ -551,14 +551,19 @@ class WeaviateCollection(
         return records_in_dict
 
     @override
-    async def ensure_collection_exists(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the collection in Weaviate.
+
+        If the collection already exists, this method does nothing.
 
         Args:
             **kwargs: Additional keyword arguments, when any kwargs are supplied they are passed
                 straight to the Weaviate client.collections.create method.
                 Make sure to check the arguments of that method for the specifications.
         """
+        if await self.collection_exists():
+            logger.debug("Collection '%s' already exists, skipping creation.", self.collection_name)
+            return
         if not self.named_vectors and len(self.definition.vector_field_names) != 1:
             raise VectorStoreOperationException(
                 "Named vectors must be enabled if there is not exactly one vector field in the data model definition."
@@ -619,15 +624,7 @@ class WeaviateCollection(
             raise VectorStoreOperationException(f"Failed to create collection: {ex}") from ex
 
     @override
-    async def collection_exists(self, **kwargs) -> bool:
-        """Check if the collection exists in Weaviate.
-
-        Args:
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: Whether the collection exists.
-        """
+    async def collection_exists(self, **kwargs: Any) -> bool:
         try:
             return await self.async_client.collections.exists(self.collection_name)
         except WeaviateClosedClientError as ex:
@@ -638,20 +635,14 @@ class WeaviateCollection(
             raise VectorStoreOperationException(f"Failed to check if collection exists: {ex}") from ex
 
     @override
-    async def ensure_collection_deleted(self, **kwargs) -> None:
-        """Delete the collection in Weaviate.
-
-        Args:
-            **kwargs: Additional keyword arguments.
-        """
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
+        if not await self.collection_exists():
+            logger.debug("Collection '%s' does not exist, skipping deletion.", self.collection_name)
+            return
         try:
             await self.async_client.collections.delete(self.collection_name)
-        except WeaviateClosedClientError as ex:
-            raise VectorStoreOperationException(
-                "Client is closed, please use the context manager or self.async_client.connect."
-            ) from ex
         except Exception as ex:
-            raise VectorStoreOperationException(f"Failed to delete collection: {ex}") from ex
+            logger.error("Failed to delete collection '%s': %s", self.collection_name, ex)
 
     @override
     async def __aenter__(self) -> "WeaviateCollection":

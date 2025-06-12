@@ -258,8 +258,19 @@ class RedisCollection(
         return key
 
     @override
+    async def collection_exists(self, **kwargs) -> bool:
+        try:
+            await self.redis_database.ft(self.collection_name).info()
+            return True
+        except Exception:
+            return False
+
+    @override
     async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new index in Redis.
+
+        First checks if the collection exists, if it does not exist,
+        it creates a new index based on the definition.
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -269,6 +280,9 @@ class RedisCollection(
                     this is used instead of a index created based on the definition.
                 other kwargs are passed to the create_index method.
         """
+        if await self.collection_exists():
+            logger.debug("Collection already exists, skipping creation.")
+            return
         if (index_definition := kwargs.pop("index_definition", None)) and (fields := kwargs.pop("fields", None)):
             if isinstance(index_definition, IndexDefinition):
                 await self.redis_database.ft(self.collection_name).create_index(
@@ -283,20 +297,11 @@ class RedisCollection(
         await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
 
     @override
-    async def collection_exists(self, **kwargs) -> bool:
-        try:
-            await self.redis_database.ft(self.collection_name).info()
-            return True
-        except Exception:
-            return False
-
-    @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
-        exists = await self.collection_exists()
-        if exists:
-            await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
-        else:
+        if not await self.collection_exists():
             logger.debug("Collection does not exist, skipping deletion.")
+            return
+        await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
 
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:

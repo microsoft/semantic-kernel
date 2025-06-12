@@ -463,17 +463,30 @@ class AzureAISearchCollection(
         return records
 
     @override
+    async def collection_exists(self, **kwargs) -> bool:
+        if "params" not in kwargs:
+            kwargs["params"] = {"select": ["name"]}
+        return self.collection_name in [
+            index_name async for index_name in self.search_index_client.list_index_names(**kwargs)
+        ]
+
+    @override
     async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in Azure AI Search.
 
+        If the collection already exists, it will not be created again.
+
         Args:
+            index (SearchIndex): The search index to create, if this is supplied
+                this is used instead of a index created based on the definition.
+            encryption_key (SearchResourceEncryptionKey): The encryption key to use,
+                not used when index is supplied.
             **kwargs: Additional keyword arguments.
-                index (SearchIndex): The search index to create, if this is supplied
-                    this is used instead of a index created based on the definition.
-                encryption_key (SearchResourceEncryptionKey): The encryption key to use,
-                    not used when index is supplied.
-                other kwargs are passed to the create_index method.
+                passed to the SearchIndexClient.create_index method.
         """
+        if await self.collection_exists(**kwargs):
+            logger.debug(f"Collection {self.collection_name} already exists, skipping creation.")
+            return
         if index := kwargs.pop("index", None):
             if isinstance(index, SearchIndex):
                 await self.search_index_client.create_index(index=index, **kwargs)
@@ -489,15 +502,10 @@ class AzureAISearchCollection(
         )
 
     @override
-    async def collection_exists(self, **kwargs) -> bool:
-        if "params" not in kwargs:
-            kwargs["params"] = {"select": ["name"]}
-        return self.collection_name in [
-            index_name async for index_name in self.search_index_client.list_index_names(**kwargs)
-        ]
-
-    @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
+        if not await self.collection_exists(**kwargs):
+            logger.debug(f"Collection {self.collection_name} does not exist, skipping deletion.")
+            return
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
 
     @override

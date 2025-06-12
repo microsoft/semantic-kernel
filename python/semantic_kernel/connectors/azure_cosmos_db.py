@@ -363,6 +363,8 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
     async def ensure_collection_exists(self, **kwargs) -> None:
         """Create a new collection in Azure CosmosDB for MongoDB.
 
+        This first checks if the collection already exists, if so, it does nothing.
+
         This first creates a collection, with the kwargs.
         Then creates a search index based on the data model definition.
 
@@ -374,6 +376,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
                 These are the additional keyword arguments for creating
                 vector indexes in Azure Cosmos DB for MongoDB.
                 And they depend on the kind of index you are creating.
+                They will be mapped under `cosmosSearchOptions`.
                 See https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
                 for more information.
                 Other kwargs are passed to the create_collection method.
@@ -965,7 +968,32 @@ class CosmosNoSqlCollection(
         return deserialized_records
 
     @override
+    async def collection_exists(self, **kwargs) -> bool:
+        container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
+        try:
+            await container_proxy.read(**kwargs)
+            return True
+        except CosmosHttpResponseError:
+            return False
+
+    @override
     async def ensure_collection_exists(self, **kwargs) -> None:
+        """Create a new collection in Azure Cosmos DB NoSQL.
+
+        This first checks if the collection exists, and if not,
+        it creates it with the optionally specified indexing and vector embedding policies.
+
+        Args:`
+            indexing_policy: The indexing policy to use for the collection.
+                Defaults to the default indexing policy based on the data model definition.
+            vector_embedding_policy: The vector embedding policy to use for the collection.
+                Defaults to the default vector embedding policy based on the data model definition.
+            **kwargs: Additional keyword arguments.
+                There are passed to the create_container_if_not_exists method.
+
+        """
+        if await self.collection_exists(**kwargs):
+            return
         indexing_policy = kwargs.pop("indexing_policy", _create_default_indexing_policy_nosql(self.definition))
         vector_embedding_policy = kwargs.pop(
             "vector_embedding_policy", _create_default_vector_embedding_policy(self.definition)
@@ -983,16 +1011,9 @@ class CosmosNoSqlCollection(
             raise VectorStoreOperationException("Failed to create container.") from e
 
     @override
-    async def collection_exists(self, **kwargs) -> bool:
-        container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
-        try:
-            await container_proxy.read(**kwargs)
-            return True
-        except CosmosHttpResponseError:
-            return False
-
-    @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
+        if not await self.collection_exists(**kwargs):
+            return
         database_proxy = await self._get_database_proxy(**kwargs)
         try:
             await database_proxy.delete_container(self.collection_name)

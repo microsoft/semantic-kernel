@@ -315,25 +315,26 @@ class MongoDBAtlasCollection(
         return [self._reset_key_field(record) for record in records]
 
     @override
-    async def ensure_collection_exists(self, **kwargs) -> None:
-        """Create a new collection in MongoDB.
-
-        This first creates a collection, with the kwargs.
-        Then creates a search index based on the data model definition.
-
-        Args:
-            **kwargs: Additional keyword arguments.
-        """
-        collection = await self._get_database().create_collection(self.collection_name, **kwargs)
-        await collection.create_search_indexes(models=_create_index_definitions(self.definition, self.index_name))
-
-    @override
     async def collection_exists(self, **kwargs) -> bool:
         return bool(await self._get_database().list_collection_names(filter={"name": self.collection_name}))
 
     @override
+    async def ensure_collection_exists(self, **kwargs) -> None:
+        if await self.collection_exists():
+            logger.debug("Collection '%s' already exists.", self.collection_name)
+            return
+        collection = await self._get_database().create_collection(self.collection_name, **kwargs)
+        await collection.create_search_indexes(models=_create_index_definitions(self.definition, self.index_name))
+
+    @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
-        await self._get_database().drop_collection(self.collection_name, **kwargs)
+        if not await self.collection_exists():
+            logger.debug("Collection '%s' does not exist.", self.collection_name)
+            return
+        try:
+            await self._get_database().drop_collection(self.collection_name, **kwargs)
+        except Exception as e:
+            logger.error("Failed to delete collection '%s': %s", self.collection_name, e)
 
     @override
     async def _inner_search(

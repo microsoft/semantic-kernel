@@ -128,7 +128,6 @@ class ChromaCollection(
 
     @override
     async def collection_exists(self, **kwargs: Any) -> bool:
-        """Check if the collection exists."""
         try:
             self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
             return True
@@ -157,6 +156,9 @@ class ChromaCollection(
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
                 See the Chroma documentation for more details.
         """
+        if await self.collection_exists():
+            logger.info(f"Collection {self.collection_name} already exists.")
+            return
         if self.definition.vector_fields:
             configuration = kwargs.pop("configuration", {})
             configuration = CreateCollectionConfiguration(**configuration)
@@ -181,7 +183,9 @@ class ChromaCollection(
 
     @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the collection."""
+        if not await self.collection_exists():
+            logger.info(f"Collection {self.collection_name} does not exist, nothing to delete.")
+            return
         try:
             self.client.delete_collection(name=self.collection_name)
         except ValueError:

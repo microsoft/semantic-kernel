@@ -1242,41 +1242,26 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         ...  # pragma: no cover
 
     @abstractmethod
-    async def ensure_collection_exists(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        This should be overridden by the child class. Should first check if the collection exists,
-        if it does not, it should create the collection.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
-
-        """
+    async def collection_exists(self, **kwargs: Any) -> bool:
+        """Check if the collection exists."""
         ...  # pragma: no cover
 
     @abstractmethod
-    async def collection_exists(self, **kwargs: Any) -> bool:
-        """Check if the collection exists.
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
+        """Create the collection in the service.
 
-        This should be overridden by the child class.
+        Should first check if the collection exists, if it does not, it should create the collection.
 
         Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
+            VectorStoreOperationException: If an error occurs during the creation of the collection.
+            VectorStoreModelException: If the data model is not valid for the collection.
+
         """
         ...  # pragma: no cover
 
     @abstractmethod
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Delete the collection.
-
-        This should be overridden by the child class.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-            This is different then the `_inner_x` methods, as this is a public method.
-        """
+        """Delete the collection."""
         ...  # pragma: no cover
 
     async def upsert(
