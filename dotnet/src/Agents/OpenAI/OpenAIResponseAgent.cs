@@ -142,10 +142,10 @@ public sealed class OpenAIResponseAgent : Agent
     {
         Kernel kernel = options.GetKernel(this).Clone();
 
-#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
         OpenAIAssistantAgentInvokeOptions extensionsContextOptions =

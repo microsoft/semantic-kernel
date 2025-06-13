@@ -42,7 +42,7 @@ internal static class ResponseThreadActions
         var inputItems = overrideHistory.Select(c => c.ToResponseItem()).ToList();
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
-        for (int requestIndex = 0; requestIndex <= MaximumAutoInvokeAttempts; requestIndex++)
+        for (int requestIndex = 0; ; requestIndex++)
         {
             // Create a response using the OpenAI Responses API
             var clientResult = await agent.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
@@ -63,6 +63,12 @@ internal static class ResponseThreadActions
             var message = response.ToChatMessageContent();
             overrideHistory.Add(message);
             yield return message;
+
+            // Reached maximum auto invocations
+            if (requestIndex == MaximumAutoInvokeAttempts)
+            {
+                break;
+            }
 
             // Check if there are any functions to invoke.
             var functionCalls = response.OutputItems
@@ -129,7 +135,7 @@ internal static class ResponseThreadActions
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
         ChatMessageContent? message = null;
-        for (int requestIndex = 0; requestIndex < MaximumAutoInvokeAttempts; requestIndex++)
+        for (int requestIndex = 0; ; requestIndex++)
         {
             // Make the call to the OpenAIResponseClient and process the streaming results.
             DateTimeOffset? createdAt = null;
@@ -153,6 +159,7 @@ internal static class ResponseThreadActions
                     case StreamingResponseCompletedUpdate completedUpdate:
                         response = completedUpdate.Response;
                         message = completedUpdate.Response.ToChatMessageContent();
+                        overrideHistory.Add(message);
                         break;
 
                     case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
@@ -230,6 +237,12 @@ internal static class ResponseThreadActions
             else if (response is not null)
             {
                 inputItems.AddRange(response.OutputItems);
+            }
+
+            // Reached maximum auto invocations
+            if (requestIndex == MaximumAutoInvokeAttempts)
+            {
+                break;
             }
 
             // Check if there a function to invoke.
