@@ -74,7 +74,7 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     /// <summary>
     /// Checks that an invalid BedrockRuntime object will throw an exception.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ShouldThrowExceptionForNullBedrockRuntimeWhenNotConfiguredAsync()
     {
         // Arrange

@@ -678,22 +678,8 @@ class MagenticAgentActor(AgentActorBase):
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received response message.")
         if self._agent_thread is not None:
-            if message.body.role != AuthorRole.USER:
-                await self._agent_thread.on_new_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
             await self._agent_thread.on_new_message(message.body)
         else:
-            if message.body.role != AuthorRole.USER:
-                self._chat_history.add_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
             self._chat_history.add_message(message.body)
 
     @message_handler
@@ -703,11 +689,7 @@ class MagenticAgentActor(AgentActorBase):
 
         logger.debug(f"{self.id}: Received request message.")
 
-        persona_adoption_message = ChatMessageContent(
-            role=AuthorRole.USER,
-            content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-        )
-        response = await self._invoke_agent(additional_messages=persona_adoption_message)
+        response = await self._invoke_agent()
 
         logger.debug(f"{self.id} responded with {response}.")
 

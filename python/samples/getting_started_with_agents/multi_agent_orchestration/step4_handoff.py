@@ -4,7 +4,7 @@ import asyncio
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
@@ -61,14 +61,14 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="TriageAgent",
         description="A customer support agent that triages issues.",
         instructions="Handle customer requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
 
     refund_agent = ChatCompletionAgent(
         name="RefundAgent",
         description="A customer support agent that handles refunds.",
         instructions="Handle refund requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderRefundPlugin()],
     )
 
@@ -76,7 +76,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderStatusAgent",
         description="A customer support agent that checks order status.",
         instructions="Handle order status requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderStatusPlugin()],
     )
 
@@ -84,7 +84,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderReturnAgent",
         description="A customer support agent that handles order returns.",
         instructions="Handle order return requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderReturnPlugin()],
     )
 
