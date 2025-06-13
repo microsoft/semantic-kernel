@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using Pgvector;
+using Npgsql;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -51,28 +51,28 @@ public class PostgresSqlBuilderTests
 
         var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
-        var cmdInfo = PostgresSqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, ifNotExists: ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("public.\"testcollection\" (", cmdInfo.CommandText);
-        Assert.Contains("\"name\" TEXT", cmdInfo.CommandText);
-        Assert.Contains("\"code\" INTEGER NOT NULL", cmdInfo.CommandText);
-        Assert.Contains("\"rating\" REAL", cmdInfo.CommandText);
-        Assert.Contains("\"description\" TEXT", cmdInfo.CommandText);
-        Assert.Contains("\"free_parking\" BOOLEAN NOT NULL", cmdInfo.CommandText);
-        Assert.Contains("\"tags\" TEXT[]", cmdInfo.CommandText);
-        Assert.Contains("\"description\" TEXT", cmdInfo.CommandText);
-        Assert.Contains("\"embedding1\" VECTOR(10) NOT NULL", cmdInfo.CommandText);
-        Assert.Contains("\"embedding2\" VECTOR(10)", cmdInfo.CommandText);
-        Assert.Contains("PRIMARY KEY (\"id\")", cmdInfo.CommandText);
+        Assert.Contains("public.\"testcollection\" (", sql);
+        Assert.Contains("\"name\" TEXT", sql);
+        Assert.Contains("\"code\" INTEGER NOT NULL", sql);
+        Assert.Contains("\"rating\" REAL", sql);
+        Assert.Contains("\"description\" TEXT", sql);
+        Assert.Contains("\"free_parking\" BOOLEAN NOT NULL", sql);
+        Assert.Contains("\"tags\" TEXT[]", sql);
+        Assert.Contains("\"description\" TEXT", sql);
+        Assert.Contains("\"embedding1\" VECTOR(10) NOT NULL", sql);
+        Assert.Contains("\"embedding2\" VECTOR(10)", sql);
+        Assert.Contains("PRIMARY KEY (\"id\")", sql);
 
         if (ifNotExists)
         {
-            Assert.Contains("IF NOT EXISTS", cmdInfo.CommandText);
+            Assert.Contains("IF NOT EXISTS", sql);
         }
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(sql);
     }
 
     [Theory]
@@ -88,47 +88,47 @@ public class PostgresSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
             return;
         }
 
-        var cmdInfo = PostgresSqlBuilder.BuildCreateIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
+        Assert.Contains("CREATE INDEX ", sql);
         // Make sure ifNotExists is respected
         if (ifNotExists)
         {
-            Assert.Contains("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+            Assert.Contains("CREATE INDEX IF NOT EXISTS", sql);
         }
         else
         {
-            Assert.DoesNotContain("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+            Assert.DoesNotContain("CREATE INDEX IF NOT EXISTS", sql);
         }
         // Make sure the name is escaped, so names starting with a digit are OK.
-        Assert.Contains($"\"1testcollection_{vectorColumn}_index\"", cmdInfo.CommandText);
+        Assert.Contains($"\"1testcollection_{vectorColumn}_index\"", sql);
 
-        Assert.Contains("ON public.\"1testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
+        Assert.Contains("ON public.\"1testcollection\" USING hnsw (\"embedding1\" ", sql);
         if (distanceFunction == null)
         {
             // Check for distance function defaults to cosine distance
-            Assert.Contains("vector_cosine_ops)", cmdInfo.CommandText);
+            Assert.Contains("vector_cosine_ops)", sql);
         }
         else if (distanceFunction == DistanceFunction.CosineDistance)
         {
-            Assert.Contains("vector_cosine_ops)", cmdInfo.CommandText);
+            Assert.Contains("vector_cosine_ops)", sql);
         }
         else if (distanceFunction == DistanceFunction.EuclideanDistance)
         {
-            Assert.Contains("vector_l2_ops)", cmdInfo.CommandText);
+            Assert.Contains("vector_l2_ops)", sql);
         }
         else
         {
             throw new NotImplementedException($"Test case for Distance function {distanceFunction} is not implemented.");
         }
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(sql);
     }
 
     [Theory]
@@ -136,31 +136,57 @@ public class PostgresSqlBuilderTests
     [InlineData(false)]
     public void TestBuildCreateNonVectorIndexCommand(bool ifNotExists)
     {
-        var cmdInfo = PostgresSqlBuilder.BuildCreateIndexCommand("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
 
         var expectedCommandText = ifNotExists
-            ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\");"
-            : "CREATE INDEX \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\");";
+            ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\")"
+            : "CREATE INDEX \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\")";
 
-        Assert.Equal(expectedCommandText, cmdInfo.CommandText);
+        Assert.Equal(expectedCommandText, sql);
     }
 
     [Fact]
     public void TestBuildDropTableCommand()
     {
-        var cmdInfo = PostgresSqlBuilder.BuildDropTableCommand("public", "testcollection");
+        using var command = new NpgsqlCommand();
+        PostgresSqlBuilder.BuildDropTableCommand(command, "public", "testcollection");
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("DROP TABLE IF EXISTS public.\"testcollection\"", cmdInfo.CommandText);
+        Assert.Contains("DROP TABLE IF EXISTS public.\"testcollection\"", command.CommandText);
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 
     [Fact]
     public void TestBuildUpsertCommand()
     {
-        var row = new Dictionary<string, object?>()
+        var recordDefinition = new VectorStoreCollectionDefinition()
+        {
+            Properties = [
+                new VectorStoreKeyProperty("id", typeof(int)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreDataProperty("code", typeof(int)),
+                new VectorStoreDataProperty("rating", typeof(float?)),
+                new VectorStoreDataProperty("description", typeof(string)),
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StorageName = "free_parking" },
+                new VectorStoreDataProperty("tags", typeof(List<string>)),
+                new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
+                {
+                    Dimensions = 10,
+                    IndexKind = "hnsw",
+                },
+                new VectorStoreVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
+                {
+                    Dimensions = 10,
+                    IndexKind = "hnsw",
+                }
+            ]
+        };
+
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
+
+        var record = new Dictionary<string, object?>
         {
             ["id"] = 123,
             ["name"] = "Hotel",
@@ -169,88 +195,38 @@ public class PostgresSqlBuilderTests
             ["description"] = "Hotel description",
             ["parking_is_included"] = true,
             ["tags"] = new List<string> { "tag1", "tag2" },
-            ["embedding1"] = new Vector(s_vector),
+            ["embedding1"] = new ReadOnlyMemory<float>(s_vector),
         };
 
-        var keyColumn = "id";
-
-        var cmdInfo = PostgresSqlBuilder.BuildUpsertCommand("public", "testcollection", keyColumn, row);
+        using var command = new NpgsqlCommand();
+        var cmdInfo = PostgresSqlBuilder.BuildUpsertCommand(command, "public", "testcollection", model, [record], generatedEmbeddings: null);
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("INSERT INTO public.\"testcollection\" (", cmdInfo.CommandText);
-        Assert.Contains("ON CONFLICT (\"id\")", cmdInfo.CommandText);
-        Assert.Contains("DO UPDATE SET", cmdInfo.CommandText);
-        Assert.NotNull(cmdInfo.Parameters);
+        Assert.Contains("INSERT INTO public.\"testcollection\" (", command.CommandText);
+        Assert.Contains("ON CONFLICT (\"id\")", command.CommandText);
+        Assert.Contains("DO UPDATE SET", command.CommandText);
+        Assert.NotNull(command.Parameters);
 
-        foreach (var (key, index) in row.Keys.Select((key, index) => (key, index)))
+        foreach (var (column, index) in record.Keys.Select((key, index) => (key, index)))
         {
-            Assert.Equal(row[key], cmdInfo.Parameters[index].Value);
+            var expectedValue = column is "embedding1"
+                ? PostgresPropertyMapping.MapVectorForStorageModel((ReadOnlyMemory<float>)record[column]!)
+                : record[column];
+            Assert.Equal(expectedValue, command.Parameters[index].Value);
+
             // If the key is not the key column, it should be included in the update clause.
-            if (key != keyColumn)
+            if (column is "id")
             {
-                Assert.Contains($"\"{key}\"=${index + 1}", cmdInfo.CommandText);
+                continue;
             }
+
+            var storageName = column is "parking_is_included" ? "free_parking" : column;
+
+            Assert.Contains($"\"{storageName}\" = EXCLUDED.\"{storageName}\"", command.CommandText);
         }
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
-    }
-
-    [Fact]
-    public void TestBuildUpsertBatchCommand()
-    {
-        var rows = new List<Dictionary<string, object?>>()
-        {
-            new()
-            {
-                ["id"] = 123,
-                ["name"] = "Hotel",
-                ["code"] = 456,
-                ["rating"] = 4.5f,
-                ["description"] = "Hotel description",
-                ["parking_is_included"] = true,
-                ["tags"] = new List<string> { "tag1", "tag2" },
-                ["embedding1"] = new Vector(s_vector),
-            },
-            new()
-            {
-                ["id"] = 124,
-                ["name"] = "Motel",
-                ["code"] = 457,
-                ["rating"] = 4.6f,
-                ["description"] = "Motel description",
-                ["parking_is_included"] = false,
-                ["tags"] = new List<string> { "tag3", "tag4" },
-                ["embedding1"] = new Vector(s_vector),
-            },
-        };
-
-        var keyColumn = "id";
-        var columnCount = rows.First().Count;
-
-        var cmdInfo = PostgresSqlBuilder.BuildUpsertBatchCommand("public", "testcollection", keyColumn, rows);
-
-        // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("INSERT INTO public.\"testcollection\" (", cmdInfo.CommandText);
-        Assert.Contains("ON CONFLICT (\"id\")", cmdInfo.CommandText);
-        Assert.Contains("DO UPDATE SET", cmdInfo.CommandText);
-        Assert.NotNull(cmdInfo.Parameters);
-
-        foreach (var (row, rowIndex) in rows.Select((row, rowIndex) => (row, rowIndex)))
-        {
-            foreach (var (column, columnIndex) in row.Keys.Select((key, index) => (key, index)))
-            {
-                Assert.Equal(row[column], cmdInfo.Parameters[columnIndex + (rowIndex * columnCount)].Value);
-                // If the key is not the key column, it should be included in the update clause.
-                if (column != keyColumn)
-                {
-                    Assert.Contains($"\"{column}\" = EXCLUDED.\"{column}\"", cmdInfo.CommandText);
-                }
-            }
-        }
-
-        // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 
     [Fact]
@@ -283,17 +259,18 @@ public class PostgresSqlBuilderTests
         var key = 123;
 
         // Act
-        var cmdInfo = PostgresSqlBuilder.BuildGetCommand("public", "testcollection", model, key, includeVectors: true);
+        using var command = new NpgsqlCommand();
+        PostgresSqlBuilder.BuildGetCommand(command, "public", "testcollection", model, key, includeVectors: true);
 
         // Assert
-        Assert.Contains("SELECT", cmdInfo.CommandText);
-        Assert.Contains("\"free_parking\"", cmdInfo.CommandText);
-        Assert.Contains("\"embedding1\"", cmdInfo.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
-        Assert.Contains("WHERE \"id\" = $1", cmdInfo.CommandText);
+        Assert.Contains("SELECT", command.CommandText);
+        Assert.Contains("\"free_parking\"", command.CommandText);
+        Assert.Contains("\"embedding1\"", command.CommandText);
+        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("WHERE \"id\" = $1", command.CommandText);
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 
     [Fact]
@@ -326,20 +303,21 @@ public class PostgresSqlBuilderTests
         var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
         // Act
-        var cmdInfo = PostgresSqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);
+        using var command = new NpgsqlCommand();
+        PostgresSqlBuilder.BuildGetBatchCommand(command, "public", "testcollection", model, keys, includeVectors: true);
 
         // Assert
-        Assert.Contains("SELECT", cmdInfo.CommandText);
-        Assert.Contains("\"code\"", cmdInfo.CommandText);
-        Assert.Contains("\"free_parking\"", cmdInfo.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
-        Assert.Contains("WHERE \"id\" = ANY($1)", cmdInfo.CommandText);
-        Assert.NotNull(cmdInfo.Parameters);
-        Assert.Single(cmdInfo.Parameters);
-        Assert.Equal(keys, cmdInfo.Parameters[0].Value);
+        Assert.Contains("SELECT", command.CommandText);
+        Assert.Contains("\"code\"", command.CommandText);
+        Assert.Contains("\"free_parking\"", command.CommandText);
+        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("WHERE \"id\" = ANY($1)", command.CommandText);
+        Assert.NotNull(command.Parameters);
+        Assert.Single(command.Parameters);
+        Assert.Equal(keys, command.Parameters[0].Value);
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 
     [Fact]
@@ -349,15 +327,16 @@ public class PostgresSqlBuilderTests
         var key = 123;
 
         // Act
-        var cmdInfo = PostgresSqlBuilder.BuildDeleteCommand("public", "testcollection", "id", key);
+        using var command = new NpgsqlCommand();
+        PostgresSqlBuilder.BuildDeleteCommand(command, "public", "testcollection", "id", key);
 
         // Assert
-        Assert.Contains("DELETE", cmdInfo.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
-        Assert.Contains("WHERE \"id\" = $1", cmdInfo.CommandText);
+        Assert.Contains("DELETE", command.CommandText);
+        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("WHERE \"id\" = $1", command.CommandText);
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 
     [Fact]
@@ -367,17 +346,18 @@ public class PostgresSqlBuilderTests
         var keys = new List<long> { 123, 124 };
 
         // Act
-        var cmdInfo = PostgresSqlBuilder.BuildDeleteBatchCommand("public", "testcollection", "id", keys);
+        using var command = new NpgsqlCommand();
+        PostgresSqlBuilder.BuildDeleteBatchCommand(command, "public", "testcollection", "id", keys);
 
         // Assert
-        Assert.Contains("DELETE", cmdInfo.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
-        Assert.Contains("WHERE \"id\" = ANY($1)", cmdInfo.CommandText);
-        Assert.NotNull(cmdInfo.Parameters);
-        Assert.Single(cmdInfo.Parameters);
-        Assert.Equal(keys, cmdInfo.Parameters[0].Value);
+        Assert.Contains("DELETE", command.CommandText);
+        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("WHERE \"id\" = ANY($1)", command.CommandText);
+        Assert.NotNull(command.Parameters);
+        Assert.Single(command.Parameters);
+        Assert.Equal(keys, command.Parameters[0].Value);
 
         // Output
-        this._output.WriteLine(cmdInfo.CommandText);
+        this._output.WriteLine(command.CommandText);
     }
 }
