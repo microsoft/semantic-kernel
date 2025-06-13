@@ -5,6 +5,10 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from _typeshed import SupportsKeysAndGetItem
+
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
@@ -86,3 +90,16 @@ class KernelArguments(dict):
 
         # Create a new KernelArguments with merged dict values
         return KernelArguments(settings=new_execution_settings, **(dict(value) | dict(self)))
+
+    def __ior__(self, value: "SupportsKeysAndGetItem[Any, Any] | Iterable[tuple[Any, Any]]") -> "KernelArguments":
+        """Merges into this KernelArguments with another KernelArguments or dict (in-place)."""
+        self.update(value)
+
+        # In-place merge execution settings
+        if isinstance(value, KernelArguments) and value.execution_settings:
+            if self.execution_settings:
+                self.execution_settings.update(value.execution_settings)
+            else:
+                self.execution_settings = value.execution_settings.copy()
+
+        return self
