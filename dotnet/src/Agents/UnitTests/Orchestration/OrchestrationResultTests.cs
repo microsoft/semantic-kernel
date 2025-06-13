@@ -16,7 +16,7 @@ public class OrchestrationResultTests
     public void Constructor_InitializesPropertiesCorrectly()
     {
         // Arrange
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
 
         // Act
@@ -32,7 +32,7 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_ReturnsCompletedValue_WhenTaskIsCompletedAsync()
     {
         // Arrange
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
         using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
@@ -50,7 +50,7 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_WithTimeout_ReturnsCompletedValue_WhenTaskCompletesWithinTimeoutAsync()
     {
         // Arrange
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
         using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
@@ -69,7 +69,7 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_WithTimeout_ThrowsTimeoutException_WhenTaskDoesNotCompleteWithinTimeoutAsync()
     {
         // Arrange
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
         using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
@@ -84,7 +84,7 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_ReturnsCompletedValue_WhenCompletionIsDelayedAsync()
     {
         // Arrange
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<int> tcs = new();
         using CancellationTokenSource cancelSource = new();
         using OrchestrationResult<int> result = new(context, tcs, cancelSource, NullLogger.Instance);

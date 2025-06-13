@@ -15,8 +15,10 @@ namespace GettingStarted.Orchestration;
 /// </summary>
 public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
-    [Fact]
-    public async Task SequentialTaskAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SequentialTaskAsync(bool streamedResponse)
     {
         // Define the agents
         ChatCompletionAgent analystAgent =
@@ -58,8 +60,9 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
         SequentialOrchestration orchestration =
             new(analystAgent, writerAgent, editorAgent)
             {
+                LoggerFactory = this.LoggerFactory,
                 ResponseCallback = monitor.ResponseCallback,
-                LoggerFactory = this.LoggerFactory
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime

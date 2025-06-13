@@ -15,12 +15,14 @@ public sealed class OrchestrationContext
         string orchestration,
         TopicId topic,
         OrchestrationResponseCallback? responseCallback,
+        OrchestrationStreamingCallback? streamingCallback,
         ILoggerFactory loggerFactory,
         CancellationToken cancellation)
     {
         this.Orchestration = orchestration;
         this.Topic = topic;
         this.ResponseCallback = responseCallback;
+        this.StreamingResponseCallback = streamingCallback;
         this.LoggerFactory = loggerFactory;
         this.Cancellation = cancellation;
     }
@@ -52,4 +54,9 @@ public sealed class OrchestrationContext
     /// Optional callback that is invoked for every agent response.
     /// </summary>
     public OrchestrationResponseCallback? ResponseCallback { get; }
+
+    /// <summary>
+    /// Optional callback that is invoked for every agent response.
+    /// </summary>
+    public OrchestrationStreamingCallback? StreamingResponseCallback { get; }
 }

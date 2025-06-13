@@ -20,8 +20,10 @@ namespace GettingStarted.Orchestration;
 /// </remarks>
 public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
-    [Fact]
-    public async Task GroupChatAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GroupChatAsync(bool streamedResponse)
     {
         // Define the agents
         ChatCompletionAgent writer =
@@ -62,8 +64,9 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
             writer,
             editor)
             {
-                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime

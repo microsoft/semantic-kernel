@@ -107,6 +107,11 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
 
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
+        OrchestrationMonitor monitor = new();
+
         // Define the orchestration
         const string topic = "What does a good life mean to you personally?";
         Kernel kernel = this.CreateKernelWithChatCompletion();
@@ -127,7 +132,8 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 immigrant,
                 doctor)
             {
-                LoggerFactory = this.LoggerFactory
+                LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
             };
 
         // Start the runtime

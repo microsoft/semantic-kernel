@@ -20,6 +20,13 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent response);
 
 /// <summary>
+/// Called to expose the streamed response produced by any agent.
+/// </summary>
+/// <param name="response">The agent response</param>
+/// <param name="isFinal">Indicates if streamed content is final chunk of the message.</param>
+public delegate ValueTask OrchestrationStreamingCallback(StreamingChatMessageContent response, bool isFinal);
+
+/// <summary>
 /// Called when human interaction is requested.
 /// </summary>
 public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback();
@@ -75,6 +82,11 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     public OrchestrationResponseCallback? ResponseCallback { get; init; }
 
     /// <summary>
+    /// Optional callback that is invoked for every agent response.
+    /// </summary>
+    public OrchestrationStreamingCallback? StreamingResponseCallback { get; init; }
+
+    /// <summary>
     /// Gets the list of member targets involved in the orchestration.
     /// </summary>
     protected IReadOnlyList<Agent> Members { get; }
@@ -102,7 +114,13 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         CancellationTokenSource orchestrationCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        OrchestrationContext context = new(this.OrchestrationLabel, topic, this.ResponseCallback, this.LoggerFactory, cancellationToken);
+        OrchestrationContext context =
+            new(this.OrchestrationLabel,
+                topic,
+                this.ResponseCallback,
+                this.StreamingResponseCallback,
+                this.LoggerFactory,
+                cancellationToken);
 
         ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
 
