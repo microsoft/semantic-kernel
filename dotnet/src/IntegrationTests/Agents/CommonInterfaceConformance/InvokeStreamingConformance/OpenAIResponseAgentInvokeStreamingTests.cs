@@ -14,10 +14,4 @@ public class OpenAIResponseAgentInvokeStreamingTests() : InvokeStreamingTests(()
     {
         return base.ConversationMaintainsHistoryAsync();
     }
-
-    [Fact(Skip = $"{nameof(OpenAIResponseAgent)} fails to notify for all messages - Issue #12468")]
-    public override Task InvokeStreamingWithPluginNotifiesForAllMessagesAsync()
-    {
-        return base.InvokeStreamingWithPluginNotifiesForAllMessagesAsync();
-    }
 }
