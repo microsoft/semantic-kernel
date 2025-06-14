@@ -47,6 +47,10 @@
     <Project Path="samples/Demos/TimePlugin/TimePlugin.csproj" />
     <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
   </Folder>
+  <Folder Name="/samples/Demos/A2AClientServer/">
+    <Project Path="samples/Demos/A2AClientServer/A2AClient/A2AClient.csproj" />
+    <Project Path="samples/Demos/A2AClientServer/A2AServer/A2AServer.csproj" />
+  </Folder>
   <Folder Name="/samples/Demos/AgentFrameworkWithAspire/">
     <File Path="samples/Demos/AgentFrameworkWithAspire/README.md" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.ApiService/ChatWithAgent.ApiService.csproj" />
@@ -85,6 +89,7 @@
     <Project Path="src/SemanticKernel.UnitTests/SemanticKernel.UnitTests.csproj" />
   </Folder>
   <Folder Name="/src/agents/">
+    <Project Path="src/Agents/A2A/Agents.A2A.csproj" />
     <Project Path="src/Agents/Abstractions/Agents.Abstractions.csproj" />
     <Project Path="src/Agents/AzureAI/Agents.AzureAI.csproj" />
     <Project Path="src/Agents/Bedrock/Agents.Bedrock.csproj" />
