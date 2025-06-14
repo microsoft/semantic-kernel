@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Extension methods for <see cref="IKernelBuilder"/>.</summary>
-[Experimental("SKEXP0010")]
 public static class OnnxChatClientKernelBuilderExtensions
 {
     #region Chat Client

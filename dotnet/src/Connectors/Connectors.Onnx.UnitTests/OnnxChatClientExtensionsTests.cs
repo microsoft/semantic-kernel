@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Xunit;
-
-#pragma warning disable SKEXP0010
 
 namespace SemanticKernel.Connectors.Onnx.UnitTests;
 
@@ -19,16 +18,14 @@ public class OnnxChatClientExtensionsTests
     {
         // Arrange
         var collection = new ServiceCollection();
-        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
 
         // Act
-        var kernelBuilder = collection.AddKernel();
-        var serviceProvider = collection.BuildServiceProvider();
-        var kernel = serviceProvider.GetRequiredService<Kernel>();
-        var service = kernel.GetRequiredService<IChatClient>();
+        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
 
         // Assert
-        Assert.NotNull(service);
+        var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient));
+        Assert.NotNull(serviceDescriptor);
+        Assert.Equal(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
     }
 
     [Fact]
@@ -37,15 +34,14 @@ public class OnnxChatClientExtensionsTests
         // Arrange
         var collection = new ServiceCollection();
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
 
         // Act
-        var serviceProvider = collection.BuildServiceProvider();
-        var kernel = serviceProvider.GetRequiredService<Kernel>();
-        var service = kernel.GetRequiredService<IChatClient>();
+        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
 
         // Assert
-        Assert.NotNull(service);
+        var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient));
+        Assert.NotNull(serviceDescriptor);
+        Assert.Equal(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
     }
 
     [Fact]
@@ -53,16 +49,14 @@ public class OnnxChatClientExtensionsTests
     {
         // Arrange
         var collection = new ServiceCollection();
-        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
 
         // Act
-        var kernelBuilder = collection.AddKernel();
-        var serviceProvider = collection.BuildServiceProvider();
-        var kernel = serviceProvider.GetRequiredService<Kernel>();
-        var service = serviceProvider.GetRequiredKeyedService<IChatClient>("test-service");
+        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
 
         // Assert
-        Assert.NotNull(service);
+        var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient) && x.ServiceKey?.ToString() == "test-service");
+        Assert.NotNull(serviceDescriptor);
+        Assert.Equal(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
     }
 
     [Fact]
@@ -71,14 +65,13 @@ public class OnnxChatClientExtensionsTests
         // Arrange
         var collection = new ServiceCollection();
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
 
         // Act
-        var serviceProvider = collection.BuildServiceProvider();
-        var kernel = serviceProvider.GetRequiredService<Kernel>();
-        var service = serviceProvider.GetRequiredKeyedService<IChatClient>("test-service");
+        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
 
         // Assert
-        Assert.NotNull(service);
+        var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient) && x.ServiceKey?.ToString() == "test-service");
+        Assert.NotNull(serviceDescriptor);
+        Assert.Equal(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
     }
 }
