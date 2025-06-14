@@ -11,10 +11,123 @@ using OllamaSharp;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods for adding Ollama Text Generation service to the kernel builder.
+/// Extension methods for adding Ollama services to the service collection.
 /// </summary>
 public static class OllamaServiceCollectionExtensions
 {
+    #region Chat Client
+
+    /// <summary>
+    /// Add Ollama Chat Client to the service collection.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOllamaChatClient(
+        this IServiceCollection services,
+        string modelId,
+        Uri endpoint,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var ollamaClient = (IChatClient)new OllamaApiClient(endpoint, modelId);
+
+            var builder = ollamaClient.AsBuilder();
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider);
+        });
+    }
+
+    /// <summary>
+    /// Add Ollama Chat Client to the service collection.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="httpClient">Optional custom HttpClient, picked from ServiceCollection if not provided.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOllamaChatClient(
+        this IServiceCollection services,
+        string modelId,
+        HttpClient? httpClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
+        {
+            httpClient ??= HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var ollamaClient = (IChatClient)new OllamaApiClient(httpClient, modelId);
+
+            var builder = ollamaClient.AsBuilder();
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider);
+        });
+    }
+
+    /// <summary>
+    /// Add Ollama Chat Client to the service collection.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOllamaChatClient(
+        this IServiceCollection services,
+        OllamaApiClient? ollamaClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            ollamaClient ??= serviceProvider.GetKeyedService<OllamaApiClient>(serviceId);
+            ollamaClient ??= serviceProvider.GetKeyedService<IOllamaApiClient>(serviceId) as OllamaApiClient;
+            ollamaClient ??= serviceProvider.GetService<OllamaApiClient>();
+            ollamaClient ??= serviceProvider.GetRequiredService<IOllamaApiClient>() as OllamaApiClient;
+
+            if (ollamaClient is null)
+            {
+                throw new InvalidOperationException($"No {nameof(IOllamaApiClient)} implementations found in the service collection.");
+            }
+
+            var builder = ((IChatClient)ollamaClient).AsBuilder();
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider);
+        });
+    }
+
+    #endregion
+
     #region Text Embeddings
 
     /// <summary>
