@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
+using System.Text;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.ML.OnnxRuntimeGenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Embeddings;
@@ -56,5 +60,57 @@ public static class OnnxServiceCollectionExtensions
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
             serviceId,
             BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options).AsEmbeddingGenerator());
+    }
+
+    /// <summary>
+    /// Add OnnxRuntimeGenAI Chat Client to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="modelId">Model Id.</param>
+    /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOnnxRuntimeGenAIChatClient(
+        this IServiceCollection services,
+        string modelId,
+        string modelPath,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(modelPath);
+
+        IChatClient Factory(IServiceProvider serviceProvider, object? _)
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var chatClient = new OnnxRuntimeGenAIChatClient(modelPath, new OnnxRuntimeGenAIChatClientOptions()
+            {
+                PromptFormatter = (messages, options) =>
+                {
+                    StringBuilder promptBuilder = new();
+                    foreach (var message in messages)
+                    {
+                        promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
+                    }
+                    promptBuilder.Append("<|end|>\n<|assistant|>");
+
+                    return promptBuilder.ToString();
+                }
+            });
+
+            var builder = chatClient.AsBuilder().UseKernelFunctionInvocation(loggerFactory);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        }
+
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
+
+        return services;
     }
 }
