@@ -66,27 +66,26 @@ public static class OnnxServiceCollectionExtensions
     /// Add OnnxRuntimeGenAI Chat Client to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="modelId">Model Id.</param>
     /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="chatClientOptions">The options for the chat client.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddOnnxRuntimeGenAIChatClient(
         this IServiceCollection services,
-        string modelId,
         string modelPath,
+        OnnxRuntimeGenAIChatClientOptions? chatClientOptions = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(modelPath);
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var chatClient = new OnnxRuntimeGenAIChatClient(modelPath, new OnnxRuntimeGenAIChatClientOptions()
+            var chatClient = new OnnxRuntimeGenAIChatClient(modelPath, chatClientOptions ?? new OnnxRuntimeGenAIChatClientOptions()
             {
-                PromptFormatter = (messages, options) =>
+                PromptFormatter = static (messages, _) =>
                 {
                     StringBuilder promptBuilder = new();
                     foreach (var message in messages)
@@ -99,7 +98,8 @@ public static class OnnxServiceCollectionExtensions
                 }
             });
 
-            var builder = chatClient.AsBuilder().UseKernelFunctionInvocation(loggerFactory);
+            var builder = chatClient.AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory);
 
             if (loggerFactory is not null)
             {

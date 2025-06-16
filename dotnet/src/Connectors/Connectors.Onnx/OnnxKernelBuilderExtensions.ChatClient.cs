@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ML.OnnxRuntimeGenAI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -14,21 +15,21 @@ public static class OnnxChatClientKernelBuilderExtensions
     /// Adds an OnnxRuntimeGenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">Model Id.</param>
     /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="chatClientOptions">The optional options for the chat client.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOnnxRuntimeGenAIChatClient(
         this IKernelBuilder builder,
-        string modelId,
         string modelPath,
+        OnnxRuntimeGenAIChatClientOptions? chatClientOptions = null,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
 
         builder.Services.AddOnnxRuntimeGenAIChatClient(
-            modelId,
             modelPath,
+            chatClientOptions,
             serviceId);
 
         return builder;

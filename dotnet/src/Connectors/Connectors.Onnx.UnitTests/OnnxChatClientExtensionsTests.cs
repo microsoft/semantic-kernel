@@ -20,7 +20,7 @@ public class OnnxChatClientExtensionsTests
         var collection = new ServiceCollection();
 
         // Act
-        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
+        collection.AddOnnxRuntimeGenAIChatClient("modelId");
 
         // Assert
         var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient));
@@ -36,7 +36,7 @@ public class OnnxChatClientExtensionsTests
         var kernelBuilder = collection.AddKernel();
 
         // Act
-        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath");
+        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelPath");
 
         // Assert
         var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient));
@@ -51,7 +51,7 @@ public class OnnxChatClientExtensionsTests
         var collection = new ServiceCollection();
 
         // Act
-        collection.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
+        collection.AddOnnxRuntimeGenAIChatClient("modelPath", serviceId: "test-service");
 
         // Assert
         var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient) && x.ServiceKey?.ToString() == "test-service");
@@ -67,7 +67,7 @@ public class OnnxChatClientExtensionsTests
         var kernelBuilder = collection.AddKernel();
 
         // Act
-        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelId", "modelPath", "test-service");
+        kernelBuilder.AddOnnxRuntimeGenAIChatClient("modelPath", serviceId: "test-service");
 
         // Assert
         var serviceDescriptor = collection.FirstOrDefault(x => x.ServiceType == typeof(IChatClient) && x.ServiceKey?.ToString() == "test-service");
