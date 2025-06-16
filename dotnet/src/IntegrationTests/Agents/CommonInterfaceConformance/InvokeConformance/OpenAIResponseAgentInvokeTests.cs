@@ -15,9 +15,9 @@ public class OpenAIResponseAgentInvokeTests() : InvokeTests(() => new OpenAIResp
         return base.ConversationMaintainsHistoryAsync();
     }
 
-    /// <remarks>
+    /// <summary>
     /// <see cref="OpenAIResponseAgent"/> must be invoked with a message.
-    /// </remarks>
+    /// </summary>
     [Fact]
     public override Task InvokeWithoutMessageCreatesThreadAsync()
     {

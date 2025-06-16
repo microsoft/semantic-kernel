@@ -140,7 +140,7 @@ public sealed class OpenAIResponseAgent : Agent
 
     private async Task<OpenAIAssistantAgentInvokeOptions> FinalizeInvokeOptionsAsync(ICollection<ChatMessageContent> messages, AgentInvokeOptions? options, AgentThread agentThread, CancellationToken cancellationToken)
     {
-        Kernel kernel = options.GetKernel(this).Clone();
+        Kernel kernel = this.GetKernel(options).Clone();
 
 #pragma warning disable SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);

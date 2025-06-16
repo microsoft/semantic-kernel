@@ -86,7 +86,7 @@ internal static class ResponseThreadActions
                     message,
                     (_) => true,
                     functionOptions,
-                    options.GetKernel(agent),
+                    agent.GetKernel(options),
                     isStreaming: false,
                     cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
@@ -257,7 +257,7 @@ internal static class ResponseThreadActions
                     message!,
                     (_) => true,
                     functionOptions,
-                    options.GetKernel(agent),
+                    agent.GetKernel(options),
                     isStreaming: true,
                     cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();

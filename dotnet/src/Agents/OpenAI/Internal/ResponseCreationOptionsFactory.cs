@@ -23,7 +23,7 @@ internal static class ResponseCreationOptionsFactory
             return responseAgentInvokeOptions.ResponseCreationOptions;
         }
 
-        var responseTools = invokeOptions.GetKernel(agent).Plugins
+        var responseTools = agent.GetKernel(invokeOptions).Plugins
             .SelectMany(kp => kp.Select(kf => kf.ToResponseTool(kp.Name)));
 
         var creationOptions = new ResponseCreationOptions
