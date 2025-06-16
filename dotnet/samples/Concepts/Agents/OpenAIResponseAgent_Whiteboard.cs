@@ -14,7 +14,7 @@ namespace Agents;
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
+/// Demonstrate creation of <see cref="OpenAIResponseAgent"/> and
 /// adding whiteboarding capabilities, where the most relevant information from the conversation is captured on a whiteboard.
 /// This is useful for long running conversations where the conversation history may need to be truncated
 /// over time, but you do not want to agent to lose context.
