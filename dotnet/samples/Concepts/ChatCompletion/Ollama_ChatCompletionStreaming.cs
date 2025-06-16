@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
@@ -13,6 +14,41 @@ namespace ChatCompletion;
 /// </summary>
 public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// This example demonstrates chat completion streaming using IChatClient directly.
+    /// </summary>
+    [Fact]
+    public async Task UsingChatClientStreamingWithOllama()
+    {
+        Assert.NotNull(TestConfiguration.Ollama.ModelId);
+
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingChatClientStreamingWithOllama)} ========");
+
+        using IChatClient ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        List<Microsoft.Extensions.AI.ChatMessage> chatHistory = [new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.System, "You are a librarian, expert about books")];
+        this.OutputLastMessage(chatHistory);
+
+        // First user message
+        chatHistory.Add(new(Microsoft.Extensions.AI.ChatRole.User, "Hi, I'm looking for book suggestions"));
+        this.OutputLastMessage(chatHistory);
+
+        // First assistant message
+        await StreamChatClientMessageOutputAsync(ollamaClient, chatHistory);
+
+        // Second user message
+        chatHistory.Add(new(Microsoft.Extensions.AI.ChatRole.User, "I love history and philosophy, I'd like to learn something new about Greece, any suggestion?"));
+        this.OutputLastMessage(chatHistory);
+
+        // Second assistant message
+        await StreamChatClientMessageOutputAsync(ollamaClient, chatHistory);
+    }
+
     /// <summary>
     /// This example demonstrates chat completion streaming using Ollama.
     /// </summary>
@@ -102,7 +138,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -136,7 +172,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -244,5 +280,34 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 """);
         }
         Console.WriteLine("------------------------");
+    }
+
+    private async Task StreamChatClientMessageOutputAsync(IChatClient chatClient, List<Microsoft.Extensions.AI.ChatMessage> chatHistory)
+    {
+        bool roleWritten = false;
+        string fullMessage = string.Empty;
+        List<ChatResponseUpdate> chatUpdates = [];
+        await foreach (var chatUpdate in chatClient.GetStreamingResponseAsync(chatHistory))
+        {
+            chatUpdates.Add(chatUpdate);
+            if (!roleWritten && !string.IsNullOrEmpty(chatUpdate.Text))
+            {
+                Console.Write($"Assistant: {chatUpdate.Text}");
+                roleWritten = true;
+            }
+            else if (!string.IsNullOrEmpty(chatUpdate.Text))
+            {
+                Console.Write(chatUpdate.Text);
+            }
+        }
+
+        Console.WriteLine("\n------------------------");
+        chatHistory.Add(chatUpdates.To);
+    }
+
+    private void OutputLastMessage(List<Microsoft.Extensions.AI.ChatMessage> chatHistory)
+    {
+        var message = chatHistory.Last();
+        Console.WriteLine($"{message.Role}: {message.Text}");
     }
 }
