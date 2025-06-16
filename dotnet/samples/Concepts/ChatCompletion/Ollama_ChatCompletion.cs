@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
-using OllamaSharp.Models.Chat;
 
 namespace ChatCompletion;
 
@@ -17,39 +17,37 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     /// Demonstrates how you can use the chat completion service directly.
     /// </summary>
     [Fact]
-    public async Task ServicePromptAsync()
+    public async Task UsingChatClientPromptAsync()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
         Console.WriteLine("======== Ollama - Chat Completion ========");
 
-        using var ollamaClient = new OllamaApiClient(
+        using IChatClient ollamaClient = new OllamaApiClient(
             uriString: TestConfiguration.Ollama.Endpoint,
             defaultModel: TestConfiguration.Ollama.ModelId);
-
-        var chatService = ollamaClient.AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = new ChatHistory("You are a librarian, expert about books");
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.System, "You are a librarian, expert about books")];
 
         // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        chatHistory.Add(new(ChatRole.User, "Hi, I'm looking for book suggestions"));
         this.OutputLastMessage(chatHistory);
 
         // First assistant message
-        var reply = await chatService.GetChatMessageContentAsync(chatHistory);
-        chatHistory.Add(reply);
+        var reply = await ollamaClient.GetResponseAsync(chatHistory);
+        chatHistory.AddRange(reply.Messages);
         this.OutputLastMessage(chatHistory);
 
         // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
+        chatHistory.Add(new(ChatRole.User, "I love history and philosophy, I'd like to learn something new about Greece, any suggestion"));
         this.OutputLastMessage(chatHistory);
 
         // Second assistant message
-        reply = await chatService.GetChatMessageContentAsync(chatHistory);
-        chatHistory.Add(reply);
+        reply = await ollamaClient.GetResponseAsync(chatHistory);
+        chatHistory.AddRange(reply.Messages);
         this.OutputLastMessage(chatHistory);
     }
 
@@ -61,7 +59,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     /// may cause breaking changes in the code below.
     /// </remarks>
     [Fact]
-    public async Task ServicePromptWithInnerContentAsync()
+    public async Task UsingChatCompletionServicePromptWithInnerContentAsync()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
@@ -87,9 +85,9 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         // Assistant message details
         // Ollama Sharp does not support non-streaming and always perform streaming calls, for this reason, the inner content is always a list of chunks.
-        var replyInnerContent = reply.InnerContent as ChatDoneResponseStream;
+        var ollamaSharpInnerContent = reply.InnerContent as OllamaSharp.Models.Chat.ChatDoneResponseStream;
 
-        OutputInnerContent(replyInnerContent!);
+        OutputOllamaSharpContent(ollamaSharpInnerContent!);
     }
 
     /// <summary>
@@ -106,7 +104,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint ?? "http://localhost:11434"),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -139,7 +137,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint ?? "http://localhost:11434"),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -147,10 +145,10 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         var functionResult = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
         // Ollama Sharp does not support non-streaming and always perform streaming calls, for this reason, the inner content of a non-streaming result is a list of the generated chunks.
-        var messageContent = functionResult.GetValue<ChatMessageContent>(); // Retrieves underlying chat message content from FunctionResult.
-        var replyInnerContent = messageContent!.InnerContent as ChatDoneResponseStream; // Retrieves inner content from ChatMessageContent.
+        var messageContent = functionResult.GetValue<ChatResponse>(); // Retrieves underlying chat message content from FunctionResult.
+        var ollamaSharpRawRepresentation = messageContent!.RawRepresentation as OllamaSharp.Models.Chat.ChatDoneResponseStream; // Retrieves inner content from ChatMessageContent.
 
-        OutputInnerContent(replyInnerContent!);
+        OutputOllamaSharpContent(ollamaSharpRawRepresentation!);
     }
 
     /// <summary>
@@ -161,7 +159,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     /// This is a breaking glass scenario, any attempt on running with different versions of OllamaSharp library that introduces breaking changes
     /// may cause breaking changes in the code below.
     /// </remarks>
-    private void OutputInnerContent(ChatDoneResponseStream innerContent)
+    private void OutputOllamaSharpContent(OllamaSharp.Models.Chat.ChatDoneResponseStream innerContent)
     {
         Console.WriteLine($$"""
             Model: {{innerContent.Model}}
