@@ -19,6 +19,7 @@ from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProce
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -71,15 +72,17 @@ class MockAgentWithHandoffFunctionCall(Agent):
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Simulate streaming response from the agent."""
+        function_call = FunctionCallContent(
+            function_name=f"transfer_to_{self.target_agent.name}",
+            plugin_name=HANDOFF_PLUGIN_NAME,
+            call_id="test_call_id",
+            id="test_id",
+        )
+
         # Simulate some processing time
         await asyncio.sleep(0.1)
         await kernel.invoke_function_call(
-            function_call=FunctionCallContent(
-                function_name=f"transfer_to_{self.target_agent.name}",
-                plugin_name=HANDOFF_PLUGIN_NAME,
-                call_id="test_call_id",
-                id="test_id",
-            ),
+            function_call=function_call,
             chat_history=ChatHistory(),
         )
 
@@ -87,6 +90,30 @@ class MockAgentWithHandoffFunctionCall(Agent):
         # Nevertheless, the method needs have a `yield` code path to satisfy the AsyncIterable interface.
         if False:
             yield
+
+        # Simulate on_intermediate_message callback
+        await on_intermediate_message(
+            ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                name=self.name,
+                items=[function_call],
+            )
+        )
+        await on_intermediate_message(
+            ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                name=self.name,
+                items=[
+                    FunctionResultContent(
+                        function_name=function_call.function_name,
+                        plugin_name=function_call.plugin_name,
+                        call_id=function_call.call_id,
+                        id=function_call.id,
+                        result=None,
+                    )
+                ],
+            )
+        )
 
 
 class MockAgentWithCompleteTaskFunctionCall(Agent):
@@ -468,6 +495,69 @@ async def test_invoke_with_streaming_response_callback():
     # The kernel in the agent should not be modified
     assert len(agent_a.kernel.plugins) == 0
     assert len(agent_b.kernel.plugins) == 0
+
+
+async def test_response_callback_with_handoff_function_call():
+    """Test the response callback of the HandoffOrchestration with a handoff function call."""
+    agent_b = MockAgent()
+    agent_a = MockAgentWithHandoffFunctionCall(agent_b)
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    responses: list[DefaultTypeAlias] = []
+
+    try:
+        orchestration = HandoffOrchestration(
+            members=[agent_a, agent_b],
+            handoffs={agent_a.name: {agent_b.name: "test"}},
+            agent_response_callback=lambda x: responses.append(x),
+        )
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+        await orchestration_result.get()
+    finally:
+        await runtime.stop_when_idle()
+
+    assert len(responses) == 3
+
+    assert responses[0].name == agent_a.name
+    assert isinstance(responses[0].items[0], FunctionCallContent)
+    assert responses[1].name == agent_a.name
+    assert isinstance(responses[1].items[0], FunctionResultContent)
+
+    assert responses[2].name == agent_b.name
+
+
+async def test_streaming_response_callback_with_handoff_function_call():
+    """Test the streaming sresponse callback of the HandoffOrchestration with a handoff function call."""
+    agent_b = MockAgent()
+    agent_a = MockAgentWithHandoffFunctionCall(agent_b)
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    responses: dict[str, list[StreamingChatMessageContent]] = {}
+    try:
+        orchestration = HandoffOrchestration(
+            members=[agent_a, agent_b],
+            handoffs={agent_a.name: {agent_b.name: "test"}},
+            streaming_agent_response_callback=lambda x, _: responses.setdefault(x.name, []).append(x),
+        )
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+        await orchestration_result.get()
+    finally:
+        await runtime.stop_when_idle()
+
+    assert len(responses[agent_a.name]) == 2
+    assert len(responses[agent_b.name]) == 2  # 2 chunks
+
+    assert responses[agent_a.name][0].name == agent_a.name
+    assert isinstance(responses[agent_a.name][0].items[0], FunctionCallContent)
+    assert responses[agent_a.name][1].name == agent_a.name
+    assert isinstance(responses[agent_a.name][1].items[0], FunctionResultContent)
+
+    assert responses[agent_b.name][0].name == agent_b.name
+    assert all([isinstance(response, StreamingChatMessageContent) for response in responses[agent_b.name]])
 
 
 @pytest.mark.skipif(
