@@ -19,12 +19,17 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Azure CosmosDB MongoDB vCore Connector</Title>
-    <Description>Azure CosmosDB MongoDB vCore connector for Semantic Kernel plugins and semantic memory</Description>
+    <Title>Azure CosmosDB MongoDB vCore VectorData</Title>
+    <Description>Azure CosmosDB MongoDB vCore VectorData implementation by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver"/>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
   <ItemGroup>
