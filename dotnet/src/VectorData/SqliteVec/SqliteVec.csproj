@@ -15,8 +15,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>SQLite VectorData</Title>
-    <Description>SQLite (sqlitevec) VectorData implementation by Semantic Kernel</Description>
+    <Title>SQLite provider for Microsoft.Extensions.VectorData</Title>
+    <Description>SQLite (sqlitevec) provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
     <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
 

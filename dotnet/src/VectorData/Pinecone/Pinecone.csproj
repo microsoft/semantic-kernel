@@ -15,8 +15,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Pinecone VectorData</Title>
-    <Description>Pinecone VectorData implementation by Semantic Kernel</Description>
+    <Title>Pinecone provider for Microsoft.Extensions.VectorData</Title>
+    <Description>Pinecone provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
     <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
 
