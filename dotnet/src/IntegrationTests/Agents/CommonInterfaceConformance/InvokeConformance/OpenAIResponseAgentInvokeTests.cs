@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
@@ -12,6 +13,15 @@ public class OpenAIResponseAgentInvokeTests() : InvokeTests(() => new OpenAIResp
     public override Task ConversationMaintainsHistoryAsync()
     {
         return base.ConversationMaintainsHistoryAsync();
+    }
+
+    /// <remarks>
+    /// <see cref="OpenAIResponseAgent"/> must be invoked with a message.
+    /// </remarks>
+    [Fact]
+    public override Task InvokeWithoutMessageCreatesThreadAsync()
+    {
+        return Assert.ThrowsAsync<ArgumentException>(() => base.InvokeWithoutMessageCreatesThreadAsync());
     }
 
     [Fact(Skip = $"{nameof(OpenAIResponseAgent)} fails to notify for all messages - Issue #12468")]

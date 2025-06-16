@@ -35,8 +35,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
 
         Assert.Contains("Paris", firstResult.Message.Content);
         Assert.NotNull(firstResult.Thread);
@@ -53,8 +52,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
         Assert.Contains("Paris", firstResult.Message.Content);
         Assert.NotNull(firstResult.Thread);
 
@@ -69,12 +67,11 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults = agent.InvokeAsync(string.Empty);
+        var asyncResults = agent.InvokeAsync();
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
         Assert.NotNull(firstResult.Thread);
 
         // Cleanup
@@ -183,8 +180,8 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
 
         // Assert
         var results = await asyncResults.ToArrayAsync();
-        Assert.Single(results);
-        Assert.Contains("Clam Chowder", results[0].Message.Content);
+        var result = Assert.Single(results);
+        Assert.Contains("Clam Chowder", result.Message.Content);
 
         Assert.Equal(3, notifiedMessages.Count);
         Assert.Contains(notifiedMessages[0].Items, x => x is FunctionCallContent);
