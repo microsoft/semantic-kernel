@@ -19,7 +19,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 public class OnnxRuntimeGenAIChatClientTests : BaseIntegrationTest
 {
     [Fact(Skip = "For manual verification only")]
-    public async Task ItCanUseKernelInvokeAsyncWithChatClient()
+    public async Task ItCanUseKernelInvokeAsyncWithChatClientAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernelWithChatClient();
@@ -36,7 +36,7 @@ public class OnnxRuntimeGenAIChatClientTests : BaseIntegrationTest
     }
 
     [Fact(Skip = "For manual verification only")]
-    public async Task ItCanUseKernelInvokeStreamingAsyncWithChatClient()
+    public async Task ItCanUseKernelInvokeStreamingAsyncWithChatClientAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernelWithChatClient();
@@ -101,7 +101,7 @@ public class OnnxRuntimeGenAIChatClientTests : BaseIntegrationTest
         Assert.NotNull(Configuration.ModelId);
 
         var services = new ServiceCollection();
-        services.AddOnnxRuntimeGenAIChatClient(Configuration.ModelId, Configuration.ModelPath);
+        services.AddOnnxRuntimeGenAIChatClient(Configuration.ModelId);
 
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider.GetRequiredService<IChatClient>();
@@ -117,7 +117,6 @@ public class OnnxRuntimeGenAIChatClientTests : BaseIntegrationTest
         var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddOnnxRuntimeGenAIChatClient(
-            modelId: Configuration.ModelId,
             modelPath: Configuration.ModelPath,
             serviceId: Configuration.ServiceId);
 
