@@ -3,8 +3,8 @@
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OllamaSharp;
 using Resources;
+using TextContent = Microsoft.SemanticKernel.TextContent;
 
 namespace ChatCompletion;
 
