@@ -90,7 +90,7 @@ async def test_invoke():
                 manager=RoundRobinGroupChatManager(max_rounds=3),
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            result = await orchestration_result.get()
+            result = await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
@@ -128,15 +128,15 @@ async def test_invoke_with_list():
                 manager=RoundRobinGroupChatManager(max_rounds=2),
             )
             orchestration_result = await orchestration.invoke(task=messages, runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
         assert mock_invoke_stream.call_count == 2
         # Two messages
-        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 2
+        assert len(mock_invoke_stream.call_args_list[0][0][1]) == 2
         # Two messages + response from agent A
-        assert len(mock_invoke_stream.call_args_list[1][1]["messages"]) == 3
+        assert len(mock_invoke_stream.call_args_list[1][0][1]) == 3
 
 
 async def test_invoke_with_response_callback():

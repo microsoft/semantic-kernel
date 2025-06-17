@@ -42,8 +42,8 @@ class MockAgentWithHandoffFunctionCall(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         kernel: Kernel | None = None,
         **kwargs,
@@ -53,8 +53,8 @@ class MockAgentWithHandoffFunctionCall(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -64,8 +64,8 @@ class MockAgentWithHandoffFunctionCall(Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         kernel: Kernel | None = None,
@@ -93,16 +93,18 @@ class MockAgentWithHandoffFunctionCall(Agent):
 
         # Simulate on_intermediate_message callback
         await on_intermediate_message(
-            ChatMessageContent(
+            StreamingChatMessageContent(
                 role=AuthorRole.ASSISTANT,
                 name=self.name,
+                choice_index=0,
                 items=[function_call],
             )
         )
         await on_intermediate_message(
-            ChatMessageContent(
+            StreamingChatMessageContent(
                 role=AuthorRole.ASSISTANT,
                 name=self.name,
+                choice_index=0,
                 items=[
                     FunctionResultContent(
                         function_name=function_call.function_name,
@@ -122,8 +124,8 @@ class MockAgentWithCompleteTaskFunctionCall(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         kernel: Kernel | None = None,
         **kwargs,
@@ -133,8 +135,8 @@ class MockAgentWithCompleteTaskFunctionCall(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -144,8 +146,8 @@ class MockAgentWithCompleteTaskFunctionCall(Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         kernel: Kernel | None = None,
@@ -381,7 +383,7 @@ async def test_invoke():
                 },
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
 
             assert mock_init.call_args_list[0][0][3] == {agent_b.name: "test", agent_c.name: "test"}
             assert isinstance(mock_invoke_stream.call_args_list[0][1]["kernel"], Kernel)
@@ -424,13 +426,13 @@ async def test_invoke_with_list():
                 handoffs={agent_a.name: {agent_b.name: "test"}},
             )
             orchestration_result = await orchestration.invoke(task=messages, runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
         assert mock_invoke_stream.call_count == 1
         # Two messages
-        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 2
+        assert len(mock_invoke_stream.call_args_list[0][0][1]) == 2
         # The kernel in the agent should not be modified
         assert len(agent_a.kernel.plugins) == 0
         assert len(agent_b.kernel.plugins) == 0
@@ -514,7 +516,7 @@ async def test_response_callback_with_handoff_function_call():
             agent_response_callback=lambda x: responses.append(x),
         )
         orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-        await orchestration_result.get()
+        await orchestration_result.get(1.0)
     finally:
         await runtime.stop_when_idle()
 
@@ -544,7 +546,7 @@ async def test_streaming_response_callback_with_handoff_function_call():
             streaming_agent_response_callback=lambda x, _: responses.setdefault(x.name, []).append(x),
         )
         orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-        await orchestration_result.get()
+        await orchestration_result.get(1.0)
     finally:
         await runtime.stop_when_idle()
 
@@ -626,7 +628,7 @@ async def test_invoke_with_handoff_function_call():
                 handoffs={agent_a.name: {agent_b.name: "test"}},
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
