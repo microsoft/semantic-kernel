@@ -72,7 +72,7 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
             })
         else:
             text = item.text
-            parts = text.split("Here is the user question:", 1)
+            parts: list[str] = text.split("Here is the user question:", 1)
             if len(parts) < 2:
                 contents.append({"text": text})
             else:
