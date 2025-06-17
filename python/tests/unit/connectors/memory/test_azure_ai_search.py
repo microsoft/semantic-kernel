@@ -36,14 +36,14 @@ def vector_store(azure_ai_search_unit_test_env):
 
 
 @fixture
-def mock_create_collection():
+def mock_ensure_collection_exists():
     """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
     with patch(f"{BASE_PATH_INDEX_CLIENT}.create_index") as mock_create_index:
         yield mock_create_index
 
 
 @fixture
-def mock_delete_collection():
+def mock_ensure_collection_deleted():
     """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
     with patch(f"{BASE_PATH_INDEX_CLIENT}.delete_index") as mock_delete_index:
         yield mock_delete_index
@@ -226,35 +226,35 @@ async def test_delete(collection, mock_delete):
     await collection._inner_delete(["id1"])
 
 
-async def test_does_collection_exist(collection, mock_list_collection_names):
-    await collection.does_collection_exist()
+async def test_collection_exists(collection, mock_list_collection_names):
+    await collection.collection_exists()
 
 
-async def test_delete_collection(collection, mock_delete_collection):
+async def test_ensure_collection_deleted(collection, mock_ensure_collection_deleted):
     await collection.ensure_collection_deleted()
 
 
-async def test_create_index_from_index(collection, mock_create_collection):
+async def test_create_index_from_index(collection, mock_ensure_collection_exists):
     from azure.search.documents.indexes.models import SearchIndex
 
     index = MagicMock(spec=SearchIndex)
-    await collection.create_collection(index=index)
+    await collection.ensure_collection_exists(index=index)
 
 
-async def test_create_index_from_definition(collection, mock_create_collection):
+async def test_create_index_from_definition(collection, mock_ensure_collection_exists):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
         "semantic_kernel.connectors.azure_ai_search._definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
-async def test_create_index_from_index_fail(collection, mock_create_collection):
+async def test_create_index_from_index_fail(collection, mock_ensure_collection_exists):
     index = Mock()
     with raises(VectorStoreOperationException):
-        await collection.create_collection(index=index)
+        await collection.ensure_collection_exists(index=index)
 
 
 @mark.parametrize("distance_function", [("cosine_distance")])
@@ -278,17 +278,17 @@ async def test_vector_store_list_collection_names(vector_store, mock_list_collec
     mock_list_collection_names.assert_called_once()
 
 
-async def test_vector_store_does_collection_exists(vector_store, mock_list_collection_names):
+async def test_vector_store_collection_existss(vector_store, mock_list_collection_names):
     assert vector_store.search_index_client is not None
-    exists = await vector_store.does_collection_exist("test")
+    exists = await vector_store.collection_exists("test")
     assert exists
     mock_list_collection_names.assert_called_once()
 
 
-async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
+async def test_vector_store_ensure_collection_deleted(vector_store, mock_ensure_collection_deleted):
     assert vector_store.search_index_client is not None
     await vector_store.ensure_collection_deleted("test")
-    mock_delete_collection.assert_called_once()
+    mock_ensure_collection_deleted.assert_called_once()
 
 
 def test_get_collection(vector_store, definition):

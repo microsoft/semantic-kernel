@@ -209,7 +209,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
-async def test_azure_cosmos_db_no_sql_collection_create_collection(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_exists(
     mock_database_proxy,
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -239,7 +239,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
-async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_indexing_policy(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_exists_allow_custom_indexing_policy(
     mock_database_proxy,
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -269,7 +269,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
-async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_vector_embedding_policy(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_exists_allow_custom_vector_embedding_policy(
     mock_database_proxy,
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -305,7 +305,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
         ("flat", "hamming", "float"),  # unsupported distance function
     ],
 )
-async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_vector_field_property(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_exists_unsupported_vector_field_property(
     mock_database_proxy,
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -327,7 +327,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
 
 
 @patch("azure.cosmos.aio.DatabaseProxy")
-async def test_azure_cosmos_db_no_sql_collection_delete_collection(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_deleted(
     mock_database_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     record_type,
@@ -349,7 +349,7 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
 
 
 @patch("azure.cosmos.aio.DatabaseProxy")
-async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
+async def test_azure_cosmos_db_no_sql_collection_ensure_collection_deleted_fail(
     mock_database_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     record_type,

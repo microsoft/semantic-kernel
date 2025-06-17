@@ -485,7 +485,7 @@ class TestSqlServerCollection:
             (json.dumps(vector), "test"),
         )
 
-    async def test_create_collection(
+    async def test_ensure_collection_exists(
         self,
         sql_server_unit_test_env,
         mock_connection,
@@ -509,7 +509,7 @@ class TestSqlServerCollection:
             (),
         )
 
-    async def test_delete_collection(
+    async def test_ensure_collection_deleted(
         self,
         sql_server_unit_test_env,
         mock_connection,

@@ -201,7 +201,7 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
 
 
 @pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_distance")])
-async def test_weaviate_collection_create_collection(
+async def test_weaviate_collection_ensure_collection_exists(
     clear_weaviate_env,
     record_type,
     definition,
@@ -245,7 +245,7 @@ async def test_weaviate_collection_create_collection(
     ],
     indirect=True,
 )
-async def test_weaviate_collection_create_collection_fail(
+async def test_weaviate_collection_ensure_collection_exists_fail(
     mock_async_client,
     clear_weaviate_env,
     record_type,
@@ -266,7 +266,7 @@ async def test_weaviate_collection_create_collection_fail(
         await collection.ensure_collection_exists()
 
 
-async def test_weaviate_collection_delete_collection(
+async def test_weaviate_collection_ensure_collection_deleted(
     clear_weaviate_env,
     record_type,
     definition,
@@ -295,7 +295,7 @@ async def test_weaviate_collection_delete_collection(
     ],
     indirect=True,
 )
-async def test_weaviate_collection_delete_collection_fail(
+async def test_weaviate_collection_ensure_collection_deleted_fail(
     mock_async_client,
     clear_weaviate_env,
     record_type,

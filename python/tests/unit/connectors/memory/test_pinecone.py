@@ -131,7 +131,7 @@ def test_create_store_grpc(pinecone_unit_test_env):
 
 
 @mark.parametrize("exclude_list", [["PINECONE_API_KEY"]], indirect=True)
-async def test_create_collection_fail(pinecone_unit_test_env, definition):
+async def test_ensure_collection_exists_fail(pinecone_unit_test_env, definition):
     with raises(VectorStoreInitializationException):
         PineconeCollection(
             collection_name="test_collection",
@@ -168,8 +168,8 @@ async def test_load_index_client(collection, mock_index_asyncio):
     assert collection.embed_settings == collection.index.embed
 
 
-async def test_create_collection(collection, mock_create_index):
-    await collection.create_collection()
+async def test_ensure_collection_exists(collection, mock_create_index):
+    await collection.ensure_collection_exists()
     assert collection.index is not None
     assert collection.index_client is not None
     mock_create_index.assert_awaited_once_with(
@@ -182,8 +182,8 @@ async def test_create_collection(collection, mock_create_index):
 
 
 @mark.parametrize("embed", [{"model": "test-model"}])
-async def test_create_collection_integrated(collection, mock_create_index_for_model):
-    await collection.create_collection(embed={"model": "test-model"})
+async def test_ensure_collection_exists_integrated(collection, mock_create_index_for_model):
+    await collection.ensure_collection_exists(embed={"model": "test-model"})
     assert collection.index is not None
     assert collection.index_client is not None
     mock_create_index_for_model.assert_awaited_once_with(
@@ -194,7 +194,7 @@ async def test_create_collection_integrated(collection, mock_create_index_for_mo
     )
 
 
-async def test_delete_collection(collection):
+async def test_ensure_collection_deleted(collection):
     # Test deleting the collection
     await collection.ensure_collection_deleted()
     assert collection.index is None

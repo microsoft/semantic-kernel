@@ -61,14 +61,14 @@ async def test_constructor_raises_exception_on_validation_error(
         assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
 
 
-async def test_create_collection_calls_database_methods(definition) -> None:
+async def test_ensure_collection_exists_calls_database_methods(definition) -> None:
     """
-    Test create_collection to verify that it first creates a collection, then
+    Test ensure_collection_exists to verify that it first creates a collection, then
     calls the appropriate command to create a vector index.
     """
     # Setup
     mock_database = AsyncMock()
-    mock_database.create_collection = AsyncMock()
+    mock_database.ensure_collection_exists = AsyncMock()
     mock_database.command = AsyncMock()
 
     mock_client = AsyncMock(spec=AsyncMongoClient)
@@ -87,7 +87,7 @@ async def test_create_collection_calls_database_methods(definition) -> None:
     await collection.ensure_collection_exists(customArg="customValue")
 
     # Assert
-    mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue")
+    mock_database.ensure_collection_exists.assert_awaited_once_with("test_collection", customArg="customValue")
     mock_database.command.assert_awaited()
     command_args = mock_database.command.call_args.kwargs["command"]
 

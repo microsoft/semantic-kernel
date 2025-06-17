@@ -124,20 +124,20 @@ def test_create_store(vector_store):
     assert vector_store.connection_pool is not None
 
 
-async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
+async def test_ensure_collection_exists_exists_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
 
     collection = vector_store.get_collection(collection_name=f"test_collection_{suffix}", record_type=SimpleDataModel)
 
-    does_exist_1 = await collection.does_collection_exist()
+    does_exist_1 = await collection.collection_exists()
     assert does_exist_1 is False
 
-    await collection.create_collection()
-    does_exist_2 = await collection.does_collection_exist()
+    await collection.ensure_collection_exists()
+    does_exist_2 = await collection.collection_exists()
     assert does_exist_2 is True
 
     await collection.ensure_collection_deleted()
-    does_exist_3 = await collection.does_collection_exist()
+    does_exist_3 = await collection.collection_exists()
     assert does_exist_3 is False
 
 
@@ -186,7 +186,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         record_type=pd.DataFrame,
         definition=definition,
     )
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     try:
         result_before_upsert = await collection.get(1)
