@@ -556,7 +556,7 @@ class PostgresCollection(
         return records
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create a PostgreSQL table based on a dictionary of VectorStoreRecordField.
 
         Args:
@@ -621,7 +621,7 @@ class PostgresCollection(
             await self._create_index(table_name, vector_field)
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
         if self.connection_pool is None:
             raise VectorStoreOperationException(

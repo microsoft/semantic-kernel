@@ -97,14 +97,14 @@ def test_get_collection(vector_store: PostgresStore) -> None:
     assert collection.collection_name == "test_collection"
 
 
-async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+async def test_collection_exists(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    result = await collection.does_collection_exist()
+    result = await collection.collection_exists()
     assert result is True
 
 
-async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+async def test_ensure_collection_deleted(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.ensure_collection_deleted()
 
@@ -128,9 +128,9 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
     assert statement_str == """DELETE FROM "public"."test_collection" WHERE "id" IN (1, 2)"""
 
 
-async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+async def test_ensure_collection_exists_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     # 2 calls, once for the table creation and once for the index creation
     assert mock_cursor.execute.call_count == 2
@@ -150,7 +150,7 @@ async def test_create_collection_simple_model(vector_store: PostgresStore, mock_
     )
 
 
-async def test_create_collection_model_with_python_types(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+async def test_ensure_collection_exists_model_with_python_types(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     @vectorstoremodel
     @dataclass
     class ModelWithImplicitTypes:
@@ -163,7 +163,7 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithImplicitTypes)
 
-    await collection.create_collection()
+    await collection.ensure_collection_exists()
 
     assert mock_cursor.execute.call_count == 2
 

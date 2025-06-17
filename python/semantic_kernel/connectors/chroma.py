@@ -127,7 +127,7 @@ class ChromaCollection(
             raise RuntimeError(f"Failed to get collection {self.collection_name}") from e
 
     @override
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
         try:
             self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
@@ -136,7 +136,7 @@ class ChromaCollection(
             return False
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the collection.
 
         Will create a metadata object with the hnsw arguments.

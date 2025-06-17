@@ -57,23 +57,23 @@ def mock_list_collection_names():
 
 
 @fixture(autouse=True)
-def mock_does_collection_exist():
+def mock_collection_exists():
     with patch(f"{BASE_PATH}.collection_exists") as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
 
 
 @fixture(autouse=True)
-def mock_create_collection():
-    with patch(f"{BASE_PATH}.create_collection") as mock_recreate_collection:
-        yield mock_recreate_collection
+def mock_ensure_collection_exists():
+    with patch(f"{BASE_PATH}.create_collection") as mock_ensure_collection_exists:
+        yield mock_ensure_collection_exists
 
 
 @fixture(autouse=True)
-def mock_delete_collection():
-    with patch(f"{BASE_PATH}.delete_collection") as mock_delete_collection:
-        mock_delete_collection.return_value = True
-        yield mock_delete_collection
+def mock_ensure_collection_deleted():
+    with patch(f"{BASE_PATH}.delete_collection") as mock_ensure_collection_deleted:
+        mock_ensure_collection_deleted.return_value = True
+        yield mock_ensure_collection_deleted
 
 
 @fixture(autouse=True)
@@ -234,11 +234,11 @@ async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-async def test_does_collection_exist(collection):
-    await collection.does_collection_exist()
+async def test_collection_exists(collection):
+    await collection.collection_exists()
 
 
-async def test_delete_collection(collection):
+async def test_ensure_collection_deleted(collection):
     await collection.ensure_collection_deleted()
 
 
@@ -261,9 +261,9 @@ async def test_delete_collection(collection):
         ),
     ],
 )
-async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
-    await request.getfixturevalue(collection_to_use).create_collection()
-    mock_create_collection.assert_called_once_with(**results)
+async def test_create_index_with_named_vectors(collection_to_use, results, mock_ensure_collection_exists, request):
+    await request.getfixturevalue(collection_to_use).ensure_collection_exists()
+    mock_ensure_collection_exists.assert_called_once_with(**results)
 
 
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
@@ -272,7 +272,7 @@ async def test_create_index_fail(collection_to_use, request):
     for field in collection.definition.vector_fields:
         field.distance_function = DistanceFunction.HAMMING
     with raises(VectorStoreOperationException):
-        await collection.create_collection()
+        await collection.ensure_collection_exists()
 
 
 async def test_search(collection, mock_search):

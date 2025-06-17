@@ -28,8 +28,7 @@ async def main(query: str):
         record_type=HotelSampleClass, embedding_generator=OpenAITextEmbedding()
     ) as collection:
         # Check if the collection exists.
-        if not await collection.does_collection_exist():
-            await collection.create_collection(index=custom_index)
+        await collection.ensure_collection_exists(index=custom_index)
         await collection.upsert(records)
         # get the first five records to check the upsert worked.
         results = await collection.get(order_by="HotelName", top=5)

@@ -187,7 +187,7 @@ class PineconeCollection(
             )
 
     @override
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the Pinecone collection.
 
         Args:
@@ -292,7 +292,7 @@ class PineconeCollection(
             )
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         """Check if the Pinecone collection exists."""
         exists = (
             await self.client.has_index(self.collection_name)
@@ -306,7 +306,7 @@ class PineconeCollection(
     @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the Pinecone collection."""
-        if not await self.does_collection_exist():
+        if not await self.collection_exists():
             if self.index or self.index_client:
                 self.index = None
                 self.index_client = None

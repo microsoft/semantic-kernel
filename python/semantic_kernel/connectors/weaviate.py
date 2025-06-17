@@ -551,7 +551,7 @@ class WeaviateCollection(
         return records_in_dict
 
     @override
-    async def create_collection(self, **kwargs) -> None:
+    async def ensure_collection_exists(self, **kwargs) -> None:
         """Create the collection in Weaviate.
 
         Args:
@@ -619,7 +619,7 @@ class WeaviateCollection(
             raise VectorStoreOperationException(f"Failed to create collection: {ex}") from ex
 
     @override
-    async def does_collection_exist(self, **kwargs) -> bool:
+    async def collection_exists(self, **kwargs) -> bool:
         """Check if the collection exists in Weaviate.
 
         Args:

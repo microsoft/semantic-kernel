@@ -1241,37 +1241,12 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         """
         ...  # pragma: no cover
 
-    async def delete_create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service, after first trying to delete it.
-
-        First uses does_collection_exist to check if it exists, if it does deletes it.
-        Then, creates the collection.
-
-        """
-        if await self.does_collection_exist(**kwargs):
-            await self.ensure_collection_deleted(**kwargs)
-        await self.create_collection(**kwargs)
-
-    async def ensure_collection_exists(self, **kwargs: Any) -> bool:
-        """Create the collection in the service if it does not exists.
-
-        First uses does_collection_exist to check if it exists, if it does returns False.
-        Otherwise, creates the collection and returns True.
-
-        Returns:
-            bool: True if the collection was created, False if it already exists.
-
-        """
-        if await self.does_collection_exist(**kwargs):
-            return False
-        await self.create_collection(**kwargs)
-        return True
-
     @abstractmethod
-    async def create_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the collection in the service.
 
-        This should be overridden by the child class.
+        This should be overridden by the child class. Should first check if the collection exists,
+        if it does not, it should create the collection.
 
         Raises:
             Make sure the implementation of this function raises relevant exceptions with good descriptions.
@@ -1281,7 +1256,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         ...  # pragma: no cover
 
     @abstractmethod
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists.
 
         This should be overridden by the child class.
@@ -1596,7 +1571,7 @@ class VectorStore(KernelBaseModel):
         """Get the names of all collections."""
         ...  # pragma: no cover
 
-    async def does_collection_exist(self, collection_name: str) -> bool:
+    async def collection_exists(self, collection_name: str) -> bool:
         """Check if a collection exists.
 
         This is a wrapper around the get_collection method of a collection,
@@ -1605,7 +1580,7 @@ class VectorStore(KernelBaseModel):
         try:
             data_model = VectorStoreCollectionDefinition(fields=[VectorStoreField("key", name="id")])
             collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
-            return await collection.does_collection_exist()
+            return await collection.collection_exists()
         except VectorStoreOperationException:
             return False
 
@@ -2180,18 +2155,7 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
         """
         ...
 
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-        """
-        ...
-
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists.
 
         Args:
