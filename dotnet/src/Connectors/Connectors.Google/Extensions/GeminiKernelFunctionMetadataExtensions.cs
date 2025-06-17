@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 
-namespace SemanticKernel.Connectors.Google.UnitTests;
+namespace Microsoft.SemanticKernel.Connectors.Google.Extensions;
 
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the Gemini connector.

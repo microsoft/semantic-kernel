@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
+using Microsoft.SemanticKernel.Connectors.Google.Extensions;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
@@ -127,50 +128,11 @@ public abstract class GeminiToolCallBehavior
             // Provide all functions from the kernel.
             foreach (var functionMetadata in kernel.Plugins.GetFunctionsMetadata())
             {
-                request.AddFunction(FunctionMetadataAsGeminiFunction(functionMetadata));
+                request.AddFunction(functionMetadata.ToGeminiFunction());
             }
         }
 
         internal override bool AllowAnyRequestedKernelFunction => true;
-
-        /// <summary>
-        /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="GeminiFunction"/>.
-        /// </summary>
-        /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
-        /// <returns>An <see cref="GeminiFunction"/> object.</returns>
-        private static GeminiFunction FunctionMetadataAsGeminiFunction(KernelFunctionMetadata metadata)
-        {
-            IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
-
-            var openAIParams = new GeminiFunctionParameter[metadataParams.Count];
-            for (int i = 0; i < openAIParams.Length; i++)
-            {
-                var param = metadataParams[i];
-
-                openAIParams[i] = new GeminiFunctionParameter(
-                    param.Name,
-                    GetDescription(param),
-                    param.IsRequired,
-                    param.ParameterType,
-                    param.Schema);
-            }
-
-            return new GeminiFunction(
-                metadata.PluginName,
-                metadata.Name,
-                metadata.Description,
-                openAIParams,
-                new GeminiFunctionReturnParameter(
-                    metadata.ReturnParameter.Description,
-                    metadata.ReturnParameter.ParameterType,
-                    metadata.ReturnParameter.Schema));
-
-            static string GetDescription(KernelParameterMetadata param)
-            {
-                string? stringValue = InternalTypeConverter.ConvertToString(param.DefaultValue);
-                return !string.IsNullOrEmpty(stringValue) ? $"{param.Description} (default value: {stringValue})" : param.Description;
-            }
-        }
     }
 
     /// <summary>

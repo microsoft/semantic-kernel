@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Connectors.Google.Extensions;
 using Xunit;
 
 #pragma warning disable CA1812 // Uninstantiated internal types

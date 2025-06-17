@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
+using Microsoft.SemanticKernel.Connectors.Google.Extensions;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini.Clients;
