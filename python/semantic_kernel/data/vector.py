@@ -2155,18 +2155,7 @@ class VectorStoreCollectionProtocol(Protocol):  # noqa: D101
         """
         ...
 
-    async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service.
-
-        Args:
-            **kwargs: Additional arguments.
-
-        Raises:
-            Make sure the implementation of this function raises relevant exceptions with good descriptions.
-        """
-        ...
-
-    async def does_collection_exist(self, **kwargs: Any) -> bool:
+    async def collection_exists(self, **kwargs: Any) -> bool:
         """Check if the collection exists.
 
         Args:

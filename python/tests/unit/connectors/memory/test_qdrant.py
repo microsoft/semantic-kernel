@@ -65,13 +65,13 @@ def mock_collection_exists():
 
 @fixture(autouse=True)
 def mock_ensure_collection_exists():
-    with patch(f"{BASE_PATH}.ensure_collection_exists") as mock_reensure_collection_exists:
-        yield mock_reensure_collection_exists
+    with patch(f"{BASE_PATH}.create_collection") as mock_ensure_collection_exists:
+        yield mock_ensure_collection_exists
 
 
 @fixture(autouse=True)
 def mock_ensure_collection_deleted():
-    with patch(f"{BASE_PATH}.ensure_collection_deleted") as mock_ensure_collection_deleted:
+    with patch(f"{BASE_PATH}.delete_collection") as mock_ensure_collection_deleted:
         mock_ensure_collection_deleted.return_value = True
         yield mock_ensure_collection_deleted
 

@@ -66,14 +66,14 @@ async def test_chroma_store_list_collection_names(chroma_store, mock_client):
 
 async def test_chroma_collection_ensure_collection_exists(chroma_collection, mock_client):
     await chroma_collection.ensure_collection_exists()
-    mock_client.ensure_collection_exists.assert_called_once_with(
+    mock_client.create_collection.assert_called_once_with(
         name="test_collection", embedding_function=None, configuration={"hnsw": {"space": "cosine"}}, get_or_create=True
     )
 
 
 async def test_chroma_collection_ensure_collection_deleted(chroma_collection, mock_client):
     await chroma_collection.ensure_collection_deleted()
-    mock_client.ensure_collection_deleted.assert_called_once_with(name="test_collection")
+    mock_client.delete_collection.assert_called_once_with(name="test_collection")
 
 
 async def test_chroma_collection_upsert(chroma_collection, mock_client):

@@ -68,7 +68,7 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     """
     # Setup
     mock_database = AsyncMock()
-    mock_database.ensure_collection_exists = AsyncMock()
+    mock_database.create_collection = AsyncMock()
     mock_database.command = AsyncMock()
 
     mock_client = AsyncMock(spec=AsyncMongoClient)
@@ -87,7 +87,7 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     await collection.ensure_collection_exists(customArg="customValue")
 
     # Assert
-    mock_database.ensure_collection_exists.assert_awaited_once_with("test_collection", customArg="customValue")
+    mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue")
     mock_database.command.assert_awaited()
     command_args = mock_database.command.call_args.kwargs["command"]
 
