@@ -163,9 +163,7 @@ class HandoffAgentActor(AgentActorBase):
         handoff_connections: AgentHandoffs,
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
-        streaming_agent_response_callback: Callable[
-            [StreamingChatMessageContent | ChatMessageContent, bool], Awaitable[None] | None
-        ]
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
         human_response_function: Callable[[], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None,
     ) -> None:
@@ -344,11 +342,11 @@ class HandoffAgentActor(AgentActorBase):
         messages = self._create_messages(additional_messages)
 
         async for response_item in self._agent.invoke_stream(
-            messages,  # type: ignore[arg-type]
+            messages=messages,
             thread=self._agent_thread,
             on_intermediate_message=self._handle_intermediate_message,
             **kwargs,
-        ):
+        ):  # type: ignore[arg-type]
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:
@@ -388,9 +386,7 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
         output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
-        streaming_agent_response_callback: Callable[
-            [StreamingChatMessageContent | ChatMessageContent, bool], Awaitable[None] | None
-        ]
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
         human_response_function: Callable[[], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None,
     ) -> None:

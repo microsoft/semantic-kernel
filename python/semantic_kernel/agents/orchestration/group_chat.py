@@ -384,9 +384,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
         output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
-        streaming_agent_response_callback: Callable[
-            [StreamingChatMessageContent | ChatMessageContent, bool], Awaitable[None] | None
-        ]
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
     ) -> None:
         """Initialize the group chat orchestration.

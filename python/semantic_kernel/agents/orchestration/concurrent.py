@@ -57,9 +57,7 @@ class ConcurrentAgentActor(AgentActorBase):
         internal_topic_type: str,
         collection_agent_type: str,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
-        streaming_agent_response_callback: Callable[
-            [StreamingChatMessageContent | ChatMessageContent, bool], Awaitable[None] | None
-        ]
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
     ) -> None:
         """Initialize the agent actor.
