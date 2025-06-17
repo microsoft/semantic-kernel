@@ -132,7 +132,9 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 is_new_message = True
 
 
-def streaming_agent_response_callback(message: StreamingChatMessageContent, is_final: bool) -> None:
+def streaming_agent_response_callback(
+    message: StreamingChatMessageContent | ChatMessageContent, is_final: bool
+) -> None:
     """Observer function to print the messages from the agents.
 
     Please note that this function is called whenever the agent generates a response,
@@ -143,24 +145,26 @@ def streaming_agent_response_callback(message: StreamingChatMessageContent, is_f
     complete message.
 
     Args:
-        message (StreamingChatMessageContent): The streaming message content from the agent.
+        message (StreamingChatMessageContent | ChatMessageContent): The message content from the agent.
         is_final (bool): Indicates if this is the final part of the message.
     """
-    global is_new_message
-    if is_new_message:
+    if isinstance(message, StreamingChatMessageContent):
+        global is_new_message
+        if is_new_message:
+            print(f"{message.name}: ", end="", flush=True)
+            is_new_message = False
+        print(message.content, end="", flush=True)
+
+        if is_final:
+            print()
+            is_new_message = True
+    else:
         print(f"{message.name}: ", end="", flush=True)
-        is_new_message = False
-    print(message.content, end="", flush=True)
-
-    for item in message.items:
-        if isinstance(item, FunctionCallContent):
-            print(f"Calling '{item.name}' with arguments '{item.arguments}'", end="", flush=True)
-        if isinstance(item, FunctionResultContent):
-            print(f"Result from '{item.name}' is '{item.result}'", end="", flush=True)
-
-    if is_final:
-        print()
-        is_new_message = True
+        for item in message.items:
+            if isinstance(item, FunctionCallContent):
+                print(f"Calling '{item.name}' with arguments '{item.arguments}'")
+            if isinstance(item, FunctionResultContent):
+                print(f"Result from '{item.name}' is '{item.result}'")
 
 
 def human_response_function() -> ChatMessageContent:

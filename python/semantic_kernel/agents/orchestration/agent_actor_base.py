@@ -44,7 +44,9 @@ class AgentActorBase(ActorBase):
         agent: Agent,
         internal_topic_type: str,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
-        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        streaming_agent_response_callback: Callable[
+            [StreamingChatMessageContent | ChatMessageContent, bool], Awaitable[None] | None
+        ]
         | None = None,
     ) -> None:
         """Initialize the agent container.
@@ -82,20 +84,21 @@ class AgentActorBase(ActorBase):
 
     async def _call_streaming_agent_response_callback(
         self,
-        message_chunk: StreamingChatMessageContent,
+        message: StreamingChatMessageContent | ChatMessageContent,
         is_final: bool,
     ) -> None:
         """Call the streaming_agent_response_callback function if it is set.
 
         Args:
-            message_chunk (StreamingChatMessageContent): The message chunk.
-            is_final (bool): Whether this is the final chunk of the response.
+            message (StreamingChatMessageContent | ChatMessageContent): The message. Can be either a full message
+                or a chunk of a streaming message.
+            is_final (bool): Whether this is the final chunk of the response (if it's a streaming chunk).
         """
         if self._streaming_agent_response_callback:
             if inspect.iscoroutinefunction(self._streaming_agent_response_callback):
-                await self._streaming_agent_response_callback(message_chunk, is_final)
+                await self._streaming_agent_response_callback(message, is_final)
             else:
-                self._streaming_agent_response_callback(message_chunk, is_final)
+                self._streaming_agent_response_callback(message, is_final)
 
     async def _invoke_agent(self, additional_messages: DefaultTypeAlias | None = None, **kwargs) -> ChatMessageContent:
         """Invoke the agent with the current chat history or thread and optionally additional messages.
@@ -112,11 +115,11 @@ class AgentActorBase(ActorBase):
         messages = self._create_messages(additional_messages)
 
         async for response_item in self._agent.invoke_stream(
-            messages=messages,
+            messages,  # type: ignore[arg-type]
             thread=self._agent_thread,
             on_intermediate_message=self._handle_intermediate_message,
             **kwargs,
-        ):  # type: ignore[arg-type]
+        ):
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:
