@@ -164,7 +164,8 @@ class AgentActorBase(ActorBase):
 
         The agent response callback expects a `ChatMessageContent`, so we can pass the message directly.
         However, the streaming agent response callback specifically requires a `StreamingChatMessageContent`.
-        To avoid type errors, we check that the message is of the correct type before calling the callbacks.
+        To avoid type errors from the static type checker due to down casting (from `ChatMessageContent` to
+        `StreamingChatMessageContent`), we check that the message is of the correct type before calling the callbacks.
         Since it will always be a `StreamingChatMessageContent`, this check is safe.
         """
         if not isinstance(message, StreamingChatMessageContent):
