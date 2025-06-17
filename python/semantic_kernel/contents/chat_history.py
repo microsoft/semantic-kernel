@@ -313,6 +313,9 @@ class ChatHistory(KernelBaseModel):
         prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
+        # currently the prompts are not XML-complete, so the except block is expected to be hit
+        # in future in case prompts become XML-complete, this part needs to be visited to ensure it behaves
+        # as expected and necessary changes will have to be made
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError as exc:

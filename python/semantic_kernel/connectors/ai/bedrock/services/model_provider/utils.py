@@ -71,7 +71,17 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
                 }
             })
         else:
-            contents.append({"text": item.text})
+            text = item.text
+            parts = text.split("Here is the user question:", 1)
+            if len(parts) < 2:
+                return contents.append({"text": text})
+            
+            prompt = parts[0]
+            user_query = parts[1]
+            contents.extend(
+                {"text": prompt},
+                {"guardContent": {"text": {"text": user_query}}},
+            )
 
     return {
         "role": "user",
