@@ -3,6 +3,7 @@
 import asyncio
 import logging
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -58,6 +59,7 @@ def get_agents() -> list[Agent]:
     return [concept_extractor_agent, writer_agent, format_proof_agent]
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a sequential orchestration with multiple agents

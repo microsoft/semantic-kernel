@@ -2,6 +2,7 @@
 
 import asyncio
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -130,6 +131,7 @@ def human_response_function() -> ChatMessageContent:
     return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a handoff orchestration with multiple agents

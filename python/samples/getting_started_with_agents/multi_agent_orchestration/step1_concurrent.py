@@ -2,6 +2,7 @@
 
 import asyncio
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, ConcurrentOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -35,6 +36,7 @@ def get_agents() -> list[Agent]:
     return [physics_agent, chemistry_agent]
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a concurrent orchestration with multiple agents

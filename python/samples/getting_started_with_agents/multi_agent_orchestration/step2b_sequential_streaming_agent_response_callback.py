@@ -2,6 +2,7 @@
 
 import asyncio
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -76,6 +77,7 @@ def streaming_agent_response_callback(message: StreamingChatMessageContent, is_f
         is_new_message = True
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a sequential orchestration with multiple agents and an agent

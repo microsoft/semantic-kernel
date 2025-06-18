@@ -3,6 +3,7 @@
 import asyncio
 import sys
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration
 from semantic_kernel.agents.orchestration.group_chat import BooleanResult, RoundRobinGroupChatManager
 from semantic_kernel.agents.runtime import InProcessRuntime
@@ -97,6 +98,7 @@ async def human_response_function(chat_histoy: ChatHistory) -> ChatMessageConten
     return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a group chat orchestration with a round robin manager

@@ -2,10 +2,10 @@
 
 import logging
 import os
-import sys
 
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
 from dotenv import load_dotenv
+from opentelemetry import trace
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
@@ -14,11 +14,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry.trace import set_tracer_provider
-
-if sys.version_info >= (3, 12):
-    pass  # pragma: no cover
-else:
-    pass  # pragma: no cover
+from opentelemetry.trace.span import format_trace_id
 
 load_dotenv()
 
@@ -65,15 +61,6 @@ def set_up_logging():
     logger.setLevel(logging.NOTSET)
 
 
-# class CustomBatchSpanProcessor(BatchSpanProcessor):
-#     @override
-#     def on_end(self, span: ReadableSpan):
-#         if span.name.startswith("agent_runtime"):
-#             # Skip spans that are part of the agent runtime.
-#             return
-#         super().on_end(span)
-
-
 def set_up_tracing():
     exporters = []
     exporters.append(AzureMonitorTraceExporter(connection_string=APPINSIGHTS_CONNECTION_STRING))
@@ -86,3 +73,18 @@ def set_up_tracing():
         tracer_provider.add_span_processor(BatchSpanProcessor(exporter))
     # Sets the global default tracer provider
     set_tracer_provider(tracer_provider)
+
+
+def enable_observability(func):
+    """A decorator to enable observability for the samples."""
+
+    async def wrapper(*args, **kwargs):
+        set_up_logging()
+        set_up_tracing()
+
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("main") as current_span:
+            print(f"Trace ID: {format_trace_id(current_span.get_span_context().trace_id)}")
+            return await func(*args, **kwargs)
+
+    return wrapper
