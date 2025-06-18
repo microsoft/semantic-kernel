@@ -6,11 +6,24 @@ import sys
 from opentelemetry import trace
 
 from samples.demos.travel_planning_system.agents import get_agents
-from semantic_kernel.agents import BooleanResult, ChatCompletionAgent, GroupChatManager, GroupChatOrchestration
-from semantic_kernel.agents.orchestration.group_chat import MessageResult, StringResult
+from semantic_kernel.agents import (
+    BooleanResult,
+    ChatCompletionAgent,
+    GroupChatManager,
+    GroupChatOrchestration,
+    MessageResult,
+    StringResult,
+)
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
-from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, StreamingChatMessageContent
+from semantic_kernel.contents import (
+    AuthorRole,
+    ChatHistory,
+    ChatMessageContent,
+    FunctionCallContent,
+    FunctionResultContent,
+    StreamingChatMessageContent,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 if sys.version_info >= (3, 12):
@@ -35,6 +48,13 @@ def streaming_agent_response_callback(message: StreamingChatMessageContent, is_f
         print(f"# {message.name}")
         is_new_message = False
     print(message.content, end="", flush=True)
+
+    for item in message.items:
+        if isinstance(item, FunctionCallContent):
+            print(f"Calling '{item.name}' with arguments '{item.arguments}'", end="", flush=True)
+        if isinstance(item, FunctionResultContent):
+            print(f"Result from '{item.name}' is '{item.result}'", end="", flush=True)
+
     if is_final:
         print()
         is_new_message = True
@@ -160,7 +180,15 @@ class AgentBaseGroupChatManager(GroupChatManager):
         settings.response_format = StringResult
 
         response = await self.agent.get_response(messages, arguments=KernelArguments(settings=settings))
-        return MessageResult.model_validate_json(response.message.content)
+        string_with_reason = StringResult.model_validate_json(response.message.content)
+
+        return MessageResult(
+            result=ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                content=string_with_reason.result,
+            ),
+            reason=string_with_reason.reason,
+        )
 
 
 # @enable_observability
