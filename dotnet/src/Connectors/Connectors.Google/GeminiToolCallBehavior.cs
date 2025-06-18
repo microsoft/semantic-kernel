@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
-using Microsoft.SemanticKernel.Connectors.Google.Extensions;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
