@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
@@ -13,5 +14,14 @@ public class OpenAIResponseAgentInvokeStreamingTests() : InvokeStreamingTests(()
     public override Task ConversationMaintainsHistoryAsync()
     {
         return base.ConversationMaintainsHistoryAsync();
+    }
+
+    /// <summary>
+    /// <see cref="OpenAIResponseAgent"/> must be invoked with a message.
+    /// </summary>
+    [Fact]
+    public override Task InvokeStreamingAsyncWithoutMessageCreatesThreadAsync()
+    {
+        return Assert.ThrowsAsync<ArgumentException>(() => base.InvokeStreamingAsyncWithoutMessageCreatesThreadAsync());
     }
 }
