@@ -9,55 +9,45 @@ _BASE_SYSTEM_MSG = (
 )
 
 
-class FlightPLugin:
-    @kernel_function
-    def search_flights(self, origin: str, destination: str, date: str) -> str:
-        """Search for available flights."""
-        available_flights = [
-            {"flight_id": "FL123"},
-            {"flight_id": "FL456"},
-            {"flight_id": "FL789"},
-        ]
-        return f"Available flights from {origin} to {destination} on {date}:\n{available_flights}"
-
+class FlightPlugin:
     @kernel_function
     def book_flight(self, flight_id: str) -> str:
         """Book a specific flight."""
-        return f"Successfully booked flight with ID {flight_id}."
-
-    @kernel_function
-    def process_payment(self, amount: float) -> str:
-        """Process payment for bookings."""
-        return f"Payment of ${amount} processed successfully for flight booking."
+        return f"Successfully booked flight with ID {flight_id}. Your booking reference is FLX12345."
 
 
 class HotelPlugin:
     @kernel_function
-    def search_hotels(self, location: str, check_in: str, check_out: str) -> str:
-        """Search for available hotels."""
-        available_hotels = [
-            {"hotel_id": "HT123", "name": "Hotel Sunshine"},
-            {"hotel_id": "HT456", "name": "Ocean View Resort"},
-            {"hotel_id": "HT789", "name": "Mountain Retreat"},
-        ]
-        return f"Searching hotels in {location} from {check_in} to {check_out}:\n{available_hotels}"
-
-    @kernel_function
     def book_hotel(self, hotel_id: str) -> str:
         """Book a specific hotel."""
-        return f"Successfully booked hotel with ID {hotel_id}."
-
-    @kernel_function
-    def process_payment(self, amount: float) -> str:
-        """Process payment for bookings."""
-        return f"Payment of ${amount} processed successfully for hotel booking."
+        return f"Successfully booked hotel with ID {hotel_id}. Your booking reference is HTX12345."
 
 
-class GeneralPlugin:
+class PlanningPlugin:
     @kernel_function
     def get_weather(self, location: str) -> str:
         """Get weather information for a location."""
         return f"Weather information for {location}: Sunny, 25°C."
+
+    @kernel_function
+    def search_hotels(self, location: str, check_in: str, check_out: str) -> str:
+        """Search for available hotels."""
+        available_hotels = [
+            {"hotel_id": "HT123", "name": "Hotel Sunshine", "price": "$150/night", "accommodates": "2 people"},
+            {"hotel_id": "HT456", "name": "Ocean View Resort", "price": "$200/night", "accommodates": "4 people"},
+            {"hotel_id": "HT789", "name": "Mountain Retreat", "price": "$180/night", "accommodates": "2 people"},
+        ]
+        return f"Searching hotels in {location} from {check_in} to {check_out}:\n{available_hotels}"
+
+    @kernel_function
+    def search_flights(self, origin: str, destination: str, date: str) -> str:
+        """Search for available flights."""
+        available_flights = [
+            {"flight_id": "FL123", "take-off-time": "10:00 AM", "arrival-time": "12:00 PM", "price": "$200"},
+            {"flight_id": "FL456", "take-off-time": "2:00 PM", "arrival-time": "4:00 PM", "price": "$250"},
+            {"flight_id": "FL789", "take-off-time": "6:00 PM", "arrival-time": "8:00 PM", "price": "$300"},
+        ]
+        return f"Available flights from {origin} to {destination} on {date}:\n{available_flights}"
 
 
 def get_agents() -> dict[str, ChatCompletionAgent]:
@@ -73,10 +63,12 @@ def get_agents() -> dict[str, ChatCompletionAgent]:
     # 2. Travel Planner Agent
     planner = ChatCompletionAgent(
         name="planner",
-        description="Creates comprehensive travel plans and breaks down user requests",
-        instructions=f"{_BASE_SYSTEM_MSG} You create detailed travel plans and identify what needs to be done.",
+        description="Creates comprehensive travel plans including flights, hotels, and activities",
+        instructions=(
+            f"{_BASE_SYSTEM_MSG} You create detailed travel plans that include flights, hotels, and activities."
+        ),
         service=AzureChatCompletion(),
-        plugins=[GeneralPlugin()],
+        plugins=[PlanningPlugin()],
     )
 
     # 3. Router Agent
@@ -95,23 +87,23 @@ def get_agents() -> dict[str, ChatCompletionAgent]:
             f"{_BASE_SYSTEM_MSG} You provide expert advice on destinations, attractions, and local experiences."
         ),
         service=AzureChatCompletion(),
-        plugins=[GeneralPlugin()],
+        plugins=[PlanningPlugin()],
     )
 
     # 5. Flight Agent
     flight_agent = ChatCompletionAgent(
         name="flight_agent",
-        description="Specializes in flight search and booking",
-        instructions=f"{_BASE_SYSTEM_MSG} You handle all flight-related tasks including search and booking.",
+        description="Specializes in flight booking",
+        instructions=f"{_BASE_SYSTEM_MSG} You handle all flight-related tasks including booking.",
         service=AzureChatCompletion(),
-        plugins=[FlightPLugin()],
+        plugins=[FlightPlugin()],
     )
 
     # 6. Hotel Agent
     hotel_agent = ChatCompletionAgent(
         name="hotel_agent",
-        description="Specializes in hotel search and booking",
-        instructions=f"{_BASE_SYSTEM_MSG} You handle all hotel-related tasks including search and booking.",
+        description="Specializes in hotel booking",
+        instructions=f"{_BASE_SYSTEM_MSG} You handle all hotel-related tasks including booking.",
         service=AzureChatCompletion(),
         plugins=[HotelPlugin()],
     )

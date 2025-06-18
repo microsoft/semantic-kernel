@@ -127,7 +127,12 @@ class AgentBaseGroupChatManager(GroupChatManager):
             )
 
         messages = chat_history.messages[:]
-        messages.append(ChatMessageContent(role=AuthorRole.USER, content="Has the group completed the task?"))
+        messages.append(
+            ChatMessageContent(
+                role=AuthorRole.USER,
+                content="Has the user's request been satisfied?",
+            )
+        )
 
         settings = AzureChatPromptExecutionSettings()
         settings.response_format = BooleanResult
@@ -147,7 +152,7 @@ class AgentBaseGroupChatManager(GroupChatManager):
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=(
-                    "Who should handle the task next? Pick one agent from the participants:\n"
+                    "Who should speak next based on the conversation? Pick one agent from the participants:\n"
                     + "\n".join([f"{k}: {v}" for k, v in participant_descriptions.items()])
                     + "\nPlease provide the agent's name."
                 ),
@@ -200,14 +205,10 @@ async def main():
     group_chat_orchestration = GroupChatOrchestration(
         members=[
             agents["planner"],
-            agents["destination_expert"],
             agents["flight_agent"],
             agents["hotel_agent"],
         ],
-        manager=AgentBaseGroupChatManager(
-            max_rounds=20,
-            human_response_function=human_response_function,
-        ),
+        manager=AgentBaseGroupChatManager(max_rounds=20, human_response_function=human_response_function),
         streaming_agent_response_callback=streaming_agent_response_callback,
     )
 
@@ -219,7 +220,9 @@ async def main():
     orchestration_result = await group_chat_orchestration.invoke(
         task=(
             "Plan a trip to bali for 5 days including flights, hotels, and "
-            "activities for a vegetarian family of 4 members."
+            "activities for a vegetarian family of 4 members. The family lives in Seattle, WA, USA. "
+            "Their vacation starts on July 30th 2025. their have a strict budget of $5000 for the trip. "
+            "Please provide a detailed plan and make the necessary hotel and flight bookings."
         ),
         runtime=runtime,
     )
