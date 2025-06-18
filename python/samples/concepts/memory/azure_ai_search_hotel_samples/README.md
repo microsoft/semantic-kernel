@@ -31,7 +31,7 @@ The Python samples in this folder will:
    To run the main sample and see search results:
 
    ```bash
-   python step_1_interact_with_the_collection.py
+   python 1_interact_with_the_collection.py
    ```
 
    This will:

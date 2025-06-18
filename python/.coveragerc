@@ -4,7 +4,6 @@ omit =
     semantic_kernel/connectors/memory_stores/*
     semantic_kernel/reliability/*
     semantic_kernel/memory/*
-    semantic_kernel/planners/*
 
 [report]
 # Regexes for lines to exclude from consideration

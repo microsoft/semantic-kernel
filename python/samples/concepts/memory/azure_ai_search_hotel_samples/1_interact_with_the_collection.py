@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 from semantic_kernel.connectors.azure_ai_search import AzureAISearchCollection
 
 """
-With the data model and records defined in step_0_data_model.py, this script will create an Azure AI Search collection,
+With the data model and records defined in data_model.py, this script will create an Azure AI Search collection,
 upsert the records, and then search the collection using vector and hybrid search.
 The script will print the first five records in the collection and the search results.
 The script will also delete the collection at the end.
