@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -40,6 +41,10 @@ public class AzureAIAgentFactoryTests : IDisposable
                 Transport = new HttpClientTransport(this._httpClient)
             });
         builder.Services.AddSingleton(client);
+        var projectClient = new AIProjectClient(
+            new Uri("https://test"),
+            new FakeTokenCredential());
+        builder.Services.AddSingleton(projectClient);
         this._kernel = builder.Build();
     }
 
@@ -137,6 +142,28 @@ public class AzureAIAgentFactoryTests : IDisposable
           "tool_resources": {},
           "metadata": {},
           "response_format": "auto"
+        }
+        """;
+
+    /// <summary>
+    /// Azure AI Agent create response.
+    /// </summary>
+    public const string ProjectBingGroundingConnectionResponse =
+        """
+        {
+          "value": [
+            {
+              "name": "test_connection",
+              "id": "unique-id",
+              "type": "AzureOpenAI",
+              "target": "bbzo",
+              "isDefault": true,
+              "credentials": {
+                "type": "BaseCredentials"
+              },
+              "metadata": {}
+            }
+          ]
         }
         """;
 

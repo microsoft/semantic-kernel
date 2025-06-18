@@ -18,6 +18,7 @@ from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.agents.runtime.core.topic import TopicId
 from semantic_kernel.agents.runtime.in_process.type_subscription import TypeSubscription
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
@@ -162,6 +163,8 @@ class HandoffAgentActor(AgentActorBase):
         handoff_connections: AgentHandoffs,
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        | None = None,
         human_response_function: Callable[[], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None,
     ) -> None:
         """Initialize the handoff agent actor."""
@@ -179,6 +182,7 @@ class HandoffAgentActor(AgentActorBase):
             agent=agent,
             internal_topic_type=internal_topic_type,
             agent_response_callback=agent_response_callback,
+            streaming_agent_response_callback=streaming_agent_response_callback,
         )
 
     def _add_handoff_functions(self) -> None:
@@ -275,45 +279,9 @@ class HandoffAgentActor(AgentActorBase):
             return
         logger.debug(f"{self.id}: Received handoff request message.")
 
-        if self._agent_thread is None:
-            self._chat_history.add_message(
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-                )
-            )
-            response_item = await self._agent.get_response(
-                messages=self._chat_history.messages,  # type: ignore[arg-type]
-                kernel=self._kernel,
-            )
-        else:
-            response_item = await self._agent.get_response(
-                messages=ChatMessageContent(
-                    role=AuthorRole.USER,
-                    content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-                ),
-                thread=self._agent_thread,
-                kernel=self._kernel,
-            )
-
-        if self._agent_thread is None:
-            self._agent_thread = response_item.thread
+        response = await self._invoke_agent_with_potentially_no_response(kernel=self._kernel)
 
         while not self._task_completed:
-            if response_item.message.role == AuthorRole.ASSISTANT:
-                # The response can potentially be a TOOL message from the Handoff plugin
-                # since we have added a filter which will terminate the conversation when
-                # a function from the handoff plugin is called. And we don't want to publish
-                # that message. So we only publish if the response is an ASSISTANT message.
-                logger.debug(f"{self.id} responded with: {response_item.message.content}")
-                await self._call_agent_response_callback(response_item.message)
-
-                await self.publish_message(
-                    HandoffResponseMessage(body=response_item.message),
-                    TopicId(self._internal_topic_type, self.id.key),
-                    cancellation_token=cts.cancellation_token,
-                )
-
             if self._handoff_agent_name:
                 await self.publish_message(
                     HandoffRequestMessage(agent_name=self._handoff_agent_name),
@@ -321,6 +289,18 @@ class HandoffAgentActor(AgentActorBase):
                 )
                 self._handoff_agent_name = None
                 break
+
+            if response is None:
+                raise RuntimeError(
+                    f'Agent "{self._agent.name}" did not return any response nor did not set a handoff agent name.'
+                )
+
+            await self.publish_message(
+                HandoffResponseMessage(body=response),
+                TopicId(self._internal_topic_type, self.id.key),
+                cancellation_token=cts.cancellation_token,
+            )
+
             if self._human_response_function:
                 human_response = await self._call_human_response_function()
                 await self.publish_message(
@@ -328,9 +308,8 @@ class HandoffAgentActor(AgentActorBase):
                     TopicId(self._internal_topic_type, self.id.key),
                     cancellation_token=cts.cancellation_token,
                 )
-                response_item = await self._agent.get_response(
-                    messages=human_response,
-                    thread=self._agent_thread,
+                response = await self._invoke_agent_with_potentially_no_response(
+                    additional_messages=human_response,
                     kernel=self._kernel,
                 )
             else:
@@ -345,6 +324,48 @@ class HandoffAgentActor(AgentActorBase):
         if inspect.iscoroutinefunction(self._human_response_function):
             return await self._human_response_function()
         return self._human_response_function()  # type: ignore[return-value]
+
+    async def _invoke_agent_with_potentially_no_response(
+        self, additional_messages: DefaultTypeAlias | None = None, **kwargs
+    ) -> ChatMessageContent | None:
+        """Invoke the agent with the current chat history or thread and optionally additional messages.
+
+        This method differs from `_invoke_agent` in that it handles the case where no response is returned
+        from the agent gracefully, returning `None` instead of raising an error.
+
+        The reason for this is that agents in a handoff group chat may not always produce a response when
+        a handoff function is invoked, where the `_handoff_function_filter` will terminate the auto function
+        invocation loop before a response is produced. In such cases, this method will return `None`
+        instead of raising an error.
+        """
+        streaming_message_buffer: list[StreamingChatMessageContent] = []
+        messages = self._create_messages(additional_messages)
+
+        async for response_item in self._agent.invoke_stream(
+            messages,  # type: ignore[arg-type]
+            thread=self._agent_thread,
+            on_intermediate_message=self._handle_intermediate_message,
+            **kwargs,
+        ):
+            # Buffer message chunks and stream them with correct is_final flag.
+            streaming_message_buffer.append(response_item.message)
+            if len(streaming_message_buffer) > 1:
+                await self._call_streaming_agent_response_callback(streaming_message_buffer[-2], is_final=False)
+            if self._agent_thread is None:
+                self._agent_thread = response_item.thread
+
+        if streaming_message_buffer:
+            # Call the callback for the last message chunk with is_final=True.
+            await self._call_streaming_agent_response_callback(streaming_message_buffer[-1], is_final=True)
+
+        if not streaming_message_buffer:
+            return None
+
+        # Build the full response from the streaming messages
+        full_response = sum(streaming_message_buffer[1:], streaming_message_buffer[0])
+        await self._call_agent_response_callback(full_response)
+
+        return full_response
 
 
 # endregion HandoffAgentActor
@@ -365,6 +386,8 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
         output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        | None = None,
         human_response_function: Callable[[], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None,
     ) -> None:
         """Initialize the handoff orchestration.
@@ -377,8 +400,10 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
             description (str | None): The description of the orchestration.
             input_transform (Callable | None): A function that transforms the external input message.
             output_transform (Callable | None): A function that transforms the internal output message.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
+            agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
+            streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
+                is produced by the agents.
             human_response_function (Callable | None): A function that is called when a human response is
                 needed.
         """
@@ -392,6 +417,7 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
             input_transform=input_transform,
             output_transform=output_transform,
             agent_response_callback=agent_response_callback,
+            streaming_agent_response_callback=streaming_agent_response_callback,
         )
 
         self._validate_handoffs()
@@ -461,6 +487,7 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
                     handoff_connections,
                     result_callback=result_callback,
                     agent_response_callback=self._agent_response_callback,
+                    streaming_agent_response_callback=self._streaming_agent_response_callback,
                     human_response_function=self._human_response_function,
                 ),
             )

@@ -31,6 +31,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -677,22 +678,8 @@ class MagenticAgentActor(AgentActorBase):
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received response message.")
         if self._agent_thread is not None:
-            if message.body.role != AuthorRole.USER:
-                await self._agent_thread.on_new_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
             await self._agent_thread.on_new_message(message.body)
         else:
-            if message.body.role != AuthorRole.USER:
-                self._chat_history.add_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
             self._chat_history.add_message(message.body)
 
     @message_handler
@@ -701,29 +688,13 @@ class MagenticAgentActor(AgentActorBase):
             return
 
         logger.debug(f"{self.id}: Received request message.")
-        if self._agent_thread is None:
-            # Add a user message to steer the agent to respond more closely to the instructions.
-            self._chat_history.add_message(
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-                )
-            )
-            response_item = await self._agent.get_response(messages=self._chat_history.messages)  # type: ignore[arg-type]
-            self._agent_thread = response_item.thread
-        else:
-            # Add a user message to steer the agent to respond more closely to the instructions.
-            new_message = ChatMessageContent(
-                role=AuthorRole.USER,
-                content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-            )
-            response_item = await self._agent.get_response(messages=new_message, thread=self._agent_thread)
 
-        logger.debug(f"{self.id} responded with {response_item.message.content}.")
-        await self._call_agent_response_callback(response_item.message)
+        response = await self._invoke_agent()
+
+        logger.debug(f"{self.id} responded with {response}.")
 
         await self.publish_message(
-            MagenticResponseMessage(body=response_item.message),
+            MagenticResponseMessage(body=response),
             TopicId(self._internal_topic_type, self.id.key),
             cancellation_token=ctx.cancellation_token,
         )
@@ -756,6 +727,8 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
         output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
+        streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
+        | None = None,
     ) -> None:
         """Initialize the Magentic One orchestration.
 
@@ -768,6 +741,8 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
             output_transform (Callable | None): A function that transforms the internal output message.
             agent_response_callback (Callable | None): A function that is called when a response is produced
                 by the agents.
+            streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
+                is produced by the agents.
         """
         self._manager = manager
 
@@ -782,6 +757,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
             input_transform=input_transform,
             output_transform=output_transform,
             agent_response_callback=agent_response_callback,
+            streaming_agent_response_callback=streaming_agent_response_callback,
         )
 
     @override
@@ -826,6 +802,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
                     agent,
                     internal_topic_type,
                     self._agent_response_callback,
+                    self._streaming_agent_response_callback,
                 ),
             )
             for agent in self._members

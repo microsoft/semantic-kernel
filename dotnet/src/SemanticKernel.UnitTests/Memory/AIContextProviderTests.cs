@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -63,5 +64,29 @@ public class AIContextProviderTests
 
         // Act & Assert.
         await mockPart.Object.ResumingAsync("threadId", CancellationToken.None);
+    }
+
+    [Fact]
+    public void ExtensionCanAddPluginsFromAIContextProvider()
+    {
+        var plugins = new List<KernelPlugin>();
+
+        var aiContext = new AIContext
+        {
+            AIFunctions = new List<AIFunction>
+            {
+                AIFunctionFactory.Create(() => Task.FromResult("Function1 Result"), "Function1"),
+                AIFunctionFactory.Create(() => Task.FromResult("Function2 Result"), "Function2")
+            }
+        };
+
+        Assert.Equal("TestPlugin", plugins.AddFromAIContext(aiContext, "TestPlugin"));
+        Assert.Equal("TestPlugin_1", plugins.AddFromAIContext(aiContext, "TestPlugin"));
+        Assert.Equal("TestPlugin_2", plugins.AddFromAIContext(aiContext, "TestPlugin"));
+
+        Assert.Equal(3, plugins.Count);
+        Assert.Contains(plugins, p => p.Name == "TestPlugin");
+        Assert.Contains(plugins, p => p.Name == "TestPlugin_1");
+        Assert.Contains(plugins, p => p.Name == "TestPlugin_2");
     }
 }

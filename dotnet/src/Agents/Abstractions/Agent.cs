@@ -384,4 +384,38 @@ public abstract class Agent
     {
         return thread.OnNewMessageAsync(message, cancellationToken);
     }
+
+    /// <summary>
+    /// Default formatting for additional instructions for the AI agent based on the provided context and invocation options.
+    /// </summary>
+    /// <param name="context">The context containing relevant information for the AI agent's operation.</param>
+    /// <param name="options">Optional parameters that influence the invocation behavior. Can be <see langword="null"/>.</param>
+    /// <returns>A formatted string representing the additional instructions for the AI agent.</returns>
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    protected static string FormatAdditionalInstructions(AIContext context, AgentInvokeOptions? options)
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    {
+        return string.Concat(ProcessInstructions());
+
+        IEnumerable<string> ProcessInstructions()
+        {
+            bool hasInstructions = false;
+            if (options?.AdditionalInstructions is not null)
+            {
+                yield return options!.AdditionalInstructions;
+                hasInstructions = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(context.Instructions))
+            {
+                if (hasInstructions)
+                {
+                    yield return Environment.NewLine;
+                    yield return Environment.NewLine;
+                }
+
+                yield return context.Instructions!;
+            }
+        }
+    }
 }

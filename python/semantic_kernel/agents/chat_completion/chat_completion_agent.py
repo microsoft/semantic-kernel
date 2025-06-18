@@ -452,7 +452,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
 
                 if (
                     role == AuthorRole.ASSISTANT
-                    and response.items
+                    and (response.items or response.metadata.get("usage"))
                     and not any(
                         isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in response.items
                     )
@@ -596,6 +596,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         drained: list[ChatMessageContent] = []
         for i in range(start, len(history)):
             msg: ChatMessageContent = history[i]  # type: ignore
+            msg.name = self.name
             await thread.on_new_message(msg)
             drained.append(msg)
         return drained
