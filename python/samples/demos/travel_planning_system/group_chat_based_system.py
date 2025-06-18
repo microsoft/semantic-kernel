@@ -6,6 +6,7 @@ import sys
 from opentelemetry import trace
 
 from samples.demos.travel_planning_system.agents import get_agents
+from samples.demos.travel_planning_system.observability import enable_observability
 from semantic_kernel.agents import (
     BooleanResult,
     ChatCompletionAgent,
@@ -191,7 +192,7 @@ class AgentBaseGroupChatManager(GroupChatManager):
         )
 
 
-# @enable_observability
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 1. Create a Group Chat orchestration with multiple agents
