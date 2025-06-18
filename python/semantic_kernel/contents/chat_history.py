@@ -340,6 +340,9 @@ class ChatHistory(KernelBaseModel):
         prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
+        # The current selection prompt isn’t XML-complete, so all text is stored as one message.
+        # This helps with applying selective guardrails, since the custom guardrails tag stays in the message.
+        # Once the prompt becomes XML-complete, ensure the XML parser does not strip out custom guardrail tags.
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError as exc:
