@@ -59,13 +59,8 @@ class GeneralPlugin:
         """Get weather information for a location."""
         return f"Weather information for {location}: Sunny, 25°C."
 
-    @kernel_function
-    def search_destinations(self, query: str) -> str:
-        """Search for travel destinations."""
-        return f"Results for '{query}':\n1. Paris\n2. New York\n3. Tokyo\n4. Bali\n5. Sydney"
 
-
-def get_agents() -> list[ChatCompletionAgent]:
+def get_agents() -> dict[str, ChatCompletionAgent]:
     """Creates and returns a set of agents for the travel planning system."""
     # 1. Conversation Manager Agent
     conversation_manager = ChatCompletionAgent(
@@ -121,11 +116,11 @@ def get_agents() -> list[ChatCompletionAgent]:
         plugins=[HotelPlugin()],
     )
 
-    return [
-        conversation_manager,
-        planner,
-        router,
-        destination_expert,
-        flight_agent,
-        hotel_agent,
-    ]
+    return {
+        conversation_manager.name: conversation_manager,
+        planner.name: planner,
+        router.name: router,
+        destination_expert.name: destination_expert,
+        flight_agent.name: flight_agent,
+        hotel_agent.name: hotel_agent,
+    }

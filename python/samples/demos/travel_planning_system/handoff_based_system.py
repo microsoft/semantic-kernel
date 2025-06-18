@@ -3,11 +3,11 @@
 import asyncio
 
 from opentelemetry import trace
-from opentelemetry.trace.span import format_trace_id
 
 from samples.demos.travel_planning_system.agents import get_agents
-from samples.demos.travel_planning_system.observability import set_up_logging, set_up_tracing
+from samples.demos.travel_planning_system.observability import enable_observability
 from semantic_kernel.agents import HandoffOrchestration
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.orchestration.handoffs import OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.contents import AuthorRole, ChatMessageContent
@@ -35,7 +35,15 @@ def get_agents_and_handoffs():
     """
     BASE_TRANSFER_DESCRIPTION = "Do not call this function in parallel with other functions."
 
-    conversation_manager, planner, router, destination_expert, flight_agent, hotel_agent = get_agents()
+    agents: dict[str, ChatCompletionAgent] = get_agents()
+
+    conversation_manager = agents["conversation_manager"]
+    planner = agents["planner"]
+    router = agents["router"]
+    destination_expert = agents["destination_expert"]
+    flight_agent = agents["flight_agent"]
+    hotel_agent = agents["hotel_agent"]
+
     handoffs = (
         OrchestrationHandoffs()
         .add_many(
@@ -94,12 +102,9 @@ def get_agents_and_handoffs():
     ], handoffs
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
-    # 0. Set up logging and observability
-    set_up_logging()
-    set_up_tracing()
-
     # 1. Create a handoff orchestration with multiple agents
     agents, handoffs = get_agents_and_handoffs()
     handoff_orchestration = HandoffOrchestration(
@@ -109,25 +114,22 @@ async def main():
         human_response_function=human_response_function,
     )
 
-    tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span("main") as current_span:
-        print(f"Trace ID: {format_trace_id(current_span.get_span_context().trace_id)}")
-        # 2. Create a runtime and start it
-        runtime = InProcessRuntime()
-        runtime.start()
+    # 2. Create a runtime and start it
+    runtime = InProcessRuntime()
+    runtime.start()
 
-        # 3. Invoke the orchestration with a task and the runtime
-        orchestration_result = await handoff_orchestration.invoke(
-            task=(
-                "Plan a trip to bali for 5 days including flights, hotels, and "
-                "activities for a vegetarian family of 4 members."
-            ),
-            runtime=runtime,
-        )
+    # 3. Invoke the orchestration with a task and the runtime
+    orchestration_result = await handoff_orchestration.invoke(
+        task=(
+            "Plan a trip to bali for 5 days including flights, hotels, and "
+            "activities for a vegetarian family of 4 members."
+        ),
+        runtime=runtime,
+    )
 
-        # 4. Wait for the results
-        value = await orchestration_result.get()
-        print(value)
+    # 4. Wait for the results
+    value = await orchestration_result.get()
+    print(value)
 
     # 5. Stop the runtime after the invocation is complete
     await runtime.stop_when_idle()
