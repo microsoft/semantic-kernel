@@ -138,6 +138,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
 
         prepared_settings = self._prepare_settings_for_request(chat_history, settings)
+        prepared_settings["guardrailConfig"]["streamProcessingMode"] = "async"
         response_stream = await self._async_converse_streaming(**prepared_settings)
         for event in response_stream.get("stream"):
             if "messageStart" in event:
@@ -263,6 +264,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             prepared_settings["guardrailConfig"] = {
                 "guardrailIdentifier": os.getenv("BEDROCK_GUARDRAIL_ID"),
                 "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION"),
+                "trace": "enabled",
             }
 
         return prepared_settings

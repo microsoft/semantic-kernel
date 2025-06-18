@@ -71,7 +71,20 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
                 }
             })
         else:
-            contents.append({"text": item.text})
+            text: str = item.text
+            delimiter = "Here is the user question:"
+            parts: list[str] = text.split(delimiter, 1)
+            # if delimiter is present in text; pass only latter part through guardrails
+            # else pass entire text
+            if delimiter in text:
+                prompt = parts[0]
+                user_query = parts[1]
+                contents.extend([
+                    {"text": prompt + delimiter},
+                    {"guardContent": {"text": {"text": user_query}}},
+                ])
+            else:
+                contents.append({"text": text})
 
     return {
         "role": "user",
