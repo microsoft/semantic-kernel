@@ -7,18 +7,12 @@ from typing import TYPE_CHECKING, Any, Final
 
 from prance import ResolvingParser
 
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
-    RestApiExpectedResponse,
-)
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import RestApiExpectedResponse
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
-    RestApiParameterLocation,
-)
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import RestApiParameterLocation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload_property import (
-    RestApiPayloadProperty,
-)
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload_property import RestApiPayloadProperty
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme import RestApiSecurityScheme
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
@@ -66,7 +60,7 @@ class OpenApiParser:
                 # The schema and content fields are mutually exclusive.
                 raise PluginInitializationError(f"Parameter {name} cannot have a 'content' field. Expected: schema.")
             location = RestApiParameterLocation(param["in"])
-            description: str = param.get("description", None)
+            description: str | None = param.get("description", None)
             is_required: bool = param.get("required", False)
             default_value = param.get("default", None)
             schema: dict[str, Any] | None = param.get("schema", None)

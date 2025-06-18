@@ -6,7 +6,7 @@ from samples.getting_started_with_agents.multi_agent_orchestration.observability
 from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents import StreamingChatMessageContent
 
 """
 The following sample demonstrates how to create a sequential orchestration for

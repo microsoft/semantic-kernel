@@ -190,6 +190,18 @@ public abstract class BaseTest : TextWriter
     }
 
     /// <summary>
+    /// Outputs the last message in the chat messages history.
+    /// </summary>
+    /// <param name="chatHistory">Chat messages history</param>
+    protected void OutputLastMessage(IReadOnlyCollection<ChatMessage> chatHistory)
+    {
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Text}");
+        Console.WriteLine("------------------------");
+    }
+
+    /// <summary>
     /// Outputs out the stream of generated message tokens.
     /// </summary>
     protected async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)

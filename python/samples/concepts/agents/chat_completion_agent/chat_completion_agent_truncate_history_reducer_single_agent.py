@@ -28,9 +28,10 @@ async def main():
     reducer_msg_count = 10
     reducer_threshold = 10
 
-    # Create a summarization reducer
+    # Create a truncation reducer
     history_truncation_reducer = ChatHistoryTruncationReducer(
-        service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
+        target_count=reducer_msg_count,
+        threshold_count=reducer_threshold,
     )
 
     thread: ChatHistoryAgentThread = ChatHistoryAgentThread(chat_history=history_truncation_reducer)
