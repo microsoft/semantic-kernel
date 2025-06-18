@@ -20,7 +20,7 @@ from semantic_kernel.kernel_types import OptionalOneOrList
 
 """
 This sample builds on the previous one, but can be run independently.
-It uses the data model defined in step_0_data_model.py, and with that creates a collection
+It uses the data model defined in data_model.py, and with that creates a collection
 and creates two kernel functions from those that are then made available to a LLM.
 The first function is a search function that allows you to search for hotels, optionally filtering for a city.
 The second function is a details function that allows you to get details about a hotel.
@@ -73,90 +73,92 @@ def filter_update(
     return filter
 
 
-# Next we create the Agent, with two functions.
-travel_agent = ChatCompletionAgent(
-    name="TravelAgent",
-    description="A travel agent that helps you find a hotel.",
-    service=OpenAIChatCompletion(),
-    instructions="""You are a travel agent. Your name is Mosscap and
+instructions = """You are a travel agent. Your name is Mosscap and
 you have one goal: help people find a hotel.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
 flowery prose. You always make sure to include the
 hotel_id in your answers so that the user can
-use it to get more information.""",
-    function_choice_behavior=FunctionChoiceBehavior.Auto(),
-    plugins=[
-        KernelPlugin(
-            name="azure_ai_search",
-            description="A plugin that allows you to search for hotels in Azure AI Search.",
-            functions=[
-                collection.create_search_function(
-                    # this create search method uses the `search` method of the text search object.
-                    # remember that the text_search object for this sample is based on
-                    # the text_search method of the Azure AI Search.
-                    # but it can also be used with the other vector search methods.
-                    # This method's description, name and parameters are what will be serialized as part of the tool
-                    # call functionality of the LLM.
-                    # And crafting these should be part of the prompt design process.
-                    # The default parameters are `query`, `top`, and `skip`, but you specify your own.
-                    # The default parameters match the parameters of the VectorSearchOptions class.
-                    description="A hotel search engine, allows searching for hotels in specific cities, "
-                    "you do not have to specify that you are searching for hotels, for all, use `*`.",
-                    search_type="keyword_hybrid",
-                    # Next to the dynamic filters based on parameters, I can specify options that are always used.
-                    # this can include the `top` and `skip` parameters, but also filters that are always applied.
-                    # In this case, I am filtering by country, so only hotels in the USA are returned.
-                    filter=lambda x: x.Address.Country == "USA",
-                    parameters=[
-                        KernelParameterMetadata(
-                            name="query",
-                            description="What to search for.",
-                            type="str",
-                            is_required=True,
-                            type_object=str,
-                        ),
-                        KernelParameterMetadata(
-                            name="city",
-                            description="The city that you want to search for a hotel "
-                            f"in, values are: {', '.join(cities)}",
-                            type="str",
-                            type_object=str,
-                        ),
-                        KernelParameterMetadata(
-                            name="top",
-                            description="Number of results to return.",
-                            type="int",
-                            default_value=5,
-                            type_object=int,
-                        ),
-                    ],
-                    # and here the above created function is passed in.
-                    filter_update_function=filter_update,
-                    # finally, we specify the `string_mapper` function that is used to convert the record to a string.
-                    # This is used to make sure the relevant information from the record is passed to the LLM.
-                    string_mapper=lambda x: f"(hotel_id :{x.record.HotelId}) {x.record.HotelName} (rating {x.record.Rating}) - {x.record.Description}. Address: {x.record.Address.StreetAddress}, {x.record.Address.City}, {x.record.Address.StateProvince}, {x.record.Address.Country}. Number of room types: {len(x.record.Rooms)}. Last renovated: {x.record.LastRenovationDate}.",  # noqa: E501
+use it to get more information."""
+
+
+search_plugin = KernelPlugin(
+    name="azure_ai_search",
+    description="A plugin that allows you to search for hotels in Azure AI Search.",
+    functions=[
+        collection.create_search_function(
+            # this create search method uses the `search` method of the text search object.
+            # remember that the text_search object for this sample is based on
+            # the text_search method of the Azure AI Search.
+            # but it can also be used with the other vector search methods.
+            # This method's description, name and parameters are what will be serialized as part of the tool
+            # call functionality of the LLM.
+            # And crafting these should be part of the prompt design process.
+            # The default parameters are `query`, `top`, and `skip`, but you specify your own.
+            # The default parameters match the parameters of the VectorSearchOptions class.
+            description="A hotel search engine, allows searching for hotels in specific cities, "
+            "you do not have to specify that you are searching for hotels, for all, use `*`.",
+            search_type="keyword_hybrid",
+            # Next to the dynamic filters based on parameters, I can specify options that are always used.
+            # this can include the `top` and `skip` parameters, but also filters that are always applied.
+            # In this case, I am filtering by country, so only hotels in the USA are returned.
+            filter=lambda x: x.Address.Country == "USA",
+            parameters=[
+                KernelParameterMetadata(
+                    name="query",
+                    description="What to search for.",
+                    type="str",
+                    is_required=True,
+                    type_object=str,
                 ),
-                collection.create_search_function(
-                    # This second function is a more detailed one, that uses a `HotelId` to get details about a hotel.
-                    # we set the top to 1, so that only 1 record is returned.
-                    function_name="get_details",
-                    description="Get details about a hotel, by ID, use the generic search function to get the ID.",
-                    top=1,
-                    parameters=[
-                        KernelParameterMetadata(
-                            name="HotelId",
-                            description="The hotel ID to get details for.",
-                            type="str",
-                            is_required=True,
-                            type_object=str,
-                        ),
-                    ],
+                KernelParameterMetadata(
+                    name="city",
+                    description=f"The city that you want to search for a hotel in, values are: {', '.join(cities)}",
+                    type="str",
+                    type_object=str,
+                ),
+                KernelParameterMetadata(
+                    name="top",
+                    description="Number of results to return.",
+                    type="int",
+                    default_value=5,
+                    type_object=int,
                 ),
             ],
-        )
+            # and here the above created function is passed in.
+            filter_update_function=filter_update,
+            # finally, we specify the `string_mapper` function that is used to convert the record to a string.
+            # This is used to make sure the relevant information from the record is passed to the LLM.
+            string_mapper=lambda x: f"(hotel_id :{x.record.HotelId}) {x.record.HotelName} (rating {x.record.Rating}) - {x.record.Description}. Address: {x.record.Address.StreetAddress}, {x.record.Address.City}, {x.record.Address.StateProvince}, {x.record.Address.Country}. Number of room types: {len(x.record.Rooms)}. Last renovated: {x.record.LastRenovationDate}.",  # noqa: E501
+        ),
+        collection.create_search_function(
+            # This second function is a more detailed one, that uses a `HotelId` to get details about a hotel.
+            # we set the top to 1, so that only 1 record is returned.
+            function_name="get_details",
+            description="Get details about a hotel, by ID, use the generic search function to get the ID.",
+            top=1,
+            parameters=[
+                KernelParameterMetadata(
+                    name="HotelId",
+                    description="The hotel ID to get details for.",
+                    type="str",
+                    is_required=True,
+                    type_object=str,
+                ),
+            ],
+        ),
     ],
+)
+
+# Next we create the Agent, with two functions.
+travel_agent = ChatCompletionAgent(
+    name="TravelAgent",
+    description="A travel agent that helps you find a hotel.",
+    service=OpenAIChatCompletion(),
+    instructions=instructions,
+    function_choice_behavior=FunctionChoiceBehavior.Auto(),
+    plugins=[search_plugin],
 )
 
 
