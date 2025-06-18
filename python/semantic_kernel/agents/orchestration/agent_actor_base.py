@@ -111,7 +111,12 @@ class AgentActorBase(ActorBase):
         streaming_message_buffer: list[StreamingChatMessageContent] = []
         messages = self._create_messages(additional_messages)
 
-        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):  # type: ignore[arg-type]
+        async for response_item in self._agent.invoke_stream(
+            messages,  # type: ignore[arg-type]
+            thread=self._agent_thread,
+            on_intermediate_message=self._handle_intermediate_message,
+            **kwargs,
+        ):
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:
@@ -149,3 +154,24 @@ class AgentActorBase(ActorBase):
         if isinstance(additional_messages, list):
             return base_messages + additional_messages
         return [*base_messages, additional_messages]
+
+    async def _handle_intermediate_message(self, message: ChatMessageContent) -> None:
+        """Handle intermediate messages from the agent.
+
+        This method is called with messages produced during streaming agent responses.
+        Although the parameter is typed as `ChatMessageContent` (to match the `invoke_stream` callback signature),
+        the actual object will always be a `StreamingChatMessageContent` (a subclass of `ChatMessageContent`).
+
+        The agent response callback expects a `ChatMessageContent`, so we can pass the message directly.
+        However, the streaming agent response callback specifically requires a `StreamingChatMessageContent`.
+        To avoid type errors from the static type checker due to down casting (from `ChatMessageContent` to
+        `StreamingChatMessageContent`), we check that the message is of the correct type before calling the callbacks.
+        Since it will always be a `StreamingChatMessageContent`, this check is safe.
+        """
+        if not isinstance(message, StreamingChatMessageContent):
+            raise TypeError(
+                f"Expected message to be of type 'StreamingChatMessageContent', "
+                f"but got '{type(message).__name__}' instead."
+            )
+        await self._call_agent_response_callback(message)
+        await self._call_streaming_agent_response_callback(message, is_final=True)

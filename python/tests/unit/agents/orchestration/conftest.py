@@ -38,8 +38,8 @@ class MockAgent(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> AgentResponseItem[ChatMessageContent]:
@@ -48,8 +48,8 @@ class MockAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -59,8 +59,8 @@ class MockAgent(Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
