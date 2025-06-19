@@ -11,14 +11,14 @@ from pinecone.core.openapi.db_data.models import (
     SearchRecordsResponseResult,
     SearchUsage,
 )
-from pinecone.data.index_asyncio import _IndexAsyncio
+from pinecone.db_data.index_asyncio import _IndexAsyncio
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.pinecone import PineconeCollection, PineconeStore
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 BASE_PATH_ASYNCIO = "pinecone.PineconeAsyncio"
-BASE_PATH_INDEX_CLIENT_ASYNCIO = "pinecone.data.index_asyncio._IndexAsyncio"
+BASE_PATH_INDEX_CLIENT_ASYNCIO = "pinecone.db_data.index_asyncio._IndexAsyncio"
 
 
 @fixture
