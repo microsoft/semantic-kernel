@@ -114,7 +114,6 @@ internal sealed class ConsoleOutputFunctionInvocationFilter() : IFunctionInvocat
 
                 Console.WriteLine(IndentMultilineString($"{message}"));
             }
-            Console.WriteLine($"Finished processing response from Agent {context.Function.Name}.\n");
         }
         Console.ResetColor();
     }

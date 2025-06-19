@@ -72,7 +72,7 @@ public static class Program
                 await foreach (AgentResponseItem<ChatMessageContent> response in hostAgent.Agent!.InvokeAsync(message, thread))
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Agent: {response.Message.Content}");
+                    Console.WriteLine($"\nAgent: {response.Message.Content}");
                     Console.ResetColor();
 
                     thread = response.Thread;
