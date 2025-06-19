@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using SharpA2A.Core;
 
 namespace A2A;
@@ -8,6 +9,7 @@ internal sealed class AzureAIInvoiceAgent : AzureAIHostAgent
 {
     internal AzureAIInvoiceAgent(ILogger logger) : base(logger)
     {
+        this.Plugins = [KernelPluginFactory.CreateFromType<InvoiceQueryPlugin>()];
     }
 
     public override AgentCard GetAgentCard(string agentUrl)

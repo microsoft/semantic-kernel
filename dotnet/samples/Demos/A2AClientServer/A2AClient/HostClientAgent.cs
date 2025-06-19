@@ -107,13 +107,14 @@ internal sealed class ConsoleOutputFunctionInvocationFilter() : IFunctionInvocat
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
 
-            Console.WriteLine($"Got Response from Agent {context.Function.Name}:");
+            Console.WriteLine($"Response from Agent {context.Function.Name}:");
             foreach (var message in chatMessages)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
 
                 Console.WriteLine(IndentMultilineString($"{message}"));
             }
+            Console.WriteLine($"Finished processing response from Agent {context.Function.Name}.\n");
         }
         Console.ResetColor();
     }

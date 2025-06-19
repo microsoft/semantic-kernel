@@ -74,7 +74,7 @@ Content-Type: application/json
             "parts": [
                 {
                     "kind": "text",
-                    "text": "What is the status for SHPMT-SAP-001"
+                    "text": "What is the status for SHPMT-SAP-001?"
                 }
             ]
         }

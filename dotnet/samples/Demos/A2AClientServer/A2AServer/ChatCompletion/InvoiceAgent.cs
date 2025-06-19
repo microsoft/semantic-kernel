@@ -30,7 +30,7 @@ internal sealed class InvoiceAgent : ChatCompletionHostAgent
             Tags = ["invoice", "semantic-kernel"],
             Examples =
             [
-                "List the latest invoices for Contoso.",
+                "List the latest invoices for Contoso?",
             ],
         };
 

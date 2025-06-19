@@ -37,7 +37,7 @@ internal sealed class LogisticsAgent : ChatCompletionHostAgent
             Tags = ["logistics", "semantic-kernel"],
             Examples =
             [
-                "What is the status for SHPMT-SAP-001",
+                "What is the status for SHPMT-SAP-001?",
             ],
         };
 
