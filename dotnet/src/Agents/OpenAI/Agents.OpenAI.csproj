@@ -35,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\Core\Agents.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

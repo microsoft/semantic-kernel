@@ -14,9 +14,14 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Connectors.InMemory</PackageId>
-    <Title>Semantic Kernel - In-Memory Vector Store</Title>
-    <Description>In-Memory Vector Store for Semantic Kernel</Description>
+    <Title>In-Memory provider for Microsoft.Extensions.VectorData</Title>
+    <Description>In-Memory provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Numerics.Tensors" />

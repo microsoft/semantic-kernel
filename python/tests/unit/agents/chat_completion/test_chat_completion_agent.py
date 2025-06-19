@@ -260,6 +260,7 @@ async def test_invoke_emits_tool_call_then_result_then_text(kernel_with_ai_servi
     assert len(messages) == 1
     assert isinstance(messages[0].message, ChatMessageContent)
     assert messages[0].message.content.startswith("Clam Chowder")
+    assert messages[0].message.name == agent.name
 
 
 async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
@@ -385,6 +386,7 @@ async def test_invoke_stream_emits_tool_call_then_result_then_text(kernel_with_a
     assert len(yielded_text) == 1
     assert isinstance(yielded_text[0], StreamingChatMessageContent)
     assert yielded_text[0].content.startswith("Clam Chowder")
+    assert yielded_text[0].name == agent.name
 
 
 async def test_invoke_stream_tool_call_added(

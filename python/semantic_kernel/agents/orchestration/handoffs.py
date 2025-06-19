@@ -279,14 +279,7 @@ class HandoffAgentActor(AgentActorBase):
             return
         logger.debug(f"{self.id}: Received handoff request message.")
 
-        persona_adoption_message = ChatMessageContent(
-            role=AuthorRole.USER,
-            content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-        )
-        response = await self._invoke_agent_with_potentially_no_response(
-            additional_messages=persona_adoption_message,
-            kernel=self._kernel,
-        )
+        response = await self._invoke_agent_with_potentially_no_response(kernel=self._kernel)
 
         while not self._task_completed:
             if self._handoff_agent_name:
@@ -348,7 +341,12 @@ class HandoffAgentActor(AgentActorBase):
         streaming_message_buffer: list[StreamingChatMessageContent] = []
         messages = self._create_messages(additional_messages)
 
-        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):  # type: ignore[arg-type]
+        async for response_item in self._agent.invoke_stream(
+            messages,  # type: ignore[arg-type]
+            thread=self._agent_thread,
+            on_intermediate_message=self._handle_intermediate_message,
+            **kwargs,
+        ):
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:

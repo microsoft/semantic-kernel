@@ -9,8 +9,8 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using OpenAI.Files;
-
 using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
+using UsageDetails = Microsoft.Extensions.AI.UsageDetails;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of host agents
@@ -69,7 +69,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         string contentExpression = string.IsNullOrWhiteSpace(message.Content) ? string.Empty : message.Content;
         bool isCode = message.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false;
         string codeMarker = isCode ? "\n  [CODE]\n" : " ";
-        Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
+        System.Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
 
         // Provide visibility for inner content (that isn't TextContent).
         foreach (KernelContent item in message.Items)
@@ -125,6 +125,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             {
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
             }
+            else if (usage is UsageDetails usageDetails)
+            {
+                WriteUsage(usageDetails.TotalTokenCount ?? 0, usageDetails.InputTokenCount ?? 0, usageDetails.OutputTokenCount ?? 0);
+            }
         }
 
         string FormatAuthor() => message.AuthorName is not null ? $" - {message.AuthorName ?? " * "}" : string.Empty;
@@ -133,6 +137,29 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
         }
+    }
+
+    /// <summary>
+    /// Common method to write formatted agent streaming chat content to the console.
+    /// </summary>
+    protected async Task<AgentThread?> WriteAgentStreamMessageAsync(IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> responseItems)
+    {
+        var first = true;
+        AgentThread? thread = null;
+        await foreach (var responseItem in responseItems)
+        {
+            var message = responseItem.Message;
+            if (first)
+            {
+                Console.Write($"# {message.AuthorName ?? message.Role.ToString()}> ");
+                first = false;
+            }
+            Console.Write(message.Content);
+            thread = responseItem.Thread;
+        }
+        Console.WriteLine();
+
+        return thread;
     }
 
     protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)

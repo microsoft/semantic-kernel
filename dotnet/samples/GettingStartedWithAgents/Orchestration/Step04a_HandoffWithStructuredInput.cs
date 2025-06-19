@@ -40,6 +40,11 @@ public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : Base
                 description: "An agent that handles .NET related issues");
         dotnetAgent.Kernel.Plugins.Add(plugin);
 
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
+        OrchestrationMonitor monitor = new();
+
         // Define the orchestration
         HandoffOrchestration<GithubIssue, string> orchestration =
             new(OrchestrationHandoffs
@@ -49,7 +54,8 @@ public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : Base
                 pythonAgent,
                 dotnetAgent)
             {
-                LoggerFactory = this.LoggerFactory
+                LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
             };
 
         GithubIssue input =
