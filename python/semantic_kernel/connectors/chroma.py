@@ -304,8 +304,8 @@ class ChromaCollection(
             elif embeddings is not None and embeddings[0] is not None and idx < len(embeddings[0]):
                 record["embedding"] = embeddings[0][idx]
             # Add distance if present
-            if distances is not None and distances[0] is not None and idx < len(distances[0]):
-                record["distance"] = distances[0][idx]
+            if distances is not None and distances[0] is not None and idx < len(distances[0]):  # type: ignore
+                record["distance"] = distances[0][idx]  # type: ignore
             # Add metadata if present
             if metadatas is not None and metadatas[0] is not None and idx < len(metadatas[0]):
                 metadata = metadatas[0] if isinstance(metadatas[0], dict) else metadatas[0][idx]  # type: ignore
