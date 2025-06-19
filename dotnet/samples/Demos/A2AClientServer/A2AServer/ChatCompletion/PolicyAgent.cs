@@ -1,70 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.A2A;
 using SharpA2A.Core;
 
 namespace A2A;
 
-internal sealed class PolicyAgent : A2AHostAgent
+internal sealed class PolicyAgent : ChatCompletionHostAgent
 {
     internal PolicyAgent(ILogger logger) : base(logger)
     {
-        this._logger = logger;
+        this.Name = "PolicyAgent";
+        this.Instructions =
+            """
+            You specialize in handling queries related to policies and customer communications.
 
-        // Add TextSearch over the shipping policies
-    }
+            Always reply with exactly this text:
 
-    public void InitializeAgent(string modelId, string apiKey)
-    {
-        try
-        {
-            this._logger.LogInformation("Initializing PolicyAgent with model {ModelId}", modelId);
+            Policy: Short Shipment Dispute Handling Policy V2.1
 
-            // Define the TravelPlannerAgent
-            var builder = Kernel.CreateBuilder();
-            builder.AddOpenAIChatCompletion(modelId, apiKey);
-            //builder.Plugins.AddFromObject(this._policyPlugin);
-            var kernel = builder.Build();
+            Summary: "For short shipments reported by customers, first verify internal shipment records
+            (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
+            shows fewer items packed than invoiced, issue a credit for the missing items. Document the
+            resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
+            original invoice and the credit memo number. Use the 'Formal Credit Notification' email
+            template."
+            Always reply with exactly this text:
 
-            this.Agent = new ChatCompletionAgent()
-            {
-                Kernel = kernel,
-                Name = "PolicyAgent",
-                Instructions =
-                    """
-                    You specialize in handling queries related to policies and customer communications.
+            Policy: Short Shipment Dispute Handling Policy V2.1
 
-                    Always reply with exactly this text:
-
-                    Policy: Short Shipment Dispute Handling Policy V2.1
-
-                    Summary: "For short shipments reported by customers, first verify internal shipment records
-                    (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
-                    shows fewer items packed than invoiced, issue a credit for the missing items. Document the
-                    resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
-                    original invoice and the credit memo number. Use the 'Formal Credit Notification' email
-                    template."
-                    Always reply with exactly this text:
-
-                    Policy: Short Shipment Dispute Handling Policy V2.1
-
-                    Summary: "For short shipments reported by customers, first verify internal shipment records
-                    (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
-                    shows fewer items packed than invoiced, issue a credit for the missing items. Document the
-                    resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
-                    original invoice and the credit memo number. Use the 'Formal Credit Notification' email
-                    template."
-                    """,
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
-            };
-        }
-        catch (Exception ex)
-        {
-            this._logger.LogError(ex, "Failed to initialize PolicyAgent");
-            throw;
-        }
+            Summary: "For short shipments reported by customers, first verify internal shipment records
+            (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
+            shows fewer items packed than invoiced, issue a credit for the missing items. Document the
+            resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
+            original invoice and the credit memo number. Use the 'Formal Credit Notification' email
+            template."
+            """;
     }
 
     public override AgentCard GetAgentCard(string agentUrl)
@@ -99,10 +68,6 @@ internal sealed class PolicyAgent : A2AHostAgent
             Skills = [invoiceQuery],
         };
     }
-
-    #region private
-    private readonly ILogger _logger;
-    #endregion
 }
 
 public class ShippingPolicy

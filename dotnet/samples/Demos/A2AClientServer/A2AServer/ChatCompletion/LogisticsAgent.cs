@@ -1,54 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.A2A;
 using SharpA2A.Core;
 
 namespace A2A;
 
-internal sealed class LogisticsAgent : A2AHostAgent
+internal sealed class LogisticsAgent : ChatCompletionHostAgent
 {
     internal LogisticsAgent(ILogger logger) : base(logger)
     {
-        this._logger = logger;
+        this.Name = "LogisticsAgent";
+        this.Instructions =
+            """
+            You specialize in handling queries related to logistics.
 
-        // Add TextSearch over the shipping policies
-    }
+            Always reply with exactly:
 
-    public void InitializeAgent(string modelId, string apiKey)
-    {
-        try
-        {
-            this._logger.LogInformation("Initializing LogisticAgent with model {ModelId}", modelId);
-
-            // Define the TravelPlannerAgent
-            var builder = Kernel.CreateBuilder();
-            builder.AddOpenAIChatCompletion(modelId, apiKey);
-            var kernel = builder.Build();
-
-            this.Agent = new ChatCompletionAgent()
-            {
-                Kernel = kernel,
-                Name = "LogisticsAgent",
-                Instructions =
-                    """
-                    You specialize in handling queries related to logistics
-
-                    Always reply with exactly:
-
-                    Shipment number: SHPMT-SAP-001
-                    Item: TSHIRT-RED-L
-                    Quantity: 900                    
-                    """,
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
-            };
-        }
-        catch (Exception ex)
-        {
-            this._logger.LogError(ex, "Failed to initialize LogisticAgent");
-            throw;
-        }
+            Shipment number: SHPMT-SAP-001
+            Item: TSHIRT-RED-L
+            Quantity: 900                    
+            """;
     }
 
     public override AgentCard GetAgentCard(string agentUrl)
@@ -83,8 +53,4 @@ internal sealed class LogisticsAgent : A2AHostAgent
             Skills = [invoiceQuery],
         };
     }
-
-    #region private
-    private readonly ILogger _logger;
-    #endregion
 }

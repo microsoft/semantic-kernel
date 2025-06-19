@@ -102,8 +102,8 @@
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-    <PackageVersion Include="SharpA2A.Core" Version="0.1.0-preview.4" />
-    <PackageVersion Include="SharpA2A.AspNetCore" Version="0.1.0-preview.4" />
+    <PackageVersion Include="SharpA2A.Core" Version="0.2.1-preview.1" />
+    <PackageVersion Include="SharpA2A.AspNetCore" Version="0.2.1-preview.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.2" />

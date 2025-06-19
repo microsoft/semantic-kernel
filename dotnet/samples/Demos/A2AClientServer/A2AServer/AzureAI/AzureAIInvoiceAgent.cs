@@ -1,39 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Agents.Persistent;
-using Azure.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.A2A;
-using Microsoft.SemanticKernel.Agents.AzureAI;
 using SharpA2A.Core;
 
 namespace A2A;
 
-internal sealed class AzureAIInvoiceAgent : A2AHostAgent
+internal sealed class AzureAIInvoiceAgent : AzureAIHostAgent
 {
     internal AzureAIInvoiceAgent(ILogger logger) : base(logger)
     {
-        this._logger = logger;
-    }
-
-    public async Task InitializeAgentAsync(string modelId, string endpoint, string assistantId)
-    {
-        try
-        {
-            this._logger.LogInformation("Initializing AzureAIInvoiceAgent {AssistantId}", assistantId);
-
-            // Define the InvoiceAgent
-            var agentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
-            PersistentAgent definition = await agentsClient.Administration.GetAgentAsync(assistantId);
-
-            this.Agent = new AzureAIAgent(definition, agentsClient);
-            this.Agent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<InvoiceQueryPlugin>());
-        }
-        catch (Exception ex)
-        {
-            this._logger.LogError(ex, "Failed to initialize AzureAIInvoiceAgent");
-            throw;
-        }
     }
 
     public override AgentCard GetAgentCard(string agentUrl)
@@ -73,8 +47,4 @@ internal sealed class AzureAIInvoiceAgent : A2AHostAgent
             Skills = [invoiceQuery],
         };
     }
-
-    #region private
-    private readonly ILogger _logger;
-    #endregion
 }

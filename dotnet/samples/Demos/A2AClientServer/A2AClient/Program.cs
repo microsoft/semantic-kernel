@@ -45,7 +45,7 @@ public static class Program
             .Build();
         var apiKey = configRoot["A2AClient:ApiKey"] ?? throw new ArgumentException("A2AClient:ApiKey must be provided");
         var modelId = configRoot["A2AClient:ModelId"] ?? "gpt-4.1";
-        var agentUrls = configRoot["A2AClient:AgentUrls"] ?? "http://localhost:5000/policy/ http://localhost:5000/invoice/ http://localhost:5000/logistics/";
+        var agentUrls = configRoot["A2AClient:AgentUrls"] ?? "http://localhost:5000/ http://localhost:5001/ http://localhost:5002/";
 
         // Create the Host agent
         var hostAgent = new HostClientAgent(logger);

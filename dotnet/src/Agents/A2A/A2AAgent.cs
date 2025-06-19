@@ -139,13 +139,12 @@ public sealed class A2AAgent : Agent
 
     private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(string name, ChatMessageContent message, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var taskSendParams = new TaskSendParams
+        var messageSendParams = new MessageSendParams
         {
-            Id = thread.Id!,
-            SessionId = thread.SessionId,
             Message = new Message
             {
-                Role = message.Role.ToString(),
+                MessageId = Guid.NewGuid().ToString(),
+                Role = message.Role.ToMessageRole(),
                 Parts =
                 [
                     new TextPart
@@ -156,20 +155,43 @@ public sealed class A2AAgent : Agent
             }
         };
 
-        var agentTask = await this.Client.Send(taskSendParams).ConfigureAwait(false);
-        if (agentTask.Artifacts != null && agentTask.Artifacts.Count > 0)
+        A2AResponse response = await this.Client.SendMessageAsync(messageSendParams).ConfigureAwait(false);
+        if (response is AgentTask agentTask)
         {
-            foreach (var artifact in agentTask.Artifacts)
+            if (agentTask.Artifacts != null && agentTask.Artifacts.Count > 0)
             {
-                foreach (var part in artifact.Parts)
+                foreach (var artifact in agentTask.Artifacts)
                 {
-                    if (part is TextPart textPart)
+                    foreach (var part in artifact.Parts)
                     {
-                        yield return new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, textPart.Text), thread);
+                        if (part is TextPart textPart)
+                        {
+                            yield return new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, textPart.Text), thread);
+                        }
                     }
                 }
+                Console.WriteLine();
             }
-            Console.WriteLine();
+        }
+        else if (response is Message messageResponse)
+        {
+            foreach (var part in messageResponse.Parts)
+            {
+                if (part is TextPart textPart)
+                {
+                    yield return new AgentResponseItem<ChatMessageContent>(
+                        new ChatMessageContent(
+                            AuthorRole.Assistant,
+                            textPart.Text,
+                            encoding: message.Encoding,
+                            metadata: message.Metadata),
+                        thread);
+                }
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Unexpected response type from A2A client.");
         }
     }
 

@@ -1,23 +1,27 @@
-﻿@host = http://localhost:5000
+﻿### Each A2A agent is available at a different host address
+@hostInvoice = http://localhost:5000
+@hostPolicy = http://localhost:5001
+@hostLogistics = http://localhost:5002
 
 ### Query agent card for the invoice agent
-GET {{host}}/invoice/.well-known/agent.json
+GET {{hostInvoice}}/.well-known/agent.json
 
 ### Send a task to the invoice agent
-POST {{host}}/invoice
+POST {{hostInvoice}}
 Content-Type: application/json
 
 {
     "id": "1",
     "jsonrpc": "2.0",
-    "method": "task/send",
+    "method": "message/send",
     "params": {
         "id": "12345",
         "message": {
             "role": "user",
+            "messageId": "msg_1",
             "parts": [
                 {
-                    "type": "text",
+                    "kind": "text",
                     "text": "Show me all invoices for Contoso?"
                 }
             ]
@@ -26,23 +30,24 @@ Content-Type: application/json
 }
 
 ### Query agent card for the policy agent
-GET {{host}}/policy/.well-known/agent.json
+GET {{hostPolicy}}/.well-known/agent.json
 
 ### Send a task to the policy agent
-POST {{host}}/policy
+POST {{hostPolicy}}
 Content-Type: application/json
 
 {
     "id": "1",
     "jsonrpc": "2.0",
-    "method": "task/send",
+    "method": "message/send",
     "params": {
         "id": "12345",
         "message": {
             "role": "user",
+            "messageId": "msg_1",
             "parts": [
                 {
-                    "type": "text",
+                    "kind": "text",
                     "text": "What is the policy for short shipments?"
                 }
             ]
@@ -51,23 +56,24 @@ Content-Type: application/json
 }
 
 ### Query agent card for the logistics agent
-GET {{host}}/logistics/.well-known/agent.json
+GET {{hostLogistics}}/.well-known/agent.json
 
 ### Send a task to the logistics agent
-POST {{host}}/logistics
+POST {{hostLogistics}}
 Content-Type: application/json
 
 {
     "id": "1",
     "jsonrpc": "2.0",
-    "method": "task/send",
+    "method": "message/send",
     "params": {
         "id": "12345",
         "message": {
             "role": "user",
+            "messageId": "msg_1",
             "parts": [
                 {
-                    "type": "text",
+                    "kind": "text",
                     "text": "What is the status for SHPMT-SAP-001"
                 }
             ]

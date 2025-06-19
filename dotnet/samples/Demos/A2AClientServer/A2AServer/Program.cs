@@ -7,6 +7,21 @@ using Microsoft.Extensions.DependencyInjection;
 using SharpA2A.AspNetCore;
 using SharpA2A.Core;
 
+string agentId = string.Empty;
+string agentType = string.Empty;
+
+for (var i = 0; i < args.Length; i++)
+{
+    if (args[i].StartsWith("--agentId", StringComparison.InvariantCultureIgnoreCase) && i + 1 < args.Length)
+    {
+        agentId = args[++i];
+    }
+    else if (args[i].StartsWith("--agentType", StringComparison.InvariantCultureIgnoreCase) && i + 1 < args.Length)
+    {
+        agentType = args[++i];
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient().AddLogging();
 var app = builder.Build();
@@ -25,46 +40,33 @@ string modelId = configuration["A2AServer:ModelId"] ?? "gpt-4o-mini";
 
 if (!string.IsNullOrEmpty(endpoint))
 {
-    var invoiceAgent = new AzureAIInvoiceAgent(logger);
-    var invoiceAgentId = configuration["A2AServer:InvoiceAgentId"] ?? throw new ArgumentException("A2AServer:InvoiceAgentId must be provided");
-    await invoiceAgent.InitializeAgentAsync(modelId, endpoint, invoiceAgentId);
-    var invoiceTaskManager = new TaskManager();
-    invoiceAgent.Attach(invoiceTaskManager);
-    app.MapA2A(invoiceTaskManager, "/invoice");
+    AzureAIHostAgent hostAgent = agentType.ToUpperInvariant() switch
+    {
+        "INVOICE" => new AzureAIInvoiceAgent(logger),
+        "POLICY" => new AzureAIPolicyAgent(logger),
+        "LOGISTICS" => new AzureAILogisticsAgent(logger),
+        _ => throw new ArgumentException($"Unsupported agent type: {agentType}"),
+    };
 
-    var policyAgent = new AzureAIPolicyAgent(logger);
-    var policyAgentId = configuration["A2AServer:PolicyAgentId"] ?? throw new ArgumentException("A2AServer:PolicyAgentId must be provided");
-    await policyAgent.InitializeAgentAsync(modelId, endpoint, policyAgentId);
-    var policyTaskManager = new TaskManager();
-    policyAgent.Attach(policyTaskManager);
-    app.MapA2A(policyTaskManager, "/policy");
-
-    var logisticsAgent = new AzureAILogisticsAgent(logger);
-    var logisticsAgentId = configuration["A2AServer:LogisticsAgentId"] ?? throw new ArgumentException("A2AServer:LogisticsAgentId must be provided");
-    await logisticsAgent.InitializeAgentAsync(modelId, endpoint, logisticsAgentId);
-    var logisticsTaskManager = new TaskManager();
-    logisticsAgent.Attach(logisticsTaskManager);
-    app.MapA2A(logisticsTaskManager, "/logistics");
+    await hostAgent.InitializeAgentAsync(modelId, endpoint, agentId);
+    var taskManager = new TaskManager();
+    hostAgent.Attach(taskManager);
+    app.MapA2A(taskManager, "");
 }
 else if (!string.IsNullOrEmpty(apiKey))
 {
-    var invoiceAgent = new InvoiceAgent(logger);
-    invoiceAgent.InitializeAgent(modelId, apiKey);
+    ChatCompletionHostAgent hostAgent = agentType.ToUpperInvariant() switch
+    {
+        "INVOICE" => new InvoiceAgent(logger),
+        "POLICY" => new PolicyAgent(logger),
+        "LOGISTICS" => new LogisticsAgent(logger),
+        _ => throw new ArgumentException($"Unsupported agent type: {agentType}"),
+    };
+
+    hostAgent.InitializeAgent(modelId, apiKey);
     var invoiceTaskManager = new TaskManager();
-    invoiceAgent.Attach(invoiceTaskManager);
-    app.MapA2A(invoiceTaskManager, "/invoice");
-
-    var policyAgent = new PolicyAgent(logger);
-    policyAgent.InitializeAgent(modelId, apiKey);
-    var policyTaskManager = new TaskManager();
-    policyAgent.Attach(policyTaskManager);
-    app.MapA2A(policyTaskManager, "/policy");
-
-    var logisticsAgent = new LogisticsAgent(logger);
-    logisticsAgent.InitializeAgent(modelId, apiKey);
-    var logisticsTaskManager = new TaskManager();
-    logisticsAgent.Attach(logisticsTaskManager);
-    app.MapA2A(logisticsTaskManager, "/logistics");
+    hostAgent.Attach(invoiceTaskManager);
+    app.MapA2A(invoiceTaskManager, "");
 }
 else
 {
