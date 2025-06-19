@@ -299,15 +299,15 @@ class ChromaCollection(
         for idx, id in enumerate(ids):
             record: dict[str, Any] = {"id": id}
             # Add vector field if present
-            if documents is not None and idx < len(documents[0]):
+            if documents is not None and documents[0] is not None and idx < len(documents[0]):
                 record["document"] = documents[0][idx]
-            elif embeddings is not None and idx < len(embeddings[0]):
+            elif embeddings is not None and embeddings[0] is not None and idx < len(embeddings[0]):
                 record["embedding"] = embeddings[0][idx]
             # Add distance if present
-            if distances is not None and isinstance(distances, list) and idx < len(distances[0]):
-                record["distance"] = distances[0][idx]
+            if distances is not None and distances[0] is not None and idx < len(distances[0]):  # type: ignore
+                record["distance"] = distances[0][idx]  # type: ignore
             # Add metadata if present
-            if metadatas is not None and idx < len(metadatas[0]) and metadatas[0] is not None:
+            if metadatas is not None and metadatas[0] is not None and idx < len(metadatas[0]):
                 metadata = metadatas[0] if isinstance(metadatas[0], dict) else metadatas[0][idx]  # type: ignore
                 if metadata and isinstance(metadata, dict):
                     record.update(metadata)
@@ -350,7 +350,7 @@ class ChromaCollection(
         results = self._get_collection().query(**args)
         records = self._unpack_results(results, options.include_vectors, include_distances=True)
         return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(records), total_count=len(records)
+            results=self._get_vector_search_results_from_results(records), total_count=len(records) if records else 0
         )
 
     @override
