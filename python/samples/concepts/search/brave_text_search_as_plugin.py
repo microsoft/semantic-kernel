@@ -5,10 +5,10 @@ from collections.abc import Awaitable, Callable
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.search.brave import BraveSearch
+from semantic_kernel.connectors.brave import BraveSearch
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
+from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
 
 """
 This project demonstrates how to integrate the Brave Search API as a plugin into the Semantic Kernel 
@@ -21,10 +21,10 @@ After that store it under the name `BRAVE_API_KEY` in a .env file or your enviro
 
 kernel = Kernel()
 kernel.add_service(OpenAIChatCompletion(service_id="chat"))
-kernel.add_plugin(
-    KernelPlugin.from_text_search_with_search(
-        BraveSearch(),
-        plugin_name="brave",
+kernel.add_function(
+    plugin_name="brave",
+    function=BraveSearch().create_search_function(
+        function_name="brave_search",
         description="Get details about Semantic Kernel concepts.",
         parameters=[
             KernelParameterMetadata(
@@ -51,7 +51,7 @@ kernel.add_plugin(
                 type_object=int,
             ),
         ],
-    )
+    ),
 )
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
