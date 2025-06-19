@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from inspect import isawaitable
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
-from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
+from pinecone import FetchResponse, IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.db_data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
 from pydantic import SecretStr, ValidationError
@@ -102,7 +102,7 @@ class PineconeCollection(
         namespace: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        **kwargs: str,
+        **kwargs: Any,
     ) -> None:
         """Initialize the Pinecone collection.
 
@@ -267,7 +267,7 @@ class PineconeCollection(
         index_creation_args.update(kwargs)
         index = self.client.create_index(**index_creation_args)
         if isawaitable(index):
-            index = await index
+            index = await index  # type: ignore
         self.index = index
         await self._load_index_client()
 
@@ -275,7 +275,7 @@ class PineconeCollection(
         if not self.index:
             index = self.client.describe_index(self.collection_name)
             if isawaitable(index):
-                index = await index
+                index = await index  # type: ignore
             self.index = index
         if self.index.embed is not None:
             if isinstance(self.client, PineconeGRPC):
@@ -347,11 +347,12 @@ class PineconeCollection(
             record[self._key_field_storage_name] = record.pop("_id")
             return record
         vector_field = self.definition.vector_fields[0]
-        ret_record = {
+        ret_record: dict[str, Any] = {
             self._key_field_storage_name: record.id,
             vector_field.storage_name or vector_field.name: record.values,
         }
-        ret_record.update(record.metadata)
+        if record.metadata:
+            ret_record.update(record.metadata)
         return ret_record
 
     @override
@@ -383,12 +384,12 @@ class PineconeCollection(
                     "Pinecone GRPC client does not support integrated embeddings. "
                     "Please use the Pinecone Asyncio client."
                 )
-            await self.index_client.upsert_records(records=records, **kwargs)
+            await self.index_client.upsert_records(records=records, **kwargs)  # type: ignore
             return [record["_id"] for record in records]
         if isinstance(self.index_client, GRPCIndex):
-            self.index_client.upsert(records, **kwargs)
+            self.index_client.upsert(records, **kwargs)  # type: ignore
         else:
-            await self.index_client.upsert(records, **kwargs)
+            await self.index_client.upsert(records, **kwargs)  # type: ignore
         return [record.id for record in records]
 
     @override
@@ -406,9 +407,9 @@ class PineconeCollection(
             raise VectorStoreOperationException("Pinecone collection is not initialized.")
         namespace = kwargs.get("namespace", self.namespace)
         if isinstance(self.index_client, GRPCIndex):
-            response = self.index_client.fetch(ids=keys, namespace=namespace)
+            response: FetchResponse = self.index_client.fetch(ids=keys, namespace=namespace)  # type: ignore
         else:
-            response = await self.index_client.fetch(ids=keys, namespace=namespace)
+            response = await self.index_client.fetch(ids=keys, namespace=namespace)  # type: ignore
         return list(response.vectors.values())
 
     @override
@@ -421,9 +422,9 @@ class PineconeCollection(
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if isinstance(self.index_client, GRPCIndex):
-            self.index_client.delete(ids=keys, **kwargs)
+            self.index_client.delete(ids=keys, **kwargs)  # type: ignore
         else:
-            await self.index_client.delete(ids=keys, **kwargs)
+            await self.index_client.delete(ids=keys, **kwargs)  # type: ignore
 
     @override
     async def _inner_search(
@@ -465,10 +466,10 @@ class PineconeCollection(
             }
             if filter:
                 search_args["query"]["filter"] = {"$and": filter} if isinstance(filter, list) else filter
-            results = await self.index_client.search_records(**search_args)
+            search_results = await self.index_client.search_records(**search_args)
             return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(results.result.hits, options),
-                total_count=len(results.result.hits),
+                results=self._get_vector_search_results_from_results(search_results.result.hits, options),
+                total_count=len(search_results.result.hits),
             )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
@@ -483,12 +484,12 @@ class PineconeCollection(
         }
         if filter:
             search_args["filter"] = {"$and": filter} if isinstance(filter, list) else filter
-        results = self.index_client.query(**search_args)
-        if isawaitable(results):
-            results = await results
+        query_results = self.index_client.query(**search_args)
+        if isawaitable(query_results):
+            query_results = await query_results  # type: ignore
         return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(results.matches, options),
-            total_count=len(results.matches),
+            results=self._get_vector_search_results_from_results(query_results.matches, options),  # type: ignore
+            total_count=len(query_results.matches),  # type: ignore
         )
 
     @override
@@ -614,7 +615,7 @@ class PineconeStore(VectorStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         use_grpc: bool = False,
-        **kwargs: str,
+        **kwargs: Any,
     ) -> None:
         """Initialize the Pinecone store.
 
