@@ -45,6 +45,7 @@ async def main():
     kernel.add_service(OpenAIChatCompletion())
 
     async with InMemoryCollection(record_type=BudgetItem) as collection:
+        await collection.ensure_collection_exists()
         # Add information to the collection
         await collection.upsert(
             [
