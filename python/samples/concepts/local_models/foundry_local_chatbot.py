@@ -17,7 +17,6 @@ To install the SDK, run the following command:
 `pip install foundry-local-sdk`
 """
 
-# The model alias is the name of the model that you want to use.
 # The way Foundry Local works, is that it picks the right variant of a model based on the
 # hardware available on the machine. For example, if you have a GPU, it will pick the GPU variant
 # of the model. If you have a CPU, it will pick the CPU variant of the model.
