@@ -358,7 +358,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new GeminiPromptExecutionSettings();
             case GeminiPromptExecutionSettings settings:
                 return settings;
         }
