@@ -73,7 +73,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = options?.Kernel ?? this.Kernel;
 
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -168,7 +168,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = options?.Kernel ?? this.Kernel;
 
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
