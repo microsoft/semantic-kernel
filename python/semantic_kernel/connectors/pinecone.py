@@ -8,7 +8,7 @@ from inspect import isawaitable
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
-from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
+from pinecone.db_data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
 from pydantic import SecretStr, ValidationError
 

@@ -296,7 +296,7 @@ async def test_create_index(collection_hash, mock_ensure_collection_exists):
 
 
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
-    from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+    from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
     index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)

@@ -123,7 +123,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone[asyncio, grpc] ~= 6.0"
+    "pinecone[asyncio, grpc] ~= 7.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -132,7 +132,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 5,< 6",
+    "redis[hiredis] ~= 6.0",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
