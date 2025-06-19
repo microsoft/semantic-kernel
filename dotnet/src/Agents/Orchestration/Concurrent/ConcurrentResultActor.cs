@@ -53,7 +53,7 @@ internal sealed class ConcurrentResultActor :
 
         if (Interlocked.Increment(ref this._resultCount) == this._expectedCount)
         {
-            await this.SendMessageAsync(this._results.ToArray(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
+            await this.PublishMessageAsync(this._results.ToArray(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
         }
     }
 }

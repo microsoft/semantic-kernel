@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Runtime;
@@ -15,13 +16,36 @@ public static class RuntimeExtensions
     /// <summary>
     /// Sends a message to the specified agent.
     /// </summary>
-    public static async ValueTask SendMessageAsync(this IAgentRuntime runtime, object message, AgentType agentType, CancellationToken cancellationToken = default)
+    public static async ValueTask PublishMessageAsync(this IAgentRuntime runtime, object message, AgentType agentType, CancellationToken cancellationToken = default)
     {
-        AgentId? agentId = await runtime.GetAgentAsync(agentType, lazy: false).ConfigureAwait(false);
-        if (agentId.HasValue)
-        {
-            await runtime.SendMessageAsync(message, agentId.Value, sender: null, messageId: null, cancellationToken).ConfigureAwait(false);
-        }
+        await runtime.PublishMessageAsync(message, new TopicId(agentType), sender: null, messageId: null, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Registers an agent factory for the specified agent type and associates it with the runtime.
+    /// </summary>
+    /// <param name="runtime">The runtime targeted for registration.</param>
+    /// <param name="agentType">The type of agent to register.</param>
+    /// <param name="factoryFunc">The factory function for creating the agent.</param>
+    /// <returns>The registered agent type.</returns>
+    public static async ValueTask<AgentType> RegisterOrchestrationAgentAsync(this IAgentRuntime runtime, AgentType agentType, Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>> factoryFunc)
+    {
+        AgentType registeredType = await runtime.RegisterAgentFactoryAsync(agentType, factoryFunc).ConfigureAwait(false);
+
+        // Subscribe agent to its own unique topic
+        await runtime.SubscribeAsync(registeredType).ConfigureAwait(false);
+
+        return registeredType;
+    }
+
+    /// <summary>
+    /// Subscribes the specified agent type to its own dedicated topic.
+    /// </summary>
+    /// <param name="runtime">The runtime for managing the subscription.</param>
+    /// <param name="agentType">The agent type to subscribe.</param>
+    public static async Task SubscribeAsync(this IAgentRuntime runtime, string agentType)
+    {
+        await runtime.AddSubscriptionAsync(new TypeSubscription(agentType, agentType)).ConfigureAwait(false);
     }
 
     /// <summary>
