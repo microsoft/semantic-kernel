@@ -792,6 +792,6 @@ public sealed class TextChunkerTests
             "Third line"
         };
 
-        Assert.Equal(expected, result); // This should PASS after our fix
+        Assert.Equal(expected, result);
     }
 }
