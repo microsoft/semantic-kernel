@@ -29,7 +29,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Null(executionSettings.AudioTimestamp);
         Assert.Null(executionSettings.ResponseMimeType);
         Assert.Null(executionSettings.ResponseSchema);
-        Assert.Equal(GeminiPromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
+        Assert.Null(executionSettings.MaxTokens);
     }
 
     [Fact]

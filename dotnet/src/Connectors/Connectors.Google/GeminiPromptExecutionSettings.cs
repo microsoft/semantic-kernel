@@ -34,11 +34,6 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private GeminiThinkingConfig? _thinkingConfig;
 
     /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
-
-    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// Range is 0.0 to 1.0.
@@ -358,7 +353,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new GeminiPromptExecutionSettings();
             case GeminiPromptExecutionSettings settings:
                 return settings;
         }
