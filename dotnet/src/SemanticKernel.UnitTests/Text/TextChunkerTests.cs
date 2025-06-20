@@ -788,10 +788,31 @@ public sealed class TextChunkerTests
         var expected = new[]
         {
             "First line",
-            "Second line", 
+            "Second line",
             "Third line"
         };
 
         Assert.Equal(expected, result); // Currently fails
+    }
+
+    [Fact]
+    public void SplitPlainTextLinesHandlesEdgeCases()
+    {
+        // Test with low token limit to ensure hierarchical splitting still works
+        var result1 = TextChunker.SplitPlainTextLines("This is a very long line without any newlines that should be split using hierarchical approach", 5);
+        Assert.True(result1.Count > 1, "Long line without newlines should be split hierarchically");
+
+        // Test with high token limit and newlines - should split on newlines
+        var result2 = TextChunker.SplitPlainTextLines("Short line\nAnother short line", 100);
+        Assert.Equal(new[] { "Short line", "Another short line" }, result2);
+
+        // Test empty string
+        var result3 = TextChunker.SplitPlainTextLines("", 10);
+        Assert.Empty(result3);
+
+        // Test single line without newlines
+        var result4 = TextChunker.SplitPlainTextLines("Single line without newlines", 100);
+        Assert.Single(result4);
+        Assert.Equal("Single line without newlines", result4[0]);
     }
 }
