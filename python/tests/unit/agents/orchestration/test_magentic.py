@@ -200,7 +200,7 @@ async def test_invoke():
         try:
             orchestration = MagenticOrchestration(members=[agent_a, agent_b], manager=manager)
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            result = await orchestration_result.get()
+            result = await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
@@ -242,7 +242,7 @@ async def test_invoke_with_list_error():
     ):
         orchestration = MagenticOrchestration(members=[agent_a, agent_b], manager=manager)
         orchestration_result = await orchestration.invoke(task=messages, runtime=runtime)
-        await orchestration_result.get()
+        await orchestration_result.get(1.0)
 
 
 @pytest.mark.skipif(
@@ -513,7 +513,7 @@ async def test_invoke_with_unknown_speaker():
                 ),
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 

@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
     """Settings for Ollama prompt execution."""
 
-    format: Literal["json"] | None = None
+    format: Literal["json"] | dict[str, Any] | None = None
     options: dict[str, Any] | None = None
 
 
