@@ -185,16 +185,28 @@ internal partial class AzureClientCore
 
         if (executionSettings.Modalities is JsonElement responseModalitiesElement)
         {
-            if (responseModalitiesElement.ValueKind == JsonValueKind.String &&
-                Enum.TryParse<ChatResponseModalities>(responseModalitiesElement.GetString(), true, out var parsedResponseModalities))
+            if (responseModalitiesElement.ValueKind == JsonValueKind.String)
             {
-                return parsedResponseModalities;
+                var modalityString = responseModalitiesElement.GetString();
+                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedResponseModalities))
+                {
+                    return parsedResponseModalities;
+                }
+
+                throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
             }
 
             if (responseModalitiesElement.ValueKind == JsonValueKind.Array)
             {
-                var modalitiesEnumeration = JsonSerializer.Deserialize<IEnumerable<string>>(responseModalitiesElement.GetRawText())!;
-                return ParseResponseModalitiesEnumerable(modalitiesEnumeration);
+                try
+                {
+                    var modalitiesEnumeration = JsonSerializer.Deserialize<IEnumerable<string>>(responseModalitiesElement.GetRawText())!;
+                    return ParseResponseModalitiesEnumerable(modalitiesEnumeration);
+                }
+                catch (JsonException ex)
+                {
+                    throw new NotSupportedException("The provided response modalities JSON array may only contain strings.", ex);
+                }
             }
 
             throw new NotSupportedException($"The provided response modalities '{executionSettings.Modalities?.GetType()}' is not supported.");
@@ -202,6 +214,7 @@ internal partial class AzureClientCore
 
         return ChatResponseModalities.Default;
     }
+
 
     /// <summary>
     /// Gets the audio options from the execution settings.
@@ -217,19 +230,33 @@ internal partial class AzureClientCore
 
         if (executionSettings.Audio is JsonElement audioOptionsElement)
         {
-            var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsElement.GetRawText()));
-            if (result != null)
+            try
             {
-                return result;
+                var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsElement.GetRawText()));
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new NotSupportedException($"Failed to parse the provided audio options from JSON. Ensure the JSON structure matches ChatAudioOptions format.", ex);
             }
         }
 
         if (executionSettings.Audio is string audioOptionsString)
         {
-            var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsString));
-            if (result != null)
+            try
             {
-                return result;
+                var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsString));
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new NotSupportedException($"Failed to parse the provided audio options from string. Ensure the string is valid JSON that matches ChatAudioOptions format.", ex);
             }
         }
 
