@@ -516,8 +516,15 @@ class Agent(KernelBaseModel, ABC):
                 f"{self.__class__.__name__} currently only supports agent threads of type {expected_type.__name__}."
             )
 
+        # Track the agent ID as user msg metadata, which is useful for
+        # fetching thread messages as the agent may have been deleted.
+        id_metadata = {
+            "agent_id": self.id,
+        }
+
         # Notify the thread that new messages are available.
         for msg in normalized_messages:
+            msg.metadata.update(id_metadata)
             await self._notify_thread_of_new_message(thread, msg)
 
         return thread

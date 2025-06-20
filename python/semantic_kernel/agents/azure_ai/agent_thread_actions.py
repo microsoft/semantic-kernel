@@ -58,7 +58,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import kernel_function
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException, AgentThreadOperationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -704,29 +704,23 @@ class AgentThreadActions:
 
         Yields:
             An AsyncIterable of ChatMessageContent that includes the thread messages.
+
+        Raises:
+            AgentThreadOperationException: If the messages cannot be retrieved.
         """
-        agent_names: dict[str, str] = {}
-
-        async for message in client.agents.messages.list(
-            thread_id=thread_id,
-            run_id=None,
-            limit=None,
-            order=sort_order,
-            before=None,
-        ):
-            assistant_name: str | None = None
-
-            if message.agent_id and message.agent_id.strip() and message.agent_id not in agent_names:
-                agent = await client.agents.get_agent(message.agent_id)
-                if agent.name and agent.name.strip():
-                    agent_names[agent.id] = agent.name
-
-            assistant_name = agent_names.get(message.agent_id) or message.agent_id
-
-            content = generate_message_content(assistant_name, message)
-
-            if len(content.items) > 0:
-                yield content
+        try:
+            async for message in client.agents.messages.list(
+                thread_id=thread_id,
+                run_id=None,
+                limit=None,
+                order=sort_order,
+                before=None,
+            ):
+                agent_id = (message.agent_id or message.metadata.get("agent_id") or "").strip() or "agent"
+                yield generate_message_content(agent_id, message)
+        except Exception as e:
+            logger.error(f"Failed to retrieve messages for thread {thread_id}: {e}")
+            raise AgentThreadOperationException(f"Failed to retrieve messages for thread `{thread_id}`.") from e
 
     # endregion
 

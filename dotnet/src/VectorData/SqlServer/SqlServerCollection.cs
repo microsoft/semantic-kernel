@@ -382,8 +382,8 @@ public class SqlServerCollection<TKey, TRecord>
             generatedEmbeddings);
 
         await connection.ExecuteWithErrorHandlingAsync(
-           this._collectionMetadata,
-           "Upsert",
+            this._collectionMetadata,
+            "Upsert",
             async () =>
             {
                 using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -391,7 +391,7 @@ public class SqlServerCollection<TKey, TRecord>
                 // TODO: Currently unused (#11835), but will be injected into the record in the future.
                 return reader.GetFieldValue<TKey>(0);
             },
-           cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
