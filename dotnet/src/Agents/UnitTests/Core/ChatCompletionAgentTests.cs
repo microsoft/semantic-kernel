@@ -177,6 +177,46 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentInvocationsCanMutateProvidedKernelAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockService = new();
+        mockService.Setup(
+            s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+
+        var kernel = CreateKernel(mockService.Object);
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = kernel,
+                Arguments = [],
+            };
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        mockService.Verify(
+            x =>
+                x.GetChatMessageContentsAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<PromptExecutionSettings>(),
+                    kernel, // Use the same kernel instance
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
     [Fact]
@@ -195,7 +235,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = [],
+                Arguments = new(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Act
@@ -208,7 +248,7 @@ public class ChatCompletionAgentTests
             x =>
                 x.GetResponseAsync(
                     It.IsAny<IEnumerable<ChatMessage>>(),
-                    It.IsAny<ChatOptions>(),
+                    It.Is<ChatOptions>(o => GetKernelFromChatOptions(o) == agent.Kernel),
                     It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -259,6 +299,52 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
+    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentStreamingCanMutateProvidedKernelAsync()
+    {
+        // Arrange
+        StreamingChatMessageContent[] returnContent =
+            [
+                new(AuthorRole.Assistant, "wh"),
+                new(AuthorRole.Assistant, "at?"),
+            ];
+
+        Mock<IChatCompletionService> mockService = new();
+        mockService.Setup(
+            s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+
+        var kernel = CreateKernel(mockService.Object);
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = kernel,
+                Arguments = [],
+            };
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+
+        // Assert
+        Assert.Equal(2, result.Length);
+
+        mockService.Verify(
+            x =>
+                x.GetStreamingChatMessageContentsAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<PromptExecutionSettings>(),
+                    kernel, // Use the same kernel instance
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>
     /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
     [Fact]
@@ -283,7 +369,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = [],
+                Arguments = new(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Act
@@ -296,7 +382,7 @@ public class ChatCompletionAgentTests
             x =>
                 x.GetStreamingResponseAsync(
                     It.IsAny<IEnumerable<ChatMessage>>(),
-                    It.IsAny<ChatOptions>(),
+                    It.Is<ChatOptions>(o => GetKernelFromChatOptions(o) == agent.Kernel),
                     It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -385,5 +471,26 @@ public class ChatCompletionAgentTests
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<IChatClient>(chatClient);
         return builder.Build();
+    }
+
+    /// <summary>
+    /// Gets the Kernel property from ChatOptions using reflection.
+    /// </summary>
+    /// <param name="options">The ChatOptions instance to extract Kernel from.</param>
+    /// <returns>The Kernel instance if found; otherwise, null.</returns>
+    private static Kernel? GetKernelFromChatOptions(ChatOptions options)
+    {
+        // Use reflection to try to get the Kernel property
+        var kernelProperty = options.GetType().GetProperty("Kernel",
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Instance);
+
+        if (kernelProperty != null)
+        {
+            return kernelProperty.GetValue(options) as Kernel;
+        }
+
+        return null;
     }
 }
