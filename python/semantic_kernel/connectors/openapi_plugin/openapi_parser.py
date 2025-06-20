@@ -229,8 +229,11 @@ class OpenApiParser:
 
         for path, methods in paths.items():
             for method, details in methods.items():
+                # Validate that operationId exists
+                if "operationId" not in details:
+                    raise PluginInitializationError(f"operationId missing, path: '{path}', method: '{method}'")
                 request_method = method.lower()
-                operationId = details.get("operationId", path + "_" + request_method)
+                operationId = details["operationId"]
 
                 summary = details.get("summary", None)
                 description = details.get("description", None)
