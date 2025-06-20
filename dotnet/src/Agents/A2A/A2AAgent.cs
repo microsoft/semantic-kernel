@@ -22,6 +22,9 @@ public sealed class A2AAgent : Agent
     /// <param name="agentCard">AgentCard instance associated ith the agent.</param>
     public A2AAgent(A2AClient client, AgentCard agentCard)
     {
+        Verify.NotNull(client);
+        Verify.NotNull(agentCard);
+
         this.Client = client;
         this.AgentCard = agentCard;
         this.Name = agentCard.Name;
@@ -195,11 +198,31 @@ public sealed class A2AAgent : Agent
         }
     }
 
-    private IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(string name, ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(string name, ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(messages);
 
-        throw new NotImplementedException();
+        foreach (var message in messages)
+        {
+            await foreach (var result in this.InvokeAgentAsync(name, message, thread, options, cancellationToken).ConfigureAwait(false))
+            {
+                await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
+                yield return new(this.ToStreamingAgentResponseItem(result), thread);
+            }
+        }
+    }
+
+    private AgentResponseItem<StreamingChatMessageContent> ToStreamingAgentResponseItem(AgentResponseItem<ChatMessageContent> responseItem)
+    {
+        var messageContent = new StreamingChatMessageContent(
+            responseItem.Message.Role,
+            responseItem.Message.Content,
+            innerContent: responseItem.Message.InnerContent,
+            modelId: responseItem.Message.ModelId,
+            encoding: responseItem.Message.Encoding,
+            metadata: responseItem.Message.Metadata);
+
+        return new AgentResponseItem<StreamingChatMessageContent>(messageContent, responseItem.Thread);
     }
     #endregion
 }

@@ -19,6 +19,8 @@ public abstract class A2AHostAgent
     /// <param name="logger"></param>
     protected A2AHostAgent(ILogger logger)
     {
+        Verify.NotNull(logger);
+
         this._logger = logger;
     }
 

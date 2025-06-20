@@ -12,7 +12,7 @@ These samples are built with [SharpA2A.Core](https://www.nuget.org/packages/Shar
 The demonstration has two components:
 
 1. `A2AServer` - You will run three instances of the server to correspond to three A2A servers each providing a single Agent i.e., the Invoice, Policy and Logistics agents.
-2. `A2AClient` - This is a songle application which will connect to the remote A2A servers using the A2A protocol so that it can use those agents when answering questions you will ask.
+2. `A2AClient` - This represents a client application which will connect to the remote A2A servers using the A2A protocol so that it can use those agents when answering questions you will ask.
 
 <img src="./demo-architecture.png" alt="Demo Architecture"/>
 
