@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapr.Actors;
 
@@ -63,5 +64,5 @@ public interface IProcess : IActor, IStep
     /// Gets the process information.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    Task<DaprProcessInfo> GetProcessInfoAsync();
+    Task<IDictionary<string, KernelProcessStepState>> GetProcessInfoAsync();
 }

@@ -25,7 +25,7 @@ public class ProcessBuilderTests
         var processBuilder = new ProcessBuilder(ProcessName);
 
         // Assert
-        Assert.Equal(ProcessName, processBuilder.Name);
+        Assert.Equal(ProcessName, processBuilder.StepId);
         Assert.Empty(processBuilder.Steps);
     }
 
@@ -43,7 +43,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.Single(processBuilder.Steps);
-        Assert.Equal(StepName, stepBuilder.Name);
+        Assert.Equal(StepName, stepBuilder.StepId);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.Single(processBuilder.Steps);
-        Assert.Equal(SubProcessName, stepBuilder.Name);
+        Assert.Equal(SubProcessName, stepBuilder.StepId);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.NotNull(kernelProcess);
-        Assert.Equal(ProcessName, kernelProcess.State.Name);
+        Assert.Equal(ProcessName, kernelProcess.State.StepId);
         Assert.Single(kernelProcess.Steps);
     }
 

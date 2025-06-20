@@ -44,9 +44,9 @@ public class DaprKernelProcessFactory
         }
 
         // Assign the process Id if one is provided and the processes does not already have an Id.
-        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
+        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.RunId))
         {
-            process = process with { State = process.State with { Id = processId } };
+            process = process with { State = process.State with { RunId = processId } };
         }
 
         DaprKernelProcessContext processContext = new(process, actorProxyFactory);

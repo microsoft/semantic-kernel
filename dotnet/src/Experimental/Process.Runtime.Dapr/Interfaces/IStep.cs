@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapr.Actors;
 
@@ -33,5 +34,5 @@ public interface IStep : IActor
     /// Builds the current state of the step into a <see cref="DaprStepInfo"/>.
     /// </summary>
     /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
-    Task<DaprStepInfo> ToDaprStepInfoAsync();
+    Task<IDictionary<string, KernelProcessStepState>> GetStepStateAsync();
 }

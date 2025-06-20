@@ -33,7 +33,7 @@ builder.Services.AddActors(static options =>
 });
 
 var process = ProcessResources.GetCStepProcess();
-builder.Services.AddKeyedSingleton<KernelProcess>(process.State.Id, (sp, key) =>
+builder.Services.AddKeyedSingleton<KernelProcess>(process.State.StepId, (sp, key) =>
 {
     return process;
 });
@@ -50,4 +50,12 @@ var app = builder.Build();
 
 app.MapControllers();
 app.MapActorsHandlers();
-app.Run();
+
+try
+{
+    app.Run();
+}
+catch (Exception)
+{
+    throw;
+}

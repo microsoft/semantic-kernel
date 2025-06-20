@@ -63,7 +63,6 @@ public class ProcessTestController : Controller
         }
         catch (Exception)
         {
-
             throw;
         }
     }
@@ -76,17 +75,48 @@ public class ProcessTestController : Controller
     [HttpGet("processes/{processId}")]
     public async Task<IActionResult> GetProcessAsync(string processId)
     {
-        if (!s_processes.TryGetValue(processId, out DaprKernelProcessContext? context))
+        try
         {
-            return this.NotFound();
+            if (!s_processes.TryGetValue(processId, out DaprKernelProcessContext? context))
+            {
+                return this.NotFound();
+            }
+
+            var process = await context.GetStateAsync();
+            var daprProcess = DaprProcessInfo.FromKernelProcess(process);
+
+            var serialized = JsonSerializer.Serialize(daprProcess);
+
+            return this.Ok(daprProcess);
         }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
 
-        var process = await context.GetStateAsync();
-        var daprProcess = DaprProcessInfo.FromKernelProcess(process);
+    /// <summary>
+    /// Retrieves information about a process.
+    /// </summary>
+    /// <param name="processId">The Id of the process.</param>
+    /// <returns></returns>
+    [HttpGet("processes/{processId}/stepStates")]
+    public async Task<IActionResult> GetProcessStepStatesAsync(string processId)
+    {
+        try
+        {
+            if (!s_processes.TryGetValue(processId, out DaprKernelProcessContext? context))
+            {
+                return this.NotFound();
+            }
 
-        var serialized = JsonSerializer.Serialize(daprProcess);
-
-        return this.Ok(daprProcess);
+            var processStepStates = await context.GetStepStatesAsync();
+            return this.Ok(processStepStates);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     /// <summary>

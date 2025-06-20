@@ -79,11 +79,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             throw new InvalidOperationException("No process registered with the specified key");
         }
 
-        var currentStep = registeredProcess.Steps.Where(s => s.State.Id == stepId).FirstOrDefault();
-        if (currentStep is null)
-        {
-            throw new InvalidOperationException("");
-        }
+        var currentStep = this._registeredProcesses.GetStepInfo<KernelProcessStepInfo>(processId, stepId);
 
         this._edgeGroupProcessors = currentStep.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new DaprEdgeGroupProcessor(kvp.Value)) ?? [];
 
@@ -128,7 +124,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepState = this._stepInfo.State;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = this._stepInfo.State.Id;
+        this._eventNamespace = this._stepInfo.State.RunId;
 
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
@@ -182,16 +178,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Extracts the current state of the step and returns it as a <see cref="DaprStepInfo"/>.
     /// </summary>
     /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
-    public virtual Task<DaprStepInfo> ToDaprStepInfoAsync()
+    public virtual async Task<IDictionary<string, KernelProcessStepState>> GetStepStateAsync()
     {
-        throw new NotImplementedException();
+        // Lazy one-time initialization of the step before extracting state information.
+        // This allows state information to be extracted even if the step has not been activated.
+        await this._activateTask.Value.ConfigureAwait(false);
 
-        //// Lazy one-time initialization of the step before extracting state information.
-        //// This allows state information to be extracted even if the step has not been activated.
-        //await this._activateTask.Value.ConfigureAwait(false);
-
-        //var stepInfo = new DaprStepInfo { InnerStepDotnetType = this._stepInfo!.InnerStepDotnetType!, State = this._stepInfo.State, Edges = this._stepInfo.Edges! };
-        //return stepInfo;
+        return new Dictionary<string, KernelProcessStepState>() { { this._stepInfo!.State.StepId, this._stepState } };
     }
 
     /// <summary>
@@ -228,7 +221,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
+    protected virtual string Name => this._stepInfo?.State.StepId ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
 
     /// <summary>
     /// Emits an event from the step.
@@ -401,7 +394,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = this.GetStepInstance();
 
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance!, pluginName: this._stepInfo.State.Name);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance!, pluginName: this._stepInfo.State.StepId);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)

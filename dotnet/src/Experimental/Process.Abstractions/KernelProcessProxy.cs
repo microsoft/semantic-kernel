@@ -23,7 +23,7 @@ public sealed record KernelProcessProxy : KernelProcessStepInfo
     public KernelProcessProxy(KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges)
         : base(typeof(KernelProxyStep), state, edges)
     {
-        Verify.NotNullOrWhiteSpace(state.Name, $"{nameof(state)}.{nameof(KernelProcessStepState.Name)}");
-        Verify.NotNullOrWhiteSpace(state.Id, $"{nameof(state)}.{nameof(KernelProcessStepState.Id)}");
+        Verify.NotNullOrWhiteSpace(state.StepId, $"{nameof(state)}.{nameof(KernelProcessStepState.StepId)}");
+        Verify.NotNullOrWhiteSpace(state.RunId, $"{nameof(state)}.{nameof(KernelProcessStepState.RunId)}");
     }
 }

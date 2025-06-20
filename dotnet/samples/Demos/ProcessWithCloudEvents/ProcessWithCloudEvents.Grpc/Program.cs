@@ -7,9 +7,9 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
 using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
-using ProcessWithCloudEvents.Grpc.Options;
 using ProcessWithCloudEvents.Grpc.Services;
 using ProcessWithCloudEvents.Processes;
+using ProcessWithCloudEvents.SharedComponents.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +41,8 @@ builder.Services.AddSingleton<DocumentGenerationService>();
 builder.Services.AddSingleton<TeacherStudentInteractionService>();
 // Injecting SK Process custom grpc client IExternalKernelProcessMessageChannel implementation
 // TODO: Add similar keyed singleton approach to support multiple grpc clients, for now uncomment/use only one grpc client at the time
-//builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, DocumentGenerationGrpcClient>();
-builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, TeacherStudentInteractionGrpcClient>();
+builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, DocumentGenerationGrpcClient>();
+//builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, TeacherStudentInteractionGrpcClient>();
 
 // Configure Dapr
 builder.Services.AddDaprKernelProcesses();

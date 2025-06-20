@@ -136,7 +136,7 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
 
     internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
     {
-        return new KernelProcessAgentInvokeTarget(this.Step.Id, this.ThreadEval, this.MessagesInEval, this.InputEvals);
+        return new KernelProcessAgentInvokeTarget(this.Step.StepId, this.ThreadEval, this.MessagesInEval, this.InputEvals);
     }
 }
 
@@ -169,7 +169,7 @@ public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
         var target = step.ResolveFunctionTarget(functionName, parameterName);
         if (target == null)
         {
-            throw new InvalidOperationException($"Failed to resolve function target for {step.GetType().Name}, {step.Name}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
+            throw new InvalidOperationException($"Failed to resolve function target for {step.GetType().Name}, {step.StepId}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
         }
 
         this.FunctionName = target.FunctionName!;
@@ -182,8 +182,8 @@ public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
     /// <returns>An instance of <see cref="KernelProcessFunctionTarget"/></returns>
     internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
     {
-        Verify.NotNull(this.Step.Id);
-        return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId);
+        Verify.NotNull(this.Step.StepId);
+        return new KernelProcessFunctionTarget(this.Step.StepId, this.FunctionName, this.ParameterName, this.TargetEventId);
     }
 
     /// <summary>

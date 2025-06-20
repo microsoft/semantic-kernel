@@ -23,11 +23,15 @@ internal sealed class LocalProxy : LocalStep
     /// </summary>
     /// <param name="proxy">an instance of <see cref="KernelProcessProxy"/></param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    internal LocalProxy(KernelProcessProxy proxy, Kernel kernel)
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
+    internal LocalProxy(KernelProcessProxy proxy, Kernel kernel, IExternalKernelProcessMessageChannel? externalMessageChannel)
         : base(proxy, kernel)
     {
         this._proxy = proxy;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.StepId) ?? new NullLogger<LocalStep>();
+        this.ExternalMessageChannel = externalMessageChannel;
+
+        this.InitializeStepInitialInputs();
     }
 
     internal override void PopulateInitialInputs()
@@ -79,8 +83,6 @@ internal sealed class LocalProxy : LocalStep
         {
             throw new KernelException("No IExternalKernelProcessMessageChannel found, need at least 1 to emit external messages");
         }
-
-        this.InitializeStepInitialInputs();
 
         await this.ExternalMessageChannel.Initialize().ConfigureAwait(false);
         await base.InitializeStepAsync().ConfigureAwait(false);

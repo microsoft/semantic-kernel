@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Process;
@@ -27,6 +28,12 @@ public abstract class KernelProcessContext
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
     public abstract Task<KernelProcess> GetStateAsync();
+
+    /// <summary>
+    /// Gets a snapshot of the step states.
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<IDictionary<string, KernelProcessStepState>> GetStepStatesAsync();
 
     /// <summary>
     /// Gets the instance of <see cref="IExternalKernelProcessMessageChannel"/> used for external messages

@@ -64,7 +64,7 @@ internal sealed class MapActor : StepActor, IMap
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
-    public override Task<DaprStepInfo> ToDaprStepInfoAsync() => throw new NotImplementedException();
+    public override Task<IDictionary<string, KernelProcessStepState>> GetStepStateAsync() => throw new NotImplementedException();
 
     protected override async Task OnActivateAsync()
     {
@@ -79,7 +79,7 @@ internal sealed class MapActor : StepActor, IMap
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected override string Name => this._mapInfo?.State.Name ?? throw new KernelException("The Map must be initialized before accessing the Name property.");
+    protected override string Name => this._mapInfo?.State.StepId ?? throw new KernelException("The Map must be initialized before accessing the Name property.");
 
     #endregion
 
@@ -95,7 +95,7 @@ internal sealed class MapActor : StepActor, IMap
         List<Task> mapOperations = [];
         foreach (var value in inputValues)
         {
-            KernelProcess mapProcess = mapOperation with { State = mapOperation.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
+            KernelProcess mapProcess = mapOperation with { State = mapOperation.State with { RunId = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
             DaprKernelProcessContext processContext = new(mapProcess);
 
             Task processTask = Task.CompletedTask;
@@ -179,9 +179,9 @@ internal sealed class MapActor : StepActor, IMap
 
         this._mapInfo = mapInfo;
         this.ParentProcessId = parentProcessId;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.StepId) ?? new NullLogger<MapActor>();
         this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = this._mapInfo.State.Id;
+        this._eventNamespace = this._mapInfo.State.RunId;
 
         // Capture the events that the map is interested in as hashtable for performant lookup
         this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];

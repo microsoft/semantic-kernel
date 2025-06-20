@@ -27,6 +27,7 @@ extend-exclude = [
     "**/azure_ai_search_hotel_samples/README.md",
     "**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
     "**/Demos/ProcessFrameworkWithAspire/**/*.http",
+    "**/samples/GettingStartedWithProcesses/**/States/**/*.json",
     "**/samples/Concepts/Resources/travel-destination-overview.txt"
 ]
 

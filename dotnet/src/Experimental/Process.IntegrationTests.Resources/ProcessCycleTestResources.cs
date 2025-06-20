@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -91,6 +92,7 @@ public sealed class CStep : KernelProcessStep<CStepState>
 public sealed record CStepState
 {
     [DataMember]
+    [JsonPropertyName("currentCycle")]
     public int CurrentCycle { get; set; }
 }
 

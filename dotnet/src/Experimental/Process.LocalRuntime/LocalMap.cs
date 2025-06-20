@@ -27,7 +27,7 @@ internal sealed class LocalMap : LocalStep
         : base(map, kernel)
     {
         this._map = map;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.StepId) ?? new NullLogger<LocalStep>();
         this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];
     }
 

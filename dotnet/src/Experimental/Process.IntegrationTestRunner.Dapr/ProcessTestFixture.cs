@@ -139,9 +139,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
-        var context = new DaprTestProcessContext(process, this._httpClient!);
-        await context.StartWithEventAsync(initialEvent);
-        return context;
+        return await this.StartAsync(process, process.State.StepId, initialEvent);
     }
 
     /// <summary>
@@ -151,11 +149,11 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     /// <param name="processId"></param>
     /// <param name="initialEvent"></param>
     /// <returns></returns>
-    public async Task<KernelProcessContext> StartAsync(string key, string processId, KernelProcessEvent initialEvent)
+    public async Task<KernelProcessContext> StartAsync(KernelProcess process, string runId, KernelProcessEvent initialEvent)
     {
         // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
-        var context = new DaprTestProcessContext(key, processId, this._httpClient!);
-        await context.StartKeyedWithEventAsync(processId, initialEvent);
+        var context = new DaprTestProcessContext(process, runId, this._httpClient!);
+        await context.StartKeyedWithEventAsync(process.State.StepId, initialEvent);
         return context;
     }
 

@@ -33,8 +33,8 @@ public class KernelProcessProxyTests
     public void KernelProcessProxyStateRequiredProperties()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(name: null!, "vTest", "testid"));
-        Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(name: "testname", null!, "testid"));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(stepId: null!, "vTest", "testid"));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(stepId: "testname", null!, "testid"));
         Assert.Throws<ArgumentNullException>(() => new KernelProcessProxy(new KernelProcessStepState("testname", "vTest", null!), []));
     }
 }

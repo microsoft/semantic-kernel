@@ -23,19 +23,30 @@ internal class LocalAgentStep : LocalStep
         this._agentThread = agentThread;
         this._processStateManager = processStateManager;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalAgentStep>();
+
+        this.InitializeStepInitialInputs();
     }
 
-    protected override ValueTask InitializeStepAsync()
+    internal override KernelProcessStep CreateStepInstance()
     {
-        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread, this._processStateManager);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
-
-        // Load the kernel functions
-        foreach (KernelFunction f in kernelPlugin)
+        if (this._stepInfo is KernelProcessAgentStep agentStep)
         {
-            this._functions.Add(f.Name, f);
+            return new KernelProcessAgentExecutorInternal(agentStep, this._agentThread, this._processStateManager);
         }
-        return default;
+
+        throw new InvalidOperationException($"Step {this._stepInfo.State.StepId} is not a valid agent step.");
+    }
+
+    internal override void PopulateInitialInputs()
+    {
+        if (this._stepInfo is KernelProcessAgentStep agentStep)
+        {
+            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Step {this._stepInfo.State.StepId} is not a valid agent step.");
+        }
     }
 
     internal override async Task HandleMessageAsync(ProcessMessage message)

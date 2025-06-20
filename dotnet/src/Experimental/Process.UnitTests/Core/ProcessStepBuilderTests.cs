@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Process.Models;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -24,8 +23,8 @@ public class ProcessStepBuilderTests
         var stepBuilder = new TestProcessStepBuilder(name);
 
         // Assert
-        Assert.Equal(name, stepBuilder.Name);
-        Assert.NotNull(stepBuilder.Id);
+        Assert.Equal(name, stepBuilder.StepId);
+        Assert.NotNull(stepBuilder.StepId);
         Assert.NotNull(stepBuilder.FunctionsDict);
         Assert.NotNull(stepBuilder.Edges);
     }
@@ -235,9 +234,9 @@ public class ProcessStepBuilderTests
     {
         public TestProcessStepBuilder(string name) : base(name, null) { }
 
-        internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+        internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
         {
-            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, version: "v1", id: this.Id), []);
+            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.StepId, version: "v1", runId: this.StepId), []);
         }
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()

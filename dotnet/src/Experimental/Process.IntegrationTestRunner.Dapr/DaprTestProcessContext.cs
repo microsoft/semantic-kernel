@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Serialization;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
@@ -23,13 +24,13 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     /// <param name="httpClient"></param>
     internal DaprTestProcessContext(KernelProcess process, HttpClient httpClient)
     {
-        if (string.IsNullOrWhiteSpace(process.State.Id))
+        if (string.IsNullOrWhiteSpace(process.State.RunId))
         {
-            process = process with { State = process.State with { Id = Guid.NewGuid().ToString() } };
+            process = process with { State = process.State with { RunId = Guid.NewGuid().ToString() } };
         }
 
         this._process = process;
-        this._processId = process.State.Id;
+        this._processId = process.State.RunId;
         this._httpClient = httpClient;
 
         this._serializerOptions = new JsonSerializerOptions()
@@ -43,16 +44,17 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     /// Creates a new instance of the <see cref="DaprTestProcessContext"/> class.
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="id"></param>
+    /// <param name="runId"></param>
     /// <param name="httpClient"></param>
-    internal DaprTestProcessContext(string key, string id, HttpClient httpClient)
+    internal DaprTestProcessContext(KernelProcess process, string runId, HttpClient httpClient)
     {
-        Verify.NotNullOrWhiteSpace(key);
-        Verify.NotNullOrWhiteSpace(id);
+        Verify.NotNull(process);
+        Verify.NotNullOrWhiteSpace(runId);
         Verify.NotNull(httpClient);
 
-        this._key = key;
-        this._processId = id;
+        this._key = process.State.StepId;
+        this._processId = process.State.StepId;
+        this._process = process;
         this._httpClient = httpClient;
 
         this._serializerOptions = new JsonSerializerOptions()
@@ -118,12 +120,17 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
 
     public override async Task<KernelProcess> GetStateAsync()
     {
-        var response = await this._httpClient.GetFromJsonAsync<DaprProcessInfo>($"http://localhost:5200/processes/{this._processId}", options: this._serializerOptions);
-        return response switch
+        IDictionary<string, KernelProcessStepState> stepStates = await this.GetStepStatesAsync();
+
+        // Build the process with thr new state
+        List<KernelProcessStepInfo> kernelProcessSteps = [];
+
+        foreach (var step in this._process.Steps)
         {
-            null => throw new InvalidOperationException("Process not found"),
-            _ => response.ToKernelProcess()
-        };
+            kernelProcessSteps.Add(step with { State = stepStates[step.State.StepId] });
+        }
+
+        return this._process with { Steps = kernelProcessSteps };
     }
 
     public override Task SendEventAsync(KernelProcessEvent processEvent)
@@ -146,5 +153,72 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
         };
     }
 
-    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process?.State.Id!);
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process?.State.RunId!);
+
+    public override async Task<IDictionary<string, KernelProcessStepState>> GetStepStatesAsync()
+    {
+        var response = await this._httpClient.GetStringAsync($"http://localhost:5200/processes/{this._processId}/stepStates");
+
+        try
+        {
+            Dictionary<string, KernelProcessStepState> dict = new();
+            using var document = JsonDocument.Parse(response);
+            JsonElement root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidOperationException("Incorrect format of States response.");
+            }
+
+            // Iterate through each property in the root object
+            foreach (JsonProperty property in root.EnumerateObject())
+            {
+                string key = property.Name;
+                JsonElement valueElement = property.Value;
+
+                // Extract the raw JSON text for this property value
+                string valueJson = RemoveStateTypeProperty(valueElement);
+
+                // Get the associated process step
+                var step = this._process!.Steps.Where(s => s.State.StepId == key).Single();
+                var stateType = step.InnerStepType.ExtractStateType(out Type? userStateType, null);
+
+                // Determine the state type and deserialize accordingly
+                KernelProcessStepState? stepState = JsonSerializer.Deserialize(valueJson, stateType) as KernelProcessStepState;
+
+                dict.Add(key, stepState);
+            }
+
+            return dict;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private static string RemoveStateTypeProperty(JsonElement element)
+    {
+        using (var stream = new System.IO.MemoryStream())
+        {
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                writer.WriteStartObject();
+
+                foreach (JsonProperty property in element.EnumerateObject())
+                {
+                    // Skip the $state-type property
+                    if (property.Name == "$state-type")
+                    {
+                        continue;
+                    }
+
+                    property.WriteTo(writer);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        }
+    }
 }

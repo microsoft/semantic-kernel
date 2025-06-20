@@ -41,27 +41,30 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="stepInfo">An instance of <see cref="KernelProcessStepInfo"/></param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists.</param>
-    public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null)
+    /// <param name="instanceId">Optional: Id of the process if given</param>
+    public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null, string? instanceId = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(stepInfo, nameof(stepInfo));
 
-        // This special handling will be removed with the refactoring of KernelProcessState
-        if (string.IsNullOrEmpty(stepInfo.State.Id))
+        if (stepInfo is KernelProcess)
         {
-            stepInfo = stepInfo with { State = stepInfo.State with { Id = Guid.NewGuid().ToString() } };
+            // Only KernelProcess can have a null Id if it is the root process
+            stepInfo = stepInfo with { State = stepInfo.State with { RunId = instanceId ?? Guid.NewGuid().ToString() } };
         }
+        // For any step that is not a process, step id must already be assigned from parent process in the step state
+        Verify.NotNullOrWhiteSpace(stepInfo.State.RunId);
 
         this._kernel = kernel;
         this._stepInfo = stepInfo;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
 
-        if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy)
+        if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy and not KernelProcessAgentStep)
         {
             this.InitializeStepInitialInputs();
         }
 
-        Verify.NotNull(stepInfo.State.Id);
+        Verify.NotNull(stepInfo.State.RunId);
 
         this.ParentProcessId = parentProcessId;
         this._stepState = stepInfo.State;
@@ -74,11 +77,9 @@ internal class LocalStep : IKernelProcessMessageChannel
     internal void InitializeStepInitialInputs()
     {
         // Instantiate an instance of the inner step object
-        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        this._stepInstance = this.CreateStepInstance();
 
-        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(this._stepInstance, this._stepInfo.State.Id);
-
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.StepId);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
@@ -90,16 +91,17 @@ internal class LocalStep : IKernelProcessMessageChannel
         this.PopulateInitialInputs();
     }
 
+    internal virtual KernelProcessStep CreateStepInstance()
+    {
+        var stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(stepInstance, this._stepInfo.State.RunId);
+
+        return stepInstance;
+    }
+
     internal virtual void PopulateInitialInputs()
     {
-        if (this._stepInfo is KernelProcessAgentStep agentStep)
-        {
-            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
-        }
-        else
-        {
-            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
-        }
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
     }
 
     /// <summary>
@@ -110,12 +112,12 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    internal string Name => this._stepInfo.State.Name!;
+    internal string Name => this._stepInfo.State.StepId!;
 
     /// <summary>
     /// The Id of the step.
     /// </summary>
-    internal string Id => this._stepInfo.State.Id!;
+    internal string Id => this._stepInfo.State.RunId!;
 
     /// <summary>
     /// An event proxy that can be used to intercept events emitted by the step.
@@ -332,24 +334,17 @@ internal class LocalStep : IKernelProcessMessageChannel
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
-    /// <summary>
-    /// Initializes the step with the provided step information.
-    /// </summary>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    /// <exception cref="KernelException"></exception>
-    protected virtual async ValueTask InitializeStepAsync()
+    private async Task<Dictionary<string, Dictionary<string, object?>?>?> TryGetCachedInputEdgesValuesAsync()
     {
-        if (this._initialInputs == null || this._stepInstance == null)
+        var storageKeyValues = this.GetStepStorageKeyValues();
+        if (this._initialInputs == null)
         {
             throw new KernelException("Initial Inputs have not been initialize, cannot initialize step properly");
         }
 
-        string key = this._stepInfo.State.Name;
-        string id = this._stepInfo.State.Id!;
-
         if (this.StorageManager != null)
         {
-            var storedEdgesData = await this.StorageManager.GetStepEdgeDataAsync(key, id).ConfigureAwait(false);
+            var storedEdgesData = await this.StorageManager.GetStepEdgeDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
             if (this._edgeGroupProcessors != null && storedEdgesData.Item1 && storedEdgesData.Item2 != null)
             {
                 foreach (var edgeGroup in this._edgeGroupProcessors)
@@ -361,7 +356,6 @@ internal class LocalStep : IKernelProcessMessageChannel
                 }
             }
             // it is not an edge group, it is regular edge
-            // TODO-estenori: need to find out if only group support will be supported
             else if (!storedEdgesData.Item1 && storedEdgesData.Item2 != null)
             {
                 Dictionary<string, Dictionary<string, object?>?> inputValuesDictionary = [];
@@ -384,37 +378,56 @@ internal class LocalStep : IKernelProcessMessageChannel
                         }
                     }
                 }
-                this._inputs = inputValuesDictionary;
-            }
-            else
-            {
-                this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
+                return inputValuesDictionary;
             }
         }
-        else
-        {
-            this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
-        }
 
-        // Activate the step with user-defined state if needed
-        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
+        return null;
+    }
 
-        KernelProcessStepState? stateObject = null;
+    private async Task<KernelProcessStepState?> TryGetCachedStepStateAsync(Type stateType, Type? userStateType)
+    {
+        var storageKeyValues = this.GetStepStorageKeyValues();
         if (this.StorageManager != null)
         {
-            var storedMetadataState = await this.StorageManager.GetStepDataAsync(key, id).ConfigureAwait(false);
+            var storedMetadataState = await this.StorageManager.GetStepDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
             if (storedMetadataState != null)
             {
-                stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, storedMetadataState.VersionInfo, this.Id);
+                var stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, storedMetadataState.VersionInfo, this.Id);
 
                 if (userStateType != null)
                 {
                     // it is a step with custom state
                     stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, storedMetadataState.State);
                 }
+
                 stateObject?.InitializeUserState(stateType, userStateType);
+                return stateObject;
             }
         }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Initializes the step with the provided step information.
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    /// <exception cref="KernelException"></exception>
+    protected virtual async ValueTask InitializeStepAsync()
+    {
+        if (this._initialInputs == null || this._stepInstance == null)
+        {
+            throw new KernelException("Initial Inputs have not been initialize, cannot initialize step properly");
+        }
+
+        // Populating step function inputs
+        this._inputs = await this.TryGetCachedInputEdgesValuesAsync().ConfigureAwait(false) ?? this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
+        // Activate the step with user-defined state if needed
+        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
+        KernelProcessStepState? stateObject = await this.TryGetCachedStepStateAsync(stateType, userStateType).ConfigureAwait(false);
 
         if (stateObject == null)
         {
@@ -451,17 +464,21 @@ internal class LocalStep : IKernelProcessMessageChannel
         return Task.CompletedTask;
     }
 
-    internal async virtual Task SaveStepDataAsync()
+    internal (string, string) GetStepStorageKeyValues()
     {
-        string stepKey = this._stepInfo.State.Name;
-        string stepId = this._stepInfo.State.Id!;
+        return (this._stepInfo.State.StepId, this._stepInfo.State.RunId!);
+    }
+
+    internal virtual async Task SaveStepDataAsync()
+    {
+        var storageKeyValues = this.GetStepStorageKeyValues();
 
         var state = (this._stepInfo with { State = this._stepState }).ToProcessStateMetadata();
 
         if (state != null && this.StorageManager != null)
         {
-            bool stateSaved = await this.StorageManager.SaveStepStateDataAsync(stepKey, stepId, state).ConfigureAwait(false);
-            bool parentSaved = await this.StorageManager.SaveParentDataAsync(stepKey, stepId, new() { ParentId = this.ParentProcessId! }).ConfigureAwait(false);
+            bool stateSaved = await this.StorageManager.SaveStepStateDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, state).ConfigureAwait(false);
+            bool parentSaved = await this.StorageManager.SaveParentDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, new() { ParentId = this.ParentProcessId! }).ConfigureAwait(false);
         }
     }
 
@@ -475,12 +492,10 @@ internal class LocalStep : IKernelProcessMessageChannel
             fromEdgeGroup = true;
         }
 
-        string stepKey = this._stepInfo.State.Name;
-        string stepId = this._stepInfo.State.Id!;
-
+        var storageKeyValues = this.GetStepStorageKeyValues();
         if (this.StorageManager != null && stepEdgesData != null)
         {
-            bool edgeDataSaved = await this.StorageManager.SaveStepEdgeDataAsync(stepKey, stepId, stepEdgesData, fromEdgeGroup).ConfigureAwait(false);
+            bool edgeDataSaved = await this.StorageManager.SaveStepEdgeDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, stepEdgesData, fromEdgeGroup).ConfigureAwait(false);
         }
     }
 

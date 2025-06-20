@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -38,9 +37,9 @@ internal static class MapExtensions
             string proxyId = Guid.NewGuid().ToString("N");
             mapOperation =
                 new KernelProcess(
-                    new KernelProcessState($"Map{map.Operation.State.Name}", map.Operation.State.Version, proxyId),
+                    new KernelProcessState($"Map{map.Operation.State.StepId}", map.Operation.State.Version, proxyId),
                     [map.Operation],
-                    new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName))] } });
+                    new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.RunId!, message.FunctionName, parameterName))] } });
         }
 
         return (inputValues, mapOperation, startEventId);
@@ -111,7 +110,7 @@ internal static class MapExtensions
         // Fails when zero or multiple candidate edges exist.  No reason a map-operation should be irrational.
         return
             mapOperation.Edges.SingleOrDefault(kvp => kvp.Value.Any(e => (e.OutputTarget as KernelProcessFunctionTarget)!.FunctionName == message.FunctionName)).Key ??
-            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.Name}/{mapOperation.State.Id}.");
+            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.StepId}/{mapOperation.State.RunId}.");
     }
 
     private static bool IsEqual(IEnumerable targetData, object? possibleValue)
@@ -170,7 +169,7 @@ internal static class MapExtensions
             throw new InvalidOperationException("No process registered with the specified key");
         }
 
-        var targetStep = registeredProcess.Steps.Where(s => s.State.Id == stepId).FirstOrDefault();
+        var targetStep = registeredProcess.Steps.Where(s => s.State.StepId == stepId).FirstOrDefault();
         if (targetStep is null || targetStep is not T typedTarget)
         {
             throw new InvalidOperationException("The specifiec step could not be found in the specified process.");

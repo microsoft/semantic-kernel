@@ -71,7 +71,7 @@ public class ProcessStorageManager
 
     private string GetEntryId(string componentName, string componentId)
     {
-        return $"{componentName}.{componentId}";
+        return $"{componentId}.{componentName}";
     }
 
     private string GetParentId(string componentName, string componentId)
@@ -113,10 +113,10 @@ public class ProcessStorageManager
     /// <param name="processId"></param>
     /// <param name="state"></param>
     /// <returns></returns>
-    public async Task<bool> SaveProcessDataAsync(string processName, string processId, StorageProcessState state)
+    public async Task<bool> SaveProcessDataAsync(string processName, string processId, KernelProcess state)
     {
         var entryId = this.GetProcessStateId(processName, processId);
-        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ProcessState, state).ConfigureAwait(false);
+        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ProcessState, state.ToKernelStorageProcessState()).ConfigureAwait(false);
     }
 
     /// <summary>

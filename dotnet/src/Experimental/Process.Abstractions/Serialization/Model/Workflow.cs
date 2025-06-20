@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Internal;
@@ -843,6 +844,7 @@ public enum HITLMode
 /// Represents an update operation to be performed on a workflow variable.
 /// Variable updates allow workflows to modify state based on conditions and execution flow.
 /// </summary>
+[DataContract]
 public sealed class VariableUpdate
 {
     /// <summary>
@@ -851,6 +853,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "path")]
     [JsonPropertyName("path")]
+    [DataMember]
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
@@ -859,6 +862,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "operation")]
     [JsonPropertyName("operation")]
+    [DataMember]
     public StateUpdateOperations Operation { get; set; }
 
     /// <summary>
@@ -867,6 +871,7 @@ public sealed class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "value")]
     [JsonPropertyName("value")]
+
     public object? Value { get; set; } = string.Empty;
 }
 

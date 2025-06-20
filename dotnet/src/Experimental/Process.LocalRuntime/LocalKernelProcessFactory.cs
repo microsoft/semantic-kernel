@@ -17,13 +17,21 @@ public static class LocalKernelProcessFactory
     /// <param name="process">Required: The <see cref="KernelProcess"/> to start running.</param>
     /// <param name="kernel">Required: An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
+    /// <param name="processId">Optional: id to be assigined to the running process, if null it will be assigned during runtime</param>
     /// <param name="externalMessageChannel">Optional: an instance of <see cref="IExternalKernelProcessMessageChannel"/>.</param>
+    /// <param name="storageConnector">Optional: an instance of <see cref="IProcessStorageConnector"/>.</param>
     /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interrogate or stop the running process.</returns>
-    public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    public static async Task<LocalKernelProcessContext> StartAsync(
+        this KernelProcess process,
+        Kernel kernel,
+        KernelProcessEvent initialEvent,
+        string? processId = null,
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null,
+        IProcessStorageConnector? storageConnector = null)
     {
         Verify.NotNull(initialEvent, nameof(initialEvent));
 
-        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, instanceId: processId);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }
@@ -53,7 +61,7 @@ public static class LocalKernelProcessFactory
     /// <param name="kernel">Required: An instance of <see cref="Kernel"/></param>
     /// <param name="registeredProcesses">Required: dictionary with registered processes</param>
     /// <param name="processKey">Required: key of the process in registered processes</param>
-    /// <param name="processId">Required: id to be assigined to the running process</param>
+    /// <param name="processId">Required: id to be assigined to the running process, if null it will be assigned during runtime</param>
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
     /// <param name="externalMessageChannel">Optional: an instance of <see cref="IExternalKernelProcessMessageChannel"/>.</param>
     /// <param name="storageConnector">Optional: an instance of <see cref="IProcessStorageConnector"/>.</param>
@@ -63,7 +71,7 @@ public static class LocalKernelProcessFactory
         Kernel kernel,
         IReadOnlyDictionary<string, KernelProcess> registeredProcesses,
         string processKey,
-        string processId,
+        string? processId,
         KernelProcessEvent initialEvent,
         IExternalKernelProcessMessageChannel? externalMessageChannel = null,
         IProcessStorageConnector? storageConnector = null)
@@ -77,13 +85,12 @@ public static class LocalKernelProcessFactory
             throw new ArgumentException($"The process with key '{processKey}' is not registered.");
         }
 
-        // Assign the process Id if one is provided and the processes does not already have an Id.
-        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
+        if (string.IsNullOrWhiteSpace(process.State.StepId))
         {
-            process = process with { State = process.State with { Id = processId, Name = processKey } };
+            process = process with { State = process.State with { StepId = processKey } };
         }
 
-        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector);
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, processId);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

@@ -23,7 +23,7 @@ public sealed class ProcessExporter
 
         Workflow workflow = new()
         {
-            Name = process.State.Name,
+            Name = process.State.StepId,
             Description = process.Description,
             FormatVersion = "1.0",
             WorkflowVersion = process.State.Version,
@@ -50,7 +50,7 @@ public sealed class ProcessExporter
         {
             var agentNode = new Node()
             {
-                Id = agentStep.State.Id ?? throw new KernelException("All steps must have an Id."),
+                Id = agentStep.State.RunId ?? throw new KernelException("All steps must have an Id."),
                 Description = agentStep.Description,
                 Type = "agent",
                 Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
