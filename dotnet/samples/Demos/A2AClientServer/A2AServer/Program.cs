@@ -64,9 +64,9 @@ else if (!string.IsNullOrEmpty(apiKey))
     };
 
     hostAgent.InitializeAgent(modelId, apiKey);
-    var invoiceTaskManager = new TaskManager();
-    hostAgent.Attach(invoiceTaskManager);
-    app.MapA2A(invoiceTaskManager, "");
+    var taskManager = new TaskManager();
+    hostAgent.Attach(taskManager);
+    app.MapA2A(taskManager, "");
 }
 else
 {
