@@ -777,4 +777,21 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
+
+    [Theory]
+    [InlineData("First line\r\nSecond line\r\nThird line")]
+    [InlineData("First line\nSecond line\nThird line")]
+    public void ActuallySplitsOnNewLines(string input)
+    {
+        var result = TextChunker.SplitPlainTextLines(input, 100);
+
+        var expected = new[]
+        {
+            "First line",
+            "Second line", 
+            "Third line"
+        };
+
+        Assert.Equal(expected, result); // Currently fails
+    }
 }
