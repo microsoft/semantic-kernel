@@ -44,6 +44,7 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
 
             // Assert
             Assert.Contains("Paris", result.Message.Content);
+            mockStatePart.Verify(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()), Times.Once);
             mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
             mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == result.Message.Content), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -78,7 +79,9 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
             // Assert
             var responseMessage = string.Concat(results.Select(x => x.Message.Content));
             Assert.Contains("Paris", responseMessage);
+            mockStatePart.Verify(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()), Times.Once);
             mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == responseMessage), It.IsAny<CancellationToken>()), Times.Once);
         }
         finally

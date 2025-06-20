@@ -37,42 +37,6 @@ internal static class PostgresPropertyMapping
             var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
         };
 
-    public static object? GetPropertyValue(NpgsqlDataReader reader, string propertyName, Type propertyType)
-    {
-        int propertyIndex = reader.GetOrdinal(propertyName);
-
-        if (reader.IsDBNull(propertyIndex))
-        {
-            return null;
-        }
-
-        // Npgsql returns array values as a .NET array - that's what GetValue() returns below.
-        // If the .NET property is a List<T>, we need an explicit GetFieldValue<List<T>>() call instead.
-        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-        {
-            return propertyType switch
-            {
-                Type t when t == typeof(List<bool>) => reader.GetFieldValue<List<bool>>(propertyIndex),
-                Type t when t == typeof(List<short>) => reader.GetFieldValue<List<short>>(propertyIndex),
-                Type t when t == typeof(List<int>) => reader.GetFieldValue<List<int>>(propertyIndex),
-                Type t when t == typeof(List<long>) => reader.GetFieldValue<List<long>>(propertyIndex),
-                Type t when t == typeof(List<float>) => reader.GetFieldValue<List<float>>(propertyIndex),
-                Type t when t == typeof(List<double>) => reader.GetFieldValue<List<double>>(propertyIndex),
-                Type t when t == typeof(List<decimal>) => reader.GetFieldValue<List<decimal>>(propertyIndex),
-                Type t when t == typeof(List<string>) => reader.GetFieldValue<List<string>>(propertyIndex),
-                Type t when t == typeof(List<byte[]>) => reader.GetFieldValue<List<byte[]>>(propertyIndex),
-                Type t when t == typeof(List<DateTime>) => reader.GetFieldValue<List<DateTime>>(propertyIndex),
-                Type t when t == typeof(List<DateTimeOffset>) => reader.GetFieldValue<List<DateTimeOffset>>(propertyIndex),
-                Type t when t == typeof(List<Guid>) => reader.GetFieldValue<List<Guid>>(propertyIndex),
-
-                _ => new UnreachableException()
-
-            };
-        }
-
-        return reader.GetValue(propertyIndex);
-    }
-
     public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
         (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
         {
