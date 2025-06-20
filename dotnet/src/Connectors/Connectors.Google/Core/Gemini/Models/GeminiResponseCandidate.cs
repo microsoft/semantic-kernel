@@ -45,4 +45,13 @@ internal sealed class GeminiResponseCandidate
     /// </summary>
     [JsonPropertyName("tokenCount")]
     public int TokenCount { get; set; }
+
+    /// <summary>
+    /// Optional. GroundingMetadata of response candidate.
+    /// </summary>
+    /// <remarks>
+    /// Returned when Grounding with Google Search is enabled.
+    /// </remarks>
+    [JsonPropertyName("groundingMetadata")]
+    public GeminiGroundingMetadata? GroundingMetadata { get; set; }
 }
