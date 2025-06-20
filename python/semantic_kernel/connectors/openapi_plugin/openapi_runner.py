@@ -151,13 +151,27 @@ class OpenApiRunner:
             headers.update(APP_INFO)
             headers = prepend_semantic_kernel_to_user_agent(headers)
 
-        if "Content-Type" not in headers:
+        # giving precedence to what request body defines & if it's not present, using the first response media type
+        # as a fallback
+        if operation.request_body is not None:
+            logger.debug(
+                "Using request body media type '%s' for operation '%s'.",
+                operation.request_body.media_type,
+                operation.id,
+            )
+            headers["Content-Type"] = operation.request_body.media_type
+        elif "Content-Type" not in headers:
             responses = (
                 operation.responses
                 if isinstance(operation.responses, OrderedDict)
                 else OrderedDict(operation.responses or {})
             )
             headers["Content-Type"] = self._get_first_response_media_type(responses)
+            logger.debug(
+                "Using default response media type '%s' for operation '%s'.",
+                headers["Content-Type"],
+                operation.id,
+            )
 
         timeout = options.timeout if options and hasattr(options, "timeout") and options.timeout is not None else None
 
