@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
@@ -776,5 +777,61 @@ public sealed class TextChunkerTests
         var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
 
         Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("First line\r\nSecond line\r\nThird line")]
+    [InlineData("First line\nSecond line\nThird line")]
+    public void ActuallySplitsOnNewLines(string input)
+    {
+        var result = TextChunker.SplitPlainTextLines(input, 100);
+
+        var expected = new[]
+        {
+            "First line",
+            "Second line",
+            "Third line"
+        };
+
+        Assert.Equal(expected, result); // Currently fails
+    }
+
+    [Fact]
+    public void SplitPlainTextLinesHandlesEdgeCases()
+    {
+        // Test with low token limit to ensure hierarchical splitting still works
+        var result1 = TextChunker.SplitPlainTextLines("This is a very long line without any newlines that should be split using hierarchical approach", 5);
+        Assert.True(result1.Count > 1, "Long line without newlines should be split hierarchically");
+
+        // Test with high token limit and newlines - should split on newlines
+        var result2 = TextChunker.SplitPlainTextLines("Short line\nAnother short line", 100);
+        Assert.Equal(new[] { "Short line", "Another short line" }, result2);
+
+        // Test empty string
+        var result3 = TextChunker.SplitPlainTextLines("", 10);
+        Assert.Empty(result3);
+
+        // Test single line without newlines
+        var result4 = TextChunker.SplitPlainTextLines("Single line without newlines", 100);
+        Assert.Single(result4);
+        Assert.Equal("Single line without newlines", result4[0]);
+    }
+
+    [Fact]
+    public void SplitPlainTextLinesWorksWithMixedLineEndings()
+    {
+        // Test mixed line endings with different combinations
+        var result1 = TextChunker.SplitPlainTextLines("Line1\r\nLine2\nLine3\rLine4", 100);
+        Assert.Equal(new[] { "Line1", "Line2", "Line3", "Line4" }, result1);
+
+        // Test that token limits still work when splitting on newlines
+        var result2 = TextChunker.SplitPlainTextLines("Short\nLine", 2);
+        Assert.Equal(new[] { "Short", "Line" }, result2);
+
+        // Test that very long text still uses hierarchical splitting
+        var longText = string.Join("", Enumerable.Repeat("word ", 1000));
+        var result3 = TextChunker.SplitPlainTextLines(longText, 10);
+        Assert.True(result3.Count > 1, "Long text should be split hierarchically");
+        Assert.True(result3.All(s => !s.Contains('\n')), "Hierarchical split should not contain newlines");
     }
 }

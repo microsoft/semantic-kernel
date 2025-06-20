@@ -62,8 +62,38 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
-    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
+    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return [];
+        }
+
+        // Normalize line endings first
+        text = text.Replace("\r\n", "\n");
+
+        // Check if the text contains newlines and the total token count is within limits
+        var totalTokenCount = GetTokenCount(text, tokenCounter);
+        if ((text.Contains('\n') || text.Contains('\r')) && totalTokenCount <= maxTokensPerLine)
+        {
+            // Split on newlines regardless of token count, as the method name suggests line-based splitting
+            char[] separators = ['\n', '\r'];
+            var lines = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var result = new List<string>();
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                if (!string.IsNullOrEmpty(trimmedLine))
+                {
+                    result.Add(trimmedLine);
+                }
+            }
+            return result;
+        }
+
+        // Fall back to the original hierarchical splitting for long text or text without newlines
+        return InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
+    }
 
     /// <summary>
     /// Split markdown text into lines.
