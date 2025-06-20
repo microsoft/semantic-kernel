@@ -552,7 +552,6 @@ class CopilotStudioAgent(Agent):
 
         normalized_messages = self._normalize_messages(messages)
 
-        # Collect responses so we can tag the final chunk correctly.
         responses: list[ChatMessageContent] = []
         async for resp in self._inner_invoke(
             thread=thread,
