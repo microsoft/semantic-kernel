@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
@@ -814,5 +815,23 @@ public sealed class TextChunkerTests
         var result4 = TextChunker.SplitPlainTextLines("Single line without newlines", 100);
         Assert.Single(result4);
         Assert.Equal("Single line without newlines", result4[0]);
+    }
+
+    [Fact]
+    public void SplitPlainTextLinesWorksWithMixedLineEndings()
+    {
+        // Test mixed line endings with different combinations
+        var result1 = TextChunker.SplitPlainTextLines("Line1\r\nLine2\nLine3\rLine4", 100);
+        Assert.Equal(new[] { "Line1", "Line2", "Line3", "Line4" }, result1);
+
+        // Test that token limits still work when splitting on newlines
+        var result2 = TextChunker.SplitPlainTextLines("Short\nLine", 2);
+        Assert.Equal(new[] { "Short", "Line" }, result2);
+
+        // Test that very long text still uses hierarchical splitting
+        var longText = string.Join("", Enumerable.Repeat("word ", 1000));
+        var result3 = TextChunker.SplitPlainTextLines(longText, 10);
+        Assert.True(result3.Count > 1, "Long text should be split hierarchically");
+        Assert.True(result3.All(s => !s.Contains('\n')), "Hierarchical split should not contain newlines");
     }
 }

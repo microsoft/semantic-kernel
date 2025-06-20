@@ -52,7 +52,7 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
     private static readonly char[] s_spaceChar = [' '];
-    private static readonly string?[] s_plaintextSplitOptions = ["\n", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
     private static readonly string?[] s_markdownSplitOptions = [".\u3002\uFF0E", "?!", ";", ":", ",\uFF0C\u3001", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
@@ -74,10 +74,11 @@ public static class TextChunker
 
         // Check if the text contains newlines and the total token count is within limits
         var totalTokenCount = GetTokenCount(text, tokenCounter);
-        if (text.Contains('\n') && totalTokenCount <= maxTokensPerLine)
+        if ((text.Contains('\n') || text.Contains('\r')) && totalTokenCount <= maxTokensPerLine)
         {
             // Split on newlines regardless of token count, as the method name suggests line-based splitting
-            var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            char[] separators = ['\n', '\r'];
+            var lines = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             var result = new List<string>();
             foreach (var line in lines)
             {
