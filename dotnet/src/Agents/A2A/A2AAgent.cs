@@ -18,8 +18,8 @@ public sealed class A2AAgent : Agent
     /// <summary>
     /// Initializes a new instance of the <see cref="A2AAgent"/> class.
     /// </summary>
-    /// <param name="client">A2AClient instance to associate with the agent.</param>
-    /// <param name="agentCard">AgentCard instance associated ith the agent.</param>
+    /// <param name="client"><see cref="A2AClient"/> instance to associate with the agent.</param>
+    /// <param name="agentCard"><see cref="AgentCard"/> instance associated ith the agent.</param>
     public A2AAgent(A2AClient client, AgentCard agentCard)
     {
         Verify.NotNull(client);
@@ -82,7 +82,6 @@ public sealed class A2AAgent : Agent
         // Invoke the agent.
         var chatMessages = new ChatHistory();
         var invokeResults = this.InternalInvokeStreamingAsync(
-            this.AgentCard.Name,
             messages,
             agentThread,
             options ?? new AgentInvokeOptions(),
@@ -132,7 +131,7 @@ public sealed class A2AAgent : Agent
 
         foreach (var message in messages)
         {
-            await foreach (var result in this.InvokeAgentAsync(name, message, thread, options, cancellationToken).ConfigureAwait(false))
+            await foreach (var result in this.InvokeAgentAsync(message, thread, options, cancellationToken).ConfigureAwait(false))
             {
                 await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
                 yield return new(result, thread);
@@ -140,7 +139,7 @@ public sealed class A2AAgent : Agent
         }
     }
 
-    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(string name, ChatMessageContent message, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(ChatMessageContent message, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var messageSendParams = new MessageSendParams
         {
@@ -198,13 +197,13 @@ public sealed class A2AAgent : Agent
         }
     }
 
-    private async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(string name, ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(messages);
 
         foreach (var message in messages)
         {
-            await foreach (var result in this.InvokeAgentAsync(name, message, thread, options, cancellationToken).ConfigureAwait(false))
+            await foreach (var result in this.InvokeAgentAsync(message, thread, options, cancellationToken).ConfigureAwait(false))
             {
                 await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
                 yield return new(this.ToStreamingAgentResponseItem(result), thread);

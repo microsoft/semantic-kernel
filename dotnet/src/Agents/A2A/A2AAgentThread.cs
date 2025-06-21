@@ -23,13 +23,7 @@ public sealed class A2AAgentThread : AgentThread
 
         this._client = client;
         this.Id = id ?? Guid.NewGuid().ToString("N");
-        this.SessionId = this.Id;
     }
-
-    /// <summary>
-    /// Gets the session id of the current thread.
-    /// </summary>
-    public string SessionId { get; init; }
 
     /// <inheritdoc />
     protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)

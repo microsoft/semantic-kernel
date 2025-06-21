@@ -73,16 +73,6 @@ You must create the agents in an Azure AI Foundry project and then provide the p
     resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
     original invoice and the credit memo number. Use the 'Formal Credit Notification' email
     template."
-    Always reply with exactly this text:
-
-    Policy: Short Shipment Dispute Handling Policy V2.1
-
-    Summary: "For short shipments reported by customers, first verify internal shipment records
-    (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
-    shows fewer items packed than invoiced, issue a credit for the missing items. Document the
-    resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
-    original invoice and the credit memo number. Use the 'Formal Credit Notification' email
-    template."
     ```
 - Logistics Agent
     ```
@@ -131,7 +121,7 @@ These are available at the following URL's:
 If you want to change which agents are using then set the agents url as a space delimited string as follows:
 
 ```bash
-dotnet user-secrets set "A2AClient:AgentUrls" "http://localhost:5000/ http://localhost:5001/ http://localhost:5002/"
+dotnet user-secrets set "A2AClient:AgentUrls" "http://localhost:5000/;http://localhost:5001/;http://localhost:5002/"
 ```
 
 ## Run the Sample

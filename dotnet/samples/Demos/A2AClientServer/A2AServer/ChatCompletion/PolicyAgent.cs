@@ -23,16 +23,6 @@ internal sealed class PolicyAgent : ChatCompletionHostAgent
             resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
             original invoice and the credit memo number. Use the 'Formal Credit Notification' email
             template."
-            Always reply with exactly this text:
-
-            Policy: Short Shipment Dispute Handling Policy V2.1
-
-            Summary: "For short shipments reported by customers, first verify internal shipment records
-            (SAP) and physical logistics scan data (BigQuery). If discrepancy is confirmed and logistics data
-            shows fewer items packed than invoiced, issue a credit for the missing items. Document the
-            resolution in SAP CRM and notify the customer via email within 2 business days, referencing the
-            original invoice and the credit memo number. Use the 'Formal Credit Notification' email
-            template."
             """;
     }
 
