@@ -178,3 +178,37 @@ def test_it_adds_security_metadata_to_operation(document_file_name, security_typ
                 if found:
                     break
             assert found, f"Security type '{security_type}' not found in operation '{operation.id}'"
+
+
+def test_patch_student_endpoint_content_type():
+    """Test that the PATCH /students/{id} endpoint expects application/json-patch+json as the request Content-Type."""
+    resource_spec_path = os.path.join(current_dir, "resource_crud_with_patch_header.json")
+    openapi_fcs = create_functions_from_openapi(
+        plugin_name="students",
+        openapi_document_path=resource_spec_path,
+        execution_settings=None,
+    )
+    # Find the function for PATCH /students/{id}
+    patch_func = next((f for f in openapi_fcs if f.metadata.name == "StudentController_update"), None)
+    assert patch_func is not None, "PATCH function for /students/{id} not found"
+    operation = patch_func.metadata.additional_properties["operation"]
+    assert operation.request_body is not None
+    assert operation.request_body.media_type == "application/json-patch+json"
+
+
+def test_findall_student_endpoint_content_type():
+    """Test that the GET /students endpoint expects application/json as the response Content-Type."""
+    resource_spec_path = os.path.join(current_dir, "resource_crud_with_patch_header.json")
+    openapi_fcs = create_functions_from_openapi(
+        plugin_name="students",
+        openapi_document_path=resource_spec_path,
+        execution_settings=None,
+    )
+    # Find the function for GET /students
+    findall_func = next((f for f in openapi_fcs if f.metadata.name == "StudentController_findAll"), None)
+    assert findall_func is not None, "GET function for /students not found"
+    operation = findall_func.metadata.additional_properties["operation"]
+    # Check the first response's media type
+    assert operation.responses is not None
+    first_response = next(iter(operation.responses.values()))
+    assert first_response.media_type == "application/json"
