@@ -6,6 +6,9 @@
 ### Query agent card for the invoice agent
 GET {{hostInvoice}}/.well-known/agent.json
 
+### Query agent card for the invoice agent using POST
+POST {{hostInvoice}}/.well-known/agent.json
+
 ### Send a task to the invoice agent
 POST {{hostInvoice}}
 Content-Type: application/json

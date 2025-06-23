@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
@@ -27,7 +25,8 @@ public sealed class A2AHostAgentTests : BaseA2AClientTest
     public void ConstructorShouldVerifyParams()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new MockA2AHostAgent(new MockAgent(), this.CreateAgentCard(), null!));
+        Assert.Throws<ArgumentNullException>(() => new A2AHostAgent(null!, this.CreateAgentCard()));
+        Assert.Throws<ArgumentNullException>(() => new A2AHostAgent(new MockAgent(), null!));
     }
 
     [Fact]
@@ -35,9 +34,8 @@ public sealed class A2AHostAgentTests : BaseA2AClientTest
     {
         // Arrange
         var agent = new MockAgent();
-        var hostAgent = new MockA2AHostAgent(agent, this.CreateAgentCard(), NullLoggerFactory.Instance.CreateLogger("Mock"));
         var taskManager = new TaskManager();
-        hostAgent.Attach(taskManager);
+        var hostAgent = new A2AHostAgent(agent, this.CreateAgentCard(), taskManager);
 
         // Act
         var agentTask = await taskManager.CreateTaskAsync();
@@ -70,22 +68,6 @@ public sealed class A2AHostAgentTests : BaseA2AClientTest
         return messages;
     }
     #endregion
-}
-
-internal sealed class MockA2AHostAgent : A2AHostAgent
-{
-    public MockA2AHostAgent(Agent agent, AgentCard agentCard, ILogger logger) : base(logger)
-    {
-        this.Agent = agent ?? throw new ArgumentNullException(nameof(agent));
-        this._agentCard = agentCard ?? throw new ArgumentNullException(nameof(agentCard));
-    }
-
-    public override AgentCard GetAgentCard(string agentUrl)
-    {
-        return this._agentCard;
-    }
-
-    private readonly AgentCard _agentCard;
 }
 
 internal sealed class MockAgent : Agent
