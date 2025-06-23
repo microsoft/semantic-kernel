@@ -12,7 +12,7 @@ namespace A2AServer;
 
 internal static class HostAgentFactory
 {
-    internal static async Task<A2AHostAgent> CreateHostAgentAsync(string agentType, string modelId, string endpoint, string assistantId, IEnumerable<KernelPlugin>? plugins = null)
+    internal static async Task<A2AHostAgent> CreateFoundryHostAgentAsync(string agentType, string modelId, string endpoint, string assistantId, IEnumerable<KernelPlugin>? plugins = null)
     {
         var agentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
         PersistentAgent definition = await agentsClient.Administration.GetAgentAsync(assistantId);
@@ -21,16 +21,16 @@ internal static class HostAgentFactory
 
         AgentCard agentCard = agentType.ToUpperInvariant() switch
         {
-            "INVOICE" => GetInvoiceAgentCard(agent),
-            "POLICY" => GetPolicyAgentCard(agent),
-            "LOGISTICS" => GetLogisticsAgentCard(agent),
+            "INVOICE" => GetInvoiceAgentCard(),
+            "POLICY" => GetPolicyAgentCard(),
+            "LOGISTICS" => GetLogisticsAgentCard(),
             _ => throw new ArgumentException($"Unsupported agent type: {agentType}"),
         };
 
         return new A2AHostAgent(agent, agentCard);
     }
 
-    internal static async Task<A2AHostAgent> CreateHostAgentAsync(string agentType, string modelId, string apiKey, string name, string instructions, IEnumerable<KernelPlugin>? plugins = null)
+    internal static async Task<A2AHostAgent> CreateChatCompletionHostAgentAsync(string agentType, string modelId, string apiKey, string name, string instructions, IEnumerable<KernelPlugin>? plugins = null)
     {
         var builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(modelId, apiKey);
@@ -53,9 +53,9 @@ internal static class HostAgentFactory
 
         AgentCard agentCard = agentType.ToUpperInvariant() switch
         {
-            "INVOICE" => GetInvoiceAgentCard(agent),
-            "POLICY" => GetPolicyAgentCard(agent),
-            "LOGISTICS" => GetLogisticsAgentCard(agent),
+            "INVOICE" => GetInvoiceAgentCard(),
+            "POLICY" => GetPolicyAgentCard(),
+            "LOGISTICS" => GetLogisticsAgentCard(),
             _ => throw new ArgumentException($"Unsupported agent type: {agentType}"),
         };
 
@@ -63,7 +63,7 @@ internal static class HostAgentFactory
     }
 
     #region private
-    private static AgentCard GetInvoiceAgentCard(Agent agent)
+    private static AgentCard GetInvoiceAgentCard()
     {
         var capabilities = new AgentCapabilities()
         {
@@ -95,7 +95,7 @@ internal static class HostAgentFactory
         };
     }
 
-    private static AgentCard GetPolicyAgentCard(Agent agent)
+    private static AgentCard GetPolicyAgentCard()
     {
         var capabilities = new AgentCapabilities()
         {
@@ -127,7 +127,7 @@ internal static class HostAgentFactory
         };
     }
 
-    private static AgentCard GetLogisticsAgentCard(Agent agent)
+    private static AgentCard GetLogisticsAgentCard()
     {
         var capabilities = new AgentCapabilities()
         {
