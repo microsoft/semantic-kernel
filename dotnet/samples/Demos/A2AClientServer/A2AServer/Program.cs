@@ -47,9 +47,9 @@ if (!string.IsNullOrEmpty(endpoint))
 {
     hostAgent = agentType.ToUpperInvariant() switch
     {
-        "INVOICE" => await HostAgentFactory.CreateHostAgentAsync(agentType, modelId, endpoint, agentId, invoicePlugins),
-        "POLICY" => await HostAgentFactory.CreateHostAgentAsync(agentType, modelId, endpoint, agentId),
-        "LOGISTICS" => await HostAgentFactory.CreateHostAgentAsync(agentType, modelId, endpoint, agentId),
+        "INVOICE" => await HostAgentFactory.CreateFoundryHostAgentAsync(agentType, modelId, endpoint, agentId, invoicePlugins),
+        "POLICY" => await HostAgentFactory.CreateFoundryHostAgentAsync(agentType, modelId, endpoint, agentId),
+        "LOGISTICS" => await HostAgentFactory.CreateFoundryHostAgentAsync(agentType, modelId, endpoint, agentId),
         _ => throw new ArgumentException($"Unsupported agent type: {agentType}"),
     };
 }
@@ -57,12 +57,12 @@ else if (!string.IsNullOrEmpty(apiKey))
 {
     hostAgent = agentType.ToUpperInvariant() switch
     {
-        "INVOICE" => await HostAgentFactory.CreateHostAgentAsync(
+        "INVOICE" => await HostAgentFactory.CreateChatCompletionHostAgentAsync(
             agentType, modelId, apiKey, "InvoiceAgent",
             """
             You specialize in handling queries related to invoices.
             """, invoicePlugins),
-        "POLICY" => await HostAgentFactory.CreateHostAgentAsync(
+        "POLICY" => await HostAgentFactory.CreateChatCompletionHostAgentAsync(
             agentType, modelId, apiKey, "PolicyAgent",
             """
             You specialize in handling queries related to policies and customer communications.
@@ -78,7 +78,7 @@ else if (!string.IsNullOrEmpty(apiKey))
             original invoice and the credit memo number. Use the 'Formal Credit Notification' email
             template."
             """, invoicePlugins),
-        "LOGISTICS" => await HostAgentFactory.CreateHostAgentAsync(
+        "LOGISTICS" => await HostAgentFactory.CreateChatCompletionHostAgentAsync(
             agentType, modelId, apiKey, "LogisticsAgent",
             """
             You specialize in handling queries related to logistics.
