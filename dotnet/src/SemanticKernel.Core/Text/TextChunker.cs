@@ -52,8 +52,7 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
     private static readonly char[] s_spaceChar = [' '];
-    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
-    private static readonly string?[] s_plaintextLineSplitOptions = ["\n", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
     private static readonly string?[] s_markdownSplitOptions = [".\u3002\uFF0E", "?!", ";", ":", ",\uFF0C\u3001", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
@@ -65,36 +64,23 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
     {
-        // First, always split on newlines regardless of token count
-        text = text.Replace("\r\n", "\n"); // normalize line endings
-        var lines = text.Split('\n');
-
-        // If we only have one line, use the existing logic with line-specific split options
-        if (lines.Length == 1)
-        {
-            return InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextLineSplitOptions, tokenCounter);
-        }
-
-        // Apply token-based splitting to each line if needed
+        // Normalize newlines to \n
+        text = text.Replace("\r\n", "\n").Replace('\r', '\n');
+        var initialLines = text.Split('\n');
         var result = new List<string>();
-        foreach (var line in lines)
+        foreach (var line in initialLines)
         {
-            var trimmedLine = line.Trim();
-            if (string.IsNullOrEmpty(trimmedLine)) continue;
-
-            var tokenCount = GetTokenCount(trimmedLine, tokenCounter);
-            if (tokenCount <= maxTokensPerLine)
+            var trimmed = line.Trim();
+            if (string.IsNullOrEmpty(trimmed)) continue;
+            if (GetTokenCount(trimmed, tokenCounter) > maxTokensPerLine)
             {
-                result.Add(trimmedLine);
+                result.AddRange(InternalSplitLines(trimmed, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter));
             }
             else
             {
-                // Split long lines using the line-specific split options
-                var splitLines = InternalSplitLines(trimmedLine, maxTokensPerLine, trim: true, s_plaintextLineSplitOptions, tokenCounter);
-                result.AddRange(splitLines);
+                result.Add(trimmed);
             }
         }
-
         return result;
     }
 
@@ -117,8 +103,19 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(IEnumerable<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
-        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
+    public static List<string> SplitPlainTextParagraphs(
+    IEnumerable<string> lines,
+    int maxTokensPerParagraph,
+    int overlapTokens = 0,
+    string? chunkHeader = null,
+    TokenCounter? tokenCounter = null) =>
+    InternalSplitTextParagraphs(
+        lines.Select(line => line.Replace("\r\n", "\n").Replace('\r', '\n')),
+        maxTokensPerParagraph,
+        overlapTokens,
+        chunkHeader,
+        static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter),
+        tokenCounter);
 
     /// <summary>
     /// Split markdown text into paragraphs.

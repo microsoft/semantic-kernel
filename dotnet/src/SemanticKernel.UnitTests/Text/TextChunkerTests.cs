@@ -794,4 +794,24 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void SplitsOnNewlinesEvenWithLowTokenCount()
+    {
+        const string input = "A\nB\nC";
+        var result = TextChunker.SplitPlainTextLines(input, 100); // High token limit
+
+        var expected = new[] { "A", "B", "C" };
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void HandlesEmptyLinesWhenSplitting()
+    {
+        const string input = "First line\n\nThird line";
+        var result = TextChunker.SplitPlainTextLines(input, 10);
+
+        var expected = new[] { "First line", "Third line" };
+        Assert.Equal(expected, result);
+    }
 }
