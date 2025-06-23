@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,31 +130,48 @@ public sealed class A2AAgent : Agent
     {
         Verify.NotNull(messages);
 
-        foreach (var message in messages)
+        // Ensure all messages have the correct role.
+        if (!messages.All(m => m.Role == AuthorRole.User))
         {
-            await foreach (var result in this.InvokeAgentAsync(message, thread, options, cancellationToken).ConfigureAwait(false))
-            {
-                await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
-                yield return new(result, thread);
-            }
+            throw new ArgumentException($"All messages must have the role {AuthorRole.User}.", nameof(messages));
+        }
+
+        // Send all messages to the remote agent in a single request.
+        await foreach (var result in this.InvokeAgentAsync(messages, thread, options, cancellationToken).ConfigureAwait(false))
+        {
+            await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, thread);
         }
     }
 
-    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(ChatMessageContent message, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        List<Part> parts = [];
+        foreach (var message in messages)
+        {
+            foreach (var item in message.Items)
+            {
+                if (item is TextContent textContent)
+                {
+                    parts.Add(new TextPart
+                    {
+                        Text = textContent.Text ?? string.Empty,
+                    });
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported content type: {item.GetType().Name}. Only TextContent are supported.");
+                }
+            }
+        }
+
         var messageSendParams = new MessageSendParams
         {
             Message = new Message
             {
                 MessageId = Guid.NewGuid().ToString(),
-                Role = message.Role.ToMessageRole(),
-                Parts =
-                [
-                    new TextPart
-                    {
-                        Text = message.Content! // TODO handle multiple items
-                    }
-                ]
+                Role = MessageRole.User,
+                Parts = parts,
             }
         };
 
@@ -184,9 +202,7 @@ public sealed class A2AAgent : Agent
                     yield return new AgentResponseItem<ChatMessageContent>(
                         new ChatMessageContent(
                             AuthorRole.Assistant,
-                            textPart.Text,
-                            encoding: message.Encoding,
-                            metadata: message.Metadata),
+                            textPart.Text),
                         thread);
                 }
             }
@@ -201,13 +217,17 @@ public sealed class A2AAgent : Agent
     {
         Verify.NotNull(messages);
 
-        foreach (var message in messages)
+        // Ensure all messages have the correct role.
+        if (!messages.All(m => m.Role == AuthorRole.User))
         {
-            await foreach (var result in this.InvokeAgentAsync(message, thread, options, cancellationToken).ConfigureAwait(false))
-            {
-                await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
-                yield return new(this.ToStreamingAgentResponseItem(result), thread);
-            }
+            throw new ArgumentException($"All messages must have the role {AuthorRole.User}.", nameof(messages));
+        }
+
+        // Send all messages to the remote agent in a single request.
+        await foreach (var result in this.InvokeAgentAsync(messages, thread, options, cancellationToken).ConfigureAwait(false))
+        {
+            await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
+            yield return new(this.ToStreamingAgentResponseItem(result), thread);
         }
     }
 

@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using SharpA2A.Core;
 
 namespace Microsoft.SemanticKernel.Agents.A2A;
@@ -11,29 +10,37 @@ namespace Microsoft.SemanticKernel.Agents.A2A;
 /// <summary>
 /// Host which will attach a <see cref="A2AAgent"/> to a <see cref="ITaskManager"/>
 /// </summary>
-public abstract class A2AHostAgent
+public sealed class A2AHostAgent
 {
     /// <summary>
     /// Initializes a new instance of the SemanticKernelTravelAgent
     /// </summary>
-    /// <param name="logger"></param>
-    protected A2AHostAgent(ILogger logger)
+    public A2AHostAgent(Agent agent, AgentCard agentCard, TaskManager? taskManager = null)
     {
-        Verify.NotNull(logger);
+        Verify.NotNull(agent);
+        Verify.NotNull(agentCard);
 
-        this._logger = logger;
+        this.Agent = agent;
+        this._agentCard = agentCard;
+
+        this.Attach(taskManager ?? new TaskManager());
     }
 
     /// <summary>
     /// The associated <see cref="Agent"/>
     /// </summary>
-    public Agent? Agent { get; protected set; }
+    public Agent? Agent { get; private set; }
+
+    /// <summary>
+    /// The associated <see cref="ITaskManager"/>
+    /// </summary>
+    public TaskManager? TaskManager => this._taskManager;
 
     /// <summary>
     /// Attach the <see cref="A2AAgent"/> to the provided <see cref="ITaskManager"/>
     /// </summary>
     /// <param name="taskManager"></param>
-    public void Attach(ITaskManager taskManager)
+    public void Attach(TaskManager taskManager)
     {
         Verify.NotNull(taskManager);
 
@@ -81,11 +88,15 @@ public abstract class A2AHostAgent
     /// </summary>
     /// <param name="agentUrl">Current URL for the agent</param>
 #pragma warning disable CA1054 // URI-like parameters should not be strings
-    public abstract AgentCard GetAgentCard(string agentUrl);
+    public AgentCard GetAgentCard(string agentUrl)
+    {
+        this._agentCard.Url = agentUrl;
+        return this._agentCard;
+    }
 #pragma warning restore CA1054 // URI-like parameters should not be strings
 
     #region private
-    private readonly ILogger _logger;
-    private ITaskManager? _taskManager;
+    private readonly AgentCard _agentCard;
+    private TaskManager? _taskManager;
     #endregion
 }
