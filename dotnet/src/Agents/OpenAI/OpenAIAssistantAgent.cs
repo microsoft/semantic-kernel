@@ -238,7 +238,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = options?.Kernel ?? this.Kernel;
+        Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         if (this.UseImmutableKernel)
         {
