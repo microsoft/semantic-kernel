@@ -67,10 +67,12 @@ public abstract class Agent
     public Kernel Kernel { get; init; } = new();
 
     /// <summary>
-    /// This option avoids the agent to mutate the original kernel instance during invocation. Default is <c>false</c>.
+    /// This option forces the agent to clone the original kernel instance during invocation if <c>true</c>. Default is <c>false</c>.
     /// </summary>
     /// <remarks>
-    /// Mutable kernels are currently not supported with <see cref="AIContextProvider"/> feature.
+    /// <see cref="AIContextProvider"/> implementations that provide <see cref="AIFunction"/> instances require the
+    /// kernel to be cloned during agent invocation, but cloning has the side affect of causing modifications to Kernel 
+    /// Data by plugins to be lost.  Cloning is therefore opt-in.
     /// </remarks>
     [Experimental("SKEXP0130")]
     public bool UseImmutableKernel { get; set; } = false;
