@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel.Primitives;
@@ -215,7 +215,6 @@ internal partial class AzureClientCore
         return ChatResponseModalities.Default;
     }
 
-
     /// <summary>
     /// Gets the audio options from the execution settings.
     /// </summary>
@@ -240,7 +239,7 @@ internal partial class AzureClientCore
             }
             catch (Exception ex)
             {
-                throw new NotSupportedException($"Failed to parse the provided audio options from JSON. Ensure the JSON structure matches ChatAudioOptions format.", ex);
+                throw new NotSupportedException("Failed to parse the provided audio options from JSON. Ensure the JSON structure matches ChatAudioOptions format.", ex);
             }
         }
 
@@ -256,7 +255,7 @@ internal partial class AzureClientCore
             }
             catch (Exception ex)
             {
-                throw new NotSupportedException($"Failed to parse the provided audio options from string. Ensure the string is valid JSON that matches ChatAudioOptions format.", ex);
+                throw new NotSupportedException("Failed to parse the provided audio options from string. Ensure the string is valid JSON that matches ChatAudioOptions format.", ex);
             }
         }
 
