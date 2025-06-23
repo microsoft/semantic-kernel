@@ -143,7 +143,7 @@ class OpenApiParser:
         # Find the first supported media type using the new matcher
         media_type = next((mt for mt in content if self.is_supported_media_type(mt)), None)
         if media_type is None:
-            raise Exception(f"None of the media types of {operation_id} is supported.")
+            raise Exception(f"Neither of the media types of {operation_id} is supported.")
 
         media_type_metadata = content[media_type]
         payload_properties = self._get_payload_properties(
