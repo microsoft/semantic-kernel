@@ -90,6 +90,10 @@ public sealed class A2AHostAgent
 #pragma warning disable CA1054 // URI-like parameters should not be strings
     public AgentCard GetAgentCard(string agentUrl)
     {
+        // Ensure the URL is in the correct format
+        Uri uri = new(agentUrl);
+        agentUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
+
         this._agentCard.Url = agentUrl;
         return this._agentCard;
     }

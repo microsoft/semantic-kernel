@@ -85,8 +85,8 @@ internal static class HostAgentFactory
 
         return new AgentCard()
         {
-            Name = agent.Name ?? "InvoiceAgent",
-            Description = agent.Description,
+            Name = "InvoiceAgent",
+            Description = "Handles requests relating to invoices.",
             Version = "1.0.0",
             DefaultInputModes = ["text"],
             DefaultOutputModes = ["text"],
@@ -117,8 +117,8 @@ internal static class HostAgentFactory
 
         return new AgentCard()
         {
-            Name = agent.Name ?? "PolicyAgent",
-            Description = agent.Description,
+            Name = "PolicyAgent",
+            Description = "Handles requests relating to policies and customer communications.",
             Version = "1.0.0",
             DefaultInputModes = ["text"],
             DefaultOutputModes = ["text"],
@@ -149,7 +149,7 @@ internal static class HostAgentFactory
 
         return new AgentCard()
         {
-            Name = agent.Name ?? "LogisticsAgent",
+            Name = "LogisticsAgent",
             Description = agent.Description,
             Version = "1.0.0",
             DefaultInputModes = ["text"],
