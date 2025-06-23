@@ -459,6 +459,198 @@ public class ChatCompletionAgentTests
         Assert.NotEqual(agent3.GetChannelKeys(), agent5.GetChannelKeys());
     }
 
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockService = new();
+        mockService.Setup(
+            s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                Arguments = [],
+                UseImmutableKernel = false // Explicitly set to false
+            };
+
+        var thread = new ChatHistoryAgentThread();
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockService = new();
+        mockService.Setup(
+            s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                Arguments = []
+                // UseImmutableKernel not set, should default to false
+            };
+
+        var thread = new ChatHistoryAgentThread();
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that kernel remains immutable when UseImmutableKernel is true.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentKernelImmutabilityWhenUseImmutableKernelTrueAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockService = new();
+        Kernel capturedKernel = null!;
+        mockService.Setup(
+            s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
+            .ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+
+        var originalKernel = CreateKernel(mockService.Object);
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = originalKernel,
+                Arguments = [],
+                UseImmutableKernel = true
+            };
+
+        var thread = new ChatHistoryAgentThread();
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify original kernel was not modified
+        Assert.Equal(originalPluginCount, originalKernel.Plugins.Count);
+
+        // Verify a different kernel instance was used for the service call
+        Assert.NotSame(originalKernel, capturedKernel);
+
+        // Verify the captured kernel has the additional plugin from AIContext
+        Assert.True(capturedKernel.Plugins.Count > originalPluginCount);
+        Assert.Contains(capturedKernel.Plugins, p => p.Name == "Tools");
+    }
+
+    /// <summary>
+    /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockService = new();
+        Kernel capturedKernel = null!;
+        mockService.Setup(
+            s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
+            .ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+
+        var originalKernel = CreateKernel(mockService.Object);
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [] // Empty AIFunctions list
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = originalKernel,
+                Arguments = [],
+                UseImmutableKernel = false
+            };
+
+        var thread = new ChatHistoryAgentThread();
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify the same kernel instance was used (mutable behavior)
+        Assert.Same(originalKernel, capturedKernel);
+    }
+
     private static Kernel CreateKernel(IChatCompletionService chatCompletionService)
     {
         var builder = Kernel.CreateBuilder();
@@ -492,5 +684,26 @@ public class ChatCompletionAgentTests
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Helper class for testing AIFunction behavior.
+    /// </summary>
+    private sealed class TestAIFunction : AIFunction
+    {
+        public TestAIFunction(string name, string description = "")
+        {
+            this.Name = name;
+            this.Description = description;
+        }
+
+        public override string Name { get; }
+
+        public override string Description { get; }
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult<object?>("Test result");
+        }
     }
 }

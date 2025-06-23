@@ -67,6 +67,15 @@ public abstract class Agent
     public Kernel Kernel { get; init; } = new();
 
     /// <summary>
+    /// This option avoids the agent to mutate the original kernel instance during invocation. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Mutable kernels are currently not supported with <see cref="AIContextProvider"/> feature.
+    /// </remarks>
+    [Experimental("SKEXP0130")]
+    public bool UseImmutableKernel { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
     public IPromptTemplate? Template { get; set; }
