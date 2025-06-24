@@ -778,40 +778,45 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
+    [Fact]
+    public void SplitPlainTextParagraphsHandlesExampleFromIssue()
+    {
+        var lines = new[] { "First line\nSecond line\nThird line" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
+
+        Assert.Equal("First line\nSecond line\nThird line", result[0]);
+    }
+
     [Theory]
     [InlineData("First line\r\nSecond line\r\nThird line")]
     [InlineData("First line\nSecond line\nThird line")]
-    public void ActuallySplitsOnNewLines(string input)
+    [InlineData("First line\rSecond line\rThird line")]
+    public void SplitPlainTextParagraphsNormalizesNewlinesButDoesNotSplit(string input)
     {
-        var result = TextChunker.SplitPlainTextLines(input, 10);
+        var lines = new[] { input };
 
-        var expected = new[]
-        {
-            "First line",
-            "Second line",
-            "Third line"
-        };
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
 
-        Assert.Equal(expected, result);
+        Assert.Single(result);
+        Assert.DoesNotContain('\r', result[0]);
+        Assert.Contains("First line", result[0]);
+        Assert.Contains("Second line", result[0]);
+        Assert.Contains("Third line", result[0]);
     }
 
     [Fact]
-    public void SplitsOnNewlinesEvenWithLowTokenCount()
+    public void SplitPlainTextParagraphsSplitsWhenExceedingTokenLimit()
     {
-        const string input = "A\nB\nC";
-        var result = TextChunker.SplitPlainTextLines(input, 100); // High token limit
+        var lines = new[] { "First line\nSecond line\nThird line" };
 
-        var expected = new[] { "A", "B", "C" };
-        Assert.Equal(expected, result);
-    }
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 5);
 
-    [Fact]
-    public void HandlesEmptyLinesWhenSplitting()
-    {
-        const string input = "First line\n\nThird line";
-        var result = TextChunker.SplitPlainTextLines(input, 10);
+        Assert.True(result.Count > 1);
 
-        var expected = new[] { "First line", "Third line" };
-        Assert.Equal(expected, result);
+        var combined = string.Join(" ", result);
+        Assert.Contains("First line", combined);
+        Assert.Contains("Second line", combined);
+        Assert.Contains("Third line", combined);
     }
 }

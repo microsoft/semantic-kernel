@@ -62,27 +62,8 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
-    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
-    {
-        // Normalize newlines to \n
-        text = text.Replace("\r\n", "\n").Replace('\r', '\n');
-        var initialLines = text.Split('\n');
-        var result = new List<string>();
-        foreach (var line in initialLines)
-        {
-            var trimmed = line.Trim();
-            if (string.IsNullOrEmpty(trimmed)) continue;
-            if (GetTokenCount(trimmed, tokenCounter) > maxTokensPerLine)
-            {
-                result.AddRange(InternalSplitLines(trimmed, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter));
-            }
-            else
-            {
-                result.Add(trimmed);
-            }
-        }
-        return result;
-    }
+    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
+        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
 
     /// <summary>
     /// Split markdown text into lines.
@@ -110,7 +91,9 @@ public static class TextChunker
     string? chunkHeader = null,
     TokenCounter? tokenCounter = null) =>
     InternalSplitTextParagraphs(
-        lines.Select(line => line.Replace("\r\n", "\n").Replace('\r', '\n')),
+        lines.Select(line => line
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')),  // Just normalize, don't split
         maxTokensPerParagraph,
         overlapTokens,
         chunkHeader,
