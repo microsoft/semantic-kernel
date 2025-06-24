@@ -93,7 +93,7 @@ public static class TextChunker
     InternalSplitTextParagraphs(
         lines.Select(line => line
             .Replace("\r\n", "\n")
-            .Replace('\r', '\n')),  // Just normalize, don't split
+            .Replace('\r', '\n')),
         maxTokensPerParagraph,
         overlapTokens,
         chunkHeader,
