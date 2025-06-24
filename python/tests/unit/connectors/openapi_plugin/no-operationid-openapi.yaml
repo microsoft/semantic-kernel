@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Simple HTTPBin API
+  version: 1.0.0
+servers:
+  - url: https://httpbin.org
+paths:
+  /get:
+    get:
+      summary: Simple GET request to httpbin.org
+      responses:
+        '200':
+          description: Successful response from httpbin
+          content:
+            application/json:
+              schema:
+                type: object

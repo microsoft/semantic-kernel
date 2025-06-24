@@ -224,6 +224,7 @@ class OpenApiParser:
 
         paths = parsed_document.get("paths", {})
         request_objects = {}
+        unique_operation_ids_registered: set[str] = set()
 
         servers = parsed_document.get("servers", [])
 
@@ -248,7 +249,15 @@ class OpenApiParser:
         for path, methods in paths.items():
             for method, details in methods.items():
                 request_method = method.lower()
-                operationId = details.get("operationId", path + "_" + request_method)
+                # Validate that operationId exists
+                if "operationId" not in details:
+                    raise PluginInitializationError(f"operationId missing, path: '{path}', method: '{method}'")
+                operationId = details["operationId"]
+                if operationId in unique_operation_ids_registered:
+                    raise PluginInitializationError(
+                        f"Duplicate operationId: '{operationId}', path: '{path}', method: '{method}'"
+                    )
+                unique_operation_ids_registered.add(operationId)
 
                 summary = details.get("summary", None)
                 description = details.get("description", None)
