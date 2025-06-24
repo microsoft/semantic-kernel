@@ -23,10 +23,10 @@ internal static class ResponseCreationOptionsFactory
             return responseAgentInvokeOptions.ResponseCreationOptions;
         }
 
-        var responseTools = agent.Kernel.Plugins
+        var responseTools = agent.GetKernel(invokeOptions).Plugins
             .SelectMany(kp => kp.Select(kf => kf.ToResponseTool(kp.Name)));
 
-        var creationOptions = new ResponseCreationOptions()
+        var creationOptions = new ResponseCreationOptions
         {
             EndUserId = agent.GetDisplayName(),
             Instructions = $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",

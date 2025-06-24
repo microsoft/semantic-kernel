@@ -164,6 +164,71 @@ public static class OllamaKernelBuilderExtensions
 
     #endregion
 
+    #region Chat Client
+
+    /// <summary>
+    /// Add Ollama Chat Client to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaChatClient(
+        this IKernelBuilder builder,
+        string modelId,
+        Uri endpoint,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaChatClient(modelId, endpoint, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Chat Client to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaChatClient(
+        this IKernelBuilder builder,
+        string modelId,
+        HttpClient? httpClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaChatClient(modelId, httpClient, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Chat Client to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaChatClient(
+        this IKernelBuilder builder,
+        OllamaApiClient? ollamaClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaChatClient(ollamaClient, serviceId);
+
+        return builder;
+    }
+
+    #endregion
+
     #region Text Embeddings
 
     /// <summary>

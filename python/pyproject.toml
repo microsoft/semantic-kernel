@@ -88,13 +88,13 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.95.1",
+    "google-cloud-aiplatform == 1.97.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.7.0"
+    "torch == 2.7.1"
 ]
 mcp = [
     "mcp>=1.8",
@@ -123,7 +123,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone[asyncio, grpc] ~= 6.0"
+    "pinecone[asyncio, grpc] ~= 7.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -132,7 +132,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 5,< 6",
+    "redis[hiredis] ~= 6.0",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -215,6 +215,7 @@ select = [
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "D418", #allow docstring on overloaded function
     "TD003", #allow missing link to todo issue
     "FIX002" #allow todo
 ]
