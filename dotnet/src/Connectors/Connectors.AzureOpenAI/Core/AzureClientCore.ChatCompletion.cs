@@ -2,7 +2,9 @@
 
 using System;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -52,7 +54,16 @@ internal partial class AzureClientCore
         options.IncludeLogProbabilities = executionSettings.Logprobs;
         options.StoredOutputEnabled = executionSettings.Store;
         options.ReasoningEffortLevel = GetEffortLevel(executionSettings);
-        options.ResponseModalities = ChatResponseModalities.Default;
+
+        if (executionSettings.Modalities is not null)
+        {
+            options.ResponseModalities = GetResponseModalities(executionSettings);
+        }
+
+        if (executionSettings.Audio is not null)
+        {
+            options.AudioOptions = GetAudioOptions(executionSettings);
+        }
 
         if (azureSettings.SetNewMaxCompletionTokensEnabled)
         {
@@ -91,6 +102,11 @@ internal partial class AzureClientCore
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         }
 
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)
@@ -115,11 +131,134 @@ internal partial class AzureClientCore
             }
         }
 
-        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        return options;
+    }
+
+    /// <summary>
+    /// Gets the response modalities from the execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The execution settings.</param>
+    /// <returns>The response modalities as a <see cref="ChatResponseModalities"/> flags enum.</returns>
+    private static ChatResponseModalities GetResponseModalities(OpenAIPromptExecutionSettings executionSettings)
+    {
+        static ChatResponseModalities ParseResponseModalitiesEnumerable(IEnumerable<string> responseModalitiesStrings)
         {
-            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+            ChatResponseModalities result = ChatResponseModalities.Default;
+            foreach (var modalityString in responseModalitiesStrings)
+            {
+                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedModality))
+                {
+                    result |= parsedModality;
+                }
+                else
+                {
+                    throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
+                }
+            }
+
+            return result;
         }
 
-        return options;
+        if (executionSettings.Modalities is null)
+        {
+            return ChatResponseModalities.Default;
+        }
+
+        if (executionSettings.Modalities is ChatResponseModalities responseModalities)
+        {
+            return responseModalities;
+        }
+
+        if (executionSettings.Modalities is IEnumerable<string> responseModalitiesStrings)
+        {
+            return ParseResponseModalitiesEnumerable(responseModalitiesStrings);
+        }
+
+        if (executionSettings.Modalities is string responseModalitiesString)
+        {
+            if (Enum.TryParse<ChatResponseModalities>(responseModalitiesString, true, out var parsedResponseModalities))
+            {
+                return parsedResponseModalities;
+            }
+            throw new NotSupportedException($"The provided response modalities '{responseModalitiesString}' is not supported.");
+        }
+
+        if (executionSettings.Modalities is JsonElement responseModalitiesElement)
+        {
+            if (responseModalitiesElement.ValueKind == JsonValueKind.String)
+            {
+                var modalityString = responseModalitiesElement.GetString();
+                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedResponseModalities))
+                {
+                    return parsedResponseModalities;
+                }
+
+                throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
+            }
+
+            if (responseModalitiesElement.ValueKind == JsonValueKind.Array)
+            {
+                try
+                {
+                    var modalitiesEnumeration = JsonSerializer.Deserialize<IEnumerable<string>>(responseModalitiesElement.GetRawText())!;
+                    return ParseResponseModalitiesEnumerable(modalitiesEnumeration);
+                }
+                catch (JsonException ex)
+                {
+                    throw new NotSupportedException("The provided response modalities JSON array may only contain strings.", ex);
+                }
+            }
+
+            throw new NotSupportedException($"The provided response modalities '{executionSettings.Modalities?.GetType()}' is not supported.");
+        }
+
+        return ChatResponseModalities.Default;
+    }
+
+    /// <summary>
+    /// Gets the audio options from the execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The execution settings.</param>
+    /// <returns>The audio options as a <see cref="ChatAudioOptions"/> object.</returns>
+    private static ChatAudioOptions GetAudioOptions(OpenAIPromptExecutionSettings executionSettings)
+    {
+        if (executionSettings.Audio is ChatAudioOptions audioOptions)
+        {
+            return audioOptions;
+        }
+
+        if (executionSettings.Audio is JsonElement audioOptionsElement)
+        {
+            try
+            {
+                var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsElement.GetRawText()));
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new NotSupportedException("Failed to parse the provided audio options from JSON. Ensure the JSON structure matches ChatAudioOptions format.", ex);
+            }
+        }
+
+        if (executionSettings.Audio is string audioOptionsString)
+        {
+            try
+            {
+                var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsString));
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new NotSupportedException("Failed to parse the provided audio options from string. Ensure the string is valid JSON that matches ChatAudioOptions format.", ex);
+            }
+        }
+
+        throw new NotSupportedException($"The provided audio options '{executionSettings.Audio?.GetType()}' is not supported.");
     }
 }
