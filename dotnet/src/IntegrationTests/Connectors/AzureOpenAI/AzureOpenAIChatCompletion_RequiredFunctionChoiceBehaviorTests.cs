@@ -74,7 +74,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
     //    Assert.Contains("GetCurrentDate", invokedFunctions);
     //}
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -102,7 +102,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange

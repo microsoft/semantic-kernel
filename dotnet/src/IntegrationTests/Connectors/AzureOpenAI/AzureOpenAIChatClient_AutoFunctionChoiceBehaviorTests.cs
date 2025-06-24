@@ -14,7 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
-using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
@@ -34,7 +33,7 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -65,7 +64,7 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange

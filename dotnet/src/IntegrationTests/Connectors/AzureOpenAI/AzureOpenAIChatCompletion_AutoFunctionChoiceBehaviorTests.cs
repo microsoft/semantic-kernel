@@ -35,7 +35,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         this._chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
     }
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -63,7 +63,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [RetryFact]
+    [Fact]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
