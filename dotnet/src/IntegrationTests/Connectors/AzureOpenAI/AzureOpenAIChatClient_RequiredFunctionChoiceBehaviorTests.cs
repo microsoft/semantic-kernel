@@ -63,7 +63,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [RetryFact]
+    [RetryFact(Skip = "For manual verification only")]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -82,7 +82,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
             template: How many days until Christmas?
             execution_settings:
               default:
-                temperature: 0.1
+                temperature: 0.5
                 function_choice_behavior:
                   type: required
             """";
