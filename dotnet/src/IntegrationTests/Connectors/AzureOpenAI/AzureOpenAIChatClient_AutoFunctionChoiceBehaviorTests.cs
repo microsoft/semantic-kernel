@@ -38,7 +38,7 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [RetryFact(skipOnExceptions: [typeof(Polly.Timeout.TimeoutRejectedException), typeof(TaskCanceledException), typeof(IOException), typeof(SocketException)])]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
