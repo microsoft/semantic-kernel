@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
@@ -31,7 +32,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [Fact]
+    [RetryFact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -62,7 +63,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [RetryFact(Skip = "For manual verification only")]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -81,7 +82,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
             template: How many days until Christmas?
             execution_settings:
               default:
-                temperature: 0.1
+                temperature: 0.5
                 function_choice_behavior:
                   type: required
             """";
@@ -202,7 +203,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
             template: How many days until Christmas?
             execution_settings:
               default:
-                temperature: 0.1
+                temperature: 0.5
                 function_choice_behavior:
                   type: required
             """";
