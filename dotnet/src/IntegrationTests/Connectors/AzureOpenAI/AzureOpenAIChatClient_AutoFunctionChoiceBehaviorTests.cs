@@ -5,7 +5,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -14,12 +17,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
-public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
+public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegrationTest, IDisposable
 {
+    private HttpClient? _httpClient;
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatClient _chatClient;
@@ -33,7 +38,7 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [Fact]
+    [RetryFact(skipOnExceptions: [typeof(Polly.Timeout.TimeoutRejectedException), typeof(TaskCanceledException), typeof(IOException), typeof(SocketException)])]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -442,6 +447,7 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
 
     private Kernel InitializeKernel()
     {
+        this._httpClient ??= new() { Timeout = TimeSpan.FromSeconds(100) };
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
@@ -453,9 +459,16 @@ public sealed class AzureOpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseI
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new AzureCliCredential());
+            credentials: new AzureCliCredential(),
+            httpClient: this._httpClient);
 
         return kernelBuilder.Build();
+    }
+
+    public void Dispose()
+    {
+        this._httpClient?.Dispose();
+        this._chatClient?.Dispose();
     }
 
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
