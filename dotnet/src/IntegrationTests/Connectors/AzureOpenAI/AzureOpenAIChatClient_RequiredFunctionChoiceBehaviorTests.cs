@@ -64,7 +64,7 @@ public sealed class AzureOpenAIChatClientRequiredFunctionChoiceBehaviorTests : B
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
