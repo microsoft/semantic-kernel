@@ -110,19 +110,19 @@ public sealed class A2AAgent : Agent
     /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
     #region private
@@ -218,7 +218,7 @@ public sealed class A2AAgent : Agent
         Verify.NotNull(messages);
 
         // Ensure all messages have the correct role.
-        if (!messages.All(m => m.Role == AuthorRole.User))
+        if (messages.Any(m => m.Role != AuthorRole.User))
         {
             throw new ArgumentException($"All messages must have the role {AuthorRole.User}.", nameof(messages));
         }

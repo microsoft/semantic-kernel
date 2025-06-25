@@ -83,7 +83,7 @@ internal static class HostAgentFactory
             ],
         };
 
-        return new AgentCard()
+        return new()
         {
             Name = "InvoiceAgent",
             Description = "Handles requests relating to invoices.",
