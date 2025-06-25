@@ -140,10 +140,22 @@ public sealed class OpenAIResponseAgent : Agent
 
     private async Task<OpenAIAssistantAgentInvokeOptions> FinalizeInvokeOptionsAsync(ICollection<ChatMessageContent> messages, AgentInvokeOptions? options, AgentThread agentThread, CancellationToken cancellationToken)
     {
-        Kernel kernel = this.GetKernel(options).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
-#pragma warning disable SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        // Get the AIContextProviders contributions to the kernel.
         AIContext providersContext = await agentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
