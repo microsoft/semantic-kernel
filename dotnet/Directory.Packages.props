@@ -165,7 +165,7 @@
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.24.0" />
     <!-- Memory stores -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.52.0" />
     <PackageVersion Include="Pgvector" Version="0.3.1" />
     <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
     <PackageVersion Include="NRedisStack" Version="1.0.0" />
