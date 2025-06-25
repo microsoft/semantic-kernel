@@ -108,9 +108,9 @@ dotnet run --urls "http://localhost:5002;https://localhost:5012" --agentId "<Log
 
 ### Testing the Agents using the Rest Client
 
-This sample contains a (.http file)[https://learn.microsoft.com/aspnet/core/test/http-files?view=aspnetcore-9.0] which can be used to test the agent.
+This sample contains a [.http file](https://learn.microsoft.com/aspnet/core/test/http-files?view=aspnetcore-9.0) which can be used to test the agent.
 
-1. In Visual Studio open (./A2AServer/A2AServer.http)[./A2AServer/A2ASerever.http]
+1. In Visual Studio open [./A2AServer/A2AServer.http](./A2AServer/A2ASerever.http)
 1. There are two sent requests for each agent, e.g., for the invoice agent:
     1. Query agent card for the invoice agent
         `GET {{hostInvoice}}/.well-known/agent.json`
@@ -151,12 +151,12 @@ Sample output from the request to send a message to the agent via A2A protocol:
 
 The A2A Inspector is a web-based tool designed to help developers inspect, debug, and validate servers that implement the Google A2A (Agent-to-Agent) protocol. It provides a user-friendly interface to interact with an A2A agent, view communication, and ensure specification compliance.
 
-For more information go (here)[https://github.com/a2aproject/a2a-inspector].
+For more information go [here](https://github.com/a2aproject/a2a-inspector).
 
-Running the (inspector with Docker)[https://github.com/a2aproject/a2a-inspector?tab=readme-ov-file#option-two-run-with-docker] is the easiest way to get started.
+Running the [inspector with Docker](https://github.com/a2aproject/a2a-inspector?tab=readme-ov-file#option-two-run-with-docker) is the easiest way to get started.
 
-1. Navigate to the A2A Inspector in your browser: (http://127.0.0.1:8080/)[http://127.0.0.1:8080/]
-1. Enter the URL of the Agent you are running e.g., (http://host.docker.internal:5000)[http://host.docker.internal:5000]
+1. Navigate to the A2A Inspector in your browser: [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
+1. Enter the URL of the Agent you are running e.g., [http://host.docker.internal:5000](http://host.docker.internal:5000)
 1. Connect to the agent and the agent card will be displayed and validated.
 1. Type a message and send it to the agent using A2A protocol.
     1. The response will be validated automatically and then displayed in the UI.
