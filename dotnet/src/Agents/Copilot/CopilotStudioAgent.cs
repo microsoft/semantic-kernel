@@ -66,6 +66,12 @@ public sealed partial class CopilotStudioAgent : Agent
         await foreach (ChatMessageContent result in invokeResults.ConfigureAwait(false))
         {
             await this.NotifyThreadOfNewMessage(agentThread, result, cancellationToken).ConfigureAwait(false);
+
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(result).ConfigureAwait(false);
+            }
+
             yield return new(result, agentThread);
         }
     }
