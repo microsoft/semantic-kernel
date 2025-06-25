@@ -6,10 +6,7 @@
 ### Query agent card for the invoice agent
 GET {{hostInvoice}}/.well-known/agent.json
 
-### Query agent card for the invoice agent using POST
-POST {{hostInvoice}}/.well-known/agent.json
-
-### Send a task to the invoice agent
+### Send a message to the invoice agent
 POST {{hostInvoice}}
 Content-Type: application/json
 
@@ -35,7 +32,7 @@ Content-Type: application/json
 ### Query agent card for the policy agent
 GET {{hostPolicy}}/.well-known/agent.json
 
-### Send a task to the policy agent
+### Send a message to the policy agent
 POST {{hostPolicy}}
 Content-Type: application/json
 
@@ -61,7 +58,7 @@ Content-Type: application/json
 ### Query agent card for the logistics agent
 GET {{hostLogistics}}/.well-known/agent.json
 
-### Send a task to the logistics agent
+### Send a message to the logistics agent
 POST {{hostLogistics}}
 Content-Type: application/json
 

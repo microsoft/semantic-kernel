@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Reflection;
 using A2A;
 using A2AServer;
 using Microsoft.AspNetCore.Builder;
@@ -33,7 +32,7 @@ var logger = app.Logger;
 
 IConfigurationRoot configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
-    .AddUserSecrets(Assembly.GetExecutingAssembly())
+    .AddUserSecrets<Program>()
     .Build();
 
 string? apiKey = configuration["A2AServer:ApiKey"];
@@ -43,7 +42,7 @@ string modelId = configuration["A2AServer:ModelId"] ?? "gpt-4o-mini";
 IEnumerable<KernelPlugin> invoicePlugins = [KernelPluginFactory.CreateFromType<InvoiceQueryPlugin>()];
 
 A2AHostAgent? hostAgent = null;
-if (!string.IsNullOrEmpty(endpoint))
+if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(agentId))
 {
     hostAgent = agentType.ToUpperInvariant() switch
     {
@@ -94,7 +93,7 @@ else if (!string.IsNullOrEmpty(apiKey))
 }
 else
 {
-    Console.Error.WriteLine("Either  A2AServer:ApiKey or A2AServer:ConnectionString must be provided");
+    throw new ArgumentException("Either A2AServer:ApiKey or A2AServer:ConnectionString & agentId must be provided");
 }
 
 app.MapA2A(hostAgent!.TaskManager!, "");
