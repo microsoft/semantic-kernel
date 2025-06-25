@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Arguments.Extensions;
@@ -65,6 +66,17 @@ public abstract class Agent
     /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime. The default value is an empty Kernel, but that can be overridden.
     /// </value>
     public Kernel Kernel { get; init; } = new();
+
+    /// <summary>
+    /// This option forces the agent to clone the original kernel instance during invocation if <c>true</c>. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AIContextProvider"/> implementations that provide <see cref="AIFunction"/> instances require the
+    /// kernel to be cloned during agent invocation, but cloning has the side affect of causing modifications to Kernel
+    /// Data by plugins to be lost.  Cloning is therefore opt-in.
+    /// </remarks>
+    [Experimental("SKEXP0130")]
+    public bool UseImmutableKernel { get; set; } = false;
 
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
