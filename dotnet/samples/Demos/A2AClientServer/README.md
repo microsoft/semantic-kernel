@@ -110,7 +110,7 @@ dotnet run --urls "http://localhost:5002;https://localhost:5012" --agentId "<Log
 
 This sample contains a [.http file](https://learn.microsoft.com/aspnet/core/test/http-files?view=aspnetcore-9.0) which can be used to test the agent.
 
-1. In Visual Studio open [./A2AServer/A2AServer.http](./A2AServer/A2ASerever.http)
+1. In Visual Studio open [./A2AServer/A2AServer.http](./A2AServer/A2AServer.http)
 1. There are two sent requests for each agent, e.g., for the invoice agent:
     1. Query agent card for the invoice agent
         `GET {{hostInvoice}}/.well-known/agent.json`
