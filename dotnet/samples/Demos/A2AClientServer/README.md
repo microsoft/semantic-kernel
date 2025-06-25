@@ -106,6 +106,74 @@ cd A2AServer
 dotnet run --urls "http://localhost:5002;https://localhost:5012" --agentId "<Logistics Agent Id>" --agentType "logistics"
 ```
 
+### Testing the Agents using the Rest Client
+
+This sample contains a (.http file)[https://learn.microsoft.com/aspnet/core/test/http-files?view=aspnetcore-9.0] which can be used to test the agent.
+
+1. In Visual Studio open (./A2AServer/A2AServer.http)[./A2AServer/A2ASerever.http]
+1. There are two sent requests for each agent, e.g., for the invoice agent:
+    1. Query agent card for the invoice agent
+        `GET {{hostInvoice}}/.well-known/agent.json`
+    1. Send a message to the invoice agent
+        ```
+        POST {{hostInvoice}}
+        Content-Type: application/json
+
+        {
+            "id": "1",
+            "jsonrpc": "2.0",
+            "method": "message/send",
+            "params": {
+                "id": "12345",
+                "message": {
+                    "role": "user",
+                    "messageId": "msg_1",
+                    "parts": [
+                        {
+                            "kind": "text",
+                            "text": "Show me all invoices for Contoso?"
+                        }
+                    ]
+                }
+            }
+        }
+        ```
+
+Sample output from the request to display the agent card:
+
+<img src="./rest-client-agent-card.png" alt="Agent Card"/>
+
+Sample output from the request to send a message to the agent via A2A protocol:
+
+<img src="./rest-client-send-message.png" alt="Send Message"/>
+
+### Testing the Agents using the A2A Inspector
+
+The A2A Inspector is a web-based tool designed to help developers inspect, debug, and validate servers that implement the Google A2A (Agent-to-Agent) protocol. It provides a user-friendly interface to interact with an A2A agent, view communication, and ensure specification compliance.
+
+For more information go (here)[https://github.com/a2aproject/a2a-inspector].
+
+Running the (inspector with Docker)[https://github.com/a2aproject/a2a-inspector?tab=readme-ov-file#option-two-run-with-docker] is the easiest way to get started.
+
+1. Navigate to the A2A Inspector in your browser: (http://127.0.0.1:8080/)[http://127.0.0.1:8080/]
+1. Enter the URL of the Agent you are running e.g., (http://host.docker.internal:5000)[http://host.docker.internal:5000]
+1. Connect to the agent and the agent card will be displayed and validated.
+1. Type a message and send it to the agent using A2A protocol.
+    1. The response will be validated automatically and then displayed in the UI.
+    1. You can select the response to view the raw json.
+
+Agent card after connecting to an agent using the A2A protocol:
+
+<img src="./a2a-inspector-agent-card.png" alt="Agent Card"/>
+
+Sample response after sending a message to the agent via A2A protocol:
+
+<img src="./a2a-inspector-send-message.png" alt="Send Message"/>
+
+Raw JSON response from an A2A agent:
+
+<img src="./a2a-inspector-raw-json-response.png" alt="Response Raw JSON"/>
+
 ### Configuring Agents for the A2A Client
 
 The A2A client will connect to remote agents using the A2A protocol.
@@ -135,7 +203,7 @@ To run the sample, follow these steps:
     dotnet run
     ```  
 3. Enter your request e.g. "Customer is disputing transaction TICKET-XYZ987 as they claim the received fewer t-shirts than ordered."
-4. The host client agent will call the remote agents, these calls will be displayed as console output. The final answer will use information from all three remote agents.
+4. The host client agent will call the remote agents, these calls will be displayed as console output. The final answer will use information from the remote agents. The sample below includes all three agents but in your case you may only see the policy and invoice agent.
 
 Sample output from the A2A client:
 
