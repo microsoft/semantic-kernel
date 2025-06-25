@@ -16,8 +16,10 @@ namespace GettingStarted.Orchestration;
 /// </summary>
 public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
-    [Fact]
-    public async Task OrderSupportAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrderSupportAsync(bool streamedResponse)
     {
         // Define the agents & tools
         ChatCompletionAgent triageAgent =
@@ -76,8 +78,9 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
                     Console.WriteLine($"\n# INPUT: {input}\n");
                     return ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input));
                 },
+                LoggerFactory = this.LoggerFactory,
                 ResponseCallback = monitor.ResponseCallback,
-                LoggerFactory = this.LoggerFactory
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime

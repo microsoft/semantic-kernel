@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
@@ -73,7 +74,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
     //    Assert.Contains("GetCurrentDate", invokedFunctions);
     //}
 
-    [Fact]
+    [RetryFact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -101,7 +102,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [RetryFact]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
