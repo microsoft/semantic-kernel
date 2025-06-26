@@ -35,7 +35,8 @@ public class ResponseItemExtensionsTests
         // Act  
         var messageContent = responseItem.ToChatMessageContent();
 
-        // Assert  
+        // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(new AuthorRole(roleLabel), messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<TextContent>(messageContent.Items[0]);
@@ -53,6 +54,7 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<FileReferenceContent>(messageContent.Items[0]);
@@ -71,6 +73,7 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<BinaryContent>(messageContent.Items[0]);
@@ -88,9 +91,24 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<TextContent>(messageContent.Items[0]);
         Assert.Equal("refusal", ((TextContent)messageContent.Items[0]).Text);
+    }
+
+    [Fact]
+    public void VerifyToChatMessageContentFromReasoning()
+    {
+        // Arrange
+        IEnumerable<string> summaryParts = ["Foo"];
+        ReasoningResponseItem responseItem = ResponseItem.CreateReasoningItem(summaryParts);
+
+        // Act
+        var messageContent = responseItem.ToChatMessageContent();
+
+        // Assert
+        Assert.Null(messageContent);
     }
 }
