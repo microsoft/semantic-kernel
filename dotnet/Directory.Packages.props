@@ -10,12 +10,12 @@
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.3.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.3.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.3.1" />
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
-    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.13" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0.2" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.3" />
-    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.0-preview.16" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.3.7" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.4.6" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0.11" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.13" />
+    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.1.1" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.2" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.0.2" />
     <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -187,12 +187,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.12.19" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.17.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.22.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
