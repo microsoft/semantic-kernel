@@ -1,14 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -139,6 +143,288 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
         Assert.Equal(3, items.Count);
         Assert.Equal("The special soup is Clam Chowder, and it costs $9.99.", items[2].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
+    {
+        // Arrange
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = false // Explicitly set to false
+        };
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
+    {
+        // Arrange
+        var agent = new OpenAIResponseAgent(this.Client);
+        // UseImmutableKernel not set, should default to false
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that kernel remains immutable when UseImmutableKernel is true.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentKernelImmutabilityWhenUseImmutableKernelTrueAsync()
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        );
+
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = true
+        };
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        var result = await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify original kernel was not modified
+        Assert.Equal(originalPluginCount, originalKernel.Plugins.Count);
+
+        // The kernel should remain unchanged since UseImmutableKernel=true creates a clone
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        );
+
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = false
+        };
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [] // Empty AIFunctions list
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        var result = await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify the same kernel instance is still being used (mutable behavior)
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentStreamingThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
+    {
+        // Arrange
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = false // Explicitly set to false
+        };
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentStreamingThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
+    {
+        // Arrange
+        var agent = new OpenAIResponseAgent(this.Client);
+        // UseImmutableKernel not set, should default to false
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that kernel remains immutable when UseImmutableKernel is true (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentStreamingKernelImmutabilityWhenUseImmutableKernelTrueAsync()
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        );
+
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = true
+        };
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        var result = await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.True(result.Length > 0);
+
+        // Verify original kernel was not modified
+        Assert.Equal(originalPluginCount, originalKernel.Plugins.Count);
+
+        // The kernel should remain unchanged since UseImmutableKernel=true creates a clone
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIResponseAgentStreamingMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
+    {
+        // Arrange
+        this.MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        );
+
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            UseImmutableKernel = false
+        };
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [] // Empty AIFunctions list
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIResponseAgentThread(this.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        // Act
+        var result = await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.True(result.Length > 0);
+
+        // Verify the same kernel instance is still being used (mutable behavior)
+        Assert.Same(originalKernel, agent.Kernel);
     }
 
     #region private
@@ -431,6 +717,27 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         [KernelFunction]
         public void MyFunction3(string value, int[] indices)
         { }
+    }
+
+    /// <summary>
+    /// Helper class for testing AIFunction behavior.
+    /// </summary>
+    private sealed class TestAIFunction : AIFunction
+    {
+        public TestAIFunction(string name, string description = "")
+        {
+            this.Name = name;
+            this.Description = description;
+        }
+
+        public override string Name { get; }
+
+        public override string Description { get; }
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult<object?>("Test result");
+        }
     }
 
     private sealed class MenuPlugin

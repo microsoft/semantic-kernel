@@ -5,11 +5,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
-    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.2.1" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.3.1-preview.1.25305.6" />
+    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.3.1" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.3.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.3.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.3.1" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0.2" />
@@ -75,7 +75,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.47.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.2.0-preview.3" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
@@ -88,7 +88,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
-    <PackageVersion Include="Pinecone.Client" Version="3.0.0" />
+    <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.2-beta" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -102,6 +102,9 @@
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+    <PackageVersion Include="SharpA2A.Core" Version="0.2.1-preview.1" />
+    <PackageVersion Include="SharpA2A.AspNetCore" Version="0.2.1-preview.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.2" />
     <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.3" />
@@ -153,8 +156,8 @@
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
     <PackageVersion Include="MongoDB.Driver" Version="2.30.0" />
     <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.23" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.23" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
@@ -162,7 +165,7 @@
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.24.0" />
     <!-- Memory stores -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.52.0" />
     <PackageVersion Include="Pgvector" Version="0.3.1" />
     <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
     <PackageVersion Include="NRedisStack" Version="1.0.0" />
