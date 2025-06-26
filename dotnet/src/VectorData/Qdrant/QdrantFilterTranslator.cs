@@ -12,6 +12,7 @@ using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using Qdrant.Client.Grpc;
 using Range = Qdrant.Client.Grpc.Range;
+using Expression = System.Linq.Expressions.Expression;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
