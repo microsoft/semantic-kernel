@@ -73,11 +73,22 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -168,11 +179,22 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -391,6 +413,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
+        int messageIndex = messageCount;
         AuthorRole? role = null;
         StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
@@ -401,18 +424,18 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
             builder.Append(message.ToString());
 
+            // Capture mutated messages related function calling / tools
+            for (; messageIndex < chat.Count; messageIndex++)
+            {
+                ChatMessageContent chatMessage = chat[messageIndex];
+
+                chatMessage.AuthorName = this.Name;
+
+                await onNewMessage(chatMessage).ConfigureAwait(false);
+                history.Add(chatMessage);
+            }
+
             yield return message;
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            await onNewMessage(message).ConfigureAwait(false);
-            history.Add(message);
         }
 
         // Do not duplicate terminated function result to history

@@ -66,6 +66,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
                 Name = "ReviewGuru",
                 Instructions = "You are a friendly assistant that summarizes key points and sentiments from customer reviews.",
                 Kernel = this._kernel,
+                UseImmutableKernel = true, // Usage of immutable kernel is required for the context provider feature.
                 Arguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new FunctionChoiceBehaviorOptions { RetainArgumentTypes = true }) })
             };
 
@@ -106,6 +107,7 @@ public sealed class ContextualFunctionProviderTests : BaseIntegrationTest, IDisp
                 Instructions = "You are a helpful assistant that helps with Azure resource management. " +
                                "Avoid including the phrase like 'If you need further assistance or have any additional tasks, feel free to let me know!' in any responses.",
                 Kernel = this._kernel,
+                UseImmutableKernel = true, // Usage of immutable kernel is required for the context provider feature.
                 Arguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new FunctionChoiceBehaviorOptions { RetainArgumentTypes = true }) })
             };
 
