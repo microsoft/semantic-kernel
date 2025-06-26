@@ -88,7 +88,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
-    <PackageVersion Include="Pinecone.Client" Version="3.0.0" />
+    <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.2-beta" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
