@@ -9,8 +9,8 @@ updates:
   - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "cron"
+      cronjob: "0 8 * * 4,0" # Every Thursday(4) and Sunday(0) at 8:00 UTC
     ignore:
       # For all System.* and Microsoft.Extensions/Bcl.* packages, ignore all major version updates
       - dependency-name: "System.*"
@@ -55,4 +55,4 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "tuesday"
