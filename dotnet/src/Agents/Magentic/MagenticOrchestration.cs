@@ -40,7 +40,7 @@ public class MagenticOrchestration<TInput, TOutput> :
         {
             throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
         }
-        return runtime.SendMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
+        return runtime.PublishMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
     }
 
     /// <inheritdoc />
@@ -65,7 +65,7 @@ public class MagenticOrchestration<TInput, TOutput> :
         }
 
         AgentType managerType =
-            await runtime.RegisterAgentFactoryAsync(
+            await runtime.RegisterOrchestrationAgentAsync(
                 this.FormatAgentType(context.Topic, "Manager"),
                 (agentId, runtime) =>
                 {
@@ -83,7 +83,7 @@ public class MagenticOrchestration<TInput, TOutput> :
         return managerType;
 
         ValueTask<AgentType> RegisterAgentAsync(Agent agent, int agentCount) =>
-            runtime.RegisterAgentFactoryAsync(
+            runtime.RegisterOrchestrationAgentAsync(
                 this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
                 (agentId, runtime) =>
                 {

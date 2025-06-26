@@ -35,8 +35,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
 
         Assert.Contains("Paris", firstResult.Message.Content);
         Assert.NotNull(firstResult.Thread);
@@ -53,8 +52,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
         Assert.Contains("Paris", firstResult.Message.Content);
         Assert.NotNull(firstResult.Thread);
 
@@ -73,8 +71,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
-        var firstResult = results.First();
+        var firstResult = Assert.Single(results);
         Assert.NotNull(firstResult.Thread);
 
         // Cleanup
@@ -92,6 +89,10 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         // Act
         var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, q1), this.Fixture.AgentThread);
         var result1 = await asyncResults1.FirstAsync();
+
+        var chatHistory = await this.Fixture.GetChatHistory();
+        Assert.Equal(2, chatHistory.Count);
+
         var asyncResults2 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, q2), result1.Thread);
         var result2 = await asyncResults2.FirstAsync();
 
@@ -99,7 +100,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         Assert.Contains("Paris", result1.Message.Content);
         Assert.Contains("Austria", result2.Message.Content);
 
-        var chatHistory = await this.Fixture.GetChatHistory();
+        chatHistory = await this.Fixture.GetChatHistory();
         Assert.Equal(4, chatHistory.Count);
         Assert.Equal(2, chatHistory.Count(x => x.Role == AuthorRole.User));
         Assert.Equal(2, chatHistory.Count(x => x.Role == AuthorRole.Assistant));
@@ -145,7 +146,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
                 });
 
             // Assert
-            var result = await asyncResults.FirstAsync();
+            var result = await asyncResults.LastAsync();
             Assert.NotNull(result);
             Assert.Contains(questionAndAnswer.Item2, result.Message.Content);
         }
@@ -179,8 +180,8 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
 
         // Assert
         var results = await asyncResults.ToArrayAsync();
-        Assert.Single(results);
-        Assert.Contains("Clam Chowder", results[0].Message.Content);
+        var result = Assert.Single(results);
+        Assert.Contains("Clam Chowder", result.Message.Content);
 
         Assert.Equal(3, notifiedMessages.Count);
         Assert.Contains(notifiedMessages[0].Items, x => x is FunctionCallContent);

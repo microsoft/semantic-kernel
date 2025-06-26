@@ -38,6 +38,6 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
 
         this.Logger.LogConcurrentAgentResult(this.Id, response.Content);
 
-        await this.SendMessageAsync(response.AsResultMessage(), this._handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
+        await this.PublishMessageAsync(response.AsResultMessage(), this._handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }
