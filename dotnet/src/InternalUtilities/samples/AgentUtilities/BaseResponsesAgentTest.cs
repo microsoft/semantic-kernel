@@ -11,7 +11,7 @@ using OpenAI.Responses;
 /// </summary>
 public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClient>
 {
-    protected BaseResponsesAgentTest(ITestOutputHelper output) : base(output)
+    protected BaseResponsesAgentTest(ITestOutputHelper output, string? model = null) : base(output)
     {
         var options = new OpenAIClientOptions();
         if (this.EnableLogging)
@@ -25,7 +25,7 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
             });
         }
 
-        this.Client = new(model: TestConfiguration.OpenAI.ModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.Client = new(model: model ?? TestConfiguration.OpenAI.ModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
     }
 
     protected bool EnableLogging { get; set; } = false;
