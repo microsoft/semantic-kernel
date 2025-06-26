@@ -43,7 +43,7 @@ internal static class OpenAIResponseExtensions
     /// </summary>
     /// <param name="item">The response item to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this ResponseItem item)
+    public static ChatMessageContent? ToChatMessageContent(this ResponseItem item)
     {
         if (item is MessageResponseItem messageResponseItem)
         {
@@ -54,7 +54,7 @@ internal static class OpenAIResponseExtensions
         {
             return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: functionCallResponseItem);
         }
-        throw new NotSupportedException($"Unsupported response item: {item.GetType()}");
+        return null;
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ internal static class OpenAIResponseExtensions
             };
             return [functionCallContent];
         }
-        throw new NotImplementedException($"Unsupported response item: {item.GetType()}");
+        return [];
     }
 
     /// <summary>
