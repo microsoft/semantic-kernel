@@ -70,9 +70,9 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.47.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.47.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.47.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.58.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.58.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.58.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.1" />
