@@ -20,7 +20,6 @@ internal static class ChatMessageExtensions
             Role = new AuthorRole(message.Role.Value),
         };
 
-        Dictionary<string, Microsoft.Extensions.AI.FunctionCallContent> fccTracking = [];
         foreach (AIContent content in message.Contents)
         {
             KernelContent? resultContent = content switch
@@ -42,11 +41,6 @@ internal static class ChatMessageExtensions
                     result: frc.Result),
                 _ => null
             };
-
-            if (content is Microsoft.Extensions.AI.FunctionCallContent fccForTracking)
-            {
-                fccTracking.Add(fccForTracking.CallId, fccForTracking);
-            }
 
             if (resultContent is not null)
             {
