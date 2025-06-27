@@ -550,14 +550,15 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     protected override Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
     {
+        // Inserts system and developer prompts at the beginning of the chat history if they are not already present.
         if (!string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
         {
-            chatHistory.AddDeveloperMessage(this.ChatDeveloperPrompt);
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.Developer, this.ChatDeveloperPrompt));
         }
 
         if (!string.IsNullOrWhiteSpace(this.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
-            chatHistory.AddSystemMessage(this.ChatSystemPrompt);
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, this.ChatSystemPrompt));
         }
 
         return Task.FromResult(chatHistory);
