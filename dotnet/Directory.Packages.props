@@ -78,7 +78,7 @@
     <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="Npgsql" Version="8.0.6" />
+    <PackageVersion Include="Npgsql" Version="8.0.7" />
     <PackageVersion Include="OllamaSharp" Version="5.1.12" />
     <PackageVersion Include="OpenAI" Version="[2.2.0-beta.4]" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
