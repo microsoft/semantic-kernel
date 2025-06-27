@@ -32,11 +32,7 @@ public class Step03_OpenAIResponseAgent_ReasoningModel(ITestOutputHelper output)
     public async Task UseOpenAIResponseAgentWithAReasoningModelAndSummariesAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
-        {
-            Name = "ResponseAgent",
-            Instructions = "Explain your responses.",
-        };
+        OpenAIResponseAgent agent = new(this.Client);
 
         // ResponseCreationOptions allows you to specify tools for the agent.
         OpenAIResponseAgentInvokeOptions invokeOptions = new()

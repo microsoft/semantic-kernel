@@ -37,7 +37,7 @@ public sealed class OpenAIResponseAgent : Agent
     /// <summary>
     /// Storing of messages is enabled.
     /// </summary>
-    public bool StoreEnabled { get; init; } = true;
+    public bool StoreEnabled { get; init; } = false;
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)

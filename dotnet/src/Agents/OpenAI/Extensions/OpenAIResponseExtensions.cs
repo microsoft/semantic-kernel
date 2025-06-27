@@ -77,7 +77,6 @@ internal static class OpenAIResponseExtensions
         }
         else if (item is ReasoningResponseItem reasoningResponseItem)
         {
-
             return reasoningResponseItem.SummaryTextParts.ToChatMessageContentItemCollection();
         }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
