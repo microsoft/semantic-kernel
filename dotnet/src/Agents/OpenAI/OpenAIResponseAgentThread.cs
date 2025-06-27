@@ -111,7 +111,11 @@ public sealed class OpenAIResponseAgentThread : AgentThread
             var collectionResult = this._client.GetResponseInputItemsAsync(this.ResponseId, default, cancellationToken).ConfigureAwait(false);
             await foreach (var responseItem in collectionResult)
             {
-                yield return responseItem.ToChatMessageContent();
+                var messageContent = responseItem.ToChatMessageContent();
+                if (messageContent is not null)
+                {
+                    yield return messageContent;
+                }
             }
         }
     }

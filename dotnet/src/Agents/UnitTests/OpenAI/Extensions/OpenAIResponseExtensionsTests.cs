@@ -50,8 +50,8 @@ public class OpenAIResponseExtensionsTests
         ResponseItem functionCall = ResponseItem.CreateFunctionCallItem("callId", "functionName", new BinaryData("{}"));
 
         // Act
-        ChatMessageContent userMessageContent = userMessage.ToChatMessageContent();
-        ChatMessageContent functionCallContent = functionCall.ToChatMessageContent();
+        ChatMessageContent? userMessageContent = userMessage.ToChatMessageContent();
+        ChatMessageContent? functionCallContent = functionCall.ToChatMessageContent();
 
         // Assert
         Assert.NotNull(userMessageContent);
