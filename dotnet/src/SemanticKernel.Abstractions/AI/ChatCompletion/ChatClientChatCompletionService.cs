@@ -52,7 +52,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         if (executionSettings is not null)
         {
-            chatHistory = await executionSettings.ChatClientPrepareChatHistoryAsync(chatHistory).ConfigureAwait(false);
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
         }
 
         var messageList = chatHistory.ToChatMessageList();
@@ -86,7 +86,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         if (executionSettings is not null)
         {
-            chatHistory = await executionSettings.ChatClientPrepareChatHistoryAsync(chatHistory).ConfigureAwait(false);
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
         }
 
         List<AIContent> fcContents = [];

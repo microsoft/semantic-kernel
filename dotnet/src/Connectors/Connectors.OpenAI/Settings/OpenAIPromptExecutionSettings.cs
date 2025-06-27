@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 using OpenAI.Chat;
@@ -548,7 +547,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <inheritdoc/>
-    protected override Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
+    protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
     {
         // Inserts system and developer prompts at the beginning of the chat history if they are not already present.
         if (!string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
@@ -561,7 +560,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, this.ChatSystemPrompt));
         }
 
-        return Task.FromResult(chatHistory);
+        return chatHistory;
     }
 
     #region private ================================================================================

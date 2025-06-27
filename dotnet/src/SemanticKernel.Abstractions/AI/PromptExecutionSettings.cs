@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -174,15 +173,15 @@ public class PromptExecutionSettings
     /// </summary>
     /// <param name="chatHistory">Chat history to prepare.</param>
     /// <returns>Returns the prepared chat history.</returns>
-    protected virtual Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory) => Task.FromResult(chatHistory);
+    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory) => chatHistory;
 
     /// <summary>
     /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
-    /// without the need to make the <see cref="PrepareChatHistoryToRequestAsync"/> public.
+    /// without the need to make the <see cref="PrepareChatHistoryForRequest"/> public.
     /// </summary>
     /// <param name="chatHistory">Target chat history to prepare.</param>
     /// <returns>Prepared chat history.</returns>
-    internal Task<ChatHistory> ChatClientPrepareChatHistoryAsync(ChatHistory chatHistory) => this.PrepareChatHistoryToRequestAsync(chatHistory);
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
 
     #region private ================================================================================
 

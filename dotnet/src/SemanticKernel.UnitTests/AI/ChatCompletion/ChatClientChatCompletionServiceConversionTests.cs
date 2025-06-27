@@ -662,11 +662,11 @@ public sealed class ChatClientChatCompletionServiceConversionTests
             this._modifiedChatHistory = modifiedChatHistory;
         }
 
-        protected override Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
+        protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
         {
             this.PrepareChatHistoryWasCalled = true;
             this.ReceivedChatHistory = chatHistory;
-            return Task.FromResult(this._modifiedChatHistory);
+            return this._modifiedChatHistory;
         }
     }
 
@@ -677,7 +677,7 @@ public sealed class ChatClientChatCompletionServiceConversionTests
     {
         public bool PrepareChatHistoryWasCalled { get; private set; }
 
-        protected override Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
+        protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
         {
             this.PrepareChatHistoryWasCalled = true;
 
@@ -685,7 +685,7 @@ public sealed class ChatClientChatCompletionServiceConversionTests
             chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, "System message added by mutation"));
 
             // Return the same mutated chat history
-            return Task.FromResult(chatHistory);
+            return chatHistory;
         }
     }
 

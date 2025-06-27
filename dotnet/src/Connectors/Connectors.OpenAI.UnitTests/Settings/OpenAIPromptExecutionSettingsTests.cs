@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -474,7 +472,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsSystemPromptWhenNotPresent()
+    public void PrepareChatHistoryToRequestAsyncAddsSystemPromptWhenNotPresent()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -486,7 +484,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result); // Should return the same instance
@@ -498,7 +496,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsSystemPromptAtBeginning()
+    public void PrepareChatHistoryToRequestAsyncAddsSystemPromptAtBeginning()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -512,7 +510,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Second message");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -528,7 +526,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncDoesNotAddSystemPromptWhenAlreadyPresent()
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddSystemPromptWhenAlreadyPresent()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -541,7 +539,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -553,7 +551,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsDeveloperPromptWhenNotPresent()
+    public void PrepareChatHistoryToRequestAsyncAddsDeveloperPromptWhenNotPresent()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -565,7 +563,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -577,7 +575,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncDoesNotAddDeveloperPromptWhenAlreadyPresent()
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddDeveloperPromptWhenAlreadyPresent()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -590,7 +588,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -602,7 +600,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsBothSystemAndDeveloperPrompts()
+    public void PrepareChatHistoryToRequestAsyncAddsBothSystemAndDeveloperPrompts()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -615,7 +613,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -629,7 +627,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncDoesNotAddEmptyOrWhitespacePrompts()
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddEmptyOrWhitespacePrompts()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -642,7 +640,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -652,7 +650,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncDoesNotAddNullPrompts()
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddNullPrompts()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -665,7 +663,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -675,7 +673,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncWorksWithEmptyChatHistory()
+    public void PrepareChatHistoryToRequestAsyncWorksWithEmptyChatHistory()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -687,7 +685,7 @@ public class OpenAIPromptExecutionSettingsTests
         var chatHistory = new ChatHistory();
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -699,7 +697,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncPreservesExistingMessageOrder()
+    public void PrepareChatHistoryToRequestAsyncPreservesExistingMessageOrder()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -714,7 +712,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Second user message");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -734,7 +732,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncInsertsSystemBeforeDeveloperWhenBothExist()
+    public void PrepareChatHistoryToRequestAsyncInsertsSystemBeforeDeveloperWhenBothExist()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -749,7 +747,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -763,7 +761,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsSystemBeforeExistingDeveloper()
+    public void PrepareChatHistoryToRequestAsyncAddsSystemBeforeExistingDeveloper()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -777,7 +775,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -793,7 +791,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public async Task PrepareChatHistoryToRequestAsyncAddsDeveloperWhenSystemExists()
+    public void PrepareChatHistoryToRequestAsyncAddsDeveloperWhenSystemExists()
     {
         // Arrange
         var settings = new TestableOpenAIPromptExecutionSettings
@@ -806,7 +804,7 @@ public class OpenAIPromptExecutionSettingsTests
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        var result = await settings.PrepareChatHistoryToRequestAsync(chatHistory);
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
 
         // Assert
         Assert.Same(chatHistory, result);
@@ -826,9 +824,9 @@ public class OpenAIPromptExecutionSettingsTests
     /// </summary>
     private sealed class TestableOpenAIPromptExecutionSettings : OpenAIPromptExecutionSettings
     {
-        public new Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
+        public ChatHistory TestPrepareChatHistoryToRequest(ChatHistory chatHistory)
         {
-            return base.PrepareChatHistoryToRequestAsync(chatHistory);
+            return base.PrepareChatHistoryForRequest(chatHistory);
         }
     }
 
