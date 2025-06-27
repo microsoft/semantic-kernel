@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 using OpenAI.Chat;
@@ -543,6 +545,22 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             Modalities = this.Modalities,
             Audio = this.Audio,
         };
+    }
+
+    /// <inheritdoc/>
+    protected override Task<ChatHistory> PrepareChatHistoryToRequestAsync(ChatHistory chatHistory)
+    {
+        if (!string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
+        {
+            chatHistory.AddDeveloperMessage(this.ChatDeveloperPrompt);
+        }
+
+        if (!string.IsNullOrWhiteSpace(this.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        {
+            chatHistory.AddSystemMessage(this.ChatSystemPrompt);
+        }
+
+        return Task.FromResult(chatHistory);
     }
 
     #region private ================================================================================
