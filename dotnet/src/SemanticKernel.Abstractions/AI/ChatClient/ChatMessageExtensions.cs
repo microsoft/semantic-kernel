@@ -57,7 +57,7 @@ internal static class ChatMessageExtensions
             => response?.Messages
                 .Select(m => m.Contents
                 .FirstOrDefault(c => c is Microsoft.Extensions.AI.FunctionCallContent fcc && fcc.CallId == callId) as Microsoft.Extensions.AI.FunctionCallContent)
-                .FirstOrDefault(fcc => fcc is not null);
+                    .FirstOrDefault(fcc => fcc is not null);
     }
 
     /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>
