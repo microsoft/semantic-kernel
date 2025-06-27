@@ -161,8 +161,6 @@ public sealed class OllamaChatCompletionFunctionCallingTests : BaseIntegrationTe
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
         var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
 
-
-
         while (functionCalls.Length != 0)
         {
             // Adding function call from LLM to chat history
