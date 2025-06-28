@@ -107,27 +107,17 @@ class GroupChatAgentActor(AgentActorBase):
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
         if isinstance(message.body, ChatMessageContent):
-            if self._agent_thread:
-                await self._agent_thread.on_new_message(message.body)
-            else:
-                self._chat_history.add_message(message.body)
+            self._message_cache.add_message(message.body)
         elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
-            if self._agent_thread:
-                for m in message.body:
-                    await self._agent_thread.on_new_message(m)
-            else:
-                for m in message.body:
-                    self._chat_history.add_message(m)
+            for m in message.body:
+                self._message_cache.add_message(m)
         else:
             raise ValueError(f"Invalid message body type: {type(message.body)}. Expected {DefaultTypeAlias}.")
 
     @message_handler
     async def _handle_response_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received group chat response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
