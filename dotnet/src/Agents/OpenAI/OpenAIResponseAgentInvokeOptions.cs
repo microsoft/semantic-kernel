@@ -24,6 +24,11 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
         : base(options)
     {
         Verify.NotNull(options);
+
+        if (options is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions)
+        {
+            this.ResponseCreationOptions = responseAgentInvokeOptions.ResponseCreationOptions;
+        }
     }
 
     /// <summary>
@@ -34,6 +39,8 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
         : base(options)
     {
         Verify.NotNull(options);
+
+        this.ResponseCreationOptions = options.ResponseCreationOptions;
     }
 
     /// <summary>

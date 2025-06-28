@@ -109,6 +109,7 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
-        Assert.Null(messageContent);
+        Assert.NotNull(messageContent);
+        Assert.Equal("Foo", messageContent.Content);
     }
 }
