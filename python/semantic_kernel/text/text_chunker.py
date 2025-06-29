@@ -264,6 +264,8 @@ def _split_str(
 
     if 0 < cutpoint < len(text):
         lines = []
+        # Since we are about to split the string at least once, mark this call as having performed a split.
+        input_was_split = True
         for text_part in [text[:cutpoint], text[cutpoint:]]:
             split, has_split = _split_str(
                 text=text_part,
@@ -273,6 +275,7 @@ def _split_str(
                 token_counter=token_counter,
             )
             lines.extend(split)
+            # Propagate information from deeper recursive calls as well.
             input_was_split = input_was_split or has_split
     else:
         return text_as_is, input_was_split
