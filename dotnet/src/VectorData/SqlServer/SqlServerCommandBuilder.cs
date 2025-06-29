@@ -615,33 +615,39 @@ internal static class SqlServerCommandBuilder
             case float[] vectorArray:
                 command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vectorArray, SqlServerJsonSerializerContext.Default.SingleArray));
                 break;
+            case DateTime dateTime:
+                command.Parameters.Add(name, System.Data.SqlDbType.DateTime2).Value = dateTime;
+                break;
             default:
                 command.Parameters.AddWithValue(name, value);
                 break;
         }
     }
 
-    private static string Map(PropertyModel property) => property.Type switch
-    {
-        Type t when t == typeof(byte) => "TINYINT",
-        Type t when t == typeof(short) => "SMALLINT",
-        Type t when t == typeof(int) => "INT",
-        Type t when t == typeof(long) => "BIGINT",
-        Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
-        Type t when t == typeof(string) && property is KeyPropertyModel => "NVARCHAR(4000)",
-        Type t when t == typeof(string) && property is DataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
-        Type t when t == typeof(string) => "NVARCHAR(MAX)",
-        Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
-        Type t when t == typeof(bool) => "BIT",
-        Type t when t == typeof(DateTime) => "DATETIME2",
+    private static string Map(PropertyModel property)
+        => (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+        {
+            Type t when t == typeof(byte) => "TINYINT",
+            Type t when t == typeof(short) => "SMALLINT",
+            Type t when t == typeof(int) => "INT",
+            Type t when t == typeof(long) => "BIGINT",
+            Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
+            Type t when t == typeof(string) && property is KeyPropertyModel => "NVARCHAR(4000)",
+            Type t when t == typeof(string) && property is DataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
+            Type t when t == typeof(string) => "NVARCHAR(MAX)",
+            Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
+            Type t when t == typeof(bool) => "BIT",
+            Type t when t == typeof(DateTime) => "DATETIME2",
 #if NET
-        Type t when t == typeof(TimeOnly) => "TIME",
+            Type t when t == typeof(DateOnly) => "DATE",
+            Type t when t == typeof(TimeOnly) => "TIME",
 #endif
-        Type t when t == typeof(decimal) => "DECIMAL",
-        Type t when t == typeof(double) => "FLOAT",
-        Type t when t == typeof(float) => "REAL",
-        _ => throw new NotSupportedException($"Type {property.Type} is not supported.")
-    };
+            Type t when t == typeof(decimal) => "DECIMAL(18,2)",
+            Type t when t == typeof(double) => "FLOAT",
+            Type t when t == typeof(float) => "REAL",
+
+            _ => throw new NotSupportedException($"Type {property.Type} is not supported.")
+        };
 
     // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch

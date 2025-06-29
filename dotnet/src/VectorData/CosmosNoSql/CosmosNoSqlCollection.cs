@@ -299,10 +299,22 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         Verify.NotNullOrWhiteSpace(compositeKey.RecordKey);
         Verify.NotNullOrWhiteSpace(compositeKey.PartitionKey);
 
-        return this.RunOperationAsync("DeleteItem", () =>
-            this._database
-                .GetContainer(this.Name)
-                .DeleteItemAsync<JsonObject>(compositeKey.RecordKey, new PartitionKey(compositeKey.PartitionKey), cancellationToken: cancellationToken));
+        return this.RunOperationAsync("DeleteItem", async () =>
+        {
+            try
+            {
+                await this._database
+                    .GetContainer(this.Name)
+                    .DeleteItemAsync<JsonObject>(compositeKey.RecordKey, new PartitionKey(compositeKey.PartitionKey), cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                return 0;
+            }
+            catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Ignore not found errors
+                return 0;
+            }
+        });
     }
 
     // TODO: Implement bulk delete, #11350

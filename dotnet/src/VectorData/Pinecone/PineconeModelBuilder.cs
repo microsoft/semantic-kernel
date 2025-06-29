@@ -28,7 +28,7 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "bool, string, int, long, float, double, decimal, string[]/List<string>";
+        supportedTypes = "bool, string, int, long, float, double, string[]/List<string>";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -41,7 +41,6 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
             || type == typeof(long)
             || type == typeof(float)
             || type == typeof(double)
-            || type == typeof(decimal)
             || type == typeof(string[])
             || type == typeof(List<string>);
     }

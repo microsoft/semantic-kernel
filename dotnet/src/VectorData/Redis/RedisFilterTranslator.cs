@@ -99,7 +99,6 @@ internal class RedisFilterTranslator
 
         bool TryProcessEqualityComparison(Expression first, Expression second)
         {
-            // TODO: Nullable
             if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 // Numeric negation has a special syntax (!=), for the rest we nest in a NOT
@@ -115,7 +114,7 @@ internal class RedisFilterTranslator
                 this._filter.Append(
                     binary.NodeType switch
                     {
-                        ExpressionType.Equal when constantValue is int or long or float or double => $" == {constantValue}",
+                        ExpressionType.Equal when constantValue is byte or short or int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
 #if NET8_0_OR_GREATER
                             => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
@@ -233,11 +232,12 @@ internal class RedisFilterTranslator
         }
 
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
         unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != property.Type && convertType != typeof(object))
+            if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
             }
