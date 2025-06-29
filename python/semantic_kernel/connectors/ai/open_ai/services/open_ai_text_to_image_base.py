@@ -142,8 +142,8 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
     async def edit_image(
         self,
         prompt: str,
-        image_path: list[str] | None = None,
-        image_file: list[IO[bytes]] | None = None,
+        image_paths: list[str] | None = None,
+        image_files: list[IO[bytes]] | None = None,
         mask_path: str | None = None,
         mask_file: IO[bytes] | None = None,
         settings: PromptExecutionSettings | None = None,
@@ -153,8 +153,8 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
 
         Args:
             prompt: Instructional prompt for image editing.
-            image_path: List of image file paths to edit.
-            image_file: List of file-like objects (opened in binary mode) to edit.
+            image_paths: List of image file paths to edit.
+            image_files: List of file-like objects (opened in binary mode) to edit.
             mask_path: Optional mask image file path.
             mask_file: Optional mask image file-like object (opened in binary mode).
             settings: Optional execution settings. If not provided, will be constructed from kwargs.
@@ -182,7 +182,7 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
             settings.n = 2
             results = await service.edit_image(
                 prompt="Make the cat wear a wizard hat",
-                image_path=file_paths,
+                image_paths=file_paths,
                 settings=settings,
             )
             ```
@@ -193,7 +193,7 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
             with open("./new_images/img_1.png", "rb") as f:
                 results = await service.edit_image(
                     prompt="Make the cat wear a wizard hat",
-                    image_file=[f],
+                    image_files=[f],
                 )
             ```
         """
@@ -205,14 +205,14 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
 
         if not settings.prompt:
             raise ServiceInvalidRequestError("Prompt is required.")
-        if (image_path is None and image_file is None) or (image_path is not None and image_file is not None):
-            raise ServiceInvalidRequestError("Provide either image_path or image_file, and only one.")
+        if (image_paths is None and image_files is None) or (image_paths is not None and image_files is not None):
+            raise ServiceInvalidRequestError("Provide either 'image_paths' or 'image_files', and only one.")
 
         images: list[FileTypes] = []
-        if image_path is not None:
-            images = [Path(p) for p in image_path]
-        elif image_file is not None:
-            images = list(image_file)
+        if image_paths is not None:
+            images = [Path(p) for p in image_paths]
+        elif image_files is not None:
+            images = list(image_files)
 
         mask: FileTypes | NotGiven = NOT_GIVEN
         if mask_path is not None:
