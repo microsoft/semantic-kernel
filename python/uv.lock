@@ -138,18 +138,6 @@ wheels = [
 ]
 
 [[package]]
-name = "aiohttp-retry"
-version = "2.9.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/61/ebda4d8e3d8cfa1fd3db0fb428db2dd7461d5742cea35178277ad180b033/aiohttp_retry-2.9.1.tar.gz", hash = "sha256:8eb75e904ed4ee5c2ec242fefe85bf04240f685391c4879d8f541d6028ff01f1", size = 13608, upload-time = "2024-11-06T10:44:54.574Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/99/84ba7273339d0f3dfa57901b846489d2e5c2cd731470167757f1935fffbd/aiohttp_retry-2.9.1-py3-none-any.whl", hash = "sha256:66d2759d1921838256a05a3f80ad7e724936f083e35be5abb5e16eed6be6dc54", size = 9981, upload-time = "2024-11-06T10:44:52.917Z" },
-]
-
-[[package]]
 name = "aioice"
 version = "0.10.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3851,25 +3839,23 @@ wheels = [
 
 [[package]]
 name = "pinecone"
-version = "7.2.0"
+version = "6.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "pinecone-plugin-assistant", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pinecone-plugin-interface", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "urllib3", marker = "(python_full_version < '4.0' and sys_platform == 'darwin') or (python_full_version < '4.0' and sys_platform == 'linux') or (python_full_version < '4.0' and sys_platform == 'win32')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/44/7b799265f4817bb4e232dc817acdf3ee4a811562128b0fcbf9d3f878b4f0/pinecone-7.2.0.tar.gz", hash = "sha256:003d78cd8ab55c08578e7d827e4324689192e4deb58b192457c49e779968d52d", size = 212436, upload-time = "2025-06-18T18:45:04.347Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/e0/3584dcde7f2cb299b4deb5cc0491f2c9c130c7a72c1d4691fe2c9c3a3613/pinecone-6.0.2.tar.gz", hash = "sha256:9c2e74be8b3abe76909da9b4dae61bced49aade51f6fc39b87edb97a1f8df0e4", size = 175104, upload-time = "2025-03-13T21:05:18.763Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/95/16780f5f3422ccde403c223f8fdaf51ccec3b6f6362bbb6d590a682dd314/pinecone-7.2.0-py3-none-any.whl", hash = "sha256:f91fac1137a6259ee528526af0e4e7ff3f1e71c6927df3fd3c4c4df288801b4e", size = 524289, upload-time = "2025-06-18T18:45:03.013Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/c7/2bc1210aa51528b9ba75aede1f169998f50942cc47cdd82dd2dbcba4faa5/pinecone-6.0.2-py3-none-any.whl", hash = "sha256:a85fa36d7d1451e7b7563ccfc7e3e2dadd39b33e5d53b2882468db8514ab8847", size = 421874, upload-time = "2025-03-13T21:05:17.11Z" },
 ]
 
 [package.optional-dependencies]
 asyncio = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "aiohttp-retry", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 grpc = [
     { name = "googleapis-common-protos", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -3877,19 +3863,6 @@ grpc = [
     { name = "lz4", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "protobuf", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "protoc-gen-openapiv2", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-
-[[package]]
-name = "pinecone-plugin-assistant"
-version = "1.7.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/fa/8c/2db25e4d88ec31cc096b71473938e9269459eb567b50ea49dbea9a88f3ab/pinecone_plugin_assistant-1.7.0.tar.gz", hash = "sha256:e26e3ba10a8b71c3da0d777cff407668022e82963c4913d0ffeb6c552721e482", size = 145608, upload-time = "2025-06-11T09:06:39.067Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/29/9aab5e3e22086da8ba40fa9cd34bfefffd9cdf3f43f237fd7c9969568f20/pinecone_plugin_assistant-1.7.0-py3-none-any.whl", hash = "sha256:864cb8e7930588e6c2da97c6d44f0240969195f43fa303c5db76cbc12bf903a5", size = 239972, upload-time = "2025-06-11T09:06:37.284Z" },
 ]
 
 [[package]]
@@ -4580,11 +4553,11 @@ wheels = [
 
 [[package]]
 name = "pyjwt"
-version = "2.10.1"
+version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e7/46/bd74733ff231675599650d3e47f361794b22ef3e3770998dda30d3b63726/pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953", size = 87785, upload-time = "2024-11-28T03:43:29.933Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/68/ce067f09fca4abeca8771fe667d89cc347d1e99da3e093112ac329c6020e/pyjwt-2.9.0.tar.gz", hash = "sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c", size = 78825, upload-time = "2024-08-01T15:01:08.445Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/61/ad/689f02752eeec26aed679477e80e632ef1b682313be70793d798c1d5fc8f/PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb", size = 22997, upload-time = "2024-11-28T03:43:27.893Z" },
+    { url = "https://files.pythonhosted.org/packages/79/84/0fdf9b18ba31d69877bd39c9cd6052b47f3761e9910c15de788e519f079f/PyJWT-2.9.0-py3-none-any.whl", hash = "sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850", size = 22344, upload-time = "2024-08-01T15:01:06.481Z" },
 ]
 
 [package.optional-dependencies]
@@ -5036,14 +5009,15 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "6.2.0"
+version = "5.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "async-timeout", marker = "(python_full_version < '3.11.3' and sys_platform == 'darwin') or (python_full_version < '3.11.3' and sys_platform == 'linux') or (python_full_version < '3.11.3' and sys_platform == 'win32')" },
+    { name = "pyjwt", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ea/9a/0551e01ba52b944f97480721656578c8a7c46b51b99d66814f85fe3a4f3e/redis-6.2.0.tar.gz", hash = "sha256:e821f129b75dde6cb99dd35e5c76e8c49512a5a0d8dfdc560b2fbd44b85ca977", size = 4639129, upload-time = "2025-05-28T05:01:18.91Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/71/dd/2b37032f4119dff2a2f9bbcaade03221b100ba26051bb96e275de3e5db7a/redis-5.3.0.tar.gz", hash = "sha256:8d69d2dde11a12dc85d0dbf5c45577a5af048e2456f7077d87ad35c1c81c310e", size = 4626288, upload-time = "2025-04-30T14:54:40.634Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/67/e60968d3b0e077495a8fee89cf3f2373db98e528288a48f1ee44967f6e8c/redis-6.2.0-py3-none-any.whl", hash = "sha256:c8ddf316ee0aab65f04a11229e94a64b2618451dab7a67cb2f77eb799d872d5e", size = 278659, upload-time = "2025-05-28T05:01:16.955Z" },
+    { url = "https://files.pythonhosted.org/packages/45/b0/aa601efe12180ba492b02e270554877e68467e66bda5d73e51eaa8ecc78a/redis-5.3.0-py3-none-any.whl", hash = "sha256:f1deeca1ea2ef25c1e4e46b07f4ea1275140526b1feea4c6459c0ec27a10ef83", size = 272836, upload-time = "2025-04-30T14:54:30.744Z" },
 ]
 
 [package.optional-dependencies]
@@ -5702,7 +5676,7 @@ requires-dist = [
     { name = "opentelemetry-api", specifier = "~=1.24" },
     { name = "opentelemetry-sdk", specifier = "~=1.24" },
     { name = "pandas", marker = "extra == 'pandas'", specifier = "~=2.2" },
-    { name = "pinecone", extras = ["asyncio", "grpc"], marker = "extra == 'pinecone'", specifier = "~=7.0" },
+    { name = "pinecone", extras = ["asyncio", "grpc"], marker = "extra == 'pinecone'", specifier = "~=6.0" },
     { name = "prance", specifier = ">=23.6.21,<25.4.9" },
     { name = "protobuf" },
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
@@ -5714,7 +5688,7 @@ requires-dist = [
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.13" },
     { name = "pyodbc", marker = "extra == 'sql'", specifier = ">=5.2" },
     { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
-    { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=6.0" },
+    { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = ">=5,<6" },
     { name = "redisvl", marker = "extra == 'redis'", specifier = "~=0.4" },
     { name = "scipy", specifier = ">=1.15.1" },
     { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<5.0" },

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import re
 from collections import OrderedDict
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Final
@@ -42,7 +43,23 @@ class OpenApiParser:
     """
 
     PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
-    SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
+
+    # Regex patterns for supported media types
+    SUPPORTED_MEDIA_TYPE_PATTERNS: Final[list[re.Pattern]] = [
+        re.compile(r"^application/json$"),
+        re.compile(r"^text/plain$"),
+        re.compile(r"^application/[\w\.\-]+?\+json$"),
+    ]
+
+    @classmethod
+    def is_supported_media_type(cls, media_type: str) -> bool:
+        """Check if the media type is supported by matching against known patterns and log the matching pattern."""
+        for pattern in cls.SUPPORTED_MEDIA_TYPE_PATTERNS:
+            if pattern.match(media_type):
+                logger.debug(f"Media type '{media_type}' matched pattern '{pattern.pattern}'")
+                return True
+        logger.debug(f"Media type '{media_type}' did not match any supported pattern.")
+        return False
 
     def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
         """Parse the OpenAPI document."""
@@ -117,7 +134,8 @@ class OpenApiParser:
         if content is None:
             return None
 
-        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in content), None)
+        # Find the first supported media type using the new matcher
+        media_type = next((mt for mt in content if self.is_supported_media_type(mt)), None)
         if media_type is None:
             raise Exception(f"Neither of the media types of {operation_id} is supported.")
 
@@ -135,7 +153,7 @@ class OpenApiParser:
     def _create_response(self, responses: dict[str, Any]) -> Generator[tuple[str, RestApiExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
-                (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
+                (mt for mt in response_value.get("content", {}) if self.is_supported_media_type(mt)), None
             )
             if media_type is not None:
                 matching_schema = response_value["content"][media_type].get("schema", {})
