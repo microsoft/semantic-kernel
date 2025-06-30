@@ -154,7 +154,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         // Arrange
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = false // Explicitly set to false
+            UseImmutableKernel = false, // Explicitly set to false
+            StoreEnabled = true,
         };
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -182,7 +183,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client);
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            StoreEnabled = true,
+        };
         // UseImmutableKernel not set, should default to false
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -216,7 +220,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = true
+            UseImmutableKernel = true,
+            StoreEnabled = true,
         };
 
         var originalKernel = agent.Kernel;
@@ -259,7 +264,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = false
+            UseImmutableKernel = false,
+            StoreEnabled = true,
         };
 
         var originalKernel = agent.Kernel;
@@ -295,7 +301,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         // Arrange
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = false // Explicitly set to false
+            UseImmutableKernel = false, // Explicitly set to false
+            StoreEnabled = true,
         };
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -323,7 +330,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentStreamingThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client);
+        var agent = new OpenAIResponseAgent(this.Client)
+        {
+            StoreEnabled = true,
+        };
         // UseImmutableKernel not set, should default to false
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -357,7 +367,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = true
+            UseImmutableKernel = true,
+            StoreEnabled = true,
         };
 
         var originalKernel = agent.Kernel;
@@ -400,7 +411,8 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         var agent = new OpenAIResponseAgent(this.Client)
         {
-            UseImmutableKernel = false
+            UseImmutableKernel = false,
+            StoreEnabled = true,
         };
 
         var originalKernel = agent.Kernel;
