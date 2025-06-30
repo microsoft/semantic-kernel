@@ -101,6 +101,7 @@ public class OpenAIResponseAgentFixture : AgentFixture
         {
             Name = "HelpfulAssistant",
             Instructions = "You are a helpful assistant.",
+            StoreEnabled = true,
             Kernel = kernel
         };
         this._thread = new OpenAIResponseAgentThread(this._responseClient);
