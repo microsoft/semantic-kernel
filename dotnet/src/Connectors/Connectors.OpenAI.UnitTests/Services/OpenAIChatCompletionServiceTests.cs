@@ -1107,12 +1107,12 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentShouldSendMutatedChatHistoryToLLM()
     {
         // Arrange
-        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        static Task MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Remove the function call messages from the chat history to reduce token count.
             context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
 
-            next(context);
+            return next(context);
         }
 
         var kernel = new Kernel();
@@ -1178,12 +1178,12 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsShouldSendMutatedChatHistoryToLLM()
     {
         // Arrange
-        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        static Task MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Remove the function call messages from the chat history to reduce token count.
             context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
 
-            next(context);
+            return next(context);
         }
 
         var kernel = new Kernel();
