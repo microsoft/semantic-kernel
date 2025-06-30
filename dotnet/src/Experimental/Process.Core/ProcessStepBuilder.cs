@@ -35,12 +35,35 @@ public abstract class ProcessStepBuilder
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
+    /// <param name="isPublic">Determins if the event is accessible outside of the parent process</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnEvent(string eventId)
+    public virtual ProcessStepEdgeBuilder OnEvent(string eventId, bool isPublic = false)
     {
+        if (isPublic)
+        {
+            this.MarkPublicEvent(eventId);
+        }
         // scope the event to this instance of this step
         var scopedEventId = this.GetScopedEventId(eventId);
         return new ProcessStepEdgeBuilder(this, scopedEventId, eventId);
+    }
+
+    /// <summary>
+    /// Define the behavior of the step when the event with the specified Id is fired.
+    /// </summary>
+    /// <typeparam name="TOutputType"></typeparam>
+    /// <param name="eventId"></param>
+    /// <param name="isPublic"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnEvent<TOutputType>(string eventId, bool isPublic = false) where TOutputType : class
+    {
+        var eventData = ProcessStepEventDataExtensions.CreateFromType(eventId, typeof(TOutputType), isPublic);
+
+        // try: if existing verify types match, else only add if not existing
+
+        this.OutputStepEvents.Add(eventId, eventData);
+
+        return this.OnEvent(eventId, isPublic);
     }
 
     /// <summary>
@@ -112,6 +135,8 @@ public abstract class ProcessStepBuilder
     /// </summary>
     internal Dictionary<string, KernelFunctionMetadata> FunctionsDict { get; set; }
 
+    internal Dictionary<string, ProcessStepEventData> OutputStepEvents { get; init; } = [];
+
     /// <summary>
     /// A mapping of event Ids to the edges that are triggered by those events.
     /// </summary>
@@ -120,7 +145,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The process builder that this step is a part of. This may be null if the step is itself a process.
     /// </summary>
-    internal ProcessBuilder? ProcessBuilder { get; }
+    internal ProcessBuilder? ProcessBuilder { get; set; }
 
     /// <summary>
     /// Builds the step with step state
@@ -163,6 +188,21 @@ public abstract class ProcessStepBuilder
         return this.FunctionsDict.Keys.First();
     }
 
+    internal void MarkPublicEvent(string eventId)
+    {
+        if (this.OutputStepEvents.TryGetValue(eventId, out var stepEventData) && stepEventData != null)
+        {
+            stepEventData.IsPublic = true;
+
+            // Update parent process as well since this step event is an output edge of the process
+            this.ProcessBuilder?.AddOutputEventToProcess(stepEventData with { IsPublic = false });
+
+            return;
+        }
+
+        throw new KernelException($"The event {eventId} does not exist on step {this.StepId}.");
+    }
+
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
     /// </summary>
@@ -181,8 +221,11 @@ public abstract class ProcessStepBuilder
 
     internal static bool FilterSupportedParameterTypes(Type? parameterType, bool hasDefaultValue = false)
     {
-        if (parameterType != typeof(KernelProcessStepContext) &&
-            parameterType != typeof(KernelProcessStepExternalContext))
+        // Should match parameters piped in in StepExtensions.FindInputChannels
+        if (parameterType != typeof(Kernel) &&
+            parameterType != typeof(KernelProcessStepContext) &&
+            parameterType != typeof(KernelProcessStepExternalContext) &&
+            parameterType != typeof(AgentDefinition))
         {
             return !hasDefaultValue;
         }
@@ -316,6 +359,32 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
         this._stepType = stepType;
         this.FunctionsDict = this.GetFunctionMetadataMap();
         this._initialState = initialState;
+
+        this.OutputStepEvents = this.GetEventDataFromFunctionMap(this.FunctionsDict);
+    }
+
+    internal Dictionary<string, ProcessStepEventData> GetEventDataFromFunctionMap(IDictionary<string, KernelFunctionMetadata> functionDict)
+    {
+        var eventDataDict = new Dictionary<string, ProcessStepEventData>();
+
+        foreach (var kvp in functionDict)
+        {
+            var functionEvents = kvp.Value.ExtractProcessStepEventsData();
+            foreach (var eventData in functionEvents)
+            {
+                if (eventData.EventId == "default")
+                {
+                    var eventId = this.GetFunctionResultEventId(kvp.Key);
+                    eventDataDict[eventId] = eventData;
+                }
+                else
+                {
+                    eventDataDict[eventData.EventId] = eventData;
+                }
+            }
+        }
+
+        return eventDataDict;
     }
 
     /// <summary>
@@ -359,7 +428,10 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Then build the step with the edges and state.
-        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups);
+        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups)
+        {
+            OutputEventsData = this.OutputStepEvents,
+        };
         return builtStep;
     }
 

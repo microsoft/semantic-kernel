@@ -36,7 +36,7 @@ internal sealed class LocalProxy : LocalStep
 
     internal override void PopulateInitialInputs()
     {
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        this._initialInputs = this.FindInputChannels(this._functions, this._stepInfo.OutputEventsData, this._logger, this.ExternalMessageChannel);
     }
 
     internal override void AssignStepFunctionParameterValues(ProcessMessage message)
