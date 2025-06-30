@@ -8,6 +8,7 @@ from openai._types import NOT_GIVEN, FileTypes, NotGiven
 from openai.types.images_response import ImagesResponse
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
+    ImageSize,
     OpenAITextToImageExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
@@ -52,6 +53,8 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
             warn("The 'height' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning)
             if settings.size and not settings.size.height:
                 settings.size.height = height
+        if not settings.size and width and height:
+            settings.size = ImageSize(width=width, height=height)
 
         if not settings.prompt:
             settings.prompt = description
