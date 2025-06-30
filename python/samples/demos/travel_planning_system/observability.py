@@ -67,15 +67,6 @@ def set_up_logging():
     logger.setLevel(logging.NOTSET)
 
 
-# class CustomBatchSpanProcessor(BatchSpanProcessor):
-#     @override
-#     def on_end(self, span: ReadableSpan):
-#         if span.name.startswith("agent_runtime"):
-#             # Skip spans that are part of the agent runtime.
-#             return
-#         super().on_end(span)
-
-
 def set_up_tracing():
     exporters = []
     exporters.append(AzureMonitorTraceExporter(connection_string=APPINSIGHTS_CONNECTION_STRING))

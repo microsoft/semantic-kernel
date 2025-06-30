@@ -4,6 +4,7 @@ import asyncio
 import sys
 
 from opentelemetry import trace
+from opentelemetry.trace import NoOpTracerProvider
 
 from samples.demos.travel_planning_system.agents import get_agents
 from samples.demos.travel_planning_system.observability import enable_observability
@@ -213,7 +214,7 @@ async def main():
     )
 
     # 2. Create a runtime and start it
-    runtime = InProcessRuntime()
+    runtime = InProcessRuntime(tracer_provider=NoOpTracerProvider())
     runtime.start()
 
     # 3. Invoke the orchestration with a task and the runtime
