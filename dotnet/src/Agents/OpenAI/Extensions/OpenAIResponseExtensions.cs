@@ -50,6 +50,13 @@ internal static class OpenAIResponseExtensions
             var role = messageResponseItem.Role.ToAuthorRole();
             return new ChatMessageContent(role, item.ToChatMessageContentItemCollection(), innerContent: messageResponseItem);
         }
+        else if (item is ReasoningResponseItem reasoningResponseItem)
+        {
+            if (reasoningResponseItem.SummaryTextParts is not null && reasoningResponseItem.SummaryTextParts.Count > 0)
+            {
+                return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: reasoningResponseItem);
+            }
+        }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
             return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: functionCallResponseItem);
@@ -67,6 +74,10 @@ internal static class OpenAIResponseExtensions
         if (item is MessageResponseItem messageResponseItem)
         {
             return messageResponseItem.Content.ToChatMessageContentItemCollection();
+        }
+        else if (item is ReasoningResponseItem reasoningResponseItem)
+        {
+            return reasoningResponseItem.SummaryTextParts.ToChatMessageContentItemCollection();
         }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
@@ -180,6 +191,16 @@ internal static class OpenAIResponseExtensions
             {
                 collection.Add(new TextContent(part.Refusal, innerContent: part));
             }
+        }
+        return collection;
+    }
+
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<string> texts)
+    {
+        var collection = new ChatMessageContentItemCollection();
+        foreach (var text in texts)
+        {
+            collection.Add(new TextContent(text, innerContent: null));
         }
         return collection;
     }
