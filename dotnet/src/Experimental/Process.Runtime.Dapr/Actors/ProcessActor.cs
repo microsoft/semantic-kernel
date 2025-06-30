@@ -538,7 +538,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private async Task<IDictionary<string, KernelProcessStepState>> ToDaprProcessInfoAsync()
     {
         var stepStates = new Dictionary<string, KernelProcessStepState>();
-        //stepStates.Add(this._process!.State.StepId, new KernelProcessState(this.Name, this._process!.State.Version, this.Id.GetId()));
 
         var stepTasks = this._steps.Select(step => step.GetStepStateAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
