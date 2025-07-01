@@ -149,7 +149,7 @@
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.24.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.52.0" />
