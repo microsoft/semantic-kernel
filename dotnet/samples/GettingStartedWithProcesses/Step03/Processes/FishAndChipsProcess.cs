@@ -34,13 +34,16 @@ public static class FishAndChipsProcess
             .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
-        makeFriedFishStep
-            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishActions"));
-
-        makePotatoFriesStep
-            .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoActions"));
+        processBuilder.ListenFor().AllOf([
+            new(FriedFishProcess.ProcessEvents.FriedFishReady, makeFriedFishStep),
+            new(PotatoFriesProcess.ProcessEvents.PotatoFriesReady, makePotatoFriesStep),
+        ]).SendEventTo(new ProcessStepTargetBuilder(addCondimentsStep, inputMapping: inputEvents =>
+        {
+            return new() {
+                { "fishActions", inputEvents[makeFriedFishStep.GetFullEventId(FriedFishProcess.ProcessEvents.FriedFishReady)] },
+                { "potatoActions", inputEvents[makePotatoFriesStep.GetFullEventId(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)] },
+            };
+        }));
 
         addCondimentsStep
             .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
@@ -63,13 +66,17 @@ public static class FishAndChipsProcess
             .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
-        makeFriedFishStep
-            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishActions"));
-
-        makePotatoFriesStep
-            .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoActions"));
+        processBuilder.ListenFor().AllOf(
+            [
+                new(FriedFishProcess.ProcessEvents.FriedFishReady, makeFriedFishStep),
+                new(PotatoFriesProcess.ProcessEvents.PotatoFriesReady, makePotatoFriesStep),
+            ]).SendEventTo(new ProcessStepTargetBuilder(addCondimentsStep, inputMapping: inputEvents =>
+            {
+                return new() {
+                    { "fishActions", inputEvents[makeFriedFishStep.GetFullEventId(FriedFishProcess.ProcessEvents.FriedFishReady)] },
+                    { "potatoActions", inputEvents[makePotatoFriesStep.GetFullEventId(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)] },
+                };
+            }));
 
         addCondimentsStep
             .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)

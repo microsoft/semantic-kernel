@@ -34,11 +34,11 @@ app.MapGet("/api/processdoc", async (Kernel kernel) =>
 
     processBuilder
         .OnInputEvent(ProcessEvents.TranslateDocument)
-        .SendEventTo(new(translateDocumentStep, TranslateStep.ProcessFunctions.Translate, parameterName: "textToTranslate"));
+        .SendEventTo(new(translateDocumentStep, TranslateStep.ProcessFunctions.Translate));
 
     translateDocumentStep
         .OnEvent(ProcessEvents.DocumentTranslated)
-        .SendEventTo(new ProcessFunctionTargetBuilder(summarizeDocumentStep, SummarizeStep.ProcessFunctions.Summarize, parameterName: "textToSummarize"));
+        .SendEventTo(new ProcessFunctionTargetBuilder(summarizeDocumentStep, SummarizeStep.ProcessFunctions.Summarize));
 
     summarizeDocumentStep
         .OnEvent(ProcessEvents.DocumentSummarized)

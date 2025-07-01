@@ -146,12 +146,14 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
 public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
+    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class. <br/>
+    /// Constructor only meant to be used by internal SK Builders components to allow piping specific parameters if needed. <br/>
+    /// For external use, <see cref="ProcessBuilder.ListenFor"/> with <see cref="ListenForBuilder.AllOf(List{MessageSourceBuilder})"/> should be used for mapping multiple parameters to a step function
     /// </summary>
     /// <param name="step">The step to target.</param>
     /// <param name="functionName">The function to target.</param>
     /// <param name="parameterName">The parameter to target.</param>
-    public ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName = null, string? parameterName = null) : base(ProcessTargetType.KernelFunction)
+    internal ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName, string? parameterName = null) : base(ProcessTargetType.KernelFunction)
     {
         Verify.NotNull(step, nameof(step));
 
@@ -174,6 +176,15 @@ public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
 
         this.FunctionName = target.FunctionName!;
         this.ParameterName = target.ParameterName;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
+    /// </summary>
+    /// <param name="step">The step to target.</param>
+    /// <param name="functionName">The function to target.</param>
+    public ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName = null) : this(step, functionName, step is ProcessAgentBuilder ? ProcessAgentBuilder.Constants.MessageParameterName : null)
+    {
     }
 
     /// <summary>
@@ -216,8 +227,9 @@ public sealed record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
     /// Initializes a new instance of the <see cref="ProcessStepTargetBuilder"/> class.
     /// </summary>
     /// <param name="stepBuilder"></param>
+    /// <param name="functionName"></param>
     /// <param name="inputMapping"></param>
-    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder)
+    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, string? functionName = null, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder, functionName, null)
     {
         this.InputMapping = inputMapping ?? new Func<Dictionary<string, object?>, Dictionary<string, object?>>((input) => input);
     }

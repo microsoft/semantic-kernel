@@ -188,7 +188,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
 
         echoStep
             .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep));
 
         echoStep
             .OnFunctionResult()

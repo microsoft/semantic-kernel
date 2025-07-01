@@ -230,7 +230,12 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: "message");
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: Constants.MessageParameterName);
+    }
+
+    internal static class Constants
+    {
+        public const string MessageParameterName = "message";
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,6 +20,8 @@ namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
 /// </summary>
 public class LocalProcessTests
 {
+    private readonly IReadOnlyDictionary<string, KernelProcess> _keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+
     /// <summary>
     /// Validates that the <see cref="LocalProcess"/> constructor initializes the steps correctly.
     /// </summary>
@@ -181,8 +184,6 @@ public class LocalProcessTests
         var processId = "myProcessId";
         var processKey = "someKeyThatDoesNotExist";
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
-
         CounterService counterService = new();
         Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
@@ -190,7 +191,7 @@ public class LocalProcessTests
         try
         {
             await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
                 {
                     Id = CommonProcesses.ProcessEvents.StartProcess,
                 });
@@ -213,14 +214,12 @@ public class LocalProcessTests
         var processId = "myProcessId";
         var processKey = CommonProcesses.ProcessKeys.CounterProcess;
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
-
         CounterService counterService = new();
         Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
             });
@@ -244,7 +243,6 @@ public class LocalProcessTests
         var processKey = CommonProcesses.ProcessKeys.CounterProcess;
         var counterName = "counterStep";
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
 
         CounterService counterService = new();
@@ -252,7 +250,7 @@ public class LocalProcessTests
 
         // Act - 1
         await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
             }, storageConnector: processStorage);
@@ -270,7 +268,7 @@ public class LocalProcessTests
         // Act - 2
         counterService.SetCount(0);
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
             }, storageConnector: processStorage);
@@ -299,18 +297,16 @@ public class LocalProcessTests
         var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.DelayedMergeProcess;
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
         // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
         //var processStorage = new JsonFileStorage("<TEST_DIR>");
-        //var processStorage = new JsonFileStorage("C:\\Users\\estenori\\Desktop\\TEST2");
 
         CounterService counterService = new();
         Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act - 1
         await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
                 Data = "Hello",
@@ -336,7 +332,7 @@ public class LocalProcessTests
 
         // Act - 2
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.OtherEvent,
                 Data = "World",
@@ -371,7 +367,6 @@ public class LocalProcessTests
         var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.SimpleMergeProcess;
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
         // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
         //var processStorage = new JsonFileStorage("<TEST_DIR>");
@@ -380,7 +375,7 @@ public class LocalProcessTests
 
         // Act - 1
         await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
                 Data = "Hello",
@@ -406,7 +401,7 @@ public class LocalProcessTests
 
         // Act - 2
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.OtherEvent,
                 Data = "World",
@@ -436,7 +431,6 @@ public class LocalProcessTests
         var innerCounterStorageEntry = "{0}.counterStep.StepState";
         var processKey = CommonProcesses.ProcessKeys.NestedCounterWithEvenDetectionAndMergeProcess;
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
         // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
         //var processStorage = new JsonFileStorage("<TEST_DIR>");
@@ -451,7 +445,7 @@ public class LocalProcessTests
         {
             // Act - 1,2,3
             await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
                 {
                     Id = CommonProcesses.ProcessEvents.StartProcess,
                 }, storageConnector: processStorage);
@@ -488,7 +482,7 @@ public class LocalProcessTests
 
         // Act - 4
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
             {
                 Id = CommonProcesses.ProcessEvents.StartProcess,
             }, storageConnector: processStorage);
@@ -534,7 +528,6 @@ public class LocalProcessTests
         var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.InternalNestedCounterWithEvenDetectionAndMergeProcess;
 
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
         // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
         //var processStorage = new JsonFileStorage("<TEST_DIR>");
@@ -548,7 +541,7 @@ public class LocalProcessTests
         {
             // Act - 1,2,3,4
             await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                kernel, this._keyedProcesses, processKey, processId, new KernelProcessEvent()
                 {
                     Id = CommonProcesses.ProcessEvents.StartProcess,
                     Data = i.ToString(),

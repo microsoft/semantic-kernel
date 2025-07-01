@@ -56,7 +56,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         // When the userInput step emits a user input event, send it to the assistantResponse step
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(responseStep, parameterName: "userMessage"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(responseStep));
 
         // When the assistantResponse step emits a response, send it to the userInput step
         responseStep

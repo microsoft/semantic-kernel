@@ -54,13 +54,19 @@ public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
             .OnEvent(CommonEvents.StartBRequested)
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
-        myAStep
-            .OnEvent(CommonEvents.AStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
-
-        myBStep
-            .OnEvent(CommonEvents.BStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
+        process.ListenFor().AllOf(
+            [
+                new(CommonEvents.AStepDone, myAStep),
+                new(CommonEvents.BStepDone, myBStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(myCStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "astepdata", inputEvents[myAStep.GetFullEventId(CommonEvents.AStepDone)] },
+                    { "bstepdata", inputEvents[myBStep.GetFullEventId(CommonEvents.BStepDone)] }
+                };
+            }));
 
         myCStep
             .OnEvent(CommonEvents.CStepDone)

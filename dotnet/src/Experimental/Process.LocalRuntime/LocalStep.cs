@@ -94,7 +94,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     internal virtual KernelProcessStep CreateStepInstance()
     {
         var stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(stepInstance, this._stepInfo.State.RunId);
+        typeof(KernelProcessStep).GetProperty(nameof(KernelProcessStep.StepName))?.SetValue(stepInstance, this._stepInfo.State.StepId);
 
         return stepInstance;
     }
@@ -321,11 +321,12 @@ internal class LocalStep : IKernelProcessMessageChannel
             this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
 
             await this.SaveStepDataAsync().ConfigureAwait(false);
-            if (this._edgeGroupProcessors != null)
+            if (!string.IsNullOrEmpty(message.GroupId) && this._edgeGroupProcessors != null)
             {
-                foreach (var item in this._edgeGroupProcessors)
+                // Only clearing out edge processor with most recent group id received
+                if (this._edgeGroupProcessors.TryGetValue(message.GroupId, out LocalEdgeGroupProcessor? edgeGroupProcessor) && edgeGroupProcessor != null)
                 {
-                    item.Value.ClearMessageData();
+                    edgeGroupProcessor.ClearMessageData();
                 }
             }
 
