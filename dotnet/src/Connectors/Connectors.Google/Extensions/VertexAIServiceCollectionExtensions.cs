@@ -98,7 +98,7 @@ public static class VertexAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the specified service collection.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
@@ -113,6 +113,7 @@ public static class VertexAIServiceCollectionExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
+    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
@@ -140,7 +141,7 @@ public static class VertexAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the specified service collection.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
@@ -150,6 +151,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

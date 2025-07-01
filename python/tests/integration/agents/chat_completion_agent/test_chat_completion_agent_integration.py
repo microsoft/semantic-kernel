@@ -5,8 +5,12 @@ from typing import Annotated
 import pytest
 
 from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
+from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
 
@@ -83,10 +87,15 @@ class TestChatCompletionAgentIntegration:
         """Test invoke of the agent."""
         responses = await agent_test_base.get_invoke_with_retry(chat_completion_agent, messages="Hello")
         assert len(responses) > 0
+        usage: CompletionUsage = CompletionUsage()
         for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+            if response.metadata.get("usage"):
+                usage += response.metadata["usage"]
+        assert usage.prompt_tokens > 0
+        assert usage.completion_tokens > 0
 
     @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_invoke_with_thread(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
@@ -112,10 +121,15 @@ class TestChatCompletionAgentIntegration:
         """Test invoke stream of the agent."""
         responses = await agent_test_base.get_invoke_stream_with_retry(chat_completion_agent, messages="Hello")
         assert len(responses) > 0
+        usage: CompletionUsage = CompletionUsage()
         for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+            if response.metadata.get("usage"):
+                usage += response.metadata["usage"]
+        assert usage.prompt_tokens > 0
+        assert usage.completion_tokens > 0
 
     @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_invoke_stream_with_thread(
@@ -160,6 +174,7 @@ class TestChatCompletionAgentIntegration:
             messages="What is the weather in Seattle?",
         )
         assert isinstance(response.message, ChatMessageContent)
+        assert all(isinstance(item, TextContent) for item in response.items)
         assert response.message.role == AuthorRole.ASSISTANT
         assert "sunny" in response.message.content
 
@@ -183,6 +198,7 @@ class TestChatCompletionAgentIntegration:
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, ChatMessageContent)
+            assert all(isinstance(item, TextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             assert "sunny" in response.message.content
 
@@ -206,8 +222,45 @@ class TestChatCompletionAgentIntegration:
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
+            assert all(isinstance(item, StreamingTextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content
         assert "sunny" in full_message
 
     # endregion
+
+    # region Image Content tests
+
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        [
+            ("azure", {"enable_kernel_function": True}),
+            ("openai", {"enable_kernel_function": True}),
+        ],
+        indirect=["chat_completion_agent"],
+        ids=["azure-image-content-streaming", "openai-image-content-streaming"],
+    )
+    async def test_image_content_stream(
+        self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase
+    ):
+        """Test function calling streaming."""
+        IMAGE_URI = (
+            "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+        )
+        image_content_remote = ImageContent(uri=IMAGE_URI)
+
+        full_message: str = ""
+        responses = await agent_test_base.get_invoke_stream_with_retry(
+            chat_completion_agent,
+            messages=ChatMessageContent(
+                role=AuthorRole.USER,
+                items=[TextContent(text="What is in this image?"), image_content_remote],
+            ),
+        )
+        assert len(responses) > 0
+        for response in responses:
+            assert isinstance(response.message, StreamingChatMessageContent)
+            assert all(isinstance(item, StreamingTextContent) for item in response.items)
+            assert response.message.role == AuthorRole.ASSISTANT
+            full_message += response.message.content
+        assert full_message is not None

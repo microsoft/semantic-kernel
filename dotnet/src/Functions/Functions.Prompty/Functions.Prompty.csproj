@@ -4,7 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Prompty</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionSuffix>beta</VersionSuffix>
     <NoWarn>$(NoWarn);CA1812</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

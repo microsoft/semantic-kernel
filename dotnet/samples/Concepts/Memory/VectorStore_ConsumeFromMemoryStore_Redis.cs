@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.Identity;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Memory;
 using StackExchange.Redis;
@@ -32,29 +30,16 @@ public class VectorStore_ConsumeFromMemoryStore_Redis(ITestOutputHelper output, 
     {
         // Setup the supporting infra and embedding generation.
         await redisFixture.ManualInitializeAsync();
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
 
-        // Construct a legacy MemoryStore.
-        var memoryStore = new RedisMemoryStore("localhost:6379", VectorSize);
-
-        // Construct a VectorStore and indicate that we want to use hashes
-        // since the legacy memory store uses hashes to store memory records.
+        // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction.
+        // Note that we use HashSet since the legacy memory store uses hashes to store memory records.
         var vectorStore = new RedisVectorStore(
             ConnectionMultiplexer.Connect("localhost:6379").GetDatabase(),
             new() { StorageType = RedisStorageType.HashSet });
 
-        // Build a collection with sample data using the MemoryStore abstraction.
-        await VectorStore_ConsumeFromMemoryStore_Common.CreateCollectionAndAddSampleDataAsync(
-            memoryStore,
-            MemoryStoreCollectionName,
-            textEmbeddingService);
-
         // Connect to the same collection using the VectorStore abstraction.
         var collection = vectorStore.GetCollection<string, VectorStoreRecord>(MemoryStoreCollectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         var record1 = await collection.GetAsync("11111111-1111-1111-1111-111111111111");
@@ -68,20 +53,20 @@ public class VectorStore_ConsumeFromMemoryStore_Redis(ITestOutputHelper output, 
 
     /// <summary>
     /// A data model with Vector Store attributes that matches the storage representation of
-    /// <see cref="MemoryRecord"/> objects as created by <see cref="RedisMemoryStore"/>.
+    /// <see cref="MemoryRecord"/> objects as created by <c>RedisMemoryStore</c>.
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "metadata")]
+        [VectorStoreData(StorageName = "metadata")]
         public string Metadata { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "timestamp")]
+        [VectorStoreData(StorageName = "timestamp")]
         public long Timestamp { get; set; }
 
-        [VectorStoreRecordVector(VectorSize, StoragePropertyName = "embedding")]
+        [VectorStoreVector(VectorSize, StorageName = "embedding")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

@@ -27,27 +27,27 @@ public static class NewAccountCreationProcess
         process
             .OnInputEvent(AccountOpeningEvents.NewCustomerFormCompleted)
             // The information gets passed to the core system record creation step
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "customerDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "customerDetails"));
 
         // When the newCustomerForm is completed, the user interaction transcript with the user is passed to the core system record creation step
         process
             .OnInputEvent(AccountOpeningEvents.CustomerInteractionTranscriptReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "interactionTranscript"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "interactionTranscript"));
 
         // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
         process
             .OnInputEvent(AccountOpeningEvents.NewAccountVerificationCheckPassed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "previousCheckSucceeded"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "previousCheckSucceeded"));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new marketing entry through the marketingRecordCreation step
         coreSystemRecordCreationStep
             .OnEvent(AccountOpeningEvents.NewMarketingRecordInfoReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(marketingRecordCreationStep, functionName: NewMarketingEntryStep.Functions.CreateNewMarketingEntry, parameterName: "userDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(marketingRecordCreationStep, functionName: NewMarketingEntryStep.ProcessStepFunctions.CreateNewMarketingEntry, parameterName: "userDetails"));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new CRM entry through the crmRecord step
         coreSystemRecordCreationStep
             .OnEvent(AccountOpeningEvents.CRMRecordInfoReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(crmRecordStep, functionName: CRMRecordCreationStep.Functions.CreateCRMEntry, parameterName: "userInteractionDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(crmRecordStep, functionName: CRMRecordCreationStep.ProcessStepFunctions.CreateCRMEntry, parameterName: "userInteractionDetails"));
 
         // ParameterName is necessary when the step has multiple input arguments like welcomePacketStep.CreateWelcomePacketAsync
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will pass the account information details to the welcomePacket step

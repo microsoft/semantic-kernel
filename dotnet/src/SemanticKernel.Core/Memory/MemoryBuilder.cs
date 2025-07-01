@@ -9,10 +9,13 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
 [Experimental("SKEXP0001")]
+[ExcludeFromCodeCoverage]
 public sealed class MemoryBuilder
 {
     private Func<IMemoryStore>? _memoryStoreFactory = null;

@@ -32,7 +32,7 @@ env:
   AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
   AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
   AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
-  AZURE_AI_AGENT_PROJECT_CONNECTION_STRING: ${{ secrets.AZURE_AI_AGENT_PROJECT_CONNECTION_STRING }}
+  AZURE_AI_AGENT_ENDPOINT: ${{ secrets.AZURE_AI_AGENT_ENDPOINT }}
   AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME: ${{ secrets.AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME }}
   AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME }}
   BING_API_KEY: ${{ secrets.BING_API_KEY }}
@@ -544,7 +544,7 @@ jobs:
           script: core.setFailed('Integration Tests Cancelled!')
 
       - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@v1.0.8
+        uses: skitionek/notify-microsoft-teams@v1.0.9
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
@@ -554,7 +554,7 @@ jobs:
           title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
-        uses: skitionek/notify-microsoft-teams@v1.0.8
+        uses: skitionek/notify-microsoft-teams@v1.0.9
         if: github.ref != 'refs/heads/main'
         with:
           webhook_url: NONE

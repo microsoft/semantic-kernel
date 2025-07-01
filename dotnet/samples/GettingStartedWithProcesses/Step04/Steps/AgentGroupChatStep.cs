@@ -14,12 +14,12 @@ public class AgentGroupChatStep : KernelProcessStep
     public const string ChatServiceKey = $"{nameof(AgentGroupChatStep)}:{nameof(ChatServiceKey)}";
     public const string ReducerServiceKey = $"{nameof(AgentGroupChatStep)}:{nameof(ReducerServiceKey)}";
 
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string InvokeAgentGroup = nameof(InvokeAgentGroup);
     }
 
-    [KernelFunction(Functions.InvokeAgentGroup)]
+    [KernelFunction(ProcessStepFunctions.InvokeAgentGroup)]
     public async Task InvokeAgentGroupAsync(KernelProcessStepContext context, Kernel kernel, string input)
     {
         AgentGroupChat chat = kernel.GetRequiredService<AgentGroupChat>();

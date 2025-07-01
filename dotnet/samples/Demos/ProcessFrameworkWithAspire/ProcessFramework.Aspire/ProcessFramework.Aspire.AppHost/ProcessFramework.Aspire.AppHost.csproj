@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -15,20 +15,15 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
-    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\..\..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj">
+    <ProjectReference Include="..\..\..\..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj">
       <IsAspireProjectResource>false</IsAspireProjectResource>
     </ProjectReference>
-    <ProjectReference
-      Include="..\ProcessFramework.Aspire.ProcessOrchestrator\ProcessFramework.Aspire.ProcessOrchestrator.csproj" />
-    <ProjectReference
-      Include="..\ProcessFramework.Aspire.SummaryAgent\ProcessFramework.Aspire.SummaryAgent.csproj" />
-    <ProjectReference
-      Include="..\ProcessFramework.Aspire.TranslatorAgent\ProcessFramework.Aspire.TranslatorAgent.csproj" />
+    <ProjectReference Include="..\ProcessFramework.Aspire.ProcessOrchestrator\ProcessFramework.Aspire.ProcessOrchestrator.csproj" />
+    <ProjectReference Include="..\ProcessFramework.Aspire.SummaryAgent\ProcessFramework.Aspire.SummaryAgent.csproj" />
+    <ProjectReference Include="..\ProcessFramework.Aspire.TranslatorAgent\ProcessFramework.Aspire.TranslatorAgent.csproj" />
   </ItemGroup>
 
 </Project>

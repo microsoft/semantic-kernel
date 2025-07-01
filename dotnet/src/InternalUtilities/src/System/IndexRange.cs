@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NETSTANDARD2_0
+#if !NET8_0_OR_GREATER
 
 // Polyfill for using Index and Range with .NET Standard 2.0 (see https://www.meziantou.net/how-to-use-csharp-8-indices-and-ranges-in-dotnet-standard-2-0-and-dotn.htm)
 
@@ -9,9 +9,15 @@
 
 #pragma warning disable RCS1168
 #pragma warning disable RCS1211
+#pragma warning disable RCS1220
 #pragma warning disable IDE0009
 #pragma warning disable IDE0011
+#pragma warning disable IDE0038
+#pragma warning disable IDE0046
+#pragma warning disable IDE0048
 #pragma warning disable IDE0090
+#pragma warning disable IDE0301
+#pragma warning disable CS8604
 
 using System.Runtime.CompilerServices;
 

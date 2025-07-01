@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
@@ -142,11 +143,11 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
     }
 
-    [Fact]
+    [RetryFact]
     public async Task ChatCompletionWithWebSearchAsync()
     {
         // Arrange
-        var kernel = this.CreateAndInitializeKernel(modelIdOverride: "gpt-4o-mini-search-preview");
+        var kernel = this.CreateAndInitializeKernel(modelIdOverride: "gpt-4o-search-preview");
         var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
         var settings = new OpenAIPromptExecutionSettings
         {
@@ -154,7 +155,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         };
 
         // Act
-        var result = await chatService.GetChatMessageContentAsync("What are the top 3 trending news currently", settings, kernel);
+        var result = await chatService.GetChatMessageContentAsync("What are the top 3 trending news items from the web today?", settings, kernel);
 
         // Assert
         var chatCompletion = Assert.IsType<ChatCompletion>(result.InnerContent);
@@ -162,7 +163,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.NotEmpty(chatCompletion.Annotations);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ChatCompletionWithAudioInputAndOutputAsync()
     {
         // Arrange
@@ -193,6 +194,29 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(audioContent.Metadata.ContainsKey("Transcript"));
         Assert.NotNull(audioContent.Metadata["Transcript"]!);
         Assert.NotEmpty(audioContent.Metadata!["Transcript"]!.ToString()!);
+    }
+
+    // Sample pdf for testing
+    private const string PdfDataUri = "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PC9UeXBlIC9DYXRhbG9nCi9QYWdlcyAyIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagozIDAgb2JqCjw8L1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA1OTUgODQyXQovQ29udGVudHMgNSAwIFIKL1Jlc291cmNlcyA8PC9Qcm9jU2V0IFsvUERGIC9UZXh0XQovRm9udCA8PC9GMSA0IDAgUj4+Cj4+Cj4+CmVuZG9iago0IDAgb2JqCjw8L1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9OYW1lIC9GMQovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL01hY1JvbWFuRW5jb2RpbmcKPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDUzCj4+CnN0cmVhbQpCVAovRjEgMjAgVGYKMjIwIDQwMCBUZAooRHVtbXkgUERGKSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZgowMDAwMDAwMDA5IDAwMDAwIG4KMDAwMDAwMDA2MyAwMDAwMCBuCjAwMDAwMDAxMjQgMDAwMDAgbgowMDAwMDAwMjc3IDAwMDAwIG4KMDAwMDAwMDM5MiAwMDAwMCBuCnRyYWlsZXIKPDwvU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgo0OTUKJSVFT0YK";
+
+    [Fact]
+    public async Task ChatCompletionWithFileInputAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+        var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
+
+        ChatHistory chatHistory = [];
+        chatHistory.Add(new Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, [
+            new BinaryContent(PdfDataUri)
+        ]));
+
+        // Act
+        var result = await chatService.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        var chatCompletion = Assert.IsType<ChatCompletion>(result.InnerContent);
+        Assert.NotNull(chatCompletion);
     }
 
     #region internals

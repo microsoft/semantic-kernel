@@ -180,8 +180,8 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
-                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
-                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
+                            .SetInputTokensUsage(chatCompletion.Usage.InputTokenCount)
+                            .SetOutputTokensUsage(chatCompletion.Usage.OutputTokenCount);
                     }
 
                     throw;
@@ -777,6 +777,7 @@ internal partial class ClientCore
                         TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
                         ImageContent imageContent => GetImageContentItem(imageContent),
                         AudioContent audioContent => GetAudioContentItem(audioContent),
+                        BinaryContent binaryContent => GetBinaryContentItem(binaryContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
                 { ParticipantName = message.AuthorName }
@@ -845,7 +846,7 @@ internal partial class ClientCore
             // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
             if (toolCalls.Count == 0)
             {
-                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+                return [new AssistantChatMessage(message.Content ?? string.Empty) { ParticipantName = message.AuthorName }];
             }
 
             var assistantMessage = new AssistantChatMessage(SanitizeFunctionNames(toolCalls)) { ParticipantName = message.AuthorName };
@@ -885,6 +886,16 @@ internal partial class ClientCore
         }
 
         throw new ArgumentException($"{nameof(AudioContent)} must have Data bytes.");
+    }
+
+    private static ChatMessageContentPart GetBinaryContentItem(BinaryContent binaryContent)
+    {
+        if (binaryContent.Data is { IsEmpty: false } data)
+        {
+            return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(data), binaryContent.MimeType, Guid.NewGuid().ToString());
+        }
+
+        throw new ArgumentException($"{nameof(BinaryContent)} must have Data bytes.");
     }
 
     private static ChatInputAudioFormat GetChatInputAudioFormat(string? mimeType)

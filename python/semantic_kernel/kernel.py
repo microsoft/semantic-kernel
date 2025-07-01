@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from contextlib import AbstractAsyncContextManager
-from copy import copy
+from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
@@ -37,6 +37,7 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
@@ -105,7 +106,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
@@ -168,7 +169,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Execute a function and return the FunctionResult.
@@ -328,20 +329,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
-        args_cloned = copy(arguments) if arguments else KernelArguments()
-        try:
-            parsed_args = function_call.to_kernel_arguments()
-            if parsed_args:
-                args_cloned.update(parsed_args)
-        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
@@ -362,6 +349,46 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     f"The tool call with name `{function_call.name}` is not part of the provided tools, "
                     "please try again with a supplied tool call name and make sure to validate the name."
                 ),
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
+        args_cloned = copy(arguments) if arguments else KernelArguments()
+        try:
+            parsed_args = function_call.to_kernel_arguments()
+
+            # Check for missing or unexpected parameters
+            required_param_names = {
+                param.name for param in function_to_call.parameters if param.name is not None and param.is_required
+            }
+            received_param_names = set(parsed_args or {})
+
+            missing_params = required_param_names - received_param_names
+            unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+
+            if missing_params or unexpected_params:
+                msg_parts = []
+                if missing_params:
+                    msg_parts.append(f"Missing required argument(s): {sorted(missing_params)}.")
+                if unexpected_params:
+                    msg_parts.append(f"Received unexpected argument(s): {sorted(unexpected_params)}.")
+                msg = " ".join(msg_parts) + " Please revise the arguments to match the function signature."
+
+                logger.info(msg)
+                frc = FunctionResultContent.from_function_call_content_and_result(
+                    function_call_content=function_call,
+                    result=msg,
+                )
+                chat_history.add_message(message=frc.to_chat_message_content())
+                return None
+
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
@@ -391,6 +418,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments=args_cloned,
             is_streaming=is_streaming,
             chat_history=chat_history,
+            function_call_content=function_call,
             execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
             function_count=function_call_count or 0,
@@ -404,6 +432,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             inner_function=self._inner_auto_function_invoke_handler,
         )
         await stack(invocation_context)
+
+        # Snapshot the tool's return value so later mutations don't leak back
+        if invocation_context.function_result and invocation_context.function_result.value is not None:
+            invocation_context.function_result.value = deepcopy(invocation_context.function_result.value)
 
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call,
@@ -419,7 +451,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""
         try:
-            result = await context.function.invoke(context.kernel, context.arguments)
+            result = await context.function.invoke(
+                context.kernel,
+                context.arguments,
+                metadata=context.function_call_content.metadata | context.function_call_content.to_dict()
+                if context.function_call_content
+                else {},
+            )
             if result:
                 context.function_result = result
         except Exception as exc:
@@ -487,9 +525,32 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             return
         setattr(inputs, field_to_store, vectors[0])
 
+    def clone(self) -> "Kernel":
+        """Clone the kernel instance to create a new one that may be mutated without affecting the current instance.
+
+        The current instance is not mutated by this operation.
+
+        Note: The same service clients are used in the new instance, so if you mutate the service clients
+        in the new instance, the original instance will be affected as well.
+
+        New lists of plugins and filters are created. It will not affect the original lists when the new instance
+        is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
+        instance is mutated.
+        """
+        return Kernel(
+            plugins=deepcopy(self.plugins),
+            # Shallow copy of the services, as they are not serializable
+            services={k: v for k, v in self.services.items()},
+            ai_service_selector=deepcopy(self.ai_service_selector),
+            function_invocation_filters=deepcopy(self.function_invocation_filters),
+            prompt_rendering_filters=deepcopy(self.prompt_rendering_filters),
+            auto_function_invocation_filters=deepcopy(self.auto_function_invocation_filters),
+        )
+
     @experimental
     def as_mcp_server(
         self,
+        prompts: list[PromptTemplateBase] | None = None,
         server_name: str = "Semantic Kernel MCP Server",
         version: str | None = None,
         instructions: str | None = None,
@@ -502,17 +563,18 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-         By default, all functions are exposed as Tools, you can specify which functions,
-        to do this you can use the `excluded_functions` argument.
-        These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
+        By default, all functions are exposed as Tools, you can control this by
+        using use the `excluded_functions` argument.
+        These need to be set to the function name, without the plugin_name.
 
         Args:
             kernel: The kernel instance to use.
+            prompts: A list of prompt templates to expose as prompts.
             server_name: The name of the server.
             version: The version of the server.
             instructions: The instructions to use for the server.
             lifespan: The lifespan of the server.
-            excluded_functions: The list of fully qualified function names to exclude from the server.
+            excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
             kwargs: Any extra arguments to pass to the server creation.
 
@@ -524,7 +586,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
 
         return create_mcp_server_from_kernel(
-            self,
+            kernel=self,
+            prompts=prompts,
             server_name=server_name,
             version=version,
             instructions=instructions,

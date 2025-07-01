@@ -31,19 +31,35 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
     public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
-        Verify.NotNull(agentDefinition.Model);
-        Verify.NotNull(agentDefinition.Model.Id);
 
-        Agent? agent = null;
         if (this.IsSupported(agentDefinition))
         {
             var client = agentDefinition.GetOpenAIClient(kernel);
             AssistantClient assistantClient = client.GetAssistantClient();
 
-            var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
-            Assistant model = await assistantClient.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+            Assistant model;
+            if (!string.IsNullOrEmpty(agentDefinition.Id))
+            {
+                // Get an existing assistant
+                model = await assistantClient.GetAssistantAsync(agentDefinition.Id, cancellationToken).ConfigureAwait(false);
 
-            agent = new OpenAIAssistantAgent(model, assistantClient)
+                return new OpenAIAssistantAgent(model, assistantClient)
+                {
+                    Kernel = kernel,
+                    Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
+                    Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
+                    Instructions = agentDefinition.Instructions ?? model.Instructions,
+                };
+            }
+
+            // Create a new assistant
+            Verify.NotNull(agentDefinition.Model);
+            Verify.NotNull(agentDefinition.Model.Id);
+
+            var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
+            model = await assistantClient.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+
+            return new OpenAIAssistantAgent(model, assistantClient)
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
@@ -51,6 +67,6 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
             };
         }
 
-        return agent;
+        return null;
     }
 }

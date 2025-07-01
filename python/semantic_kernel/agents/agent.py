@@ -1,18 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import importlib
 import logging
+import threading
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Annotated, Any, ClassVar, Generic, TypeVar
+from contextlib import AbstractAsyncContextManager
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, Protocol, TypeVar, runtime_checkable
 
+import yaml
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInitializationException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -24,10 +28,83 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
+if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT, Server
+
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
 logger: logging.Logger = logging.getLogger(__name__)
 
+_T = TypeVar("_T", bound="Agent")
 TMessage = TypeVar("TMessage", bound=ChatMessageContent)
 TThreadType = TypeVar("TThreadType", bound="AgentThread")
+
+
+# region Declarative Spec Definitions
+
+
+class InputSpec(KernelBaseModel):
+    """Class representing an input specification."""
+
+    description: str | None = None
+    required: bool = False
+    default: Any = None
+
+
+class OutputSpec(KernelBaseModel):
+    """Class representing an output specification."""
+
+    description: str | None = None
+    type: str | None = None
+
+
+class ModelConnection(KernelBaseModel):
+    """Class representing a model connection."""
+
+    type: str | None = None
+    service_id: str | None = None
+    extras: dict[str, Any] = Field(default_factory=dict)
+
+
+class ModelSpec(KernelBaseModel):
+    """Class representing a model specification."""
+
+    id: str | None = None
+    api: str = "chat"
+    options: dict[str, Any] = Field(default_factory=dict)
+    connection: ModelConnection | None = None
+
+
+class ToolSpec(KernelBaseModel):
+    """Class representing a tool specification."""
+
+    id: str | None = None
+    type: str | None = None
+    description: str | None = None
+    options: dict[str, Any] = Field(default_factory=dict)
+    extras: dict[str, Any] = Field(default_factory=dict)
+
+
+class AgentSpec(KernelBaseModel):
+    """Class representing an agent specification."""
+
+    type: str
+    id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    instructions: str | None = None
+    model: ModelSpec | None = None
+    tools: list[ToolSpec] = Field(default_factory=list)
+    template: dict[str, Any] | None = None
+    extras: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, InputSpec] = Field(default_factory=dict)
+    outputs: dict[str, OutputSpec] = Field(default_factory=dict)
+
+
+# endregion
+
+
+# region AgentThread
 
 
 class AgentThread(ABC):
@@ -105,6 +182,11 @@ class AgentThread(ABC):
         raise NotImplementedError
 
 
+# endregion
+
+# region AgentResponseItem
+
+
 class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     """Class representing a response item from an agent.
 
@@ -152,6 +234,12 @@ class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     def __hash__(self):
         """Get the hash of the response item."""
         return hash((self.message, self.thread))
+
+
+# endregion
+
+
+# region Agent Base Class
 
 
 class Agent(KernelBaseModel, ABC):
@@ -229,11 +317,13 @@ class Agent(KernelBaseModel, ABC):
         # it will fail validating the model.
         setattr(self, "_as_kernel_function", _as_kernel_function)
 
+    # region Invocation Methods
+
     @abstractmethod
     def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
@@ -262,8 +352,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -293,8 +383,8 @@ class Agent(KernelBaseModel, ABC):
     @abstractmethod
     def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -321,6 +411,10 @@ class Agent(KernelBaseModel, ABC):
         """
         pass
 
+    # endregion
+
+    # region Channel Management
+
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
 
@@ -340,6 +434,10 @@ class Agent(KernelBaseModel, ABC):
         if not self.channel_type:
             raise NotImplementedError("Unable to create channel. Channel type not configured.")
         return self.channel_type()
+
+    # endregion
+
+    # region Instructions Management
 
     async def format_instructions(self, kernel: Kernel, arguments: KernelArguments | None = None) -> str | None:
         """Format the instructions.
@@ -386,6 +484,10 @@ class Agent(KernelBaseModel, ABC):
 
         return KernelArguments(settings=merged_execution_settings, **merged_params)
 
+    # endregion
+
+    # region Thread Management
+
     async def _ensure_thread_exists_with_messages(
         self,
         *,
@@ -414,8 +516,15 @@ class Agent(KernelBaseModel, ABC):
                 f"{self.__class__.__name__} currently only supports agent threads of type {expected_type.__name__}."
             )
 
+        # Track the agent ID as user msg metadata, which is useful for
+        # fetching thread messages as the agent may have been deleted.
+        id_metadata = {
+            "agent_id": self.id,
+        }
+
         # Notify the thread that new messages are available.
         for msg in normalized_messages:
+            msg.metadata.update(id_metadata)
             await self._notify_thread_of_new_message(thread, msg)
 
         return thread
@@ -427,6 +536,8 @@ class Agent(KernelBaseModel, ABC):
     ) -> None:
         """Notify the thread of a new message."""
         await thread.on_new_message(new_message)
+
+    # endregion
 
     def __eq__(self, other):
         """Check if two agents are equal."""
@@ -443,3 +554,505 @@ class Agent(KernelBaseModel, ABC):
     def __hash__(self):
         """Get the hash of the agent."""
         return hash((self.id, self.name, self.description, self.instructions, self.channel_type))
+
+    def as_mcp_server(
+        self,
+        *,
+        prompts: list[PromptTemplateBase] | None = None,
+        server_name: str | None = None,
+        version: str | None = None,
+        instructions: str | None = None,
+        lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    ) -> "Server[LifespanResultT]":
+        """Convert the agent to an MCP server.
+
+        This will create a MCP Server, with a single Tool, which is the agent itself.
+        Prompts can be added through the prompts keyword.
+
+        By default, the server name will be the same as the agent name.
+        If a server name is provided, it will be used instead.
+
+        Returns:
+            The MCP server instance.
+        """
+        from semantic_kernel.connectors.mcp import create_mcp_server_from_functions
+
+        return create_mcp_server_from_functions(
+            functions=self,
+            prompts=prompts,
+            server_name=server_name or self.name,
+            version=version,
+            instructions=instructions,
+            lifespan=lifespan,
+        )
+
+
+# region Declarative Spec Handling
+
+
+@runtime_checkable
+class DeclarativeSpecProtocol(Protocol):
+    """Protocol for declarative spec mixin."""
+
+    @classmethod
+    def resolve_placeholders(
+        cls: type,
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Resolve placeholders in the YAML string."""
+        ...
+
+    @classmethod
+    async def from_yaml(
+        cls: type,
+        yaml_str: str,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> "Agent":
+        """Create an agent instance from a YAML string."""
+        ...
+
+    @classmethod
+    async def from_dict(
+        cls: type,
+        data: dict,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        **kwargs,
+    ) -> "Agent":
+        """Create an agent from a dictionary."""
+        ...
+
+
+# region Agent Type Registry
+
+
+_TAgent = TypeVar("_TAgent", bound=Agent)
+
+# Global agent type registry
+AGENT_TYPE_REGISTRY: dict[str, type[Agent]] = {}
+
+
+def register_agent_type(agent_type: str):
+    """Decorator to register an agent type with the registry.
+
+    Example usage:
+        @register_agent_type("my_custom_agent")
+        class MyCustomAgent(Agent):
+            ...
+    """
+
+    def decorator(cls: type[_TAgent]) -> type[_TAgent]:
+        AGENT_TYPE_REGISTRY[agent_type.lower()] = cls
+        return cls
+
+    return decorator
+
+
+_BUILTIN_AGENTS_LOADED = False
+_BUILTIN_AGENTS_LOCK = threading.Lock()
+
+# List of import paths for all built-in agent modules
+# These modules must contain `@register_agent_type(...)` decorators.
+_BUILTIN_AGENT_MODULES = [
+    "semantic_kernel.agents.chat_completion.chat_completion_agent",
+    "semantic_kernel.agents.azure_ai.azure_ai_agent",
+    "semantic_kernel.agents.open_ai.openai_assistant_agent",
+    "semantic_kernel.agents.open_ai.azure_assistant_agent",
+    "semantic_kernel.agents.open_ai.openai_responses_agent",
+    "semantic_kernel.agents.open_ai.azure_responses_agent",
+]
+
+
+def _preload_builtin_agents() -> None:
+    """Make sure all built-in agent modules are imported at least once, so their decorators register agent types."""
+    global _BUILTIN_AGENTS_LOADED
+
+    if _BUILTIN_AGENTS_LOADED:
+        return
+
+    with _BUILTIN_AGENTS_LOCK:
+        if _BUILTIN_AGENTS_LOADED:
+            return  # Double-checked locking
+
+        failed = []
+
+        for module_name in _BUILTIN_AGENT_MODULES:
+            try:
+                importlib.import_module(module_name)
+            except Exception as ex:
+                failed.append((module_name, ex))
+
+        if failed:
+            error_msgs = "\n".join(f"- {mod}: {err}" for mod, err in failed)
+            raise RuntimeError(f"Failed to preload the following built-in agent modules:\n{error_msgs}")
+
+        _BUILTIN_AGENTS_LOADED = True
+
+
+class AgentRegistry:
+    """Responsible for creating agents from YAML, dicts, or files."""
+
+    @staticmethod
+    def register_type(agent_type: str, agent_cls: type[Agent]) -> None:
+        """Register a new agent type at runtime.
+
+        Args:
+            agent_type: The string identifier representing the agent type (e.g., 'chat_completion_agent').
+            agent_cls: The class implementing the agent, inheriting from `Agent`.
+
+        Example:
+            AgentRegistry.register_type("my_custom_agent", MyCustomAgent)
+        """
+        AGENT_TYPE_REGISTRY[agent_type.lower()] = agent_cls
+
+    @staticmethod
+    async def create_from_yaml(
+        yaml_str: str,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> _TAgent:
+        """Create a single agent instance from a YAML string.
+
+        Args:
+            yaml_str: The YAML string defining the agent.
+            kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
+            settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
+            **kwargs: Additional parameters passed to the agent constructor if required.
+
+        Returns:
+            An instance of the requested agent.
+
+        Raises:
+            AgentInitializationException: If the YAML is invalid or the agent type is not supported.
+
+        Example:
+            agent = await AgentRegistry.create_agent_from_yaml(
+                yaml_str, kernel=kernel, service=AzureChatCompletion(),
+            )
+        """
+        _preload_builtin_agents()
+
+        data = yaml.safe_load(yaml_str)
+
+        agent_type = data.get("type", "").lower()
+        if not agent_type:
+            raise AgentInitializationException("Missing 'type' field in agent definition.")
+
+        if agent_type not in AGENT_TYPE_REGISTRY:
+            raise AgentInitializationException(f"Agent type '{agent_type}' not registered.")
+
+        agent_cls = AGENT_TYPE_REGISTRY[agent_type]
+
+        if not isinstance(agent_cls, DeclarativeSpecProtocol):
+            raise AgentInitializationException(
+                f"Agent class '{agent_cls.__name__}' does not support declarative spec loading."
+            )
+
+        yaml_str = agent_cls.resolve_placeholders(yaml_str, settings, extras)
+        data = yaml.safe_load(yaml_str)
+
+        return await agent_cls.from_dict(
+            data,
+            kernel=kernel,
+            plugins=plugins,
+            settings=settings,
+            **kwargs,
+        )
+
+    @staticmethod
+    async def create_from_dict(
+        data: dict,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> _TAgent:
+        """Create a single agent instance from a dictionary.
+
+        Args:
+            data: The dictionary defining the agent fields.
+            kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
+            settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
+            **kwargs: Additional parameters passed to the agent constructor if required.
+
+        Returns:
+            An instance of the requested agent.
+
+        Raises:
+            AgentInitializationException: If the dictionary is missing a 'type' field or the agent type is unsupported.
+
+        Example:
+            agent = await AgentRegistry.create_agent_from_dict(agent_data, kernel=kernel)
+        """
+        _preload_builtin_agents()
+
+        agent_type = data.get("type", "").lower()
+
+        if not agent_type:
+            raise AgentInitializationException("Missing 'type' field in agent definition.")
+
+        if agent_type not in AGENT_TYPE_REGISTRY:
+            raise AgentInitializationException(f"Agent type '{agent_type}' is not supported.")
+
+        agent_cls = AGENT_TYPE_REGISTRY[agent_type]
+
+        if not isinstance(agent_cls, DeclarativeSpecProtocol):
+            raise AgentInitializationException(
+                f"Agent class '{agent_cls.__name__}' does not support declarative spec loading."
+            )
+
+        return await agent_cls.from_dict(
+            data,
+            kernel=kernel,
+            plugins=plugins,
+            settings=settings,
+            extras=extras,
+            **kwargs,
+        )
+
+    @staticmethod
+    async def create_from_file(
+        file_path: str,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        encoding: str | None = None,
+        **kwargs,
+    ) -> _TAgent:
+        """Create a single agent instance from a YAML file.
+
+        Args:
+            file_path: Path to the YAML file defining the agent.
+            kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
+            settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
+            encoding: The encoding of the file (default is 'utf-8').
+            **kwargs: Additional parameters passed to the agent constructor if required.
+
+        Returns:
+            An instance of the requested agent.
+
+        Raises:
+            AgentInitializationException: If the file is unreadable or the agent type is unsupported.
+        """
+        _preload_builtin_agents()
+
+        try:
+            if encoding is None:
+                encoding = "utf-8"
+            with open(file_path, encoding=encoding) as f:
+                yaml_str = f.read()
+        except Exception as e:
+            raise AgentInitializationException(f"Failed to read agent spec file: {e}") from e
+
+        return await AgentRegistry.create_from_yaml(
+            yaml_str,
+            kernel=kernel,
+            plugins=plugins,
+            settings=settings,
+            extras=extras,
+            **kwargs,
+        )
+
+
+# endregion
+
+
+# region DeclarativeSpecMixin
+
+_D = TypeVar("_D", bound="DeclarativeSpecMixin")
+
+
+class DeclarativeSpecMixin(ABC):
+    """Mixin class for declarative agent methods."""
+
+    @classmethod
+    async def from_yaml(
+        cls: type[_D],
+        yaml_str: str,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> _D:
+        """Create an agent instance from a YAML string."""
+        if settings:
+            yaml_str = cls.resolve_placeholders(yaml_str, settings, extras=extras)
+
+        data = yaml.safe_load(yaml_str)
+        return await cls.from_dict(
+            data,
+            kernel=kernel,
+            plugins=plugins,
+            prompt_template_config=prompt_template_config,
+            settings=settings,
+            **kwargs,
+        )
+
+    @classmethod
+    async def from_dict(
+        cls: type[_D],
+        data: dict,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        **kwargs,
+    ) -> _D:
+        """Default implementation: call the protected _from_dict."""
+        extracted, kernel = cls._normalize_spec_fields(data, kernel=kernel, plugins=plugins, **kwargs)
+        return await cls._from_dict(
+            {**data, **extracted},
+            kernel=kernel,
+            prompt_template_config=extracted.get("prompt_template"),
+            settings=settings,
+            **kwargs,
+        )
+
+    @classmethod
+    @abstractmethod
+    async def _from_dict(
+        cls: type[_D],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        **kwargs,
+    ) -> _D:
+        """Create an agent instance from a dictionary."""
+        pass
+
+    @classmethod
+    def resolve_placeholders(
+        cls: type[_D],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Resolve placeholders inside the YAML string using agent-specific settings.
+
+        Override in subclasses if necessary.
+        """
+        return yaml_str
+
+    @classmethod
+    def _normalize_spec_fields(
+        cls: type[_D],
+        data: dict,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        **kwargs,
+    ) -> tuple[dict[str, Any], Kernel]:
+        """Normalize the fields in the spec dictionary.
+
+        Returns:
+            A tuple of:
+                - Normalized constructor field dict
+                - The effective Kernel instance (created or reused)
+        """
+        if not kernel:
+            kernel = Kernel()
+
+        # Plugins provided explicitly
+        if plugins:
+            for plugin in plugins:
+                kernel.add_plugin(plugin)
+
+        # Validate tools declared in the spec exist in the kernel
+        if "tools" in data:
+            cls._validate_tools(data["tools"], kernel)
+
+        model_options = data.get("model", {}).get("options", {}) if data.get("model") else {}
+
+        inputs = data.get("inputs", {})
+        input_defaults = {
+            k: v.get("default")
+            for k, v in (inputs.items() if isinstance(inputs, dict) else [])
+            if v.get("default") is not None
+        }
+
+        # Start with model options
+        arguments = KernelArguments(**model_options)
+        # Update with input defaults (only if not already provided by model options)
+        for k, v in input_defaults.items():
+            if k not in arguments:
+                arguments[k] = v
+
+        fields = {
+            "name": data.get("name"),
+            "description": data.get("description"),
+            "instructions": data.get("instructions"),
+            "arguments": arguments,
+        }
+
+        # Handle prompt_template if available
+        if "template" in data or "prompt_template" in data:
+            template_data = data.get("prompt_template") or data.get("template")
+            if isinstance(template_data, dict):
+                prompt_template_config = PromptTemplateConfig(**template_data)
+                # If 'instructions' is set in YAML, override the template field in config
+                instructions = data.get("instructions")
+                if instructions is not None:
+                    prompt_template_config.template = instructions
+                fields["prompt_template"] = prompt_template_config
+                # Always set fields["instructions"] to the template being used
+                fields["instructions"] = prompt_template_config.template
+
+        return fields, kernel
+
+    @classmethod
+    def _validate_tools(cls: type[_D], tools_list: list[dict], kernel: Kernel) -> None:
+        """Validate tool references in the declarative spec against kernel's registered plugins.
+
+        This validates the declared tools in the YAML spec, and only checks whether those references resolve
+        properly in the current kernel.
+        """
+        if not kernel:
+            raise AgentInitializationException("Kernel instance is required for tool resolution.")
+
+        for tool in tools_list:
+            tool_id = tool.get("id")
+            if not tool_id or tool.get("type") != "function":
+                continue
+
+            if "." not in tool_id:
+                raise AgentInitializationException(f"Tool id '{tool_id}' must be in format PluginName.FunctionName")
+
+            plugin_name, function_name = tool_id.split(".", 1)
+
+            plugin = kernel.plugins.get(plugin_name)
+            if not plugin:
+                raise AgentInitializationException(f"Plugin '{plugin_name}' not found in kernel.")
+
+            if function_name not in plugin.functions:
+                raise AgentInitializationException(f"Function '{function_name}' not found in plugin '{plugin_name}'.")
+
+
+# endregion

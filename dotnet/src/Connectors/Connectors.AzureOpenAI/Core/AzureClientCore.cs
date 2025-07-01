@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
-using SemanticKernel.Connectors.AzureOpenAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -53,7 +52,6 @@ internal partial class AzureClientCore : ClientCore
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
@@ -86,7 +84,6 @@ internal partial class AzureClientCore : ClientCore
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
 
@@ -153,7 +150,6 @@ internal partial class AzureClientCore : ClientCore
 
         options.UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
-        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
         if (httpClient is not null)
         {

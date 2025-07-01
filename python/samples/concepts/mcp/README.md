@@ -16,31 +16,26 @@ There are two types of servers, Stdio and Sse based. The sample shows how to use
 
 Some other common runners are [uvx](https://docs.astral.sh/uv/guides/tools/), for python servers and [docker](https://www.docker.com/), for containerized servers.
 
-The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin.
+The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin. For Streamable HTTP server, MCPStreamableHttpPlugin can be used.
 
-The reverse, using Semantic Kernel as a server, can be found in the [demos/sk_mcp_server](../../demos/sk_mcp_server/) folder.
+The reverse, using Semantic Kernel as a server, can be found in the [demos/mcp_server](../../demos/mcp_server/) folder.
 
-## Running the sample
+## Running the samples
 
-1. Make sure you have the [Node.js](https://nodejs.org/en/download/) installed.
-2. Make sure you have the [npx](https://docs.npmjs.com/cli/v8/commands/npx) available in PATH.
-3. The Github MCP Server uses a Github Personal Access Token (PAT) to authenticate, see [the documentation](https://github.com/modelcontextprotocol/servers/tree/main/src/github) on how to create one.
-4. Install Semantic Kernel with the mcp extra:
+1. Depending on the sample you want to run:
+    1. [Docker](https://www.docker.com/products/docker-desktop/) installed, for the samples that use the Github MCP server.
+    1. [uv](https://docs.astral.sh/uv/getting-started/installation/) installed, for the samples that use the local MCP server.
+2. The Github MCP Server uses a Github Personal Access Token (PAT) to authenticate, see [the documentation](https://github.com/modelcontextprotocol/servers/tree/main/src/github) on how to create one.
+1. Check the comment at the start of the sample you want to run, for the appropriate environment variables to set.
+1. Install Semantic Kernel with the mcp extra:
 
 ```bash
 pip install semantic-kernel[mcp]
 ```
 
-5. Run the sample:
+4. Run any of the samples:
 
 ```bash
 cd python/samples/concepts/mcp
-python mcp_as_plugin.py
-```
-
-or:
-
-```bash
-cd python/samples/concepts/mcp
-python agent_with_mcp_plugin.py
+python <name>.py
 ```

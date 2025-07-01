@@ -19,7 +19,7 @@ using OpenAI.Assistants;
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
 /// <summary>
-/// Actions associated with an Open Assistant thread.
+/// Actions associated with an OpenAI Assistant thread.
 /// </summary>
 internal static class AssistantThreadActions
 {
@@ -105,6 +105,7 @@ internal static class AssistantThreadActions
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="invocationOptions">Options to utilize for the invocation</param>
+    /// <param name="providersAdditionalInstructions">Additional instructions from <see cref="AIContextProvider"/> instances to pass to the invoke method.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -115,6 +116,7 @@ internal static class AssistantThreadActions
         AssistantClient client,
         string threadId,
         RunCreationOptions? invocationOptions,
+        string? providersAdditionalInstructions,
         ILogger logger,
         Kernel kernel,
         KernelArguments? arguments,
@@ -133,7 +135,7 @@ internal static class AssistantThreadActions
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, providersAdditionalInstructions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -335,6 +337,7 @@ internal static class AssistantThreadActions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="messages">The receiver for the completed messages generated</param>
     /// <param name="invocationOptions">Options to utilize for the invocation</param>
+    /// <param name="providersAdditionalInstructions">Additional instructions from <see cref="AIContextProvider"/> instances to pass to the invoke method.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -350,6 +353,7 @@ internal static class AssistantThreadActions
         string threadId,
         IList<ChatMessageContent>? messages,
         RunCreationOptions? invocationOptions,
+        string? providersAdditionalInstructions,
         ILogger logger,
         Kernel kernel,
         KernelArguments? arguments,
@@ -361,7 +365,7 @@ internal static class AssistantThreadActions
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, providersAdditionalInstructions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -401,7 +405,7 @@ internal static class AssistantThreadActions
                     switch (contentUpdate.UpdateKind)
                     {
                         case StreamingUpdateReason.MessageUpdated:
-                            yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                            yield return GenerateStreamingMessageContent(agent.GetName(), run!, contentUpdate, logger);
                             break;
                     }
                 }
@@ -412,13 +416,14 @@ internal static class AssistantThreadActions
                     {
                         yield return toolContent;
                     }
-                    else if (detailsUpdate.FunctionOutput != null)
+                    else if (detailsUpdate.FunctionName != null || detailsUpdate.FunctionArguments != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
                             {
                                 AuthorName = agent.Name,
-                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments, detailsUpdate.ToolCallIndex ?? 0)],
+                                InnerContent = detailsUpdate,
                             };
                     }
                 }
@@ -540,7 +545,7 @@ internal static class AssistantThreadActions
         logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
     }
 
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null, ILogger? logger = null)
     {
         AuthorRole role = new(message.Role.ToString());
 
@@ -564,6 +569,7 @@ internal static class AssistantThreadActions
             new(role, content: null)
             {
                 AuthorName = assistantName,
+                InnerContent = message,
                 Metadata = metadata,
             };
 
@@ -576,7 +582,15 @@ internal static class AssistantThreadActions
 
                 foreach (TextAnnotation annotation in itemContent.TextAnnotations)
                 {
-                    content.Items.Add(GenerateAnnotationContent(annotation));
+                    AnnotationContent? annotationItem = GenerateAnnotationContent(annotation);
+                    if (annotationItem is not null)
+                    {
+                        content.Items.Add(annotationItem);
+                    }
+                    else
+                    {
+                        logger?.LogOpenAIAssistantUnknownAnnotation(nameof(GenerateMessageContent), message.RunId, message.ThreadId, annotation.GetType());
+                    }
                 }
             }
             // Process image content
@@ -590,12 +604,13 @@ internal static class AssistantThreadActions
     }
 
     [ExcludeFromCodeCoverage]
-    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
+    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, ThreadRun run, MessageContentUpdate update, ILogger? logger)
     {
         StreamingChatMessageContent content =
             new(AuthorRole.Assistant, content: null)
             {
                 AuthorName = assistantName,
+                InnerContent = update,
             };
 
         // Process text content
@@ -611,7 +626,15 @@ internal static class AssistantThreadActions
         // Process annotations
         else if (update.TextAnnotation != null)
         {
-            content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
+            StreamingAnnotationContent? annotationItem = GenerateStreamingAnnotationContent(update.TextAnnotation);
+            if (annotationItem is not null)
+            {
+                content.Items.Add(annotationItem);
+            }
+            else
+            {
+                logger?.LogOpenAIAssistantUnknownAnnotation(nameof(GenerateMessageContent), run.Id, run.ThreadId, update.TextAnnotation.GetType());
+            }
         }
 
         if (update.Role.HasValue && update.Role.Value != MessageRole.User)
@@ -652,49 +675,63 @@ internal static class AssistantThreadActions
         return content.Items.Count > 0 ? content : null;
     }
 
-    private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
+    private static AnnotationContent? GenerateAnnotationContent(TextAnnotation annotation)
     {
-        string? fileId = null;
+        string referenceId;
+        AnnotationKind kind;
 
         if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
-            fileId = annotation.OutputFileId;
+            referenceId = annotation.OutputFileId;
+            kind = AnnotationKind.TextCitation;
         }
         else if (!string.IsNullOrEmpty(annotation.InputFileId))
         {
-            fileId = annotation.InputFileId;
+            referenceId = annotation.InputFileId;
+            kind = AnnotationKind.FileCitation;
+        }
+        else
+        {
+            return null;
         }
 
         return
-            new(annotation.TextToReplace)
+            new(kind, label: annotation.TextToReplace, referenceId)
             {
-                Quote = annotation.TextToReplace,
+                InnerContent = annotation,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
-                FileId = fileId,
             };
     }
 
     [ExcludeFromCodeCoverage]
-    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
+    private static StreamingAnnotationContent? GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
-        string? fileId = null;
+        string referenceId;
+        AnnotationKind kind;
 
         if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
-            fileId = annotation.OutputFileId;
+            referenceId = annotation.OutputFileId;
+            kind = AnnotationKind.TextCitation;
         }
         else if (!string.IsNullOrEmpty(annotation.InputFileId))
         {
-            fileId = annotation.InputFileId;
+            referenceId = annotation.InputFileId;
+            kind = AnnotationKind.FileCitation;
+        }
+        else
+        {
+            return null;
         }
 
         return
-            new(annotation.TextToReplace)
+            new(kind, referenceId)
             {
-                StartIndex = annotation.StartIndex ?? 0,
-                EndIndex = annotation.EndIndex ?? 0,
-                FileId = fileId,
+                Label = annotation.TextToReplace,
+                InnerContent = annotation,
+                StartIndex = annotation.StartIndex,
+                EndIndex = annotation.EndIndex,
             };
     }
 

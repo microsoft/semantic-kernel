@@ -2,7 +2,7 @@
 
 from typing import Generic, Literal, TypeVar
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -17,5 +17,8 @@ class KernelProcessStepState(KernelBaseModel, Generic[TState]):
     type: Literal["KernelProcessStepState"] = Field(default="KernelProcessStepState")  # type: ignore
 
     name: str
+    version: str
     id: str | None = None
     state: TState | None = None
+
+    model_config = ConfigDict(extra="ignore")

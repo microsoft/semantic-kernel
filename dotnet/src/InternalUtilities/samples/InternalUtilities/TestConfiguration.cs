@@ -42,19 +42,21 @@ public sealed class TestConfiguration
     public static RedisConfig Redis => LoadSection<RedisConfig>();
     public static JiraConfig Jira => LoadSection<JiraConfig>();
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
-    public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
     public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
-    public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
+    public static CosmosMongoConfig CosmosMongo => LoadSection<CosmosMongoConfig>();
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+    public static BedrockConfig Bedrock => LoadSection<BedrockConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
+    public static A2AConfig A2A => LoadSection<A2AConfig>();
+    public static Mem0Config Mem0 => LoadSection<Mem0Config>();
 
-    public static IConfiguration GetSection(string caller)
+    public static IConfigurationSection GetSection(string caller)
     {
         return s_instance?._configRoot.GetSection(caller) ??
                throw new ConfigurationNotFoundException(section: caller);
@@ -105,10 +107,12 @@ public sealed class TestConfiguration
 
     public class AzureAIConfig
     {
-        public string ConnectionString { get; set; }
         public string ChatModelId { get; set; }
+        public string Endpoint { get; set; }
+        public string WorkflowEndpoint { get; set; }
         public string BingConnectionId { get; set; }
         public string VectorStoreId { get; set; }
+        public string AgentId { get; set; }
     }
 
     public class AzureOpenAIConfig
@@ -124,6 +128,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
         public string ImageApiKey { get; set; }
+        public string AgentId { get; set; }
     }
 
     public class AzureOpenAIEmbeddingsConfig
@@ -219,11 +224,6 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
     }
 
-    public class KustoConfig
-    {
-        public string ConnectionString { get; set; }
-    }
-
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
@@ -256,7 +256,7 @@ public sealed class TestConfiguration
 
     public class VertexAIConfig
     {
-        public string BearerKey { get; set; }
+        public string? BearerKey { get; set; }
         public string EmbeddingModelId { get; set; }
         public string Location { get; set; }
         public string ProjectId { get; set; }
@@ -278,7 +278,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; } = "http://localhost:11434";
     }
 
-    public class AzureCosmosDbMongoDbConfig
+    public class CosmosMongoConfig
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
@@ -342,10 +342,26 @@ public sealed class TestConfiguration
         public string AuthToken { get; set; }
     }
 
+    public class BedrockConfig
+    {
+        public string? EmbeddingModelId { get; set; }
+    }
+
     public class BedrockAgentConfig
     {
         public string AgentResourceRoleArn { get; set; }
         public string FoundationModel { get; set; }
         public string? KnowledgeBaseId { get; set; }
+    }
+
+    public class A2AConfig
+    {
+        public Uri AgentUrl { get; set; } = new Uri("http://localhost:5000");
+    }
+
+    public class Mem0Config
+    {
+        public string? BaseAddress { get; set; }
+        public string ApiKey { get; set; }
     }
 }

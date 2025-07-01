@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API response.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiExpectedResponse
 {
     /// <summary>

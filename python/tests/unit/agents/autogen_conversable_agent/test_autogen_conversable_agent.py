@@ -35,7 +35,7 @@ async def test_autogen_conversable_agent_get_response(mock_conversable_agent):
     agent = AutoGenConversableAgent(mock_conversable_agent)
     thread: AutoGenConversableAgentThread = None
 
-    response = await agent.get_response("Hello", thread)
+    response = await agent.get_response("Hello", thread=thread)
     assert response.message.role == AuthorRole.ASSISTANT
     assert response.message.content == "Mocked assistant response"
     assert response.thread is not None

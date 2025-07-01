@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from copy import deepcopy
 
 from numpy import array, linalg, ndarray
@@ -8,12 +9,16 @@ from numpy import array, linalg, ndarray
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@deprecated("This class will be removed in a future version. Please use the InMemoryStore and Collection instead.")
 class VolatileMemoryStore(MemoryStoreBase):
     """A volatile memory store that stores data in memory."""
 

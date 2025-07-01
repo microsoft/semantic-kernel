@@ -7,7 +7,10 @@ import pytest
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureResponsesAgent, OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings, OpenAISettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
 
@@ -46,10 +49,12 @@ class TestOpenAIResponsesAgentIntegration:
         tools, plugins, text = [], [], None
 
         if agent_type == "azure":
-            client, model = AzureResponsesAgent.setup_resources()
+            client = AzureResponsesAgent.create_client()
+            model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureResponsesAgent
         else:  # agent_type == "openai"
-            client, model = OpenAIResponsesAgent.setup_resources()
+            client = OpenAIResponsesAgent.create_client()
+            model = OpenAISettings().chat_model_id
             AgentClass = OpenAIResponsesAgent
 
         if params.get("enable_web_search"):
@@ -100,6 +105,7 @@ class TestOpenAIResponsesAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
     async def test_get_response_with_thread(
@@ -285,6 +291,7 @@ class TestOpenAIResponsesAgentIntegration:
             messages="What is the weather in Seattle?",
         )
         assert isinstance(response.message, ChatMessageContent)
+        assert all(isinstance(item, TextContent) for item in response.items)
         assert response.message.role == AuthorRole.ASSISTANT
         assert "sunny" in response.message.content
 
@@ -306,6 +313,7 @@ class TestOpenAIResponsesAgentIntegration:
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, ChatMessageContent)
+            assert all(isinstance(item, TextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             assert "sunny" in response.message.content
 
@@ -327,6 +335,7 @@ class TestOpenAIResponsesAgentIntegration:
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
+            assert all(isinstance(item, StreamingTextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content
         assert "sunny" in full_message

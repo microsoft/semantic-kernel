@@ -18,8 +18,15 @@ class LocalKernelProcessContext(KernelBaseModel):
 
     local_process: LocalProcess
 
-    def __init__(self, process: "KernelProcess", kernel: "Kernel"):
-        """Initializes the local kernel process context."""
+    def __init__(self, process: "KernelProcess", kernel: "Kernel", max_supersteps: int | None = None) -> None:
+        """Initializes the local kernel process context.
+
+        Args:
+            process: The kernel process to start.
+            kernel: The kernel instance.
+            max_supersteps: The maximum number of supersteps. This is the total number of times process steps will run.
+                Defaults to None.
+        """
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess  # noqa: F401
 
         LocalProcess.model_rebuild()
@@ -34,6 +41,7 @@ class LocalKernelProcessContext(KernelBaseModel):
             kernel=kernel,
             parent_process_id=None,
             factories=process.factories,
+            max_supersteps=max_supersteps,
         )
 
         super().__init__(local_process=local_process)  # type: ignore

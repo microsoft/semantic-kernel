@@ -10,12 +10,12 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 
-################################################################################################
-# Demonstrate the creation of KernelProcess and eliciting different food related events.       #
-# For visual reference of the processes used here check the diagram in:                        #
-# https://github.com/microsoft/semantic-kernel/tree/main/python/samples/                       #
-# getting_started_with_processes#step03b_food_ordering                                         #
-################################################################################################
+"""
+Demonstrate the creation of KernelProcess and eliciting different food related events.
+For visual reference of the processes used here check the diagram in:
+https://github.com/microsoft/semantic-kernel/tree/main/python/samples/
+getting_started_with_processes#step03b_food_ordering
+"""
 
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:

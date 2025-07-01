@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
 from azure.identity.aio import DefaultAzureCredential
 
@@ -10,6 +11,11 @@ from semantic_kernel.connectors.mcp import MCPStdioPlugin
 """
 The following sample demonstrates how to create a AzureAIAgent that
 answers questions about Github using a Semantic Kernel Plugin from a MCP server.
+
+It uses the Azure AI Foundry Agent service to create a agent, so make sure to 
+set the required environment variables for the Azure AI Foundry service:
+- AZURE_AI_AGENT_PROJECT_CONNECTION_STRING
+- AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME
 """
 
 
@@ -22,8 +28,9 @@ async def main():
         MCPStdioPlugin(
             name="github",
             description="Github Plugin",
-            command="npx",
-            args=["-y", "@modelcontextprotocol/server-github"],
+            command="docker",
+            args=["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+            env={"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")},
         ) as github_plugin,
     ):
         # 3. Create the agent, with the MCP plugin and the thread

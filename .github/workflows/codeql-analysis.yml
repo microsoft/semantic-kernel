@@ -5,6 +5,7 @@
 name: "CodeQL"
 
 on:
+  workflow_dispatch:
   push:
     # TODO: Add "feature*" back in again, once we determine the cause of the ongoing CodeQL failures.
     branches: ["main", "experimental*", "*-development"]

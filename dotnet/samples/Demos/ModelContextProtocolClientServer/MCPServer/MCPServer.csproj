@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-    <NoWarn>$(NoWarn);VSTHRD111;CA2007;CA1054;SKEXP0001;SKEXP0010</NoWarn>
+    <NoWarn>$(NoWarn);VSTHRD111;CA2007;CA1054;SKEXP0001;SKEXP0010;SKEXP0110</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,11 +13,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Prompts\getCurrentWeatherForCity.json" />
-    <EmbeddedResource Include="Resources\cat.jpg">
+    <None Remove="ProjectResources\EmployeeBirthdaysAndPositions.png" />
+    <None Remove="ProjectResources\SalesReport2014.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectResources\EmployeeBirthdaysAndPositions.png" />
+    <EmbeddedResource Include="ProjectResources\getCurrentWeatherForCity.json" />
+    <EmbeddedResource Include="ProjectResources\cat.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\semantic-kernel-info.txt">
+    <EmbeddedResource Include="ProjectResources\SalesReport2014.png" />
+    <EmbeddedResource Include="ProjectResources\semantic-kernel-info.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -28,7 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\VectorData\InMemory\InMemory.csproj" />
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

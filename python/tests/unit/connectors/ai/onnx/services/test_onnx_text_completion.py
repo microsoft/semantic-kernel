@@ -4,22 +4,10 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.onnx import (  # noqa: E402
-    OnnxGenAIPromptExecutionSettings,
-    OnnxGenAITextCompletion,
-)
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion  # noqa: E402
 from semantic_kernel.contents import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
 from tests.unit.connectors.ai.onnx.conftest import gen_ai_config
-
-try:
-    import onnxruntime_genai  # noqa: F401
-
-    ready = True
-except ImportError:
-    ready = False
-
-pytestmark = pytest.mark.skipif(not ready, reason="ONNX Runtime is not installed.")
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))

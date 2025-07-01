@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
-
-#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="FileReferenceContent"/>.
@@ -17,9 +16,7 @@ public class FileReferenceContentTests
     [Fact]
     public void VerifyFileReferenceContentInitialState()
     {
-        FileReferenceContent definition = new();
-
-        Assert.Empty(definition.FileId);
+        Assert.Throws<ArgumentException>(() => new FileReferenceContent(string.Empty));
     }
 
     /// <summary>

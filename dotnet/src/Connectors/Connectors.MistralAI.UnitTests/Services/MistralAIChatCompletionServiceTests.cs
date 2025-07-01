@@ -77,17 +77,17 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
     public async Task GetChatMessageContentShouldSendMutatedChatHistoryToLLMAsync()
     {
         // Arrange
-        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        static Task MutateChatHistoryAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Remove the function call messages from the chat history to reduce token count.
             context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
 
-            next(context);
+            return next(context);
         }
 
         var kernel = new Kernel();
         kernel.ImportPluginFromFunctions("WeatherPlugin", [KernelFunctionFactory.CreateFromMethod((string location) => "rainy", "GetWeather")]);
-        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(MutateChatHistory));
+        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(MutateChatHistoryAsync));
 
         var firstResponse = this.GetTestResponseAsBytes("chat_completions_function_call_response.json");
         var secondResponse = this.GetTestResponseAsBytes("chat_completions_function_called_response.json");
@@ -138,6 +138,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
         Assert.Equal("ejOH4Z1A2", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
         Assert.Equal("WeatherPlugin-GetWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("function", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("type").GetString());
 
         var functionResult = messages[4];
         Assert.Equal("tool", functionResult.GetProperty("role").GetString());
@@ -148,12 +149,12 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
     public async Task GetStreamingChatMessageContentsShouldSendMutatedChatHistoryToLLMAsync()
     {
         // Arrange
-        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        static Task MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Remove the function call messages from the chat history to reduce token count.
             context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
 
-            next(context);
+            return next(context);
         }
 
         var kernel = new Kernel();
@@ -211,6 +212,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
         Assert.Equal("u2ef3Udel", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
         Assert.Equal("WeatherPlugin-GetWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("function", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("type").GetString());
 
         var functionResult = messages[4];
         Assert.Equal("tool", functionResult.GetProperty("role").GetString());

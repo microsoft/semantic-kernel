@@ -31,7 +31,7 @@ def test_kernel_function_metadata_defaults():
 def test_kernel_function_metadata_name_pattern_error():
     with pytest.raises(ValueError):
         KernelFunctionMetadata(
-            name="-",
+            name="*",
             plugin_name="plugin1",
             description="Semantic function",
             is_prompt=True,

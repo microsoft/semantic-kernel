@@ -80,6 +80,20 @@ def test_initialization(mock_process, mock_kernel, build_model):
     assert local_process.external_event_queue.empty()
 
 
+def test_initialization_max_supersteps(mock_process, mock_kernel, build_model):
+    # Act
+    local_process = LocalProcess(process=mock_process, kernel=mock_kernel, max_supersteps=10)
+
+    # Assert
+    assert local_process.process == mock_process
+    assert local_process.kernel == mock_kernel
+    assert not local_process.initialize_task
+    assert len(local_process.step_infos) == len(mock_process.steps)
+    assert local_process.step_infos[0] == mock_process.steps[0]
+    assert local_process.external_event_queue.empty()
+    assert local_process.max_supersteps == 10
+
+
 def test_ensure_initialized(mock_process, mock_kernel, build_model):
     # Arrange
     local_process = LocalProcess(process=mock_process, kernel=mock_kernel)
