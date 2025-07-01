@@ -14,12 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Use newest available compiler to permit LangVersion 12. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />

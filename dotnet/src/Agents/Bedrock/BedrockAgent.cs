@@ -121,16 +121,16 @@ public sealed class BedrockAgent : Agent
             cancellationToken).ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
         string message = this.ExtractUserMessage(messages.Last());
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
         sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
@@ -196,7 +196,7 @@ public sealed class BedrockAgent : Agent
             thread = new BedrockAgentThread(this.RuntimeClient, invokeAgentRequest.SessionId);
         }
 
-        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
+        BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
             [],
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
@@ -255,23 +255,23 @@ public sealed class BedrockAgent : Agent
         }
 
         // Create a thread if needed
-        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
+        BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        AIContext providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
         string? message = this.ExtractUserMessage(messages.Last());
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
         sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
@@ -578,21 +578,6 @@ public sealed class BedrockAgent : Agent
 
         throw new ArgumentOutOfRangeException($"Invalid role: {authorRole}");
     }
-
-    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string? extensionsContext) =>
-        (optionsAdditionalInstructions, extensionsContext) switch
-        {
-            (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(
-                ai,
-                Environment.NewLine,
-                Environment.NewLine,
-                ec),
-            (string ai, string ec) when string.IsNullOrWhiteSpace(ai) => ec,
-            (string ai, string ec) when string.IsNullOrWhiteSpace(ec) => ai,
-            (null, string ec) => ec,
-            (string ai, null) => ai,
-            _ => string.Empty
-        };
 
     #endregion
 }

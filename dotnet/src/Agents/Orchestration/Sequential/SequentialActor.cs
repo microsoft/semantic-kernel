@@ -56,6 +56,6 @@ internal sealed class SequentialActor :
 
         this.Logger.LogSequentialAgentResult(this.Id, response.Content);
 
-        await this.SendMessageAsync(response.AsResponseMessage(), this._nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
+        await this.PublishMessageAsync(response.AsResponseMessage(), this._nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

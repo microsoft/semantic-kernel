@@ -108,14 +108,15 @@ public sealed class OpenAIResponseAgentThread : AgentThread
 
         if (!string.IsNullOrEmpty(this.ResponseId))
         {
-            var options = new ResponseItemCollectionOptions();
-            var collectionResult = this._client.GetResponseInputItemsAsync(this.ResponseId, options, cancellationToken).ConfigureAwait(false);
+            var collectionResult = this._client.GetResponseInputItemsAsync(this.ResponseId, default, cancellationToken).ConfigureAwait(false);
             await foreach (var responseItem in collectionResult)
             {
-                yield return responseItem.ToChatMessageContent();
+                var messageContent = responseItem.ToChatMessageContent();
+                if (messageContent is not null)
+                {
+                    yield return messageContent;
+                }
             }
         }
-
-        yield break;
     }
 }

@@ -4,8 +4,8 @@ import asyncio
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.contents import AuthorRole, ChatMessageContent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import AuthorRole, ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -61,14 +61,14 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="TriageAgent",
         description="A customer support agent that triages issues.",
         instructions="Handle customer requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
 
     refund_agent = ChatCompletionAgent(
         name="RefundAgent",
         description="A customer support agent that handles refunds.",
         instructions="Handle refund requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderRefundPlugin()],
     )
 
@@ -76,7 +76,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderStatusAgent",
         description="A customer support agent that checks order status.",
         instructions="Handle order status requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderStatusPlugin()],
     )
 
@@ -84,7 +84,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderReturnAgent",
         description="A customer support agent that handles order returns.",
         instructions="Handle order return requests.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[OrderReturnPlugin()],
     )
 
@@ -120,8 +120,18 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 
 
 def agent_response_callback(message: ChatMessageContent) -> None:
-    """Observer function to print the messages from the agents."""
+    """Observer function to print the messages from the agents.
+
+    Please note that this function is called whenever the agent generates a response,
+    including the internal processing messages (such as tool calls) that are not visible
+    to other agents in the orchestration.
+    """
     print(f"{message.name}: {message.content}")
+    for item in message.items:
+        if isinstance(item, FunctionCallContent):
+            print(f"Calling '{item.name}' with arguments '{item.arguments}'")
+        if isinstance(item, FunctionResultContent):
+            print(f"Result from '{item.name}' is '{item.result}'")
 
 
 def human_response_function() -> ChatMessageContent:
@@ -147,7 +157,7 @@ async def main():
 
     # 3. Invoke the orchestration with a task and the runtime
     orchestration_result = await handoff_orchestration.invoke(
-        task="A customer is on the line.",
+        task="Greet the customer who is reaching out for support.",
         runtime=runtime,
     )
 
@@ -160,24 +170,48 @@ async def main():
 
     """
     Sample output:
-    TriageAgent: Hello! Thank you for reaching out. How can I assist you today?
+    TriageAgent: Hello! Thank you for reaching out for support. How can I assist you today?
     User: I'd like to track the status of my order
-    OrderStatusAgent: Sure, I can help you with that. Could you please provide me with your order ID?
+    TriageAgent:
+    Calling 'Handoff-transfer_to_OrderStatusAgent' with arguments '{}'
+    TriageAgent:
+    Result from 'Handoff-transfer_to_OrderStatusAgent' is 'None'
+    OrderStatusAgent: Could you please provide me with your order ID so I can check the status for you?
     User: My order ID is 123
-    OrderStatusAgent: Your order with ID 123 has been shipped and is expected to arrive in 2-3 days. Is there anything
-        else I can assist you with?
+    OrderStatusAgent:
+    Calling 'OrderStatusPlugin-check_order_status' with arguments '{"order_id":"123"}'
+    OrderStatusAgent:
+    Result from 'OrderStatusPlugin-check_order_status' is 'Order 123 is shipped and will arrive in 2-3 days.'
+    OrderStatusAgent: Your order with ID 123 has been shipped and is expected to arrive in 2-3 days. If you have any
+        more questions, feel free to ask!
     User: I want to return another order of mine
-    OrderReturnAgent: I can help you with returning your order. Could you please provide the order ID for the return
-        and the reason you'd like to return it?
+    OrderStatusAgent: I can help you with that. Could you please provide me with the order ID of the order you want
+        to return?
     User: Order ID 321
-    OrderReturnAgent: Please provide the reason for returning the order with ID 321.
+    OrderStatusAgent:
+    Calling 'Handoff-transfer_to_TriageAgent' with arguments '{}'
+    OrderStatusAgent:
+    Result from 'Handoff-transfer_to_TriageAgent' is 'None'
+    TriageAgent:
+    Calling 'Handoff-transfer_to_OrderReturnAgent' with arguments '{}'
+    TriageAgent:
+    Result from 'Handoff-transfer_to_OrderReturnAgent' is 'None'
+    OrderReturnAgent: Could you please provide me with the reason for the return for order ID 321?
     User: Broken item
     Processing return for order 321 due to: Broken item
-    OrderReturnAgent: The return for your order with ID 321 has been successfully processed due to the broken item.
-        Is there anything else I can assist you with?
+    OrderReturnAgent:
+    Calling 'OrderReturnPlugin-process_return' with arguments '{"order_id":"321","reason":"Broken item"}'
+    OrderReturnAgent:
+    Result from 'OrderReturnPlugin-process_return' is 'Return for order 321 has been processed successfully.'
+    OrderReturnAgent: The return for order ID 321 has been processed successfully due to a broken item. If you need
+        further assistance or have any other questions, feel free to let me know!
     User: No, bye
-    Task is completed with summary: Handled order return for order ID 321 due to a broken item, and successfully
-        processed the return.
+    Task is completed with summary: Processed the return request for order ID 321 due to a broken item.
+    OrderReturnAgent:
+    Calling 'Handoff-complete_task' with arguments '{"task_summary":"Processed the return request for order ID 321
+        due to a broken item."}'
+    OrderReturnAgent:
+    Result from 'Handoff-complete_task' is 'None'
     """
 
 

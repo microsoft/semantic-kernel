@@ -15,9 +15,14 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Pinecone Connector</Title>
-    <Description>Pinecone connector for Semantic Kernel plugins and semantic memory</Description>
+    <Title>Pinecone provider for Microsoft.Extensions.VectorData</Title>
+    <Description>Pinecone provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Pinecone.Client" />

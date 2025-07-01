@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -124,7 +125,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        OpenAIAssistantAgentThread openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
@@ -138,13 +139,24 @@ public sealed partial class OpenAIAssistantAgent : Agent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
-        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        AIContext providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -220,19 +232,30 @@ public sealed partial class OpenAIAssistantAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        OpenAIAssistantAgentThread openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        AIContext providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
         // falls back to creating a new RunCreationOptions if additional instructions is provided
@@ -243,7 +266,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         });
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
-        var newMessagesReceiver = new ChatHistory();
+        ChatHistory newMessagesReceiver = [];
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeStreamingAsync(),

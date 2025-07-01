@@ -40,7 +40,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
 
         // Register result actor
         AgentType resultType = this.FormatAgentType(context.Topic, "Results");
-        await runtime.RegisterAgentFactoryAsync(
+        await runtime.RegisterOrchestrationAgentAsync(
             resultType,
             (agentId, runtime) =>
             {
