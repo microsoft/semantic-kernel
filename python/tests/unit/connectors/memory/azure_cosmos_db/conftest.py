@@ -28,6 +28,31 @@ def key():
 
 
 @pytest.fixture()
+def azure_cosmos_db_mongo_db_unit_test_env(monkeypatch, url, key, database_name, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Azure Cosmos DB NoSQL unit tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "AZURE_COSMOS_DB_MONGODB_CONNECTION_STRING": url,
+        "AZURE_COSMOS_DB_MONGODB_DATABASE_NAME": database_name,
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
 def azure_cosmos_db_no_sql_unit_test_env(monkeypatch, url, key, database_name, exclude_list, override_env_param_dict):
     """Fixture to set environment variables for Azure Cosmos DB NoSQL unit tests."""
     if exclude_list is None:

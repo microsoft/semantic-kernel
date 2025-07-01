@@ -177,7 +177,7 @@ async def test_invoke_with_double_get_result():
         with pytest.raises(asyncio.TimeoutError):
             await orchestration_result.get(0.1)
         # The invocation should still be in progress and getting the result again should not raise an error
-        result = await orchestration_result.get()
+        result = await orchestration_result.get(1.0)
 
         assert isinstance(result, list)
         assert len(result) == 2

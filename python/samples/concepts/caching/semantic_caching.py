@@ -8,19 +8,9 @@ from typing import Annotated
 from uuid import uuid4
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
-from semantic_kernel.connectors.memory.in_memory.in_memory_store import InMemoryVectorStore
-from semantic_kernel.data import (
-    VectorizedSearchMixin,
-    VectorSearchOptions,
-    VectorStore,
-    VectorStoreRecordCollection,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.connectors.in_memory import InMemoryStore
+from semantic_kernel.data.vector import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
 from semantic_kernel.functions import FunctionResult
 
@@ -28,16 +18,15 @@ COLLECTION_NAME = "llm_responses"
 RECORD_ID_KEY = "cache_record_id"
 
 
-# Define a simple data model to store, the prompt, the result, and the prompt embedding.
-@vectorstoremodel
+# Define a simple data model to store, the prompt and the result
+# we annotate the prompt field as the vector field, the prompt itself will not be stored.
+# and if you use `include_vectors` in the search, it will return the vector, but not the prompt.
+@vectorstoremodel(collection_name=COLLECTION_NAME)
 @dataclass
 class CacheRecord:
-    prompt: Annotated[str, VectorStoreRecordDataField(embedding_property_name="prompt_embedding")]
-    result: Annotated[str, VectorStoreRecordDataField(is_full_text_searchable=True)]
-    prompt_embedding: Annotated[list[float], VectorStoreRecordVectorField(dimensions=1536)] = field(
-        default_factory=list
-    )
-    id: Annotated[str, VectorStoreRecordKeyField] = field(default_factory=lambda: str(uuid4()))
+    result: Annotated[str, VectorStoreField("data", is_full_text_indexed=True)]
+    prompt: Annotated[str | None, VectorStoreField("vector", dimensions=1536)] = None
+    id: Annotated[str, VectorStoreField("key")] = field(default_factory=lambda: str(uuid4()))
 
 
 # Define the filters, one for caching the results and one for using the cache.
@@ -46,16 +35,13 @@ class PromptCacheFilter:
 
     def __init__(
         self,
-        embedding_service: EmbeddingGeneratorBase,
         vector_store: VectorStore,
-        collection_name: str = COLLECTION_NAME,
         score_threshold: float = 0.2,
     ):
-        self.embedding_service = embedding_service
+        if vector_store.embedding_generator is None:
+            raise ValueError("The vector store must have an embedding generator.")
         self.vector_store = vector_store
-        self.collection: VectorStoreRecordCollection[str, CacheRecord] = vector_store.get_collection(
-            collection_name, data_model_type=CacheRecord
-        )
+        self.collection: VectorStoreCollection[str, CacheRecord] = vector_store.get_collection(record_type=CacheRecord)
         self.score_threshold = score_threshold
 
     async def on_prompt_render(
@@ -69,15 +55,10 @@ class PromptCacheFilter:
         closer the match.
         """
         await next(context)
-        assert context.rendered_prompt  # nosec
-        prompt_embedding = await self.embedding_service.generate_raw_embeddings([context.rendered_prompt])
-        await self.collection.create_collection_if_not_exists()
-        assert isinstance(self.collection, VectorizedSearchMixin)  # nosec
-        results = await self.collection.vectorized_search(
-            vector=prompt_embedding[0], options=VectorSearchOptions(vector_field_name="prompt_embedding", top=1)
-        )
+        await self.collection.ensure_collection_exists()
+        results = await self.collection.search(context.rendered_prompt, vector_property_name="prompt", top=1)
         async for result in results.results:
-            if result.score < self.score_threshold:
+            if result.score and result.score < self.score_threshold:
                 context.function_result = FunctionResult(
                     function=context.function.metadata,
                     value=result.record.result,
@@ -92,13 +73,8 @@ class PromptCacheFilter:
         await next(context)
         result = context.result
         if result and result.rendered_prompt and RECORD_ID_KEY not in result.metadata:
-            prompt_embedding = await self.embedding_service.generate_embeddings([result.rendered_prompt])
-            cache_record = CacheRecord(
-                prompt=result.rendered_prompt,
-                result=str(result),
-                prompt_embedding=prompt_embedding[0],
-            )
-            await self.collection.create_collection_if_not_exists()
+            cache_record = CacheRecord(prompt=result.rendered_prompt, result=str(result))
+            await self.collection.ensure_collection_exists()
             await self.collection.upsert(cache_record)
 
 
@@ -118,11 +94,10 @@ async def main():
     chat = OpenAIChatCompletion(service_id="default")
     embedding = OpenAITextEmbedding(service_id="embedder")
     kernel.add_service(chat)
-    kernel.add_service(embedding)
     # create the in-memory vector store
-    vector_store = InMemoryVectorStore()
+    vector_store = InMemoryStore(embedding_generator=embedding)
     # create the cache filter and add the filters to the kernel
-    cache = PromptCacheFilter(embedding_service=embedding, vector_store=vector_store)
+    cache = PromptCacheFilter(vector_store=vector_store)
     kernel.add_filter(FilterTypes.PROMPT_RENDERING, cache.on_prompt_render)
     kernel.add_filter(FilterTypes.FUNCTION_INVOCATION, cache.on_function_invocation)
 

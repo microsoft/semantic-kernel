@@ -4,14 +4,16 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
+using OpenAI.Files;
 using OpenAI.Responses;
+using OpenAI.VectorStores;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="OpenAIResponseAgent"/>.
 /// </summary>
 public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClient>
 {
-    protected BaseResponsesAgentTest(ITestOutputHelper output) : base(output)
+    protected BaseResponsesAgentTest(ITestOutputHelper output, string? model = null) : base(output)
     {
         var options = new OpenAIClientOptions();
         if (this.EnableLogging)
@@ -25,10 +27,16 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
             });
         }
 
-        this.Client = new(model: TestConfiguration.OpenAI.ModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.Client = new(model: model ?? TestConfiguration.OpenAI.ChatModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.FileClient = new OpenAIFileClient(TestConfiguration.OpenAI.ApiKey);
+        this.VectorStoreClient = new VectorStoreClient(TestConfiguration.OpenAI.ApiKey);
     }
 
-    protected bool EnableLogging { get; set; } = false;
+    protected OpenAIFileClient FileClient { get; set; }
+
+    protected VectorStoreClient VectorStoreClient { get; set; }
+
+    protected bool EnableLogging { get; set; } = true;
 
     /// <inheritdoc/>
     protected override OpenAIResponseClient Client { get; }

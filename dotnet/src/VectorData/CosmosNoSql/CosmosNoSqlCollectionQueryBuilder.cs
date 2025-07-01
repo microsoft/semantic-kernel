@@ -57,7 +57,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
         var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
-        var formattedKeywords = sanitizedKeywords is not null ? $"[\"{string.Join("\", \"", sanitizedKeywords)}\"]" : null;
+        var formattedKeywords = sanitizedKeywords is not null ? $"\"{string.Join("\", \"", sanitizedKeywords)}\"" : null;
         var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {formattedKeywords})" : null;
 
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";

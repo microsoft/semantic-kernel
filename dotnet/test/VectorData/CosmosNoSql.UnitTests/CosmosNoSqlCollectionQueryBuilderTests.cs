@@ -259,7 +259,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         Assert.Contains("SELECT x.id,x.TestProperty1,x.TestProperty2,x.TestProperty3,VectorDistance(x.TestProperty1, @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
         Assert.Contains("WHERE x.TestProperty2 = @cv0 AND ARRAY_CONTAINS(x.TestProperty3, @cv1)", queryText);
-        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x.TestProperty1, @vector), FullTextScore(x.TestProperty2, [\"hybrid\"]))", queryText);
+        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x.TestProperty1, @vector), FullTextScore(x.TestProperty2, \"hybrid\"))", queryText);
         Assert.Contains("OFFSET 5 LIMIT 10", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);

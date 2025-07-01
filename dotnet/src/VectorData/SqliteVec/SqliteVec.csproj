@@ -15,9 +15,14 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - SQLite Connector</Title>
-    <Description>SQLite connector for Semantic Kernel plugins and semantic memory</Description>
+    <Title>SQLite provider for Microsoft.Extensions.VectorData</Title>
+    <Description>SQLite (sqlitevec) provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
