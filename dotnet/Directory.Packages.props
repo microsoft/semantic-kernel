@@ -157,12 +157,12 @@
     <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
     <PackageVersion Include="NRedisStack" Version="1.0.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-    <PackageVersion Include="Testcontainers" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Milvus" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.MongoDB" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Qdrant" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Redis" Version="4.4.0" />
+    <PackageVersion Include="Testcontainers" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Milvus" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.14.1" />
     <!-- Symbols -->
