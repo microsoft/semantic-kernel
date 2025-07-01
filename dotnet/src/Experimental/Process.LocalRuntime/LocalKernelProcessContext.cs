@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
 
@@ -37,11 +38,6 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
         this._localProcess.RunOnceAsync(initialEvent, kernel);
 
-    //internal RunUntilEndAsync(KernelProcessEvent initialEvent, Kernel? kernel = null, TimeSpan? timeout = null)
-    //{
-
-    //}
-
     /// <summary>
     /// Sends a message to the process.
     /// </summary>
@@ -78,4 +74,14 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
 
     /// <inheritdoc/>
     public override Task<string> GetProcessIdAsync() => Task.FromResult(this._localProcess.Id);
+
+    /// <summary>
+    /// Read the step states in from the process.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="System.NotImplementedException"></exception>
+    public override Task<IDictionary<string, KernelProcessStepState>> GetStepStatesAsync()
+    {
+        throw new System.NotImplementedException();
+    }
 }

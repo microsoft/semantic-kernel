@@ -128,30 +128,10 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
         throw new InvalidProgramException("Dapr Test Host did not start");
     }
 
-    /// <summary>
-    /// Starts a process.
-    /// </summary>
-    /// <param name="process">The process to start.</param>
-    /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="initialEvent">An optional initial event.</param>
-    /// <param name="externalMessageChannel">channel used for external messages</param>
-    /// <returns>A <see cref="Task{KernelProcessContext}"/></returns>
-    public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    /// <inheritdoc/>
+    public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null, string? runId = null)
     {
-        // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
-        return await this.StartAsync(process, process.State.StepId, initialEvent);
-    }
-
-    /// <summary>
-    /// Starts the specified process.
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="processId"></param>
-    /// <param name="initialEvent"></param>
-    /// <returns></returns>
-    public async Task<KernelProcessContext> StartAsync(KernelProcess process, string runId, KernelProcessEvent initialEvent)
-    {
-        // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
+        runId ??= Guid.NewGuid().ToString();
         var context = new DaprTestProcessContext(process, runId, this._httpClient!);
         await context.StartKeyedWithEventAsync(process.State.StepId, initialEvent);
         return context;
