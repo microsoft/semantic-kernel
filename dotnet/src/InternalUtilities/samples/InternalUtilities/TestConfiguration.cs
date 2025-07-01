@@ -42,7 +42,6 @@ public sealed class TestConfiguration
     public static RedisConfig Redis => LoadSection<RedisConfig>();
     public static JiraConfig Jira => LoadSection<JiraConfig>();
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
-    public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
@@ -223,11 +222,6 @@ public sealed class TestConfiguration
     public class ChromaConfig
     {
         public string Endpoint { get; set; }
-    }
-
-    public class KustoConfig
-    {
-        public string ConnectionString { get; set; }
     }
 
     public class MongoDBConfig

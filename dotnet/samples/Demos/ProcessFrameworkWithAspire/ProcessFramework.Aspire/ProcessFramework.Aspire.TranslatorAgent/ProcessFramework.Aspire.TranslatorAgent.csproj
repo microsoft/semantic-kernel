@@ -10,17 +10,13 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.AI.OpenAI" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
-    <ProjectReference
-      Include="..\..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference
-      Include="..\ProcessFramework.Aspire.ServiceDefaults\ProcessFramework.Aspire.ServiceDefaults.csproj" />
-    <ProjectReference
-      Include="..\ProcessFramework.Aspire.Shared\ProcessFramework.Aspire.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\ProcessFramework.Aspire.ServiceDefaults\ProcessFramework.Aspire.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\ProcessFramework.Aspire.Shared\ProcessFramework.Aspire.Shared.csproj" />
   </ItemGroup>
 
 </Project>

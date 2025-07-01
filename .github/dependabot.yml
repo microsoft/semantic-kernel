@@ -24,20 +24,6 @@ updates:
       - ".NET"
       - "dependencies"
 
-  # Maintain dependencies for nuget
-  - package-ecosystem: "nuget"
-    directory: "samples/dotnet"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-
-  # Maintain dependencies for npm
-  - package-ecosystem: "npm"
-    directory: "samples/apps"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "python/"
