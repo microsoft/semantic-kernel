@@ -32,8 +32,6 @@ public partial class ProcessController : ControllerBase
     public async Task<IActionResult> PostAsync(string processId)
     {
         var processContext = await this._kernelProcessFactory.StartAsync(ProcessWithCycle.Key, processId, new KernelProcessEvent() { Id = CommonEvents.StartProcess });
-        //var finalState = await processContext.GetStateAsync();
-
         return this.Ok(processId);
     }
 
