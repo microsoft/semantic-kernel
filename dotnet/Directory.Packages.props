@@ -71,12 +71,12 @@
     <PackageVersion Include="Npgsql" Version="8.0.7" />
     <PackageVersion Include="OllamaSharp" Version="5.2.3" />
     <PackageVersion Include="OpenAI" Version="[2.2.0-beta.4]" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.2-beta" />
