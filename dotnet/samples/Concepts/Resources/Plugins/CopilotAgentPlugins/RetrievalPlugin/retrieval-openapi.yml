@@ -1,0 +1,162 @@
+openapi: 3.0.4
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/beta
+  version: beta
+servers:
+  - url: https://graph.microsoft.com/beta
+paths:
+  /copilot/retrieval:
+    post:
+      tags:
+        - copilot.copilotRoot.Actions
+      summary: Invoke action retrieval
+      operationId: copilot_retrieval
+      requestBody:
+        description: Action parameters
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queryString:
+                  type: string
+                dataSource:
+                  title: retrievalDataSource
+                  enum:
+                    - sharePoint
+                    - oneDriveBusiness
+                    - externalItem
+                    - mail
+                    - calendar
+                    - teams
+                    - people
+                    - sharePointEmbedded
+                    - unknownFutureValue
+                  type: string
+                filterExpression:
+                  type: string
+                  nullable: true
+                resourceMetadata:
+                  type: array
+                  items:
+                    type: string
+                    nullable: true
+                maximumNumberOfResults:
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  type: number
+                  format: int32
+                  nullable: true
+        required: true
+      responses:
+        2XX:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/microsoft.graph.retrievalResponse'
+      deprecated: true
+      x-ms-deprecation:
+        removalDate: '2025-12-31T00:00:00.0000000+00:00'
+        date: '2024-02-23T00:00:00.0000000+00:00'
+        version: 2024-12/PrivatePreview:retrievalAPI
+components:
+  schemas:
+    microsoft.graph.retrievalResponse:
+      title: retrievalResponse
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        retrievalHits:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.retrievalHit'
+        '@odata.type':
+          type: string
+    microsoft.graph.retrievalHit:
+      title: retrievalHit
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        extracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.retrievalExtract'
+        resourceMetadata:
+          $ref: '#/components/schemas/microsoft.graph.searchResourceMetadataDictionary'
+        resourceType:
+          title: retrievalEntityType
+          enum:
+            - site
+            - list
+            - listItem
+            - drive
+            - driveItem
+            - externalItem
+            - unknownFutureValue
+          type: string
+        sensitivityLabel:
+          $ref: '#/components/schemas/microsoft.graph.searchSensitivityLabelInfo'
+        webUrl:
+          type: string
+          nullable: true
+        '@odata.type':
+          type: string
+    microsoft.graph.retrievalExtract:
+      title: retrievalExtract
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+        '@odata.type':
+          type: string
+    microsoft.graph.searchResourceMetadataDictionary:
+      title: searchResourceMetadataDictionary
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        '@odata.type':
+          type: string
+    microsoft.graph.searchSensitivityLabelInfo:
+      title: searchSensitivityLabelInfo
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+          readOnly: true
+        displayName:
+          type: string
+          nullable: true
+          readOnly: true
+        isEncrypted:
+          type: boolean
+          nullable: true
+          readOnly: true
+        priority:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+          readOnly: true
+        sensitivityLabelId:
+          type: string
+          nullable: true
+          readOnly: true
+        tooltip:
+          type: string
+          nullable: true
+          readOnly: true
+        '@odata.type':
+          type: string
+      description: "Represents a sensitivityLabel.\nThis model is shared with the CCS retrieval API and search where it is already unhidden."
