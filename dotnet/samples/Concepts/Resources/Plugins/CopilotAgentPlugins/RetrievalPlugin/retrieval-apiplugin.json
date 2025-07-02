@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json",
+  "schema_version": "v2.1",
+  "name_for_human": "OData Service for namespace microsoft.graph",
+  "description_for_human": "This OData service is located at https://graph.microsoft.com/beta",
+  "description_for_model": "This OData service is located at https://graph.microsoft.com/beta",
+  "contact_email": "publisher-email@example.com",
+  "namespace": "Retrieval",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "text": "Invoke action retrieval"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "copilot_retrieval",
+      "description": "Invoke action retrieval"
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "None"
+      },
+      "spec": {
+        "url": "retrieval-openapi.yml"
+      },
+      "run_for_functions": [
+        "copilot_retrieval"
+      ]
+    }
+  ]
+}
