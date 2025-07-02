@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -15,7 +16,7 @@ internal static class ChatMessageExtensions
             ModelId = response?.ModelId,
             AuthorName = message.AuthorName,
             InnerContent = response?.RawRepresentation ?? message.RawRepresentation,
-            Metadata = message.AdditionalProperties,
+            Metadata = new AdditionalPropertiesDictionary(message.AdditionalProperties ?? []) { ["Usage"] = response?.Usage },
             Role = new AuthorRole(message.Role.Value),
         };
 
@@ -30,8 +31,14 @@ internal static class ChatMessageExtensions
                 Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(uc.Uri),
                 Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
                 Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
-                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null),
-                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(callId: frc.CallId, result: frc.Result),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(
+                    functionName: fcc.Name,
+                    id: fcc.CallId,
+                    arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
+                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(
+                    functionName: GetFunctionCallContent(frc.CallId)?.Name,
+                    callId: frc.CallId,
+                    result: frc.Result),
                 _ => null
             };
 
@@ -45,6 +52,12 @@ internal static class ChatMessageExtensions
         }
 
         return result;
+
+        Microsoft.Extensions.AI.FunctionCallContent? GetFunctionCallContent(string callId)
+            => response?.Messages
+                .Select(m => m.Contents
+                .FirstOrDefault(c => c is Microsoft.Extensions.AI.FunctionCallContent fcc && fcc.CallId == callId) as Microsoft.Extensions.AI.FunctionCallContent)
+                    .FirstOrDefault(fcc => fcc is not null);
     }
 
     /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>

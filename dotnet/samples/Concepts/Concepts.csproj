@@ -29,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" />
@@ -55,33 +56,31 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Bedrock\Agents.Bedrock.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Chroma\Chroma.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\InMemory\InMemory.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\MongoDB\MongoDB.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Pinecone\Pinecone.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\PgVector\PgVector.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Qdrant\Qdrant.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Redis\Redis.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\SqliteVec\SqliteVec.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
@@ -89,8 +88,6 @@
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Prompty\Functions.Prompty.csproj" />
-    <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
-    <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.AI\Plugins.AI.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />

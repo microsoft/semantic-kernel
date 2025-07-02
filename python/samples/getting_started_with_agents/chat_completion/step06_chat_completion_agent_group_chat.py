@@ -11,6 +11,15 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 The following sample demonstrates how to create a simple, agent group chat that
 utilizes An Art Director Chat Completion Agent along with a Copy Writer Chat
 Completion Agent to complete a task.
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
 
 
@@ -25,7 +34,8 @@ class ApprovalTerminationStrategy(TerminationStrategy):
 
     async def should_agent_terminate(self, agent, history):
         """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
+        last_message = history[-1].content.lower()
+        return "approved" in last_message and "not approved" not in last_message
 
 
 REVIEWER_NAME = "ArtDirector"

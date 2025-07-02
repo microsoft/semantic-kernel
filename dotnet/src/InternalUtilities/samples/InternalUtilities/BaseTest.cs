@@ -120,8 +120,8 @@ public abstract class BaseTest : TextWriter
                 .AsIChatClient();
         }
 
-        var functionCallingChatClient = chatClient!.AsBuilder().UseKernelFunctionInvocation().Build();
-        builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
+        IChatClient functionCallingChatClient = chatClient.AsBuilder().UseKernelFunctionInvocation().Build();
+        builder.Services.AddSingleton(functionCallingChatClient);
         return functionCallingChatClient;
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
@@ -186,6 +186,18 @@ public abstract class BaseTest : TextWriter
         var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
+    }
+
+    /// <summary>
+    /// Outputs the last message in the chat messages history.
+    /// </summary>
+    /// <param name="chatHistory">Chat messages history</param>
+    protected void OutputLastMessage(IReadOnlyCollection<ChatMessage> chatHistory)
+    {
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Text}");
         Console.WriteLine("------------------------");
     }
 

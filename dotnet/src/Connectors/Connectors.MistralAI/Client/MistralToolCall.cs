@@ -13,6 +13,9 @@ internal sealed class MistralToolCall
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Id { get; set; }
 
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "function";
+
     [JsonPropertyName("function")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MistralFunction? Function { get; set; }

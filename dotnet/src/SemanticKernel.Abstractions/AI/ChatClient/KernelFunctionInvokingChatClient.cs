@@ -102,13 +102,42 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
                 // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                 // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                 // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                result = await autoContext.AIFunction.InvokeAsync(autoContext.Arguments, cancellationToken).ConfigureAwait(false);
-                ctx.Result = new FunctionResult(ctx.Function, result);
+                ctx.Result = await autoContext.Function.InvokeAsync(kernelChatOptions.Kernel, autoContext.Arguments, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
         result = autoContext.Result.GetValue<object>();
 
         context.Terminate = autoContext.Terminate;
 
         return result;
+    }
+
+    public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // If the autoInvoke is false, we don't call any function, just process the messages as is.
+        if (options is KernelChatOptions kernelChatOptions && (
+                kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoFunctionChoiceBehavior && !autoFunctionChoiceBehavior.AutoInvoke
+                || kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior && !requiredFunctionChoiceBehavior.AutoInvoke
+            ))
+        {
+            // Skip function invocation
+            return base.InnerClient.GetResponseAsync(messages, options, cancellationToken);
+        }
+
+        return base.GetResponseAsync(messages, options, cancellationToken);
+    }
+
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // If the autoInvoke is false, we don't call any function, just process the messages as is.
+        if (options is KernelChatOptions kernelChatOptions && (
+                kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoFunctionChoiceBehavior && !autoFunctionChoiceBehavior.AutoInvoke
+                || kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior && !requiredFunctionChoiceBehavior.AutoInvoke
+            ))
+        {
+            // Skip function invocation
+            return base.InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+        }
+
+        return base.GetStreamingResponseAsync(messages, options, cancellationToken);
     }
 }

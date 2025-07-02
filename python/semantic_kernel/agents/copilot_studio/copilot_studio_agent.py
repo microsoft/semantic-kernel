@@ -32,6 +32,7 @@ from semantic_kernel.agents.copilot_studio.copilot_studio_agent_settings import 
     CopilotStudioAgentSettings,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
@@ -54,7 +55,6 @@ else:  # pragma: no cover
     from typing_extensions import override
 
 if TYPE_CHECKING:  # pragma: no cover
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -420,8 +420,8 @@ class CopilotStudioAgent(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -467,8 +467,8 @@ class CopilotStudioAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
@@ -510,17 +510,62 @@ class CopilotStudioAgent(Agent):
             yield AgentResponseItem(message=response, thread=thread)
 
     @override
-    def invoke_stream(
+    async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
-        raise NotImplementedError("Streaming is not supported for Copilot Studio agents.")
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
+        """Invoke the agent and stream the response.
+
+        Note: this is a “pseudo-streaming” implementation.
+
+        We're internally delegating to the real async generator `_inner_invoke`.
+        Each complete ChatMessageContent is wrapped in exactly one
+        StreamingChatMessageContent chunk, so downstream consumers can iterate
+        without change.  The stream yields at least once; callers still receive
+        on_intermediate callbacks in real time.
+
+        Args:
+            messages: The messages to send to the agent.
+            thread: The thread to use for the agent.
+            on_intermediate_message: A callback function to call with each intermediate message.
+            arguments: The arguments to pass to the agent.
+            kernel: The kernel to use for the agent.
+            **kwargs: Additional keyword arguments.
+
+        Yields:
+            A chat message content and thread with the response.
+        """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: CopilotStudioAgentThread(self.client),
+            expected_type=CopilotStudioAgentThread,
+        )
+        if not isinstance(thread, CopilotStudioAgentThread):
+            raise AgentThreadOperationException("The thread is not a Copilot Studio Agent thread.")
+
+        normalized_messages = self._normalize_messages(messages)
+
+        responses: list[ChatMessageContent] = []
+        async for resp in self._inner_invoke(
+            thread=thread,
+            messages=normalized_messages,
+            on_intermediate_message=on_intermediate_message,
+            arguments=arguments,
+            kernel=kernel,
+            **kwargs,
+        ):
+            responses.append(resp)
+
+        for i, resp in enumerate(responses):
+            stream_msg = self._to_streaming(resp, index=i)
+            yield AgentResponseItem(message=stream_msg, thread=thread)
 
     # endregion
 
@@ -597,6 +642,21 @@ class CopilotStudioAgent(Agent):
         for m in messages:
             normalized.append(m.content if isinstance(m, ChatMessageContent) else str(m))
         return normalized
+
+    @staticmethod
+    def _to_streaming(
+        msg: ChatMessageContent,
+        *,
+        index: int,
+    ) -> StreamingChatMessageContent:
+        """Wrap a complete ChatMessageContent in a StreamingChatMessageContent."""
+        return StreamingChatMessageContent(
+            role=msg.role,
+            name=msg.name,
+            content=msg.content,
+            choice_index=index,
+            metadata=msg.metadata,
+        )
 
     @override
     async def _notify_thread_of_new_message(self, thread, new_message):

@@ -57,6 +57,14 @@ public static class ChatClientExtensions
     {
         var chatOptions = executionSettings.ToChatOptions(kernel);
 
+        // Try to parse the text as a chat history
+        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
+        {
+            var messageList = chatHistoryFromPrompt.ToChatMessageList();
+            return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
+        }
+
+        // Otherwise, use the prompt as the chat user message
         return chatClient.GetStreamingResponseAsync(prompt, chatOptions, cancellationToken);
     }
 

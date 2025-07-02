@@ -72,28 +72,43 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Setup dotnet ${{ matrix.dotnet }}
-        uses: actions/setup-dotnet@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4.3.1
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          global-json-file: ${{ github.workspace }}/dotnet/global.json
+
       - name: Build dotnet solutions
         shell: bash
         run: |
-          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
             dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
           done
+
       - name: Package install check
         shell: bash
-        if: matrix.os == 'ubuntu-latest'
         run: |
-          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
             dotnet pack $solution -c ${{ matrix.configuration }} --no-build --no-restore --output ./artifacts
           done
           dotnet new console --name packcheck --output consoleapp
-          dotnet add consoleapp/packcheck.csproj package Microsoft.SemanticKernel --source ./artifacts
-          dotnet build consoleapp/packcheck.csproj
+
+          # Create minimal nuget.config and use only dotnet nuget commands
+          echo '<?xml version="1.0" encoding="utf-8"?><configuration><packageSources><clear /></packageSources></configuration>' > consoleapp/nuget.config
+
+          # Add sources with local first using dotnet nuget commands
+          dotnet nuget add source ../artifacts --name local --configfile consoleapp/nuget.config
+          dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org --configfile consoleapp/nuget.config
+
+          # Change to project directory to ensure local nuget.config is used
+          cd consoleapp
+          dotnet add packcheck.csproj package Microsoft.SemanticKernel
+          dotnet build -c ${{ matrix.configuration }} packcheck.csproj
+          cd ..
+
+          # Clean up
           rm -rf ./artifacts
           rm -rf ./consoleapp
 
@@ -169,7 +184,7 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"

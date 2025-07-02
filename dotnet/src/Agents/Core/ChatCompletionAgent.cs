@@ -67,14 +67,33 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
+
+        // Get the context contributions from the AIContextProviders.
+        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = new ChatHistory();
+        ChatHistory chatHistory = [];
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
@@ -91,8 +110,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
-            options?.AdditionalInstructions,
+            kernel,
+            FormatAdditionalInstructions(providersContext, options),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -126,8 +145,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -150,14 +173,33 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
+
+        // Get the context contributions from the AIContextProviders.
+        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = new ChatHistory();
+        ChatHistory chatHistory = [];
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
@@ -175,8 +217,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
-            options?.AdditionalInstructions,
+            kernel,
+            FormatAdditionalInstructions(providersContext, options),
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -186,8 +228,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
-    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -367,6 +413,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
+        int messageIndex = messageCount;
         AuthorRole? role = null;
         StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
@@ -377,18 +424,18 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
             builder.Append(message.ToString());
 
+            // Capture mutated messages related function calling / tools
+            for (; messageIndex < chat.Count; messageIndex++)
+            {
+                ChatMessageContent chatMessage = chat[messageIndex];
+
+                chatMessage.AuthorName = this.Name;
+
+                await onNewMessage(chatMessage).ConfigureAwait(false);
+                history.Add(chatMessage);
+            }
+
             yield return message;
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            await onNewMessage(message).ConfigureAwait(false);
-            history.Add(message);
         }
 
         // Do not duplicate terminated function result to history

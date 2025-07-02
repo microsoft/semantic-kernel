@@ -3,12 +3,13 @@
 import asyncio
 from enum import Enum
 
+from pydantic import BaseModel
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 """
 The following sample demonstrates how to create a handoff orchestration that can triage
@@ -37,7 +38,7 @@ class GitHubLabels(Enum):
     AGENT = "agent"
 
 
-class GithubIssue(KernelBaseModel):
+class GithubIssue(BaseModel):
     """Model representing a GitHub issue."""
 
     id: str
@@ -46,7 +47,7 @@ class GithubIssue(KernelBaseModel):
     labels: list[str] = []
 
 
-class Plan(KernelBaseModel):
+class Plan(BaseModel):
     """Model representing a plan for resolving a GitHub issue."""
 
     tasks: list[str]
@@ -77,20 +78,20 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="TriageAgent",
         description="An agent that triages GitHub issues",
         instructions="Given a GitHub issue, triage it.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     python_agent = ChatCompletionAgent(
         name="PythonAgent",
         description="An agent that handles Python related issues",
         instructions="You are an agent that handles Python related GitHub issues.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[GithubPlugin()],
     )
     dotnet_agent = ChatCompletionAgent(
         name="DotNetAgent",
         description="An agent that handles .NET related issues",
         instructions="You are an agent that handles .NET related GitHub issues.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
         plugins=[GithubPlugin()],
     )
 

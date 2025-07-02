@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,23 +22,32 @@ internal sealed class MockAgent : ChatHistoryAgent
 
     public IReadOnlyList<ChatMessageContent> Response { get; set; } = [];
 
-    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public async override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.InvokeCount++;
+
         if (thread == null)
         {
             Mock<AgentThread> mockThread = new();
             thread = mockThread.Object;
         }
-        return this.Response.Select(x => new AgentResponseItem<ChatMessageContent>(x, thread!)).ToAsyncEnumerable();
+
+        foreach (ChatMessageContent response in this.Response)
+        {
+            AgentResponseItem<ChatMessageContent> responseItem = new(response, thread);
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(responseItem);
+                yield return responseItem;
+            }
+        }
     }
 
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
-    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -49,18 +59,31 @@ internal sealed class MockAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.InvokeCount++;
-        return this.Response.Select(m => new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(m.Role, m.Content), thread!)).ToAsyncEnumerable();
+
+        if (thread == null)
+        {
+            Mock<AgentThread> mockThread = new();
+            thread = mockThread.Object;
+        }
+
+        foreach (ChatMessageContent response in this.Response)
+        {
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(new AgentResponseItem<ChatMessageContent>(response, thread));
+                yield return new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(response.Role, response.Content), thread);
+            }
+        }
     }
 
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
-    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,

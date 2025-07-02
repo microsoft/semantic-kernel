@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>

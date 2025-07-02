@@ -59,7 +59,7 @@ internal sealed class HandoffActor :
     protected override bool ResponseCallbackFilter(ChatMessageContent response) => response.Role == AuthorRole.Tool;
 
     /// <inheritdoc/>
-    protected override AgentInvokeOptions? CreateInvokeOptions()
+    protected override AgentInvokeOptions CreateInvokeOptions(Func<ChatMessageContent, Task> messageHandler)
     {
         // Clone kernel to avoid modifying the original
         Kernel kernel = this.Agent.Kernel.Clone();
@@ -71,7 +71,8 @@ internal sealed class HandoffActor :
             new()
             {
                 Kernel = kernel,
-                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
+                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                OnIntermediateMessage = messageHandler,
             };
 
         return options;
@@ -125,7 +126,7 @@ internal sealed class HandoffActor :
             if (this._handoffAgent != null)
             {
                 AgentType handoffType = this._handoffs[this._handoffAgent].AgentType;
-                await this.SendMessageAsync(new HandoffMessages.Request(), handoffType, messageContext.CancellationToken).ConfigureAwait(false);
+                await this.PublishMessageAsync(new HandoffMessages.Request(), handoffType, messageContext.CancellationToken).ConfigureAwait(false);
 
                 this._handoffAgent = null;
                 break;
@@ -134,6 +135,7 @@ internal sealed class HandoffActor :
             if (this.InteractiveCallback != null && this._taskSummary == null)
             {
                 ChatMessageContent input = await this.InteractiveCallback().ConfigureAwait(false);
+                await this.PublishMessageAsync(new HandoffMessages.Response { Message = input }, this.Context.Topic, messageId: null, messageContext.CancellationToken).ConfigureAwait(false);
                 this._cache.Add(input);
                 continue;
             }
@@ -151,7 +153,7 @@ internal sealed class HandoffActor :
             yield return KernelFunctionFactory.CreateFromMethod(
                 this.EndAsync,
                 functionName: "end_task_with_summary",
-                description: "End the task with a summary when there is no further action to take.");
+                description: "Complete the task with a summary when no further requests are given.");
 
             foreach (KeyValuePair<string, (AgentType _, string Description)> handoff in this._handoffs)
             {
@@ -182,6 +184,6 @@ internal sealed class HandoffActor :
     {
         this.Logger.LogHandoffSummary(this.Id, summary);
         this._taskSummary = summary;
-        await this.SendMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.Assistant, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
+        await this.PublishMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.Assistant, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
     }
 }

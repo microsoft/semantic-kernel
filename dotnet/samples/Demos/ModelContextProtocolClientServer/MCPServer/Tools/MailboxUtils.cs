@@ -52,10 +52,10 @@ internal sealed class MailboxUtils
         };
 
         // Send the sampling request to the client to summarize the emails
-        CreateMessageResult result = await server.RequestSamplingAsync(request, cancellationToken: CancellationToken.None);
+        CreateMessageResult result = await server.SampleAsync(request, cancellationToken: CancellationToken.None);
 
         // Assuming the response is a text message
-        return result.Content.Text!;
+        return (result.Content as TextContentBlock)!.Text;
     }
 
     /// <summary>
@@ -72,11 +72,9 @@ internal sealed class MailboxUtils
             messages.Add(new SamplingMessage
             {
                 Role = Role.User,
-                Content = new Content
+                Content = new TextContentBlock
                 {
                     Text = $"Email from {email.Sender} with subject {email.Subject}. Body: {email.Body}",
-                    Type = "text",
-                    MimeType = "text/plain"
                 }
             });
 
@@ -87,9 +85,8 @@ internal sealed class MailboxUtils
                     messages.Add(new SamplingMessage
                     {
                         Role = Role.User,
-                        Content = new Content
+                        Content = new ImageContentBlock
                         {
-                            Type = "image",
                             Data = Convert.ToBase64String(attachment),
                             MimeType = "image/png",
                         }

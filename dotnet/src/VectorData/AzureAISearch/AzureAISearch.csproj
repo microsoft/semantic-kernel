@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureAISearch</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.AzureAISearch</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
+  </PropertyGroup>
+
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/RestrictedInternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <PackageId>Microsoft.SemanticKernel.Connectors.AzureAISearch</PackageId>
+    <Title>Azure AI Search provider for Microsoft.Extensions.VectorData</Title>
+    <Description>Azure AI Search provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Azure.Search.Documents" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureAISearch.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

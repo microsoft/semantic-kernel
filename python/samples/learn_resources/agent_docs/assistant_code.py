@@ -5,6 +5,7 @@ import logging
 import os
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import StreamingFileReferenceContent
 
 logging.basicConfig(level=logging.ERROR)
@@ -65,7 +66,7 @@ async def download_response_image(agent: AzureAssistantAgent, file_ids: list[str
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Upload the files to the client
     file_ids: list[str] = []
@@ -81,7 +82,7 @@ async def main():
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         instructions="""
             Analyze the available data to provide an answer to the user's question.
             Always format response using markdown.

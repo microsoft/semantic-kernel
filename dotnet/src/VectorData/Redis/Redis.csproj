@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Redis</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
+  </PropertyGroup>
+
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/RestrictedInternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Redis provider for Microsoft.Extensions.VectorData</Title>
+    <Description>Redis provider for Microsoft.Extensions.VectorData by Semantic Kernel</Description>
+    <PackageReadmeFile>VECTORDATA-CONNECTORS-NUGET.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/nuget/VECTORDATA-CONNECTORS-NUGET.md" Link="VECTORDATA-CONNECTORS-NUGET.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="NRedisStack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Redis.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
