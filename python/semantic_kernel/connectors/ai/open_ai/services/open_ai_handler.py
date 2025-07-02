@@ -221,7 +221,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
         | ImagesResponse,
     ):
         """Store the usage information from the response."""
-        if isinstance(response, ImagesResponse) and response.usage:
+        if isinstance(response, ImagesResponse) and hasattr(response, "usage") and response.usage:
             logger.info(f"OpenAI image usage: {response.usage}")
             self.prompt_tokens += response.usage.input_tokens
             self.total_tokens += response.usage.total_tokens
