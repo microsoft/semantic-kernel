@@ -250,16 +250,10 @@ class HandoffAgentActor(AgentActorBase):
     async def _handle_start_message(self, message: HandoffStartMessage, cts: MessageContext) -> None:
         logger.debug(f"{self.id}: Received handoff start message.")
         if isinstance(message.body, ChatMessageContent):
-            if self._agent_thread:
-                await self._agent_thread.on_new_message(message.body)
-            else:
-                self._chat_history.add_message(message.body)
+            self._message_cache.add_message(message.body)
         elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
             for m in message.body:
-                if self._agent_thread:
-                    await self._agent_thread.on_new_message(m)
-                else:
-                    self._chat_history.add_message(m)
+                self._message_cache.add_message(m)
         else:
             raise ValueError(f"Invalid message body type: {type(message.body)}. Expected {DefaultTypeAlias}.")
 
@@ -267,10 +261,7 @@ class HandoffAgentActor(AgentActorBase):
     async def _handle_response_message(self, message: HandoffResponseMessage, cts: MessageContext) -> None:
         """Handle a response message from an agent in the handoff group."""
         logger.debug(f"{self.id}: Received handoff response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: HandoffRequestMessage, cts: MessageContext) -> None:

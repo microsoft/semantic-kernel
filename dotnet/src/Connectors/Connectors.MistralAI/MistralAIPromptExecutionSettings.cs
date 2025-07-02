@@ -78,7 +78,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("safe_prompt")]
     [JsonConverter(typeof(BoolJsonConverter))]
-    public bool SafePrompt
+    public bool? SafePrompt
     {
         get => this._safePrompt;
 
@@ -338,7 +338,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     private double _temperature = 0.7;
     private double _topP = 1;
     private int? _maxTokens;
-    private bool _safePrompt = false;
+    private bool? _safePrompt = false;
     private int? _randomSeed;
     private string _apiVersion = "v1";
     private MistralAIToolCallBehavior? _toolCallBehavior;

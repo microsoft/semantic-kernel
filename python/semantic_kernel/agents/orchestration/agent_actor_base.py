@@ -63,8 +63,8 @@ class AgentActorBase(ActorBase):
         self._streaming_agent_response_callback = streaming_agent_response_callback
 
         self._agent_thread: AgentThread | None = None
-        # Chat history to temporarily store messages before the agent thread is created
-        self._chat_history = ChatHistory()
+        # Chat history to temporarily store messages before each invoke.
+        self._message_cache: ChatHistory = ChatHistory()
 
         ActorBase.__init__(self, description=agent.description or "Semantic Kernel Agent")
 
@@ -146,7 +146,10 @@ class AgentActorBase(ActorBase):
         Returns:
             list[ChatMessageContent]: A list of messages to be sent to the agent.
         """
-        base_messages = self._chat_history.messages[:] if self._agent_thread is None else []
+        base_messages = self._message_cache.messages[:]
+
+        # Clear the message cache for the next invoke.
+        self._message_cache.clear()
 
         if additional_messages is None:
             return base_messages

@@ -71,12 +71,12 @@
     <PackageVersion Include="Npgsql" Version="8.0.7" />
     <PackageVersion Include="OllamaSharp" Version="5.2.3" />
     <PackageVersion Include="OpenAI" Version="[2.2.0-beta.4]" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.2-beta" />
@@ -149,7 +149,7 @@
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.24.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.52.0" />
@@ -157,12 +157,12 @@
     <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
     <PackageVersion Include="NRedisStack" Version="1.0.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-    <PackageVersion Include="Testcontainers" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Milvus" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.MongoDB" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Qdrant" Version="4.4.0" />
-    <PackageVersion Include="Testcontainers.Redis" Version="4.4.0" />
+    <PackageVersion Include="Testcontainers" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Milvus" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.14.1" />
     <!-- Symbols -->
@@ -189,17 +189,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Analyzers" Version="[4.12.10]" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="[4.13.1]" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.13.1]" />
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.11]" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.13.1]" />
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
