@@ -48,7 +48,7 @@ internal sealed class GeminiRequest
 
     [JsonPropertyName("labels")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Labels { get; set; }
+    public Dictionary<string, string>? Labels { get; set; }
 
     public void AddFunction(GeminiFunction function)
     {
@@ -450,7 +450,12 @@ internal sealed class GeminiRequest
     private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.CachedContent = executionSettings.CachedContent;
-        request.Labels = executionSettings.Labels;
+
+        if (executionSettings.Labels is not null)
+        {
+            request.Labels = executionSettings.Labels;
+        }
+
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
