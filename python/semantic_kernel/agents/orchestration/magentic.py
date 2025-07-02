@@ -677,10 +677,7 @@ class MagenticAgentActor(AgentActorBase):
     @message_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: MagenticRequestMessage, ctx: MessageContext) -> None:
@@ -703,7 +700,7 @@ class MagenticAgentActor(AgentActorBase):
     async def _handle_reset_message(self, message: MagenticResetMessage, ctx: MessageContext) -> None:
         """Handle the reset message for the Magentic One group chat."""
         logger.debug(f"{self.id}: Received reset message.")
-        self._chat_history.clear()
+        self._message_cache.clear()
         if self._agent_thread:
             await self._agent_thread.delete()
             self._agent_thread = None
