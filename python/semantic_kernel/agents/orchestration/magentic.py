@@ -647,19 +647,32 @@ class MagenticManagerActor(ActorBase):
         if self._context is None:
             raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
 
-        if (
+        hit_round_limit = (
             self._manager.max_round_count is not None and self._context.round_count >= self._manager.max_round_count
-        ) or (self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count):
-            message = (
-                "Max round count reached."
-                if self._manager.max_round_count and self._context.round_count >= self._manager.max_round_count
-                else "Max reset count reached."
+        )
+        hit_reset_limit = (
+            self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count
+        )
+
+        if hit_round_limit or hit_reset_limit:
+            limit_type = "round" if hit_round_limit else "reset"
+            logger.debug(f"Max {limit_type} count reached.")
+
+            # Retrieve the latest assistant content produced so far
+            partial_result = next(
+                (m for m in reversed(self._context.chat_history.messages) if m.role == AuthorRole.ASSISTANT),
+                None,
             )
-            logger.debug(message)
-            if self._result_callback:
-                await self._result_callback(
-                    ChatMessageContent(role=AuthorRole.ASSISTANT, content=message, name=self.__class__.__name__)
+            if partial_result is None:
+                partial_result = ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    content=f"Stopped because the maximum {limit_type} limit was reached. No partial result available.",
+                    name=self.__class__.__name__,
                 )
+
+            if self._result_callback:
+                await self._result_callback(partial_result)
+
             return False
 
         return True
