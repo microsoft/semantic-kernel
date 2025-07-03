@@ -62,7 +62,13 @@ internal static class AgentMessageFactory
             {
                 if (content is TextContent textContent)
                 {
-                    yield return new MessageInputTextBlock(content.ToString());
+                    var text = content.ToString();
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        // Message content must be non-empty.
+                        continue;
+                    }
+                    yield return new MessageInputTextBlock(text);
                 }
                 else if (content is ImageContent imageContent)
                 {
