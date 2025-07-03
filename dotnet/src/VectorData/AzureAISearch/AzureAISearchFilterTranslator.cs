@@ -98,7 +98,6 @@ internal class AzureAISearchFilterTranslator
 
     private void GenerateLiteral(object? value)
     {
-        // TODO: Nullable
         switch (value)
         {
             case byte b:
@@ -114,6 +113,13 @@ internal class AzureAISearchFilterTranslator
                 this._filter.Append(l);
                 return;
 
+            case float f:
+                this._filter.Append(f);
+                return;
+            case double d:
+                this._filter.Append(d);
+                return;
+
             case string untrustedInput:
                 // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
                 this._filter.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
@@ -125,9 +131,9 @@ internal class AzureAISearchFilterTranslator
                 this._filter.Append('\'').Append(g.ToString()).Append('\'');
                 return;
 
-            case DateTime:
-            case DateTimeOffset:
-                throw new NotImplementedException();
+            case DateTimeOffset d:
+                this._filter.Append(d.ToString("o"));
+                return;
 
             case Array:
                 throw new NotImplementedException();
@@ -364,11 +370,12 @@ RestartLoop:
         }
 
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
         unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != property.Type && convertType != typeof(object))
+            if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
             }
