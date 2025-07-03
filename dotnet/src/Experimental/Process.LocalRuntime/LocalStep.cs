@@ -101,7 +101,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 
     internal virtual void PopulateInitialInputs()
     {
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        this._initialInputs = this.FindInputChannels(this._functions, this._stepInfo.OutputEventsData, this._logger, this.ExternalMessageChannel);
     }
 
     /// <summary>

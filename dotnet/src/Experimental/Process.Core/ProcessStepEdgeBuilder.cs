@@ -129,7 +129,7 @@ public class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder, this.Condition);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, edgeGroupBuilder: this.EdgeGroupBuilder, condition: this.Condition);
     }
 
     /// <summary>
@@ -156,6 +156,16 @@ public class ProcessStepEdgeBuilder
         var targetBuilder = agentStep.GetInvokeAgentFunctionTargetBuilder();
 
         return this.SendEventTo(targetBuilder);
+    }
+
+    public void EmitAsPublicEvent()
+    {
+        if (this.Source is null)
+        {
+            throw new InvalidOperationException("An source must be set before marking the event as public.");
+        }
+
+        this.Source.MarkPublicEvent(this.EventData.EventName);
     }
 
     /// <summary>

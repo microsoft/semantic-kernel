@@ -40,7 +40,25 @@ public static class KernelFunctionMetadataFactory
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
             {
-                functionMetadata.Add(KernelFunctionFromMethod.CreateMetadata(method, loggerFactory: loggerFactory));
+                var processOutputEventAttributes = method.GetCustomAttributes<KernelProcessStepEventMetadataAttribute>();
+                Dictionary<string, KernelReturnParameterMetadata> outputDictionary = [];
+                if (processOutputEventAttributes != null)
+                {
+                    foreach (var attribute in processOutputEventAttributes)
+                    {
+                        // If the method has a KernelProcessOutputEventMetadata attribute, we need to add it to the metadata.
+                        if (attribute.OutputType != null)
+                        {
+                            var returnMetadata = KernelReturnParameterMetadataFactory.CreateFromType(attribute.OutputType);
+
+                            outputDictionary.Add(attribute.OutputEventName, returnMetadata);
+                        }
+                    }
+                }
+
+                var methodMetadata = new KernelFunctionMetadata(KernelFunctionFromMethod.CreateMetadata(method, loggerFactory: loggerFactory)) { ProcessOutputEvents = new(outputDictionary) };
+
+                functionMetadata.Add(methodMetadata);
             }
         }
         if (functionMetadata.Count == 0)

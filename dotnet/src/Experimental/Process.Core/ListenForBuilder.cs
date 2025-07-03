@@ -76,6 +76,15 @@ public sealed class ListenForBuilder
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
 
+        // verify mapped message sources output events do exist
+        foreach (var source in messageSources)
+        {
+            if (!source.Source.OutputStepEvents.ContainsKey(source.MessageType))
+            {
+                throw new InvalidOperationException($"Output Event {source.MessageType} is not emitted by {source.Source.StepId}");
+            }
+        }
+
         var edgeGroup = new KernelProcessEdgeGroupBuilder(this.GetGroupId(messageSources), messageSources);
         this._targetBuilder = new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
         return this._targetBuilder;

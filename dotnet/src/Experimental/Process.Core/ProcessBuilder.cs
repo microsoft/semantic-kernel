@@ -125,6 +125,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
                                .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
+    internal void AddOutputEventToProcess(ProcessStepEventData outputEvent)
+    {
+        this.OutputStepEvents.Add(outputEvent.EventId, outputEvent);
+    }
+
     /// <summary>
     /// Builds the step.
     /// </summary>
@@ -191,7 +196,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this.ProcessBuilder);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -205,7 +210,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this.ProcessBuilder);
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -221,7 +226,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this, initialState: initialState);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -250,7 +255,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -278,7 +283,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode };
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this, id) { HumanInLoopMode = humanInLoopMode };
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -320,7 +325,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -342,6 +347,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess, IReadOnlyList<string>? aliases = null)
     {
+        kernelProcess.ProcessBuilder = this;
         kernelProcess.HasParentProcess = true;
 
         return this.AddStep(kernelProcess, aliases);
@@ -459,6 +465,17 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
+    }
+
+    /// <inheritdoc/>
+    public override ProcessStepEdgeBuilder OnEvent(string eventId, bool isPublic = false)
+    {
+        if (!this.OutputStepEvents.ContainsKey(eventId))
+        {
+            throw new InvalidOperationException($"Output Event {eventId} is not emitted publicly by {this.StepId}");
+        }
+
+        return base.OnEvent(eventId, isPublic);
     }
 
     /// <summary>

@@ -47,6 +47,11 @@ public record KernelProcessStepInfo
     public IReadOnlyDictionary<string, KernelProcessEdgeGroup>? IncomingEdgeGroups { get; }
 
     /// <summary>
+    /// A dictionary of output events type data for the step.
+    /// </summary>
+    public IReadOnlyDictionary<string, ProcessStepEventData>? OutputEventsData { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepInfo"/> class.
     /// </summary>
     public KernelProcessStepInfo(Type innerStepType, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null)

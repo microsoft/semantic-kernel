@@ -2,10 +2,8 @@
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>
-/// A class representing an event that can be emitted from a <see cref="KernelProcessStep"/>. This type is convertible to and from CloudEvents.
-/// </summary>
-public record KernelProcessEvent
+// TODO: May not need this and instead just nee to hide usage of EmitEventAsync with KernelProcessEvent only
+public record KernelProcessEventBase
 {
     /// <summary>
     /// The unique identifier for the event.
@@ -16,11 +14,29 @@ public record KernelProcessEvent
     /// An optional data payload associated with the event.
     /// </summary>
     public object? Data { get; init; }
+}
 
+
+/// <summary>
+/// A class representing an event that can be emitted from a <see cref="KernelProcessStep"/>. This type is convertible to and from CloudEvents.
+/// </summary>
+public record KernelProcessEvent : KernelProcessEventBase
+{
     /// <summary>
     /// The visibility of the event. Defaults to <see cref="KernelProcessEventVisibility.Internal"/>.
     /// </summary>
     public KernelProcessEventVisibility Visibility { get; set; } = KernelProcessEventVisibility.Internal;
+
+    public KernelProcessEvent()
+    {
+        // Default constructor initializes with default values
+    }
+
+    public KernelProcessEvent(KernelProcessEventBase eventData)
+    {
+        this.Id = eventData.Id;
+        this.Data = eventData.Data;
+    }
 }
 
 /// <summary>

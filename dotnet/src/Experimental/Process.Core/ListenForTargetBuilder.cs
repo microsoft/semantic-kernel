@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -34,6 +35,24 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// <returns>A fresh builder instance for fluid definition</returns>
     public ProcessStepEdgeBuilder SendEventTo(ProcessStepTargetBuilder target)
     {
+        if (!target.Step.InputParametersTypeData.TryGetValue(target.FunctionName, out var targetFunction))
+        {
+            throw new InvalidOperationException($"Function '{target.FunctionName}' not found in target step {target.Step.StepId}");
+        }
+
+        var incomingEventTypes = this._messageSources.Select(m => m.Source.OutputStepEvents[m.MessageType].EventTypeData?.DataType).ToList();
+
+        //foreach (var inputParameter in targetFunction.Values)
+        //{
+        //    if (!incomingEventTypes.Contains(inputParameter.DataType))
+        //    {
+        //        throw new InvalidOperationException($"Input parameter '{inputParameter.DataType?.Name}' of type '{inputParameter.DataType.Name}' does not match any of the incoming event types: {string.Join(", ", incomingEventTypes)}");
+        //    }
+        //}
+
+        // TODO: For now strict parameter validation cannot be done, but type check can be done to make sure parameters are type compatible.
+        // Specific mapping of parameters from inputMapping needs restructure to be validated at the builder stage.
+
         return this.SendEventTo_Internal(target);
     }
 
