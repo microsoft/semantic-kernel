@@ -75,7 +75,7 @@ public sealed class TextSearchProvider : AIContextProvider
 
         var searchResults = await this._textSearch.GetTextSearchResultsAsync(
             input,
-            new() { Top = this.Options.Top },
+            new() { Top = this.Options.Top, Filter = this.Options.Filter },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);

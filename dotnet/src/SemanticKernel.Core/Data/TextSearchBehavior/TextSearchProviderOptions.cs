@@ -34,6 +34,11 @@ public sealed class TextSearchProviderOptions
     }
 
     /// <summary>
+    /// The filter expression to apply to the search query.
+    /// </summary>
+    public TextSearchFilter? Filter { get; init; }
+
+    /// <summary>
     /// Gets or sets the time at which the text search is performed.
     /// </summary>
     public RagBehavior SearchTime { get; init; } = RagBehavior.BeforeAIInvoke;
