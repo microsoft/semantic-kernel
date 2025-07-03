@@ -32,13 +32,19 @@ public static class ChatClientExtensions
         var chatOptions = executionSettings.ToChatOptions(kernel);
 
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
+        if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))
         {
-            var messageList = chatHistoryFromPrompt.ToChatMessageList();
-            return chatClient.GetResponseAsync(messageList, chatOptions, cancellationToken);
+            chatHistory = [new ChatMessageContent(AuthorRole.User, prompt)];
         }
 
-        return chatClient.GetResponseAsync(prompt, chatOptions, cancellationToken);
+        // Check if the execution settings is present and attempt to prepare the chat history for the request
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
+
+        var messageList = chatHistory.ToChatMessageList();
+        return chatClient.GetResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
     /// <summary>Get ChatClient streaming response for the prompt, settings and kernel.</summary>
@@ -58,14 +64,21 @@ public static class ChatClientExtensions
         var chatOptions = executionSettings.ToChatOptions(kernel);
 
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
+        if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))
         {
-            var messageList = chatHistoryFromPrompt.ToChatMessageList();
-            return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
+            chatHistory = [new ChatMessageContent(AuthorRole.User, prompt)];
         }
 
+        // Check if the execution settings is present and attempt to prepare the chat history for the request
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
+
+        var messageList = chatHistory.ToChatMessageList();
+
         // Otherwise, use the prompt as the chat user message
-        return chatClient.GetStreamingResponseAsync(prompt, chatOptions, cancellationToken);
+        return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
     /// <summary>Creates an <see cref="IChatCompletionService"/> for the specified <see cref="IChatClient"/>.</summary>

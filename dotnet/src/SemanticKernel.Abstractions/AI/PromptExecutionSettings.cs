@@ -167,6 +167,22 @@ public class PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// When some specialized <see cref="ChatHistory"/> is used, this method can be overridden to prepare the chat history before the request is sent based on the
+    /// current settings configuration
+    /// </summary>
+    /// <param name="chatHistory">Chat history to prepare.</param>
+    /// <returns>Returns the prepared chat history.</returns>
+    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory) => chatHistory;
+
+    /// <summary>
+    /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
+    /// without the need to make the <see cref="PrepareChatHistoryForRequest"/> public.
+    /// </summary>
+    /// <param name="chatHistory">Target chat history to prepare.</param>
+    /// <returns>Prepared chat history.</returns>
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
+
     #region private ================================================================================
 
     private string? _modelId;
