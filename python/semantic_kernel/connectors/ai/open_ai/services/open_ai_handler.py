@@ -5,6 +5,7 @@ from abc import ABC
 from typing import Any, Union
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError, _legacy_response
+from openai._types import NOT_GIVEN, FileTypes, NotGiven
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
@@ -122,11 +123,40 @@ class OpenAIHandler(KernelBaseModel, ABC):
     async def _send_text_to_image_request(self, settings: OpenAITextToImageExecutionSettings) -> ImagesResponse:
         """Send a request to the OpenAI text to image endpoint."""
         try:
-            return await self.client.images.generate(
+            response: ImagesResponse = await self.client.images.generate(
                 **settings.prepare_settings_dict(),
             )
+            self.store_usage(response)
+            return response
         except Exception as ex:
             raise ServiceResponseException(f"Failed to generate image: {ex}") from ex
+
+    async def _send_image_edit_request(
+        self,
+        image: list[FileTypes],
+        settings: OpenAITextToImageExecutionSettings,
+        mask: FileTypes | NotGiven = NOT_GIVEN,
+    ) -> ImagesResponse:
+        """Send a request to the OpenAI image edit endpoint.
+
+        Args:
+            image: List of image files to edit. Accepts file paths or bytes.
+            settings: Image edit execution settings.
+            mask: Optional mask image. Accepts file path or bytes.
+
+        Returns:
+            ImagesResponse: The response from the image edit API.
+        """
+        try:
+            response: ImagesResponse = await self.client.images.edit(
+                image=image,
+                mask=mask,
+                **settings.prepare_settings_dict(),
+            )
+            self.store_usage(response)
+            return response
+        except Exception as ex:
+            raise ServiceResponseException(f"Failed to edit image: {ex}") from ex
 
     async def _send_audio_to_text_request(self, settings: OpenAIAudioToTextExecutionSettings) -> Transcription:
         """Send a request to the OpenAI audio to text endpoint."""
@@ -187,12 +217,19 @@ class OpenAIHandler(KernelBaseModel, ABC):
         | Completion
         | AsyncStream[ChatCompletionChunk]
         | AsyncStream[Completion]
-        | CreateEmbeddingResponse,
+        | CreateEmbeddingResponse
+        | ImagesResponse,
     ):
         """Store the usage information from the response."""
-        if not isinstance(response, AsyncStream) and response.usage:
+        if isinstance(response, ImagesResponse) and hasattr(response, "usage") and response.usage:
+            logger.info(f"OpenAI image usage: {response.usage}")
+            self.prompt_tokens += response.usage.input_tokens
+            self.total_tokens += response.usage.total_tokens
+            self.completion_tokens += response.usage.output_tokens
+            return
+        if not isinstance(response, AsyncStream) and not isinstance(response, ImagesResponse) and response.usage:
             logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.total_tokens += response.usage.total_tokens
             if hasattr(response.usage, "completion_tokens"):
-                self.completion_tokens += response.usage.completion_tokens
+                self.completion_tokens += response.usage.completion_tokens  # type: ignore
