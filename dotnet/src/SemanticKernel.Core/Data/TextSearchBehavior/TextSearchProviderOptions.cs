@@ -34,7 +34,7 @@ public sealed class TextSearchProviderOptions
     }
 
     /// <summary>
-    /// The filter expression to apply to the search query.
+    /// Gets or sets the filter expression to apply to the search query.
     /// </summary>
     public TextSearchFilter? Filter { get; init; }
 
