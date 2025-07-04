@@ -263,4 +263,56 @@ public class TextSearchProviderTests
         // Assert
         Assert.Equal("Custom formatted context with 2 results.", result.Instructions);
     }
+
+    [Fact]
+    public async Task SearchAsyncRespectsFilterOption()
+    {
+        // Arrange
+        var mockTextSearch = new Mock<ITextSearch>();
+        var searchResults = new Mock<IAsyncEnumerable<TextSearchResult>>();
+        var mockEnumerator = new Mock<IAsyncEnumerator<TextSearchResult>>();
+
+        // 模拟被过滤的结果
+        var filteredResult = new TextSearchResult("Filtered Content") { Name = "FilteredDoc", Link = "http://example.com/filtered" };
+        var results = new List<TextSearchResult> { filteredResult };
+
+        mockEnumerator.SetupSequence(e => e.MoveNextAsync())
+            .ReturnsAsync(true)
+            .ReturnsAsync(false);
+
+        mockEnumerator.SetupSequence(e => e.Current)
+            .Returns(filteredResult);
+
+        searchResults.Setup(r => r.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
+            .Returns(mockEnumerator.Object);
+
+        TextSearchFilter? capturedFilter = null;
+        mockTextSearch.Setup(ts => ts.GetTextSearchResultsAsync(
+                It.IsAny<string>(),
+                It.IsAny<TextSearchOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, TextSearchOptions?, CancellationToken>((q, opts, ct) =>
+            {
+                capturedFilter = opts?.Filter;
+            })
+            .ReturnsAsync(new KernelSearchResults<TextSearchResult>(searchResults.Object));
+
+        var filter = new TextSearchFilter().Equality("Name", "FilteredDoc");
+        var options = new TextSearchProviderOptions
+        {
+            Filter = filter
+        };
+
+        var provider = new TextSearchProvider(mockTextSearch.Object, options: options);
+
+        // Act
+        var result = await provider.SearchAsync("Sample user question?", CancellationToken.None);
+
+        // Assert
+        Assert.Contains("Filtered Content", result);
+        Assert.Contains("SourceDocName: FilteredDoc", result);
+        Assert.Contains("SourceDocLink: http://example.com/filtered", result);
+        Assert.NotNull(capturedFilter);
+        Assert.Equal(filter, capturedFilter);
+    }
 }
