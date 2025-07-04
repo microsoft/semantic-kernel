@@ -45,7 +45,13 @@ internal static class AssistantMessageFactory
         {
             if (content is TextContent textContent)
             {
-                yield return MessageContent.FromText(content.ToString());
+                var text = content.ToString();
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    // Message content must be non-empty.
+                    continue;
+                }
+                yield return MessageContent.FromText(text);
             }
             else if (content is ImageContent imageContent)
             {

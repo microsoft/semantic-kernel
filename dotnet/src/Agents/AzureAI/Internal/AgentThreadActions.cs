@@ -65,10 +65,16 @@ internal static class AgentThreadActions
             return;
         }
 
+        var contentBlocks = AgentMessageFactory.GetMessageContent(message);
+        if (!contentBlocks.Any())
+        {
+            return;
+        }
+
         await client.Messages.CreateMessageAsync(
             threadId,
             role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
-            contentBlocks: AgentMessageFactory.GetMessageContent(message),
+            contentBlocks: contentBlocks,
             attachments: AgentMessageFactory.GetAttachments(message),
             metadata: AgentMessageFactory.GetMetadata(message),
             cancellationToken).ConfigureAwait(false);

@@ -17,7 +17,7 @@ public class Step02a_SequentialCancellation(ITestOutputHelper output) : BaseOrch
     {
         // Define the agents
         ChatCompletionAgent agent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 """
                 If the input message is a number, return the number incremented by one.
                 """,

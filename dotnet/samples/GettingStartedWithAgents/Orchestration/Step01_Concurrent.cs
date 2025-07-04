@@ -21,12 +21,12 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
     {
         // Define the agents
         ChatCompletionAgent physicist =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an expert in physics. You answer questions from a physics perspective.",
                 name: "Physicist",
                 description: "An expert in physics");
         ChatCompletionAgent chemist =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an expert in chemistry. You answer questions from a chemistry perspective.",
                 name: "Chemist",
                 description: "An expert in chemistry");

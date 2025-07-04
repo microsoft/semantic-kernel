@@ -19,7 +19,7 @@ public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : Bas
     {
         // Define the agents
         ChatCompletionAgent writer =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "CopyWriter",
                 description: "A copy writer",
                 instructions:
@@ -32,7 +32,7 @@ public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : Bas
                 Consider suggestions when refining an idea.
                 """);
         ChatCompletionAgent editor =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Reviewer",
                 description: "An editor.",
                 instructions:
@@ -73,7 +73,7 @@ public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : Bas
         await runtime.StartAsync();
 
         // Run the orchestration
-        string input = "Create a slogon for a new eletric SUV that is affordable and fun to drive.";
+        string input = "Create a slogan for a new electric SUV that is affordable and fun to drive.";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
