@@ -272,7 +272,7 @@ public class TextSearchProviderTests
         var searchResults = new Mock<IAsyncEnumerable<TextSearchResult>>();
         var mockEnumerator = new Mock<IAsyncEnumerator<TextSearchResult>>();
 
-        // 模拟被过滤的结果
+        // Simulate the filtered results
         var filteredResult = new TextSearchResult("Filtered Content") { Name = "FilteredDoc", Link = "http://example.com/filtered" };
         var results = new List<TextSearchResult> { filteredResult };
 
