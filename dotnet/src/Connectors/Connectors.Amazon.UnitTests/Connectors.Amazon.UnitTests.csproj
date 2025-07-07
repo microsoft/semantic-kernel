@@ -9,7 +9,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup>
-      <NoWarn>$(NoWarn);CS1591;CA2007;VSTHRD111;SKEXP0001;SKEXP0070</NoWarn>
+      <NoWarn>$(NoWarn);CS1591;CA2007;VSTHRD111;SKEXP0001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

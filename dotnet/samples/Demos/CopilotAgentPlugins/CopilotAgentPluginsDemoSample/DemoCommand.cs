@@ -238,7 +238,6 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                     loggingBuilder.AddProvider(new SemanticKernelLoggerProvider());
                 });
         }
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0001
         return (builder.AddOllamaChatCompletion(
                 chatModelId,
@@ -253,7 +252,6 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                 )
                 });
 #pragma warning restore SKEXP0001
-#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     private static (Kernel, PromptExecutionSettings) InitializeAzureOpenAiKernel(IConfiguration configuration, bool enableLogging)

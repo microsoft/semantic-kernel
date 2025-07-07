@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
-#pragma warning disable SKEXP0070
 
 namespace AIModelRouter;
 
