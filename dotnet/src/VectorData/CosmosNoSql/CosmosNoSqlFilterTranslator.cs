@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -100,46 +102,74 @@ internal class CosmosNoSqlFilterTranslator
     }
 
     private void TranslateConstant(ConstantExpression constant)
+        => this.TranslateConstant(constant.Value);
+
+    private void TranslateConstant(object? value)
     {
-        // TODO: Nullable
-        switch (constant.Value)
+        switch (value)
         {
-            case byte b:
-                this._sql.Append(b);
+            case byte v:
+                this._sql.Append(v);
                 return;
-            case short s:
-                this._sql.Append(s);
+            case short v:
+                this._sql.Append(v);
                 return;
-            case int i:
-                this._sql.Append(i);
+            case int v:
+                this._sql.Append(v);
                 return;
-            case long l:
-                this._sql.Append(l);
-                return;
-
-            case string s:
-                this._sql.Append('"').Append(s.Replace(@"\", @"\\").Replace("\"", "\\\"")).Append('"');
-                return;
-            case bool b:
-                this._sql.Append(b ? "true" : "false");
-                return;
-            case Guid g:
-                this._sql.Append('"').Append(g.ToString()).Append('"');
+            case long v:
+                this._sql.Append(v);
                 return;
 
-            case DateTime:
-            case DateTimeOffset:
-                throw new NotImplementedException();
+            case float v:
+                this._sql.Append(v);
+                return;
+            case double v:
+                this._sql.Append(v);
+                return;
 
-            case Array:
-                throw new NotImplementedException();
+            case string v:
+                this._sql.Append('"').Append(v.Replace(@"\", @"\\").Replace("\"", "\\\"")).Append('"');
+                return;
+            case bool v:
+                this._sql.Append(v ? "true" : "false");
+                return;
+            case Guid v:
+                this._sql.Append('"').Append(v.ToString()).Append('"');
+                return;
+
+            case DateTimeOffset v:
+                // Cosmos doesn't support DateTimeOffset with non-zero offset, so we convert it to UTC.
+                // See https://github.com/dotnet/efcore/issues/35310
+                this._sql
+                    .Append('"')
+                    .Append(v.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture))
+                    .Append("Z\"");
+                return;
+
+            case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
+                this._sql.Append('[');
+
+                var i = 0;
+                foreach (var element in v)
+                {
+                    if (i++ > 0)
+                    {
+                        this._sql.Append(',');
+                    }
+
+                    this.TranslateConstant(element);
+                }
+
+                this._sql.Append(']');
+                return;
 
             case null:
                 this._sql.Append("null");
                 return;
 
             default:
-                throw new NotSupportedException("Unsupported constant type: " + constant.Value.GetType().Name);
+                throw new NotSupportedException("Unsupported constant type: " + value.GetType().Name);
         }
     }
 
