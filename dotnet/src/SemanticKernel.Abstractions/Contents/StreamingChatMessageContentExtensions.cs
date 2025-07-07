@@ -15,6 +15,8 @@ public static class StreamingChatMessageContentExtensions
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
     public static ChatResponseUpdate ToChatResponseUpdate(this StreamingChatMessageContent content)
     {
+        Verify.NotNull(content);
+
         ChatResponseUpdate update = new()
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,

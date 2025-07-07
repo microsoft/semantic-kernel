@@ -13,6 +13,8 @@ public static class ChatMessageContentExtensions
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
     public static ChatMessage ToChatMessage(this ChatMessageContent content)
     {
+        Verify.NotNull(content);
+
         ChatMessage message = new()
         {
             AdditionalProperties = content.Metadata is not null ? new(content.Metadata) : null,
