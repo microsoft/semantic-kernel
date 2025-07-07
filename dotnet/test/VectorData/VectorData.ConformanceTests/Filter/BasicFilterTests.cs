@@ -539,8 +539,6 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
         }
     }
 
-#pragma warning disable CS1819 // Properties should not return arrays
-#pragma warning disable CA1819 // Properties should not return arrays
     public class FilterRecord
     {
         public TKey Key { get; set; } = default!;
@@ -553,8 +551,6 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
         public string[] StringArray { get; set; } = null!;
         public List<string> StringList { get; set; } = null!;
     }
-#pragma warning restore CA1819 // Properties should not return arrays
-#pragma warning restore CS1819
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, FilterRecord>
     {
