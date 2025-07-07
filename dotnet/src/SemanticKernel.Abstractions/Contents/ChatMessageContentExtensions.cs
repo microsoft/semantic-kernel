@@ -1,14 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
 
-internal static class ChatMessageContentExtensions
+/// <summary>Provides extension methods for <see cref="ChatMessageContent"/>.</summary>
+[Experimental("SKEXP0001")]
+public static class ChatMessageContentExtensions
 {
     /// <summary>Converts a <see cref="ChatMessageContent"/> to a <see cref="ChatMessage"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatMessage ToChatMessage(this ChatMessageContent content)
+    public static ChatMessage ToChatMessage(this ChatMessageContent content)
     {
         ChatMessage message = new()
         {
