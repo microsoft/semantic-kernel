@@ -425,7 +425,8 @@ async def test_invoke_with_max_round_count_exceeded():
         finally:
             await runtime.stop_when_idle()
 
-        assert result.content == "Max round count reached."
+        # Partial result will be returned when max round count is exceeded.
+        assert result.content == mock_get_chat_message_content.return_value.content
         assert mock_invoke_stream.call_count == 1
         # Planning will be called once, so the facts and plan will be created once.
         assert mock_get_chat_message_content.call_count == 2
@@ -472,7 +473,9 @@ async def test_invoke_with_max_reset_count_exceeded():
         finally:
             await runtime.stop_when_idle()
 
-        assert result.content == "Max reset count reached."
+        # Partial result will be returned when max reset count is exceeded. The test emits content based on the prompt
+        # so check that the content is not None and not an exact match to a mock response.
+        assert result.content is not None
         assert mock_invoke_stream.call_count == 1
         # Planning and replanning will be each called once, so the facts and plan will be created twice.
         assert mock_get_chat_message_content.call_count == 4
