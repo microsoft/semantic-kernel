@@ -138,7 +138,6 @@ internal abstract class SqlFilterTranslator
 
     protected virtual void TranslateConstant(object? value)
     {
-        // TODO: Nullable
         switch (value)
         {
             case byte b:
@@ -152,6 +151,16 @@ internal abstract class SqlFilterTranslator
                 return;
             case long l:
                 this._sql.Append(l);
+                return;
+
+            case float f:
+                this._sql.Append(f);
+                return;
+            case double d:
+                this._sql.Append(d);
+                return;
+            case decimal d:
+                this._sql.Append(d);
                 return;
 
             case string untrustedInput:
@@ -169,7 +178,11 @@ internal abstract class SqlFilterTranslator
             case DateTime dateTime:
             case DateTimeOffset dateTimeOffset:
             case Array:
-                throw new NotImplementedException();
+#if NET8_0_OR_GREATER
+            case DateOnly dateOnly:
+            case TimeOnly timeOnly:
+#endif
+                throw new UnreachableException("Database-specific format, needs to be implemented in the provider's derived translator.");
 
             case null:
                 this._sql.Append("NULL");
@@ -350,11 +363,12 @@ internal abstract class SqlFilterTranslator
         }
 
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
         unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != property.Type && convertType != typeof(object))
+            if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
             }
