@@ -28,7 +28,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private string? _responseMimeType;
     private object? _responseSchema;
     private string? _cachedContent;
-    private Dictionary<string, string>? _labels;
+    private IDictionary<string, string>? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
     private GeminiThinkingConfig? _thinkingConfig;
@@ -152,7 +152,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// </value>
     [JsonPropertyName("labels")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string>? Labels
+    public IDictionary<string, string>? Labels
     {
         get => this._labels;
         set

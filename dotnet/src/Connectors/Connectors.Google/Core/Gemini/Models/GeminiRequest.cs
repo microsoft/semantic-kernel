@@ -48,7 +48,7 @@ internal sealed class GeminiRequest
 
     [JsonPropertyName("labels")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string>? Labels { get; set; }
+    public IDictionary<string, string>? Labels { get; set; }
 
     public void AddFunction(GeminiFunction function)
     {
