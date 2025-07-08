@@ -12,7 +12,7 @@ namespace GettingStarted;
 /// </summary>
 public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected override bool ForceOpenAI { get; set; } = true;
+    protected override bool ForceOpenAI { get; } = true;
 
     [Fact]
     public async Task SalesAssistantAgent()
