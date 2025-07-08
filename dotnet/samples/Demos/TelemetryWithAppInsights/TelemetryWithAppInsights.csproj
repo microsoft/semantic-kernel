@@ -7,7 +7,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait" -->
-    <NoWarn>$(NoWarn);CA1024;CA1050;CA1707;CA2007;CS1591;VSTHRD111,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0001</NoWarn>
+    <NoWarn>$(NoWarn);CA1024;CA1050;CA1707;CA2007;CS1591;VSTHRD111,SKEXP0050,SKEXP0060,SKEXP0001</NoWarn>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
 
