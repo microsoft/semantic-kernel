@@ -299,26 +299,33 @@ def generate_bing_grounding_content(
 @experimental
 def generate_azure_ai_search_content(
     agent_name: str, azure_ai_search_tool_call: "RunStepAzureAISearchToolCall"
-) -> ChatMessageContent:
+) -> ChatMessageContent | None:
     """Generate function result content related to an Azure AI Search Tool."""
-    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
     # Azure AI Search tool call contains both tool call input and output
-    message_content.items.append(
-        FunctionCallContent(
-            id=azure_ai_search_tool_call.id,
-            name=azure_ai_search_tool_call.type,
-            function_name=azure_ai_search_tool_call.type,
-            arguments=azure_ai_search_tool_call.azure_ai_search.get("input"),
+    arguments = azure_ai_search_tool_call.azure_ai_search.get("input")
+    if arguments:
+        items.append(
+            FunctionCallContent(
+                id=azure_ai_search_tool_call.id,
+                name=azure_ai_search_tool_call.type,
+                function_name=azure_ai_search_tool_call.type,
+                arguments=arguments,
+                inner_content=azure_ai_search_tool_call,
+            )
         )
-    )
-    message_content.items.append(
-        FunctionResultContent(
-            function_name=azure_ai_search_tool_call.type,
-            id=azure_ai_search_tool_call.id,
-            result=azure_ai_search_tool_call.azure_ai_search.get("output"),
+    result = azure_ai_search_tool_call.azure_ai_search.get("output")
+    if result:
+        items.append(
+            FunctionResultContent(
+                function_name=azure_ai_search_tool_call.type,
+                id=azure_ai_search_tool_call.id,
+                result=result,
+                inner_content=azure_ai_search_tool_call,
+            )
         )
-    )
-    return message_content
+    return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=items) if items else None  # type: ignore
 
 
 @experimental
@@ -506,29 +513,39 @@ def generate_streaming_azure_ai_search_content(
     for index, tool in enumerate(step_details.tool_calls):
         if tool.type == "azure_ai_search":
             azure_ai_search_tool = cast(RunStepAzureAISearchToolCall, tool)
-            arguments = getattr(azure_ai_search_tool, "azure_ai_search", None)
-            items.append(
-                FunctionCallContent(
-                    id=azure_ai_search_tool.id,
-                    index=index,
-                    name=azure_ai_search_tool.type,
-                    function_name=azure_ai_search_tool.type,
-                    arguments=arguments,
+            azure_ai_search_dict: dict = azure_ai_search_tool.get("azure_ai_search", None)
+            arguments = azure_ai_search_dict.get("input", {}) if azure_ai_search_dict else None
+            if arguments:
+                items.append(
+                    FunctionCallContent(
+                        id=azure_ai_search_tool.id,
+                        index=index,
+                        name=azure_ai_search_tool.type,
+                        function_name=azure_ai_search_tool.type,
+                        arguments=arguments,
+                        inner_content=azure_ai_search_tool,
+                    )
                 )
-            )
-            items.append(
-                FunctionResultContent(
-                    function_name=azure_ai_search_tool.type,
-                    id=azure_ai_search_tool.id,
-                    result=azure_ai_search_tool.azure_ai_search.get("output"),
+            result = azure_ai_search_dict.get("output", {}) if azure_ai_search_dict else None
+            if result:
+                items.append(
+                    FunctionResultContent(
+                        function_name=azure_ai_search_tool.type,
+                        id=azure_ai_search_tool.id,
+                        result=result,
+                        inner_content=azure_ai_search_tool,
+                    )
                 )
-            )
 
-    return StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT,
-        name=agent_name,
-        choice_index=0,
-        items=items,  # type: ignore
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            choice_index=0,
+            items=items,  # type: ignore
+        )
+        if items
+        else None
     )  # type: ignore
 
 
