@@ -145,7 +145,7 @@ internal sealed class WeaviateMapper<TRecord>
                 if (dataPropertiesJson.TryGetPropertyValue(property.StorageName, out var dataValue))
                 {
                     // TODO: NativeAOT support, #11963
-                    property.SetValueAsObject(record, dataValue.Deserialize(property.Type, this._jsonSerializerOptions));
+                    property.SetValueAsObject(record, dataValue?.Deserialize(property.Type, this._jsonSerializerOptions));
                 }
             }
         }

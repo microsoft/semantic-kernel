@@ -72,7 +72,13 @@ internal class MongoFilterTranslator
     {
         if (value is null)
         {
-            throw new NotSupportedException("MongogDB does not support null checks in vector search pre-filters");
+            throw new NotSupportedException("MongoDB does not support null checks in vector search pre-filters");
+        }
+
+        if (value is DateTime or decimal or IList)
+        {
+            // Operand type is not supported for $vectorSearch: date/decimal
+            throw new NotSupportedException($"MongoDB does not support type {value.GetType().Name} in vector search pre-filters.");
         }
 
         // Short form of equality (instead of $eq)
@@ -261,11 +267,12 @@ internal class MongoFilterTranslator
         }
 
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
         unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != property.Type && convertType != typeof(object))
+            if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
             }

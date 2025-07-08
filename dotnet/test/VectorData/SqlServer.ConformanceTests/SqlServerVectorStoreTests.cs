@@ -395,9 +395,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         public long Number64 { get; set; }
 
         [VectorStoreData(StorageName = "bytes")]
-#pragma warning disable CA1819 // Properties should not return arrays
         public byte[]? Bytes { get; set; }
-#pragma warning restore CA1819 // Properties should not return arrays
 
         [VectorStoreVector(Dimensions: 10, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
