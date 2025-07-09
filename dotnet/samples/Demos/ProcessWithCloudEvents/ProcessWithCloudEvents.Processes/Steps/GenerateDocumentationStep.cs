@@ -29,12 +29,12 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// <summary>
     /// Output events of the step, using this since 2 steps emit the same output event
     /// </summary>
-    public static class OutputEvents
+    public static new class StepEvents
     {
         /// <summary>
         /// Document Generated output event
         /// </summary>
-        public const string DocumentationGenerated = nameof(DocumentationGenerated);
+        public static readonly KernelProcessEventDescriptor<DocumentInfo> DocumentationGenerated = new(nameof(DocumentationGenerated));
     }
 
     internal GenerateDocumentationState _state = new();
@@ -84,7 +84,7 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
 
         this._state!.LastGeneratedDocument = generatedContent;
 
-        await context.EmitEventAsync(OutputEvents.DocumentationGenerated, generatedContent);
+        await context.EmitEventAsync(StepEvents.DocumentationGenerated, generatedContent);
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
 
         this._state!.LastGeneratedDocument = updatedContent;
 
-        await context.EmitEventAsync(OutputEvents.DocumentationGenerated, updatedContent);
+        await context.EmitEventAsync(StepEvents.DocumentationGenerated, updatedContent);
     }
 }
 

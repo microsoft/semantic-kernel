@@ -17,16 +17,16 @@ public class ProofReadDocumentationStep : KernelProcessStep
     /// <summary>
     /// SK Process Events emitted by <see cref="ProofReadDocumentationStep"/>
     /// </summary>
-    public static class OutputEvents
+    public static new class StepEvents
     {
         /// <summary>
         /// Document has errors and needs to be revised event
         /// </summary>
-        public const string DocumentationRejected = nameof(DocumentationRejected);
+        public static readonly KernelProcessEventDescriptor<string> DocumentationRejected = new(nameof(DocumentationRejected));
         /// <summary>
         /// Document looks ok and can be processed by the next step
         /// </summary>
-        public const string DocumentationApproved = nameof(DocumentationApproved);
+        public static readonly KernelProcessEventDescriptor<DocumentInfo> DocumentationApproved = new(nameof(DocumentationApproved));
     }
 
     private readonly string _systemPrompt = """"
@@ -70,16 +70,13 @@ public class ProofReadDocumentationStep : KernelProcessStep
         {
             // Events that are getting piped to steps that will be resumed, like PublishDocumentationStep.OnPublishDocumentation
             // require events to be marked as public so they are persisted and restored correctly
-            await context.EmitEventAsync(OutputEvents.DocumentationApproved, data: document, visibility: KernelProcessEventVisibility.Public);
+            await context.EmitEventAsync(StepEvents.DocumentationApproved, document);
         }
         else
         {
-            await context.EmitEventAsync(new()
-            {
-                Id = OutputEvents.DocumentationRejected,
+            await context.EmitEventAsync(StepEvents.DocumentationRejected,
                 // This event is getting piped to the GenerateDocumentationStep.ApplySuggestionsAsync step which expects a string with suggestions for the document
-                Data = $"Explanation = {formattedResponse.Explanation}, Suggestions = {string.Join(",", formattedResponse.Suggestions)} ",
-            });
+                $"Explanation = {formattedResponse.Explanation}, Suggestions = {string.Join(",", formattedResponse.Suggestions)} ");
         }
     }
 

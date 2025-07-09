@@ -371,7 +371,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     internal virtual Dictionary<string, Dictionary<string, object?>?> GenerateInitialInputs()
     {
-        return this.FindInputChannels(this._functions, this._logger);
+        return this.FindInputChannels(this._functions, this._stepInfo?.OutputEventsData, this._logger);
     }
 
     internal virtual KernelProcessStep GetStepInstance()

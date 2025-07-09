@@ -18,10 +18,10 @@ public class CutFoodStep : KernelProcessStep
         public const string SliceFood = nameof(SliceFood);
     }
 
-    public static class OutputEvents
+    public static new class StepEvents
     {
-        public const string ChoppingReady = nameof(ChoppingReady);
-        public const string SlicingReady = nameof(SlicingReady);
+        public static readonly KernelProcessEventDescriptor<List<string>> ChoppingReady = new(nameof(ChoppingReady));
+        public static readonly KernelProcessEventDescriptor<List<string>> SlicingReady = new(nameof(SlicingReady));
     }
 
     [KernelFunction(ProcessStepFunctions.ChopFood)]
@@ -30,7 +30,7 @@ public class CutFoodStep : KernelProcessStep
         var foodToBeCut = foodActions.First();
         foodActions.Add(this.getActionString(foodToBeCut, "chopped"));
         Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut} has been chopped!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.ChoppingReady, Data = foodActions });
+        await context.EmitEventAsync(StepEvents.ChoppingReady, foodActions);
     }
 
     [KernelFunction(ProcessStepFunctions.SliceFood)]
@@ -39,7 +39,7 @@ public class CutFoodStep : KernelProcessStep
         var foodToBeCut = foodActions.First();
         foodActions.Add(this.getActionString(foodToBeCut, "sliced"));
         Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut} has been sliced!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.SlicingReady, Data = foodActions });
+        await context.EmitEventAsync(StepEvents.SlicingReady, foodActions);
     }
 
     private string getActionString(string food, string action)

@@ -3,8 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -35,20 +39,30 @@ public abstract class ProcessStepBuilder
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
+    /// <param name="isPublic">Determins if the event is accessible outside of the parent process</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnEvent(string eventId)
+    public virtual ProcessStepEdgeBuilder OnEvent(string eventId, bool isPublic = false)
     {
+        if (isPublic)
+        {
+            this.MarkPublicEvent(eventId);
+        }
         // scope the event to this instance of this step
         var scopedEventId = this.GetScopedEventId(eventId);
         return new ProcessStepEdgeBuilder(this, scopedEventId, eventId);
     }
 
-    /// <summary>
-    /// Returns the event Id that is used to identify the result of a function.
-    /// </summary>
-    /// <param name="functionName">Optional: name of the step function the result is expected from</param>
-    /// <returns></returns>
-    public string GetFunctionResultEventId(string? functionName = null)
+    public virtual ProcessStepEdgeBuilder OnEvent<T>(KernelProcessEventDescriptor<T> eventDescriptor, bool isPublic = false)
+    {
+        return this.OnEvent(eventDescriptor.EventName, isPublic);
+    }
+
+	/// <summary>
+	/// Returns the event Id that is used to identify the result of a function.
+	/// </summary>
+	/// <param name="functionName">Optional: name of the step function the result is expected from</param>
+	/// <returns></returns>
+	public string GetFunctionResultEventId(string? functionName = null)
     {
         // TODO: Add a check to see if the function name is valid if provided
         if (string.IsNullOrWhiteSpace(functionName))
@@ -73,6 +87,11 @@ public abstract class ProcessStepBuilder
         }
 
         return $"{this.StepId}.{eventName}";
+    }
+
+    public string GetFullEventId<T>(KernelProcessEventDescriptor<T> eventDescriptor, string? functionName = null)
+    {
+        return this.GetFullEventId(eventDescriptor.EventName, functionName);
     }
 
     /// <summary>
@@ -107,10 +126,15 @@ public abstract class ProcessStepBuilder
     /// <summary>The namespace for events that are scoped to this step.</summary>
     private readonly string _eventNamespace;
 
+    internal JsonSerializerOptions? JsonSerializerOptions { get; set; } = null;
+
     /// <summary>
     /// A mapping of function names to the functions themselves.
     /// </summary>
     internal Dictionary<string, KernelFunctionMetadata> FunctionsDict { get; set; }
+
+    internal Dictionary<string, Dictionary<string, KernelEventTypeData>> InputParametersTypeData { get; init; } = [];
+    internal Dictionary<string, ProcessStepEventData> OutputStepEvents { get; init; } = [];
 
     /// <summary>
     /// A mapping of event Ids to the edges that are triggered by those events.
@@ -120,7 +144,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The process builder that this step is a part of. This may be null if the step is itself a process.
     /// </summary>
-    internal ProcessBuilder? ProcessBuilder { get; }
+    internal ProcessBuilder? ProcessBuilder { get; set; }
 
     /// <summary>
     /// Builds the step with step state
@@ -163,6 +187,21 @@ public abstract class ProcessStepBuilder
         return this.FunctionsDict.Keys.First();
     }
 
+    internal void MarkPublicEvent(string eventId)
+    {
+        if (this.OutputStepEvents.TryGetValue(eventId, out var stepEventData) && stepEventData != null)
+        {
+            stepEventData.IsPublic = true;
+
+            // Update parent process as well since this step event is an output edge of the process
+            this.ProcessBuilder?.AddOutputEventToProcess(stepEventData with { IsPublic = false });
+
+            return;
+        }
+
+        throw new KernelException($"The event {eventId} does not exist on step {this.StepId}.");
+    }
+
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
     /// </summary>
@@ -181,8 +220,11 @@ public abstract class ProcessStepBuilder
 
     internal static bool FilterSupportedParameterTypes(Type? parameterType, bool hasDefaultValue = false)
     {
-        if (parameterType != typeof(KernelProcessStepContext) &&
-            parameterType != typeof(KernelProcessStepExternalContext))
+        // Should match parameters piped in in StepExtensions.FindInputChannels
+        if (parameterType != typeof(Kernel) &&
+            parameterType != typeof(KernelProcessStepContext) &&
+            parameterType != typeof(KernelProcessStepExternalContext) &&
+            parameterType != typeof(AgentDefinition))
         {
             return !hasDefaultValue;
         }
@@ -308,14 +350,173 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// <param name="id">The unique id of the step.</param>
     /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilderTyped(Type stepType, string id, ProcessBuilder? processBuilder, object? initialState = default)
+    internal ProcessStepBuilderTyped(Type stepType, string id, ProcessBuilder? processBuilder, object? initialState = default, JsonSerializerOptions? jsonSerializerOptions = null)
         : base(id, processBuilder)
     {
         Verify.NotNull(stepType);
 
+        this.JsonSerializerOptions ??= jsonSerializerOptions;
+
         this._stepType = stepType;
         this.FunctionsDict = this.GetFunctionMetadataMap();
         this._initialState = initialState;
+
+        this.InputParametersTypeData = this.GetInputParameterFunctionDataMap(this.FunctionsDict);
+        this.OutputStepEvents = this.ExtractStepOutputEvents(stepType, this.FunctionsDict);
+    }
+
+    internal Dictionary<string, Dictionary<string, KernelEventTypeData>> GetInputParameterFunctionDataMap(IDictionary<string, KernelFunctionMetadata> functionDict)
+    {
+        var inputDataDict = new Dictionary<string, Dictionary<string, KernelEventTypeData>>();
+
+        foreach (var kvp in functionDict)
+        {
+            var parameters = kvp.Value.Parameters;
+            if (!inputDataDict.TryGetValue(kvp.Key, out Dictionary<string, KernelEventTypeData>? value))
+            {
+                value = new Dictionary<string, KernelEventTypeData>();
+                inputDataDict[kvp.Key] = value;
+            }
+
+            foreach (var parameter in parameters)
+            {
+                if (FilterSupportedParameterTypes(parameter.ParameterType, hasDefaultValue: parameter.DefaultValue != null))
+                {
+                    value[parameter.Name] = parameter.ToKernelEventTypeData();
+                }
+            }
+        }
+
+        return inputDataDict;
+    }
+
+    /// <summary>
+    /// Inspects default function return data if any, since this could be used with the <see cref="ProcessStepBuilder.OnFunctionResult(string?)"/> method
+    /// </summary>
+    /// <param name="functionDict"></param>
+    /// <returns></returns>
+    internal Dictionary<string, ProcessStepEventData> ExtractOnFunctionResultEventsData(IDictionary<string, KernelFunctionMetadata> functionDict)
+    {
+        var eventDataDict = new Dictionary<string, ProcessStepEventData>();
+
+        foreach (var kvp in functionDict)
+        {
+            var eventId = this.GetFunctionResultEventId(kvp.Key);
+            if (kvp.Value.ReturnParameter.Schema != null)
+            {
+                var outputEventData = kvp.Value.ReturnParameter.ToKernelEventTypeData();
+                eventDataDict[eventId] = new(eventId, outputEventData);
+            }
+        }
+
+        return eventDataDict;
+    }
+
+    /// <summary>
+    /// Inspects Custom step implementation to extract custom output events declared in the <see cref="KernelProcessStep.StepEvents"/> class if any.
+    /// </summary>
+    /// <param name="stepType"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
+    internal Dictionary<string, ProcessStepEventData> ExtractCustomOutputEventsData(Type stepType)
+    {
+        if (stepType == null)
+        {
+            throw new ArgumentNullException(nameof(stepType));
+        }
+
+        if (!typeof(KernelProcessStep).IsAssignableFrom(stepType))
+        {
+            throw new ArgumentException($"The type {stepType.Name} must derive from {nameof(KernelProcessStep)}.", nameof(stepType));
+        }
+
+        var stepEventsType = stepType.GetNestedType(nameof(KernelProcessStep.StepEvents), BindingFlags.Public | BindingFlags.Static);
+        if (stepEventsType == null)
+        {
+            // since there is no StepEvents found, attepting to using base class instead in case there is one
+            stepEventsType = stepType.BaseType?.GetNestedType(nameof(KernelProcessStep.StepEvents), BindingFlags.Public | BindingFlags.Static);
+            if (stepEventsType == null)
+            {
+                // no StepEvents found in base class either, log warning, maybe user is only relying on FunctionResult events only
+                //throw new ArgumentException($"No static {nameof(KernelProcessStep.StepEvents)} class found in {stepType.Name}");
+                return [];
+            }
+        }
+
+        var eventClassFields = stepEventsType.GetFields(BindingFlags.Public | BindingFlags.Static);
+        var processEventDescriptors = eventClassFields.Where(field => field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(KernelProcessEventDescriptor<>)).ToList();
+        if (processEventDescriptors.Count == 0)
+        {
+            // no StepEvents found in base class either, log warning, maybe user is only relying on FunctionResult events only
+            //throw new ArgumentException($"No public static fields of type {nameof(KernelProcessEventDescriptor<object>)} found in {stepEventsType.Name}");
+            return [];
+        }
+
+        // TODO: Add logger warning saying that anything that is not a KernelProcessEventDescriptor will be ignored
+
+        var outputEvents = new Dictionary<string, ProcessStepEventData>();
+        foreach (var field in processEventDescriptors)
+        {
+            var eventData = field.GetValue(null);
+            var eventDescriptorType = eventData?.GetType();
+            if (eventDescriptorType != null)
+            {
+                var eventTypeValue = eventDescriptorType.GetProperty(nameof(KernelProcessEventDescriptor<object>.EventType))?.GetValue(eventData);
+                var eventNameValue = eventDescriptorType.GetProperty(nameof(KernelProcessEventDescriptor<object>.EventName))?.GetValue(eventData);
+
+                if (eventTypeValue is Type eventType && eventNameValue is string eventName)
+                {
+                    // Create a new ProcessStepEventData instance
+                    var processStepEventData = KernelEventTypeDataExtensions.FromObjectType((Type)eventTypeValue, this.JsonSerializerOptions!);
+                    if (outputEvents.TryGetValue(eventName, out ProcessStepEventData? value))
+                    {
+                        var assignedDataType = value.EventTypeData?.DataType;
+                        if (assignedDataType != processStepEventData.DataType)
+                        {
+                            throw new InvalidOperationException($"Event {eventName} has already been assigned with data type {assignedDataType?.Name}, cannot assign multiple types to same event name");
+                        }
+                    }
+                    else
+                    {
+                        outputEvents.Add(eventName, new(eventName, processStepEventData));
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException($"The field {field.Name} does not have valid EventType or EventName properties.");
+                }
+            }
+        }
+
+        return outputEvents;
+    }
+
+    internal Dictionary<string, ProcessStepEventData> ExtractStepOutputEvents(Type stepType, IDictionary<string, KernelFunctionMetadata> functionDict)
+    {
+        var stepOutputEvents = new Dictionary<string, ProcessStepEventData>();
+
+        var defaultOutputEvents = this.ExtractOnFunctionResultEventsData(functionDict);
+        if (defaultOutputEvents != null)
+        {
+            foreach (var kvp in defaultOutputEvents)
+            {
+               stepOutputEvents[kvp.Key] = kvp.Value;
+            }
+        }
+
+        var customOutputEvents = this.ExtractCustomOutputEventsData(stepType);
+        foreach (var eventKvp in customOutputEvents)
+        {
+            if (stepOutputEvents.ContainsKey(eventKvp.Key))
+            {
+                throw new KernelException($"The event {eventKvp.Key} has already been defined. All event in a step must be unique.");
+            }
+            stepOutputEvents[eventKvp.Key] = eventKvp.Value;
+        }
+
+        return stepOutputEvents;
     }
 
     /// <summary>
@@ -359,13 +560,17 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Then build the step with the edges and state.
-        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups);
+        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups)
+        {
+            OutputEventsData = this.OutputStepEvents,
+        };
         return builtStep;
     }
 
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
+        // TODO: !!!!
         var metadata = KernelFunctionMetadataFactory.CreateFromType(this._stepType);
         return metadata.ToDictionary(m => m.Name, m => m);
     }
@@ -382,8 +587,8 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : K
     /// <param name="id">The unique Id of the step.</param>
     /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder = null, object? initialState = default)
-        : base(typeof(TStep), id, processBuilder, initialState)
+    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder = null, object? initialState = default, JsonSerializerOptions? jsonSerializerOptions = null)
+        : base(typeof(TStep), id, processBuilder, initialState, jsonSerializerOptions)
     {
     }
 }
