@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a builder for defining the source of a message in a process.
 /// </summary>
-public sealed class MessageSourceBuilder
+public class MessageSourceBuilder
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageSourceBuilder"/> class.
@@ -36,4 +36,20 @@ public sealed class MessageSourceBuilder
     /// The condition that must be met for the message to be processed.
     /// </summary>
     public KernelProcessEdgeCondition Condition { get; }
+}
+
+public sealed class TypedMessageSourceBuilder<T> : MessageSourceBuilder
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageSourceBuilder{T}"/> class.
+    /// </summary>
+    /// <param name="source">The source step builder</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
+    public TypedMessageSourceBuilder(KernelProcessEventDescriptor<T> messageType, ProcessStepBuilder source, KernelProcessEdgeCondition? condition = null)
+        : base(messageType.EventName, source, condition)
+    {
+        this.MessageDescriptor = messageType;
+    }
+
+    public KernelProcessEventDescriptor<T> MessageDescriptor { get; }
 }

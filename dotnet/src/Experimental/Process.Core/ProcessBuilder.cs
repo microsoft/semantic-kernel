@@ -2,12 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
+using Microsoft.SemanticKernel.Process.Serialization;
 using Microsoft.SemanticKernel.Process.Tools;
 
 namespace Microsoft.SemanticKernel;
@@ -36,6 +39,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     internal bool HasParentProcess { get; set; }
 
+    internal Dictionary<string, KernelEventTypeData> InputProcessEvents { get; init; } = [];
+
     /// <summary>
     /// Version of the process, used when saving the state of the process
     /// </summary>
@@ -51,6 +56,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     public string Description { get; init; } = string.Empty;
 
+    public KernelProcessOptions Options { get; init; } = new KernelProcessOptions();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
@@ -58,12 +65,19 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="description">The semantic description of the Process being built.</param>
     /// <param name="processBuilder">ProcessBuilder to copy from</param>
     /// <param name="stateType">The type of the state. This is optional.</param>
-    public ProcessBuilder(string id, string? description = null, ProcessBuilder? processBuilder = null, Type? stateType = null)
+    /// <param name="processOptions"></param>
+    public ProcessBuilder(string id, string? description = null, ProcessBuilder? processBuilder = null, Type? stateType = null, KernelProcessOptions? processOptions = null)
         : base(id, processBuilder)
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
         this.StateType = stateType;
         this.Description = description ?? string.Empty;
+        this.Options = processOptions ?? new KernelProcessOptions();
+
+        if (this.JsonSerializerOptions == null)
+        {
+            this.JsonSerializerOptions = KernelProcessJsonSerializationExtensions.GetKernelProcessCustomJsonSerializationOptions(processOptions?.JsonSerializerAdditionalContexts ?? []);
+        }
     }
 
     /// <summary>
@@ -123,6 +137,29 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         // Merge the function metadata map from each of the entry steps.
         return this._entrySteps.SelectMany(step => step.GetFunctionMetadataMap())
                                .ToDictionary(pair => pair.Key, pair => pair.Value);
+    }
+
+    internal void AddInputEventToProcess(string eventName, Type? inputType)
+    {
+        var processStepEventData = inputType != null ? KernelEventTypeDataExtensions.FromObjectType(inputType, this.JsonSerializerOptions!) : new();
+        this.AddInputEventToProcess(eventName, processStepEventData);
+    }
+
+    internal void AddInputEventToProcess(string eventName, KernelEventTypeData inputTypeData)
+    {
+        // If the event is already registered, we can skip adding it.
+        if (this.InputProcessEvents.ContainsKey(eventName))
+        {
+            // TODO: verify that the event type data is the same as the one already registered.
+            return;
+        }
+        // Add the input event to the process.
+        this.InputProcessEvents.Add(eventName, inputTypeData);
+    }
+
+    internal void AddOutputEventToProcess(ProcessStepEventData outputEvent)
+    {
+        this.OutputStepEvents.Add(outputEvent.EventId, outputEvent);
     }
 
     /// <summary>
@@ -191,7 +228,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this.ProcessBuilder);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this, jsonSerializerOptions: this.JsonSerializerOptions);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -205,7 +242,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this.ProcessBuilder);
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this, jsonSerializerOptions: this.JsonSerializerOptions);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -221,7 +258,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this, initialState: initialState) { JsonSerializerOptions = this.JsonSerializerOptions };
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -250,7 +287,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this, id) { HumanInLoopMode = humanInLoopMode, JsonSerializerOptions = this.JsonSerializerOptions }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -278,7 +315,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode };
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this, id) { HumanInLoopMode = humanInLoopMode, JsonSerializerOptions = this.JsonSerializerOptions };
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -320,7 +357,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode, JsonSerializerOptions = this.JsonSerializerOptions }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -342,7 +379,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess, IReadOnlyList<string>? aliases = null)
     {
+        kernelProcess.ProcessBuilder = this;
         kernelProcess.HasParentProcess = true;
+        kernelProcess.JsonSerializerOptions = this.JsonSerializerOptions;
 
         return this.AddStep(kernelProcess, aliases);
     }
@@ -356,9 +395,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder) { JsonSerializerOptions = this.JsonSerializerOptions };
 
-        ProcessMapBuilder mapBuilder = new(stepBuilder);
+        ProcessMapBuilder mapBuilder = new(stepBuilder) { JsonSerializerOptions = this.JsonSerializerOptions };
 
         return this.AddStep(mapBuilder, aliases);
     }
@@ -374,9 +413,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string id, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id, this.ProcessBuilder, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id, this.ProcessBuilder, initialState: initialState) { JsonSerializerOptions = this.JsonSerializerOptions };
 
-        ProcessMapBuilder mapBuilder = new(stepBuilder);
+        ProcessMapBuilder mapBuilder = new(stepBuilder) { JsonSerializerOptions = this.JsonSerializerOptions };
 
         return this.AddStep(mapBuilder, aliases);
     }
@@ -393,7 +432,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     {
         process.HasParentProcess = true;
 
-        ProcessMapBuilder mapBuilder = new(process);
+        ProcessMapBuilder mapBuilder = new(process) { JsonSerializerOptions = this.JsonSerializerOptions };
 
         return this.AddStep(mapBuilder, aliases);
     }
@@ -459,6 +498,25 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
+    }
+
+
+    public ProcessEdgeBuilder OnInputEvent<T>(KernelProcessEventDescriptor<T> eventDescriptor)
+    {
+        this.AddInputEventToProcess(eventDescriptor.EventName, eventDescriptor.EventType);
+
+        return this.OnInputEvent(eventDescriptor.EventName);
+    }
+
+    /// <inheritdoc/>
+    public override ProcessStepEdgeBuilder OnEvent(string eventId, bool isPublic = false)
+    {
+        if (!this.OutputStepEvents.ContainsKey(eventId))
+        {
+            throw new InvalidOperationException($"Output Event {eventId} is not emitted publicly by {this.StepId}");
+        }
+
+        return base.OnEvent(eventId, isPublic);
     }
 
     /// <summary>

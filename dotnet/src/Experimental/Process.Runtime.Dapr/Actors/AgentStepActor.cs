@@ -41,7 +41,7 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
 
     internal override Dictionary<string, Dictionary<string, object?>?> GenerateInitialInputs()
     {
-        return this.FindInputChannels(this._functions, this._logger, agentDefinition: this._daprAgentStepInfo!.AgentDefinition);
+        return this.FindInputChannels(this._functions, null, this._logger, agentDefinition: this._daprAgentStepInfo!.AgentDefinition);
     }
 
     public async Task InitializeAgentStepAsync(string processId, string stepId, string? parentProcessId)

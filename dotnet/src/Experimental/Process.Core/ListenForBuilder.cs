@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -75,6 +76,29 @@ public sealed class ListenForBuilder
     public ListenForTargetBuilder AllOf(List<MessageSourceBuilder> messageSources)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
+
+        // verify mapped message sources output events do exist
+        foreach (var source in messageSources)
+        {
+            var messageSourceType = source.GetType();
+            Type? eventTypeData = null;
+            if (messageSourceType.IsGenericType && messageSourceType.GetGenericTypeDefinition() == typeof(TypedMessageSourceBuilder<>))
+            {
+                eventTypeData = messageSourceType.GenericTypeArguments.FirstOrDefault();
+            }
+
+            if (source.Source is ProcessBuilder sourceProcessBuilder)
+            {
+                sourceProcessBuilder.AddInputEventToProcess(source.MessageType, eventTypeData);
+            }
+            else
+            {
+                if (!source.Source.OutputStepEvents.ContainsKey(source.MessageType))
+                {
+                    throw new InvalidOperationException($"Output Event {source.MessageType} is not emitted by {source.Source.StepId}");
+                }
+            }
+        }
 
         var edgeGroup = new KernelProcessEdgeGroupBuilder(this.GetGroupId(messageSources), messageSources);
         this._targetBuilder = new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);

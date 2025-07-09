@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -89,6 +91,45 @@ public class ProcessStepEdgeBuilder
     /// <returns>A fresh builder instance for fluid definition</returns>
     public ProcessStepEdgeBuilder SendEventTo(ProcessTargetBuilder target)
     {
+        if (target is ProcessFunctionTargetBuilder functionTarget)
+        {
+            Dictionary<string, KernelEventTypeData>? targetFunctionInput = null;
+            KernelEventTypeData? targetParameter = null;
+            // Some step may not have input parameters, they may just need event trigger, so we need to check if the step has input parameters defined
+            if (functionTarget.Step.InputParametersTypeData.Count > 0 && !functionTarget.Step.InputParametersTypeData.TryGetValue(functionTarget.FunctionName, out targetFunctionInput))
+            {
+                throw new InvalidOperationException($"Step {functionTarget.Step.StepId} does not have input parameter schemas for function {functionTarget.FunctionName}");
+            }
+
+            if (targetFunctionInput != null && functionTarget.ParameterName != null && !targetFunctionInput.TryGetValue(functionTarget.ParameterName, out targetParameter))
+            {
+                throw new InvalidOperationException($"Step {functionTarget.Step.StepId} does not have input parameter schemas for function {functionTarget.FunctionName} and parameter {functionTarget.ParameterName}");
+            }
+
+            // TODO: Typing comparison only works if process uses KernelProcessStepEventMetadata Attribute or OnEvent<TType>
+            if (targetParameter != null && this.Source.OutputStepEvents.TryGetValue(this.EventData.EventName, out var outputEventData) && outputEventData != null)
+            {
+                // If the output event data is not null, we can check if the types match
+                if (outputEventData.EventTypeData?.DataType != targetParameter?.DataType)
+                {
+                    var outputType = outputEventData.EventTypeData?.DataType;
+                    var inputType = targetParameter?.DataType;
+                    if (outputType is null || inputType is null)
+                    {
+                        throw new InvalidOperationException($"Failed to resolve types for output schema {outputType?.Name} or input schema {inputType?.Name}.");
+                    }
+
+                    // TODO: Need to add any additional internal types to skip types compatibility checks
+                    if (inputType != typeof(KernelProcessProxyMessage) && !outputType.IsAssignableFrom(inputType) && !inputType.IsAssignableFrom(outputType))
+                    {
+                        throw new InvalidOperationException($"Output type {outputType.Name} is not assignable to input type {inputType.Name} for event {this.EventData.EventName} in step {this.Source.StepId}.");
+                    }
+
+                    // TODO: Add default schema check
+                }
+            }
+        }
+
         return this.SendEventTo_Internal(target);
     }
 
@@ -129,7 +170,7 @@ public class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder, this.Condition);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, edgeGroupBuilder: this.EdgeGroupBuilder, condition: this.Condition);
     }
 
     /// <summary>
@@ -156,6 +197,16 @@ public class ProcessStepEdgeBuilder
         var targetBuilder = agentStep.GetInvokeAgentFunctionTargetBuilder();
 
         return this.SendEventTo(targetBuilder);
+    }
+
+    public void EmitAsPublicEvent()
+    {
+        if (this.Source is null)
+        {
+            throw new InvalidOperationException("An source must be set before marking the event as public.");
+        }
+
+        this.Source.MarkPublicEvent(this.EventData.EventName);
     }
 
     /// <summary>

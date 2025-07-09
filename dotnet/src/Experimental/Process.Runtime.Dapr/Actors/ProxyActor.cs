@@ -70,7 +70,8 @@ internal sealed class ProxyActor : StepActor, IProxy
         IExternalMessageBuffer actor = this.ProxyFactory.CreateActorProxy<IExternalMessageBuffer>(scopedExternalMessageBufferId, nameof(ExternalMessageBufferActor));
         externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);
 
-        return this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
+        // Proxy step does not emit output events, no output event data is needed
+        return this.FindInputChannels(this._functions, null, this._logger, externalMessageChannelActor);
     }
 
     public async Task InitializeProxyAsync(string processId, string stepId, string? parentProcessId)

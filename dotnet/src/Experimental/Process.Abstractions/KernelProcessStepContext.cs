@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -10,14 +12,17 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelProcessStepContext
 {
     private readonly IKernelProcessMessageChannel _stepMessageChannel;
+    private readonly IReadOnlyDictionary<string, ProcessStepEventData> _outputEventsData;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
     /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
-    public KernelProcessStepContext(IKernelProcessMessageChannel channel)
+    /// <param name="outputEventsData">event data of output events emitted by step</param>
+    public KernelProcessStepContext(IKernelProcessMessageChannel channel, IReadOnlyDictionary<string, ProcessStepEventData>? outputEventsData)
     {
         this._stepMessageChannel = channel;
+        this._outputEventsData = outputEventsData ?? new ReadOnlyDictionary<string, ProcessStepEventData>(new Dictionary<string, ProcessStepEventData>());
     }
 
     /// <summary>
@@ -44,12 +49,43 @@ public sealed class KernelProcessStepContext
     {
         Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
+        var eventVisibility = KernelProcessEventVisibility.Internal;
+        if (this._outputEventsData.TryGetValue(eventId, out var eventData))
+        {
+            if (eventData.IsPublic)
+            {
+                eventVisibility = KernelProcessEventVisibility.Public;
+            }
+        }
+        else
+        {
+            // TODO: Log a warning that the event is not registered in the step metadata -> event mismatch between step implementation and step builder event usage
+            var t = "Event with ID '" + eventId + "' is not registered in the step metadata.";
+        }
+
         return this._stepMessageChannel.EmitEventAsync(
             new KernelProcessEvent
             {
                 Id = eventId,
                 Data = data,
-                Visibility = visibility
+                Visibility = eventVisibility,
             });
+    }
+
+    public ValueTask EmitEventAsync<T>(KernelProcessEventDescriptor<T> eventIdData, object? data = null)
+    {
+        Verify.NotNull(eventIdData, nameof(eventIdData));
+        var eventVisibility = KernelProcessEventVisibility.Internal;
+        if (this._outputEventsData.TryGetValue(eventIdData.EventName, out var eventData))
+        {
+            if (eventData.IsPublic)
+            {
+                eventVisibility = KernelProcessEventVisibility.Public;
+            }
+        }
+
+        // TODO: Runtime check/warning can be added were to validate that the data type matches the expected type of the event.
+
+        return this._stepMessageChannel.EmitEventAsync(new KernelProcessEvent { Id = eventIdData.EventName, Data = data, Visibility = eventVisibility });
     }
 }
