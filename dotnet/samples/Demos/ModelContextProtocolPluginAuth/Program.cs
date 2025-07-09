@@ -24,12 +24,12 @@ if (config["OpenAI:ApiKey"] is not { } apiKey)
 }
 
 // We can customize a shared HttpClient with a custom handler if desired
-var sharedHandler = new SocketsHttpHandler
+using var sharedHandler = new SocketsHttpHandler
 {
     PooledConnectionLifetime = TimeSpan.FromMinutes(2),
     PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1)
 };
-var httpClient = new HttpClient(sharedHandler);
+using var httpClient = new HttpClient(sharedHandler);
 
 var consoleLoggerFactory = LoggerFactory.Create(builder =>
 {
