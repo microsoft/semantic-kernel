@@ -46,8 +46,10 @@ public static class FishAndChipsProcess
         }));
 
         addCondimentsStep
-            .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
+            .OnEvent(AddFishAndChipsCondimentsStep.StepEvents.CondimentsAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
+
+        externalStep.OnEvent(ExternalFishAndChipsStep.StepEvents.FishAndChipsReady).EmitAsPublicEvent();
 
         return processBuilder;
     }
@@ -79,8 +81,10 @@ public static class FishAndChipsProcess
             }));
 
         addCondimentsStep
-            .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
+            .OnEvent(AddFishAndChipsCondimentsStep.StepEvents.CondimentsAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
+
+        externalStep.OnEvent(ExternalFishAndChipsStep.StepEvents.FishAndChipsReady).EmitAsPublicEvent();
 
         return processBuilder;
     }
@@ -92,9 +96,9 @@ public static class FishAndChipsProcess
             public const string AddCondiments = nameof(AddCondiments);
         }
 
-        public static class OutputEvents
+        public static new class StepEvents
         {
-            public const string CondimentsAdded = nameof(CondimentsAdded);
+            public static readonly KernelProcessEventDescriptor<List<string>> CondimentsAdded = new(nameof(CondimentsAdded));
         }
 
         [KernelFunction(ProcessFunctions.AddCondiments)]
@@ -103,12 +107,17 @@ public static class FishAndChipsProcess
             Console.WriteLine($"ADD_CONDIMENTS: Added condiments to Fish & Chips - Fish: {JsonSerializer.Serialize(fishActions)}, Potatoes: {JsonSerializer.Serialize(potatoActions)}");
             fishActions.AddRange(potatoActions);
             fishActions.Add(FoodIngredients.Condiments.ToFriendlyString());
-            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions });
+            await context.EmitEventAsync(StepEvents.CondimentsAdded, fishActions);
         }
     }
 
     private sealed class ExternalFishAndChipsStep : ExternalStep
     {
+        public static new class StepEvents
+        {
+            public static readonly KernelProcessEventDescriptor<List<string>> FishAndChipsReady = new(nameof(ProcessEvents.FishAndChipsReady));
+        }
+
         public ExternalFishAndChipsStep() : base(ProcessEvents.FishAndChipsReady) { }
     }
 }

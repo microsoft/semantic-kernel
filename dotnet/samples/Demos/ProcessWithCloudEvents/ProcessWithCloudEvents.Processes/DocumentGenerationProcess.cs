@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
+using ProcessWithCloudEvents.Processes.Models;
 using ProcessWithCloudEvents.Processes.Steps;
 
 namespace ProcessWithCloudEvents.Processes;
@@ -34,6 +36,13 @@ public static class DocumentGenerationProcess
         public const string UserApprovedDocument = nameof(UserApprovedDocument);
     }
 
+    public static class ProcessInputEvents
+    {
+        public static readonly KernelProcessEventDescriptor<ProductInfo> StartDocumentGeneration = new(nameof(StartDocumentGeneration));
+        public static readonly KernelProcessEventDescriptor<bool> UserApprovedDocument = new(nameof(UserApprovedDocument));
+        public static readonly KernelProcessEventDescriptor<string> UserRejectedDocument = new(nameof(UserRejectedDocument));
+    }
+
     /// <summary>
     /// SK Process topics emitted by <see cref="DocumentGenerationProcess"/>
     /// Topics are used to emit events to external systems
@@ -57,8 +66,8 @@ public static class DocumentGenerationProcess
     /// <returns>instance of <see cref="ProcessBuilder"/></returns>
     public static ProcessBuilder CreateProcessBuilder(string processName = "DocumentationGeneration")
     {
-        // Create the process builder
-        ProcessBuilder processBuilder = new(processName);
+        // Create the process builder 
+        ProcessBuilder processBuilder = new(processName, processOptions: new() { JsonSerializerAdditionalContexts = [DocumentJsonSerializerContext.Default] });
 
         // Add the steps
         var infoGatheringStep = processBuilder.AddStepFromType<GatherProductInfoStep>();
@@ -70,7 +79,7 @@ public static class DocumentGenerationProcess
 
         // Orchestrate the external input events
         processBuilder
-            .OnInputEvent(DocGenerationEvents.StartDocumentGeneration)
+            .OnInputEvent(ProcessInputEvents.StartDocumentGeneration)
             .SendEventTo(new(infoGatheringStep));
 
         processBuilder
@@ -87,39 +96,45 @@ public static class DocumentGenerationProcess
             .SendEventTo(new ProcessFunctionTargetBuilder(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.GenerateDocs));
 
         docsGenerationStep
-            .OnEvent(GenerateDocumentationStep.OutputEvents.DocumentationGenerated)
+            .OnEvent(GenerateDocumentationStep.StepEvents.DocumentationGenerated)
             .SendEventTo(new ProcessFunctionTargetBuilder(docsProofreadStep));
 
         docsProofreadStep
-            .OnEvent(ProofReadDocumentationStep.OutputEvents.DocumentationRejected)
+            .OnEvent(ProofReadDocumentationStep.StepEvents.DocumentationRejected)
             .SendEventTo(new ProcessFunctionTargetBuilder(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.ApplySuggestions));
 
         // When the proofreader approves the documentation, send it to the 'docs' parameter of the docsPublishStep
         // Additionally, the generated document is emitted externally for user approval using the pre-configured proxyStep
         docsProofreadStep
-            .OnEvent(ProofReadDocumentationStep.OutputEvents.DocumentationApproved)
-            .EmitExternalEvent(proxyStep, DocGenerationTopics.RequestUserReview);
+            .OnEvent(ProofReadDocumentationStep.StepEvents.DocumentationApproved)
+            .EmitExternalEvent(proxyStep, DocGenerationTopics.RequestUserReview)
+            .EmitAsPublicEvent();
         //.SendEventTo(new ProcessFunctionTargetBuilder(docsPublishStep, parameterName: "document"));
 
         processBuilder
             .ListenFor()
             .AllOf([
-                new(messageType: ProofReadDocumentationStep.OutputEvents.DocumentationApproved, docsProofreadStep),
-                new(messageType: DocGenerationEvents.UserApprovedDocument, processBuilder),
+                new TypedMessageSourceBuilder<DocumentInfo>(messageType: ProofReadDocumentationStep.StepEvents.DocumentationApproved, docsProofreadStep),
+                new TypedMessageSourceBuilder<bool>(messageType: ProcessInputEvents.UserApprovedDocument, processBuilder),
             ])
             .SendEventTo(new ProcessStepTargetBuilder(docsPublishStep, inputMapping: (inputEvents) =>
             {
                 return new() {
-                    { "document", inputEvents[docsProofreadStep.GetFullEventId(ProofReadDocumentationStep.OutputEvents.DocumentationApproved)] },
-                    { "userApproval", inputEvents[processBuilder.GetFullEventId(DocGenerationEvents.UserApprovedDocument)] },
+                    { "document", inputEvents[docsProofreadStep.GetFullEventId(ProofReadDocumentationStep.StepEvents.DocumentationApproved)] },
+                    { "userApproval", inputEvents[processBuilder.GetFullEventId(ProcessInputEvents.UserApprovedDocument)] },
                 };
             }));
 
         // When event is approved by user, it gets published externally too
         docsPublishStep
             .OnFunctionResult()
-            .EmitExternalEvent(proxyStep, DocGenerationTopics.PublishDocumentation);
+            .EmitExternalEvent(proxyStep, DocGenerationTopics.PublishDocumentation)
+            .EmitAsPublicEvent();
 
         return processBuilder;
     }
 }
+
+[JsonSerializable(typeof(ProductInfo))]
+[JsonSerializable(typeof(DocumentInfo))]
+public partial class DocumentJsonSerializerContext : JsonSerializerContext;

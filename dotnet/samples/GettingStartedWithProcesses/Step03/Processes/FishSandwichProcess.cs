@@ -43,6 +43,8 @@ public static class FishSandwichProcess
             .OnEvent(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
+        externalStep.OnEvent(ProcessEvents.FishSandwichReady).EmitAsPublicEvent();
+
         return processBuilder;
     }
 
@@ -99,6 +101,8 @@ public static class FishSandwichProcess
             .OnEvent(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
+        externalStep.OnEvent(ExternalFriedFishStep.StepEvents.FishSandwichReady).EmitAsPublicEvent();
+
         return processBuilder;
     }
 
@@ -146,6 +150,10 @@ public static class FishSandwichProcess
 
     private sealed class ExternalFriedFishStep : ExternalStep
     {
+        public static new class StepEvents
+        {
+            public static readonly KernelProcessEventDescriptor<List<string>> FishSandwichReady = new(nameof(ProcessEvents.FishSandwichReady));
+        }
         public ExternalFriedFishStep() : base(ProcessEvents.FishSandwichReady) { }
     }
 }

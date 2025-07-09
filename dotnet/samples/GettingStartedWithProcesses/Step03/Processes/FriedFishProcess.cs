@@ -17,7 +17,7 @@ public static class FriedFishProcess
         // When multiple processes use the same final step, the should event marked as public
         // so that the step event can be used as the output event of the process too.
         // In these samples both fried fish and potato fries end with FryStep success
-        public const string FriedFishReady = FryFoodStep.OutputEvents.FriedFoodReady;
+        public const string FriedFishReady = nameof(FryFoodStep.StepEvents.FriedFoodReady);
     }
 
     /// <summary>
@@ -39,15 +39,15 @@ public static class FriedFishProcess
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         gatherIngredientsStep
-            .OnEvent(GatherFriedFishIngredientsStep.OutputEvents.IngredientsGathered)
+            .OnEvent(GatherFriedFishIngredientsStep.StepEvents.IngredientsGathered)
             .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodStep.ProcessStepFunctions.ChopFood));
 
         chopStep
-            .OnEvent(CutFoodStep.OutputEvents.ChoppingReady)
+            .OnEvent(CutFoodStep.StepEvents.ChoppingReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(fryStep));
 
         fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .OnEvent(FryFoodStep.StepEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         return processBuilder;
@@ -75,8 +75,10 @@ public static class FriedFishProcess
             .SendEventTo(new ProcessFunctionTargetBuilder(fryStep));
 
         fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .OnEvent(FryFoodStep.StepEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        fryStep.OnEvent(FryFoodStep.StepEvents.FriedFoodReady).EmitAsPublicEvent();
 
         return processBuilder;
     }
@@ -121,7 +123,7 @@ public static class FriedFishProcess
             .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.ChopFood));
 
         fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .OnEvent(FryFoodStep.StepEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         return processBuilder;

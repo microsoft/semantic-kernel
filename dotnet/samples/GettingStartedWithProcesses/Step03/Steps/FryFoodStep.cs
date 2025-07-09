@@ -17,10 +17,10 @@ public class FryFoodStep : KernelProcessStep
         public const string FryFood = nameof(FryFood);
     }
 
-    public static class OutputEvents
+    public static new class StepEvents
     {
-        public const string FoodRuined = nameof(FoodRuined);
-        public const string FriedFoodReady = nameof(FriedFoodReady);
+        public static readonly KernelProcessEventDescriptor<List<string>> FoodRuined = new(nameof(FoodRuined));
+        public static readonly KernelProcessEventDescriptor<List<string>> FriedFoodReady = new(nameof(FriedFoodReady));
     }
 
     private readonly Random _randomSeed = new();
@@ -38,12 +38,12 @@ public class FryFoodStep : KernelProcessStep
             // Oh no! Food got burnt :(
             foodActions.Add($"{foodToFry}_frying_failed");
             Console.WriteLine($"FRYING_STEP: Ingredient {foodToFry} got burnt while frying :(");
-            await context.EmitEventAsync(new() { Id = OutputEvents.FoodRuined, Data = foodActions });
+            await context.EmitEventAsync(StepEvents.FoodRuined, foodActions);
             return;
         }
 
         foodActions.Add($"{foodToFry}_frying_succeeded");
         Console.WriteLine($"FRYING_STEP: Ingredient {foodToFry} is ready!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodActions, Visibility = KernelProcessEventVisibility.Public });
+        await context.EmitEventAsync(StepEvents.FriedFoodReady, foodActions);
     }
 }

@@ -15,6 +15,6 @@ public class ExternalStep(string externalEventName) : KernelProcessStep
     [KernelFunction]
     public async Task EmitExternalEventAsync(KernelProcessStepContext context, object data)
     {
-        await context.EmitEventAsync(new() { Id = this._externalEventName, Data = data, Visibility = KernelProcessEventVisibility.Public });
+        await context.EmitEventAsync(this._externalEventName, data);
     }
 }

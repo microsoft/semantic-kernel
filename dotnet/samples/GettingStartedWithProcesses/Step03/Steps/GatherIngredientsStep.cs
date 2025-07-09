@@ -14,9 +14,9 @@ public class GatherIngredientsStep : KernelProcessStep
         public const string GatherIngredients = nameof(GatherIngredients);
     }
 
-    public static class OutputEvents
+    public static new class StepEvents
     {
-        public const string IngredientsGathered = nameof(IngredientsGathered);
+        public static readonly KernelProcessEventDescriptor<List<string>> IngredientsGathered = new(nameof(IngredientsGathered));
     }
 
     private readonly FoodIngredients _ingredient;
@@ -45,7 +45,7 @@ public class GatherIngredientsStep : KernelProcessStep
         updatedFoodActions.Add($"{ingredient}_gathered");
 
         Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
-        await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = updatedFoodActions });
+        await context.EmitEventAsync(StepEvents.IngredientsGathered, updatedFoodActions);
     }
 }
 
