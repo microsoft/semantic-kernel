@@ -38,6 +38,7 @@
     <Project Path="samples/Demos/FunctionInvocationApproval/FunctionInvocationApproval.csproj" />
     <Project Path="samples/Demos/HomeAutomation/HomeAutomation.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
+    <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
     <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
