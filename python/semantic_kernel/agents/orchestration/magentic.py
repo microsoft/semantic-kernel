@@ -647,19 +647,32 @@ class MagenticManagerActor(ActorBase):
         if self._context is None:
             raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
 
-        if (
+        hit_round_limit = (
             self._manager.max_round_count is not None and self._context.round_count >= self._manager.max_round_count
-        ) or (self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count):
-            message = (
-                "Max round count reached."
-                if self._manager.max_round_count and self._context.round_count >= self._manager.max_round_count
-                else "Max reset count reached."
+        )
+        hit_reset_limit = (
+            self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count
+        )
+
+        if hit_round_limit or hit_reset_limit:
+            limit_type = "round" if hit_round_limit else "reset"
+            logger.debug(f"Max {limit_type} count reached.")
+
+            # Retrieve the latest assistant content produced so far
+            partial_result = next(
+                (m for m in reversed(self._context.chat_history.messages) if m.role == AuthorRole.ASSISTANT),
+                None,
             )
-            logger.debug(message)
-            if self._result_callback:
-                await self._result_callback(
-                    ChatMessageContent(role=AuthorRole.ASSISTANT, content=message, name=self.__class__.__name__)
+            if partial_result is None:
+                partial_result = ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    content=f"Stopped because the maximum {limit_type} limit was reached. No partial result available.",
+                    name=self.__class__.__name__,
                 )
+
+            if self._result_callback:
+                await self._result_callback(partial_result)
+
             return False
 
         return True
@@ -677,10 +690,7 @@ class MagenticAgentActor(AgentActorBase):
     @message_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: MagenticRequestMessage, ctx: MessageContext) -> None:
@@ -703,7 +713,7 @@ class MagenticAgentActor(AgentActorBase):
     async def _handle_reset_message(self, message: MagenticResetMessage, ctx: MessageContext) -> None:
         """Handle the reset message for the Magentic One group chat."""
         logger.debug(f"{self.id}: Received reset message.")
-        self._chat_history.clear()
+        self._message_cache.clear()
         if self._agent_thread:
             await self._agent_thread.delete()
             self._agent_thread = None

@@ -3,6 +3,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if NET8_0_OR_GREATER
+using System.Globalization;
+#endif
 using System.Linq.Expressions;
 using System.Text;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -34,11 +37,21 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(boolValue ? "1" : "0");
                 return;
             case DateTime dateTime:
-                this._sql.AppendFormat("'{0:yyyy-MM-dd HH:mm:ss}'", dateTime);
+                this._sql.Append('\'').Append(dateTime.ToString("o")).Append('\'');
                 return;
             case DateTimeOffset dateTimeOffset:
-                this._sql.AppendFormat("'{0:yyy-MM-dd HH:mm:ss zzz}'", dateTimeOffset);
+                this._sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
+#if NET8_0_OR_GREATER
+            case DateOnly dateOnly:
+                this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
+                return;
+            case TimeOnly timeOnly:
+                this._sql.AppendFormat(timeOnly.Ticks % 10000000 == 0
+                    ? string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss}'", value)
+                    : string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss\.FFFFFFF}'", value));
+                return;
+#endif
             default:
                 base.TranslateConstant(value);
                 break;
