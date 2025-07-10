@@ -32,7 +32,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
             .Build();
     }
 
-    [Theory(Skip = "This test is for manual verification.")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("phi3")]
     [InlineData("llama3.2")]
     public async Task OllamaChatClientBasicUsageAsync(string modelId)
@@ -56,7 +56,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         this._output.WriteLine($"Response: {response.Text}");
     }
 
-    [Theory(Skip = "This test is for manual verification.")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("phi3")]
     [InlineData("llama3.2")]
     public async Task OllamaChatClientStreamingUsageAsync(string modelId)
@@ -87,7 +87,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         this._output.WriteLine($"Complete response: {responseText}");
     }
 
-    [Theory(Skip = "This test is for manual verification.")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("phi3")]
     public async Task OllamaChatClientWithOptionsAsync(string modelId)
     {
@@ -116,7 +116,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         this._output.WriteLine($"Response: {response.Text}");
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "For manual verification only")]
     public async Task OllamaChatClientServiceCollectionIntegrationAsync()
     {
         // Arrange
@@ -146,7 +146,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         this._output.WriteLine($"Response: {response.Text}");
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "For manual verification only")]
     public async Task OllamaChatClientKernelBuilderIntegrationAsync()
     {
         // Arrange
@@ -173,7 +173,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         this._output.WriteLine($"Response: {response.Text}");
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public void OllamaChatClientMetadataTest()
     {
         // Arrange
@@ -190,7 +190,7 @@ public sealed class OllamaChatClientIntegrationTests : IDisposable
         Assert.Equal(modelId, metadata.DefaultModelId);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "For manual verification only")]
     public async Task OllamaChatClientWithKernelFunctionInvocationAsync()
     {
         // Arrange

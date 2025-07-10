@@ -50,6 +50,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
+
         var messageList = chatHistory.ToChatMessageList();
         var currentSize = messageList.Count;
 
@@ -78,6 +83,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
+
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
 
         List<AIContent> fcContents = [];
         ChatRole? role = null;

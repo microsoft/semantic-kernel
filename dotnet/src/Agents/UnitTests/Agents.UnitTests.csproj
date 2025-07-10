@@ -19,11 +19,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" VersionOverride="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" VersionOverride="9.0.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.0.5" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\A2A\Agents.A2A.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />

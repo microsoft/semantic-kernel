@@ -28,15 +28,10 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private string? _responseMimeType;
     private object? _responseSchema;
     private string? _cachedContent;
-    private string? _labels;
+    private IDictionary<string, string>? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
     private GeminiThinkingConfig? _thinkingConfig;
-
-    /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
 
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -152,9 +147,12 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the labels.
     /// </summary>
     /// <value>
-    /// Metadata that can be added to the API call in the format of key-value pairs.
+    /// The labels with user-defined metadata for the request. It is used for billing and reporting only.
+    /// label keys and values can be no longer than 63 characters (Unicode codepoints) and can only contain lowercase letters, numeric characters, underscores, and dashes. International characters are allowed. label values are optional. label keys must start with a letter.
     /// </value>
-    public string? Labels
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Labels
     {
         get => this._labels;
         set
@@ -358,7 +356,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new GeminiPromptExecutionSettings();
             case GeminiPromptExecutionSettings settings:
                 return settings;
         }
