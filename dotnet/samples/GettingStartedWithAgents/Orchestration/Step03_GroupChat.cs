@@ -27,7 +27,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
     {
         // Define the agents
         ChatCompletionAgent writer =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "CopyWriter",
                 description: "A copy writer",
                 instructions:
@@ -40,7 +40,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 Consider suggestions when refining an idea.
                 """);
         ChatCompletionAgent editor =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Reviewer",
                 description: "An editor.",
                 instructions:
@@ -73,7 +73,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         InProcessRuntime runtime = new();
         await runtime.StartAsync();
 
-        string input = "Create a slogon for a new eletric SUV that is affordable and fun to drive.";
+        string input = "Create a slogan for a new electric SUV that is affordable and fun to drive.";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
