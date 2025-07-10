@@ -55,7 +55,7 @@ pip install semantic-kernel
 
 ```bash
 dotnet add package Microsoft.SemanticKernel
-dotnet add package Microsoft.SemanticKernel.Agents.core
+dotnet add package Microsoft.SemanticKernel.Agents.Core
 ```
 
 ### Java
