@@ -238,7 +238,6 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                     loggingBuilder.AddProvider(new SemanticKernelLoggerProvider());
                 });
         }
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0001
         return (builder.AddOllamaChatCompletion(
                 chatModelId,
@@ -253,7 +252,6 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                 )
                 });
 #pragma warning restore SKEXP0001
-#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     private static (Kernel, PromptExecutionSettings) InitializeAzureOpenAiKernel(IConfiguration configuration, bool enableLogging)
@@ -364,6 +362,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             FunctionExecutionParameters = new()
             {
                 { "https://graph.microsoft.com/v1.0", new OpenApiFunctionExecutionParameters(authCallback: this._bearerAuthenticationProviderWithCancellationToken.AuthenticateRequestAsync, enableDynamicOperationPayload: false, enablePayloadNamespacing: true) { ParameterFilter = s_restApiParameterFilter} },
+                { "https://graph.microsoft.com/beta", new OpenApiFunctionExecutionParameters(authCallback: this._bearerAuthenticationProviderWithCancellationToken.AuthenticateRequestAsync, enableDynamicOperationPayload: false, enablePayloadNamespacing: true) { ParameterFilter = s_restApiParameterFilter} },
                 { "https://api.nasa.gov/planetary", new OpenApiFunctionExecutionParameters(authCallback: GetApiKeyAuthProvider("DEMO_KEY", "api_key", false), enableDynamicOperationPayload: false, enablePayloadNamespacing: true)}
             },
         };
@@ -500,8 +499,9 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     {
 #pragma warning restore SKEXP0040
         if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
-            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
+            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
+            ("copilot_retrieval".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;

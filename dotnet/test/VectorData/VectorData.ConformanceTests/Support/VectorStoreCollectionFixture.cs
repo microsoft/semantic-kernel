@@ -17,7 +17,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
     private List<TRecord>? _testData;
 
     public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
-    protected abstract List<TRecord> BuildTestData();
+    protected virtual List<TRecord> BuildTestData() => [];
 
     public virtual string CollectionName => Guid.NewGuid().ToString();
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
@@ -47,8 +47,11 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 
     protected virtual async Task SeedAsync()
     {
-        await this.Collection.UpsertAsync(this.TestData);
-        await this.WaitForDataAsync();
+        if (this.TestData.Count > 0)
+        {
+            await this.Collection.UpsertAsync(this.TestData);
+            await this.WaitForDataAsync();
+        }
     }
 
     protected virtual Task WaitForDataAsync()
