@@ -215,9 +215,23 @@ class MCPPluginBase:
         self.session = session
         self.kernel = kernel or None
         self.request_timeout = request_timeout
+        self._current_task = None
+        self._stop_event = None
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
+        ready_event = asyncio.Event()
+        try:
+            self._current_task = asyncio.create_task(self._inner_connect(ready_event))
+            await ready_event.wait()
+            return self
+        except KernelPluginInvalidConfigurationError:
+            raise
+        except Exception as ex:
+            await self.close()
+            raise FunctionExecutionException("Failed to enter context manager.") from ex
+
+    async def _inner_connect(self, ready_event: asyncio.Event) -> None:
         if not self.session:
             try:
                 transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
@@ -242,7 +256,13 @@ class MCPPluginBase:
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
-            await session.initialize()
+            try:
+                await session.initialize()
+            except Exception as ex:
+                await self._exit_stack.aclose()
+                raise KernelPluginInvalidConfigurationError(
+                    "Failed to initialize session. Please check your configuration."
+                ) from ex
             self.session = session
         elif self.session._request_id == 0:
             # If the session is not initialized, we need to reinitialize it
@@ -260,6 +280,14 @@ class MCPPluginBase:
                 )
             except Exception:
                 logger.warning("Failed to set log level to %s", logger.level)
+        ready_event.set()
+        self._stop_event = asyncio.Event()
+        await self._stop_event.wait()
+        try:
+            await self._exit_stack.aclose()
+        except Exception as e:
+            logger.exception("Error during exit stack close", exc_info=e)
+            pass
 
     async def sampling_callback(
         self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
@@ -400,7 +428,8 @@ class MCPPluginBase:
 
     async def close(self) -> None:
         """Disconnect from the MCP server."""
-        await self._exit_stack.aclose()
+        self._stop_event.set()
+        await self._current_task
         self.session = None
 
     @abstractmethod
@@ -445,14 +474,8 @@ class MCPPluginBase:
 
     async def __aenter__(self) -> Self:
         """Enter the context manager."""
-        try:
-            await self.connect()
-            return self
-        except KernelPluginInvalidConfigurationError:
-            raise
-        except Exception as ex:
-            await self._exit_stack.aclose()
-            raise FunctionExecutionException("Failed to enter context manager.") from ex
+        await self.connect()
+        return self
 
     async def __aexit__(
         self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
