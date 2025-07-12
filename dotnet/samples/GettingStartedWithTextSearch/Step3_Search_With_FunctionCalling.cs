@@ -33,7 +33,7 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -60,7 +60,7 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -92,7 +92,7 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
         var searchOptions = new TextSearchOptions() { Filter = filter };
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
-            [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
+            [textSearch.CreateGetTextSearchResults(5, searchOptions: searchOptions)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -154,10 +154,10 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
                 new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
 
-        return textSearch.CreateSearch(options);
+        return textSearch.CreateSearch(5, options);
     }
     #endregion
 }
