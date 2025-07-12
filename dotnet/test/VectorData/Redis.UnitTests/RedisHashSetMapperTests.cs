@@ -52,14 +52,12 @@ public sealed class RedisHashSetMapperTests
         Assert.Equal(4ul, actual.ULongData);
         Assert.Equal(5.5d, actual.DoubleData);
         Assert.Equal(6.6f, actual.FloatData);
-        Assert.True(actual.BoolData);
         Assert.Equal(7, actual.NullableIntData);
         Assert.Equal(8u, actual.NullableUIntData);
         Assert.Equal(9, actual.NullableLongData);
         Assert.Equal(10ul, actual.NullableULongData);
         Assert.Equal(11.1d, actual.NullableDoubleData);
         Assert.Equal(12.2f, actual.NullableFloatData);
-        Assert.False(actual.NullableBoolData);
 
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.FloatVector!.Value.ToArray());
         Assert.Equal(new double[] { 5, 6, 7, 8 }, actual.DoubleVector!.Value.ToArray());
@@ -77,14 +75,12 @@ public sealed class RedisHashSetMapperTests
             ULongData = 4,
             DoubleData = 5.5d,
             FloatData = 6.6f,
-            BoolData = true,
             NullableIntData = 7,
             NullableUIntData = 8,
             NullableLongData = 9,
             NullableULongData = 10,
             NullableDoubleData = 11.1d,
             NullableFloatData = 12.2f,
-            NullableBoolData = false,
             FloatVector = new float[] { 1, 2, 3, 4 },
             DoubleVector = new double[] { 5, 6, 7, 8 },
             NotAnnotated = "notAnnotated",
@@ -118,9 +114,6 @@ public sealed class RedisHashSetMapperTests
         public float FloatData { get; set; }
 
         [VectorStoreData]
-        public bool BoolData { get; set; }
-
-        [VectorStoreData]
         public int? NullableIntData { get; set; }
 
         [VectorStoreData]
@@ -137,9 +130,6 @@ public sealed class RedisHashSetMapperTests
 
         [VectorStoreData]
         public float? NullableFloatData { get; set; }
-
-        [VectorStoreData]
-        public bool? NullableBoolData { get; set; }
 
         [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }

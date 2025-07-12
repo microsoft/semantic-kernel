@@ -127,4 +127,56 @@ public class FilterTranslationPreprocessor : ExpressionVisitor
 
         return new QueryParameterExpression(name, evaluatedValue, visited.Type);
     }
+
+    /// <inheritdoc />
+    protected override Expression VisitNew(NewExpression node)
+    {
+        var visited = (NewExpression)base.VisitNew(node);
+
+        // Recognize certain well-known constructors where we can evaluate immediately, converting the NewExpression to a ConstantExpression.
+        // This is particularly useful for converting inline instantiation of DateTime and DateTimeOffset to constants, which can then be easily translated.
+        switch (visited.Constructor)
+        {
+            case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset) || constructor.DeclaringType == typeof(DateTime):
+                var constantArguments = new object?[visited.Arguments.Count];
+
+                // We first do a fast path to check if all arguments are constants; this catches the common case of e.g. new DateTime(2023, 10, 1).
+                // If an argument isn't a constant (e.g. new DateTimeOffset(..., TimeSpan.FromHours(2))), we fall back to trying the LINQ interpreter
+                // as a general-purpose expression evaluator - but note that this is considerably slower.
+                for (var i = 0; i < visited.Arguments.Count; i++)
+                {
+                    if (visited.Arguments[i] is ConstantExpression constantArgument)
+                    {
+                        constantArguments[i] = constantArgument.Value;
+                    }
+                    else
+                    {
+                        // There's a non-constant argument - try the LINQ interpreter.
+#pragma warning disable CA1031 // Do not catch general exception types
+                        try
+                        {
+                            var evaluated = Expression.Lambda<Func<object>>(Expression.Convert(visited, typeof(object)))
+#if NET8_0_OR_GREATER
+                                .Compile(preferInterpretation: true)
+#else
+                                .Compile()
+#endif
+                                .Invoke();
+
+                            return Expression.Constant(evaluated, constructor.DeclaringType);
+                        }
+                        catch
+                        {
+                            return visited;
+                        }
+#pragma warning restore CA1031
+                    }
+                }
+
+                var constantValue = constructor.Invoke(constantArguments);
+                return Expression.Constant(constantValue, constructor.DeclaringType);
+        }
+
+        return visited;
+    }
 }

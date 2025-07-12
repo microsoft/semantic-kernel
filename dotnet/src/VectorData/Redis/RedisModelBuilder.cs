@@ -28,7 +28,7 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, uint, long, ulong, double, float, bool";
+        supportedTypes = "string, int, uint, long, ulong, double, float";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -41,8 +41,7 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
             || type == typeof(long)
             || type == typeof(ulong)
             || type == typeof(double)
-            || type == typeof(float)
-            || type == typeof(bool);
+            || type == typeof(float);
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

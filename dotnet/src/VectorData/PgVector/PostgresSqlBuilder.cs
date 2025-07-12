@@ -60,14 +60,14 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
         // Add the key column
         var keyPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(model.KeyProperty.Type);
-        createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType} {(keyPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+        createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType}{(keyPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
 
         // Add the data columns
         foreach (var dataProperty in model.DataProperties)
         {
             string columnName = dataProperty.StorageName;
             var dataPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(dataProperty.Type);
-            createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType} {(dataPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+            createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType}{(dataPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
         }
 
         // Add the vector columns
@@ -75,7 +75,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         {
             string columnName = vectorProperty.StorageName;
             var vectorPgTypeInfo = PostgresPropertyMapping.GetPgVectorTypeName(vectorProperty);
-            createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType} {(vectorPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+            createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType}{(vectorPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
         }
 
         createTableCommand.AppendLine($"    PRIMARY KEY (\"{keyName}\")");
