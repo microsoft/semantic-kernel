@@ -56,10 +56,7 @@ public class PublishMessageTests
         Func<Task> publishTask = async () => await fixture.RunPublishTestAsync(new TopicId("TestTopic"), new BasicMessage { Content = "1" });
 
         // What we are really testing here is that a single exception does not prevent sending to the remaining agents
-        (await publishTask.Should().ThrowAsync<AggregateException>())
-                                   .Which.Should().Match<AggregateException>(
-                                        exception => exception.InnerExceptions.Count == 2 &&
-                                              exception.InnerExceptions.All(exception => exception is TestException));
+        await publishTask.Should().ThrowAsync<TestException>();
 
         fixture.GetAgentInstances<ErrorAgent>().Values
             .Should().HaveCount(2)
@@ -81,11 +78,7 @@ public class PublishMessageTests
         Func<Task> publicTask = async () => await fixture.RunPublishTestAsync(new TopicId("TestTopic"), new BasicMessage { Content = "1" });
 
         // What we are really testing here is that raising exceptions does not prevent sending to the remaining agents
-        (await publicTask.Should().ThrowAsync<AggregateException>())
-                                   .Which.Should().Match<AggregateException>(
-                                        exception => exception.InnerExceptions.Count == 2 &&
-                                              exception.InnerExceptions.All(
-                                                exception => exception is TestException));
+        await publicTask.Should().ThrowAsync<TestException>();
 
         fixture.GetAgentInstances<ReceiverAgent>().Values
             .Should().HaveCount(2, "Two ReceiverAgents should have been created")
