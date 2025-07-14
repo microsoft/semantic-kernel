@@ -262,7 +262,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             prepared_settings["guardrailConfig"] = {
                 "guardrailIdentifier": os.getenv("BEDROCK_GUARDRAIL_ID"),
                 "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION"),
-                "trace": "enabled",
+                "trace": "disabled",
             }
 
         return prepared_settings
