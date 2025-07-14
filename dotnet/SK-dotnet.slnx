@@ -32,6 +32,7 @@
     <Project Path="samples/Demos/AIModelRouter/AIModelRouter.csproj" />
     <Project Path="samples/Demos/AmazonBedrockModels/AmazonBedrockAIModels.csproj" />
     <Project Path="samples/Demos/AotCompatibility/AotCompatibility.csproj" />
+    <Project Path="samples/Demos/bing/bing.csproj" />
     <Project Path="samples/Demos/BookingRestaurant/BookingRestaurant.csproj" />
     <Project Path="samples/Demos/CodeInterpreterPlugin/CodeInterpreterPlugin.csproj" />
     <Project Path="samples/Demos/ContentSafety/ContentSafety.csproj" />

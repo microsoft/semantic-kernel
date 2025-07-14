@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
-using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using OpenAI.Responses;
+using Microsoft.SemanticKernel.Plugins.Web.QP;
+using Microsoft.Extensions.Configuration;    // <-- Add this NuGet: Microsoft.Extensions.Configuration.Ini
 
 internal sealed class Program
 {
@@ -112,6 +113,7 @@ internal sealed class Program
             MaxTokens = 10000,
             FunctionChoiceBehavior = Microsoft.SemanticKernel.FunctionChoiceBehavior.Auto()
         };
+
         while (true)
         {
             Console.Write("User: ");
@@ -121,38 +123,57 @@ internal sealed class Program
                 break;
             }
             chatHistory.AddUserMessage(userMessage);
+
+            var fullMessage = new StringBuilder();
             Console.WriteLine($"\nStart Model output ------------------------------------  \n");
             await foreach (var answer in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel).ConfigureAwait(false))
             {
-                Console.Write(answer);
+                Console.Write(answer.Content);
+                fullMessage.Append(answer.Content);
             }
+            // Add the full response to the chat history
+            chatHistory.AddAssistantMessage(fullMessage.ToString());
+
             Console.WriteLine($"\nEnd Model output ------------------------------------  \n");
         }
     }
+    private const string IniFileName = "systemprompt.json";
 
     private static async Task Main(string[] args)
     {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile(path: IniFileName, optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        string apiKey = config["OpenAI:apikey"];
+        string endpoint = config["OpenAI:endpoint"];
+        string deploymentName = config["OpenAI:deploymentname"];
+        string systemprompt = config["OpenAI:systemprompt"];
         // Console.WriteLine("Please enter your Azure OpenAI endpoint:");
-        string endpoint = "https://gpt-gem-westus3.openai.azure.com/";
+        //string endpoint = "https://gpt-gem-westus3.openai.azure.com/";
 
         // Console.WriteLine("Please enter your Azure OpenAI API key:");
-        string apiKey = "";
+        // string apiKey = "";
 
-        string deploymentName = "gpt-4o";
+        // string deploymentName = "gpt-4o";
 
 
-        string bingApiKey="";
+        // string bingApiKey="";
+
+        //string deploymentName = "gpt-4o";
+
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey)
             .Build();
 
         #pragma warning disable SKEXP0050
-        var bingConnector = new BingConnector(bingApiKey);
+        var bingConnector = new QPConnector("");
         kernel.ImportPluginFromObject(new WebSearchEnginePlugin(bingConnector), "WebSearch");
         #pragma warning restore SKEXP0050
 
-        string systemprompt = "You are a helpful assistant that reasons step-by-step.\nBefore you give your answer, list each intermediate reasoning step as:\nModel Thought: ... \nThen conclude with:\n =========\n Final Answer: <your answer>. Also you can help user find the most relevacne page using function call.";
+        //string systemprompt = "You are a helpful assistant that reasons step-by-step.\nBefore you give your answer, list each intermediate reasoning step as:\nModel Thought: ... \nThen conclude with:\n =========\n Final Answer: <your answer>. Also you can help user find the most relevacne page using function call. Please use the search mcp tool to find 100 urls and rank them by their title and snippets. Please select final few urls out of 100 urls returned by mcp tool that you think is usefull. also try to summurize the knowledge and please add the reference.";
         int mode = 2;
         if (mode == 0)
         {

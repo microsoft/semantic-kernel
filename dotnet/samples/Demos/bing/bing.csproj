@@ -23,5 +23,11 @@
     <ProjectReference Include="..\..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
   </ItemGroup>
-
+	
+	<ItemGroup>
+	<None Include=".\systemprompt.json">
+      <!-- or Use Always, if you want to copy even when unchanged -->
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+	</ItemGroup>
 </Project>
