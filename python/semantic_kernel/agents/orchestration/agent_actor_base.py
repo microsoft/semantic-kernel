@@ -23,6 +23,20 @@ else:
 class ActorBase(RoutedAgent):
     """A base class for actors running in the AgentRuntime."""
 
+    def __init__(
+        self,
+        exception_callback: Callable[[BaseException], None],
+        description: str = "Semantic Kernel Actor",
+    ):
+        """Initialize the actor with a description and an exception callback.
+
+        Args:
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
+            description (str): A description of the actor.
+        """
+        super().__init__(description=description)
+        self._exception_callback = exception_callback
+
     @override
     async def on_message_impl(self, message: Any, ctx: MessageContext) -> Any | None:
         """Handle a message.
@@ -43,6 +57,7 @@ class AgentActorBase(ActorBase):
         self,
         agent: Agent,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
@@ -52,6 +67,7 @@ class AgentActorBase(ActorBase):
         Args:
             agent (Agent): An agent to be run in the container.
             internal_topic_type (str): The topic type of the internal topic.
+            exception_callback (Callable): A function that is called when an exception occurs.
             agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
             streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
@@ -66,7 +82,7 @@ class AgentActorBase(ActorBase):
         # Chat history to temporarily store messages before each invoke.
         self._message_cache: ChatHistory = ChatHistory()
 
-        ActorBase.__init__(self, description=agent.description or "Semantic Kernel Agent")
+        super().__init__(exception_callback, description=agent.description)
 
     async def _call_agent_response_callback(self, message: DefaultTypeAlias) -> None:
         """Call the agent_response_callback function if it is set.
