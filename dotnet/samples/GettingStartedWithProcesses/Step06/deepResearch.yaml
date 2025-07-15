@@ -42,7 +42,7 @@ beginDialog:
       value: =true
 
     - kind: SetVariable
-      id: setVariable_NUiu0l
+      id: setVariable_NZ2u0l
       displayName: Set Task
       variable: Topic.NewTask
       value: =System.LastMessage.Text
