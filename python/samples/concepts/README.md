@@ -106,6 +106,10 @@
 - [OpenAI Responses Reuse Existing Thread ID](./agents/openai_responses/responses_agent_reuse_existing_thread_id.py)
 - [OpenAI Responses Web Search Streaming](./agents/openai_responses/responses_agent_web_search_streaming.py)
 
+#### React Agents - Implementing the React (Reasoning and Acting) pattern with agents
+
+- [Azure AI React Agent](./react/azure_ai_react_agent.py)
+
 ### Audio - Using services that support audio-to-text and text-to-audio conversion
 
 - [Chat with Audio Input](./audio/01-chat_with_audio_input.py)
@@ -255,9 +259,11 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 ## Steps for Configuration
 
 1. **Reading Environment Variables:**
+
    - **Primary Source:** Pydantic first attempts to read the required settings from environment variables.
 
 2. **Using a .env File:**
+
    - **Fallback Source:** If the required environment variables are not set, Pydantic will look for a `.env` file in the current working directory.
    - **Custom Path (Optional):** You can specify an alternative path for the `.env` file via `env_file_path`. This can be either a relative or an absolute path.
 
