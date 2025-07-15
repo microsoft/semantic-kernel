@@ -2,6 +2,7 @@
 
 
 import inspect
+import logging
 import sys
 from collections.abc import Awaitable, Callable
 from functools import wraps
@@ -18,6 +19,8 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
@@ -63,6 +66,8 @@ class ActorBase(RoutedAgent):
         Returns:
             The wrapped function.
         """
+        log_message_template = "Exception occurred in agent {agent_id}:\n{exception}"
+
         if inspect.iscoroutinefunction(func):
 
             @wraps(func)
@@ -71,6 +76,7 @@ class ActorBase(RoutedAgent):
                     return await func(self, *args, **kwargs)
                 except BaseException as e:
                     self._exception_callback(e)
+                    logger.error(log_message_template.format(agent_id=self.id, exception=e))
                     raise
 
             return async_wrapper
@@ -81,6 +87,7 @@ class ActorBase(RoutedAgent):
                 return func(self, *args, **kwargs)
             except BaseException as e:
                 self._exception_callback(e)
+                logger.error(log_message_template.format(agent_id=self.id, exception=e))
                 raise
 
         return sync_wrapper
