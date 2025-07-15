@@ -496,9 +496,10 @@ class MagenticManagerActor(ActorBase):
         self._context: MagenticContext | None = None
         self._task_ledger: ChatMessageContent | None = None
 
-        super().__init__(exception_callback=exception_callback, description="Magentic One Manager")
+        super().__init__("Magentic One Manager", exception_callback)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_start_message(self, message: MagenticStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the Magentic One manager."""
         logger.debug(f"{self.id}: Received Magentic One start message.")
@@ -514,6 +515,7 @@ class MagenticManagerActor(ActorBase):
         await self._run_outer_loop(ctx.cancellation_token)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         """Handle the response message for the Magentic One manager."""
         if self._context is None or self._task_ledger is None:

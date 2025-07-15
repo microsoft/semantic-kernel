@@ -4,6 +4,7 @@
 import inspect
 import sys
 from collections.abc import Awaitable, Callable
+from functools import wraps
 from typing import Any
 
 from semantic_kernel.agents.agent import Agent, AgentThread
@@ -25,14 +26,14 @@ class ActorBase(RoutedAgent):
 
     def __init__(
         self,
+        description: str,
         exception_callback: Callable[[BaseException], None],
-        description: str = "Semantic Kernel Actor",
     ):
         """Initialize the actor with a description and an exception callback.
 
         Args:
-            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
             description (str): A description of the actor.
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
         """
         super().__init__(description=description)
         self._exception_callback = exception_callback
@@ -47,6 +48,42 @@ class ActorBase(RoutedAgent):
             return None
 
         return await super().on_message_impl(message, ctx)
+
+    @staticmethod
+    def exception_handler(func: Callable[..., Any]) -> Callable[..., Any]:
+        """Decorator that wraps a function in a try-catch block and calls the exception callback on errors.
+
+        This decorator can be used on both synchronous and asynchronous functions. When an exception
+        occurs during function execution, it will call the exception_callback with the exception
+        and then re-raise the exception.
+
+        Args:
+            func: The function to be wrapped.
+
+        Returns:
+            The wrapped function.
+        """
+        if inspect.iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(self, *args, **kwargs):
+                try:
+                    return await func(self, *args, **kwargs)
+                except BaseException as e:
+                    self._exception_callback(e)
+                    raise
+
+            return async_wrapper
+
+        @wraps(func)
+        def sync_wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except BaseException as e:
+                self._exception_callback(e)
+                raise
+
+        return sync_wrapper
 
 
 @experimental
@@ -82,7 +119,7 @@ class AgentActorBase(ActorBase):
         # Chat history to temporarily store messages before each invoke.
         self._message_cache: ChatHistory = ChatHistory()
 
-        super().__init__(exception_callback, description=agent.description)
+        super().__init__(agent.description or "Semantic Kernel Actor", exception_callback)
 
     async def _call_agent_response_callback(self, message: DefaultTypeAlias) -> None:
         """Call the agent_response_callback function if it is set.
@@ -113,6 +150,7 @@ class AgentActorBase(ActorBase):
             else:
                 self._streaming_agent_response_callback(message_chunk, is_final)
 
+    @ActorBase.exception_handler
     async def _invoke_agent(self, additional_messages: DefaultTypeAlias | None = None, **kwargs) -> ChatMessageContent:
         """Invoke the agent with the current chat history or thread and optionally additional messages.
 

@@ -93,7 +93,7 @@ class CollectionActor(ActorBase):
         """Initialize the collection actor."""
         self._result_callback = result_callback
 
-        super().__init__(exception_callback, description=description)
+        super().__init__(description, exception_callback)
 
     @message_handler
     async def _handle_message(self, message: SequentialRequestMessage, _: MessageContext) -> None:

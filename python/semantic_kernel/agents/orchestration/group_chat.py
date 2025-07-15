@@ -275,7 +275,7 @@ class GroupChatManagerActor(ActorBase):
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
-        super().__init__(exception_callback, description="An actor for the group chat manager.")
+        super().__init__("An actor for the group chat manager.", exception_callback)
 
     @message_handler
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
@@ -304,6 +304,7 @@ class GroupChatManagerActor(ActorBase):
 
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
+    @ActorBase.exception_handler
     async def _determine_state_and_take_action(self, cancellation_token: CancellationToken) -> None:
         """Determine the state of the group chat and take action accordingly."""
         # User input state
@@ -453,7 +454,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
         await self._register_members(runtime, internal_topic_type, exception_callback)
-        await self._register_manager(runtime, internal_topic_type, result_callback=result_callback)
+        await self._register_manager(runtime, internal_topic_type, exception_callback, result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
     async def _register_members(

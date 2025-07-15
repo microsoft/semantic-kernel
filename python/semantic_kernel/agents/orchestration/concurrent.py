@@ -114,7 +114,7 @@ class CollectionActor(ActorBase):
         self._results: list[ChatMessageContent] = []
         self._lock = asyncio.Lock()
 
-        super().__init__(exception_callback, description=description)
+        super().__init__(description, exception_callback)
 
     @message_handler
     async def _handle_message(self, message: ConcurrentResponseMessage, _: MessageContext) -> None:

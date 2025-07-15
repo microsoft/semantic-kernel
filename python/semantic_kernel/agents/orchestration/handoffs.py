@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from functools import partial
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.orchestration.agent_actor_base import AgentActorBase
+from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
@@ -318,6 +318,7 @@ class HandoffAgentActor(AgentActorBase):
             return await self._human_response_function()
         return self._human_response_function()  # type: ignore[return-value]
 
+    @ActorBase.exception_handler
     async def _invoke_agent_with_potentially_no_response(
         self, additional_messages: DefaultTypeAlias | None = None, **kwargs
     ) -> ChatMessageContent | None:

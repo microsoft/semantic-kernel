@@ -34,6 +34,7 @@ TOut = TypeVar("TOut", default=DefaultTypeAlias)
 class OrchestrationResult(KernelBaseModel, Generic[TOut]):
     """The result of an invocation of an orchestration."""
 
+    background_task: asyncio.Task | None = None
     value: TOut | None = None
     exception: BaseException | None = None
     event: asyncio.Event = Field(default_factory=asyncio.Event)
@@ -241,7 +242,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             )
         )
 
-        # Add a callback to surface any exceptions that occur during the task execution.
+        # Add a callback to surface any exceptions that occur during outside of the runtime.
         def exception_callback(task: asyncio.Task) -> None:
             nonlocal orchestration_result
             try:
@@ -251,6 +252,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
                 orchestration_result.event.set()
 
         background_task.add_done_callback(exception_callback)
+        orchestration_result.background_task = background_task
 
         return orchestration_result
 
