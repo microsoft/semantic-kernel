@@ -206,7 +206,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             orchestration_result.value = transformed_result
             orchestration_result.event.set()
 
-        def exception_callback(exception: BaseException) -> None:
+        def inner_exception_callback(exception: BaseException) -> None:
             nonlocal orchestration_result
             orchestration_result.exception = exception
             orchestration_result.event.set()
@@ -218,7 +218,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             runtime,
             internal_topic_type=internal_topic_type,
             result_callback=result_callback,
-            exception_callback=exception_callback,
+            exception_callback=inner_exception_callback,
         )
 
         if isinstance(task, str):
@@ -243,7 +243,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
         )
 
         # Add a callback to surface any exceptions that occur during outside of the runtime.
-        def exception_callback(task: asyncio.Task) -> None:
+        def outer_exception_callback(task: asyncio.Task) -> None:
             nonlocal orchestration_result
             try:
                 task.result()
@@ -251,7 +251,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
                 orchestration_result.exception = e
                 orchestration_result.event.set()
 
-        background_task.add_done_callback(exception_callback)
+        background_task.add_done_callback(outer_exception_callback)
         orchestration_result.background_task = background_task
 
         return orchestration_result
