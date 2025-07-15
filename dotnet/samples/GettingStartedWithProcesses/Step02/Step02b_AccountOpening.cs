@@ -29,7 +29,6 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
 
         var accountVerificationStep = process.AddStepFromProcess(NewAccountVerificationProcess.CreateProcess());
         var accountCreationStep = process.AddStepFromProcess(NewAccountCreationProcess.CreateProcess());
-
         var mailServiceStep = process.AddStepFromType<MailServiceStep>();
 
         process

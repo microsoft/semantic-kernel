@@ -1,0 +1,56 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: main
+  type: Message
+  actions:
+    - kind: SetVariable
+      id: setVariable_u4cBtN
+      displayName: Invocation count
+      variable: Topic.Count
+      value: =0
+
+    # - kind: SetVariable
+    #   id: setVariable_a9f4o2
+    #   displayName: Invocation count
+    #   variable: Topic.Count
+    #   value: =Topic.Count + 1
+
+    # - kind: SendActivity
+    #   id: sendActivity_aGsbRo
+    #   activity: Looping (x{Topic.Count})
+
+    - kind: ConditionGroup
+      id: conditionGroup_mVIecC
+      conditions:
+        - id: conditionItem_fj432c
+          condition: =Topic.Count < 5
+          displayName: Just started
+          actions:
+            - kind: SendActivity
+              id: sendActivity_Pkkmpq
+              activity: Just started (x{Topic.Count})
+
+        - id: conditionItem_yiqund
+          condition: =Topic.Count > 5 && Topic.Count < 10
+          displayName: Making progress
+          actions:
+            - kind: SendActivity
+              id: sendActivity_aLM1o3
+              activity: Making progress (x{Topic.Count})  
+
+            - kind: GotoAction
+              id: goto_LzfJ8u
+              actionId: setVariable_a9f4o2
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_rOk31p
+          activity: All done (x{Topic.Count})
+
+        - kind: EndConversation
+          id: end_SVoNSV
+             
+    - kind: SendActivity
+      id: sendActivity_fJsbRz
+      activity: Complete! (x{Topic.Count})

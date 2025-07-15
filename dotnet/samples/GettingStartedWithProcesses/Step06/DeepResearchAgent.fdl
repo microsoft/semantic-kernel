@@ -1,0 +1,144 @@
+name: deepresearch
+states:
+  - name: GatherFacts
+    actors:
+      - agent: LedgerFacts
+        inputs:
+          instructions: instructions
+        outputs:
+          task: task
+          facts: facts
+        thread: Planning
+        humanInLoopMode: onNoMessage
+        streamOutput: false
+    isFinal: false
+  - name: Plan
+    actors:
+      - agent: LedgerPlanner
+        inputs:
+          task: task
+          facts: facts
+          team: team
+          instructions: instructions
+        messagesOut: plannerMessages
+        thread: Planning
+        humanInLoopMode: never
+        streamOutput: true
+    isFinal: false
+  - name: ProcessProgress
+    actors:
+      - agent: ProgressLedger
+        inputs:
+          task: task
+          team: team
+          systemAgents: systemAgents
+        messagesOut: nextStepMessages
+        messagesIn:
+          - plannerMessages
+        thread: Run
+        humanInLoopMode: never
+        streamOutput: true
+    isFinal: false
+  - name: actionRouter
+    actors:
+      - agent: ActionRouterAgent
+        messagesIn:
+          - nextStepMessages
+        inputs:
+          team: team
+          systemAgents: systemAgents
+        outputs:
+          targetAgent: nextAgent
+        humanInLoopMode: never
+        streamOutput: true
+  - name: dynamicStepAgent
+    actors:
+      - agent: nextAgent
+        thread: Run
+        humanInLoopMode: never
+        streamOutput: true
+  - name: UpdateLedgerFact
+    actors:
+      - agent: LedgerFactsUpdate
+        thread: Run
+        inputs:
+          task: task
+          facts: facts
+        outputs:
+          updatedFacts: facts
+        humanInLoopMode: never
+        streamOutput: false
+    isFinal: false
+  - name: LedgerPlanUpdate
+    actors:
+      - agent: LedgerPlanUpdate
+        inputs:
+          facts: facts
+          team: team
+        messagesOut: plannerMessages
+        thread: Run
+        humanInLoopMode: never
+        streamOutput: true
+    isFinal: false
+  - name: Summarizer
+    actors:
+      - agent: FinalStepAgent
+        thread: Run
+        inputs:
+          task: task
+        humanInLoopMode: never
+        streamOutput: true
+    isFinal: true
+transitions:
+  - from: GatherFacts
+    to: Plan
+  - from: Plan
+    to: ProcessProgress
+  - from: LedgerPlanUpdate
+    to: ProcessProgress
+  - from: ProcessProgress
+    to: actionRouter
+  - from: actionRouter
+    to: UpdateLedgerFact
+    condition: nextAgent.Equals(LedgerFactsUpdate)
+  - from: actionRouter
+    to: Summarizer
+    condition: nextAgent.Equals(FinalStepAgent)
+  - from: actionRouter
+    to: dynamicStepAgent
+    condition: nextAgent.NotContains(FinalStepAgent)
+  - from: dynamicStepAgent
+    to: ProcessProgress
+  - from: UpdateLedgerFact
+    to: LedgerPlanUpdate
+variables:
+  - Type: userDefined
+    name: team
+  - Type: userDefined
+    name: instructions
+  - Type: userDefined
+    name: task
+  - Type: userDefined
+    name: facts
+  - Type: userDefined
+    name: plan
+  - Type: messages
+    name: plannerMessages
+  - Type: thread
+    name: Planning
+  - Type: thread
+    name: Run
+  - Type: messages
+    name: nextStepMessages
+  - Type: userDefined
+    name: nextAgent
+  - Type: userDefined
+    name: systemAgents
+    value:
+      - agent: FinalStepAgent
+        description: >-
+          Agent which summarizes the output after task is complete. When next speaker is none.
+      - agent: LedgerFactsUpdate
+        description: >-
+          Agent which can update the plan if we are looping without making progress or stall is detected.
+startstate: GatherFacts

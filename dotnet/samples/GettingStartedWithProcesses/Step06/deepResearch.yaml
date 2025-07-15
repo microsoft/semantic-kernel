@@ -1,0 +1,473 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: main
+  condition: =Global.OrchestratorRunning <> true
+  type: Message
+  actions:
+    - kind: SetVariable
+      id: setVariable_aASlmF
+      displayName: List all available agents for this orchestrator
+      variable: Topic.AgentToSchemaMapping
+      value: |-
+        =[
+            {
+                name: "WeatherAgent", 
+                description: "Able to retrieve weather information",
+                schema: "cr36e_agentRd2yAT.topic.Deterministic"
+            },
+            {
+                name: "WebAgent", 
+                description: "Able to perform generic websearches",
+                schema: "cr36e_agentRd2yAT.topic.WebSearch"
+            }
+        ]
+
+    - kind: SetVariable
+      id: setVariable_u4cBtN
+      displayName: Get all names
+      variable: Topic.AvailableAgents
+      value: =DropColumns(Topic.AgentToSchemaMapping, description, schema)
+
+    - kind: SetVariable
+      id: setVariable_V6yEbo
+      displayName: Get a summary of all the agents for use in prompts
+      variable: Topic.TeamDescription
+      value: "=Concat(ForAll(Topic.AgentToSchemaMapping, name & $\": \" & description), Value, \".\\n\\n\")"
+
+    - kind: SetVariable
+      id: setVariable_eLmgKQ
+      displayName: Toggle Orchestration Enabled Flag
+      variable: Global.OrchestratorRunning
+      value: =true
+
+    - kind: SetVariable
+      id: setVariable_NUiu0l
+      displayName: Set Task
+      variable: Topic.NewTask
+      value: =System.LastMessage.Text
+
+    - kind: SetVariable
+      id: setVariable_PKmRsz
+      variable: Topic.ReTaskCount
+      value: 0
+
+    - kind: SetVariable
+      id: setVariable_EpFEKQ
+      displayName: Initialize Stall Count
+      variable: Topic.StallCount
+      value: =0
+
+    - kind: SendActivity
+      id: sendActivity_yFsbRz
+      activity: |-
+        Creating a Task Ledger, defining a plan, based on the following ask:
+
+        {Topic.NewTask}
+
+    - kind: SetVariable
+      id: setVariable_s8hR6q
+      variable: Topic.ContextHistory
+      value: |-
+        =["Below I will present you a request. Before we begin addressing the request, please answer the following pre-survey to the best of your ability. Keep in mind that you are Ken Jennings-level with trivia, and Mensa-level with puzzles, so there should be a deep well to draw from.
+
+        Here is the request:
+
+        " & Topic.NewTask & "
+
+        Here is the pre-survey:
+
+            1. Please list any specific facts or figures that are GIVEN in the request itself. It is possible that there are none.
+            2. Please list any facts that may need to be looked up, and WHERE SPECIFICALLY they might be found. In some cases, authoritative sources are mentioned in the request itself.
+            3. Please list any facts that may need to be derived (e.g., via logical deduction, simulation, or computation)
+            4. Please list any facts that are recalled from memory, hunches, well-reasoned guesses, etc.
+
+        When answering this survey, keep in mind that 'facts' will typically be specific names, dates, statistics, etc. Your answer should use headings:
+
+            1. GIVEN OR VERIFIED FACTS
+            2. FACTS TO LOOK UP
+            3. FACTS TO DERIVE
+            4. EDUCATED GUESSES
+
+        DO NOT include any other headings or sections in your response. DO NOT list next steps or plans until asked to do so."]
+
+    - kind: AnswerQuestionWithAI
+      id: question_wEJ123
+      displayName: Get Facts Prompt
+      autoSend: false
+      variable: Topic.TaskFacts
+      userInput: =First(Topic.ContextHistory).Value
+      
+    - kind: EditTableV2
+      id: editTableV2_Pry8em
+      displayName: Add Fact Response to Context
+      itemsVariable: Topic.ContextHistory
+      changeType:
+        kind: AddItemOperation
+        value: =Topic.TaskFacts
+
+    - kind: AnswerQuestionWithAI
+      id: question_wEJ456
+      displayName: Create a Plan Prompt
+      autoSend: false
+      variable: Topic.Plan
+      userInput: |-
+        ="Fantastic. To address this request we have assembled the following team:
+
+        " & Topic.TeamDescription & "
+
+        Based on the team composition, and known and unknown facts, please devise a short bullet-point plan for addressing the original request. Remember, there is no requirement to involve all team members -- a team member's particular expertise may not be needed for this task."
+      additionalInstructions: =Concat(Topic.ContextHistory, Value, \".\\n\\n\")
+
+    - kind: SetVariable
+      id: setVariable_Kk2LDL
+      displayName: Set Plan as Context
+      variable: Topic.ContextHistory
+      value: |-
+        =["
+
+        We are working to address the following user request:
+
+        " & Topic.NewTask &"
+
+
+        To answer this request we have assembled the following team:
+
+        " & Topic.TeamDescription &"
+
+
+        Here is an initial fact sheet to consider:
+
+        " & Topic.TaskFacts &"
+
+        Here is the plan to follow as best as possible:
+  
+        "
+        & Topic.Plan
+
+        ]
+
+    - kind: SendActivity
+      id: sendActivity_bwNZiM
+      activity: "{First(Topic.ContextHistory).Value}"
+
+    - kind: AnswerQuestionWithAI
+      id: sendActivity_YhpNE8
+      displayName: Progress Ledger Prompt
+      autoSend: false
+      variable: Topic.ProgressLedgerUpdateString
+      userInput: |-
+        ="
+        Recall we are working on the following request:
+
+        " & Topic.NewTask & "
+
+        And we have assembled the following team:
+
+        " & Topic.TeamDescription & "
+
+        To make progress on the request, please answer the following questions, including necessary reasoning:
+
+            - Is the request fully satisfied? (True if complete, or False if the original request has yet to be SUCCESSFULLY and FULLY addressed)
+            - Are we in a loop where we are repeating the same requests and / or getting the same responses from an agent multiple times? Loops can span multiple turns, and can include repeated actions like scrolling up or down more than a handful of times.
+            - Are we making forward progress? (True if just starting, or recent messages are adding value. False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file)
+            - Who should speak next? (select from: " & Concat(Topic.AvailableAgents, name, ",") & ") 
+            - What instruction or question would you give this team member? (Phrase as if speaking directly to them, and include any specific information they may need)
+
+        Please output an answer in pure JSON format according to the following schema. The JSON object must be parsable as-is. DO NOT OUTPUT ANYTHING OTHER THAN JSON, AND DO NOT DEVIATE FROM THIS SCHEMA:
+
+            {{
+                ""is_request_satisfied"": {{
+                    ""reason"": string,
+                    ""answer"": boolean
+                }},
+                ""is_in_loop"": {{
+                    ""reason"": string,
+                    ""answer"": boolean
+                }},
+                ""is_progress_being_made"": {{
+                    ""reason"": string,
+                    ""answer"": boolean
+                }},
+                ""next_speaker"": {{
+                    ""reason"": string,
+                    ""answer"": string (select from: " & Concat(Topic.AvailableAgents, name, ",") & ")
+                }},
+                ""instruction_or_question"": {{
+                    ""reason"": string,
+                    ""answer"": string
+                }}
+            }}
+        "
+      additionalInstructions: =Concat(Topic.ContextHistory, Value, ".\\n\\n")
+
+    - kind: ParseValue
+      id: rNZtlV
+      displayName: Parse ledger response
+      variable: Topic.TypedProgressLedger
+      valueType:
+        kind: Record
+        properties:
+          instruction_or_question:
+            type:
+              kind: Record
+              properties:
+                answer: String
+                reason: String
+
+          is_in_loop:
+            type:
+              kind: Record
+              properties:
+                answer: Boolean
+                reason: String
+
+          is_progress_being_made:
+            type:
+              kind: Record
+              properties:
+                answer: Boolean
+                reason: String
+
+          is_request_satisfied:
+            type:
+              kind: Record
+              properties:
+                answer: Boolean
+                reason: String
+
+          next_speaker:
+            type:
+              kind: Record
+              properties:
+                answer: String
+                reason: String
+
+      value: =Topic.ProgressLedgerUpdateString
+
+    - kind: SendActivity
+      id: sendActivity_1GMmNq
+      activity: |-
+        Progress Ledger response:
+        {Topic.ProgressLedgerUpdateString}
+
+    - kind: ConditionGroup
+      id: conditionGroup_mVIecC
+      conditions:
+        - id: conditionItem_fj432c
+          condition: =Topic.TypedProgressLedger.is_request_satisfied.answer
+          displayName: If Done
+          actions:
+            - kind: AnswerQuestionWithAI
+              id: sendActivity_Pkkmpq
+              displayName: Generate Response
+              variable: Topic.FinalResponse
+              userInput: |-
+                ="
+                We are working on the following task:
+                " & Topic.NewTask & "
+
+                We have completed the task.
+
+                The above messages contain the conversation that took place to complete the task.
+
+                Based on the information gathered, provide the final answer to the original request.
+                The answer should be phrased as if you were speaking to the user.
+                "
+              additionalInstructions: =Concat(Topic.ContextHistory, Value, \".\\n\\n\")
+
+            - kind: SendActivity
+              id: sendActivity_fpaNL9
+              activity: Done with Task!
+
+            - kind: SetVariable
+              id: setVariable_H2GWZ4
+              variable: Global.OrchestratorRunning
+              value: =false
+
+            - kind: EndConversation
+              id: SVoNSV
+
+        - id: conditionItem_yiqund
+          condition: =Topic.TypedProgressLedger.is_in_loop.answer || Not(Topic.TypedProgressLedger.is_progress_being_made.answer)
+          displayName: If Stalling
+          actions:
+            - kind: SetVariable
+              id: setVariable_H5lXdD
+              displayName: Increase stall count
+              variable: Topic.StallCount
+              value: =Topic.StallCount + 1
+
+            - kind: ConditionGroup
+              id: conditionGroup_xzNrdM
+              conditions:
+                - id: conditionItem_NlQTBv
+                  condition: =Topic.StallCount > 2
+                  displayName: Stall Count Exceeded
+                  actions:
+                    - kind: ConditionGroup
+                      id: conditionGroup_4s1Z27
+                      conditions:
+                        - id: conditionItem_EXAlhZ
+                          condition: =Topic.ReTaskCount > 2
+                          actions:
+                            - kind: SendActivity
+                              id: sendActivity_xKxFUU
+                              activity: We tried to re-task 3 times. Short-Circuiting
+
+                            - kind: EndConversation
+                              id: GHVrFh
+
+                    - kind: AnswerQuestionWithAI
+                      id: question_wFJ123
+                      displayName: Get New Facts Prompt
+                      autoSend: false
+                      variable: Topic.TaskFacts
+                      userInput: |-
+                        ="As a reminder, we are working to solve the following task:
+
+                        " & Topic.NewTask & "
+
+                        It's clear we aren't making as much progress as we would like, but we may have learned something new. Please rewrite the following fact sheet, updating it to include anything new we have learned that may be helpful. Example edits can include (but are not limited to) adding new guesses, moving educated guesses to verified facts if appropriate, etc. Updates may be made to any section of the fact sheet, and more than one section of the fact sheet can be edited. This is an especially good time to update educated guesses, so please at least add or update one educated guess or hunch, and explain your reasoning.
+
+                        Here is the old fact sheet:
+
+                        " & Topic.TaskFacts
+                      additionalInstructions: =Concat(Topic.ContextHistory, Value, ".\\n\\n")
+
+                    - kind: AnswerQuestionWithAI
+                      id: question_uEJ456
+                      displayName: Create new Plan Prompt
+                      autoSend: false
+                      variable: Topic.Plan
+                      userInput: |-
+                        ="Please briefly explain what went wrong on this last run (the root cause of the failure), and then come up with a new plan that takes steps and/or includes hints to overcome prior challenges and especially avoids repeating the same mistakes. As before, the new plan should be concise, be expressed in bullet-point form, and consider the following team composition (do not involve any other outside people since we cannot contact anyone else):
+
+                        " & Topic.TeamDescription
+                      additionalInstructions: =Concat(Topic.ContextHistory, Value, ".\\n\\n")
+
+                    - kind: EditTableV2
+                      id: editTableV2_jW7tmM
+                      displayName: Add new plan to history
+                      itemsVariable: Topic.ContextHistory
+                      changeType:
+                        kind: AddItemOperation
+                        value: |
+                          ="
+
+                          We are working to address the following user request:
+
+                          " & Topic.NewTask & "
+
+
+                          To answer this request we have assembled the following team:
+
+                          " & Topic.TeamDescription & "
+
+
+                          Here is an initial fact sheet to consider:
+
+                          " & Topic.TaskFacts & "
+
+                          Here is the plan to follow as best as possible:
+
+                          "
+                          & Topic.Plan
+
+                    - kind: SetVariable
+                      id: setVariable_6J2snP
+                      displayName: Reset Stall count
+                      variable: Topic.StallCount
+                      value: 0
+
+                    - kind: SetVariable
+                      id: setVariable_S6HCgh
+                      displayName: Increase ReTask count
+                      variable: Topic.ReTaskCount
+                      value: =Topic.ReTaskCount + 1
+
+                    - kind: SendActivity
+                      id: sendActivity_cwNZiM
+                      activity: |-
+                        We have Stalled - Adjusting plan:
+
+                        {Last(Topic.ContextHistory).Value}
+
+                    - kind: GotoAction
+                      id: LzfJ8u
+                      actionId: sendActivity_YhpNE8
+
+      elseActions:
+        - kind: SetVariable
+          id: setVariable_L7ooQO
+          variable: Topic.StallCount
+          value: 0
+
+    - kind: ConditionGroup
+      id: conditionGroup_QFPiF5
+      conditions:
+        - id: conditionItem_GmigcU
+          condition: =CountRows(Search(Topic.AvailableAgents, Topic.TypedProgressLedger.next_speaker.answer, name)) > 0
+          displayName: If next Agent tool Exists
+          actions:
+            - kind: SetVariable
+              id: setVariable_TdKfOn
+              displayName: Set Current Goal for Sub-Agent
+              variable: Global.AgentGoal
+              value: =Topic.TypedProgressLedger.instruction_or_question.answer
+
+            - kind: SetVariable
+              id: setVariable_C2AoCu
+              displayName: Reset Output
+              variable: Global.AgentResponse
+              value: "\"\""
+
+            - kind: BeginDialog
+              id: fqLWPt
+              displayName: Invoke Agent
+              input: {}
+              dialog: =First(Search(Topic.AgentToSchemaMapping, Topic.TypedProgressLedger.next_speaker.answer, name)).schema
+              output: {}
+
+            - kind: EditTableV2
+              id: editTableV2_fhfYJi
+              displayName: Add agent response to context
+              itemsVariable: Topic.ContextHistory
+              changeType:
+                kind: AddItemOperation
+                value: |-
+                  ="Agent: " & Topic.TypedProgressLedger.next_speaker.answer & "
+
+                  Question or Instruction: 
+
+                  "
+                  & Topic.TypedProgressLedger.instruction_or_question.answer &
+                  "
+
+                  Agent Response:
+
+                  "
+                  & Global.AgentResponse
+
+            - kind: SendActivity
+              id: sendActivity_MjWETC
+              activity: |-
+                Agent invoked:
+                {Last(Topic.ContextHistory).Value}
+
+            - kind: GotoAction
+              id: 76Hne8
+              actionId: sendActivity_YhpNE8
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_BhcsI7
+          activity: Redirecting to unknown agent
+
+        - kind: SetVariable
+          id: setVariable_H2GW44
+          variable: Global.OrchestratorRunning
+          value: =false
+
+        - kind: EndConversation
+          id: 8nXE8H

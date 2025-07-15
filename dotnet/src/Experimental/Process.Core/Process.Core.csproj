@@ -20,6 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Extensions\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Extensions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
@@ -34,12 +40,10 @@
   <ItemGroup>
     <PackageReference Include="JmesPath.Net" />
     <PackageReference Include="JsonSchema.Net.Generation" />
+    <PackageReference Include="Microsoft.Bot.ObjectModel" />
+    <PackageReference Include="Microsoft.PowerFx.Interpreter" />
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Text.RegularExpressions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>
