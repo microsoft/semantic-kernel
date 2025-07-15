@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
