@@ -68,7 +68,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.39.0",
+    "boto3>=1.36.4,<1.40.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
