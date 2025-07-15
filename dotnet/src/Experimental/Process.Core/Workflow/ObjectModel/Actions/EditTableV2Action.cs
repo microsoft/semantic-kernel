@@ -25,7 +25,7 @@ internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
         EditTableOperation? changeType = this.Action.ChangeType;
         if (changeType is AddItemOperation addItemOperation)
         {
-            FormulaValue result = engine.EvaluteExpression(addItemOperation.Value);
+            FormulaValue result = engine.EvaluateExpression(addItemOperation.Value);
             RecordValue newRecord = BuildRecord(tableValue.Type.ToRecord(), result);
             await tableValue.AppendAsync(newRecord, cancellationToken).ConfigureAwait(false);
             this.AssignTarget(engine, scopes, tableValue);

@@ -22,7 +22,7 @@ internal sealed class SetVariableAction : AssignmentAction<SetVariable>
 
     public override Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken)
     {
-        FormulaValue result = engine.EvaluteExpression(this.Action.Value!);
+        FormulaValue result = engine.EvaluateExpression(this.Action.Value!);
 
         if (result is ErrorValue errorVal) // %%% APPLY EVERYWHERE (OR CENTRAL)
         {

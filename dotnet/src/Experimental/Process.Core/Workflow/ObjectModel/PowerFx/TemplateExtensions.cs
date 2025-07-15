@@ -44,6 +44,6 @@ internal static class TemplateExtensions
             }
         }
 
-        return $"UNSUPPORTED SEGEMENT: {segment.GetType().Name}"; // %%% LOG AND EMPTY STRING
+        return $"UNSUPPORTED SEGMENT: {segment.GetType().Name}"; // %%% LOG AND EMPTY STRING
     }
 }

@@ -25,7 +25,7 @@ public record KernelProcessDelegateStepInfo : KernelProcessStepInfo
     }
 
     /// <summary>
-    /// Ste funtion
+    /// Step function
     /// </summary>
     public StepFunction StepFunction { get; }
 }

@@ -44,7 +44,7 @@ internal static class RecalcEngineExtensions
         }
     }
 
-    public static FormulaValue EvaluteExpression(this RecalcEngine engine, ValueExpression? value)
+    public static FormulaValue EvaluateExpression(this RecalcEngine engine, ValueExpression? value)
     {
         if (value is null)
         {

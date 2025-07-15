@@ -27,7 +27,7 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
         ValueExpression value = this.Action.Value!;
         DataType valueType = this.Action.ValueType!;
 
-        FormulaValue result = engine.EvaluteExpression(value);
+        FormulaValue result = engine.EvaluateExpression(value);
 
         FormulaValue? parsedResult = null;
         if (result is StringValue stringValue)
