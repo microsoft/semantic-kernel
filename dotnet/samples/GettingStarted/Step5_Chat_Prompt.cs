@@ -14,7 +14,7 @@ public sealed class Step5_Chat_Prompt(ITestOutputHelper output) : BaseTest(outpu
     {
         // Create a kernel with OpenAI chat completion
         Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+            .AddOpenAIChatClient(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
