@@ -37,7 +37,8 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         int? dimensions = null)
         : base(
             httpClient: httpClient,
-            logger: logger)
+            logger: logger,
+            apiKey: apiKey)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -45,7 +46,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents?key={apiKey}");
+        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents");
         this._dimensions = dimensions;
     }
 
