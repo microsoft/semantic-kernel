@@ -63,10 +63,25 @@ internal static class RecalcEngineExtensions
 
         if (value.IsLiteral)
         {
-            DataValue? source = value.LiteralValue; // %%% TODO: TRANSLATE VALUE
-            return BlankValue.NewBlank(); // %%% HACK
+            DataValue? source = value.LiteralValue;
+            return
+                source switch
+                {
+                    null => FormulaValue.NewBlank(),
+                    StringDataValue stringValue => FormulaValue.New(stringValue.Value),
+                    NumberDataValue numberValue => FormulaValue.New(numberValue.Value),
+                    BooleanDataValue boolValue => FormulaValue.New(boolValue.Value),
+                    DateTimeDataValue dateTimeValue => FormulaValue.New(dateTimeValue.Value.DateTime),
+                    DateDataValue dateValue => FormulaValue.New(dateValue.Value),
+                    TimeDataValue timeValue => FormulaValue.New(timeValue.Value),
+                    //RecordDataValue recordValue => FormulaValue.NewRecordFromFields(recordValue.Properties), // %%% TODO
+                    //TableDataValue tableValue => FormulaValue.NewTable(), // %%% TODO
+                    _ => FormulaValue.NewError(new Microsoft.PowerFx.ExpressionError { Message = $"Unknown literal type: {source.GetType().Name}" }),
+                };
         }
+
         // %%% TODO: value.StructuredRecordExpression ???
+
         return BlankValue.NewBlank();
     }
 }
