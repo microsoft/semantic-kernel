@@ -27,7 +27,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)"/>
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,8 +36,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Community.OData.Linq" />
     <PackageReference Include="EntityFramework" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="Community.OData.Linq" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net462'">
+    <PackageReference Include="OData2Linq" />
   </ItemGroup>
 
 </Project>

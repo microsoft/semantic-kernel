@@ -6,7 +6,11 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if NET462
 using Community.OData.Linq;
+#else
+using OData2Linq;
+#endif
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
 
