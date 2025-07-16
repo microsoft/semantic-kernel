@@ -143,6 +143,38 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCreatesPostRequestWithApiKeyInHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var apiKeyHeader = this._messageHandlerStub.RequestHeaders.GetValues("x-goog-api-key").SingleOrDefault();
+        Assert.NotNull(apiKeyHeader);
+        Assert.Equal("fake-key", apiKeyHeader);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithoutApiKeyInUrlAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.DoesNotContain("key=", this._messageHandlerStub.RequestUri.ToString());
+    }
+
+    [Fact]
     public async Task ShouldIncludeDimensionsInAllRequestsAsync()
     {
         // Arrange
