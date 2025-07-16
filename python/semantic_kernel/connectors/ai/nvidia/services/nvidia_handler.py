@@ -5,7 +5,10 @@ from abc import ABC
 from typing import Any, ClassVar, Union
 
 from openai import AsyncOpenAI, AsyncStream
-from openai.types import CreateEmbeddingResponse
+from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.completion import Completion
+from openai.types.create_embedding_response import CreateEmbeddingResponse
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai.nvidia import (
     NvidiaPromptExecutionSettings,
@@ -18,7 +21,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-RESPONSE_TYPE = Union[list[Any],]
+RESPONSE_TYPE = Union[list[Any], ChatCompletion, Completion, AsyncStream[Any]]
 
 
 class NvidiaHandler(KernelBaseModel, ABC):
@@ -26,18 +29,23 @@ class NvidiaHandler(KernelBaseModel, ABC):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "nvidia"
     client: AsyncOpenAI
-    ai_model_type: NvidiaModelTypes = (
-        NvidiaModelTypes.EMBEDDING
-    )  # TODO: revert this to chat after adding support for chat-compl  # noqa: TD002
-    prompt_tokens: int = 0
+    ai_model_type: NvidiaModelTypes = NvidiaModelTypes.CHAT
     completion_tokens: int = 0
     total_tokens: int = 0
+    prompt_tokens: int = 0
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the Nvidia API."""
         if self.ai_model_type == NvidiaModelTypes.EMBEDDING:
             assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
+        elif self.ai_model_type == NvidiaModelTypes.CHAT:
+            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            return await self._send_chat_completion_request(settings)
+        elif self.ai_model_type == NvidiaModelTypes.TEXT:
+            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            return await self._send_text_completion_request(settings)
+
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
 
@@ -55,9 +63,38 @@ class NvidiaHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
+    async def _send_chat_completion_request(self, settings: NvidiaPromptExecutionSettings) -> ChatCompletion | AsyncStream[Any]:
+        """Send a request to the NVIDIA chat completion endpoint."""
+        try:
+            response = await self.client.chat.completions.create(**settings.prepare_settings_dict())
+            self.store_usage(response)
+            return response
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the chat",
+                ex,
+            ) from ex
+
+    async def _send_text_completion_request(self, settings: NvidiaPromptExecutionSettings) -> Completion | AsyncStream[Any]:
+        """Send a request to the NVIDIA text completion endpoint."""
+        try:
+            settings_dict = settings.prepare_settings_dict()
+            response = await self.client.completions.create(**settings_dict)
+            self.store_usage(response)
+            return response
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the text",
+                ex,
+            ) from ex
+
     def store_usage(
         self,
-        response: CreateEmbeddingResponse,
+        response: ChatCompletion
+        | Completion
+        | AsyncStream[ChatCompletionChunk]
+        | AsyncStream[Completion]
+        | CreateEmbeddingResponse,
     ):
         """Store the usage information from the response."""
         if not isinstance(response, AsyncStream) and response.usage:

@@ -4,6 +4,8 @@ from enum import Enum
 
 
 class NvidiaModelTypes(Enum):
-    """Nvidia model types, can be text, chat or embedding."""
+    """Nvidia model types, can be text, chat, or embedding."""
 
     EMBEDDING = "embedding"
+    CHAT = "chat"
+    TEXT = "text"
