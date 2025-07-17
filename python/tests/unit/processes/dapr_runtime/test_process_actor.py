@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from queue import Queue
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -9,10 +10,13 @@ from dapr.actor.id import ActorId
 from dapr.actor.runtime._type_information import ActorTypeInformation
 from dapr.actor.runtime.context import ActorRuntimeContext
 
+from semantic_kernel.exceptions.kernel_exceptions import KernelException
+from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
 from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
+from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 
 
@@ -158,3 +162,122 @@ def test_handle_message(actor_context):
         asyncio.run(actor_context.handle_message(message_mock))
 
         mock_run_once.assert_called_once()
+
+
+@pytest.fixture
+def actor() -> ProcessActor:
+    """Create a fresh ProcessActor with mocked dependencies."""
+    # Arrange: Create a dummy runtime context and ProcessActor instance
+    actor_id = ActorId("test_actor")
+    runtime_context = MagicMock()
+    kernel = MagicMock()
+    actor_obj = ProcessActor(runtime_context, actor_id, kernel=kernel, factories={})
+    # Mock internal state manager
+    actor_obj._state_manager = AsyncMock()
+    actor_obj._state_manager.try_get_state = AsyncMock(return_value=(False, None))
+    actor_obj._state_manager.try_add_state = AsyncMock()
+    actor_obj._state_manager.save_state = AsyncMock()
+    return actor_obj
+
+
+def test_name_uninitialized(actor: ProcessActor):
+    """Test that accessing name before initialization raises KernelException."""
+    with pytest.raises(KernelException) as exc_info:
+        _ = actor.name
+    assert "must be initialized before accessing the name" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_start_not_initialized(actor: ProcessActor):
+    """Test that start() without initialization raises ValueError."""
+    actor.initialize_task = False
+    with pytest.raises(ValueError):
+        await actor.start()
+
+
+@pytest.mark.asyncio
+async def test_run_once_none_event(actor: ProcessActor):
+    """Test that run_once(None) raises ProcessEventUndefinedException."""
+    actor.initialize_task = True
+    with pytest.raises(ProcessEventUndefinedException):
+        await actor.run_once(None)  # type: ignore
+
+
+@pytest.mark.asyncio
+async def test_send_message_none_event(actor: ProcessActor):
+    """Test that send_message(None) raises ProcessEventUndefinedException."""
+    with pytest.raises(ProcessEventUndefinedException):
+        await actor.send_message(None)  # type: ignore
+
+
+def test_send_message_success(actor: ProcessActor):
+    """Test that send_message enqueues the event into external_event_queue."""
+    event = KernelProcessEvent(id="e1", data="d1")
+    asyncio.run(actor.send_message(event))
+    assert isinstance(actor.external_event_queue, Queue)
+    assert not actor.external_event_queue.empty()
+    queued = actor.external_event_queue.get()
+    assert queued is event
+
+
+@pytest.mark.asyncio
+async def test_to_dapr_process_info_uninitialized(actor: ProcessActor):
+    """Test to_dapr_process_info raises ValueError if process is None."""
+    actor.process = None
+    with pytest.raises(ValueError) as exc:
+        await actor.to_dapr_process_info()
+    assert "must be initialized before converting" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_to_dapr_process_info_inner_step_type_none(actor: ProcessActor):
+    """Test to_dapr_process_info raises ValueError if inner_step_python_type is None."""
+    actor.process = MagicMock()
+    # Simulate a process with missing inner_step_python_type
+    actor.process.inner_step_python_type = None
+    actor.process.state = MagicMock(name="Proc", id="pid")
+    actor.steps = []
+    with pytest.raises(ValueError) as exc:
+        await actor.to_dapr_process_info()
+    assert "inner step type must be defined" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_to_dapr_process_info_success(actor: ProcessActor):
+    """Test to_dapr_process_info returns correct dict for initialized process with no steps."""
+    proc_state = KernelProcessState(name="Proc", version="1.0", id="test_actor")
+    dapr_proc = DaprProcessInfo(
+        inner_step_python_type="Type1",
+        state=proc_state,
+        edges={},
+        steps=[],
+    )
+    actor.process = dapr_proc
+    actor.steps = []
+    result = await actor.to_dapr_process_info()
+    assert result == dapr_proc.model_dump()
+
+
+@pytest.mark.asyncio
+async def test_stop_no_task(actor: ProcessActor):
+    """Test stop() returns normally when no process_task is running."""
+    actor.process_task = None
+    await actor.stop()
+
+
+def test_name_after_manual_set(actor: ProcessActor):
+    """Test that name property returns the correct name after manual initialization."""
+    actor.process = MagicMock()
+    actor.process.state = MagicMock()
+    actor.process.state.name = "MyProcess"
+    actor.process.state.id = "id123"
+    assert actor.name == "MyProcess"
+
+
+@pytest.mark.asyncio
+async def test_send_outgoing_public_events_no_parent(actor: ProcessActor):
+    """Test send_outgoing_public_events does nothing if parent_process_id is None."""
+    actor.parent_process_id = None
+    with patch("semantic_kernel.processes.dapr_runtime.actors.process_actor.ActorProxy.create") as mock_proxy:
+        await actor.send_outgoing_public_events()
+        mock_proxy.assert_not_called()

@@ -25,7 +25,6 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_result_content,
     generate_message_content,
     generate_streaming_code_interpreter_content,
-    generate_streaming_function_content,
     generate_streaming_message_content,
     get_function_call_contents,
     get_message_contents,
@@ -50,7 +49,7 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
-    from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+    from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -478,9 +477,9 @@ class AssistantThreadActions:
                             for tool_call in details.tool_calls:
                                 tool_content = None
                                 content_is_visible = False
-                                if tool_call.type == "function":
-                                    tool_content = generate_streaming_function_content(agent.name, step_details)
-                                elif tool_call.type == "code_interpreter":
+                                # Function Calling-related content is emitted as a single message
+                                # via the `on_intermediate_message` callback.
+                                if tool_call.type == "code_interpreter":
                                     tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
                                     content_is_visible = True
                                 if tool_content:
@@ -490,29 +489,30 @@ class AssistantThreadActions:
                                         yield tool_content
                     elif event.event == "thread.run.requires_action":
                         run = event.data
-                        function_action_result = await cls._handle_streaming_requires_action(
+                        action_result = await cls._handle_streaming_requires_action(
                             agent.name,
                             kernel,
                             run,
                             function_steps,
                             arguments,
                         )
-                        if function_action_result is None:
+                        if action_result is None:
                             raise AgentInvokeException(
                                 f"Function call required but no function steps found for agent `{agent.name}` "
                                 f"thread: {thread_id}."
                             )
-                        if function_action_result.function_call_streaming_content:
-                            if output_messages is not None:
-                                output_messages.append(function_action_result.function_call_streaming_content)
-                            stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
-                                run_id=run.id,
-                                thread_id=thread_id,
-                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
-                            )
-                        if function_action_result.function_result_streaming_content and output_messages is not None:
-                            # Add the function result content to the messages list, if it exists
-                            output_messages.append(function_action_result.function_result_streaming_content)
+                        for content in (
+                            action_result.function_call_streaming_content,
+                            action_result.function_result_streaming_content,
+                        ):
+                            if content and output_messages is not None:
+                                output_messages.append(content)
+
+                        stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
+                            run_id=run.id,
+                            thread_id=thread_id,
+                            tool_outputs=action_result.tool_outputs,  # type: ignore
+                        )
                         break
                     elif event.event == "thread.run.completed":
                         run = event.data
@@ -681,7 +681,7 @@ class AssistantThreadActions:
             tool_call.id: tool_call
             for message in chat_history.messages
             for tool_call in message.items
-            if isinstance(tool_call, FunctionResultContent)
+            if isinstance(tool_call, FunctionResultContent) and tool_call.id is not None
         }
         return [
             {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}

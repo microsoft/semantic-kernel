@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
@@ -910,7 +911,7 @@ public sealed class KernelFunctionFromMethodTests1
         functionName: "Test");
 
         await function.InvokeAsync(this._kernel, arguments);
-        await function.AsAIFunction().InvokeAsync(new(arguments));
+        await function.InvokeAsync(new AIFunctionArguments(arguments));
     }
 
     [Fact]
@@ -940,7 +941,7 @@ public sealed class KernelFunctionFromMethodTests1
         functionName: "Test");
 
         await function.InvokeAsync(this._kernel, arguments);
-        await function.AsAIFunction().InvokeAsync(new(arguments));
+        await function.InvokeAsync(new AIFunctionArguments(arguments));
     }
 
     [Fact]
@@ -1553,6 +1554,28 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.NotNull(metadata.ReturnParameter);
         Assert.NotNull(metadata.ReturnParameter.Schema);
         Assert.Equal("""{"type":"object","properties":{"Result":{"type":"integer"}}}""", metadata.ReturnParameter.Schema!.ToString());
+    }
+
+    [InlineData("f_1", true)]
+    [InlineData("f-1", true)]
+    [InlineData("f+1", false)]
+    [InlineData("f?1", false)]
+    [Theory]
+    public void ItShouldValidateFunctionName(string name, bool allowed)
+    {
+        // Arrange & Act & Assert
+        if (allowed)
+        {
+            // Should not throw
+            KernelFunctionFactory.CreateFromMethod(() => { }, functionName: name);
+            KernelFunctionFactory.CreateFromMethod(() => { }, new KernelFunctionFromMethodOptions() { FunctionName = name });
+        }
+        else
+        {
+            // Should throw
+            Assert.Throws<ArgumentException>(() => KernelFunctionFactory.CreateFromMethod(() => { }, functionName: name));
+            Assert.Throws<ArgumentException>(() => KernelFunctionFactory.CreateFromMethod(() => { }, new KernelFunctionFromMethodOptions() { FunctionName = name }));
+        }
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

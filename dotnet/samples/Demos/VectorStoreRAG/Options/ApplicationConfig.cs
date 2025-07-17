@@ -15,8 +15,8 @@ internal sealed class ApplicationConfig
     private readonly OpenAIEmbeddingsConfig _openAIEmbeddingsConfig = new();
     private readonly RagConfig _ragConfig = new();
     private readonly AzureAISearchConfig _azureAISearchConfig = new();
-    private readonly AzureCosmosDBConfig _azureCosmosDBMongoDBConfig = new();
-    private readonly AzureCosmosDBConfig _azureCosmosDBNoSQLConfig = new();
+    private readonly CosmosConfig _cosmosMongoConfig = new();
+    private readonly CosmosConfig _cosmosNoSqlConfig = new();
     private readonly QdrantConfig _qdrantConfig = new();
     private readonly RedisConfig _redisConfig = new();
     private readonly WeaviateConfig _weaviateConfig = new();
@@ -43,11 +43,11 @@ internal sealed class ApplicationConfig
             .GetRequiredSection($"VectorStores:{AzureAISearchConfig.ConfigSectionName}")
             .Bind(this._azureAISearchConfig);
         configurationManager
-            .GetRequiredSection($"VectorStores:{AzureCosmosDBConfig.MongoDBConfigSectionName}")
-            .Bind(this._azureCosmosDBMongoDBConfig);
+            .GetRequiredSection($"VectorStores:{CosmosConfig.MongoConfigSectionName}")
+            .Bind(this._cosmosMongoConfig);
         configurationManager
-            .GetRequiredSection($"VectorStores:{AzureCosmosDBConfig.NoSQLConfigSectionName}")
-            .Bind(this._azureCosmosDBNoSQLConfig);
+            .GetRequiredSection($"VectorStores:{CosmosConfig.NoSqlConfigSectionName}")
+            .Bind(this._cosmosNoSqlConfig);
         configurationManager
             .GetRequiredSection($"VectorStores:{QdrantConfig.ConfigSectionName}")
             .Bind(this._qdrantConfig);
@@ -71,9 +71,9 @@ internal sealed class ApplicationConfig
 
     public AzureAISearchConfig AzureAISearchConfig => this._azureAISearchConfig;
 
-    public AzureCosmosDBConfig AzureCosmosDBMongoDBConfig => this._azureCosmosDBMongoDBConfig;
+    public CosmosConfig CosmosMongoConfig => this._cosmosMongoConfig;
 
-    public AzureCosmosDBConfig AzureCosmosDBNoSQLConfig => this._azureCosmosDBNoSQLConfig;
+    public CosmosConfig CosmosNoSqlConfig => this._cosmosNoSqlConfig;
 
     public QdrantConfig QdrantConfig => this._qdrantConfig;
 

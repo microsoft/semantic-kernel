@@ -3,6 +3,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 """
@@ -28,7 +29,7 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     pdf_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
@@ -46,7 +47,7 @@ async def main():
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=OpenAISettings().chat_model_id,
         client=client,
         instructions="Find answers to the user's questions in the provided file.",
         name="FileSearch",

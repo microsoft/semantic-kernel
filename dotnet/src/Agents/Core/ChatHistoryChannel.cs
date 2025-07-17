@@ -51,9 +51,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Queue<ChatMessageContent> messageQueue = [];
 
         ChatMessageContent? yieldMessage = null;
-#pragma warning disable CS0618 // Type or member is obsolete
         await foreach (ChatMessageContent responseMessage in historyAgent.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
@@ -105,9 +103,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
         int messageCount = this._history.Count;
 
-#pragma warning disable CS0618 // Type or member is obsolete
         await foreach (StreamingChatMessageContent streamingMessage in historyAgent.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             yield return streamingMessage;
         }

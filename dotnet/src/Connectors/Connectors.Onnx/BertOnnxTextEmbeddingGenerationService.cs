@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
@@ -24,6 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// <summary>
 /// Provides a text embedding generation service using a BERT ONNX model.
 /// </summary>
+[Obsolete("Use BertOnnxEmbeddingGenerator instead.")]
 public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGenerationService, IDisposable
 {
     /// <summary>Reusable options instance passed to OnnxSession.Run.</summary>

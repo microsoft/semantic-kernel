@@ -104,7 +104,7 @@ public static class FishSandwichProcess
 
     private sealed class AddBunsStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string AddBuns = nameof(AddBuns);
         }
@@ -114,7 +114,7 @@ public static class FishSandwichProcess
             public const string BunsAdded = nameof(BunsAdded);
         }
 
-        [KernelFunction(Functions.AddBuns)]
+        [KernelFunction(ProcessFunctions.AddBuns)]
         public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
             Console.WriteLine($"BUNS_ADDED_STEP: Buns added to ingredient {foodActions.First()}");
@@ -125,7 +125,7 @@ public static class FishSandwichProcess
 
     private sealed class AddSpecialSauceStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string AddSpecialSauce = nameof(AddSpecialSauce);
         }
@@ -135,7 +135,7 @@ public static class FishSandwichProcess
             public const string SpecialSauceAdded = nameof(SpecialSauceAdded);
         }
 
-        [KernelFunction(Functions.AddSpecialSauce)]
+        [KernelFunction(ProcessFunctions.AddSpecialSauce)]
         public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
             Console.WriteLine($"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {foodActions.First()}");

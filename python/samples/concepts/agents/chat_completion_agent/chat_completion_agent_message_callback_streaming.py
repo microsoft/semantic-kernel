@@ -37,11 +37,18 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
+# This callback function will be called for each intermediate message
+# Which will allow one to handle FunctionCallContent and FunctionResultContent
+# If the callback is not provided, the agent will return the final response
+# with no intermediate tool call steps.
 async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        elif isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        else:
+            print(f"{message.role}: {message.content}")
 
 
 async def main() -> None:
@@ -66,57 +73,39 @@ async def main() -> None:
 
     for user_input in user_inputs:
         print(f"\n# User: '{user_input}'")
-        first_chunk = True
         async for response in agent.invoke_stream(
             messages=user_input,
             thread=thread,
             on_intermediate_message=handle_streaming_intermediate_steps,
         ):
-            if first_chunk:
-                print(f"# {response.name}: ", end="", flush=True)
-                first_chunk = False
             if response.content:
                 print(response.content, end="", flush=True)
             thread = response.thread
         print()
 
-    # Print the intermediate steps
-    print("\nIntermediate Steps:")
-    for msg in intermediate_steps:
-        if any(isinstance(item, FunctionResultContent) for item in msg.items):
-            for fr in msg.items:
-                if isinstance(fr, FunctionResultContent):
-                    print(f"Function Result:> {fr.result} for function: {fr.name}")
-        elif any(isinstance(item, FunctionCallContent) for item in msg.items):
-            for fcc in msg.items:
-                if isinstance(fcc, FunctionCallContent):
-                    print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
-        else:
-            print(f"{msg.role}: {msg.content}")
+    """
+    Sample Output:
 
-    # Sample output:
     # User: 'Hello'
-    # AuthorRole.ASSISTANT: Hello! How can I assist you today? If you have any questions about the menu,
-    #                       feel free to ask!
+    Hello! How can I assist you today?
+
     # User: 'What is the special soup?'
-    # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about it or
-    #                       anything else on the menu?
+    Function Call:> MenuPlugin-get_specials with arguments: {}
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    The special soup today is Clam Chowder. Is there anything else you'd like to know?
+
     # User: 'How much does that cost?'
-    # AuthorRole.ASSISTANT: The Clam Chowder costs $9.99. If you have any other questions or need further
-    #                       information, feel free to ask!
+    Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
+    Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    The Clam Chowder costs $9.99. Would you like to know anything else about the menu?
+
     # User: 'Thank you'
-    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions in the future, don't hesitate
-    #                       to ask. Have a great day!
-    #
-    # Intermediate Steps:
-    # Function Call:> MenuPlugin-get_specials with arguments: {}
-    # Function Result:>
-    #         Special Soup: Clam Chowder
-    #         Special Salad: Cobb Salad
-    #         Special Drink: Chai Tea
-    #         for function: MenuPlugin-get_specials
-    # Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
-    # Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    You're welcome! If you have any more questions, feel free to ask. Have a great day!
+    """
 
 
 if __name__ == "__main__":

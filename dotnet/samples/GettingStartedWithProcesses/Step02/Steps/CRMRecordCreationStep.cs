@@ -10,12 +10,12 @@ namespace Step02.Steps;
 /// </summary>
 public class CRMRecordCreationStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string CreateCRMEntry = nameof(CreateCRMEntry);
     }
 
-    [KernelFunction(Functions.CreateCRMEntry)]
+    [KernelFunction(ProcessStepFunctions.CreateCRMEntry)]
     public async Task CreateCRMEntryAsync(KernelProcessStepContext context, AccountUserInteractionDetails userInteractionDetails, Kernel _kernel)
     {
         Console.WriteLine($"[CRM ENTRY CREATION] New Account {userInteractionDetails.AccountId} created");

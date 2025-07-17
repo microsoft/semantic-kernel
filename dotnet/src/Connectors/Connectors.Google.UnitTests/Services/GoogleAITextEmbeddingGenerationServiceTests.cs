@@ -12,6 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
+[Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
 public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
 {
     private const string Model = "fake-model";

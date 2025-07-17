@@ -522,6 +522,24 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void LabelsFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            Labels = new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Labels);
+        Assert.Equal(executionSettings.Labels, request.Labels);
+    }
+
+    [Fact]
     public void CachedContentFromChatHistoryReturnsAsExpected()
     {
         // Arrange
@@ -539,6 +557,26 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Equal(executionSettings.CachedContent, request.CachedContent);
+    }
+
+    [Fact]
+    public void LabelsFromChatHistoryReturnsAsExpected()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage("user-message2");
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            Labels = new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } }
+        };
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.Labels, request.Labels);
     }
 
     [Fact]

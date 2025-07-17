@@ -6,26 +6,27 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
   </PropertyGroup>
   
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props"/>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   
   <ItemGroup>
-    <PackageReference Include="AWSSDK.BedrockRuntime"/>
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup"/>
-    <PackageReference Include="AWSSDK.Core"/>
+    <PackageReference Include="AWSSDK.BedrockRuntime" />
+    <PackageReference Include="AWSSDK.Extensions.Bedrock.MEAI" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
+    <PackageReference Include="AWSSDK.Core" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj"/>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Amazon.UnitTests"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Amazon.UnitTests" />
   </ItemGroup>
 
 </Project>

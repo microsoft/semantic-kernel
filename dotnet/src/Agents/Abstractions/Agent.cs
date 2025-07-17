@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Arguments.Extensions;
@@ -65,6 +66,17 @@ public abstract class Agent
     /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime. The default value is an empty Kernel, but that can be overridden.
     /// </value>
     public Kernel Kernel { get; init; } = new();
+
+    /// <summary>
+    /// This option forces the agent to clone the original kernel instance during invocation if <c>true</c>. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AIContextProvider"/> implementations that provide <see cref="AIFunction"/> instances require the
+    /// kernel to be cloned during agent invocation, but cloning has the side affect of causing modifications to Kernel
+    /// Data by plugins to be lost.  Cloning is therefore opt-in.
+    /// </remarks>
+    [Experimental("SKEXP0130")]
+    public bool UseImmutableKernel { get; set; } = false;
 
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
@@ -338,14 +350,9 @@ public abstract class Agent
             thread = constructThread();
         }
 
-        if (thread is not TThreadType concreteThreadType)
+        if (thread is not TThreadType concreteThreadType || (requiresThreadRetrieval && thread is not IAgentThreadRetrievable))
         {
-            throw new InvalidOperationException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
-        }
-
-        if (requiresThreadRetrieval && thread is not IAgentThreadRetrievable)
-        {
-            throw new InvalidOperationException($"{this.GetType().Name} currently only supports agent threads that allow retrieving chat history via the {nameof(IAgentThreadRetrievable)} interface.");
+            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {typeof(TThreadType).Name}.");
         }
 
         // We have to explicitly call create here to ensure that the thread is created
@@ -391,5 +398,39 @@ public abstract class Agent
     protected Task NotifyThreadOfNewMessage(AgentThread thread, ChatMessageContent message, CancellationToken cancellationToken)
     {
         return thread.OnNewMessageAsync(message, cancellationToken);
+    }
+
+    /// <summary>
+    /// Default formatting for additional instructions for the AI agent based on the provided context and invocation options.
+    /// </summary>
+    /// <param name="context">The context containing relevant information for the AI agent's operation.</param>
+    /// <param name="options">Optional parameters that influence the invocation behavior. Can be <see langword="null"/>.</param>
+    /// <returns>A formatted string representing the additional instructions for the AI agent.</returns>
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    protected static string FormatAdditionalInstructions(AIContext context, AgentInvokeOptions? options)
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    {
+        return string.Concat(ProcessInstructions());
+
+        IEnumerable<string> ProcessInstructions()
+        {
+            bool hasInstructions = false;
+            if (options?.AdditionalInstructions is not null)
+            {
+                yield return options!.AdditionalInstructions;
+                hasInstructions = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(context.Instructions))
+            {
+                if (hasInstructions)
+                {
+                    yield return Environment.NewLine;
+                    yield return Environment.NewLine;
+                }
+
+                yield return context.Instructions!;
+            }
+        }
     }
 }

@@ -6,12 +6,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using static Microsoft.SemanticKernel.Data.VectorStoreExtensions;
 
 namespace SemanticKernel.IntegrationTests.Data;
@@ -21,32 +21,53 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
-    protected IVectorStore? VectorStore { get; set; }
+    protected VectorStore? VectorStore { get; set; }
 
-    protected ITextEmbeddingGenerationService? EmbeddingGenerator { get; set; }
+    [Obsolete("Temporary for Obsoleted TextEmbeddingGenerationService AzureAISearchVectorStore Ctor")]
+    protected ITextEmbeddingGenerationService? TextEmbeddingGenerationService { get; set; }
+
+    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; set; }
 
     protected new IConfigurationRoot Configuration { get; } = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAITextEmbeddingTests>()
+        .AddUserSecrets<BaseVectorStoreTextSearchTests>()
         .Build();
 
     /// <summary>
     /// Add sample records to the vector store record collection.
     /// </summary>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
-        IVectorStore vectorStore,
+    [Obsolete("Temporary test mock for Obsolete ITextEmbeddingGenerationService")]
+    public static async Task<VectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        VectorStore vectorStore,
         string collectionName,
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
         return await vectorStore.CreateCollectionFromListAsync<TKey, TRecord>(
                 collectionName, lines, embeddingGenerationService, createRecord);
+    }
+
+    /// <summary>
+    /// Add sample records to the vector store record collection.
+    /// </summary>
+    public static async Task<VectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        VectorStore vectorStore,
+        string collectionName,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        CreateRecordFromString<TKey, TRecord> createRecord)
+        where TKey : notnull
+        where TRecord : class
+    {
+        var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
+
+        return await vectorStore.CreateCollectionFromListAsync<TKey, TRecord>(
+                collectionName, lines, embeddingGenerator, createRecord);
     }
 
     /// <summary>
@@ -84,6 +105,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
     /// </summary>
+    [Obsolete("Temporary test mock for Obsolete ITextEmbeddingGenerationService")]
     protected sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
     {
         /// <inheritdoc />
@@ -108,19 +130,19 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     protected sealed class DataModel
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI;
 using OpenAI.VectorStores;
 using Xunit;
 
@@ -20,7 +21,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-    private readonly OpenAIClientProvider _clientProvider;
+    private readonly OpenAIClient _client;
 
     /// <summary>
     /// Verify the default creation of vector-store.
@@ -33,7 +34,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
 
         // Act
-        string storeId = await this._clientProvider.Client.CreateVectorStoreAsync(fileIds, waitUntilCompleted: false);
+        string storeId = await this._client.CreateVectorStoreAsync(fileIds, waitUntilCompleted: false);
 
         // Assert
         Assert.NotNull(storeId);
@@ -56,7 +57,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
 
         // Act
-        string storeId = await this._clientProvider.Client.CreateVectorStoreAsync(
+        string storeId = await this._client.CreateVectorStoreAsync(
             fileIds,
             waitUntilCompleted: false,
             storeName: "test-store",
@@ -79,7 +80,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
 
         // Act
         await using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
-        string fileId = await this._clientProvider.Client.UploadAssistantFileAsync(stream, "text.txt");
+        string fileId = await this._client.UploadAssistantFileAsync(stream, "text.txt");
 
         // Assert
         Assert.NotNull(fileId);
@@ -95,7 +96,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteFile);
 
         // Act
-        bool isDeleted = await this._clientProvider.Client.DeleteFileAsync("file-id");
+        bool isDeleted = await this._client.DeleteFileAsync("file-id");
 
         // Assert
         Assert.True(isDeleted);
@@ -111,7 +112,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteVectorStore);
 
         // Act
-        bool isDeleted = await this._clientProvider.Client.DeleteVectorStoreAsync("store-id");
+        bool isDeleted = await this._client.DeleteVectorStoreAsync("store-id");
 
         // Assert
         Assert.True(isDeleted);
@@ -131,7 +132,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
-        this._clientProvider = OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
+        this._client = OpenAIAssistantAgent.CreateOpenAIClient(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
     }
 
     private void SetupResponse(HttpStatusCode statusCode, string content) =>

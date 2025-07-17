@@ -22,10 +22,12 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     /// Demonstrate the usage of <see cref="ChatCompletionAgent"/> where each invocation is
     /// a unique interaction with no conversation history between them.
     /// </summary>
-    [Fact]
-    public async Task UseSingleChatCompletionAgent()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseSingleChatCompletionAgent(bool useChatClient)
     {
-        Kernel kernel = this.CreateKernelWithChatCompletion();
+        Kernel kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient);
 
         // Define the agent
         ChatCompletionAgent agent =
@@ -33,13 +35,15 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Name = ParrotName,
                 Instructions = ParrotInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = kernel
             };
 
         // Respond to user input
         await InvokeAgentAsync("Fortune favors the bold.");
         await InvokeAgentAsync("I came, I saw, I conquered.");
         await InvokeAgentAsync("Practice makes perfect.");
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
@@ -138,8 +142,10 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
 
-    [Fact]
-    public async Task UseTemplateForChatCompletionAgent()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseTemplateForChatCompletionAgent(bool useChatClient)
     {
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
@@ -150,7 +156,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         ChatCompletionAgent agent =
             new(templateConfig, templateFactory)
             {
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 Arguments = new()
                     {
                         { "topic", "Dog" },
@@ -168,6 +174,8 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
                 { "topic", "Cat" },
                 { "length", "3" },
             });
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)

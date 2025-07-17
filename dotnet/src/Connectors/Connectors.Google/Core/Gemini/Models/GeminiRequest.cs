@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 internal sealed class GeminiRequest
 {
     private static JsonSerializerOptions? s_options;
-    private static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
+    private static readonly AIJsonSchemaCreateOptions s_schemaConfiguration = new()
     {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = false,
-        DisallowAdditionalProperties = false,
+        TransformOptions = new()
+        {
+            UseNullableKeyword = true,
+        }
     };
 
     [JsonPropertyName("contents")]
@@ -45,6 +45,10 @@ internal sealed class GeminiRequest
     [JsonPropertyName("cachedContent")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
+
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Labels { get; set; }
 
     public void AddFunction(GeminiFunction function)
     {
@@ -319,11 +323,11 @@ internal sealed class GeminiRequest
         var jsonElement = responseSchemaSettings switch
         {
             JsonElement element => element,
-            Type type => CreateSchema(type, GetDefaultOptions()),
+            Type type => CreateSchema(type, GetDefaultOptions(), configuration: s_schemaConfiguration),
             KernelJsonSchema kernelJsonSchema => kernelJsonSchema.RootElement,
             JsonNode jsonNode => JsonSerializer.SerializeToElement(jsonNode, GetDefaultOptions()),
             JsonDocument jsonDocument => JsonSerializer.SerializeToElement(jsonDocument, GetDefaultOptions()),
-            _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions())
+            _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions(), configuration: s_schemaConfiguration)
         };
 
         jsonElement = TransformToOpenApi3Schema(jsonElement);
@@ -355,6 +359,11 @@ internal sealed class GeminiRequest
 
         static void TransformOpenApi3Object(JsonObject obj)
         {
+            if (obj.TryGetPropertyValue("additionalProperties", out _))
+            {
+                obj.Remove("additionalProperties");
+            }
+
             if (obj.TryGetPropertyValue("properties", out JsonNode? propsNode) && propsNode is JsonObject properties)
             {
                 foreach (var property in properties)
@@ -382,7 +391,18 @@ internal sealed class GeminiRequest
                             {
                                 if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
                                 {
-                                    TransformOpenApi3Object(itemsObj);
+                                    // Ensure AnyOf array is considered
+                                    if (itemsObj.TryGetPropertyValue("anyOf", out JsonNode? anyOfNode) && anyOfNode is JsonArray anyOfArray)
+                                    {
+                                        foreach (var anyOfObj in anyOfArray.OfType<JsonObject>())
+                                        {
+                                            TransformOpenApi3Object(anyOfObj);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        TransformOpenApi3Object(itemsObj);
+                                    }
                                 }
                             }
                         }
@@ -401,7 +421,7 @@ internal sealed class GeminiRequest
         string? description = null,
         AIJsonSchemaCreateOptions? configuration = null)
     {
-        configuration ??= s_schemaOptions;
+        configuration ??= s_schemaConfiguration;
         return AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
     }
 
@@ -430,6 +450,12 @@ internal sealed class GeminiRequest
     private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.CachedContent = executionSettings.CachedContent;
+
+        if (executionSettings.Labels is not null)
+        {
+            request.Labels = executionSettings.Labels;
+        }
+
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();

@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ClientModel;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -8,20 +11,20 @@ namespace Agents;
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
 /// on <see cref="Agent.Arguments"/> and also providing override <see cref="KernelArguments"/>
-/// when calling <see cref="ChatCompletionAgent.InvokeAsync(ChatHistory, KernelArguments?, Kernel?, CancellationToken)"/>
+/// when calling <see cref="ChatCompletionAgent.InvokeAsync(ICollection{ChatMessageContent}, AgentThread?, AgentInvokeOptions?, CancellationToken)"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ServiceKeyGood = "chat-good";
     private const string ServiceKeyBad = "chat-bad";
 
-    [Fact]
-    public async Task UseServiceSelectionWithChatCompletionAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseServiceSelectionWithChatCompletionAgent(bool useChatClient)
     {
-        // Create kernel with two instances of IChatCompletionService
-        // One service is configured with a valid API key and the other with an
-        // invalid key that will result in a 401 Unauthorized error.
-        Kernel kernel = CreateKernelWithTwoServices();
+        // Create kernel with two instances of chat services - one good, one bad
+        Kernel kernel = CreateKernelWithTwoServices(useChatClient);
 
         // Define the agent targeting ServiceId = ServiceKeyGood
         ChatCompletionAgent agentGood =
@@ -88,38 +91,78 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
             {
                 Console.WriteLine($"Status: {exception.StatusCode}");
             }
+            catch (ClientResultException cre)
+            {
+                Console.WriteLine($"Status: {cre.Status}");
+            }
         }
     }
 
-    private Kernel CreateKernelWithTwoServices()
+    private Kernel CreateKernelWithTwoServices(bool useChatClient)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        if (this.UseOpenAIConfig)
+        if (useChatClient)
         {
-            builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
-                "bad-key",
-                serviceId: ServiceKeyBad);
+            // Add chat clients
+            if (this.UseOpenAIConfig)
+            {
+                builder.Services.AddKeyedChatClient(
+                    ServiceKeyBad,
+                    new OpenAI.OpenAIClient("bad-key").GetChatClient(TestConfiguration.OpenAI.ChatModelId).AsIChatClient());
 
-            builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey,
-                serviceId: ServiceKeyGood);
+                builder.Services.AddKeyedChatClient(
+                    ServiceKeyGood,
+                    new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey).GetChatClient(TestConfiguration.OpenAI.ChatModelId).AsIChatClient());
+            }
+            else
+            {
+                builder.Services.AddKeyedChatClient(
+                    ServiceKeyBad,
+                    new Azure.AI.OpenAI.AzureOpenAIClient(
+                        new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                        new Azure.AzureKeyCredential("bad-key"))
+                        .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                        .AsIChatClient());
+
+                builder.Services.AddKeyedChatClient(
+                    ServiceKeyGood,
+                    new Azure.AI.OpenAI.AzureOpenAIClient(
+                        new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                        new Azure.AzureKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
+                        .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                        .AsIChatClient());
+            }
         }
         else
         {
-            builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                "bad-key",
-                serviceId: ServiceKeyBad);
+            // Add chat completion services
+            if (this.UseOpenAIConfig)
+            {
+                builder.AddOpenAIChatCompletion(
+                    TestConfiguration.OpenAI.ChatModelId,
+                    "bad-key",
+                    serviceId: ServiceKeyBad);
 
-            builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: ServiceKeyGood);
+                builder.AddOpenAIChatCompletion(
+                    TestConfiguration.OpenAI.ChatModelId,
+                    TestConfiguration.OpenAI.ApiKey,
+                    serviceId: ServiceKeyGood);
+            }
+            else
+            {
+                builder.AddAzureOpenAIChatCompletion(
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    "bad-key",
+                    serviceId: ServiceKeyBad);
+
+                builder.AddAzureOpenAIChatCompletion(
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    TestConfiguration.AzureOpenAI.ApiKey,
+                    serviceId: ServiceKeyGood);
+            }
         }
 
         return builder.Build();

@@ -72,16 +72,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             Content = new StringContent(responseContent),
         };
-        var expectedResult = """
-                       Status:
-                       "Succeeded"
-                       Result:
-                       ""
-                       Stdout:
-                       "Hello World!\n"
-                       Stderr:
-                       ""
-                       """;
+
         // Arrange
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
@@ -89,7 +80,10 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await plugin.ExecuteCodeAsync("print('hello world')");
 
         // Assert
-        Assert.Equal(expectedResult, result);
+        Assert.Equal("Succeeded", result.Status);
+        Assert.Equal("Hello World!\n", result.Result?.StdOut);
+        Assert.True(string.IsNullOrEmpty(result.Result?.StdErr));
+        Assert.True(string.IsNullOrEmpty(result.Result?.ExecutionResult));
     }
 
     [Theory]

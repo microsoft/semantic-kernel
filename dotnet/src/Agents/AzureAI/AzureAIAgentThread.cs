@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 public sealed class AzureAIAgentThread : AgentThread
 {
-    private readonly AgentsClient _client;
+    private readonly PersistentAgentsClient _client;
     private readonly IEnumerable<ThreadMessageOptions>? _messages;
     private readonly ToolResources? _toolResources;
     private readonly IReadOnlyDictionary<string, string>? _metadata;
@@ -34,7 +34,7 @@ public sealed class AzureAIAgentThread : AgentThread
     /// </param>
     /// <param name="metadata">Metadata to attach to the underlying thread when it is created..</param>
     public AzureAIAgentThread(
-        AgentsClient client,
+        PersistentAgentsClient client,
         IEnumerable<ThreadMessageOptions>? messages = null,
         ToolResources? toolResources = null,
         IReadOnlyDictionary<string, string>? metadata = null)
@@ -52,7 +52,7 @@ public sealed class AzureAIAgentThread : AgentThread
     /// </summary>
     /// <param name="client">The agents client to use for interacting with threads.</param>
     /// <param name="id">The ID of an existing thread to resume.</param>
-    public AzureAIAgentThread(AgentsClient client, string id)
+    public AzureAIAgentThread(PersistentAgentsClient client, string id)
     {
         Verify.NotNull(client);
         Verify.NotNull(id);
@@ -78,7 +78,7 @@ public sealed class AzureAIAgentThread : AgentThread
 
         try
         {
-            var agentThreadResponse = await this._client.CreateThreadAsync(
+            var agentThreadResponse = await this._client.Threads.CreateThreadAsync(
                 this._messages,
                 this._toolResources,
                 this._metadata,
@@ -102,7 +102,7 @@ public sealed class AzureAIAgentThread : AgentThread
 
         try
         {
-            await this._client.DeleteThreadAsync(this.Id, cancellationToken).ConfigureAwait(false);
+            await this._client.Threads.DeleteThreadAsync(this.Id, cancellationToken).ConfigureAwait(false);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {

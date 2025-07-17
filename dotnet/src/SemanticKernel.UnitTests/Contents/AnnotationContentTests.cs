@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
-
-#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="AnnotationContent"/>.
@@ -17,12 +16,8 @@ public class AnnotationContentTests
     [Fact]
     public void VerifyAnnotationContentInitialState()
     {
-        AnnotationContent definition = new();
-
-        Assert.Empty(definition.Quote);
-        Assert.Equal(0, definition.StartIndex);
-        Assert.Equal(0, definition.EndIndex);
-        Assert.Null(definition.FileId);
+        Assert.Throws<ArgumentException>(() => new AnnotationContent(AnnotationKind.FileCitation, string.Empty, "test"));
+        Assert.Throws<ArgumentException>(() => new AnnotationContent(AnnotationKind.FileCitation, "test", string.Empty));
     }
     /// <summary>
     /// Verify usage.
@@ -31,17 +26,16 @@ public class AnnotationContentTests
     public void VerifyAnnotationContentUsage()
     {
         AnnotationContent definition =
-            new()
+            new(AnnotationKind.TextCitation, "test label", "#id")
             {
-                Quote = "test quote",
                 StartIndex = 33,
                 EndIndex = 49,
-                FileId = "#id",
             };
 
-        Assert.Equal("test quote", definition.Quote);
+        Assert.Equal(AnnotationKind.TextCitation, definition.Kind);
+        Assert.Equal("test label", definition.Label);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
-        Assert.Equal("#id", definition.FileId);
+        Assert.Equal("#id", definition.ReferenceId);
     }
 }
