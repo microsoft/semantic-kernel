@@ -6,10 +6,10 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-#if !NET_8_OR_GREATER
-using Community.OData.Linq;
-#else
+#if NET8_0_OR_GREATER
 using OData2Linq;
+#else
+using Community.OData.Linq;
 #endif
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
