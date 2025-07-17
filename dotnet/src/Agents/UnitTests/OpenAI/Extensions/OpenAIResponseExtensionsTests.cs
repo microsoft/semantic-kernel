@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -178,25 +179,39 @@ public class OpenAIResponseExtensionsTests
     private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
     {
         Type type = typeof(OpenAIResponse);
+        var assembly = type.Assembly;
+        var internalServiceTierType = assembly.GetType("OpenAI.Internal.InternalServiceTier");
+        var nullableInternalServiceTierType = typeof(Nullable<>).MakeGenericType(internalServiceTierType!);
 
         ConstructorInfo? constructor = type.GetConstructor(
             BindingFlags.Instance | BindingFlags.NonPublic,
             null,
             [
-                typeof(string),
-                typeof(DateTimeOffset),
-                typeof(ResponseError),
-                typeof(string),
-                typeof(string),
-                typeof(string),
-                typeof(float),
-                typeof(IEnumerable<ResponseTool>),
-                typeof(float),
                 typeof(IDictionary<string, string>),
-                typeof(ResponseIncompleteStatusDetails),
-                typeof(IEnumerable<ResponseItem>),
-                typeof(bool),
-                typeof(ResponseToolChoice)
+            typeof(float?),
+            typeof(float?),
+            nullableInternalServiceTierType,
+            typeof(string),
+            typeof(bool?),
+            typeof(string),
+            typeof(IList<ResponseTool>),
+            typeof(string),
+            typeof(ResponseStatus?),
+            typeof(DateTimeOffset),
+            typeof(ResponseError),
+            typeof(ResponseTokenUsage),
+            typeof(string),
+            typeof(ResponseReasoningOptions),
+            typeof(int?),
+            typeof(ResponseTextOptions),
+            typeof(ResponseTruncationMode?),
+            typeof(ResponseIncompleteStatusDetails),
+            typeof(IList<ResponseItem>),
+            typeof(bool),
+            typeof(ResponseToolChoice),
+            typeof(string),
+            typeof(string),
+            typeof(IDictionary<string, BinaryData>)
             ],
             null);
 
@@ -204,20 +219,31 @@ public class OpenAIResponseExtensionsTests
         {
             return (OpenAIResponse)constructor.Invoke(
                 [
-                    id,
-                    createdAt,
-                    error,
-                    instructions,
-                    model,
-                    previousResponseId,
-                    temperature,
-                    tools,
-                    topP,
                     metadata,
-                    incompleteStatusDetails,
-                    outputItems,
-                    parallelToolCallsEnabled,
-                    toolChoice
+                (float?)temperature,
+                (float?)topP,
+                null, // serviceTier
+                previousResponseId,
+                null, // background
+                instructions,
+                tools.ToList(),
+                id,
+                null, // status
+                createdAt,
+                error,
+                null, // usage
+                null, // endUserId
+                null, // reasoningOptions
+                null, // maxOutputTokenCount
+                null, // textOptions
+                null, // truncationMode
+                incompleteStatusDetails,
+                outputItems.ToList(),
+                parallelToolCallsEnabled,
+                toolChoice,
+                model,
+                "response",
+                null // additionalBinaryDataProperties
                 ]
             );
         }
