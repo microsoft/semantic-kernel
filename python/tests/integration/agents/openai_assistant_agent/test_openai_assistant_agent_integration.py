@@ -193,8 +193,12 @@ class TestOpenAIAssistantAgentIntegration:
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],
@@ -219,8 +223,12 @@ Dolphin  2
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],
@@ -245,8 +253,12 @@ Dolphin  2
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],
