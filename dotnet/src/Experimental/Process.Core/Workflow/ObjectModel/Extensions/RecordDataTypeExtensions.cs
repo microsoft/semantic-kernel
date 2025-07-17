@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
 
-namespace Microsoft.SemanticKernel.Process.Workflows.PowerFx;
+namespace Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 internal static class RecordDataTypeExtensions
 {

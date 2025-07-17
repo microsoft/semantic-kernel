@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.PowerFx.Types;
 
-namespace Microsoft.SemanticKernel.Process.Workflows.PowerFx;
+namespace Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 internal delegate object? GetFormulaValue(FormulaValue value);
 

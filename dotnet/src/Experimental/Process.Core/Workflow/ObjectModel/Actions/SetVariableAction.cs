@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;

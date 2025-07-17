@@ -6,7 +6,7 @@ using Microsoft.Bot.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 

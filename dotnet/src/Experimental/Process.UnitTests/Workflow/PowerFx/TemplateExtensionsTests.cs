@@ -5,7 +5,7 @@ using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 
