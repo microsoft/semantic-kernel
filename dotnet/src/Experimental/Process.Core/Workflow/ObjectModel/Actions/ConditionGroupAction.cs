@@ -3,18 +3,17 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
 internal sealed class ConditionGroupAction : ProcessAction<ConditionGroup>
 {
-    public ConditionGroupAction(ConditionGroup source)
-        : base(source)
+    public ConditionGroupAction(ConditionGroup model)
+        : base(model)
     {
     }
 
-    public override Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken)
+    protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
         // %%% REMOVE
         //foreach (ConditionItem condition in this.Action.Conditions)

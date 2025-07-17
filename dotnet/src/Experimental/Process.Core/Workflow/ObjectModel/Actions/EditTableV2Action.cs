@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
@@ -12,23 +11,23 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
 internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
 {
-    public EditTableV2Action(EditTableV2 source)
-        : base(source, () => source.ItemsVariable?.Path)
+    public EditTableV2Action(EditTableV2 model)
+        : base(model, () => model.ItemsVariable?.Path)
     {
     }
 
-    public override async Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken)
+    protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        FormulaValue table = scopes[this.Target.VariableScopeName!][this.Target.VariableName!];  // %%% NULL OVERRIDE & MAKE UTILITY
+        FormulaValue table = context.Scopes.Get(this.Target.VariableName!, ActionScopeType.Parse(this.Target.VariableScopeName));
         TableValue tableValue = (TableValue)table;
 
-        EditTableOperation? changeType = this.Action.ChangeType;
+        EditTableOperation? changeType = this.Model.ChangeType;
         if (changeType is AddItemOperation addItemOperation)
         {
-            FormulaValue result = engine.EvaluateExpression(addItemOperation.Value);
+            FormulaValue result = context.Engine.EvaluateExpression(addItemOperation.Value);
             RecordValue newRecord = BuildRecord(tableValue.Type.ToRecord(), result);
             await tableValue.AppendAsync(newRecord, cancellationToken).ConfigureAwait(false);
-            this.AssignTarget(engine, scopes, tableValue);
+            this.AssignTarget(context, tableValue);
         }
         else if (changeType is ClearItemsOperation)
         {
@@ -44,6 +43,7 @@ internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
         static RecordValue BuildRecord(RecordType recordType, FormulaValue value)
         {
             return FormulaValue.NewRecordFromFields(recordType, GetValues());
+
             IEnumerable<NamedValue> GetValues()
             {
                 // %%% expression.StructuredRecordExpression.Properties ???
@@ -57,24 +57,6 @@ internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
                     {
                         yield return new NamedValue(fieldType.Name, value);
                     }
-                    // %%% REMOVE ???
-                    //if (fieldType.Type is StringType)
-                    //{
-                    //    // For string fields, we can use a placeholder value
-                    //    yield return new NamedValue(fieldType.Name, value); // %%% TODO: VALUE
-                    //    continue;
-                    //}
-                    //if (fieldType.Type is BooleanType)
-                    //{
-                    //    // For boolean fields, we can use a default boolean value
-                    //    yield return new NamedValue(fieldType.Name, BooleanValue.New(true)); // %%% TODO: VALUE
-                    //    continue;
-                    //}
-                    //if (fieldType.Type is DecimalType)
-                    //{
-                    //    // For number fields, we can use a default numeric value
-                    //    yield return new NamedValue(fieldType.Name, NumberValue.New(-123)); // %%% TODO: VALUE
-                    //}
                 }
             }
         }

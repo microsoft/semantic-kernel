@@ -3,19 +3,19 @@
 using System;
 using Microsoft.PowerFx;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows;
+namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows.PowerFx;
 
 #pragma warning disable CA1308 // Ignore "Normalize strings to uppercase" warning for test cases
 
-public sealed class RecalcEngineTests
+public sealed class RecalcEngineEvaluationTests(ITestOutputHelper output) : RecalcEngineTest(output)
 {
     [Fact]
     public void EvaluateConstant()
     {
-        RecalcEngine engine = RecalcEngineFactory.Create([], 100);
+        RecalcEngine engine = this.CreateEngine();
 
         this.EvaluateExpression(engine, 0m, "0");
         this.EvaluateExpression(engine, -1m, "-1");
@@ -28,8 +28,8 @@ public sealed class RecalcEngineTests
     [Fact]
     public void EvaluateInvalid()
     {
-        RecalcEngine engine = RecalcEngineFactory.Create([], 100);
-        engine.UpdateVariable("Scoped.Value", DecimalValue.New(33));
+        RecalcEngine engine = this.CreateEngine();
+        engine.UpdateVariable("Scoped.Value", FormulaValue.New(33));
 
         this.EvaluateFailure(engine, "Hi");
         this.EvaluateFailure(engine, "True");
@@ -48,14 +48,14 @@ public sealed class RecalcEngineTests
     {
         NamedValue[] recordValues =
             [
-                new NamedValue("Label", StringValue.New("Test")),
-                new NamedValue("Value", DecimalValue.New(54)),
+                new NamedValue("Label", FormulaValue.New("Test")),
+                new NamedValue("Value", FormulaValue.New(54)),
             ];
         FormulaValue complexValue = FormulaValue.NewRecordFromFields(recordValues);
 
-        RecalcEngine engine = RecalcEngineFactory.Create([], 100);
-        engine.UpdateVariable("CustomLabel", StringValue.New("Note"));
-        engine.UpdateVariable("CustomValue", DecimalValue.New(42));
+        RecalcEngine engine = this.CreateEngine();
+        engine.UpdateVariable("CustomLabel", FormulaValue.New("Note"));
+        engine.UpdateVariable("CustomValue", FormulaValue.New(42));
         engine.UpdateVariable("Scoped", complexValue);
 
         this.EvaluateExpression(engine, 2m, "1 + 1");

@@ -12,12 +12,12 @@ internal static class TemplateExtensions
 {
     public static string? Format(this RecalcEngine engine, IEnumerable<TemplateLine> template)
     {
-        return string.Concat(template.Select(t => engine.Format(t)));
+        return string.Concat(template.Select(line => engine.Format(line)));
     }
 
-    public static string? Format(this RecalcEngine engine, TemplateLine line)
+    public static string? Format(this RecalcEngine engine, TemplateLine? line)
     {
-        return string.Concat(line.Segments.Select(s => engine.Format(s)));
+        return string.Concat(line?.Segments.Select(segment => engine.Format(segment)) ?? [string.Empty]);
     }
 
     private static string? Format(this RecalcEngine engine, TemplateSegment segment)
@@ -34,16 +34,16 @@ internal static class TemplateExtensions
                 if (expressionSegment.Expression.ExpressionText is not null)
                 {
                     FormulaValue expressionValue = engine.Eval(expressionSegment.Expression.ExpressionText);
-                    return expressionValue?.Format();
+                    return expressionValue.Format();
                 }
                 if (expressionSegment.Expression.VariableReference is not null)
                 {
                     FormulaValue expressionValue = engine.Eval(expressionSegment.Expression.VariableReference.ToString());
-                    return expressionValue?.Format();
+                    return expressionValue.Format();
                 }
             }
         }
 
-        return $"UNSUPPORTED SEGMENT: {segment.GetType().Name}"; // %%% LOG AND EMPTY STRING
+        throw new InvalidSegmentException($"Unsupported segment type: {segment.GetType().Name}");
     }
 }

@@ -40,7 +40,7 @@ internal sealed class ProcessActionWalker : BotElementWalker
 
     private static ProcessActionVisitor CreateActionVisitor(ProcessBuilder processBuilder, string messageId, ProcessActionEnvironment processEnvironment)
     {
-        ProcessActionScopes scopes = [];
+        ProcessActionScopes scopes = new();
 
         ProcessStepBuilder initStep = processBuilder.AddStepFromType<InitializeProcessStep, ProcessActionScopes>(scopes, "init");
 
@@ -74,8 +74,7 @@ internal sealed class ProcessActionWalker : BotElementWalker
             }
 
             Console.WriteLine("!!! INIT WORKFLOW");
-            FormulaValue inputTask = StringValue.New(message);
-            this._scopes[ActionScopeTypes.System]["LastMessage"] = inputTask; // %%% MAGIC CONST
+            this._scopes.Set("LastMessage", ActionScopeType.System, StringValue.New(message)); // %%% MAGIC CONST "LastMessage"
         }
     }
 }

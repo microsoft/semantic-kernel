@@ -5,56 +5,42 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx;
-using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal abstract class ProcessAction<TAction>(TAction action) : ProcessAction(action) where TAction : DialogAction
+internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel);
+
+internal abstract class ProcessAction<TAction>(TAction model) : ProcessAction(model) where TAction : DialogAction
 {
-    public new TAction Action => action;
+    public new TAction Model => (TAction)base.Model;
 }
 
-internal abstract class ProcessAction(DialogAction action)
+internal abstract class ProcessAction(DialogAction model)
 {
-    public ActionId Id => action.Id;
+    public ActionId Id => model.Id;
 
-    public DialogAction Action => action;
+    public DialogAction Model => model;
 
-    public abstract Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken);
-}
-
-internal abstract class AssignmentAction<TAction> : ProcessAction<TAction> where TAction : DialogAction
-{
-    protected AssignmentAction(TAction action, Func<PropertyPath?> resolver)
-        : base(action)
+    public async Task ExecuteAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        this.Target =
-            resolver.Invoke() ??
-            throw new InvalidActionException($"Action '{action.GetType().Name}' must have a variable path defined.");
+        cancellationToken.ThrowIfCancellationRequested();
 
-        if (string.IsNullOrWhiteSpace(this.Target.VariableScopeName))
+        try
         {
-            throw new InvalidActionException($"Action '{action.GetType().Name}' must define a variable scope.");
+            // Execute each action in the current context
+            await this.HandleAsync(context, cancellationToken).ConfigureAwait(false);
         }
-        if (string.IsNullOrWhiteSpace(this.Target.VariableName))
+        catch (ProcessWorkflowException exception)
         {
-            throw new InvalidActionException($"Action '{action.GetType().Name}' must define a variable name.");
+            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
+            throw new ProcessWorkflowException($"Unexpected failure executing action #{this.Id} [{this.GetType().Name}]", exception);
         }
     }
 
-    public PropertyPath Target { get; }
-
-    protected void AssignTarget(RecalcEngine engine, ProcessActionScopes scopes, FormulaValue result)
-    {
-        engine.SetScopedVariable(scopes, this.Target.VariableScopeName!, this.Target.VariableName!, result);
-        string? resultValue = result.Format();
-        string valuePosition = (resultValue?.IndexOf('\n') ?? -1) >= 0 ? Environment.NewLine : " ";
-        Console.WriteLine( // %%% DEVTRACE
-            $"""
-            !!! ASSIGN {this.GetType().Name} [{this.Id}]
-                NAME: {this.Target.VariableScopeName}.{this.Target.VariableName}
-                VALUE:{valuePosition}{result.Format()}
-            """);
-    }
+    protected abstract Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken);
 }

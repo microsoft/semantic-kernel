@@ -6,9 +6,9 @@ using Microsoft.Bot.ObjectModel;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
-internal sealed class EndConversationAction : ProcessAction<EndConversation>
+internal sealed class ForeachAction : ProcessAction<Foreach>
 {
-    public EndConversationAction(EndConversation model)
+    public ForeachAction(Foreach model)
         : base(model)
     {
     }

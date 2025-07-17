@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
@@ -16,60 +14,47 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
     public ParseValueAction(ParseValue source)
         : base(source, () => source.Variable?.Path)
     {
-        if (this.Action.Value is null)
+        if (this.Model.Value is null)
         {
             throw new InvalidActionException($"{nameof(ParseValue)} must define {nameof(ParseValue.Value)}");
         }
     }
 
-    public override Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken)
+    protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        ValueExpression value = this.Action.Value!;
-        DataType valueType = this.Action.ValueType!;
-
-        FormulaValue result = engine.EvaluateExpression(value);
-
         FormulaValue? parsedResult = null;
+
+        DataType valueType = this.Model.ValueType!; // %%% NULL OVERRIDE
+        FormulaValue result = context.Engine.EvaluateExpression(this.Model.Value);
+
         if (result is StringValue stringValue)
         {
-            // %%% TODO: TRIM ```json ... ```
-            if (valueType is RecordDataType recordType)
-            {
-                JsonDocument json = JsonDocument.Parse(stringValue.Value);
-                JsonElement currentElement = json.RootElement;
-                parsedResult = ParseRecord(currentElement, recordType);
-            }
+            parsedResult =
+                valueType switch
+                {
+                    StringDataType => stringValue,
+                    NumberDataType => NumberValue.New(stringValue.Value),
+                    BooleanDataType => BooleanValue.New(stringValue.Value),
+                    RecordDataType recordType => ParseRecord(recordType, stringValue.Value),
+                    _ => null
+                };
         }
 
-        if (parsedResult is not null)
+        if (parsedResult is null)
         {
-            this.AssignTarget(engine, scopes, parsedResult);
+            throw new ProcessActionException($"Unable to parse {valueType.GetType().Name}");
         }
-        // %%% ELSE THROW ???
+
+        this.AssignTarget(context, parsedResult);
 
         return Task.CompletedTask;
     }
 
-    private static RecordValue ParseRecord(JsonElement currentElement, RecordDataType recordType)
+    private static RecordValue ParseRecord(RecordDataType recordType, string rawText)
     {
-        return FormulaValue.NewRecordFromFields(ParseValues());
-
-        IEnumerable<NamedValue> ParseValues()
-        {
-            foreach (KeyValuePair<string, PropertyInfo> property in recordType.Properties)
-            {
-                JsonElement propertyElement = currentElement.GetProperty(property.Key);
-                FormulaValue? parsedValue =
-                    property.Value.Type switch
-                    {
-                        StringDataType => StringValue.New(propertyElement.GetString()),
-                        BooleanDataType => BooleanValue.New(propertyElement.GetBoolean()),
-                        NumberDataType => NumberValue.New(propertyElement.GetDecimal()),
-                        RecordDataType => ParseRecord(propertyElement, (RecordDataType)property.Value.Type),
-                        _ => throw new InvalidActionException($"Unsupported data type '{property.Value.Type}' for property '{property.Key}'") // %%% EXCEPTION TYPE & MESSAGE
-                    };
-                yield return new NamedValue(property.Key, parsedValue);
-            }
-        }
+        string jsonText = rawText.TrimJsonDelimeter();
+        JsonDocument json = JsonDocument.Parse(jsonText);
+        JsonElement currentElement = json.RootElement;
+        return recordType.ParseRecord(currentElement);
     }
 }

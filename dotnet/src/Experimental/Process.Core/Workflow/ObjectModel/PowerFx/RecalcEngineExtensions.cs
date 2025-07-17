@@ -11,49 +11,27 @@ namespace Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 internal static class RecalcEngineExtensions
 {
-    public static void SetScopedVariable(this RecalcEngine engine, ProcessActionScopes scopes, string scopeName, string varName, FormulaValue value)
+    public static void SetScopedVariable(this RecalcEngine engine, ProcessActionScopes scopes, ActionScopeType scope, string varName, FormulaValue value)
     {
         // Validate inputs and assign value.
-        ProcessActionScope scope = scopes.AssignValue(scopeName, varName, value);
+        scopes.Set(varName, scope, value);
 
         // Rebuild scope record and update engine
-        RecordValue scopeRecord = scope.BuildRecord();
-        engine.DeleteFormula(scopeName);
-        engine.UpdateVariable(scopeName, scopeRecord);
-    }
-
-    public static async Task ExecuteActionsAsync(this RecalcEngine engine, KernelProcessStepContext context, ProcessActionScopes scopes, ProcessAction action, Kernel kernel, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        try
-        {
-            // Execute each action in the current context
-            //Console.WriteLine($"!!! ACTION {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
-            await action.HandleAsync(context, scopes, engine, kernel, cancellationToken).ConfigureAwait(false);
-        }
-        catch (ProcessActionException exception)
-        {
-            Console.WriteLine($"*** ACTION [{action.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
-            throw;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine($"*** ACTION [{action.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
-            throw new ProcessActionException($"Unexpected failure executing action #{action.Id} [{action.GetType().Name}]", exception);
-        }
+        RecordValue scopeRecord = scopes.BuildRecord(scope);
+        engine.DeleteFormula(scope.Name);
+        engine.UpdateVariable(scope.Name, scopeRecord);
     }
 
     public static FormulaValue EvaluateExpression(this RecalcEngine engine, ValueExpression? value)
     {
         if (value is null)
         {
-            return BlankValue.NewBlank(); // %%% HANDLE NULL CASE
+            return BlankValue.NewBlank();
         }
 
         if (value.IsVariableReference)
         {
-            return engine.Eval($"{value.VariableReference!.VariableScopeName}.{value.VariableReference!.VariableName}"); // %%% DRY
+            return engine.Eval(value.VariableReference?.Format());
         }
 
         if (value.IsExpression)
@@ -63,21 +41,7 @@ internal static class RecalcEngineExtensions
 
         if (value.IsLiteral)
         {
-            DataValue? source = value.LiteralValue;
-            return
-                source switch
-                {
-                    null => FormulaValue.NewBlank(),
-                    StringDataValue stringValue => FormulaValue.New(stringValue.Value),
-                    NumberDataValue numberValue => FormulaValue.New(numberValue.Value),
-                    BooleanDataValue boolValue => FormulaValue.New(boolValue.Value),
-                    DateTimeDataValue dateTimeValue => FormulaValue.New(dateTimeValue.Value.DateTime),
-                    DateDataValue dateValue => FormulaValue.New(dateValue.Value),
-                    TimeDataValue timeValue => FormulaValue.New(timeValue.Value),
-                    //RecordDataValue recordValue => FormulaValue.NewRecordFromFields(recordValue.Properties), // %%% TODO
-                    //TableDataValue tableValue => FormulaValue.NewTable(), // %%% TODO
-                    _ => FormulaValue.NewError(new Microsoft.PowerFx.ExpressionError { Message = $"Unknown literal type: {source.GetType().Name}" }),
-                };
+            return value.LiteralValue.ToFormulaValue();
         }
 
         // %%% TODO: value.StructuredRecordExpression ???

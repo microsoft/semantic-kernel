@@ -3,15 +3,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
 internal sealed class SendActivityAction : ProcessAction<SendActivity>
 {
-    private readonly ProcessActionEnvironment _environment;
+    private readonly ActivityNotificationHandler _handler;
 
-    public SendActivityAction(SendActivity source, ProcessActionEnvironment environment)
+    public SendActivityAction(SendActivity source, ActivityNotificationHandler handler)
         : base(source)
     {
         if (source.Activity is null)
@@ -19,11 +18,11 @@ internal sealed class SendActivityAction : ProcessAction<SendActivity>
             throw new InvalidActionException($"{nameof(SendActivity)} action must have an activity defined.");
         }
 
-        this._environment = environment;
+        this._handler = handler;
     }
 
-    public override async Task HandleAsync(KernelProcessStepContext context, ProcessActionScopes scopes, RecalcEngine engine, Kernel kernel, CancellationToken cancellationToken)
+    protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        await this._environment.ActivityNotificationHandler(this.Action.Activity!, engine).ConfigureAwait(false); // %%% NULL OVERRIDE
+        await this._handler.Invoke(this.Model.Activity!, context.Engine).ConfigureAwait(false);
     }
 }

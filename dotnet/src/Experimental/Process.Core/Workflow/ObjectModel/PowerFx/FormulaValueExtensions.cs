@@ -22,27 +22,37 @@ internal static class FormulaValueExtensions
             { typeof(StringValue), FromStringValue },
         }.ToImmutableDictionary();
 
+    public static FormulaValue ThrowIfError(this FormulaValue value)
+    {
+        if (value is ErrorValue errorVal)
+        {
+            throw new InvalidExpressionException($"Failure evaluating expression.  Error: {errorVal.Errors[0].Message}");
+        }
+
+        return value;
+    }
+
     public static string? Format(this FormulaValue value)
     {
         Type valueType = value.GetType();
 
         if (s_handlers.TryGetValue(valueType, out GetFormulaValue? handler))
         {
-            return $"{handler.Invoke(value) ?? "-"} ({valueType.Name})";
+            return $"{handler.Invoke(value)}";
         }
 
-        foreach (KeyValuePair<Type, GetFormulaValue> kvp in s_handlers)
+        foreach (KeyValuePair<Type, GetFormulaValue> kvp in s_handlers) // %%% NEEDED ???
         {
             if (kvp.Key.IsAssignableFrom(valueType))
             {
-                return $"{kvp.Value.Invoke(value) ?? "-"} ({valueType.Name})";
+                return $"{kvp.Value.Invoke(value)}";
             }
         }
 
         return value.ToString();
     }
 
-    // %%% TODO
+    // %%% TODO: Type conversion
     //VoidValue
     //NamedValue
     //BlobValue

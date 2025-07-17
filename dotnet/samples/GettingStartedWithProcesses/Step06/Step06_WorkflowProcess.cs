@@ -16,7 +16,8 @@ public class Step06_WorkflowProcess : BaseTest
     public async Task RunWorkflowProcess()
     {
         const string InputEventId = "question";
-        const string FileName = "conditionalTest";
+        const string FileName = "testLoop";
+        //const string FileName = "testCondition";
         //const string FileName = "deepResearch";
 
         Console.WriteLine("$$$ PROCESS INIT");

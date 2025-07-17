@@ -1,53 +1,93 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.PowerFx.Types;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal static class ActionScopeTypes
+/// <summary>
+/// Describes the type of action scope.
+/// </summary>
+internal sealed class ActionScopeType
 {
-    public const string Topic = nameof(Topic);
-    public const string Global = nameof(Global);
-    public const string System = nameof(System);
+    public static readonly ActionScopeType Env = new(nameof(Env));
+    public static readonly ActionScopeType Topic = new(nameof(Topic));
+    public static readonly ActionScopeType Global = new(nameof(Global));
+    public static readonly ActionScopeType System = new(nameof(System));
+
+    public static ActionScopeType Parse(string? scope)
+    {
+        return scope switch
+        {
+            nameof(Env) => Env,
+            nameof(Global) => Global,
+            nameof(System) => System,
+            nameof(Topic) => Topic,
+            null => throw new InvalidScopeException("Undefined action scope type."),
+            _ => throw new InvalidScopeException($"Unknown action scope type: {scope}."),
+        };
+    }
+
+    private ActionScopeType(string name)
+    {
+        this.Name = name;
+    }
+
+    public string Name { get; }
+
+    public override string ToString() => this.Name;
+
+    public override int GetHashCode() => this.Name.GetHashCode();
+
+    public override bool Equals(object? obj) =>
+        (obj is ActionScopeType other && this.Name.Equals(other.Name, StringComparison.Ordinal)) ||
+        (obj is string name && this.Name.Equals(name, StringComparison.Ordinal));
 }
 
+/// <summary>
+/// The set of variables for a specific action scope.
+/// </summary>
 internal sealed class ProcessActionScope : Dictionary<string, FormulaValue>;
 
-internal sealed class ProcessActionScopes : Dictionary<string, ProcessActionScope>
+/// <summary>
+/// Contains all action scopes for a process.
+/// </summary>
+internal sealed class ProcessActionScopes
 {
+    private readonly ImmutableDictionary<ActionScopeType, ProcessActionScope> _scopes;
+
     public ProcessActionScopes()
     {
-        this[ActionScopeTypes.Topic] = [];
-        this[ActionScopeTypes.Global] = [];
-        this[ActionScopeTypes.System] = [];
-    }
-}
+        Dictionary<ActionScopeType, ProcessActionScope> scopes =
+            new()
+            {
+                { ActionScopeType.Env, [] },
+                { ActionScopeType.Topic, [] },
+                { ActionScopeType.Global, [] },
+                { ActionScopeType.System, [] },
+            };
 
-internal static class ProcessActionScopeExtensions
-{
-    public static RecordValue BuildRecord(this ProcessActionScope scope)
+        this._scopes = scopes.ToImmutableDictionary();
+    }
+
+    public RecordValue BuildRecord(ActionScopeType scope)
     {
         return FormulaValue.NewRecordFromFields(GetFields());
 
         IEnumerable<NamedValue> GetFields()
         {
-            foreach (KeyValuePair<string, FormulaValue> kvp in scope)
+            foreach (KeyValuePair<string, FormulaValue> kvp in this._scopes[scope])
             {
                 yield return new NamedValue(kvp.Key, kvp.Value);
             }
         }
     }
 
-    public static ProcessActionScope AssignValue(this ProcessActionScopes scopes, string scopeName, string varName, FormulaValue value)
-    {
-        if (!scopes.TryGetValue(scopeName, out ProcessActionScope? scope))
-        {
-            throw new InvalidActionException("Unknown scope: " + scopeName);
-        }
+    public FormulaValue Get(string name, ActionScopeType? type = null) => this._scopes[type ?? ActionScopeType.Topic][name];
 
-        scope[varName] = value;
+    public void Set(string name, FormulaValue value) => this.Set(name, ActionScopeType.Topic, value);
 
-        return scope;
-    }
+    public void Set(string name, ActionScopeType type, FormulaValue value) => this._scopes[type][name] = value;
 }

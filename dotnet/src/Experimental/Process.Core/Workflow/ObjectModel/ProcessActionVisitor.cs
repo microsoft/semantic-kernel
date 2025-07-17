@@ -17,7 +17,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     private readonly ProcessActionEnvironment _environment;
     private readonly ProcessActionScopes _scopes;
     private readonly Dictionary<ActionId, ProcessStepBuilder> _steps;
-    private readonly Stack<ProcessActionContext> _contextStack;
+    private readonly Stack<ProcessActionVisitorContext> _contextStack;
     private readonly List<(ActionId TargetId, ProcessStepEdgeBuilder SourceEdge)> _linkCache;
 
     public ProcessActionVisitor(
@@ -26,7 +26,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         ProcessStepBuilder sourceStep,
         ProcessActionScopes scopes)
     {
-        ProcessActionContext rootContext = new(sourceStep);
+        ProcessActionVisitorContext rootContext = new(sourceStep);
         this._contextStack = [];
         this._contextStack.Push(rootContext);
         this._steps = [];
@@ -64,7 +64,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         Console.WriteLine("> COMPLETE"); // %%% DEVTRACE
     }
 
-    private ProcessActionContext CurrentContext => this._contextStack.Peek();
+    private ProcessActionVisitorContext CurrentContext => this._contextStack.Peek();
 
     protected override void Visit(ActionScope item)
     {
@@ -84,11 +84,11 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         foreach (ConditionItem conditionItem in item.Conditions)
         {
             ProcessStepBuilder step = this.CreateContainerStep(this.CurrentContext, conditionItem.Id ?? $"{item.Id.Value}_item{index}");
-            this._contextStack.Push(new ProcessActionContext(step));
+            this._contextStack.Push(new ProcessActionVisitorContext(step));
 
             conditionItem.Accept(this);
 
-            ProcessActionContext conditionContext = this._contextStack.Pop();
+            ProcessActionVisitorContext conditionContext = this._contextStack.Pop();
             KernelProcessEdgeCondition? condition = null;
 
             if (conditionItem.Condition is not null)
@@ -97,7 +97,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 condition =
                     new((stepEvent, state) =>
                     {
-                        RecalcEngine engine = RecalcEngineFactory.Create(this._scopes, this._environment.MaximumExpressionLength); // %%% DRY
+                        RecalcEngine engine = this.CreateEngine();
                         bool result = engine.Eval(conditionItem.Condition.ExpressionText ?? "true").AsBoolean();
                         Console.WriteLine($"!!! CONDITION: {conditionItem.Condition.ExpressionText ?? "true"}={result}");
                         return Task.FromResult(result);
@@ -166,6 +166,8 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     protected override void Visit(SetTextVariable item)
     {
         Trace(item);
+
+        this.AddAction(new SetTextVariableAction(item));
     }
 
     protected override void Visit(EditTable item)
@@ -191,7 +193,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         Trace(item, isSkipped: false);
 
-        this.AddAction(new SendActivityAction(item, this._environment));
+        this.AddAction(new SendActivityAction(item, this._environment.ActivityNotificationHandler));
     }
 
     #region Not implemented
@@ -259,6 +261,8 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     protected override void Visit(Foreach item)
     {
         Trace(item);
+
+        this.AddAction(new ForeachAction(item));
     }
 
     protected override void Visit(RepeatDialog item)
@@ -408,7 +412,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.ContinueWith(step);
     }
 
-    private ProcessStepBuilder CreateContainerStep(ProcessActionContext currentContext, string contextId)
+    private ProcessStepBuilder CreateContainerStep(ProcessActionVisitorContext currentContext, string contextId)
     {
         return this.InitializeStep(
             this._processBuilder.AddStepFromFunction(
@@ -422,7 +426,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     // This implementation accepts the context as a parameter in order to pin the context closure.
     // The step cannot reference this.CurrentContext directly, as this will always be the final context.
-    private ProcessStepBuilder CreateActionStep(ProcessActionContext currentContext, ProcessAction action)
+    private ProcessStepBuilder CreateActionStep(ProcessActionVisitorContext currentContext, ProcessAction action)
     {
         return this.InitializeStep(
             this._processBuilder.AddStepFromFunction(
@@ -431,9 +435,9 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 {
                     try
                     {
-                        Console.WriteLine($"!!! STEP [{action.Id}]"); // %%% DEVTRACE
-                        RecalcEngine engine = RecalcEngineFactory.Create(this._scopes, this._environment.MaximumExpressionLength); // %%% DRY
-                        await engine.ExecuteActionsAsync(context, this._scopes, action, kernel, cancellationToken: default).ConfigureAwait(false);
+                        Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
+                        ProcessActionContext actionContext = new(this.CreateEngine(), this._scopes, kernel);
+                        await action.ExecuteAsync(actionContext, cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
                     }
                     catch (ProcessActionException)
                     {
@@ -461,6 +465,8 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.CurrentContext.Then(newStep, condition);
         this.CurrentContext.Step = newStep;
     }
+
+    private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._environment.MaximumExpressionLength);
 
     private static void Trace(DialogAction item, bool isSkipped = true)
     {

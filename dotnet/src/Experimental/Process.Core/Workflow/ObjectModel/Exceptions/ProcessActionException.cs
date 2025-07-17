@@ -5,9 +5,9 @@ using System;
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents an exception that occurs during the execution of a process action.
 /// </summary>
-public class ProcessActionException : KernelException
+public class ProcessActionException : ProcessWorkflowException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessActionException"/> class.

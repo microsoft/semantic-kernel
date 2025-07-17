@@ -12,9 +12,6 @@ public record KernelProcessDelegateStepInfo : KernelProcessStepInfo
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessDelegateStepInfo"/> class.
     /// </summary>
-    /// <param name="state"></param> // %%% COMMENTS
-    /// <param name="stepFunction"></param>
-    /// <param name="edges"></param>
     public KernelProcessDelegateStepInfo(
         KernelProcessStepState state,
         StepFunction stepFunction,

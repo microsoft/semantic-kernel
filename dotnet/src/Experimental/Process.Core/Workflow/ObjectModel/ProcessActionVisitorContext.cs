@@ -10,7 +10,7 @@ internal delegate Task ProcessActionHandler(KernelProcessStepContext context, Pr
 /// <summary>
 /// Step context for the current step in a process.
 /// </summary>
-internal sealed class ProcessActionContext(ProcessStepBuilder step)
+internal sealed class ProcessActionVisitorContext(ProcessStepBuilder step)
 {
     /// <summary>
     /// The current step for the context.

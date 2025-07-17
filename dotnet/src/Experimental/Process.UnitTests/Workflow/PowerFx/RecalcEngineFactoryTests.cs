@@ -2,18 +2,18 @@
 
 using System.Collections.Generic;
 using Microsoft.PowerFx;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows;
+namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows.PowerFx;
 
-public class RecalcEngineFactoryTests
+public class RecalcEngineFactoryTests(ITestOutputHelper output) : RecalcEngineTest(output)
 {
     [Fact]
     public void DefaultNotNull()
     {
         // Act
-        RecalcEngine engine = RecalcEngineFactory.Create([], 100);
+        RecalcEngine engine = this.CreateEngine();
 
         // Assert
         Assert.NotNull(engine);
@@ -23,8 +23,8 @@ public class RecalcEngineFactoryTests
     public void NewInstanceEachTime()
     {
         // Act
-        RecalcEngine engine1 = RecalcEngineFactory.Create([], 100);
-        RecalcEngine engine2 = RecalcEngineFactory.Create([], 100);
+        RecalcEngine engine1 = this.CreateEngine();
+        RecalcEngine engine2 = this.CreateEngine();
 
         // Assert
         Assert.NotNull(engine1);
@@ -36,7 +36,7 @@ public class RecalcEngineFactoryTests
     public void HasSetFunctionEnabled()
     {
         // Arrange
-        RecalcEngine engine = RecalcEngineFactory.Create([], 100);
+        RecalcEngine engine = this.CreateEngine();
 
         // Act
         CheckResult result = engine.Check("1+1");
@@ -49,7 +49,7 @@ public class RecalcEngineFactoryTests
     public void HasCorrectMaximumExpressionLength()
     {
         // Arrange
-        RecalcEngine engine = RecalcEngineFactory.Create([], 2000);
+        RecalcEngine engine = this.CreateEngine(2000);
 
         // Act: Create a long expression that is within the limit
         string goodExpression = string.Concat(GenerateExpression(999));

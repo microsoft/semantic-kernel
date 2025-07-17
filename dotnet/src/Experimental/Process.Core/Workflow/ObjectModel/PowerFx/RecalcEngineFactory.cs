@@ -11,16 +11,16 @@ internal static class RecalcEngineFactory
     {
         RecalcEngine engine = new(CreateConfig());
 
-        SetScope(ActionScopeTypes.Topic);
-        SetScope(ActionScopeTypes.Global);
-        SetScope(ActionScopeTypes.System);
+        SetScope(ActionScopeType.Topic);
+        SetScope(ActionScopeType.Global);
+        SetScope(ActionScopeType.System);
 
         return engine;
 
-        void SetScope(string scopeName)
+        void SetScope(ActionScopeType scope)
         {
-            RecordValue record = scopes[scopeName].BuildRecord();
-            engine.UpdateVariable(scopeName, record);
+            RecordValue record = scopes.BuildRecord(scope);
+            engine.UpdateVariable(scope.Name, record);
         }
 
         PowerFxConfig CreateConfig()

@@ -8,20 +8,20 @@ using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
-internal sealed class SetVariableAction : AssignmentAction<SetVariable>
+internal sealed class SetTextVariableAction : AssignmentAction<SetTextVariable>
 {
-    public SetVariableAction(SetVariable model)
+    public SetTextVariableAction(SetTextVariable model)
         : base(model, () => model.Variable?.Path)
     {
         if (this.Model.Value is null)
         {
-            throw new InvalidActionException($"{nameof(SetVariable)} must define {nameof(SetVariable.Value)}");
+            throw new InvalidActionException($"{nameof(SetTextVariable)} must define {nameof(SetTextVariable.Value)}");
         }
     }
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        FormulaValue result = context.Engine.EvaluateExpression(this.Model.Value).ThrowIfError();
+        FormulaValue result = FormulaValue.New(context.Engine.Format(this.Model.Value));
 
         this.AssignTarget(context, result);
 

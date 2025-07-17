@@ -11,6 +11,14 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// %%% COMMENT
 /// </summary>
+/// <param name="activity"></param>
+/// <param name="engine"></param>
+/// <returns></returns>
+public delegate Task ActivityNotificationHandler(ActivityTemplateBase activity, RecalcEngine engine);
+
+/// <summary>
+/// %%% COMMENT
+/// </summary>
 public sealed class ProcessActionEnvironment
 {
     /// <summary>
