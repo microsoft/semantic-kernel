@@ -78,10 +78,12 @@ def test_azure_text_to_image_init_with_from_dict(azure_openai_unit_test_env) -> 
         assert azure_text_to_image.client.default_headers[key] == value
 
 
-@patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
+@patch.object(AsyncImages, "generate")
 async def test_azure_text_to_image_calls_with_parameters(mock_generate, azure_openai_unit_test_env) -> None:
-    mock_generate.return_value.data = [Image(url="abc")]
-    mock_generate.return_value.usage = None
+    mock_response = AsyncMock(spec=ImagesResponse)
+    mock_response.data = [Image(url="abc")]
+    mock_response.usage = None
+    mock_generate.return_value = mock_response
 
     prompt = "A painting of a vase with flowers"
     width = 512
