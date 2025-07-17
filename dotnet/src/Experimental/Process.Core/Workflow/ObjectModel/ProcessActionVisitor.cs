@@ -68,14 +68,14 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     protected override void Visit(ActionScope item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddContainer(item.Id.Value);
     }
 
     protected override void Visit(ConditionGroup item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new ConditionGroupAction(item));
 
@@ -112,35 +112,35 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     protected override void Visit(GotoAction item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddContainer(item.Id.Value);
         // Store the link for processing after all actions have steps.
-        this._linkCache.Add((item.ActionId, this.CurrentContext.Then()));
+        this._linkCache.Add((item.ActionId, this.CurrentContext.Then())); // %%% DRY
         // Create an orphaned context for continuity
         this.AddDead(item.Id.Value);
     }
 
     protected override void Visit(Foreach item)
     {
-        Trace(item);
+        this.Trace(item);
 
         this.AddAction(new ForeachAction(item));
     }
 
     protected override void Visit(BreakLoop item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(ContinueLoop item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(EndConversation item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new EndConversationAction(item));
         // Stop the process, this is a terminal action
@@ -149,80 +149,63 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.AddDead(item.Id.Value);
     }
 
-    protected override void Visit(BeginDialog item)
-    {
-        Trace(item, isSkipped: false);
-
-        this.AddAction(new BeginDialogAction(item));
-    }
-
-    protected override void Visit(UnknownDialogAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(EndDialog item)
-    {
-        Trace(item);
-    }
-
     protected override void Visit(AnswerQuestionWithAI item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new AnswerQuestionWithAIAction(item));
     }
 
     protected override void Visit(SetVariable item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new SetVariableAction(item));
     }
 
     protected override void Visit(SetTextVariable item)
     {
-        Trace(item);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new SetTextVariableAction(item));
     }
 
     protected override void Visit(ClearAllVariables item)
     {
-        Trace(item);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new ClearAllVariablesAction(item));
     }
 
     protected override void Visit(ResetVariable item)
     {
-        Trace(item);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new ResetVariableAction(item));
     }
 
     protected override void Visit(EditTable item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(EditTableV2 item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new EditTableV2Action(item));
     }
 
     protected override void Visit(ParseValue item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new ParseValueAction(item));
     }
 
     protected override void Visit(SendActivity item)
     {
-        Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: false);
 
         this.AddAction(new SendActivityAction(item, this._environment.ActivityNotificationHandler));
     }
@@ -231,162 +214,179 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     protected override void Visit(DeleteActivity item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(GetActivityMembers item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(UpdateActivity item)
     {
-        Trace(item);
-    }
-
-    protected override void Visit(InvokeFlowAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(InvokeAIBuilderModelAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(WaitForConnectorTrigger item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(InvokeConnectorAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(InvokeSkillAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(AdaptiveCardPrompt item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(Question item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(CSATQuestion item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(OAuthInput item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(RepeatDialog item)
-    {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(ActivateExternalTrigger item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(DisableTrigger item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
-    protected override void Visit(ReplaceDialog item)
+    protected override void Visit(WaitForConnectorTrigger item)
     {
-        Trace(item);
+        this.Trace(item);
     }
 
-    protected override void Visit(CancelAllDialogs item)
+    protected override void Visit(InvokeConnectorAction item)
     {
-        Trace(item);
-    }
-
-    protected override void Visit(CancelDialog item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(EmitEvent item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(GetConversationMembers item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(HttpRequestAction item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(RecognizeIntent item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(TransferConversation item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(TransferConversationV2 item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(SignOutUser item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(LogCustomTelemetryEvent item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(DisconnectedNodeContainer item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(CreateSearchQuery item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(SearchKnowledgeSources item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(SearchAndSummarizeWithCustomModel item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(SearchAndSummarizeContent item)
-    {
-        Trace(item);
+        this.Trace(item);
     }
 
     protected override void Visit(InvokeCustomModelAction item)
     {
-        Trace(item);
+        this.Trace(item);
+    }
+
+    protected override void Visit(InvokeFlowAction item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(InvokeAIBuilderModelAction item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(InvokeSkillAction item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(AdaptiveCardPrompt item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(Question item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(CSATQuestion item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(OAuthInput item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(BeginDialog item)
+    {
+        this.Trace(item);
+
+        this.AddAction(new BeginDialogAction(item));
+    }
+
+    protected override void Visit(UnknownDialogAction item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(EndDialog item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(RepeatDialog item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(ReplaceDialog item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(CancelAllDialogs item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(CancelDialog item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(EmitEvent item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(GetConversationMembers item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(HttpRequestAction item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(RecognizeIntent item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(TransferConversation item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(TransferConversationV2 item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(SignOutUser item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(LogCustomTelemetryEvent item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(DisconnectedNodeContainer item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(CreateSearchQuery item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(SearchKnowledgeSources item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(SearchAndSummarizeWithCustomModel item)
+    {
+        this.Trace(item);
+    }
+
+    protected override void Visit(SearchAndSummarizeContent item)
+    {
+        this.Trace(item);
     }
 
     #endregion
@@ -479,8 +479,21 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._environment.MaximumExpressionLength);
 
-    private static void Trace(DialogAction item, bool isSkipped = true)
+    private void Trace(DialogAction item, bool isSkipped = true)
     {
-        Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")} - {item.GetType().Name} [{item.Id.Value}]"); // %%% DEVTRACE
+        //Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}{new string('\t', this._contextStack.Count - 1)} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% DEVTRACE
+        Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")} x{this._contextStack.Count} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% DEVTRACE
     }
+
+    private string Format(DialogAction action) => $"{action.GetType().Name} [{action.Id.Value}]";
+
+    private string Format(BotElement? element) =>
+        element switch
+        {
+            null => "(root)",
+            DialogAction action => this.Format(action),
+            ConditionItem conditionItem => $"{conditionItem.GetType().Name} [{conditionItem.Id}]",
+            OnActivity activity => $"{activity.GetType().Name} (workflow)",
+            _ => $"{element.GetType().Name} (unknown element)"
+        };
 }

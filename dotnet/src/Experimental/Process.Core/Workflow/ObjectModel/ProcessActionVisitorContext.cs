@@ -32,10 +32,11 @@ internal sealed class ProcessActionVisitorContext(ProcessStepBuilder step)
     public ProcessStepBuilder Then(ProcessStepBuilder step, KernelProcessEdgeCondition? condition = null)
     {
         // IN: Target the given step when the previous step ends
-        ProcessStepEdgeBuilder edge = this.Then();
+        ProcessStepEdgeBuilder edge =
+            this.Then()
+                .SendEventTo(new ProcessFunctionTargetBuilder(step));
 
         edge.Condition = condition;
-        edge.SendEventTo(new ProcessFunctionTargetBuilder(step));
 
         return step;
     }

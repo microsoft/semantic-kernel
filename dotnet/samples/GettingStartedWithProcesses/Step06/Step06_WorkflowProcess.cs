@@ -12,18 +12,18 @@ public class Step06_WorkflowProcess : BaseTest
     public Step06_WorkflowProcess(ITestOutputHelper output)
         : base(output, redirectSystemConsoleOutput: true) { }
 
-    [Fact]
-    public async Task RunWorkflowProcess()
+    [Theory]
+    [InlineData("testLoop")]
+    [InlineData("testCondition")]
+    [InlineData("deepResearch")]
+    public async Task RunWorkflow(string fileName)
     {
         const string InputEventId = "question";
-        const string FileName = "testLoop";
-        //const string FileName = "testCondition";
-        //const string FileName = "deepResearch";
 
         Console.WriteLine("$$$ PROCESS INIT");
 
-        string yaml = File.ReadAllText(@$"{nameof(Step06)}\{FileName}.yaml");
-        KernelProcess process = ObjectModelBuilder.Build(FileName, yaml, InputEventId);
+        string yaml = File.ReadAllText(@$"{nameof(Step06)}\{fileName}.yaml");
+        KernelProcess process = ObjectModelBuilder.Build(fileName, yaml, InputEventId);
 
         Console.WriteLine("$$$ PROCESS INVOKE");
 
