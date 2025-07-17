@@ -47,7 +47,7 @@ public sealed class A2AAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync<A2AAgentThread>(
+        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new A2AAgentThread(this.Client),
@@ -75,7 +75,7 @@ public sealed class A2AAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync<A2AAgentThread>(
+        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new A2AAgentThread(this.Client),

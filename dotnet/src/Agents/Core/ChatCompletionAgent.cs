@@ -95,7 +95,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        // Invoke Chat Completion with the updated chat history.
+        // Retrieve the chat history from the thread.
         ChatHistory chatHistory = [];
         await foreach (var existingMessage in retrievableAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {

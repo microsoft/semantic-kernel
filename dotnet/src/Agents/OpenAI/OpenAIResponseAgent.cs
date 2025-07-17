@@ -132,7 +132,7 @@ public sealed class OpenAIResponseAgent : Agent
     {
         if (this.StoreEnabled)
         {
-            return await this.EnsureThreadExistsWithMessagesAsync<OpenAIResponseAgentThread>(messages, thread, () => new OpenAIResponseAgentThread(this.Client), requiresThreadRetrieval: false, cancellationToken).ConfigureAwait(false);
+            return await this.EnsureThreadExistsWithMessagesAsync(messages, thread, () => new OpenAIResponseAgentThread(this.Client), requiresThreadRetrieval: false, cancellationToken).ConfigureAwait(false);
         }
 
         return await this.EnsureThreadExistsWithMessagesAsync<AgentThread>(messages, thread, () => new ChatHistoryAgentThread(), requiresThreadRetrieval: true, cancellationToken).ConfigureAwait(false);

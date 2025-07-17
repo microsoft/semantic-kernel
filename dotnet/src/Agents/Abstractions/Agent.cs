@@ -350,7 +350,12 @@ public abstract class Agent
             thread = constructThread();
         }
 
-        if (thread is not TThreadType concreteThreadType || (requiresThreadRetrieval && thread is not IAgentThreadRetrievable))
+        if (requiresThreadRetrieval && thread is not IAgentThreadRetrievable)
+        {
+            throw new KernelException($"{this.GetType().Name} requires agent threads that implement {nameof(IAgentThreadRetrievable)}.");
+        }
+
+        if (thread is not TThreadType concreteThreadType)
         {
             throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {typeof(TThreadType).Name}.");
         }

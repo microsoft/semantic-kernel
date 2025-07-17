@@ -53,7 +53,7 @@ public sealed partial class CopilotStudioAgent : Agent
         }
 
         // Create a thread if needed
-        CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync<CopilotStudioAgentThread>(
+        CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
@@ -92,7 +92,7 @@ public sealed partial class CopilotStudioAgent : Agent
         }
 
         // Create a thread if needed
-        CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync<CopilotStudioAgentThread>(
+        CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
