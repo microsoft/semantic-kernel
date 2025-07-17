@@ -216,7 +216,7 @@
 
 ### RAG - Different ways of `RAG` (Retrieval-Augmented Generation)
 
-- [RAG with Text Memory Plugin](.rag/rag_with_vector_collection.py)
+- [RAG with Vector Collection](./rag/rag_with_vector_collection.py)
 - [Self-Critique RAG](./rag/self_critique_rag.py)
 
 ### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
