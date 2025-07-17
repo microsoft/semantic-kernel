@@ -21,20 +21,6 @@ namespace OpenAIRealtime;
 /// </summary>
 internal sealed class Program
 {
-    private readonly static OpenAIOptions s_openAIOptions;
-    private readonly static AzureOpenAIOptions s_azureOpenAIOptions;
-
-    static Program()
-    {
-        var config = new ConfigurationBuilder()
-            .AddUserSecrets<Program>()
-            .AddEnvironmentVariables()
-            .Build();
-
-        s_openAIOptions = config.GetSection(OpenAIOptions.SectionName).Get<OpenAIOptions>()!;
-        s_azureOpenAIOptions = config.GetSection(AzureOpenAIOptions.SectionName).Get<AzureOpenAIOptions>()!;
-    }
-
     public static async Task Main(string[] args)
     {
         // Retrieve the RealtimeConversationClient based on the available OpenAI or Azure OpenAI configuration.
@@ -47,7 +33,7 @@ internal sealed class Program
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         // Start a new conversation session.
-        using RealtimeSession session = await realtimeConversationClient.StartConversationSessionAsync(s_azureOpenAIOptions.DeploymentName);
+        using RealtimeSession session = await realtimeConversationClient.StartConversationSessionAsync("gpt-4o-realtime-preview");
 
         // Initialize session options.
         // Session options control connection-wide behavior shared across all conversations,
@@ -393,15 +379,23 @@ internal sealed class Program
     /// </summary>
     private static RealtimeClient GetRealtimeConversationClient()
     {
-        if (s_openAIOptions is not null && s_openAIOptions.IsValid)
+        var config = new ConfigurationBuilder()
+            .AddUserSecrets<Program>()
+            .AddEnvironmentVariables()
+            .Build();
+
+        var openAIOptions = config.GetSection(OpenAIOptions.SectionName).Get<OpenAIOptions>()!;
+        var azureOpenAIOptions = config.GetSection(AzureOpenAIOptions.SectionName).Get<AzureOpenAIOptions>()!;
+
+        if (openAIOptions is not null && openAIOptions.IsValid)
         {
-            return new RealtimeClient(new ApiKeyCredential(s_openAIOptions.ApiKey));
+            return new RealtimeClient(new ApiKeyCredential(openAIOptions.ApiKey));
         }
-        else if (s_azureOpenAIOptions is not null && s_azureOpenAIOptions.IsValid)
+        else if (azureOpenAIOptions is not null && azureOpenAIOptions.IsValid)
         {
             var client = new AzureOpenAIClient(
-                endpoint: new Uri(s_azureOpenAIOptions.Endpoint),
-                credential: new ApiKeyCredential(s_azureOpenAIOptions.ApiKey));
+                endpoint: new Uri(azureOpenAIOptions.Endpoint),
+                credential: new ApiKeyCredential(azureOpenAIOptions.ApiKey));
 
             return client.GetRealtimeClient();
         }
