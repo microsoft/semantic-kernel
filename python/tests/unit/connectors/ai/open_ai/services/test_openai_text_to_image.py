@@ -78,12 +78,10 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_text_to_image.get_prompt_execution_settings_class() == OpenAITextToImageExecutionSettings
 
 
-@patch.object(AsyncImages, "generate")
+@patch.object(AsyncImages, "generate", new_callable=AsyncMock)
 async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_env) -> None:
     """Test that generate_image calls the OpenAI API with correct parameters."""
-    mock_response = AsyncMock(spec=ImagesResponse)
-    mock_response.data = [Image(url="abc")]
-    mock_response.usage = None
+    mock_response = ImagesResponse(created=1, data=[Image(url="abc")], usage=None)
     mock_generate.return_value = mock_response
 
     ai_model_id = "test_model_id"
