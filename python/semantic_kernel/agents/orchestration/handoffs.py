@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from functools import partial
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.orchestration.agent_actor_base import AgentActorBase
+from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
@@ -161,6 +161,7 @@ class HandoffAgentActor(AgentActorBase):
         agent: Agent,
         internal_topic_type: str,
         handoff_connections: AgentHandoffs,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
@@ -181,6 +182,7 @@ class HandoffAgentActor(AgentActorBase):
         super().__init__(
             agent=agent,
             internal_topic_type=internal_topic_type,
+            exception_callback=exception_callback,
             agent_response_callback=agent_response_callback,
             streaming_agent_response_callback=streaming_agent_response_callback,
         )
@@ -316,6 +318,7 @@ class HandoffAgentActor(AgentActorBase):
             return await self._human_response_function()
         return self._human_response_function()  # type: ignore[return-value]
 
+    @ActorBase.exception_handler
     async def _invoke_agent_with_potentially_no_response(
         self, additional_messages: DefaultTypeAlias | None = None, **kwargs
     ) -> ChatMessageContent | None:
@@ -453,16 +456,18 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type, result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback, result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
     async def _register_members(
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the members with the runtime."""
@@ -476,6 +481,7 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
                     agent,
                     internal_topic_type,
                     handoff_connections,
+                    exception_callback,
                     result_callback=result_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,

@@ -11,7 +11,7 @@ from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeA
 from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
+from tests.unit.agents.orchestration.conftest import MockAgent, MockAgentWithException, MockRuntime
 
 
 async def test_prepare():
@@ -181,5 +181,24 @@ async def test_invoke_with_double_get_result():
 
         assert isinstance(result, list)
         assert len(result) == 2
+    finally:
+        await runtime.stop_when_idle()
+
+
+async def test_invoke_with_agent_raising_exception():
+    """Test the invoke method of the ConcurrentOrchestration with an agent raising an exception."""
+    agent_a = MockAgent()
+    agent_b = MockAgentWithException()
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    try:
+        orchestration = ConcurrentOrchestration(members=[agent_a, agent_b])
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+
+        with pytest.raises(RuntimeError, match="Mock agent exception"):
+            await orchestration_result.get(1.0)
+        assert orchestration_result.exception is not None
     finally:
         await runtime.stop_when_idle()
