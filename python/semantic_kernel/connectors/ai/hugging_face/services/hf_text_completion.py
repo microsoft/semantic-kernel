@@ -11,7 +11,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
@@ -71,7 +70,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         generator = pipeline(
-            task=task,
+            task=task,  # type: ignore[arg-type]
             model=ai_model_id,
             device=device,
             model_kwargs=model_kwargs,

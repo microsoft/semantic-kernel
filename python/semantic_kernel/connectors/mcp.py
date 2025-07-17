@@ -89,7 +89,7 @@ def _mcp_call_tool_result_to_kernel_contents(
 
 @experimental
 def _mcp_content_types_to_kernel_content(
-    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource,
+    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource | types.ResourceLink,
 ) -> TextContent | ImageContent | BinaryContent | AudioContent:
     """Convert a MCP type to a Semantic Kernel type."""
     if isinstance(mcp_type, types.TextContent):
@@ -98,6 +98,12 @@ def _mcp_content_types_to_kernel_content(
         return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
     if isinstance(mcp_type, types.AudioContent):
         return AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+    if isinstance(mcp_type, types.ResourceLink):
+        return BinaryContent(
+            uri=mcp_type.uri,  # type: ignore
+            mime_type=mcp_type.mimeType,
+            inner_content=mcp_type,
+        )
     # subtypes of EmbeddedResource
     if isinstance(mcp_type.resource, types.TextResourceContents):
         return TextContent(
@@ -215,8 +221,8 @@ class MCPPluginBase:
         self.session = session
         self.kernel = kernel or None
         self.request_timeout = request_timeout
-        self._current_task = None
-        self._stop_event = None
+        self._current_task: asyncio.Task | None = None
+        self._stop_event: asyncio.Event | None = None
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
@@ -224,7 +230,6 @@ class MCPPluginBase:
         try:
             self._current_task = asyncio.create_task(self._inner_connect(ready_event))
             await ready_event.wait()
-            return self
         except KernelPluginInvalidConfigurationError:
             raise
         except Exception as ex:
@@ -237,6 +242,7 @@ class MCPPluginBase:
                 transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to connect to the MCP server. Please check your configuration."
                 ) from ex
@@ -253,6 +259,7 @@ class MCPPluginBase:
                 )
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
@@ -428,8 +435,10 @@ class MCPPluginBase:
 
     async def close(self) -> None:
         """Disconnect from the MCP server."""
-        self._stop_event.set()
-        await self._current_task
+        if self._stop_event:
+            self._stop_event.set()
+        if self._current_task:
+            await self._current_task
         self.session = None
 
     @abstractmethod
