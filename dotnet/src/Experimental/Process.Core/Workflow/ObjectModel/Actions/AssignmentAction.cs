@@ -37,7 +37,7 @@ internal abstract class AssignmentAction<TAction> : ProcessAction<TAction> where
         Console.WriteLine( // %%% DEVTRACE
             $"""
             !!! ASSIGN {this.GetType().Name} [{this.Id}]
-                NAME: {this.Target.VariableScopeName}.{this.Target.VariableName}
+                NAME: {this.Target.Format()}
                 VALUE:{valuePosition}{result.Format()} ({result.GetType().Name})
             """);
     }

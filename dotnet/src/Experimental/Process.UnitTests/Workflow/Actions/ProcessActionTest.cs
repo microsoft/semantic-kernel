@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
@@ -42,5 +43,12 @@ public abstract class ProcessActionTest(ITestOutputHelper output) : WorkflowTest
     {
         FormulaValue actualValue = this.Scopes.Get(variableName, scope);
         Assert.Equivalent(expectedValue, actualValue);
+    }
+
+    protected void VerifyUndefined(string variableName) => this.VerifyUndefined(variableName, ActionScopeType.Topic);
+
+    internal void VerifyUndefined(string variableName, ActionScopeType scope)
+    {
+        Assert.Throws<KeyNotFoundException>(() => this.Scopes.Get(variableName, scope));
     }
 }

@@ -121,6 +121,23 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.AddDead(item.Id.Value);
     }
 
+    protected override void Visit(Foreach item)
+    {
+        Trace(item);
+
+        this.AddAction(new ForeachAction(item));
+    }
+
+    protected override void Visit(BreakLoop item)
+    {
+        Trace(item);
+    }
+
+    protected override void Visit(ContinueLoop item)
+    {
+        Trace(item);
+    }
+
     protected override void Visit(EndConversation item)
     {
         Trace(item, isSkipped: false);
@@ -170,6 +187,20 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.AddAction(new SetTextVariableAction(item));
     }
 
+    protected override void Visit(ClearAllVariables item)
+    {
+        Trace(item);
+
+        this.AddAction(new ClearAllVariablesAction(item));
+    }
+
+    protected override void Visit(ResetVariable item)
+    {
+        Trace(item);
+
+        this.AddAction(new ResetVariableAction(item));
+    }
+
     protected override void Visit(EditTable item)
     {
         Trace(item);
@@ -198,17 +229,17 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     #region Not implemented
 
+    protected override void Visit(DeleteActivity item)
+    {
+        Trace(item);
+    }
+
     protected override void Visit(GetActivityMembers item)
     {
         Trace(item);
     }
 
     protected override void Visit(UpdateActivity item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(DeleteActivity item)
     {
         Trace(item);
     }
@@ -258,13 +289,6 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         Trace(item);
     }
 
-    protected override void Visit(Foreach item)
-    {
-        Trace(item);
-
-        this.AddAction(new ForeachAction(item));
-    }
-
     protected override void Visit(RepeatDialog item)
     {
         Trace(item);
@@ -291,26 +315,6 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     }
 
     protected override void Visit(CancelDialog item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(ClearAllVariables item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(BreakLoop item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(ContinueLoop item)
-    {
-        Trace(item);
-    }
-
-    protected override void Visit(ResetVariable item)
     {
         Trace(item);
     }
@@ -433,9 +437,16 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 action.Id.Value,
                 async (kernel, context) =>
                 {
+                    Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
+
+                    if (action.Model.Disabled) // %%% VALIDATE
+                    {
+                        Console.WriteLine($"!!! DISABLED {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
+                        return;
+                    }
+
                     try
                     {
-                        Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
                         ProcessActionContext actionContext = new(this.CreateEngine(), this._scopes, kernel);
                         await action.ExecuteAsync(actionContext, cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
                     }

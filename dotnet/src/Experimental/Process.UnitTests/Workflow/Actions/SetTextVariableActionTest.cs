@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows.Actions;
 public sealed class SetTextVariableActionTest(ITestOutputHelper output) : ProcessActionTest(output)
 {
     [Fact]
-    public async Task CaptureActivity()
+    public async Task SetLiteralValue()
     {
         // Arrange
         SetTextVariable model =
             this.CreateModel(
-                this.FormatDisplayName(nameof(CaptureActivity)),
+                this.FormatDisplayName(nameof(SetLiteralValue)),
                 FormatVariablePath("TextVar"),
                 "Text variable value");
 
@@ -31,6 +31,27 @@ public sealed class SetTextVariableActionTest(ITestOutputHelper output) : Proces
         // Assert
         this.VerifyModel(model, action);
         this.VerifyState("TextVar", FormulaValue.New("Text variable value"));
+    }
+
+    [Fact]
+    public async Task UpdateExistingValue()
+    {
+        // Arrange
+        this.Scopes.Set("TextVar", FormulaValue.New("Old value"));
+
+        SetTextVariable model =
+            this.CreateModel(
+                this.FormatDisplayName(nameof(UpdateExistingValue)),
+                FormatVariablePath("TextVar"),
+                "New value");
+
+        // Act
+        SetTextVariableAction action = new(model);
+        await this.ExecuteAction(action);
+
+        // Assert
+        this.VerifyModel(model, action);
+        this.VerifyState("TextVar", FormulaValue.New("New value"));
     }
 
     private SetTextVariable CreateModel(string displayName, string variablePath, string textValue)
