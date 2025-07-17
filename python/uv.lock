@@ -350,16 +350,16 @@ wheels = [
 
 [[package]]
 name = "azure-ai-agents"
-version = "1.1.0b2"
+version = "1.1.0b4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/18/7b/fa5452b4cf7559ac827140edf38097026da66bfe78df70783057aea68238/azure_ai_agents-1.1.0b2.tar.gz", hash = "sha256:432ce359c3d02e05873d1d670bd91c1393bbe51f734ec4ce3f76fcafd8104c75", size = 302724, upload-time = "2025-06-09T16:53:47.994Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/8f/741c57202f4e4b6a7782f5a7ce7b18fd607696a154f5c9f2c716b207fa61/azure_ai_agents-1.1.0b4.tar.gz", hash = "sha256:126007543e3e9b9a4be017287e230e911fa126081f05b1c593e0d75702d01cd5", size = 331198, upload-time = "2025-07-11T19:55:35.776Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/34/3f47d9cb320b672c8482b15b0431fc546aea5b00104e405042e75d2f1397/azure_ai_agents-1.1.0b2-py3-none-any.whl", hash = "sha256:4e48aba6ac2cdb4955adae5a5c94324b51005d2360ef5bc30a4d2ed86d7a9bde", size = 189945, upload-time = "2025-06-09T16:53:49.721Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/40/7a1bd4b98c7c16b863782b07c9c3e98a1b531068a3b5462c935a468db5ce/azure_ai_agents-1.1.0b4-py3-none-any.whl", hash = "sha256:2256cdddd6176ac3855c9b1fb7174e156d1a2f7538cfb6bd80a743e2b205d775", size = 200368, upload-time = "2025-07-11T19:55:37.512Z" },
 ]
 
 [[package]]
@@ -378,7 +378,7 @@ wheels = [
 
 [[package]]
 name = "azure-ai-projects"
-version = "1.0.0b11"
+version = "1.0.0b12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-ai-agents", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -387,9 +387,9 @@ dependencies = [
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/01/4b/0a879eb66b5d9a08ab09292ff9a36a4e9c855b458d0e843b5e838fc6f6fd/azure_ai_projects-1.0.0b11.tar.gz", hash = "sha256:68a115c48cde7d5f9c29aee61c7fbf0b6de69aecbd1dc749b847a1e1348216b5", size = 133087, upload-time = "2025-05-16T00:33:32.286Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/57/9a89c1978ec9ce29a3be454b83b66885982261762d7a436cad73c47c9225/azure_ai_projects-1.0.0b12.tar.gz", hash = "sha256:1a3784e4be6af3b0fc76e9e4a64158a38f6679fe3a1f8b9c33f12bc8914ae36c", size = 144358, upload-time = "2025-06-27T04:12:48.334Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/2d/5502377ecc07677365a1e86be64d8cb9959eb6e9b605fcc28f1f68d3777a/azure_ai_projects-1.0.0b11-py3-none-any.whl", hash = "sha256:3572f2989627e896ecfebe2fa7326d5b940f920cc581e98809b244af7a38cbf0", size = 130983, upload-time = "2025-05-16T00:33:33.789Z" },
+    { url = "https://files.pythonhosted.org/packages/73/e4/50cd2c3bd5ab745e85a4a1bd591bf4343d6e3470580f1eadceed55fd57c0/azure_ai_projects-1.0.0b12-py3-none-any.whl", hash = "sha256:4e3d3ef275f7409ea8030e474626968848055d4b3717ff7ef03681da809c096f", size = 129783, upload-time = "2025-06-27T04:12:49.837Z" },
 ]
 
 [[package]]
@@ -5669,14 +5669,14 @@ requires-dist = [
     { name = "aiortc", marker = "extra == 'realtime'", specifier = ">=1.9.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
-    { name = "azure-ai-agents", specifier = ">=1.1.0b1" },
+    { name = "azure-ai-agents", specifier = ">=1.1.0b4" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
-    { name = "azure-ai-projects", specifier = ">=1.0.0b11" },
+    { name = "azure-ai-projects", specifier = ">=1.0.0b12" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = ">=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.39.0" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.40.0" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<1.1" },
     { name = "cloudevents", specifier = "~=1.0" },
     { name = "dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
@@ -5711,7 +5711,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.6" },
-    { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.13" },
+    { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.14" },
     { name = "pyodbc", marker = "extra == 'sql'", specifier = ">=5.2" },
     { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=6.0" },
