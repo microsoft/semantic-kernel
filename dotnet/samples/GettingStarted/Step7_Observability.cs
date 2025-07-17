@@ -54,7 +54,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     {
         private readonly ITestOutputHelper _output = output;
 
-        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             this._output.WriteLine($"Invoking {context.Function.Name}");
 

@@ -29,16 +29,20 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         Kernel kernel = kernelBuilder.Build();
 
         // Example 1. Invoke the kernel with a prompt that asks the AI for information it cannot provide and may hallucinate
+        Console.WriteLine("Example 1: Asking the AI for information it cannot provide:");
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
         // Example 2. Use kernel for templated prompts that invoke plugins directly
+        Console.WriteLine("\nExample 2: Using templated prompts that invoke plugins directly:");
         Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Use kernel with function calling for automatic plugin invocation
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine("\nExample 3: Using function calling for automatic plugin invocation:");
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
 
         // Example 4. Use kernel with function calling for complex scenarios with enumerations
+        Console.WriteLine("\nExample 4: Using function calling for complex scenarios with enumerations:");
         Console.WriteLine(await kernel.InvokePromptAsync("Create a handy lime colored widget for me.", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));
