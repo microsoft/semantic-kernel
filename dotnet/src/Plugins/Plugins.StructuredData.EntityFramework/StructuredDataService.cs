@@ -6,7 +6,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-#if NET462
+#if !NET_8_OR_GREATER
 using Community.OData.Linq;
 #else
 using OData2Linq;
