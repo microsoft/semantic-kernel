@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.RealtimeConversation;
+using OpenAI.Realtime;
 
 namespace OpenAIRealtime;
 
@@ -16,11 +16,25 @@ namespace OpenAIRealtime;
 
 /// <summary>
 /// Demonstrates the use of the OpenAI Realtime API with function calling and Semantic Kernel.
-/// For conversational experiences, it is recommended to use <see cref="RealtimeConversationClient"/> from the Azure/OpenAI SDK.
+/// For conversational experiences, it is recommended to use <see cref="RealtimeClient"/> from the Azure/OpenAI SDK.
 /// Since the OpenAI Realtime API supports function calling, the example shows how to combine it with Semantic Kernel plugins and functions.
 /// </summary>
 internal sealed class Program
 {
+    private readonly static OpenAIOptions s_openAIOptions;
+    private readonly static AzureOpenAIOptions s_azureOpenAIOptions;
+
+    static Program()
+    {
+        var config = new ConfigurationBuilder()
+            .AddUserSecrets<Program>()
+            .AddEnvironmentVariables()
+            .Build();
+
+        s_openAIOptions = config.GetSection(OpenAIOptions.SectionName).Get<OpenAIOptions>()!;
+        s_azureOpenAIOptions = config.GetSection(AzureOpenAIOptions.SectionName).Get<AzureOpenAIOptions>()!;
+    }
+
     public static async Task Main(string[] args)
     {
         // Retrieve the RealtimeConversationClient based on the available OpenAI or Azure OpenAI configuration.
@@ -33,7 +47,7 @@ internal sealed class Program
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         // Start a new conversation session.
-        using RealtimeConversationSession session = await realtimeConversationClient.StartConversationSessionAsync();
+        using RealtimeSession session = await realtimeConversationClient.StartConversationSessionAsync(s_azureOpenAIOptions.DeploymentName);
 
         // Initialize session options.
         // Session options control connection-wide behavior shared across all conversations,
@@ -41,8 +55,8 @@ internal sealed class Program
         ConversationSessionOptions sessionOptions = new()
         {
             Voice = ConversationVoice.Alloy,
-            InputAudioFormat = ConversationAudioFormat.Pcm16,
-            OutputAudioFormat = ConversationAudioFormat.Pcm16,
+            InputAudioFormat = RealtimeAudioFormat.Pcm16,
+            OutputAudioFormat = RealtimeAudioFormat.Pcm16,
             InputTranscriptionOptions = new()
             {
                 Model = "whisper-1",
@@ -62,13 +76,12 @@ internal sealed class Program
         }
 
         // Configure session with defined options.
-        await session.ConfigureSessionAsync(sessionOptions);
+        await session.ConfigureConversationSessionAsync(sessionOptions);
 
         // Items such as user, assistant, or system messages, as well as input audio, can be sent to the session.
         // An example of sending user message to the session.
         // ConversationItem can be constructed from Microsoft.SemanticKernel.ChatMessageContent if needed by mapping the relevant fields.
-        await session.AddItemAsync(
-            ConversationItem.CreateUserMessage(["I'm trying to decide what to wear on my trip."]));
+        await session.AddItemAsync(RealtimeItem.CreateUserMessage(["I'm trying to decide what to wear on my trip."]));
 
         // Use audio file that contains a recorded question: "What's the weather like in San Francisco, California?"
         string inputAudioPath = FindFile("Assets\\realtime_whats_the_weather_pcm16_24khz_mono.wav");
@@ -82,7 +95,7 @@ internal sealed class Program
         Dictionary<string, StringBuilder> functionArgumentBuildersById = [];
 
         // Define a loop to receive conversation updates in the session.
-        await foreach (ConversationUpdate update in session.ReceiveUpdatesAsync())
+        await foreach (RealtimeUpdate update in session.ReceiveUpdatesAsync())
         {
             // Notification indicating the start of the conversation session.
             if (update is ConversationSessionStartedUpdate sessionStartedUpdate)
@@ -92,21 +105,21 @@ internal sealed class Program
             }
 
             // Notification indicating the start of detected voice activity.
-            if (update is ConversationInputSpeechStartedUpdate speechStartedUpdate)
+            if (update is InputAudioSpeechStartedUpdate speechStartedUpdate)
             {
                 Console.WriteLine(
                     $"  -- Voice activity detection started at {speechStartedUpdate.AudioStartTime}");
             }
 
             // Notification indicating the end of detected voice activity.
-            if (update is ConversationInputSpeechFinishedUpdate speechFinishedUpdate)
+            if (update is InputAudioSpeechFinishedUpdate speechFinishedUpdate)
             {
                 Console.WriteLine(
                     $"  -- Voice activity detection ended at {speechFinishedUpdate.AudioEndTime}");
             }
 
             // Notification indicating the start of item streaming, such as a function call or response message.
-            if (update is ConversationItemStreamingStartedUpdate itemStreamingStartedUpdate)
+            if (update is OutputStreamingStartedUpdate itemStreamingStartedUpdate)
             {
                 Console.WriteLine("  -- Begin streaming of new item");
                 if (!string.IsNullOrEmpty(itemStreamingStartedUpdate.FunctionName))
@@ -116,7 +129,7 @@ internal sealed class Program
             }
 
             // Notification about item streaming delta, which may include audio transcript, audio bytes, or function arguments.
-            if (update is ConversationItemStreamingPartDeltaUpdate deltaUpdate)
+            if (update is OutputDeltaUpdate deltaUpdate)
             {
                 Console.Write(deltaUpdate.AudioTranscript);
                 Console.Write(deltaUpdate.Text);
@@ -148,7 +161,7 @@ internal sealed class Program
 
             // Notification indicating the end of item streaming, such as a function call or response message.
             // At this point, audio transcript can be displayed on console, or a function can be called with aggregated arguments.
-            if (update is ConversationItemStreamingFinishedUpdate itemStreamingFinishedUpdate)
+            if (update is OutputStreamingFinishedUpdate itemStreamingFinishedUpdate)
             {
                 Console.WriteLine();
                 Console.WriteLine($"  -- Item streaming finished, item_id={itemStreamingFinishedUpdate.ItemId}");
@@ -176,7 +189,7 @@ internal sealed class Program
                     var resultContent = await functionCallContent.InvokeAsync(kernel);
 
                     // Create a function call output conversation item with function call result.
-                    ConversationItem functionOutputItem = ConversationItem.CreateFunctionCallOutput(
+                    RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
                         callId: itemStreamingFinishedUpdate.FunctionCallId,
                         output: ProcessFunctionResult(resultContent.Result));
 
@@ -198,7 +211,7 @@ internal sealed class Program
             }
 
             // Notification indicating the completion of transcription from input audio.
-            if (update is ConversationInputTranscriptionFinishedUpdate transcriptionCompletedUpdate)
+            if (update is InputAudioTranscriptionFinishedUpdate transcriptionCompletedUpdate)
             {
                 Console.WriteLine();
                 Console.WriteLine($"  -- User audio transcript: {transcriptionCompletedUpdate.Transcript}");
@@ -206,7 +219,7 @@ internal sealed class Program
             }
 
             // Notification about completed model response turn.
-            if (update is ConversationResponseFinishedUpdate turnFinishedUpdate)
+            if (update is ResponseFinishedUpdate turnFinishedUpdate)
             {
                 Console.WriteLine($"  -- Model turn generation finished. Status: {turnFinishedUpdate.Status}");
 
@@ -226,7 +239,7 @@ internal sealed class Program
             }
 
             // Notification about error in conversation session.
-            if (update is ConversationErrorUpdate errorUpdate)
+            if (update is RealtimeErrorUpdate errorUpdate)
             {
                 Console.WriteLine();
                 Console.WriteLine($"ERROR: {errorUpdate.Message}");
@@ -375,32 +388,22 @@ internal sealed class Program
     }
 
     /// <summary>
-    /// Helper method to get an instance of <see cref="RealtimeConversationClient"/> based on provided
+    /// Helper method to get an instance of <see cref="RealtimeClient"/> based on provided
     /// OpenAI or Azure OpenAI configuration.
     /// </summary>
-    private static RealtimeConversationClient GetRealtimeConversationClient()
+    private static RealtimeClient GetRealtimeConversationClient()
     {
-        var config = new ConfigurationBuilder()
-            .AddUserSecrets<Program>()
-            .AddEnvironmentVariables()
-            .Build();
-
-        var openAIOptions = config.GetSection(OpenAIOptions.SectionName).Get<OpenAIOptions>();
-        var azureOpenAIOptions = config.GetSection(AzureOpenAIOptions.SectionName).Get<AzureOpenAIOptions>();
-
-        if (openAIOptions is not null && openAIOptions.IsValid)
+        if (s_openAIOptions is not null && s_openAIOptions.IsValid)
         {
-            return new RealtimeConversationClient(
-                model: "gpt-4o-realtime-preview",
-                credential: new ApiKeyCredential(openAIOptions.ApiKey));
+            return new RealtimeClient(new ApiKeyCredential(s_openAIOptions.ApiKey));
         }
-        else if (azureOpenAIOptions is not null && azureOpenAIOptions.IsValid)
+        else if (s_azureOpenAIOptions is not null && s_azureOpenAIOptions.IsValid)
         {
             var client = new AzureOpenAIClient(
-                endpoint: new Uri(azureOpenAIOptions.Endpoint),
-                credential: new ApiKeyCredential(azureOpenAIOptions.ApiKey));
+                endpoint: new Uri(s_azureOpenAIOptions.Endpoint),
+                credential: new ApiKeyCredential(s_azureOpenAIOptions.ApiKey));
 
-            return client.GetRealtimeConversationClient(azureOpenAIOptions.DeploymentName);
+            return client.GetRealtimeClient();
         }
         else
         {
