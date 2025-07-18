@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Json.More;
 using Json.Schema;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -33,18 +34,21 @@ internal static class OpenApiTypeConverter
                 "array" => argument switch
                 {
                     string s => JsonArray.Parse(s) as JsonArray,
+                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Array => jsonElement.AsNode(),
                     _ => JsonSerializer.SerializeToNode(argument) as JsonArray
                 },
                 "integer" => argument switch
                 {
                     string stringArgument => JsonValue.Create(long.Parse(stringArgument, CultureInfo.InvariantCulture)),
                     byte or sbyte or short or ushort or int or uint or long or ulong => JsonValue.Create(argument),
+                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && long.TryParse(jsonElement.ToString(), out var intValue) => JsonValue.Create(intValue),
                     _ => null
                 },
                 "boolean" => argument switch
                 {
                     bool b => JsonValue.Create(b),
                     string s => JsonValue.Create(bool.Parse(s)),
+                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.True || jsonElement.ValueKind == JsonValueKind.False => jsonElement.AsNode(),
                     _ => null
                 },
                 "number" => argument switch
@@ -52,6 +56,8 @@ internal static class OpenApiTypeConverter
                     string stringArgument when long.TryParse(stringArgument, out var intValue) => JsonValue.Create(intValue),
                     string stringArgument when double.TryParse(stringArgument, out var doubleValue) => JsonValue.Create(doubleValue),
                     byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => JsonValue.Create(argument),
+                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && long.TryParse(jsonElement.ToString(), out var intValue) => JsonValue.Create(intValue),
+                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && double.TryParse(jsonElement.ToString(), out var doubleValue) => JsonValue.Create(doubleValue),
                     _ => null
                 },
                 _ => schema is null
