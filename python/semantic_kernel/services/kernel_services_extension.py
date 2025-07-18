@@ -2,7 +2,8 @@
 
 import logging
 from abc import ABC
-from typing import TYPE_CHECKING
+from collections.abc import Mapping, MutableMapping
+from typing import TYPE_CHECKING, TypeVar
 
 from pydantic import Field, field_validator
 
@@ -10,7 +11,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.functions.kernel_function import KernelFunction
 
+AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClientBase)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class KernelServicesExtension(KernelBaseModel, ABC):
     Adds all services related entities to the Kernel.
     """
 
-    services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
+    services: MutableMapping[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
 
     @field_validator("services", mode="before")
@@ -68,7 +69,7 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         self,
         service_id: str | None = None,
         type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None = None,
-    ) -> AIServiceClientBase:
+    ) -> AI_SERVICE_CLIENT_TYPE:
         """Get a service by service_id and type.
 
         Type is optional and when not supplied, no checks are done.
@@ -109,11 +110,11 @@ class KernelServicesExtension(KernelBaseModel, ABC):
 
     def get_services_by_type(
         self, type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None
-    ) -> dict[str, AIServiceClientBase]:
+    ) -> Mapping[str, AI_SERVICE_CLIENT_TYPE]:
         """Get all services of a specific type."""
         if type is None:
-            return self.services
-        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
+            return self.services  # type: ignore
+        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
 
     def get_prompt_execution_settings_from_service_id(
         self, service_id: str, type: type[AI_SERVICE_CLIENT_TYPE] | None = None

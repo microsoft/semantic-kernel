@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -36,7 +35,6 @@ public class PromptExecutionSettings
     /// When provided, this service identifier will be the key in a dictionary collection of execution settings for both <see cref="KernelArguments"/> and <see cref="PromptTemplateConfig"/>.
     /// If not provided the service identifier will be the default value in <see cref="DefaultServiceId"/>.
     /// </remarks>
-    [Experimental("SKEXP0001")]
     [JsonPropertyName("service_id")]
     public string? ServiceId
     {
@@ -168,6 +166,22 @@ public class PromptExecutionSettings
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }
     }
+
+    /// <summary>
+    /// When some specialized <see cref="ChatHistory"/> is used, this method can be overridden to prepare the chat history before the request is sent based on the
+    /// current settings configuration
+    /// </summary>
+    /// <param name="chatHistory">Chat history to prepare.</param>
+    /// <returns>Returns the prepared chat history.</returns>
+    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory) => chatHistory;
+
+    /// <summary>
+    /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
+    /// without the need to make the <see cref="PrepareChatHistoryForRequest"/> public.
+    /// </summary>
+    /// <param name="chatHistory">Target chat history to prepare.</param>
+    /// <returns>Prepared chat history.</returns>
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
 
     #region private ================================================================================
 

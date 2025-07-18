@@ -13,7 +13,7 @@ namespace GettingStarted.OpenAIAssistants;
 public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
-    public async Task UseTemplateForAssistantAgentAsync()
+    public async Task UseTemplateForAssistantAgent()
     {
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
@@ -26,7 +26,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
             templateFactory: new KernelPromptTemplateFactory(),
             templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 { "topic", "Dog" },
                 { "length", "3" }

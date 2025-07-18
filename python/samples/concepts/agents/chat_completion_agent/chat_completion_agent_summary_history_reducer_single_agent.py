@@ -3,14 +3,9 @@
 import asyncio
 import logging
 
-from semantic_kernel.agents import (
-    ChatCompletionAgent,
-    ChatHistoryAgentThread,
-)
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import (
-    ChatHistorySummarizationReducer,
-)
+from semantic_kernel.contents import ChatHistorySummarizationReducer
 
 """
 The following sample demonstrates how to implement a truncation chat 
@@ -55,14 +50,13 @@ async def main():
         # Attempt reduction
         is_reduced = await thread.reduce()
         if is_reduced:
-            print(f"@ History reduced to {len(thread.messages)} messages.")
+            print(f"@ History reduced to {len(thread)} messages.")
 
-        print(f"@ Message Count: {len(thread.messages)}\n")
+        print(f"@ Message Count: {len(thread)}\n")
 
         # If reduced, print summary if present
         if is_reduced:
-            chat_history = await thread.get_messages()
-            for msg in chat_history.messages:
+            async for msg in thread.get_messages():
                 if msg.metadata and msg.metadata.get("__summary__"):
                     print(f"\tSummary: {msg.content}")
                     break

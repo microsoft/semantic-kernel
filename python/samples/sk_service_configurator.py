@@ -29,16 +29,15 @@ def add_service(
         Kernel: The configured kernel
     """
     try:
-        settings = ServiceSettings.create(
+        settings = ServiceSettings(
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
     except ValidationError as ex:
         raise ServiceInitializationError("Unable to configure learn resources settings.", ex) from ex
 
-    if not settings.global_llm_service:
+    if "global_llm_service" not in settings.model_fields_set:
         print("GLOBAL_LLM_SERVICE not set, trying to use Azure OpenAI.")
-        settings.global_llm_service = "AzureOpenAI"
 
     # The service_id is used to identify the service in the kernel.
     # This can be updated to a custom value if needed.

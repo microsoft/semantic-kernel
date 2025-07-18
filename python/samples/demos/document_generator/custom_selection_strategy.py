@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 from opentelemetry import trace
 from pydantic import Field
 
-from semantic_kernel.agents.strategies import SelectionStrategy
+from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,

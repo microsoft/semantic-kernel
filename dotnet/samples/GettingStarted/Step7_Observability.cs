@@ -13,11 +13,11 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
     /// </summary>
     [Fact]
-    public async Task ObservabilityWithFiltersAsync()
+    public async Task ObservabilityWithFilters()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
+        kernelBuilder.AddOpenAIChatClient(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 

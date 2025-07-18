@@ -525,7 +525,7 @@ async def test_bedrock_agent_invoke(
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
         mock_start.return_value = "test_session_id"
 
-        async for response in agent.invoke("test_input_text", thread=thread):
+        async for response in agent.invoke(messages="test_input_text", thread=thread):
             assert response.message.content == simple_response
 
         mock_invoke_agent.assert_called_once_with(
@@ -565,7 +565,7 @@ async def test_bedrock_agent_invoke_stream(
         mock_start.return_value = "test_session_id"
 
         full_message = ""
-        async for response in agent.invoke_stream("test_input_text", thread=thread):
+        async for response in agent.invoke_stream(messages="test_input_text", thread=thread):
             full_message += response.message.content
 
         assert full_message == simple_response
@@ -611,7 +611,7 @@ async def test_bedrock_agent_invoke_with_function_call(
             bedrock_agent_non_streaming_simple_response,
         ]
         mock_start.return_value = "test_session_id"
-        async for _ in agent.invoke("test_input_text"):
+        async for _ in agent.invoke(messages="test_input_text"):
             mock_invoke_agent.assert_called_with(
                 "test_session_id",
                 "test_input_text",
@@ -657,7 +657,7 @@ async def test_bedrock_agent_invoke_stream_with_function_call(
             bedrock_agent_streaming_simple_response,
         ]
         mock_start.return_value = "test_session_id"
-        async for _ in agent.invoke_stream("test_input_text"):
+        async for _ in agent.invoke_stream(messages="test_input_text"):
             mock_invoke_agent.assert_called_with(
                 "test_session_id",
                 "test_input_text",

@@ -73,10 +73,10 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
-        Assert.Equal(runningProcessId, mockClient.CloudEvents[0].Data?.ProcessId);
-        Assert.Equal(runningProcessId, mockClient.CloudEvents[1].Data?.ProcessId);
-        this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: MockTopicNames.EchoExternalTopic, expectedTopicData: testInput);
-        this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: MockTopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
+        Assert.Equal(runningProcessId, mockClient.CloudEvents[0].ProcessId);
+        Assert.Equal(runningProcessId, mockClient.CloudEvents[1].ProcessId);
+        this.AssertProxyMessage(mockClient.CloudEvents[0], expectedPublishTopic: MockTopicNames.EchoExternalTopic, expectedTopicData: testInput);
+        this.AssertProxyMessage(mockClient.CloudEvents[1], expectedPublishTopic: MockTopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
     }
 
     /// <summary>
@@ -111,15 +111,15 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
-        if (mockClient.CloudEvents[0].TopicName == this._topic1)
+        if (mockClient.CloudEvents[0].ExternalTopicName == this._topic1)
         {
-            this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: this._topic1, expectedTopicData: testInput);
-            this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: this._topic2, expectedTopicData: testInput);
+            this.AssertProxyMessage(mockClient.CloudEvents[0], expectedPublishTopic: this._topic1, expectedTopicData: testInput);
+            this.AssertProxyMessage(mockClient.CloudEvents[1], expectedPublishTopic: this._topic2, expectedTopicData: testInput);
         }
         else
         {
-            this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: this._topic2, expectedTopicData: testInput);
-            this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: this._topic1, expectedTopicData: testInput);
+            this.AssertProxyMessage(mockClient.CloudEvents[0], expectedPublishTopic: this._topic2, expectedTopicData: testInput);
+            this.AssertProxyMessage(mockClient.CloudEvents[1], expectedPublishTopic: this._topic1, expectedTopicData: testInput);
         }
     }
 
@@ -155,8 +155,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
-        this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: this._topic1, expectedTopicData: testInput);
-        this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: this._topic1, expectedTopicData: testInput);
+        this.AssertProxyMessage(mockClient.CloudEvents[0], expectedPublishTopic: this._topic1, expectedTopicData: testInput);
+        this.AssertProxyMessage(mockClient.CloudEvents[1], expectedPublishTopic: this._topic1, expectedTopicData: testInput);
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
         var proxyTopics = new List<string>() { MockTopicNames.RepeatExternalTopic, MockTopicNames.EchoExternalTopic };
-        var proxyStep = processBuilder.AddProxyStep(proxyTopics);
+        var proxyStep = processBuilder.AddProxyStep(id: "proxy", proxyTopics);
 
         processBuilder
             .OnInputEvent(ProcessTestsEvents.StartProcess)
@@ -206,7 +206,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         ProcessBuilder process = new(processName);
 
         var echoStep = process.AddStepFromType<CommonSteps.EchoStep>();
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process
             .OnInputEvent(ProcessTestsEvents.StartInnerProcess)
@@ -225,17 +225,11 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(proxyMessage);
         Assert.IsType<KernelProcessProxyMessage>(proxyMessage);
         Assert.Equal(expectedPublishTopic, proxyMessage.ExternalTopicName);
-        if (proxyMessage.EventData is JsonElement jsonEventData)
-        {
-            // needed for Dapr Testing setup since it serializes everything with json
-            Assert.Equal(JsonValueKind.String, jsonEventData.ValueKind);
-            Assert.Equal(expectedTopicData, jsonEventData.ToString());
-        }
-        else
-        {
-            Assert.IsType<string>(proxyMessage.EventData);
-            Assert.Equal(expectedTopicData, proxyMessage.EventData);
-        }
+
+        Assert.IsType<KernelProcessEventData>(proxyMessage.EventData);
+        var outputEventData = proxyMessage.EventData.ToObject();
+        Assert.IsType<string>(outputEventData);
+        Assert.Equal(expectedTopicData, outputEventData);
     }
     #endregion
 }

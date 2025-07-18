@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +9,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Interface for reducing the chat history.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface IChatHistoryReducer
 {
     /// <summary>

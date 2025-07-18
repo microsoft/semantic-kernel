@@ -25,7 +25,7 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
         var chatService = new ChatCompletionsClient(
                 endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
                 credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey))
-            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsIChatClient(TestConfiguration.AzureAIInference.ChatModelId)
             .AsChatCompletionService();
 
         Console.WriteLine("Chat content:");

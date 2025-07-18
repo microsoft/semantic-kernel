@@ -423,6 +423,38 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCreatesPostRequestWithApiKeyInHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var apiKeyHeader = this._messageHandlerStub.RequestHeaders.GetValues("x-goog-api-key").SingleOrDefault();
+        Assert.NotNull(apiKeyHeader);
+        Assert.Equal("fake-key", apiKeyHeader);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithoutApiKeyInUrlAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.DoesNotContain("key=", this._messageHandlerStub.RequestUri.ToString());
+    }
+
+    [Fact]
     public async Task ItCreatesPostRequestWithResponseSchemaPropertyAsync()
     {
         // Get a mock logger that will return true for IsEnabled(LogLevel.Trace)

@@ -80,7 +80,7 @@ public static class FishAndChipsProcess
 
     private sealed class AddFishAndChipsCondimentsStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string AddCondiments = nameof(AddCondiments);
         }
@@ -90,7 +90,7 @@ public static class FishAndChipsProcess
             public const string CondimentsAdded = nameof(CondimentsAdded);
         }
 
-        [KernelFunction(Functions.AddCondiments)]
+        [KernelFunction(ProcessFunctions.AddCondiments)]
         public async Task AddCondimentsAsync(KernelProcessStepContext context, List<string> fishActions, List<string> potatoActions)
         {
             Console.WriteLine($"ADD_CONDIMENTS: Added condiments to Fish & Chips - Fish: {JsonSerializer.Serialize(fishActions)}, Potatoes: {JsonSerializer.Serialize(potatoActions)}");

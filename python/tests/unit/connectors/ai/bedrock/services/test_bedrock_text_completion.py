@@ -14,7 +14,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
 
 # region init
@@ -211,27 +211,6 @@ async def test_bedrock_streaming_text_completion(
         assert response.text == output_text
         assert response.choice_index == 0
         assert isinstance(response.inner_content, list)
-
-
-async def test_bedrock_streaming_text_completion_with_unsupported_model(
-    model_id,
-) -> None:
-    """Test Amazon Bedrock Streaming Chat Completion complete method"""
-    with patch.object(
-        MockBedrockClient, "get_foundation_model", return_value={"modelDetails": {"responseStreamingSupported": False}}
-    ):
-        # Setup
-        bedrock_text_completion = BedrockTextCompletion(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
-        )
-
-        # Act
-        settings = BedrockTextPromptExecutionSettings()
-        with pytest.raises(ServiceInvalidRequestError):
-            async for chunk in bedrock_text_completion.get_streaming_text_contents("Hello", settings=settings):
-                pass
 
 
 # endregion

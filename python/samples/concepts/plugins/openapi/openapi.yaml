@@ -32,7 +32,7 @@ paths:
             description: Your name
         - name: Header
           in: header
-          required: false
+          required: true
           schema:
             type: string
             description: The header

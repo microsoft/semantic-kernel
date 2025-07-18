@@ -44,7 +44,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// Add an <see cref="Agent"/> to the chat.
     /// </summary>
-    /// <param name="agent">The <see cref="KernelAgent"/> to add.</param>
+    /// <param name="agent">The <see cref="Agent"/> to add.</param>
     public void AddAgent(Agent agent)
     {
         if (this._agentIds.Add(agent.Id))

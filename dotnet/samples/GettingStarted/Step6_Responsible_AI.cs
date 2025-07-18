@@ -11,11 +11,11 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
     /// Show how to use prompt filters to ensure that prompts are rendered in a responsible manner.
     /// </summary>
     [Fact]
-    public async Task AddPromptFilterAsync()
+    public async Task AddPromptFilter()
     {
         // Create a kernel with OpenAI chat completion
         var builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+            .AddOpenAIChatClient(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 

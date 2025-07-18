@@ -2,7 +2,7 @@
 
 This project contains a step by step guide to get started with _Semantic Kernel Agents_ in Python.
 
-## PyPI:
+## PyPI
 
 - For the use of Chat Completion agents, the minimum allowed Semantic Kernel pypi version is 1.3.0.
 - For the use of OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.4.0.
@@ -10,7 +10,7 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0.
 - For the use of AzureAI and Bedrock agents, the minimum allowed Semantic Kernel pypi version is 1.21.0.
 - For the use of Crew.AI as a plugin, the minimum allowed Semantic Kernel pypi version is 1.21.1.
-
+- For the use of OpenAI Responses agents, the minimum allowed Semantic Kernel pypi version is 1.27.0.
 
 ## Source
 
@@ -28,6 +28,7 @@ chat_completion_agent|How to use Semantic Kernel Chat Completion agents that lev
 bedrock|How to use [AWS Bedrock agents](https://aws.amazon.com/bedrock/agents/) in Semantic Kernel.
 mixed_chat|How to combine different agent types.
 openai_assistant|How to use [OpenAI Assistants](https://platform.openai.com/docs/assistants/overview) in Semantic Kernel.
+openai_responses|How to use [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses) in Semantic Kernel.
 
 ## Configuring the Kernel
 
@@ -57,6 +58,9 @@ You can explicitly create a specific implementation for the desired `Agent` that
 Below is a sample code snippet demonstrating thread management:
 
 ```python
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+
 USER_INPUTS = [
     "Why is the sky blue?",
 ]
@@ -71,7 +75,7 @@ agent = ChatCompletionAgent(
 # 2. Create a thread to hold the conversation
 # If no thread is provided, a new thread will be
 # created and returned with the initial response
-thread: ChatCompletionAgentThread = None
+thread = None
 
 for user_input in USER_INPUTS:
     print(f"# User: {user_input}")

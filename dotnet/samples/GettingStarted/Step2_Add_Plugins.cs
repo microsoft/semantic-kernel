@@ -9,36 +9,40 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace GettingStarted;
 
 /// <summary>
-/// This example shows how to load a <see cref="KernelPlugin"/> instances.
+/// This example shows how to load a <see cref="KernelPlugin"/> instances with ChatClient.
 /// </summary>
 public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
+    /// Shows different ways to load a <see cref="KernelPlugin"/> instances with ChatClient.
     /// </summary>
     [Fact]
-    public async Task AddPluginsAsync()
+    public async Task AddPlugins()
     {
-        // Create a kernel with OpenAI chat completion
+        // Create a kernel with ChatClient and plugins
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.AddOpenAIChatClient(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
         kernelBuilder.Plugins.AddFromType<WidgetFactory>();
         Kernel kernel = kernelBuilder.Build();
 
         // Example 1. Invoke the kernel with a prompt that asks the AI for information it cannot provide and may hallucinate
+        Console.WriteLine("Example 1: Asking the AI for information it cannot provide:");
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
-        // Example 2. Invoke the kernel with a templated prompt that invokes a plugin and display the result
+        // Example 2. Use kernel for templated prompts that invoke plugins directly
+        Console.WriteLine("\nExample 2: Using templated prompts that invoke plugins directly:");
         Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
-        // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
+        // Example 3. Use kernel with function calling for automatic plugin invocation
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine("\nExample 3: Using function calling for automatic plugin invocation:");
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
 
-        // Example 4. Invoke the kernel with a prompt and allow the AI to automatically invoke functions that use enumerations
+        // Example 4. Use kernel with function calling for complex scenarios with enumerations
+        Console.WriteLine("\nExample 4: Using function calling for complex scenarios with enumerations:");
         Console.WriteLine(await kernel.InvokePromptAsync("Create a handy lime colored widget for me.", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));

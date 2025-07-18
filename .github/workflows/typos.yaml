@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
 
       - name: Use custom config file
-        uses: crate-ci/typos@master
+        uses: crate-ci/typos@v1.31.1
         with:
           config: .github/_typos.toml
           write_changes: false

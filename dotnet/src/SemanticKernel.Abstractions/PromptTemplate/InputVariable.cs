@@ -101,4 +101,11 @@ public sealed class InputVariable
     /// </remarks>
     [JsonPropertyName("allow_dangerously_set_content")]
     public bool AllowDangerouslySetContent { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets a sample value for the variable.
+    /// </summary>
+    [JsonPropertyName("sample")]
+    [Experimental("SKEXP0110")]
+    public object? Sample { get; set; }
 }

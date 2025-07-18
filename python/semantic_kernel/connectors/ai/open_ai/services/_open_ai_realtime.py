@@ -10,11 +10,6 @@ from collections.abc import AsyncGenerator, Callable, Coroutine
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import numpy as np
 from aiohttp import ClientSession
 from aiortc import (
@@ -47,13 +42,15 @@ from openai.types.beta.realtime.response_create_event import Response
 from pydantic import Field, PrivateAttr
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    prepare_settings_for_function_calling,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import prepare_settings_for_function_calling
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    OpenAIRealtimeExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -72,6 +69,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ContentException
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
@@ -84,7 +82,13 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
-logger: logging.Logger = logging.getLogger(__name__)
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+logger: logging.Logger = logging.getLogger("semantic_kernel.connectors.ai.open_ai.realtime")
 
 
 # region utils
@@ -151,14 +155,16 @@ class SendEvents(str, Enum):
     RESPONSE_CANCEL = "response.cancel"
 
 
-def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
+def _create_openai_realtime_client_event(event_type: SendEvents | str, **kwargs: Any) -> RealtimeClientEvent:
     """Create an OpenAI Realtime client event from a event type and kwargs."""
+    if isinstance(event_type, str):
+        event_type = SendEvents(event_type)
     match event_type:
         case SendEvents.SESSION_UPDATE:
             if "session" not in kwargs:
                 raise ContentException("Session is required for SessionUpdateEvent")
             return SessionUpdateEvent(
-                type=event_type,
+                type=event_type.value,
                 session=kwargs.pop("session"),
                 **kwargs,
             )
@@ -166,36 +172,36 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
             if "audio" not in kwargs:
                 raise ContentException("Audio is required for InputAudioBufferAppendEvent")
             return InputAudioBufferAppendEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_COMMIT:
             return InputAudioBufferCommitEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_CLEAR:
             return InputAudioBufferClearEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_CREATE:
             if "item" not in kwargs:
                 raise ContentException("Item is required for ConversationItemCreateEvent")
-            kwargs["type"] = event_type
+            kwargs["type"] = event_type.value
             return ConversationItemCreateEvent(**kwargs)
         case SendEvents.CONVERSATION_ITEM_TRUNCATE:
             if "content_index" not in kwargs:
                 kwargs["content_index"] = 0
             return ConversationItemTruncateEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_DELETE:
             if "item_id" not in kwargs:
                 raise ContentException("Item ID is required for ConversationItemDeleteEvent")
             return ConversationItemDeleteEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.RESPONSE_CREATE:
@@ -204,13 +210,13 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
             else:
                 response = None
             return ResponseCreateEvent(
-                type=event_type,
+                type=event_type.value,
                 response=response,
                 **kwargs,
             )
         case SendEvents.RESPONSE_CANCEL:
             return ResponseCancelEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
 
@@ -647,10 +653,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (  # noqa
-            OpenAIRealtimeExecutionSettings,
-        )
-
         return OpenAIRealtimeExecutionSettings
 
     @override
@@ -723,14 +725,11 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         try:
             ephemeral_token = await self._get_ephemeral_token()
             headers = {"Authorization": f"Bearer {ephemeral_token}", "Content-Type": "application/sdp"}
+            headers = prepend_semantic_kernel_to_user_agent(headers)
 
             async with (
                 ClientSession() as session,
-                session.post(
-                    f"{self.client.beta.realtime._client.base_url}realtime?model={self.ai_model_id}",
-                    headers=headers,
-                    data=offer.sdp,
-                ) as response,
+                session.post(self._get_webrtc_url(), headers=headers, data=offer.sdp) as response,
             ):
                 if response.status not in [200, 201]:
                     error_text = await response.text()
@@ -811,15 +810,13 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
 
     async def _get_ephemeral_token(self) -> str:
         """Get an ephemeral token from OpenAI."""
-        headers = {"Authorization": f"Bearer {self.client.api_key}", "Content-Type": "application/json"}
-        data = {"model": self.ai_model_id, "voice": "echo"}
-
+        data = {"model": self.ai_model_id}
+        headers, url = self._get_ephemeral_token_headers_and_url()
+        headers = prepend_semantic_kernel_to_user_agent(headers)
         try:
             async with (
                 ClientSession() as session,
-                session.post(
-                    f"{self.client.beta.realtime._client.base_url}/realtime/sessions", headers=headers, json=data
-                ) as response,
+                session.post(url, headers=headers, json=data) as response,
             ):
                 if response.status not in [200, 201]:
                     error_text = await response.text()
@@ -831,6 +828,17 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         except Exception as e:
             logger.error(f"Failed to get ephemeral token: {e!s}")
             raise
+
+    def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
+        """Get the headers for the ephemeral token."""
+        return {
+            "Authorization": f"Bearer {self.client.api_key}",
+            "Content-Type": "application/json",
+        }, f"{self.client.beta.realtime._client.base_url}/realtime/sessions"
+
+    def _get_webrtc_url(self) -> str:
+        """Get the WebRTC URL."""
+        return f"{self.client.beta.realtime._client.base_url}/realtime?model={self.ai_model_id}"
 
 
 # region Websocket
@@ -886,7 +894,9 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
         **kwargs: Any,
     ) -> None:
         """Create a session in the service."""
-        self.connection = await self.client.beta.realtime.connect(model=self.ai_model_id).enter()
+        self.connection = await self.client.beta.realtime.connect(
+            model=self.ai_model_id, extra_headers={USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}
+        ).enter()
         self.connected.set()
         await self.update_session(settings=settings, chat_history=chat_history, **kwargs)
 

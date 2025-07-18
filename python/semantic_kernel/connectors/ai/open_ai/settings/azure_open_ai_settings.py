@@ -24,43 +24,49 @@ class AzureOpenAISettings(KernelBaseSettings):
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_CHAT_DEPLOYMENT_NAME)
+    - responses_deployment_name: str - The name of the Azure Responses deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure AI Foundry.
+                (Env var AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME)
     - text_deployment_name: str - The name of the Azure Text deployment. This value
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_TEXT_DEPLOYMENT_NAME)
     - embedding_deployment_name: str - The name of the Azure Embedding deployment. This value
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME)
     - text_to_image_deployment_name: str - The name of the Azure Text to Image deployment. This
                 value will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME)
     - audio_to_text_deployment_name: str - The name of the Azure Audio to Text deployment. This
                 value will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME)
     - text_to_audio_deployment_name: str - The name of the Azure Text to Audio deployment. This
                 value will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME)
     - realtime_deployment_name: str - The name of the Azure Realtime deployment. This value
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
+                under Management > Deployments in Azure AI Foundry.
                 (Env var AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME)
     - api_key: SecretStr - The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
@@ -87,6 +93,7 @@ class AzureOpenAISettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "AZURE_OPENAI_"
 
     chat_deployment_name: str | None = None
+    responses_deployment_name: str | None = None
     text_deployment_name: str | None = None
     embedding_deployment_name: str | None = None
     text_to_image_deployment_name: str | None = None

@@ -36,6 +36,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.contents.utils.hashing import make_hashable
+from semantic_kernel.contents.utils.status import Status
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
@@ -94,6 +95,7 @@ class ChatMessageContent(KernelContent):
     items: list[CMC_ITEM_TYPES] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
+    status: Status | None = None
 
     @overload
     def __init__(
@@ -104,6 +106,7 @@ class ChatMessageContent(KernelContent):
         inner_content: Any | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -118,6 +121,7 @@ class ChatMessageContent(KernelContent):
         inner_content: Any | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -132,6 +136,7 @@ class ChatMessageContent(KernelContent):
         name: str | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -149,6 +154,7 @@ class ChatMessageContent(KernelContent):
             name: Optional[str] - The name of the response.
             encoding: Optional[str] - The encoding of the text.
             finish_reason: Optional[FinishReason] - The reason the response was finished.
+            status: Optional[Status] - The status of the response for the Responses API.
             ai_model_id: Optional[str] - The id of the AI model that generated this response.
             metadata: Dict[str, Any] - Any metadata that should be attached to the response.
             **kwargs: Any - Any additional fields to set on the instance.
@@ -158,6 +164,8 @@ class ChatMessageContent(KernelContent):
             kwargs["encoding"] = encoding
         if finish_reason:
             kwargs["finish_reason"] = finish_reason
+        if status:
+            kwargs["status"] = status
         if name:
             kwargs["name"] = name
         if content:

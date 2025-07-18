@@ -34,7 +34,9 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
     private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
 
-    public override KernelAgent Agent => this._agent!;
+    public AssistantClient AssistantClient => this._assistantClient!;
+
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
@@ -43,6 +45,11 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
+
+    public override AgentThread GetNewThread()
+    {
+        return new OpenAIAssistantAgentThread(this._assistantClient!);
+    }
 
     public override async Task<ChatHistory> GetChatHistory()
     {
@@ -85,13 +92,13 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public override async Task InitializeAsync()
     {
-        AzureAIConfiguration configuration = this._configuration.GetSection("AzureAI").Get<AzureAIConfiguration>()!;
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
         var client = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(configuration.Endpoint));
         this._assistantClient = client.GetAssistantClient();
 
         this._assistant =
             await this._assistantClient.CreateAssistantAsync(
-                configuration.ChatModelId,
+                configuration.ChatDeploymentName!,
                 name: "HelpfulAssistant",
                 instructions: "You are a helpful assistant.");
 

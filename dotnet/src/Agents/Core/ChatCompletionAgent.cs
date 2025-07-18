@@ -10,20 +10,20 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
+/// Represents a <see cref="Agent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
-/// (<see cref="KernelAgent.Arguments"/>).
+/// (<see cref="Agent.Arguments"/>).
 /// </remarks>
-public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
+public sealed class ChatCompletionAgent : ChatHistoryAgent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
@@ -67,14 +67,33 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
+
+        // Get the context contributions from the AIContextProviders.
+        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = new ChatHistory();
+        ChatHistory chatHistory = [];
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
@@ -85,14 +104,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
-            options?.AdditionalInstructions,
+            kernel,
+            FormatAdditionalInstructions(providersContext, options),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -115,9 +134,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
 
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(result).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(result).ConfigureAwait(false);
                 }
             }
 
@@ -126,8 +145,12 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
-    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -150,14 +173,33 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
+
+        // Get the context contributions from the AIContextProviders.
+        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = new ChatHistory();
+        ChatHistory chatHistory = [];
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
@@ -169,14 +211,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
-            options?.AdditionalInstructions,
+            kernel,
+            FormatAdditionalInstructions(providersContext, options),
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -186,8 +228,12 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
-    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    /// <remarks>
+    /// This method is used by the <see cref="ChatHistoryChannel"/>. Note that if this method is removed, the <see cref="ChatHistoryChannel"/>
+    /// would automatically invoke the overload with <see cref="ICollection{ChatMessageContent}"/> since it is interchangeable with <see cref="ChatHistory"/>
+    /// but it's behavior is different, so will not work as expected.
+    /// </remarks>
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -220,13 +266,44 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
-            kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
-                kernel,
-                arguments?.ExecutionSettings,
-                arguments ?? []);
+        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
+        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
 
-        return (chatCompletionService, executionSettings);
+        kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(kernel, nullPrompt, arguments ?? [], out IChatCompletionService? chatCompletionService, out PromptExecutionSettings? executionSettings);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        if (chatCompletionService is null
+            && kernel.ServiceSelector is IChatClientSelector chatClientSelector
+            && chatClientSelector.TrySelectChatClient<Microsoft.Extensions.AI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
+            && chatClient is not null)
+        {
+            // This change is temporary until Agents support IChatClient natively in near future.
+            chatCompletionService = chatClient!.AsChatCompletionService();
+        }
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        if (chatCompletionService is null)
+        {
+            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(Microsoft.Extensions.AI.IChatClient)).Append('.');
+            if (nullPrompt.ExecutionSettings is not null)
+            {
+                string serviceIds = string.Join("|", nullPrompt.ExecutionSettings.Keys);
+                if (!string.IsNullOrEmpty(serviceIds))
+                {
+                    message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
+                }
+
+                string modelIds = string.Join("|", nullPrompt.ExecutionSettings.Values.Select(model => model.ModelId));
+                if (!string.IsNullOrEmpty(modelIds))
+                {
+                    message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
+                }
+            }
+
+            throw new KernelException(message.ToString());
+        }
+
+        return (chatCompletionService!, executionSettings);
     }
 
     #region private
@@ -240,7 +317,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         ChatHistory chat = [];
 
-        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        string? instructions = await this.RenderInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
@@ -267,9 +344,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, this.Arguments.MergeArguments(arguments));
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
@@ -317,9 +393,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, this.Arguments.MergeArguments(arguments));
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
@@ -338,6 +413,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
+        int messageIndex = messageCount;
         AuthorRole? role = null;
         StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
@@ -348,18 +424,18 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             builder.Append(message.ToString());
 
+            // Capture mutated messages related function calling / tools
+            for (; messageIndex < chat.Count; messageIndex++)
+            {
+                ChatMessageContent chatMessage = chat[messageIndex];
+
+                chatMessage.AuthorName = this.Name;
+
+                await onNewMessage(chatMessage).ConfigureAwait(false);
+                history.Add(chatMessage);
+            }
+
             yield return message;
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            await onNewMessage(message).ConfigureAwait(false);
-            history.Add(message);
         }
 
         // Do not duplicate terminated function result to history

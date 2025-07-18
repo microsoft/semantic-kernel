@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -577,5 +578,57 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         Assert.NotNull(geminiMetadata);
         this.Output.WriteLine($"ResponseSafetyRatings: {JsonSerializer.Serialize(geminiMetadata.ResponseSafetyRatings)}");
         Assert.NotNull(geminiMetadata.ResponseSafetyRatings);
+    }
+
+    [RetryFact(Skip = "This test is for manual verification.")]
+    public async Task GoogleAIChatReturnsResponseWorksWithThinkingBudgetAsync()
+    {
+        // Arrange
+        var modelId = "gemini-2.5-pro-exp-03-25";
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Call me by my name and expand this abbreviation: LLM");
+
+        var sut = this.GetChatService(ServiceType.GoogleAI, isBeta: true, overrideModelId: modelId);
+        var settings = new GeminiPromptExecutionSettings { ThinkingConfig = new() { ThinkingBudget = 2000 } };
+
+        // Act
+        var streamResponses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, settings).ToListAsync();
+        var responses = await sut.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(streamResponses[0].Content);
+        Assert.NotNull(responses[0].Content);
+    }
+
+    [RetryTheory(Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI)] // GoogleAI does not support labels yet
+    public async Task GoogleAIChatReturnsResponseWorksWithLabelsAsync(ServiceType serviceType)
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Call me by my name and expand this abbreviation: LLM");
+
+        var sut = this.GetChatService(serviceType);
+
+        var settings = new GeminiPromptExecutionSettings
+        {
+            Labels = new Dictionary<string, string>()
+            {
+                ["label1"] = "value1",
+                ["label2"] = "value2"
+            }
+        };
+
+        // Act
+        var streamResponses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, settings).ToListAsync();
+        var responses = await sut.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(streamResponses[0].Content);
+        Assert.NotNull(responses[0].Content);
     }
 }

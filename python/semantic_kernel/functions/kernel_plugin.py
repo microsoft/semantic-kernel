@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -239,12 +238,15 @@ class KernelPlugin(KernelBaseModel):
         else:
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
             candidates.extend(inspect.getmembers(plugin_instance, inspect.isfunction))  # type: ignore
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.iscoroutinefunction))  # type: ignore
         # Read every method from the plugin instance
         functions = [
             KernelFunctionFromMethod(method=candidate, plugin_name=plugin_name)
             for _, candidate in candidates
             if hasattr(candidate, "__kernel_function__")
         ]
+        if not description:
+            description = getattr(plugin_instance, "description", None)
         return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod
@@ -411,77 +413,6 @@ class KernelPlugin(KernelBaseModel):
             instance = getattr(module, name)(**init_args)
             return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
-
-    @classmethod
-    def from_text_search_with_search(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "search" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(name=plugin_name, description=plugin_description, functions=[text_search.create_search(**kwargs)])
-
-    @classmethod
-    def from_text_search_with_get_text_search_results(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "get_text_search_results" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(
-            name=plugin_name,
-            description=plugin_description,
-            functions=[text_search.create_get_text_search_results(**kwargs)],
-        )
-
-    @classmethod
-    def from_text_search_with_get_search_results(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "get_search_results" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(
-            name=plugin_name,
-            description=plugin_description,
-            functions=[text_search.create_get_search_results(**kwargs)],
-        )
 
     # endregion
     # region Internal Static Methods

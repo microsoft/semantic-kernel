@@ -93,7 +93,7 @@ class ChatCompletionTestBase(CompletionTestBase):
     )  # This needs to be scoped to function to avoid resources getting cleaned up after each test
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
-        azure_openai_settings = AzureOpenAISettings.create()
+        azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.chat_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)

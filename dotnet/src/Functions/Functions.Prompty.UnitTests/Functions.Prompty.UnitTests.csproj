@@ -39,4 +39,9 @@
     </None>
     <EmbeddedResource Include="TestData\**\*.prompty" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\**\*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

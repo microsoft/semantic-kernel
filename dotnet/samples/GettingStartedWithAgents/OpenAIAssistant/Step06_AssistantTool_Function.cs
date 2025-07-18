@@ -19,7 +19,7 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssis
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task UseSingleAssistantWithFunctionToolsAsync()
+    public async Task UseSingleAssistantWithFunctionTools()
     {
         // Define the agent
         AssistantCreationOptions creationOptions =

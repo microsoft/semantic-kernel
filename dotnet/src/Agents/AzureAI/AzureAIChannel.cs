@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -12,15 +14,28 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="AzureAIAgent"/>.
 /// </summary>
-internal sealed class AzureAIChannel(AgentsClient client, string threadId)
+internal sealed class AzureAIChannel(PersistentAgentsClient client, string threadId)
     : AgentChannel<AzureAIAgent>
 {
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
+        const string ErrorMessage = "The message could not be added to the thread due to an error response from the service.";
+
         foreach (ChatMessageContent message in history)
         {
-            await AgentThreadActions.CreateMessageAsync(client, threadId, message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await AgentThreadActions.CreateMessageAsync(client, threadId, message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (RequestFailedException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+            catch (AggregateException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
         }
     }
 
@@ -53,7 +68,7 @@ internal sealed class AzureAIChannel(AgentsClient client, string threadId)
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default)
     {
-        return client.DeleteThreadAsync(threadId, cancellationToken);
+        return client.Threads.DeleteThreadAsync(threadId, cancellationToken);
     }
 
     /// <inheritdoc/>

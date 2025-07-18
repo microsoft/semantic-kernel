@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
@@ -13,5 +11,4 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// which will replace the original parameter.
 /// </remarks>
 /// <param name="context">Instance of <see cref="RestApiParameterFilterContext"/> containing details of the parameter to filter.</param>
-[Experimental("SKEXP0040")]
 public delegate RestApiParameter? RestApiParameterFilter(RestApiParameterFilterContext context);

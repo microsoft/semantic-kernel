@@ -26,7 +26,7 @@ public interface IExternalKernelProcessMessageChannel
     /// Emits the specified event from the step outside the SK process
     /// </summary>
     /// <param name="externalTopicEvent">name of the topic to be used externally as the event name</param>
-    /// <param name="eventData">data to be transmitted externally</param>
+    /// <param name="message">data to be transmitted externally</param>
     /// <returns></returns>
-    abstract Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData);
+    abstract Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message);
 }

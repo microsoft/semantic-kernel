@@ -38,7 +38,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         // Create the agent
         OpenAIAssistantAgent agent = new(assistant, this.AssistantClient)
         {
-            Arguments =
+            Arguments = new()
             {
                 {"style", "haiku"}
             },
@@ -105,7 +105,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         // Create the agent
         OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, plugins: null, templateFactory, templateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 {"style", "haiku"}
             },

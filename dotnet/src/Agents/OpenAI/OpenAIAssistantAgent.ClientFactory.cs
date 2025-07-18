@@ -2,6 +2,7 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using Azure.AI.OpenAI;
@@ -11,7 +12,7 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-public sealed partial class OpenAIAssistantAgent : KernelAgent
+public sealed partial class OpenAIAssistantAgent : Agent
 {
     /// <summary>
     /// Specifies a key that avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
@@ -24,6 +25,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="apiKey">The API key.</param>
     /// <param name="endpoint">The service endpoint.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    [ExcludeFromCodeCoverage]
     public static AzureOpenAIClient CreateAzureOpenAIClient(ApiKeyCredential apiKey, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(apiKey, nameof(apiKey));
@@ -40,6 +42,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="credential">The credentials.</param>
     /// <param name="endpoint">The service endpoint.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    [ExcludeFromCodeCoverage]
     public static AzureOpenAIClient CreateAzureOpenAIClient(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(credential, nameof(credential));
@@ -55,6 +58,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// </summary>
     /// <param name="endpoint">An optional endpoint.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    [ExcludeFromCodeCoverage]
     public static OpenAIClient CreateOpenAIClient(Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);

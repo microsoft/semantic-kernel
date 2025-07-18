@@ -190,16 +190,26 @@ internal partial class ClientCore
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="endpoint">Endpoint for the OpenAI API.</param>
+    /// <param name="orgId"></param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, Uri? endpoint)
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, Uri? endpoint = null, string? orgId = null)
     {
         OpenAIClientOptions options = new()
         {
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
-            Endpoint = endpoint
         };
 
+        if (endpoint is not null)
+        {
+            options.Endpoint = endpoint;
+        }
+
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
+
+        if (orgId is not null)
+        {
+            options.OrganizationId = orgId;
+        }
 
         if (httpClient is not null)
         {

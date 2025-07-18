@@ -43,8 +43,10 @@ class AIServiceSelector:
         if type_ is None:
             from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
             from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+            from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
+            from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
 
-            type_ = (TextCompletionClientBase, ChatCompletionClientBase)  # type: ignore
+            type_ = (TextCompletionClientBase, ChatCompletionClientBase, TextToAudioClientBase, TextToImageClientBase)  # type: ignore
 
         execution_settings_dict = arguments.execution_settings if arguments and arguments.execution_settings else {}
         if func_exec_settings := getattr(function, "prompt_execution_settings", None):

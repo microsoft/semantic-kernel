@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -43,6 +45,43 @@ public abstract class Agent
     /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
     /// </summary>
     public ILoggerFactory? LoggerFactory { get; init; }
+
+    /// <summary>
+    /// Gets the arguments for the agent instruction parameters (optional).
+    /// </summary>
+    /// <remarks>
+    /// Also includes <see cref="PromptExecutionSettings"/>.
+    /// </remarks>
+    public KernelArguments? Arguments { get; init; }
+
+    /// <summary>
+    /// Gets the instructions for the agent (optional).
+    /// </summary>
+    public string? Instructions { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
+    /// </summary>
+    /// <value>
+    /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime. The default value is an empty Kernel, but that can be overridden.
+    /// </value>
+    public Kernel Kernel { get; init; } = new();
+
+    /// <summary>
+    /// This option forces the agent to clone the original kernel instance during invocation if <c>true</c>. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AIContextProvider"/> implementations that provide <see cref="AIFunction"/> instances require the
+    /// kernel to be cloned during agent invocation, but cloning has the side affect of causing modifications to Kernel
+    /// Data by plugins to be lost.  Cloning is therefore opt-in.
+    /// </remarks>
+    [Experimental("SKEXP0130")]
+    public bool UseImmutableKernel { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets a prompt template based on the agent instructions.
+    /// </summary>
+    public IPromptTemplate? Template { get; set; }
 
     /// <summary>
     /// Invoke the agent with no message assuming that all required instructions are already provided to the agent or on the thread.
@@ -223,6 +262,27 @@ public abstract class Agent
     protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
 
     /// <summary>
+    /// Formats the system instructions for the agent.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The formatted system instructions for the agent.</returns>
+    protected async Task<string?> RenderInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
+    {
+        if (this.Template is null)
+        {
+            // Use the instructions as-is
+            return this.Instructions;
+        }
+
+        var mergedArguments = this.Arguments.Merge(arguments);
+
+        // Use the provided template as the instructions
+        return await this.Template.RenderAsync(kernel, mergedArguments, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
     /// <example>
     /// yield return typeof(YourAgentChannel).FullName;
@@ -290,7 +350,7 @@ public abstract class Agent
 
         if (thread is not TThreadType concreteThreadType)
         {
-            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
+            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {typeof(TThreadType).Name}.");
         }
 
         // We have to explicitly call create here to ensure that the thread is created
@@ -335,5 +395,39 @@ public abstract class Agent
     protected Task NotifyThreadOfNewMessage(AgentThread thread, ChatMessageContent message, CancellationToken cancellationToken)
     {
         return thread.OnNewMessageAsync(message, cancellationToken);
+    }
+
+    /// <summary>
+    /// Default formatting for additional instructions for the AI agent based on the provided context and invocation options.
+    /// </summary>
+    /// <param name="context">The context containing relevant information for the AI agent's operation.</param>
+    /// <param name="options">Optional parameters that influence the invocation behavior. Can be <see langword="null"/>.</param>
+    /// <returns>A formatted string representing the additional instructions for the AI agent.</returns>
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    protected static string FormatAdditionalInstructions(AIContext context, AgentInvokeOptions? options)
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    {
+        return string.Concat(ProcessInstructions());
+
+        IEnumerable<string> ProcessInstructions()
+        {
+            bool hasInstructions = false;
+            if (options?.AdditionalInstructions is not null)
+            {
+                yield return options!.AdditionalInstructions;
+                hasInstructions = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(context.Instructions))
+            {
+                if (hasInstructions)
+                {
+                    yield return Environment.NewLine;
+                    yield return Environment.NewLine;
+                }
+
+                yield return context.Instructions!;
+            }
+        }
     }
 }

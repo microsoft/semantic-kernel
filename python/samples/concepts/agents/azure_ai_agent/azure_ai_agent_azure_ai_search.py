@@ -3,7 +3,8 @@
 import asyncio
 import logging
 
-from azure.ai.projects.models import AzureAISearchTool, ConnectionType
+from azure.ai.agents.models import AzureAISearchTool
+from azure.ai.projects.models import ConnectionType
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
@@ -35,21 +36,16 @@ AZURE_AI_SEARCH_INDEX_NAME = "hotels-sample-index"
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
-        conn_list = await client.connections.list()
-
         ai_search_conn_id = ""
-        for conn in conn_list:
-            if conn.connection_type == ConnectionType.AZURE_AI_SEARCH and conn.authentication_type == "ApiKey":
-                ai_search_conn_id = conn.id
+        async for connection in client.connections.list():
+            if connection.type == ConnectionType.AZURE_AI_SEARCH:
+                ai_search_conn_id = connection.id
                 break
 
         ai_search = AzureAISearchTool(index_connection_id=ai_search_conn_id, index_name=AZURE_AI_SEARCH_INDEX_NAME)

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Agents.Yaml" />
   </ItemGroup>
 
   <ItemGroup>

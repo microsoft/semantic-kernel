@@ -13,3 +13,4 @@ class OpenAIModelTypes(Enum):
     AUDIO_TO_TEXT = "audio-to-text"
     TEXT_TO_AUDIO = "text-to-audio"
     REALTIME = "realtime"
+    RESPONSE = "response"

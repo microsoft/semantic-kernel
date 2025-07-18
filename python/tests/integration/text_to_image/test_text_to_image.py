@@ -18,6 +18,11 @@ pytestmark = pytest.mark.parametrize(
             "azure_openai",
             "A cute tuxedo cat driving a race car.",
             id="azure_openai",
+            marks=[
+                pytest.mark.xfail(
+                    reason="Temporary failure due to Internal Server Error (500) from Azure OpenAI.",
+                ),
+            ],
         ),
     ],
 )

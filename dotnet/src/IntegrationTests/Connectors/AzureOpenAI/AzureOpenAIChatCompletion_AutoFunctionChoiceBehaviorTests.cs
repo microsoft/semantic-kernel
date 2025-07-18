@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -19,8 +20,9 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
-public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
+public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest, IDisposable
 {
+    private HttpClient? _httpClient;
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatCompletionService _chatCompletionService;
@@ -81,7 +83,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
             template: How many days until Christmas?
             execution_settings:
               default:
-                temperature: 0.1
                 function_choice_behavior:
                   type: auto
             """";
@@ -185,7 +186,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
             template: How many days until Christmas?
             execution_settings:
               default:
-                temperature: 0.1
                 function_choice_behavior:
                   type: auto
             """";
@@ -397,8 +397,14 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         }
     }
 
+    public void Dispose()
+    {
+        this._httpClient?.Dispose();
+    }
+
     private Kernel InitializeKernel()
     {
+        this._httpClient ??= new() { Timeout = TimeSpan.FromSeconds(100) };
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
@@ -410,7 +416,8 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new AzureCliCredential());
+            credentials: new AzureCliCredential(),
+            httpClient: this._httpClient);
 
         return kernelBuilder.Build();
     }

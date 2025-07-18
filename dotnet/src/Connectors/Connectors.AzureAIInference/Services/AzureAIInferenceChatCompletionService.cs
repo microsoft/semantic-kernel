@@ -41,7 +41,7 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         this._core = new ChatClientCore(modelId, apiKey, endpoint, httpClient);
 
         var builder = this._core.Client
-            .AsChatClient(modelId)
+            .AsIChatClient(modelId)
             .AsBuilder()
             .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
@@ -71,7 +71,7 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         this._core = new ChatClientCore(modelId, credential, endpoint, httpClient);
 
         var builder = this._core.Client
-            .AsChatClient(modelId)
+            .AsIChatClient(modelId)
             .AsBuilder()
             .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
@@ -99,7 +99,7 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         this._core = new ChatClientCore(modelId, chatClient);
 
         var builder = chatClient
-            .AsChatClient(modelId)
+            .AsIChatClient(modelId)
             .AsBuilder()
             .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 

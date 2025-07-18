@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 using OpenAI.Chat;
-using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
+using OAIChat = OpenAI.Chat;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -92,7 +92,7 @@ internal partial class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
-    protected virtual Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
+    protected virtual Dictionary<string, object?> GetChatCompletionMetadata(OAIChat.ChatCompletion completions)
     {
         return new Dictionary<string, object?>
         {
@@ -162,7 +162,7 @@ internal partial class ClientCore
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Make the request.
-            OpenAIChatCompletion? chatCompletion = null;
+            OAIChat.ChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
@@ -180,14 +180,14 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
-                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
-                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
+                            .SetInputTokensUsage(chatCompletion.Usage.InputTokenCount)
+                            .SetOutputTokensUsage(chatCompletion.Usage.OutputTokenCount);
                     }
 
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false);
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false, chatOptions);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
@@ -477,6 +477,18 @@ internal partial class ClientCore
             ReasoningEffortLevel = GetEffortLevel(executionSettings),
         };
 
+        // Set response modalities if specified in the execution settings
+        if (executionSettings.Modalities is not null)
+        {
+            options.ResponseModalities = GetResponseModalities(executionSettings);
+        }
+
+        // Set audio options if specified in the execution settings
+        if (executionSettings.Audio is not null)
+        {
+            options.AudioOptions = GetAudioOptions(executionSettings);
+        }
+
         var responseFormat = GetResponseFormat(executionSettings);
         if (responseFormat is not null)
         {
@@ -764,6 +776,8 @@ internal partial class ClientCore
                     {
                         TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
                         ImageContent imageContent => GetImageContentItem(imageContent),
+                        AudioContent audioContent => GetAudioContentItem(audioContent),
+                        BinaryContent binaryContent => GetBinaryContentItem(binaryContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
                 { ParticipantName = message.AuthorName }
@@ -832,7 +846,7 @@ internal partial class ClientCore
             // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
             if (toolCalls.Count == 0)
             {
-                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+                return [new AssistantChatMessage(message.Content ?? string.Empty) { ParticipantName = message.AuthorName }];
             }
 
             var assistantMessage = new AssistantChatMessage(SanitizeFunctionNames(toolCalls)) { ParticipantName = message.AuthorName };
@@ -864,6 +878,41 @@ internal partial class ClientCore
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
+    private static ChatMessageContentPart GetAudioContentItem(AudioContent audioContent)
+    {
+        if (audioContent.Data is { IsEmpty: false } data)
+        {
+            return ChatMessageContentPart.CreateInputAudioPart(BinaryData.FromBytes(data), GetChatInputAudioFormat(audioContent.MimeType));
+        }
+
+        throw new ArgumentException($"{nameof(AudioContent)} must have Data bytes.");
+    }
+
+    private static ChatMessageContentPart GetBinaryContentItem(BinaryContent binaryContent)
+    {
+        if (binaryContent.Data is { IsEmpty: false } data)
+        {
+            return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(data), binaryContent.MimeType, Guid.NewGuid().ToString());
+        }
+
+        throw new ArgumentException($"{nameof(BinaryContent)} must have Data bytes.");
+    }
+
+    private static ChatInputAudioFormat GetChatInputAudioFormat(string? mimeType)
+    {
+        if (string.IsNullOrWhiteSpace(mimeType))
+        {
+            return ChatInputAudioFormat.Mp3;
+        }
+
+        return mimeType.ToUpperInvariant() switch
+        {
+            "AUDIO/WAV" => ChatInputAudioFormat.Wav,
+            "AUDIO/MP3" => ChatInputAudioFormat.Mp3,
+            _ => throw new NotSupportedException($"Unsupported audio format '{mimeType}'. Supported formats are 'audio/wav' and 'audio/mp3'.")
+        };
+    }
+
     private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
     {
         const string DetailLevelProperty = "ChatImageDetailLevel";
@@ -887,13 +936,68 @@ internal partial class ClientCore
         return null;
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel, bool retainArgumentTypes)
+    private OpenAIChatMessageContent CreateChatMessageContent(OAIChat.ChatCompletion completion, string targetModel, bool retainArgumentTypes, OAIChat.ChatCompletionOptions options)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
+
+        if (completion.OutputAudio is ChatOutputAudio outputAudio)
+        {
+            var audioContent = new AudioContent(outputAudio.AudioBytes, GetAudioOutputMimeType(options.AudioOptions))
+            {
+                Metadata = new Dictionary<string, object?>
+                {
+                    [nameof(outputAudio.Id)] = outputAudio.Id,
+                    [nameof(outputAudio.Transcript)] = outputAudio.Transcript,
+                    [nameof(outputAudio.ExpiresAt)] = outputAudio.ExpiresAt,
+                }
+            };
+
+            message.Items.Add(audioContent);
+        }
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls, retainArgumentTypes));
 
         return message;
+    }
+
+    private static string? GetAudioOutputMimeType(ChatAudioOptions? audioOptions)
+    {
+        if (audioOptions is null)
+        {
+            return null;
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        {
+            return "audio/wav";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Mp3)
+        {
+            return "audio/mp3";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Opus)
+        {
+            return "audio/opus";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        {
+            return "audio/wav";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Flac)
+        {
+            return "audio/flac";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Pcm16)
+        {
+            return "audio/pcm16";
+        }
+
+        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'flac' and 'pcm16'.");
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)
@@ -971,6 +1075,125 @@ internal partial class ClientCore
         {
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
+    }
+
+    /// <summary>
+    /// Gets the response modalities from the execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The execution settings.</param>
+    /// <returns>The response modalities as a <see cref="ChatResponseModalities"/> flags enum.</returns>
+    /// <remarks>
+    /// This method supports converting from various formats:
+    /// <list type="bullet">
+    /// <item><description>A <see cref="ChatResponseModalities"/> flags enum</description></item>
+    /// <item><description>A string representation of the enum (e.g., "Text, Audio")</description></item>
+    /// <item><description>An <see cref="IEnumerable{String}"/> of modality names (e.g., ["text", "audio"])</description></item>
+    /// <item><description>A <see cref="JsonElement"/> containing either a string, or array of strings</description></item>
+    /// </list>
+    /// </remarks>
+    private static ChatResponseModalities GetResponseModalities(OpenAIPromptExecutionSettings executionSettings)
+    {
+        static ChatResponseModalities ParseResponseModalitiesEnumerable(IEnumerable<string> responseModalitiesStrings)
+        {
+            ChatResponseModalities result = ChatResponseModalities.Default;
+            foreach (var modalityString in responseModalitiesStrings)
+            {
+                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedModality))
+                {
+                    result |= parsedModality;
+                }
+                else
+                {
+                    throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
+                }
+            }
+
+            return result;
+        }
+
+        if (executionSettings.Modalities is null)
+        {
+            return ChatResponseModalities.Default;
+        }
+
+        if (executionSettings.Modalities is ChatResponseModalities responseModalities)
+        {
+            return responseModalities;
+        }
+
+        if (executionSettings.Modalities is IEnumerable<string> responseModalitiesStrings)
+        {
+            return ParseResponseModalitiesEnumerable(responseModalitiesStrings);
+        }
+
+        if (executionSettings.Modalities is string responseModalitiesString)
+        {
+            if (Enum.TryParse<ChatResponseModalities>(responseModalitiesString, true, out var parsedResponseModalities))
+            {
+                return parsedResponseModalities;
+            }
+            throw new NotSupportedException($"The provided response modalities '{responseModalitiesString}' is not supported.");
+        }
+
+        if (executionSettings.Modalities is JsonElement responseModalitiesElement)
+        {
+            if (responseModalitiesElement.ValueKind == JsonValueKind.String &&
+                Enum.TryParse<ChatResponseModalities>(responseModalitiesElement.GetString(), true, out var parsedResponseModalities))
+            {
+                return parsedResponseModalities;
+            }
+
+            if (responseModalitiesElement.ValueKind == JsonValueKind.Array)
+            {
+                var modalitiesEnumeration = JsonSerializer.Deserialize<IEnumerable<string>>(responseModalitiesElement.GetRawText())!;
+                return ParseResponseModalitiesEnumerable(modalitiesEnumeration);
+            }
+
+            throw new NotSupportedException($"The provided response modalities '{executionSettings.Modalities?.GetType()}' is not supported.");
+        }
+
+        return ChatResponseModalities.Default;
+    }
+
+    /// <summary>
+    /// Gets the audio options from the execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The execution settings.</param>
+    /// <returns>The audio options as a <see cref="ChatAudioOptions"/> object.</returns>
+    /// <remarks>
+    /// This method supports converting from various formats:
+    /// <list type="bullet">
+    /// <item><description>A <see cref="ChatAudioOptions"/> object</description></item>
+    /// <item><description>A <see cref="JsonElement"/> containing the serialized audio options</description></item>
+    /// <item><description>A <see cref="string"/> containing the JSON representation of the audio options</description></item>
+    /// </list>
+    /// </remarks>
+    private static ChatAudioOptions GetAudioOptions(OpenAIPromptExecutionSettings executionSettings)
+    {
+        if (executionSettings.Audio is ChatAudioOptions audioOptions)
+        {
+            return audioOptions;
+        }
+
+        if (executionSettings.Audio is JsonElement audioOptionsElement)
+        {
+            var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsElement.GetRawText()));
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        if (executionSettings.Audio is string audioOptionsString)
+        {
+            var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsString));
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        throw new NotSupportedException($"The provided audio options '{executionSettings.Audio?.GetType()}' is not supported.");
     }
 
     /// <summary>

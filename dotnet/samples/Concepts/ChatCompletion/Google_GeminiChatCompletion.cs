@@ -1,14 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Google.Apis.Auth.OAuth2;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ChatCompletion;
 
+/// <summary>
+/// These examples demonstrate different ways of using chat completion with Google VertexAI and GoogleAI APIs.
+/// </summary>
 public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task GoogleAIAsync()
+    public async Task GoogleAIUsingChatCompletion()
     {
         Console.WriteLine("============= Google AI - Gemini Chat Completion =============");
 
@@ -27,31 +31,27 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
                 apiKey: geminiApiKey)
             .Build();
 
-        await RunSampleAsync(kernel);
+        await this.ProcessChatAsync(kernel);
     }
 
     [Fact]
-    public async Task VertexAIAsync()
+    public async Task VertexAIUsingChatCompletion()
     {
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 
-        string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
-        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
-        string geminiLocation = TestConfiguration.VertexAI.Location;
-        string geminiProject = TestConfiguration.VertexAI.ProjectId;
-
-        if (geminiBearerKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
-        {
-            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
-            return;
-        }
+        string? bearerToken = null;
+        Assert.NotNull(TestConfiguration.VertexAI.ClientId);
+        Assert.NotNull(TestConfiguration.VertexAI.ClientSecret);
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                bearerKey: geminiBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject)
+                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
+                bearerTokenProvider: GetBearerToken,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
             .Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
@@ -72,23 +72,39 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         //             // This is just example, in production we recommend using Google SDK to generate your BearerKey token.
         //             // This delegate will be called on every request,
         //             // when providing the token consider using caching strategy and refresh token logic when it is expired or close to expiration.
-        //             return GetBearerKey();
+        //             return GetBearerToken();
         //         },
         //         location: TestConfiguration.VertexAI.Location,
         //         projectId: TestConfiguration.VertexAI.ProjectId);
 
-        await RunSampleAsync(kernel);
+        async ValueTask<string> GetBearerToken()
+        {
+            if (!string.IsNullOrEmpty(bearerToken))
+            {
+                return bearerToken;
+            }
+
+            var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                new ClientSecrets
+                {
+                    ClientId = TestConfiguration.VertexAI.ClientId,
+                    ClientSecret = TestConfiguration.VertexAI.ClientSecret
+                },
+                ["https://www.googleapis.com/auth/cloud-platform"],
+                "user",
+                CancellationToken.None);
+
+            var userCredential = await credential.WaitAsync(CancellationToken.None);
+            bearerToken = userCredential.Token.AccessToken;
+
+            return bearerToken;
+        }
+
+        await this.ProcessChatAsync(kernel);
     }
 
-    private async Task RunSampleAsync(Kernel kernel)
+    private async Task ProcessChatAsync(Kernel kernel)
     {
-        await SimpleChatAsync(kernel);
-    }
-
-    private async Task SimpleChatAsync(Kernel kernel)
-    {
-        Console.WriteLine("======== Simple Chat ========");
-
         var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 

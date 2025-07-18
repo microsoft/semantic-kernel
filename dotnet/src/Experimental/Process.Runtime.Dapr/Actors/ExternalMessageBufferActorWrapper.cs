@@ -24,9 +24,9 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
     }
 
     /// <inheritdoc cref="IExternalMessageBuffer.EmitExternalEventAsync(string, KernelProcessProxyMessage)"/>
-    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
+    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message)
     {
-        await this._actor.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
+        await this._actor.EmitExternalEventAsync(externalTopicEvent, message).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

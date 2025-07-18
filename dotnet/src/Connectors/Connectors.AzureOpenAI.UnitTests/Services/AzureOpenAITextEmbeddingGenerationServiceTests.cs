@@ -19,6 +19,7 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
 /// </summary>
+[Obsolete("Temporary Tests for Obsolete AzureOpenAITextEmbeddingGenerationService")]
 public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -58,7 +57,6 @@ public sealed class PromptRenderContext
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public PromptExecutionSettings? ExecutionSettings { get; init; }
 
     /// <summary>

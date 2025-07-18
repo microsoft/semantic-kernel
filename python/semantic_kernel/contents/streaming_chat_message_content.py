@@ -202,6 +202,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
             function_invoke_attempt=self.function_invoke_attempt,
+            name=self.name or other.name,
         )
 
     def to_element(self) -> "Element":

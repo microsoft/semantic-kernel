@@ -16,10 +16,12 @@ public sealed class OpenAIJsonSchemaTransformerTests
 {
     private static readonly AIJsonSchemaCreateOptions s_jsonSchemaCreateOptions = new()
     {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        DisallowAdditionalProperties = true,
-        RequireAllProperties = true,
+        TransformOptions = new()
+        {
+            DisallowAdditionalProperties = true,
+            RequireAllProperties = true,
+            MoveDefaultKeywordToDescription = true,
+        }
     };
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
@@ -71,7 +73,7 @@ public sealed class OpenAIJsonSchemaTransformerTests
                     "null"
                   ],
                   "items": {
-                    "type": "object",
+                    "type": ["object","null"],
                     "properties": {
                       "TextProperty": {
                         "type": [

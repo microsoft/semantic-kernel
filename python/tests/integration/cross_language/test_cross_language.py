@@ -12,8 +12,7 @@ import pytest
 import pytest_asyncio
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAISettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -23,7 +22,7 @@ from semantic_kernel.kernel import Kernel
 
 logger = logging.getLogger(__name__)
 
-OPENAI_MODEL_ID = "gpt-3.5-turbo"
+OPENAI_MODEL_ID = "gpt-4.1-nano"
 
 # region Test Prompts
 
@@ -106,7 +105,7 @@ class LoggingAsyncClient(httpx.AsyncClient):
 
 @pytest_asyncio.fixture
 async def async_clients() -> AsyncGenerator[tuple[AsyncOpenAI, LoggingAsyncClient], None]:
-    openai_settings = OpenAISettings.create()
+    openai_settings = OpenAISettings()
     logging_async_client = LoggingAsyncClient()
     async with AsyncOpenAI(
         api_key=openai_settings.api_key.get_secret_value(), http_client=logging_async_client

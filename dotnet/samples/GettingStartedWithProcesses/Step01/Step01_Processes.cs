@@ -131,7 +131,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
     /// </summary>
     private sealed class ChatBotResponseStep : KernelProcessStep<ChatBotState>
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string GetChatResponse = nameof(GetChatResponse);
         }
@@ -159,7 +159,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         /// <param name="userMessage">The user message from a previous step.</param>
         /// <param name="_kernel">A <see cref="Kernel"/> instance.</param>
         /// <returns></returns>
-        [KernelFunction(Functions.GetChatResponse)]
+        [KernelFunction(ProcessFunctions.GetChatResponse)]
         public async Task GetChatResponseAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
         {
             _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));

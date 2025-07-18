@@ -4,7 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -17,6 +17,15 @@ assistant using either Azure OpenAI or OpenAI, a chat completion
 agent and have them participate in a group chat to work towards
 the user's requirement. It also demonstrates how the underlying
 agent reset method is used to clear the current state of the chat
+
+Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
+no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
+
+Read more about the `GroupChatOrchestration` here:
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
+
+Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
+https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
 
 
@@ -41,11 +50,11 @@ async def main():
     # Next, we will create the AzureAssistantAgent
 
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model=model,
+        model=AzureOpenAISettings().chat_deployment_name,
         name="copywriter",
         instructions="""
             The user may either provide information or query on information previously provided. 

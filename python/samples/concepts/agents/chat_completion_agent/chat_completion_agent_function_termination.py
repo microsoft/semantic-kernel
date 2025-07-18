@@ -99,8 +99,7 @@ async def main():
     print("================================")
 
     # 4. Print out the chat history to view the different types of messages
-    chat_history = await thread.get_messages()
-    for message in chat_history.messages:
+    async for message in thread.get_messages():
         _write_content(message)
 
     """

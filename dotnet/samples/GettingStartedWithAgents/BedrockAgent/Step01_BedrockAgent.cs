@@ -19,7 +19,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseNewAgentAsync()
+    public async Task UseNewAgent()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent");
@@ -46,7 +46,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseExistingAgentAsync()
+    public async Task UseExistingAgent()
     {
         // Retrieve the agent
         // Replace "bedrock-agent-id" with the ID of the agent you want to use
@@ -75,7 +75,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseNewAgentStreamingAsync()
+    public async Task UseNewAgentStreaming()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");

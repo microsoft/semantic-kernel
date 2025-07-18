@@ -1,0 +1,18 @@
+﻿{
+  "name": "GetCurrentWeatherForCity",
+  "description": "Provides current weather information for a specified city.",
+  "template_format": "handlebars",
+  "template": "It's {{WeatherUtils-GetWeatherForCity city time}} in {{city}} as of {{time}}",
+  "input_variables": [
+    {
+      "name": "city",
+      "description": "The city for which to get the weather.",
+      "is_required": true
+    },
+    {
+      "name": "time",
+      "description": "The UTC time for which to get the weather.",
+      "is_required": true
+    }
+  ]
+}

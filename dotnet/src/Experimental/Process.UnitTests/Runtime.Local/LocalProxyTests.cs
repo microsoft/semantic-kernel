@@ -29,8 +29,8 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
         counterStep.OnFunctionResult().EmitExternalEvent(proxyStep, this._topic1);
@@ -49,9 +49,9 @@ public class LocalProxyTests
             Assert.Equal(1, mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Single(mockProxyClient.CloudEvents);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
 
             // Act
             await processContext.SendEventAsync(new() { Id = this._startProcessEvent, Data = null });
@@ -61,9 +61,9 @@ public class LocalProxyTests
             Assert.Equal(1, mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(2, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
         }
         Assert.Equal(1, mockProxyClient.UninitializationCounter);
     }
@@ -78,8 +78,8 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
-        var proxyStep = process.AddProxyStep([this._topic1]);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
 
@@ -111,13 +111,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
@@ -155,13 +155,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
@@ -205,13 +205,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
@@ -234,9 +234,9 @@ public class LocalProxyTests
     {
         ProcessBuilder process = new(processName);
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: counterName);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: counterName);
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>();
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process
             .OnInputEvent(this._startProcessEvent)
@@ -245,12 +245,12 @@ public class LocalProxyTests
         counterStep
             .OnFunctionResult()
             .EmitExternalEvent(proxyStep, this._topic1)
-            .SendEventTo(new(evenNumberStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(evenNumberStep));
 
         // request another number if number is odd
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.OddNumber)
-            .SendEventTo(new(counterStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep));
 
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)

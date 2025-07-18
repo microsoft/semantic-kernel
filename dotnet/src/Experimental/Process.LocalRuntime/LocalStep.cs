@@ -18,11 +18,12 @@ namespace Microsoft.SemanticKernel;
 internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
-    private readonly Lazy<ValueTask> _initializeTask;
+    protected readonly Lazy<ValueTask> _initializeTask;
     private readonly ILogger _logger;
 
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
+    private readonly Dictionary<string, LocalEdgeGroupProcessor> _edgeGroupProcessors = [];
 
     protected KernelProcessStepState _stepState;
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
@@ -59,7 +60,8 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._eventNamespace = this.Id;
+        this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
     /// <summary>
@@ -154,7 +156,14 @@ internal class LocalStep : IKernelProcessMessageChannel
                 functionParameters = this._inputs[message.FunctionName];
             }
 
-            functionParameters![kvp.Key] = kvp.Value;
+            if (kvp.Value is KernelProcessEventData proxyData)
+            {
+                functionParameters![kvp.Key] = proxyData.ToObject();
+            }
+            else
+            {
+                functionParameters![kvp.Key] = kvp.Value;
+            }
         }
     }
 
@@ -178,6 +187,24 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
         this._logger.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
+
+        if (!string.IsNullOrEmpty(message.GroupId))
+        {
+            this._logger.LogDebug("Step {StepName} received message from Step named '{SourceId}' with group Id '{GroupId}'.", this.Name, message.SourceId, message.GroupId);
+            if (!this._edgeGroupProcessors.TryGetValue(message.GroupId, out LocalEdgeGroupProcessor? edgeGroupProcessor) || edgeGroupProcessor is null)
+            {
+                throw new KernelException($"Step {this.Name} received message from Step named '{message.SourceId}' with group Id '{message.GroupId}' that is not registered.").Log(this._logger);
+            }
+
+            if (!edgeGroupProcessor.TryGetResult(message, out Dictionary<string, object?>? result))
+            {
+                // The edge group processor has not received all required messages yet.
+                return;
+            }
+
+            // The edge group processor has received all required messages and has produced a result.
+            message = message with { Values = result ?? [] };
+        }
 
         // Add the message values to the inputs for the function
         this.AssignStepFunctionParameterValues(message);
@@ -210,26 +237,28 @@ internal class LocalStep : IKernelProcessMessageChannel
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
+            // TODO: Process edges for the OnStepEnter event: This feels like a good use for filters in the non-declarative version
+
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
             this.EmitEvent(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace,
-                    SourceId = $"{targetFunction}.OnResult",
-                    Data = invokeResult.GetValue<object>()
-                });
+                ProcessEvent.Create(
+                    invokeResult.GetValue<object>(),
+                    this._eventNamespace,
+                    sourceId: $"{targetFunction}.OnResult",
+                    eventVisibility: KernelProcessEventVisibility.Public));
+
+            // TODO: Process edges for the OnStepExit event: This feels like a good use for filters in the non-declarative version
         }
         catch (Exception ex)
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             this.EmitEvent(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace,
-                    SourceId = $"{targetFunction}.OnError",
-                    Data = KernelProcessError.FromException(ex),
-                    IsError = true
-                });
+                ProcessEvent.Create(
+                    KernelProcessError.FromException(ex),
+                    this._eventNamespace,
+                    sourceId: $"{targetFunction}.OnError",
+                    eventVisibility: KernelProcessEventVisibility.Public,
+                    isError: true));
         }
         finally
         {
@@ -257,7 +286,15 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        if (this._stepInfo is KernelProcessAgentStep agentStep)
+        {
+            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
+        }
+        else
+        {
+            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        }
+
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -300,7 +337,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="kernel">The kernel to use for invocation.</param>
     /// <param name="arguments">The arguments to invoke with.</param>
     /// <returns>A <see cref="Task"/> containing the result of the function invocation.</returns>
-    private Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
+    internal Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
     {
         return kernel.InvokeAsync(function, arguments: arguments);
     }
@@ -337,6 +374,6 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
     {
         Verify.NotNull(localEvent, nameof(localEvent));
-        return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        return localEvent with { Namespace = this.Id };
     }
 }

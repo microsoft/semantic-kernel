@@ -26,7 +26,7 @@ public class ChatCompletionAgentFixture : AgentFixture
     private ChatHistoryAgentThread? _thread;
     private ChatHistoryAgentThread? _createdThread;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
@@ -35,6 +35,11 @@ public class ChatCompletionAgentFixture : AgentFixture
     public override AgentThread ServiceFailingAgentThread => null!;
 
     public override AgentThread CreatedServiceFailingAgentThread => null!;
+
+    public override AgentThread GetNewThread()
+    {
+        return new ChatHistoryAgentThread();
+    }
 
     public override async Task<ChatHistory> GetChatHistory()
     {

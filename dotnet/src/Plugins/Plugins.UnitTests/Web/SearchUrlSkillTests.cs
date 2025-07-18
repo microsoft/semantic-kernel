@@ -118,6 +118,71 @@ public class SearchUrlPluginTests
     }
 
     [Fact]
+    public void BraveSearchUrl()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act
+        string actual = plugin.BraveSearchUrl(AnyInput);
+
+        // Assert
+        Assert.Equal($"https://search.brave.com/search?q={this._encodedInput}", actual);
+    }
+
+    [Fact]
+    public void BraveImagesSearchUrl()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act
+        string actual = plugin.BraveImagesSearchUrl(AnyInput);
+
+        // Assert
+        Assert.Equal($"https://search.brave.com/images?q={this._encodedInput}", actual);
+    }
+
+    [Fact]
+    public void BraveNewsSearchUrl()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act
+        string actual = plugin.BraveNewsSearchUrl(AnyInput);
+
+        // Assert
+        Assert.Equal($"https://search.brave.com/news?q={this._encodedInput}", actual);
+    }
+
+    [Fact]
+    public void BraveGooglesSearchUrl()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act
+        string actual = plugin.BraveGooglesSearchUrl(AnyInput);
+
+        // Assert
+        Assert.Equal($"https://search.brave.com/goggles?q={this._encodedInput}", actual);
+    }
+
+    [Fact]
+    public void BraveVideosSearchUrl()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act
+        string actual = plugin.BraveVideosSearchUrl(AnyInput);
+
+        // Assert
+        Assert.Equal($"https://search.brave.com/videos?q={this._encodedInput}", actual);
+    }
+
+    [Fact]
     public void FacebookSearchUrl()
     {
         // Arrange

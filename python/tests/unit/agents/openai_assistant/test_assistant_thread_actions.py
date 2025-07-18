@@ -53,10 +53,13 @@ from openai.types.shared.function_definition import FunctionDefinition
 
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -433,7 +436,7 @@ async def test_agent_thread_actions_create_message():
 async def test_assistant_thread_actions_invoke(
     mock_run_step_message_creation, mock_run_step_tool_call, mock_run_in_progress, mock_thread_messages
 ):
-    async def mock_poll_run_status(agent, run, thread_id):
+    async def mock_poll_run_status(agent, run, thread_id, polling_options):
         run.update_status()
         return run
 
@@ -552,6 +555,76 @@ async def test_assistant_thread_actions_stream(
         agent=agent, thread_id="thread_id", output_messages=messages
     ):
         assert content is not None
+
+
+async def test_assistant_thread_actions_stream_tool_and_text_message_ordering(mock_thread_messages):
+    events = [
+        MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
+        MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
+        mock_thread_run_step_completed(),
+        MockEvent(
+            "thread.message.delta",
+            StreamingChatMessageContent(role="assistant", content="Hello", choice_index=0),
+        ),
+        MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
+    ]
+
+    client = AsyncMock(spec=AsyncOpenAI)
+    definition = AsyncMock(spec=Assistant)
+    definition.id = "agent123"
+    definition.name = "agentName"
+    definition.description = "desc"
+    definition.instructions = "test agent"
+    definition.tools = []
+    definition.model = "gpt-4o"
+    definition.temperature = 0.7
+    definition.top_p = 0.9
+    definition.metadata = {}
+    definition.response_format = {"type": "json_object"}
+
+    agent = OpenAIAssistantAgent(
+        client=client,
+        definition=definition,
+    )
+
+    client.beta = MagicMock()
+    client.beta.threads = MagicMock()
+    client.beta.assistants = MagicMock()
+    client.beta.threads.runs = MagicMock()
+    client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+    client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+    collected_messages = []
+    streamed_results = []
+
+    tool_call_msg = ChatMessageContent(
+        role="assistant", content="", items=[FunctionCallContent(name="ToolA", arguments="{}")]
+    )
+    tool_result_msg = ChatMessageContent(
+        role="assistant", content="", items=[FunctionResultContent(id="tool_123", name="ToolA", result="$9.99")]
+    )
+
+    async def fake_invoke_stream(*args, output_messages=None, **kwargs):
+        if output_messages is not None:
+            output_messages.append(tool_call_msg)
+            output_messages.append(tool_result_msg)
+
+        yield StreamingChatMessageContent(role="assistant", content="Hello", choice_index=0)
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
+        side_effect=fake_invoke_stream,
+    ):
+        async for content in AssistantThreadActions.invoke_stream(
+            agent=agent,
+            thread_id="thread_id",
+            output_messages=collected_messages,
+        ):
+            streamed_results.append(content)
+
+    assert collected_messages == [tool_call_msg, tool_result_msg]
+    assert len(streamed_results) == 1
+    assert streamed_results[0].content == "Hello"
 
 
 async def test_assistant_thread_actions_stream_run_fails(
@@ -702,6 +775,8 @@ async def test_poll_loop_exits_on_status_change():
     initial_run = MagicMock()
     initial_run.id = run_id
 
+    polling_options = RunPollingOptions()
+
     run_in_progress = MagicMock()
     run_in_progress.id = run_id
     run_in_progress.status = "in_progress"
@@ -716,7 +791,7 @@ async def test_poll_loop_exits_on_status_change():
 
     thread_id = "thread_123"
 
-    result_run = await AssistantThreadActions._poll_loop(dummy_agent, initial_run, thread_id)
+    result_run = await AssistantThreadActions._poll_loop(dummy_agent, initial_run, thread_id, polling_options)
 
     assert result_run.status == "completed"
 
@@ -743,9 +818,9 @@ async def test_handle_streaming_requires_action_returns_result():
         ),
         patch(
             "semantic_kernel.agents.open_ai.assistant_thread_actions.merge_streaming_function_results",
-            return_value=[dummy_function_result_streaming_content],
+            return_value=dummy_function_result_streaming_content,
         ),
-        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=None)),
+        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=[None])),
         patch.object(AssistantThreadActions, "_format_tool_outputs", return_value=dummy_tool_outputs),
     ):
         result = await AssistantThreadActions._handle_streaming_requires_action(

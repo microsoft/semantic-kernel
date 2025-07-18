@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any, cast
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageDeltaImageFileContent,
     MessageDeltaImageFileContentObject,
     MessageDeltaTextContent,
@@ -14,19 +14,25 @@ from azure.ai.projects.models import (
     MessageTextFileCitationAnnotation,
     MessageTextFilePathAnnotation,
     MessageTextUrlCitationAnnotation,
+    RequiredFunctionToolCall,
+    RequiredMcpToolCall,
     RunStep,
-    RunStepDeltaCodeInterpreterDetailItemObject,
+    RunStepAzureAISearchToolCall,
+    RunStepBingGroundingToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
     RunStepDeltaCodeInterpreterToolCall,
     RunStepDeltaFileSearchToolCall,
     RunStepDeltaFunctionToolCall,
+    RunStepFileSearchToolCall,
     RunStepFunctionToolCall,
+    RunStepMcpToolCall,
+    RunStepOpenAPIToolCall,
     ThreadMessage,
     ThreadRun,
 )
 
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.annotation_content import AnnotationContent, CitationType
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -41,7 +47,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import (
+    from azure.ai.agents.models import (
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )
@@ -207,18 +213,23 @@ def get_function_call_contents(
     """
     function_call_contents: list[FunctionCallContent] = []
     required_action = getattr(run, "required_action", None)
-    if not required_action or not getattr(required_action, "submit_tool_outputs", False):
+    submit_tool_outputs = getattr(required_action, "submit_tool_outputs", None)
+    if not submit_tool_outputs or not hasattr(submit_tool_outputs, "tool_calls"):
         return function_call_contents
-    for tool_call in required_action.submit_tool_outputs.tool_calls:
-        tool: RunStepFunctionToolCall = tool_call
+    tool_calls = getattr(submit_tool_outputs, "tool_calls", [])
+    if not isinstance(tool_calls, (list, tuple)):
+        return function_call_contents
+    for tool_call in tool_calls:
+        if not isinstance(tool_call, RequiredFunctionToolCall):
+            continue
         fcc = FunctionCallContent(
-            id=tool.id,
-            index=getattr(tool, "index", None),
-            name=tool.function.name,
-            arguments=tool.function.arguments,
+            id=tool_call.id,
+            index=getattr(tool_call, "index", None),
+            name=tool_call.function.name,
+            arguments=tool_call.function.arguments,
         )
         function_call_contents.append(fcc)
-        function_steps[tool.id] = fcc
+        function_steps[tool_call.id] = fcc
     return function_call_contents
 
 
@@ -264,10 +275,122 @@ def generate_function_result_content(
             function_name=function_step.function_name,
             plugin_name=function_step.plugin_name,
             id=function_step.id,
-            result=tool_call.function.output,  # type: ignore
+            result=tool_call.function.get("output"),  # type: ignore
         )
     )
     return function_call_content
+
+
+@experimental
+def generate_bing_grounding_content(
+    agent_name: str, bing_tool_call: "RunStepBingGroundingToolCall"
+) -> ChatMessageContent:
+    """Generate function result content related to a Bing Grounding Tool."""
+    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    message_content.items.append(
+        FunctionCallContent(
+            id=bing_tool_call.id,
+            name=bing_tool_call.type,
+            function_name=bing_tool_call.type,
+            arguments=bing_tool_call.bing_grounding,
+        )
+    )
+    return message_content
+
+
+@experimental
+def generate_azure_ai_search_content(
+    agent_name: str, azure_ai_search_tool_call: "RunStepAzureAISearchToolCall"
+) -> ChatMessageContent | None:
+    """Generate function result content related to an Azure AI Search Tool."""
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    # Azure AI Search tool call contains both tool call input and output
+    arguments = azure_ai_search_tool_call.azure_ai_search.get("input")
+    if arguments:
+        items.append(
+            FunctionCallContent(
+                id=azure_ai_search_tool_call.id,
+                name=azure_ai_search_tool_call.type,
+                function_name=azure_ai_search_tool_call.type,
+                arguments=arguments,
+                inner_content=azure_ai_search_tool_call,
+            )
+        )
+    result = azure_ai_search_tool_call.azure_ai_search.get("output")
+    if result:
+        items.append(
+            FunctionResultContent(
+                function_name=azure_ai_search_tool_call.type,
+                id=azure_ai_search_tool_call.id,
+                result=result,
+                inner_content=azure_ai_search_tool_call,
+            )
+        )
+    return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=items) if items else None  # type: ignore
+
+
+@experimental
+def generate_file_search_content(
+    agent_name: str, file_search_tool_call: "RunStepFileSearchToolCall"
+) -> ChatMessageContent:
+    """Generate function result content related to an Azure AI Search Tool."""
+    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    # Azure AI Search tool call contains both tool call input and output
+    message_content.items.append(
+        FunctionCallContent(
+            id=file_search_tool_call.id,
+            name=file_search_tool_call.type,
+            function_name=file_search_tool_call.type,
+            arguments=file_search_tool_call.file_search.get("ranking_options", None),
+        )
+    )
+    message_content.items.append(
+        FunctionResultContent(
+            function_name=file_search_tool_call.type,
+            id=file_search_tool_call.id,
+            result=file_search_tool_call.file_search.get("results", None),
+        )
+    )
+    return message_content
+
+
+@experimental
+def generate_openapi_content(agent_name: str, openapi_tool_call: RunStepOpenAPIToolCall) -> ChatMessageContent:
+    """Generate ChatMessageContent for a non-streaming OpenAPI tool call."""
+    tool_id = openapi_tool_call.get("id")
+    tool_type = openapi_tool_call.get("type", "openapi")
+    function: dict[str, Any] = openapi_tool_call.get("function", {})
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    arguments = function.get("arguments")
+    if arguments:
+        items.append(
+            FunctionCallContent(
+                id=tool_id,
+                name=tool_type,
+                function_name=function.get("name"),
+                arguments=arguments,
+            )
+        )
+
+    output = function.get("output")
+    if output:
+        items.append(
+            FunctionResultContent(
+                function_name=function.get("name"),
+                id=tool_id,
+                name=tool_type,
+                result=output,
+            )
+        )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=items,  # type: ignore
+        name=agent_name,
+    )
 
 
 @experimental
@@ -338,6 +461,191 @@ def generate_streaming_function_content(
 
 
 @experimental
+def generate_streaming_bing_grounding_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate StreamingChatMessageContent for Bing Grounding tool calls, filtering out empty results."""
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent] = []
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type != "bing_grounding":
+            continue
+
+        arguments = tool.get("bing_grounding", {}) or {}
+        requesturl = arguments.get("requesturl", "")
+        response_metadata = arguments.get("response_metadata", None)
+
+        # Only skip if BOTH are missing/empty
+        if requesturl == "" and response_metadata is None:
+            continue
+
+        items.append(
+            FunctionCallContent(
+                id=tool.id,
+                index=index,
+                name=tool.type,
+                function_name=tool.type,
+                arguments=arguments,
+            )
+        )
+
+    if not items:
+        return None
+
+    return StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        choice_index=0,
+        items=items,  # type: ignore
+    )
+
+
+@experimental
+def generate_streaming_azure_ai_search_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate function result content related to a Bing Grounding Tool."""
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "azure_ai_search":
+            azure_ai_search_tool = cast(RunStepAzureAISearchToolCall, tool)
+            azure_ai_search_dict: dict = azure_ai_search_tool.get("azure_ai_search", None)
+            arguments = azure_ai_search_dict.get("input", {}) if azure_ai_search_dict else None
+            if arguments:
+                items.append(
+                    FunctionCallContent(
+                        id=azure_ai_search_tool.id,
+                        index=index,
+                        name=azure_ai_search_tool.type,
+                        function_name=azure_ai_search_tool.type,
+                        arguments=arguments,
+                        inner_content=azure_ai_search_tool,
+                    )
+                )
+            result = azure_ai_search_dict.get("output", {}) if azure_ai_search_dict else None
+            if result:
+                items.append(
+                    FunctionResultContent(
+                        function_name=azure_ai_search_tool.type,
+                        id=azure_ai_search_tool.id,
+                        result=result,
+                        inner_content=azure_ai_search_tool,
+                    )
+                )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            choice_index=0,
+            items=items,  # type: ignore
+        )
+        if items
+        else None
+    )  # type: ignore
+
+
+@experimental
+def generate_streaming_file_search_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate function result content related to a File Search Tool."""
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "file_search":
+            file_search_tool = cast(RunStepFileSearchToolCall, tool)
+            arguments = getattr(file_search_tool, "file_search", None)
+            results: list[Any] = []
+            if arguments is not None:
+                results = arguments.pop("results", None)
+            items.append(
+                FunctionCallContent(
+                    id=file_search_tool.id,
+                    index=index,
+                    name=file_search_tool.type,
+                    function_name=file_search_tool.type,
+                    arguments=arguments,
+                )
+            )
+            items.append(
+                FunctionResultContent(
+                    function_name=file_search_tool.type,
+                    id=file_search_tool.id,
+                    name=file_search_tool.type,
+                    result=results,
+                )
+            )
+
+    return StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        choice_index=0,
+        items=items,  # type: ignore
+    )
+
+
+@experimental
+def generate_streaming_openapi_content(
+    agent_name: str,
+    step_details: "RunStepDeltaToolCallObject",
+) -> "StreamingChatMessageContent | None":
+    """Generate OpenAPI content for streaming function/tool call messages."""
+    if not getattr(step_details, "tool_calls", None):
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []  # type: ignore
+
+    for index, tool in enumerate(step_details.tool_calls or []):
+        if tool.get("type") != "openapi":
+            continue
+
+        func: dict[str, Any] = tool.get("function")
+        tool_id = tool.get("id")
+        arguments = func.get("arguments") if func else None
+        if arguments:
+            items.append(
+                FunctionCallContent(
+                    id=tool_id,
+                    index=index,
+                    name="openapi",
+                    function_name=func.get("name") if func else None,
+                    arguments=arguments,
+                )
+            )
+
+        output = func.get("output") if func else None
+        if output:
+            items.append(
+                FunctionResultContent(
+                    function_name=func.get("name") if func else None,
+                    id=tool_id,
+                    name="openapi",
+                    result=output,
+                )
+            )
+
+    if not items:
+        return None
+
+    return StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        choice_index=0,
+        items=items,  # type: ignore
+    )
+
+
+@experimental
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> "StreamingChatMessageContent | None":
@@ -357,8 +665,10 @@ def generate_streaming_code_interpreter_content(
 
     metadata: dict[str, bool] = {}
     for index, tool in enumerate(step_details.tool_calls):
-        if isinstance(tool, RunStepDeltaCodeInterpreterDetailItemObject):
-            code_interpreter_tool_call = tool
+        if isinstance(tool, RunStepDeltaCodeInterpreterToolCall):
+            code_interpreter_tool_call = tool.code_interpreter
+            if code_interpreter_tool_call is None:
+                continue
             if code_interpreter_tool_call.input:
                 items.append(
                     StreamingTextContent(
@@ -404,22 +714,30 @@ def generate_streaming_code_interpreter_content(
 def generate_annotation_content(
     annotation: MessageTextFilePathAnnotation | MessageTextFileCitationAnnotation | MessageTextUrlCitationAnnotation,
 ) -> AnnotationContent:
-    """Generate annotation content."""
+    """Generate annotation content with safe attribute access."""
     file_id = None
     url = None
-    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
+    title = None
+    citation_type = None
+    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path:
         file_id = annotation.file_path.file_id
-    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
+        citation_type = CitationType.FILE_PATH
+    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation:
         file_id = annotation.file_citation.file_id
-    elif isinstance(annotation, MessageTextUrlCitationAnnotation) and annotation.url_citation is not None:
-        url = annotation.url_citation.url if annotation.url_citation.url else None
+        citation_type = CitationType.FILE_CITATION
+    elif isinstance(annotation, MessageTextUrlCitationAnnotation) and annotation.url_citation:
+        url = annotation.url_citation.url
+        title = annotation.url_citation.title
+        citation_type = CitationType.URL_CITATION
 
     return AnnotationContent(
         file_id=file_id,
-        quote=annotation.text,
-        start_index=annotation.start_index if annotation.start_index is not None else None,
-        end_index=annotation.end_index if annotation.end_index is not None else None,
+        quote=getattr(annotation, "text", None),
+        start_index=getattr(annotation, "start_index", None),
+        end_index=getattr(annotation, "end_index", None),
         url=url,
+        title=title,
+        citation_type=citation_type,
     )
 
 
@@ -429,24 +747,169 @@ def generate_streaming_annotation_content(
     | MessageDeltaTextFileCitationAnnotation
     | MessageDeltaTextUrlCitationAnnotation,
 ) -> StreamingAnnotationContent:
-    """Generate streaming annotation content."""
+    """Generate streaming annotation content with defensive checks."""
     file_id = None
     url = None
     quote = None
+    title = None
+    citation_type = None
     if isinstance(annotation, MessageDeltaTextFilePathAnnotation) and annotation.file_path:
-        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
-        quote = annotation.text if annotation.text else None
+        file_id = annotation.file_path.file_id
+        quote = getattr(annotation, "text", None)
+        citation_type = CitationType.FILE_PATH
     elif isinstance(annotation, MessageDeltaTextFileCitationAnnotation) and annotation.file_citation:
-        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
-        quote = annotation.text if annotation.text else None
+        file_id = annotation.file_citation.file_id
+        quote = getattr(annotation, "text", None)
+        citation_type = CitationType.FILE_CITATION
     elif isinstance(annotation, MessageDeltaTextUrlCitationAnnotation) and annotation.url_citation:
-        url = annotation.url_citation.url if annotation.url_citation.url else None
-        quote = annotation.url_citation.title if annotation.url_citation.title else None
+        url = annotation.url_citation.url
+        title = annotation.url_citation.title
+        quote = annotation.get("text", None)
+        citation_type = CitationType.URL_CITATION
 
     return StreamingAnnotationContent(
         file_id=file_id,
         quote=quote,
-        start_index=annotation.start_index if annotation.start_index is not None else None,
-        end_index=annotation.end_index if annotation.end_index is not None else None,
+        start_index=getattr(annotation, "start_index", None),
+        end_index=getattr(annotation, "end_index", None),
         url=url,
+        title=title,
+        citation_type=citation_type,
     )
+
+
+@experimental
+def generate_mcp_content(agent_name: str, mcp_tool_call: RunStepMcpToolCall) -> ChatMessageContent:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_call: The MCP tool call.
+
+    Returns:
+        The generated content.
+    """
+    mcp_result = FunctionResultContent(
+        function_name=mcp_tool_call.name,
+        id=mcp_tool_call.id,
+        result=mcp_tool_call.output,
+    )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=[mcp_result],
+        inner_content=mcp_tool_call,  # type: ignore
+    )
+
+
+@experimental
+def generate_mcp_call_content(agent_name: str, mcp_tool_calls: list[RequiredMcpToolCall]) -> ChatMessageContent:
+    """Generate MCP tool call content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The MCP tool calls.
+
+    Returns:
+        The generated content.
+    """
+    content_items: list[FunctionCallContent] = []
+    for mcp_call in mcp_tool_calls:
+        content_items.append(
+            FunctionCallContent(
+                id=mcp_call.id,
+                name=mcp_call.name,
+                function_name=mcp_call.name,
+                arguments=mcp_call.arguments,
+                server_label=mcp_call.server_label,
+            )
+        )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=content_items,  # type: ignore
+    )
+
+
+@experimental
+def generate_streaming_mcp_call_content(
+    agent_name: str, mcp_tool_calls: list["RequiredMcpToolCall"]
+) -> "StreamingChatMessageContent | None":
+    """Generate streaming MCP content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The mcp tool call details.
+
+    Returns:
+        The generated streaming content.
+    """
+    items: list[FunctionCallContent] = []
+    for index, tool in enumerate(mcp_tool_calls or []):
+        if isinstance(tool, RequiredMcpToolCall):
+            items.append(
+                FunctionCallContent(
+                    id=tool.id,
+                    index=index,
+                    name=tool.name,
+                    function_name=tool.name,
+                    arguments=tool.arguments,
+                    server_label=tool.server_label,
+                )
+            )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )
+
+
+@experimental
+def generate_streaming_mcp_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        step_details: The steps details with mcp tool call.
+
+    Returns:
+        The generated content.
+    """
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionResultContent] = []
+
+    for _, tool in enumerate(step_details.tool_calls):
+        if tool.type == "mcp":
+            mcp_tool_call = cast(RunStepMcpToolCall, tool)
+            if not mcp_tool_call.get("output"):
+                continue
+            mcp_result = FunctionResultContent(
+                function_name=mcp_tool_call.get("name"),
+                id=mcp_tool_call.get("id"),
+                result=mcp_tool_call.get("output"),
+            )
+            items.append(mcp_result)
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            inner_content=mcp_tool_call,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )  # type: ignore

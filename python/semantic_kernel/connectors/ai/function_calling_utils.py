@@ -59,6 +59,24 @@ def kernel_function_metadata_to_function_call_format(
     }
 
 
+def kernel_function_metadata_to_response_function_call_format(
+    metadata: "KernelFunctionMetadata",
+) -> dict[str, Any]:
+    """Convert the kernel function metadata to function calling format."""
+    return {
+        "type": "function",
+        "name": metadata.fully_qualified_name,
+        "description": metadata.description or "",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                param.name: param.schema_data for param in metadata.parameters if param.include_in_function_choices
+            },
+            "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
+        },
+    }
+
+
 def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
     """Combine multiple filter dictionaries with list values into one dictionary.
 

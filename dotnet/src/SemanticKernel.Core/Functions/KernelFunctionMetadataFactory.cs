@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// Provides factory methods for creating collections of <see cref="KernelFunctionMetadata"/>, such as
 /// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class KernelFunctionMetadataFactory
 {
     /// <summary>
@@ -63,7 +62,6 @@ public static class KernelFunctionMetadataFactory
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    [Experimental("SKEXP0120")]
     public static IEnumerable<KernelFunctionMetadata> CreateFromType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type instanceType, JsonSerializerOptions jsonSerializerOptions, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(instanceType);

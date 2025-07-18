@@ -137,14 +137,21 @@ internal sealed class MapActor : StepActor, IMap
             string eventName = processEvent.SourceId;
             if (capturedEvents.TryGetValue(eventName, out Type? resultType))
             {
+                var eventData = processEvent.Data;
+                if (resultType == typeof(KernelProcessEventData) && eventData is KernelProcessEventData kernelProcessData)
+                {
+                    eventData = kernelProcessData.ToObject();
+                    resultType = Type.GetType(kernelProcessData.ObjectType);
+                }
+
                 if (!resultMap.TryGetValue(eventName, out Array? results))
                 {
-                    results = Array.CreateInstance(resultType, mapOperations.Count);
+                    results = Array.CreateInstance(resultType!, mapOperations.Count);
                     resultMap[eventName] = results;
                 }
 
                 resultCounts.TryGetValue(eventName, out int resultIndex); // resultIndex defaults to 0 when not found
-                results.SetValue(processEvent.Data, resultIndex);
+                results.SetValue(eventData, resultIndex);
                 resultCounts[eventName] = resultIndex + 1;
             }
         }

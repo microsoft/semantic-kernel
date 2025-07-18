@@ -45,7 +45,7 @@ class TestBedrockAgentIntegration:
     @pytest.mark.asyncio
     async def test_invoke(self):
         """Test invoke of the agent."""
-        async for response in self.bedrock_agent.invoke("Hello"):
+        async for response in self.bedrock_agent.invoke(messages="Hello"):
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
@@ -53,7 +53,7 @@ class TestBedrockAgentIntegration:
     @pytest.mark.asyncio
     async def test_invoke_stream(self):
         """Test invoke stream of the agent."""
-        async for response in self.bedrock_agent.invoke_stream("Hello"):
+        async for response in self.bedrock_agent.invoke_stream(messages="Hello"):
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
@@ -71,7 +71,7 @@ Monkey  6
 Dolphin  2
 """
         binary_item: BinaryContent | None = None
-        async for response in self.bedrock_agent.invoke(input_text):
+        async for response in self.bedrock_agent.invoke(messages=input_text):
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             if not binary_item:
@@ -92,7 +92,7 @@ Monkey  6
 Dolphin  2
 """
         binary_item: BinaryContent | None = None
-        async for response in self.bedrock_agent.invoke_stream(input_text):
+        async for response in self.bedrock_agent.invoke_stream(messages=input_text):
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             binary_item = next((item for item in response.message.items if isinstance(item, BinaryContent)), None)
@@ -112,7 +112,7 @@ Dolphin  2
     async def test_function_calling(self):
         """Test function calling."""
         async for response in self.bedrock_agent.invoke(
-            "What is the weather in Seattle?",
+            messages="What is the weather in Seattle?",
         ):
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
@@ -133,7 +133,7 @@ Dolphin  2
         """Test function calling streaming."""
         full_message: str = ""
         async for response in self.bedrock_agent.invoke_stream(
-            "What is the weather in Seattle?",
+            messages="What is the weather in Seattle?",
         ):
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT

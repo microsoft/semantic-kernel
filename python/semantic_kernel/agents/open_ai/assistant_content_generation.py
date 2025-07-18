@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
@@ -50,7 +51,7 @@ async def create_chat_message(
     client: AsyncOpenAI,
     thread_id: str,
     message: "ChatMessageContent",
-    allowed_message_roles: list[str] = [AuthorRole.USER, AuthorRole.ASSISTANT],
+    allowed_message_roles: Sequence[str] | None = None,
 ) -> "Message":
     """Class method to add a chat message, callable from class or instance.
 
@@ -59,10 +60,15 @@ async def create_chat_message(
         thread_id: The thread id.
         message: The chat message.
         allowed_message_roles: The allowed message roles.
+            Defaults to [AuthorRole.USER, AuthorRole.ASSISTANT] if None.
+            Providing an empty list will disallow all message roles.
 
     Returns:
         Message: The message.
     """
+    # Set the default allowed message roles if not provided
+    if allowed_message_roles is None:
+        allowed_message_roles = [AuthorRole.USER, AuthorRole.ASSISTANT]
     if message.role.value not in allowed_message_roles and message.role != AuthorRole.TOOL:
         raise AgentExecutionException(
             f"Invalid message role `{message.role.value}`. Allowed roles are {allowed_message_roles}."
@@ -264,6 +270,71 @@ def generate_final_streaming_message_content(
             )
 
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
+
+
+@experimental
+def merge_function_results(messages: list["ChatMessageContent"], name: str) -> "ChatMessageContent":
+    """Combine multiple function result content types to one chat message content type.
+
+    This method combines the FunctionResultContent items from separate ChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+
+    Args:
+        messages: The list of chat messages.
+        name: The name of the agent.
+
+    Returns:
+        list[ChatMessageContent]: The combined chat message content.
+    """
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+    return ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=items,
+        name=name,
+    )
+
+
+@experimental
+def merge_streaming_function_results(
+    messages: list["ChatMessageContent | StreamingChatMessageContent"],
+    name: str,
+    ai_model_id: str | None = None,
+    function_invoke_attempt: int | None = None,
+) -> "StreamingChatMessageContent":
+    """Combine multiple streaming function result content types to one streaming chat message content type.
+
+    This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+
+    Args:
+        messages: The list of streaming chat message content types.
+        name: The name of the agent.
+        ai_model_id: The AI model ID.
+        function_invoke_attempt: The function invoke attempt.
+
+    Returns:
+        The combined streaming chat message content type.
+    """
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+
+    return StreamingChatMessageContent(
+        name=name,
+        role=AuthorRole.TOOL,
+        items=items,
+        choice_index=0,
+        ai_model_id=ai_model_id,
+        function_invoke_attempt=function_invoke_attempt,
+    )
 
 
 @experimental

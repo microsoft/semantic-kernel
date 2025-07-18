@@ -12,9 +12,13 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
+from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
@@ -204,6 +208,34 @@ through prompt_template_config or in the prompt_template."
             )
             return
 
+        if isinstance(prompt_render_result.ai_service, TextToImageClientBase):
+            try:
+                images = await prompt_render_result.ai_service.get_image_content(
+                    description=unescape(prompt_render_result.rendered_prompt),
+                    settings=prompt_render_result.execution_settings,
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            context.result = self._create_function_result(
+                completions=[images], arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
+            )
+            return
+
+        if isinstance(prompt_render_result.ai_service, TextToAudioClientBase):
+            try:
+                audio = await prompt_render_result.ai_service.get_audio_content(
+                    text=unescape(prompt_render_result.rendered_prompt),
+                    settings=prompt_render_result.execution_settings,
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            context.result = self._create_function_result(
+                completions=[audio], arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
+            )
+            return
+
         raise ValueError(f"Service `{type(prompt_render_result.ai_service).__name__}` is not a valid AI service")
 
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
@@ -253,7 +285,9 @@ through prompt_template_config or in the prompt_template."
         if prompt_render_context.rendered_prompt is None:
             raise PromptRenderingException("Prompt rendering failed, no rendered prompt was returned.")
         selected_service: tuple["AIServiceClientBase", PromptExecutionSettings] = context.kernel.select_ai_service(
-            function=self, arguments=context.arguments
+            function=self,
+            arguments=context.arguments,
+            type=(TextCompletionClientBase, ChatCompletionClientBase) if prompt_render_context.is_streaming else None,
         )
         return PromptRenderingResult(
             rendered_prompt=prompt_render_context.rendered_prompt,
@@ -268,7 +302,7 @@ through prompt_template_config or in the prompt_template."
 
     def _create_function_result(
         self,
-        completions: list[ChatMessageContent] | list[TextContent],
+        completions: list[ChatMessageContent] | list[TextContent] | list[ImageContent] | list[AudioContent],
         arguments: KernelArguments,
         chat_history: ChatHistory | None = None,
         prompt: str | None = None,

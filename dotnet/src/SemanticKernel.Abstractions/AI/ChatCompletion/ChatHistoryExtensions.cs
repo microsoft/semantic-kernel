@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Extension methods for chat history.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class ChatHistoryExtensions
 {
     /// <summary>
@@ -79,5 +78,69 @@ public static class ChatHistoryExtensions
         }
 
         return chatHistory;
+    }
+
+    /// <summary>Converts a <see cref="ChatHistory"/> to a <see cref="ChatMessage"/> list.</summary>
+    /// <param name="chatHistory">The chat history to convert.</param>
+    /// <returns>A list of <see cref="ChatMessage"/> objects.</returns>
+    internal static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
+        => chatHistory.Select(m => m.ToChatMessage()).ToList();
+
+    internal static void SetChatMessageHandlers(this ChatHistory chatHistory, IList<ChatMessage> messages)
+    {
+        chatHistory.SetOverrides(Add, Remove, Clear, Insert, RemoveAt, RemoveRange, AddRange);
+
+        void Add(ChatMessageContent item)
+        {
+            messages.Add(item.ToChatMessage());
+        }
+
+        void Clear()
+        {
+            messages.Clear();
+        }
+
+        bool Remove(ChatMessageContent item)
+        {
+            var index = chatHistory.IndexOf(item);
+
+            if (index < 0)
+            {
+                return false;
+            }
+
+            messages.RemoveAt(index);
+
+            return true;
+        }
+
+        void Insert(int index, ChatMessageContent item)
+        {
+            messages.Insert(index, item.ToChatMessage());
+        }
+
+        void RemoveAt(int index)
+        {
+            messages.RemoveAt(index);
+        }
+
+        void RemoveRange(int index, int count)
+        {
+            if (messages is List<ChatMessage> messageList)
+            {
+                messageList.RemoveRange(index, count);
+                return;
+            }
+
+            foreach (var chatMessage in messages.Skip(index).Take(count))
+            {
+                messages.Remove(chatMessage);
+            }
+        }
+
+        void AddRange(IEnumerable<ChatMessageContent> items)
+        {
+            messages.AddRange(items.Select(i => i.ToChatMessage()));
+        }
     }
 }

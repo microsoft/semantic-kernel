@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.OpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010,OPENAI001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
@@ -37,11 +37,12 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Already gets included by Connectors.OpenAI which has [InternalsVisibleTo] to this project, causing CS1685 on RuntimeHelpers -->
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

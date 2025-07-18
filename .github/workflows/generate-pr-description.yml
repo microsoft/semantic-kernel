@@ -17,7 +17,7 @@ jobs:
         id: comment-branch
 
       - name: Set latest commit status as pending
-        uses: myrotvorets/set-commit-status-action@master
+        uses: myrotvorets/set-commit-status-action@v2.0.1
         with:
           sha: ${{ steps.comment-branch.outputs.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +36,7 @@ jobs:
           AZURE_OPENAI_API_KEY: ${{ secrets.AZUREOPENAI__APIKEY }}
       
       - name: Set latest commit status as ${{ job.status }}
-        uses: myrotvorets/set-commit-status-action@master
+        uses: myrotvorets/set-commit-status-action@v2.0.1
         if: always()
         with:
           sha: ${{ steps.comment-branch.outputs.head_sha }}

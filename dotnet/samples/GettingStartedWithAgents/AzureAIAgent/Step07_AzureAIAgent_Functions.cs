@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -18,7 +19,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task UseSingleAgentWithFunctionToolsAsync()
+    public async Task UseSingleAgentWithFunctionTools()
     {
         // Define the agent
         // In this sample the function tools are added to the agent this is
@@ -27,19 +28,19 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
-        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             model: TestConfiguration.AzureAI.ChatModelId,
             name: HostName,
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -52,7 +53,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

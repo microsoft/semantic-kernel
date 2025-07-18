@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
@@ -40,6 +40,30 @@ class OpenAITextToImageExecutionSettings(PromptExecutionSettings):
     size: ImageSize | None = None
     quality: str | None = None
     style: str | None = None
+    output_compression: int | None = None
+    background: Literal["transparent", "opaque", "auto"] | None = None
+    n: int | None = Field(default=1, ge=1, le=10)
+    moderation: Literal["auto", "low"] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def get_size(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Check that the requested image size is valid."""
+        if isinstance(data, dict):
+            if "size" not in data and "width" in data and "height" in data:
+                data["size"] = ImageSize(width=data["width"], height=data["height"])
+            elif "extension_data" in data:
+                extension_data = data["extension_data"]
+                if (
+                    isinstance(extension_data, dict)
+                    and "size" not in extension_data
+                    and "width" in extension_data
+                    and "height" in extension_data
+                ):
+                    data["extension_data"]["size"] = ImageSize(
+                        width=extension_data["width"], height=extension_data["height"]
+                    )
+        return data
 
     @model_validator(mode="after")
     def check_size(self) -> "OpenAITextToImageExecutionSettings":
@@ -48,16 +72,6 @@ class OpenAITextToImageExecutionSettings(PromptExecutionSettings):
 
         if size is not None and (size.width, size.height) not in VALID_IMAGE_SIZES:
             raise ServiceInvalidExecutionSettingsError(f"Invalid image size: {size.width}x{size.height}.")
-
-        return self
-
-    @model_validator(mode="after")
-    def check_prompt(self) -> "OpenAITextToImageExecutionSettings":
-        """Check that the prompt is not empty."""
-        prompt = self.prompt or self.extension_data.get("prompt")
-
-        if not prompt:
-            raise ServiceInvalidExecutionSettingsError("The prompt is required.")
 
         return self
 

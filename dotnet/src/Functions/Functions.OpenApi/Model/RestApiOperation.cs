@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>
@@ -47,6 +45,19 @@ public sealed class RestApiOperation
         {
             this._freezable.ThrowIfFrozen();
             this._description = value;
+        }
+    }
+
+    /// <summary>
+    /// The operation summary.
+    /// </summary>
+    public string? Summary
+    {
+        get => this._summary;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._summary = value;
         }
     }
 
@@ -401,6 +412,7 @@ public sealed class RestApiOperation
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
     private readonly Freezable _freezable = new();
     private string? _description;
+    private string? _summary;
 
     #endregion
 }

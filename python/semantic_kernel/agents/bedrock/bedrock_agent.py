@@ -4,7 +4,7 @@
 import asyncio
 import logging
 import sys
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Awaitable, Callable
 from functools import partial, reduce
 from typing import Any, ClassVar
 
@@ -15,7 +15,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents import AgentResponseItem, AgentThread
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -207,7 +207,7 @@ class BedrockAgent(BedrockAgentBase):
             An instance of BedrockAgent with the created agent.
         """
         try:
-            bedrock_agent_settings = BedrockAgentSettings.create(
+            bedrock_agent_settings = BedrockAgentSettings(
                 agent_resource_role_arn=agent_resource_role_arn,
                 foundation_model=foundation_model,
                 env_file_path=env_file_path,
@@ -261,8 +261,8 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
@@ -359,8 +359,9 @@ class BedrockAgent(BedrockAgentBase):
     async def invoke(
         self,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
-        thread: AgentThread | None = None,
         *,
+        thread: AgentThread | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -371,6 +372,7 @@ class BedrockAgent(BedrockAgentBase):
         Args:
             messages (str | ChatMessageContent | list[str | ChatMessageContent]): The messages.
             thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
+            on_new_message: A callback function to handle intermediate steps of the agent's execution.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
             kernel (Kernel, optional): The kernel to override the current kernel.
@@ -381,6 +383,9 @@ class BedrockAgent(BedrockAgentBase):
         """
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
+
+        if on_new_message:
+            logger.warning("The on_new_message callback is not supported for BedrockAgent.")
 
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
@@ -458,8 +463,9 @@ class BedrockAgent(BedrockAgentBase):
     async def invoke_stream(
         self,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
-        thread: AgentThread | None = None,
         *,
+        thread: AgentThread | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -470,6 +476,8 @@ class BedrockAgent(BedrockAgentBase):
         Args:
             messages (str | ChatMessageContent | list[str | ChatMessageContent]): The messages.
             thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
+            on_new_message: A callback function to handle intermediate steps of the
+                            agent's execution as fully formed messages.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
             kernel (Kernel, optional): The kernel to override the current kernel.
@@ -480,6 +488,9 @@ class BedrockAgent(BedrockAgentBase):
         """
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
+
+        if on_new_message:
+            logger.warning("The on_new_message callback is not supported for BedrockAgent.")
 
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,

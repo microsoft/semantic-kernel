@@ -178,3 +178,14 @@ def test_it_adds_security_metadata_to_operation(document_file_name, security_typ
                 if found:
                     break
             assert found, f"Security type '{security_type}' not found in operation '{operation.id}'"
+
+
+def test_no_operationid_raises_error():
+    """Test that OpenAPI spec without operationId raises PluginInitializationError."""
+    no_op_path = os.path.join(current_dir, "no-operationid-openapi.yaml")
+    with pytest.raises(PluginInitializationError, match="operationId missing"):
+        create_functions_from_openapi(
+            plugin_name="noOpTest",
+            openapi_document_path=no_op_path,
+            execution_settings=None,
+        )

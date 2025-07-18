@@ -9,7 +9,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import sentence_transformers
 import torch
 from numpy import ndarray
 
@@ -49,12 +48,17 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        from sentence_transformers import SentenceTransformer
+
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
             service_id=service_id or ai_model_id,
             device=resolved_device,
-            generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
+            generator=SentenceTransformer(  # type: ignore
+                model_name_or_path=ai_model_id,
+                device=resolved_device,
+            ),
         )
 
     @override

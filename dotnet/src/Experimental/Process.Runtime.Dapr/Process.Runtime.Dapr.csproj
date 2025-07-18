@@ -21,6 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\..\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
   </ItemGroup>

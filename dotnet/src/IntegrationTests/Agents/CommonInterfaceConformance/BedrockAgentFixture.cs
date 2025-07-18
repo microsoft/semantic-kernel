@@ -18,7 +18,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
-internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
+public sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -37,7 +37,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
     private readonly AmazonBedrockAgentClient _client = new();
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
 
-    public override Microsoft.SemanticKernel.Agents.KernelAgent Agent => this._agent!;
+    public override Microsoft.SemanticKernel.Agents.Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
@@ -46,6 +46,11 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
+
+    public override AgentThread GetNewThread()
+    {
+        return new BedrockAgentThread(this._runtimeClient);
+    }
 
     public override async Task DeleteThread(AgentThread thread)
     {

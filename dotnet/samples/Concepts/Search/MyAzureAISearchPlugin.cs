@@ -6,6 +6,7 @@ using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Models;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
@@ -34,7 +35,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
         kernelBuilder.Services.AddSingleton<IAzureAISearchService, AzureAISearchService>();
 
         // Embedding generation service to convert string query to vector
-        kernelBuilder.AddOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.AddOpenAIEmbeddingGenerator("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey);
 
         // Chat completion service to ask questions based on data from Azure AI Search index.
         kernelBuilder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
@@ -160,10 +161,10 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
     /// It uses <see cref="IAzureAISearchService"/> to perform a request to Azure AI Search.
     /// </summary>
     private sealed class MyAzureAISearchPlugin(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         AzureAISearchPlugin.IAzureAISearchService searchService)
     {
-        private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService = textEmbeddingGenerationService;
+        private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
         private readonly IAzureAISearchService _searchService = searchService;
 
         [KernelFunction("Search")]
@@ -174,7 +175,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
             CancellationToken cancellationToken = default)
         {
             // Convert string query to vector
-            ReadOnlyMemory<float> embedding = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken);
+            ReadOnlyMemory<float> embedding = (await this._embeddingGenerator.GenerateAsync(query, cancellationToken: cancellationToken)).Vector;
 
             // Perform search
             return await this._searchService.SearchAsync(collection, embedding, searchFields, cancellationToken) ?? string.Empty;

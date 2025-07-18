@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Embeddings;
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
 [Experimental("SKEXP0001")]
+[Obsolete("Use Microsoft.Extensions.AI.IEmbeddingGenerator<string, Embedding<float>> instead.")]
 public static class EmbeddingGenerationExtensions
 {
     /// <summary>
@@ -177,9 +178,9 @@ public static class EmbeddingGenerationExtensions
             {
                 attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
             }
-            if (metadata?.ModelId is not null)
+            if (metadata?.DefaultModelId is not null)
             {
-                attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
+                attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
             }
         }
 

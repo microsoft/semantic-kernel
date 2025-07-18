@@ -33,7 +33,8 @@ class FunctionResultContent(KernelContent):
 
     content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
-    id: str
+    id: str | None = None
+    call_id: str | None = None
     result: Any
     name: str | None = None
     function_name: str
@@ -45,6 +46,7 @@ class FunctionResultContent(KernelContent):
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
+        call_id: str | None = None,
         name: str | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
@@ -59,6 +61,7 @@ class FunctionResultContent(KernelContent):
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call that the result relates to.
+            call_id (str | None): The call id of the function call from the Responses API.
             name (str | None): The name of the function.
                 When not supplied function_name and plugin_name should be supplied.
             function_name (str | None): The function name.
@@ -87,6 +90,8 @@ class FunctionResultContent(KernelContent):
             "result": result,
             "encoding": encoding,
         }
+        if call_id:
+            args["call_id"] = call_id
         if metadata:
             args["metadata"] = metadata
 
@@ -99,7 +104,8 @@ class FunctionResultContent(KernelContent):
     def to_element(self) -> Element:
         """Convert the instance to an Element."""
         element = Element(self.tag)
-        element.set("id", self.id)
+        if self.id:
+            element.set("id", self.id)
         if self.name:
             element.set("name", self.name)
         element.text = str(self.result)
@@ -117,14 +123,15 @@ class FunctionResultContent(KernelContent):
         cls: type[_T],
         function_call_content: "FunctionCallContent",
         result: "FunctionResult | TextContent | ChatMessageContent | Any",
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
     ) -> _T:
         """Create an instance from a FunctionCallContent and a result."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
         from semantic_kernel.functions.function_result import FunctionResult
 
-        metadata.update(function_call_content.metadata or {})
-        metadata.update(getattr(result, "metadata", {}))
+        metadata = metadata or {}
+        metadata = metadata | (function_call_content.metadata or {})
+        metadata = metadata | getattr(result, "metadata", {})
         inner_content = result
         if isinstance(result, FunctionResult):
             result = result.value
@@ -142,6 +149,7 @@ class FunctionResultContent(KernelContent):
             res = result
         return cls(
             id=function_call_content.id or "unknown",
+            call_id=function_call_content.call_id if hasattr(function_call_content, "call_id") else None,
             inner_content=inner_content,
             result=res,
             function_name=function_call_content.function_name,
@@ -162,7 +170,7 @@ class FunctionResultContent(KernelContent):
 
         return StreamingChatMessageContent(role=AuthorRole.TOOL, choice_index=0, items=[self])
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
         return {
             "tool_call_id": self.id,

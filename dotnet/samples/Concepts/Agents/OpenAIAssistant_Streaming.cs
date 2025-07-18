@@ -107,14 +107,15 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
 
         bool isFirst = false;
         bool isCode = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new() { OnNewMessage = OnNewMessage }))
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new() { OnIntermediateMessage = OnNewMessage }))
         {
             if (string.IsNullOrEmpty(response.Content))
             {
                 StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
-                if (functionCall != null)
+                if (functionCall?.Name != null)
                 {
-                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                    (string? pluginName, string functionName) = this.ParseFunctionName(functionCall.Name);
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {$"{pluginName}." ?? string.Empty}{functionName}");
                 }
 
                 continue;
@@ -161,11 +162,12 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+            return
+                """
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                """;
         }
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]

@@ -14,7 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -228,7 +228,7 @@ def test_create_options_azure_data():
 
 
 def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
-    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings())
     extra = ExtraBody(data_sources=[az_source])
     assert extra["data_sources"] is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)

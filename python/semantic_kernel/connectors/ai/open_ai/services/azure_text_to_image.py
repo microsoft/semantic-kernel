@@ -60,7 +60,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
             env_file_encoding: The encoding of the environment settings file. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 api_key=api_key,

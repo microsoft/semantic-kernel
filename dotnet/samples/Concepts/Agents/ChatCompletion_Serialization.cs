@@ -13,8 +13,10 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
 
-    [Fact]
-    public async Task SerializeAndRestoreAgentGroupChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
@@ -22,7 +24,7 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
             {
                 Instructions = HostInstructions,
                 Name = HostName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -50,6 +52,8 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
         {
             this.WriteAgentChatMessage(content);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(AgentGroupChat chat, string input)

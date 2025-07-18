@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
           - { dotnet: "9.0", configuration: Release, os: ubuntu-latest }
 
     runs-on: ${{ matrix.os }}
@@ -74,11 +73,11 @@ jobs:
               done
             done
           else
-            # if the changed-files step failed, run dotnet on the whole sln instead of specific projects
-            csproj_files=$(find ./ -type f -name "*.sln" | tr '\n' ' ');
+            # if the changed-files step failed, run dotnet on the whole slnx instead of specific projects
+            csproj_files=$(find ./ -type f -name "*.slnx" | tr '\n' ' ');
           fi
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
-          echo "Found ${#csproj_files[@]} unique csproj/sln files: ${csproj_files[*]}"
+          echo "Found ${#csproj_files[@]} unique csproj/slnx files: ${csproj_files[*]}"
           echo "::set-output name=csproj_files::${csproj_files[*]}"
 
       - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
