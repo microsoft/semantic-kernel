@@ -112,6 +112,9 @@ public sealed class GeminiPromptExecutionSettingsTests
                           ],
                           "thinking_config": {
                             "thinking_budget": 1000
+                          },
+                          "grounding_config": {
+                            "google_search": {}
                           }
                         }
                         """;
@@ -134,6 +137,7 @@ public sealed class GeminiPromptExecutionSettingsTests
             settings.Threshold.Equals(threshold));
 
         Assert.Equal(1000, executionSettings.ThinkingConfig?.ThinkingBudget);
+        Assert.NotNull(executionSettings.GroundingConfig?.GoogleSearch);
     }
 
     [Fact]
@@ -160,6 +164,9 @@ public sealed class GeminiPromptExecutionSettingsTests
                           ],
                           "thinking_config": {
                             "thinking_budget": 1000
+                          },
+                          "grouding_config": {
+                            "google_search": {}
                           }
                         }
                         """;
@@ -177,6 +184,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equivalent(executionSettings.SafetySettings, clone.SafetySettings);
         Assert.Equal(executionSettings.AudioTimestamp, clone.AudioTimestamp);
         Assert.Equivalent(executionSettings.ThinkingConfig, clone.ThinkingConfig);
+        Assert.Equivalent(executionSettings.GroundingConfig, clone.GroundingConfig);
     }
 
     [Fact]
@@ -220,5 +228,6 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences!.Add("baz"));
         Assert.Throws<NotSupportedException>(() => executionSettings.SafetySettings!.Add(new GeminiSafetySetting(GeminiSafetyCategory.Toxicity, GeminiSafetyThreshold.Unspecified)));
         Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1 });
+        Assert.Throws<InvalidOperationException>(() => executionSettings.GroundingConfig = new GeminiGroundingConfig { GoogleSearch = new object() });
     }
 }
