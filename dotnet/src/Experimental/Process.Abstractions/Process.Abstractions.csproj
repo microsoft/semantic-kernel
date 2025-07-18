@@ -20,6 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Agents\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
@@ -27,6 +29,18 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Process.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JmesPath.Net" />
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 import asyncio
 
 from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAISettings
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -25,13 +26,13 @@ USER_INPUTS = [
 async def main():
     # 1. Create the client using OpenAI resources and configuration
     # Note: the Azure OpenAI Responses API does not yet support the web search tool.
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     web_search_tool = OpenAIResponsesAgent.configure_web_search_tool()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
-        ai_model_id=model,
+        ai_model_id=OpenAISettings().responses_model_id,
         client=client,
         instructions="Answer questions from the user about performing web searches for news.",
         name="NewsSearcher",

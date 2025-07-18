@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -78,6 +79,43 @@ public sealed class VertexAIGeminiChatCompletionServiceTests : IDisposable
             // Then no quality is provided, it should not be included in the request body
             Assert.DoesNotContain("cachedContent", requestBody);
         }
+    }
+
+    [Fact]
+    public async Task RequestLabelsWorksCorrectlyAsync()
+    {
+        // Arrange
+        string model = "fake-model";
+        var sut = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project", httpClient: this._httpClient);
+        var labels = new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = labels });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.Contains("\"labels\":{\"key1\":\"value1\",\"key2\":\"value2\"}", requestBody);
+    }
+
+    [Fact]
+    public async Task RequestLabelsNullWorksCorrectlyAsync()
+    {
+        // Arrange
+        string model = "fake-model";
+        var sut = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", new GeminiPromptExecutionSettings { Labels = null });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.DoesNotContain("labels", requestBody);
     }
 
     [Theory]

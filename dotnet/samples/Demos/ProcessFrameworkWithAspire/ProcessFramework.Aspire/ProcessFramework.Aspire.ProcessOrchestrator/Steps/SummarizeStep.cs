@@ -7,12 +7,12 @@ namespace ProcessFramework.Aspire.ProcessOrchestrator.Steps;
 
 public class SummarizeStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessFunctions
     {
         public const string Summarize = nameof(Summarize);
     }
 
-    [KernelFunction(Functions.Summarize)]
+    [KernelFunction(ProcessFunctions.Summarize)]
     public async ValueTask SummarizeAsync(KernelProcessStepContext context, Kernel kernel, string textToSummarize)
     {
         var summaryAgentHttpClient = kernel.GetRequiredService<SummaryAgentHttpClient>();

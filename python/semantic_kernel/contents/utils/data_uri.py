@@ -150,10 +150,13 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             matches["mime_type"] = default_mime_type
         return cls(**matches)  # type: ignore
 
-    def to_string(self, metadata: dict[str, str] = {}) -> str:
+    def to_string(self, metadata: dict[str, str] | None = None) -> str:
         """Return the data uri as a string."""
-        parameters = ";".join([f"{key}={val}" for key, val in metadata.items()])
-        parameters = f";{parameters}" if parameters else ""
+        if metadata:
+            parameters = ";".join([f"{key}={val}" for key, val in metadata.items()])
+            parameters = f";{parameters}" if parameters else ""
+        else:
+            parameters = ""
         data_format = f"{self.data_format}" if self.data_format else ""
         return f"data:{self.mime_type or ''}{parameters};{data_format},{self._data_str()}"
 

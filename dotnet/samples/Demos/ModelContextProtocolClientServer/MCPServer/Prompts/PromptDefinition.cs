@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Prompts;
@@ -103,9 +103,8 @@ public sealed class PromptDefinition
             [
                 new PromptMessage()
                 {
-                    Content = new Content()
+                    Content = new TextContentBlock()
                     {
-                        Type = "text",
                         Text = renderedPrompt
                     },
                     Role = Role.Assistant

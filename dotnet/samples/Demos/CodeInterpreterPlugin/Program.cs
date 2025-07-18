@@ -35,7 +35,7 @@ ArgumentNullException.ThrowIfNull(endpoint);
 /// <summary>
 /// Acquire a token for the Azure Container Apps service
 /// </summary>
-async Task<string> TokenProvider()
+async Task<string> TokenProvider(CancellationToken cancellationToken)
 {
     if (cachedToken is null)
     {
@@ -43,7 +43,7 @@ async Task<string> TokenProvider()
         var credential = new InteractiveBrowserCredential();
 
         // Attempt to get the token
-        var accessToken = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
+        var accessToken = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource]), cancellationToken).ConfigureAwait(false);
         if (logger.IsEnabled(LogLevel.Information))
         {
             logger.LogInformation("Access token obtained successfully");

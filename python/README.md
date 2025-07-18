@@ -1,182 +1,235 @@
-# Get Started with Semantic Kernel ⚡
+# Get Started with Semantic Kernel Python
 
-Install the latest package:
-```bash
-python -m pip install --upgrade semantic-kernel
-```
-If you want to use some of the optional dependencies (OpenAI is installed by default), you can install them with:
-```bash
-python -m pip install --upgrade semantic-kernel[hugging_face]
-```
+Highlights
+- Flexible Agent Framework: build, orchestrate, and deploy AI agents and multi-agent systems
+- Multi-Agent Systems: Model workflows and collaboration between AI specialists
+- Plugin Ecosystem: Extend with Python, OpenAPI, Model Context Protocol (MCP), and more
+- LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Vertex AI, ONNX, Ollama, NVIDIA NIM, and others
+- Vector DB Support: Azure AI Search, Elasticsearch, Chroma, and more
+- Process Framework: Build structured business processes with workflow modeling
+- Multimodal: Text, vision, audio
 
-or all of them:
-```bash
-python -m pip install --upgrade semantic-kernel[all]
-```
-# AI Services
-
-## OpenAI / Azure OpenAI API keys
-
-Make sure you have an
-[OpenAI API Key](https://platform.openai.com/) or
-[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
-
-There are two methods to manage keys, secrets, and endpoints:
-
-1. Store them in environment variables. SK Python leverages Pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
-
-2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
+## Quick Install
 
 ```bash
-OPENAI_API_KEY=""
-OPENAI_ORG_ID=""
-AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
-AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
-AZURE_OPENAI_ENDPOINT=""
-AZURE_OPENAI_API_KEY=""
+pip install --upgrade semantic-kernel
+# Optional: Add integrations
+pip install --upgrade semantic-kernel[hugging_face]
+pip install --upgrade semantic-kernel[all]
 ```
 
-Put the .env file in the root directory.
+Supported Platforms:
+- Python: 3.10+
+- OS: Windows, macOS, Linux
 
-If you place the .env in a different directory, configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+## 1. Setup API Keys
+
+Set as environment variables, or create a .env file at your project root:
+
+```bash
+OPENAI_API_KEY=sk-...
+OPENAI_CHAT_MODEL_ID=...
+...
+AZURE_OPENAI_API_KEY=...
+AZURE_OPENAI_ENDPOINT=...
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=...
+...
+```
+
+You can also override environment variables by explicitly passing configuration parameters to the AI service constructor:
 
 ```python
-chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+chat_service = AzureChatCompletion(
+    api_key=...,
+    endpoint=...,
+    deployment_name=...,
+    api_version=...,
+)
 ```
 
-This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
+See the following [setup guide](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/concepts/setup) for more information.
 
-# Running a prompt
+## 2. Use the Kernel for Prompt Engineering
+
+Create prompt functions and invoke them via the `Kernel`:
 
 ```python
 import asyncio
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
-from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.functions import KernelArguments
 
 kernel = Kernel()
-
-# Prepare OpenAI service using credentials stored in the `.env` file
-service_id="chat-gpt"
-kernel.add_service(
-    OpenAIChatCompletion(
-        service_id=service_id,
-    )
-)
-
-# Alternative using Azure:
-# kernel.add_service(
-#   AzureChatCompletion(
-#       service_id=service_id,
-#   )
-# )
-
-# Define the request settings
-req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
-req_settings.max_tokens = 2000
-req_settings.temperature = 0.7
-req_settings.top_p = 0.8
+kernel.add_service(OpenAIChatCompletion())
 
 prompt = """
-1) A robot may not injure a human being or, through inaction,
-allow a human being to come to harm.
+1) A robot may not injure a human being...
+2) A robot must obey orders given it by human beings...
+3) A robot must protect its own existence...
 
-2) A robot must obey orders given it by human beings except where
-such orders would conflict with the First Law.
+Give me the TLDR in exactly {{$num_words}} words."""
 
-3) A robot must protect its own existence as long as such protection
-does not conflict with the First or Second Law.
 
-Give me the TLDR in exactly 5 words."""
-
-prompt_template_config = PromptTemplateConfig(
-    template=prompt,
-    name="tldr",
-    template_format="semantic-kernel",
-    execution_settings=req_settings,
-)
-
-function = kernel.add_function(
-    function_name="tldr_function",
-    plugin_name="tldr_plugin",
-    prompt_template_config=prompt_template_config,
-)
-
-# Run your prompt
-# Note: functions are run asynchronously
 async def main():
-    result = await kernel.invoke(function)
-    print(result) # => Robots must not harm humans.
+    result = await kernel.invoke_prompt(prompt, arguments=KernelArguments(num_words=5))
+    print(result)
+
+
+asyncio.run(main())
+# Output: Protect humans, obey, self-preserve, prioritized.
+```
+
+## 3. Directly Use AI Services (No Kernel Required)
+
+You can use the AI service classes directly for advanced workflows:
+
+```python
+import asyncio
+import asyncio
+
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.contents import ChatHistory
+
+
+async def main():
+    service = OpenAIChatCompletion()
+    settings = OpenAIChatPromptExecutionSettings()
+
+    chat_history = ChatHistory(system_message="You are a helpful assistant.")
+    chat_history.add_user_message("Write a haiku about Semantic Kernel.")
+    response = await service.get_chat_message_content(chat_history=chat_history, settings=settings)
+    print(response.content)
+
+    """
+    Output:
+
+    Thoughts weave through context,  
+    Semantic threads interlace—  
+    Kernel sparks meaning.
+    """
+
+
+asyncio.run(main())
+```
+
+## 4. Build an Agent with Plugins and Tools
+
+Add Python functions as plugins or Pydantic models as structured outputs;
+
+Enhance your agent with custom tools (plugins) and structured output:
+
+```python
+import asyncio
+from typing import Annotated
+from pydantic import BaseModel
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.functions import kernel_function, KernelArguments
+
+class MenuPlugin:
+    @kernel_function(description="Provides a list of specials from the menu.")
+    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
+        return """
+        Special Soup: Clam Chowder
+        Special Salad: Cobb Salad
+        Special Drink: Chai Tea
+        """
+
+    @kernel_function(description="Provides the price of the requested menu item.")
+    def get_item_price(
+        self, menu_item: Annotated[str, "The name of the menu item."]
+    ) -> Annotated[str, "Returns the price of the menu item."]:
+        return "$9.99"
+
+class MenuItem(BaseModel):
+    # Used for structured outputs
+    price: float
+    name: str
+
+async def main():
+    # Configure structured outputs format
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = MenuItem
+
+    # Create agent with plugin and settings
+    agent = ChatCompletionAgent(
+        service=AzureChatCompletion(),
+        name="SK-Assistant",
+        instructions="You are a helpful assistant.",
+        plugins=[MenuPlugin()],
+        arguments=KernelArguments(settings)
+    )
+
+    response = await agent.get_response("What is the price of the soup special?")
+    print(response.content)
+
+    # Output:
+    # The price of the Clam Chowder, which is the soup special, is $9.99.
+
+asyncio.run(main()) 
+```
+
+You can explore additional getting started agent samples [here](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents).
+
+## 5. Multi-Agent Orchestration
+
+Coordinate a group of agents to iteratively solve a problem or refine content together:
+
+```python
+import asyncio
+from semantic_kernel.agents import ChatCompletionAgent, GroupChatOrchestration, RoundRobinGroupChatManager
+from semantic_kernel.agents.runtime import InProcessRuntime
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+
+def get_agents():
+    return [
+        ChatCompletionAgent(
+            name="Writer",
+            instructions="You are a creative content writer. Generate and refine slogans based on feedback.",
+            service=AzureChatCompletion(),
+        ),
+        ChatCompletionAgent(
+            name="Reviewer",
+            instructions="You are a critical reviewer. Provide detailed feedback on proposed slogans.",
+            service=AzureChatCompletion(),
+        ),
+    ]
+
+async def main():
+    agents = get_agents()
+    group_chat = GroupChatOrchestration(
+        members=agents,
+        manager=RoundRobinGroupChatManager(max_rounds=5),
+    )
+    runtime = InProcessRuntime()
+    runtime.start()
+    result = await group_chat.invoke(
+        task="Create a slogan for a new electric SUV that is affordable and fun to drive.",
+        runtime=runtime,
+    )
+    value = await result.get()
+    print(f"Final Slogan: {value}")
+
+    # Example Output:
+    # Final Slogan: "Feel the Charge: Adventure Meets Affordability in Your New Electric SUV!"
+
+    await runtime.stop_when_idle()
 
 if __name__ == "__main__":
     asyncio.run(main())
-# If running from a jupyter-notebook:
-# await main()
 ```
 
-# **Semantic Prompt Functions** are Prompts with input parameters
+For orchestration-focused examples, see [these orchestration samples](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents/multi_agent_orchestration).
 
-```python
-# Create a reusable function summarize function
-summarize = kernel.add_function(
-    function_name="tldr_function",
-    plugin_name="tldr_plugin",
-    prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
-    prompt_execution_settings=req_settings,
-)
+## More Examples & Notebooks
 
-# Summarize the laws of thermodynamics
-print(await kernel.invoke(summarize, input="""
-1st Law of Thermodynamics - Energy cannot be created or destroyed.
-2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
-3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy."""))
+- [Getting Started with Agents](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents): Practical agent orchestration and tool use  
+- [Getting Started with Processes](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_processes): Modeling structured workflows with the Process framework  
+- [Concept Samples](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/concepts): Advanced scenarios, integrations, and SK patterns  
+- [Getting Started Notebooks](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started): Interactive Python notebooks for rapid experimentation  
 
-# Summarize the laws of motion
-print(await kernel.invoke(summarize, input="""
-1. An object at rest remains at rest, and an object in motion remains in motion at constant speed and in a straight line unless acted on by an unbalanced force.
-2. The acceleration of an object depends on the mass of the object and the amount of force applied.
-3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite on the first."""))
+## Semantic Kernel Documentation
 
-# Summarize the law of universal gravitation
-print(await kernel.invoke(summarize, input="""
-Every point mass attracts every single other point mass by a force acting along the line intersecting both points.
-The force is proportional to the product of the two masses and inversely proportional to the square of the distance between them."""))
-
-# Output:
-# > Energy conserved, entropy increases, zero entropy at 0K.
-# > Objects move in response to forces.
-# > Gravitational force between two point masses is inversely proportional to the square of the distance between them.
-```
-
-# Semantic Kernel Notebooks
-
-The repository contains a few Python and C# notebooks that demonstrate how to
-get started with the Semantic Kernel.
-
-Python notebooks:
-
-- [Getting started with Semantic Kernel](./samples/getting_started/00-getting-started.ipynb)
-- [Loading and configuring Semantic Kernel](./samples/getting_started/01-basic-loading-the-kernel.ipynb)
-- [Running AI prompts from file](./samples/getting_started/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./samples/getting_started/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./samples/getting_started/04-kernel-arguments-chat.ipynb)
-- [Introduction to planners](./samples/getting_started/05-using-the-planner.ipynb)
-- [Building Memory with Embeddings](./samples/getting_started/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Plugins](./samples/getting_started/07-hugging-face-for-plugins.ipynb)
-- [Combining native functions and semantic functions](./samples/getting_started/08-native-function-inline.ipynb)
-- [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
-- [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
-- [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
-
-# SK Frequently Asked Questions
-
-## How does Python SK compare to the C# version of Semantic Kernel?
-
-The two SDKs are compatible and at their core they follow the same design principles.
-Some features are still available only in the C# version and are being ported.
-Refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md) doc to see where
-things stand in matching the features and functionality of the main SK branch.
-Over time there will be some features available only in the Python version, and
-others only in the C# version, for example, adapters to external services,
-scientific libraries, etc.
+- [Getting Started with Semantic Kernel Python](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python)  
+- [Agent Framework Guide](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/?pivots=programming-language-python)  
+- [Process Framework Guide](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/process/process-framework)

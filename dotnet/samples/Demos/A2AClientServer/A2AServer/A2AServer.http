@@ -1,0 +1,82 @@
+﻿### Each A2A agent is available at a different host address
+@hostInvoice = http://localhost:5000
+@hostPolicy = http://localhost:5001
+@hostLogistics = http://localhost:5002
+
+### Query agent card for the invoice agent
+GET {{hostInvoice}}/.well-known/agent.json
+
+### Send a message to the invoice agent
+POST {{hostInvoice}}
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "messageId": "msg_1",
+            "parts": [
+                {
+                    "kind": "text",
+                    "text": "Show me all invoices for Contoso?"
+                }
+            ]
+        }
+    }
+}
+
+### Query agent card for the policy agent
+GET {{hostPolicy}}/.well-known/agent.json
+
+### Send a message to the policy agent
+POST {{hostPolicy}}
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "messageId": "msg_1",
+            "parts": [
+                {
+                    "kind": "text",
+                    "text": "What is the policy for short shipments?"
+                }
+            ]
+        }
+    }
+}
+
+### Query agent card for the logistics agent
+GET {{hostLogistics}}/.well-known/agent.json
+
+### Send a message to the logistics agent
+POST {{hostLogistics}}
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "messageId": "msg_1",
+            "parts": [
+                {
+                    "kind": "text",
+                    "text": "What is the status for SHPMT-SAP-001?"
+                }
+            ]
+        }
+    }
+}

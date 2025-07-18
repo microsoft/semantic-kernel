@@ -219,7 +219,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                         securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
                     )
                     {
-                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger),
+                        Summary = operationItem.Summary
                     };
 
                     operations.Add(operation);

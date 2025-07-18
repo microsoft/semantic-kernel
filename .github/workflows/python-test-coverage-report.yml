@@ -43,7 +43,7 @@ jobs:
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           issue-number: ${{ env.PR_NUMBER }}
-          pytest-coverage-path: python/python-coverage.txt
+          pytest-xml-coverage-path: python/python-coverage.xml
           title: "Python Test Coverage Report"
           badge-title: "Python Test Coverage"
           junitxml-title: "Python Unit Test Overview"

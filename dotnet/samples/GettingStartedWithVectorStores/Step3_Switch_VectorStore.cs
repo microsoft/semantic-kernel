@@ -29,13 +29,13 @@ public class Step3_Switch_VectorStore(ITestOutputHelper output, VectorStoresFixt
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
 
         // Ingest data into the collection using the same code as we used in Step1 with the InMemory Vector Store.
-        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.TextEmbeddingGenerationService);
+        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.EmbeddingGenerator);
 
         // Search the vector store using the same code as we used in Step2 with the InMemory Vector Store.
         var searchResultItem = await Step2_Vector_Search.SearchVectorStoreAsync(
             collection,
             "What is an Application Programming Interface?",
-            fixture.TextEmbeddingGenerationService);
+            fixture.EmbeddingGenerator);
 
         // Write the search result with its score to the console.
         Console.WriteLine(searchResultItem.Record.Definition);
@@ -57,13 +57,13 @@ public class Step3_Switch_VectorStore(ITestOutputHelper output, VectorStoresFixt
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
 
         // Ingest data into the collection using the same code as we used in Step1 with the InMemory Vector Store.
-        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.TextEmbeddingGenerationService);
+        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.EmbeddingGenerator);
 
         // Search the vector store using the same code as we used in Step2 with the InMemory Vector Store.
         var searchResultItem = await Step2_Vector_Search.SearchVectorStoreAsync(
             collection,
             "What is an Application Programming Interface?",
-            fixture.TextEmbeddingGenerationService);
+            fixture.EmbeddingGenerator);
 
         // Write the search result with its score to the console.
         Console.WriteLine(searchResultItem.Record.Definition);

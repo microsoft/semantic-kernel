@@ -109,8 +109,8 @@ class PromptTemplateConfig(KernelBaseModel):
         description: str,
         template: str,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        input_variables: MutableSequence[InputVariable] = [],
-        execution_settings: MutableMapping[str, PromptExecutionSettings] = {},
+        input_variables: MutableSequence[InputVariable] | None = None,
+        execution_settings: MutableMapping[str, PromptExecutionSettings] | None = None,
         allow_dangerously_set_content: bool = False,
     ) -> _T:
         """Restore a PromptTemplateConfig instance from the specified parameters.
@@ -132,7 +132,7 @@ class PromptTemplateConfig(KernelBaseModel):
             description=description,
             template=template,
             template_format=template_format,
-            input_variables=input_variables,
-            execution_settings=execution_settings,
+            input_variables=input_variables or [],
+            execution_settings=execution_settings or {},
             allow_dangerously_set_content=allow_dangerously_set_content,
         )

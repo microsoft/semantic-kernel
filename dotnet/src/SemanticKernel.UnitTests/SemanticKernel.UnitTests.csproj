@@ -6,7 +6,7 @@
     <TargetFrameworks>net8.0</TargetFrameworks>    <!-- ;net48 -->
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050,SKEXP0110,SKEXP0120,MEVD9000</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050,SKEXP0110,SKEXP0120,SKEXP0130,MEVD9000,OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,12 +24,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
+    <ProjectReference Include="..\VectorData\InMemory\InMemory.csproj" />
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
@@ -37,16 +36,15 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/TypeExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseData.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseLine.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseReader.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordMapping.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/TypeExtensions.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/**/*.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseData.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseJsonParser.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseLine.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseReader.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

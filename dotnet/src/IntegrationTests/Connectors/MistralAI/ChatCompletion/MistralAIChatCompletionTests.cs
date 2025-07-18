@@ -507,7 +507,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
         chatHistory.AddRange(result1);
-        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
+        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather temperature in Marseille?"));
         var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert

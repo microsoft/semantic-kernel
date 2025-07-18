@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Protocol.Types;
+using ModelContextProtocol.Protocol;
 
 namespace MCPClient;
 
@@ -23,37 +23,33 @@ public static class ChatMessageContentExtensions
         // ChatMessageContent can contain multiple items of different modalities, while the CreateMessageResult
         // can only have a single content type: text, image, or audio. First, look for image or audio content,
         // and if not found, fall back to the text content type by concatenating the text of all text contents.
-        Content? content = null;
+        ContentBlock? content = null;
 
         foreach (KernelContent item in chatMessageContent.Items)
         {
             if (item is ImageContent image)
             {
-                content = new Content
+                content = new ImageContentBlock
                 {
-                    Type = "image",
                     Data = Convert.ToBase64String(image.Data!.Value.Span),
-                    MimeType = image.MimeType
+                    MimeType = image.MimeType ?? "image/jpeg"
                 };
                 break;
             }
             else if (item is AudioContent audio)
             {
-                content = new Content
+                content = new AudioContentBlock
                 {
-                    Type = "audio",
                     Data = Convert.ToBase64String(audio.Data!.Value.Span),
-                    MimeType = audio.MimeType
+                    MimeType = audio.MimeType ?? "audio/mpeg"
                 };
                 break;
             }
         }
 
-        content ??= new Content
+        content ??= new TextContentBlock
         {
-            Type = "text",
             Text = string.Concat(chatMessageContent.Items.OfType<TextContent>()),
-            MimeType = "text/plain"
         };
 
         return new CreateMessageResult

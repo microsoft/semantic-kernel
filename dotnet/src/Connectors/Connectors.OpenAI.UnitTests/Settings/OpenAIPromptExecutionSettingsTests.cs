@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
@@ -468,6 +469,365 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings));
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsSystemPromptWhenNotPresent()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result); // Should return the same instance
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role);
+        Assert.Equal("Hello", chatHistory[1].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsSystemPromptAtBeginning()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("First message");
+        chatHistory.AddAssistantMessage("First response");
+        chatHistory.AddUserMessage("Second message");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(4, chatHistory.Count);
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role);
+        Assert.Equal("First message", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.Assistant, chatHistory[2].Role);
+        Assert.Equal("First response", chatHistory[2].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[3].Role);
+        Assert.Equal("Second message", chatHistory[3].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddSystemPromptWhenAlreadyPresent()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("Existing system message");
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("Existing system message", chatHistory[0].Content); // Original system message preserved
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role);
+        Assert.Equal("Hello", chatHistory[1].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsDeveloperPromptWhenNotPresent()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(AuthorRole.Developer, chatHistory[0].Role);
+        Assert.Equal("Debug mode enabled.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role);
+        Assert.Equal("Hello", chatHistory[1].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddDeveloperPromptWhenAlreadyPresent()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddDeveloperMessage("Existing developer message");
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(AuthorRole.Developer, chatHistory[0].Role);
+        Assert.Equal("Existing developer message", chatHistory[0].Content); // Original developer message preserved
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role);
+        Assert.Equal("Hello", chatHistory[1].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsBothSystemAndDeveloperPrompts()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant.",
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(3, chatHistory.Count);
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.Developer, chatHistory[1].Role);
+        Assert.Equal("Debug mode enabled.", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("Hello", chatHistory[2].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddEmptyOrWhitespacePrompts()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "   ", // Whitespace only
+            ChatDeveloperPrompt = "" // Empty string
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Single(chatHistory); // Only the original user message should remain
+        Assert.Equal(AuthorRole.User, chatHistory[0].Role);
+        Assert.Equal("Hello", chatHistory[0].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncDoesNotAddNullPrompts()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = null,
+            ChatDeveloperPrompt = null
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Single(chatHistory); // Only the original user message should remain
+        Assert.Equal(AuthorRole.User, chatHistory[0].Role);
+        Assert.Equal("Hello", chatHistory[0].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncWorksWithEmptyChatHistory()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant.",
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.Developer, chatHistory[1].Role);
+        Assert.Equal("Debug mode enabled.", chatHistory[1].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncPreservesExistingMessageOrder()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddDeveloperMessage("Existing developer message");
+        chatHistory.AddUserMessage("First user message");
+        chatHistory.AddAssistantMessage("Assistant response");
+        chatHistory.AddUserMessage("Second user message");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(5, chatHistory.Count);
+
+        // System message should be added at the beginning, before existing developer message
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.Developer, chatHistory[1].Role);
+        Assert.Equal("Existing developer message", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("First user message", chatHistory[2].Content);
+        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
+        Assert.Equal("Assistant response", chatHistory[3].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[4].Role);
+        Assert.Equal("Second user message", chatHistory[4].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncInsertsSystemBeforeDeveloperWhenBothExist()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant.",
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddDeveloperMessage("Existing developer message");
+        chatHistory.AddSystemMessage("Existing system message");
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(3, chatHistory.Count); // No new messages should be added since both already exist
+        Assert.Equal(AuthorRole.Developer, chatHistory[0].Role);
+        Assert.Equal("Existing developer message", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.System, chatHistory[1].Role);
+        Assert.Equal("Existing system message", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("Hello", chatHistory[2].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsSystemBeforeExistingDeveloper()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatSystemPrompt = "You are a helpful assistant.",
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddDeveloperMessage("Existing developer message");
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(3, chatHistory.Count);
+
+        // System message should be inserted at the beginning, before existing developer message
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are a helpful assistant.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.Developer, chatHistory[1].Role);
+        Assert.Equal("Existing developer message", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("Hello", chatHistory[2].Content);
+    }
+
+    [Fact]
+    public void PrepareChatHistoryToRequestAsyncAddsDeveloperWhenSystemExists()
+    {
+        // Arrange
+        var settings = new TestableOpenAIPromptExecutionSettings
+        {
+            ChatDeveloperPrompt = "Debug mode enabled."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("Existing system message");
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        var result = settings.TestPrepareChatHistoryToRequest(chatHistory);
+
+        // Assert
+        Assert.Same(chatHistory, result);
+        Assert.Equal(3, chatHistory.Count);
+
+        // Developer message should be inserted at the beginning, before existing system message
+        Assert.Equal(AuthorRole.Developer, chatHistory[0].Role);
+        Assert.Equal("Debug mode enabled.", chatHistory[0].Content);
+        Assert.Equal(AuthorRole.System, chatHistory[1].Role);
+        Assert.Equal("Existing system message", chatHistory[1].Content);
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("Hello", chatHistory[2].Content);
+    }
+
+    /// <summary>
+    /// Test implementation of OpenAIPromptExecutionSettings that exposes the protected PrepareChatHistoryToRequestAsync method.
+    /// </summary>
+    private sealed class TestableOpenAIPromptExecutionSettings : OpenAIPromptExecutionSettings
+    {
+        public ChatHistory TestPrepareChatHistoryToRequest(ChatHistory chatHistory)
+        {
+            return base.PrepareChatHistoryForRequest(chatHistory);
+        }
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

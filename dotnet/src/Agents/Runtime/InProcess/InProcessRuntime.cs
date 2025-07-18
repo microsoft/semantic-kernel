@@ -352,45 +352,41 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             throw new InvalidOperationException("Message must have a topic to be published.");
         }
 
-        List<Exception> exceptions = [];
+        List<Task>? tasks = null;
         TopicId topic = envelope.Topic.Value;
         foreach (ISubscriptionDefinition subscription in this._subscriptions.Values.Where(subscription => subscription.Matches(topic)))
         {
-            try
-            {
-                deliveryToken.ThrowIfCancellationRequested();
-
-                AgentId? sender = envelope.Sender;
-
-                using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken);
-                MessageContext messageContext = new(envelope.MessageId, combinedSource.Token)
-                {
-                    Sender = sender,
-                    Topic = topic,
-                    IsRpc = false
-                };
-
-                AgentId agentId = subscription.MapToAgent(topic);
-                if (!this.DeliverToSelf && sender.HasValue && sender == agentId)
-                {
-                    continue;
-                }
-
-                IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
-
-                // TODO: Cancellation propagation!
-                await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!ex.IsCriticalException())
-            {
-                exceptions.Add(ex);
-            }
+            (tasks ??= []).Add(ProcessSubscriptionAsync(envelope, topic, subscription, deliveryToken));
         }
 
-        if (exceptions.Count > 0)
+        if (tasks is not null)
         {
-            // TODO: Unwrap TargetInvocationException?
-            throw new AggregateException("One or more exceptions occurred while processing the message.", exceptions);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        async Task ProcessSubscriptionAsync(MessageEnvelope envelope, TopicId topic, ISubscriptionDefinition subscription, CancellationToken deliveryToken)
+        {
+            deliveryToken.ThrowIfCancellationRequested();
+
+            AgentId? sender = envelope.Sender;
+
+            using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken);
+            MessageContext messageContext = new(envelope.MessageId, combinedSource.Token)
+            {
+                Sender = sender,
+                Topic = topic,
+                IsRpc = false
+            };
+
+            AgentId agentId = subscription.MapToAgent(topic);
+            if (!this.DeliverToSelf && sender.HasValue && sender == agentId)
+            {
+                return;
+            }
+
+            IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+
+            await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
         }
     }
 

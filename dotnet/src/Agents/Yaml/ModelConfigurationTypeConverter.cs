@@ -24,7 +24,7 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
     }
 
     /// <inheritdoc/>
-    public object? ReadYaml(IParser parser, Type type)
+    public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
@@ -55,7 +55,7 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
     }
 
     /// <inheritdoc/>
-    public void WriteYaml(IEmitter emitter, object? value, Type type)
+    public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }

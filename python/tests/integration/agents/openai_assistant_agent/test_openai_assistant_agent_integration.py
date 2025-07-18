@@ -6,6 +6,7 @@ from typing import Annotated
 import pytest
 
 from semantic_kernel.agents import AzureAssistantAgent, OpenAIAssistantAgent
+from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings, OpenAISettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -37,10 +38,12 @@ class TestOpenAIAssistantAgentIntegration:
         tools, tool_resources, plugins = [], {}, []
 
         if agent_type == "azure":
-            client, model = AzureAssistantAgent.setup_resources()
+            client = AzureAssistantAgent.create_client()
+            model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureAssistantAgent
         else:  # agent_type == "openai"
-            client, model = OpenAIAssistantAgent.setup_resources()
+            client = OpenAIAssistantAgent.create_client()
+            model = OpenAISettings().chat_model_id
             AgentClass = OpenAIAssistantAgent
 
         if params.get("enable_code_interpreter"):
@@ -190,8 +193,12 @@ class TestOpenAIAssistantAgentIntegration:
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],
@@ -216,8 +223,12 @@ Dolphin  2
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],
@@ -242,8 +253,12 @@ Dolphin  2
     @pytest.mark.parametrize(
         "assistant_agent",
         [
-            ("azure", {"enable_code_interpreter": True}),
-            ("openai", {"enable_code_interpreter": True}),
+            pytest.param(
+                ("azure", {"enable_code_interpreter": True}), marks=pytest.mark.xfail(reason="Service outage")
+            ),
+            pytest.param(
+                ("openai", {"enable_code_interpreter": True}),
+            ),
         ],
         indirect=["assistant_agent"],
         ids=["azure-code-interpreter", "openai-code-interpreter"],

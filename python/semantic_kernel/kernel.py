@@ -106,7 +106,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
@@ -169,7 +169,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Execute a function and return the FunctionResult.
@@ -329,20 +329,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
-        args_cloned = copy(arguments) if arguments else KernelArguments()
-        try:
-            parsed_args = function_call.to_kernel_arguments()
-            if parsed_args:
-                args_cloned.update(parsed_args)
-        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
@@ -363,6 +349,46 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     f"The tool call with name `{function_call.name}` is not part of the provided tools, "
                     "please try again with a supplied tool call name and make sure to validate the name."
                 ),
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
+        args_cloned = copy(arguments) if arguments else KernelArguments()
+        try:
+            parsed_args = function_call.to_kernel_arguments()
+
+            # Check for missing or unexpected parameters
+            required_param_names = {
+                param.name for param in function_to_call.parameters if param.name is not None and param.is_required
+            }
+            received_param_names = set(parsed_args or {})
+
+            missing_params = required_param_names - received_param_names
+            unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+
+            if missing_params or unexpected_params:
+                msg_parts = []
+                if missing_params:
+                    msg_parts.append(f"Missing required argument(s): {sorted(missing_params)}.")
+                if unexpected_params:
+                    msg_parts.append(f"Received unexpected argument(s): {sorted(unexpected_params)}.")
+                msg = " ".join(msg_parts) + " Please revise the arguments to match the function signature."
+
+                logger.info(msg)
+                frc = FunctionResultContent.from_function_call_content_and_result(
+                    function_call_content=function_call,
+                    result=msg,
+                )
+                chat_history.add_message(message=frc.to_chat_message_content())
+                return None
+
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
@@ -392,6 +418,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments=args_cloned,
             is_streaming=is_streaming,
             chat_history=chat_history,
+            function_call_content=function_call,
             execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
             function_count=function_call_count or 0,
@@ -424,7 +451,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""
         try:
-            result = await context.function.invoke(context.kernel, context.arguments)
+            result = await context.function.invoke(
+                context.kernel,
+                context.arguments,
+                metadata=context.function_call_content.metadata | context.function_call_content.to_dict()
+                if context.function_call_content
+                else {},
+            )
             if result:
                 context.function_result = result
         except Exception as exc:

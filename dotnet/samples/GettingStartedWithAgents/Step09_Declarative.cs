@@ -116,7 +116,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             }
         };
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync([], options: options))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(Array.Empty<ChatMessageContent>(), options: options))
         {
             this.WriteAgentChatMessage(response);
         }

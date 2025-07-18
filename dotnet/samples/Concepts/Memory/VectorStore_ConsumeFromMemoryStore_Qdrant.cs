@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Azure.Identity;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Qdrant.Client;
@@ -23,11 +21,9 @@ namespace Memory;
 /// To run this sample, you need a local instance of Docker running, since the associated fixture
 /// will try and start a Qdrant container in the local docker instance to run against.
 /// </remarks>
-[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
-    private const string MemoryStoreCollectionName = "memorystorecollection";
     private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
 
     [Fact]
@@ -35,26 +31,13 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output,
     {
         // Setup the supporting infra and embedding generation.
         await qdrantFixture.ManualInitializeAsync();
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
-
-        // Construct a legacy MemoryStore.
-        var memoryStore = new QdrantMemoryStore("http://localhost:6333", VectorSize);
 
         // Construct a VectorStore.
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
-        // Build a collection with sample data using the MemoryStore abstraction.
-        await VectorStore_ConsumeFromMemoryStore_Common.CreateCollectionAndAddSampleDataAsync(
-            memoryStore,
-            MemoryStoreCollectionName,
-            textEmbeddingService);
-
-        // Connect to the same collection using the VectorStore abstraction.
-        var collection = vectorStore.GetCollection<Guid, VectorStoreRecord>(MemoryStoreCollectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction
+        var collection = vectorStore.GetCollection<Guid, VectorStoreRecord>("memorystorecollection");
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         var record1 = await collection.GetAsync(new Guid("11111111-1111-1111-1111-111111111111"));
@@ -68,32 +51,32 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output,
 
     /// <summary>
     /// A data model with Vector Store attributes that matches the storage representation of
-    /// <see cref="MemoryRecord"/> objects as created by <see cref="QdrantMemoryStore"/>.
+    /// <see cref="MemoryRecord"/> objects as created by <c>QdrantMemoryStore</c>.
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "id")]
+        [VectorStoreData(StorageName = "id")]
         public string Id { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "description")]
+        [VectorStoreData(StorageName = "description")]
         public string Description { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "text")]
+        [VectorStoreData(StorageName = "text")]
         public string Text { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "is_reference")]
+        [VectorStoreData(StorageName = "is_reference")]
         public bool IsReference { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "external_source_name")]
+        [VectorStoreData(StorageName = "external_source_name")]
         public string ExternalSourceName { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "additional_metadata")]
+        [VectorStoreData(StorageName = "additional_metadata")]
         public string AdditionalMetadata { get; set; }
 
-        [VectorStoreRecordVector(VectorSize)]
+        [VectorStoreVector(VectorSize)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

@@ -19,35 +19,47 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     private readonly AIFunction _aiFunction;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
-        base(aiFunction.Name,
-            aiFunction.Description,
-            MapParameterMetadata(aiFunction),
-            aiFunction.JsonSerializerOptions,
+        base(
+            name: aiFunction.Name,
+            description: aiFunction.Description,
+            parameters: MapParameterMetadata(aiFunction),
+            jsonSerializerOptions: aiFunction.JsonSerializerOptions,
             new KernelReturnParameterMetadata(AbstractionsJsonContext.Default.Options)
             {
                 Description = aiFunction.UnderlyingMethod?.ReturnParameter.GetCustomAttribute<DescriptionAttribute>()?.Description,
                 ParameterType = aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType,
-                Schema = new KernelJsonSchema(AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
+                Schema = new KernelJsonSchema(aiFunction.ReturnJsonSchema ?? AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
             })
     {
+        // Kernel functions created from AI functions are always fully qualified
         this._aiFunction = aiFunction;
     }
 
-    private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
+    private AIFunctionKernelFunction(AIFunctionKernelFunction other, string? pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
         this._aiFunction = other._aiFunction;
     }
 
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName);
+        // Should allow null but not empty or whitespace
+        if (pluginName is not null)
+        {
+            Verify.NotNullOrWhiteSpace(pluginName);
+        }
+
         return new AIFunctionKernelFunction(this, pluginName);
     }
 
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
+        if (this._aiFunction is KernelFunction kernelFunction)
+        {
+            return await kernelFunction.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        }
+
         object? result = await this._aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
         return new FunctionResult(this, result);
     }
@@ -61,6 +73,11 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
     private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
     {
+        if (aiFunction is KernelFunction kernelFunction)
+        {
+            return kernelFunction.Metadata.Parameters;
+        }
+
         if (!aiFunction.JsonSchema.TryGetProperty("properties", out JsonElement properties))
         {
             return Array.Empty<KernelParameterMetadata>();

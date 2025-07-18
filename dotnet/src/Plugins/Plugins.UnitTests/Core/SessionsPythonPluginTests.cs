@@ -3,11 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 using Moq;
 using Xunit;
@@ -22,6 +25,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private const string ListFilesTestDataFilePath = "./TestData/sessions_python_plugin_file_list.json";
     private const string UpdaloadFileTestDataFilePath = "./TestData/sessions_python_plugin_file_upload.json";
     private const string FileTestDataFilePath = "./TestData/sessions_python_plugin_file.txt";
+    private readonly static string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
 
     private readonly SessionsPythonSettings _defaultSettings = new(
         sessionId: Guid.NewGuid().ToString(),
@@ -68,16 +72,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             Content = new StringContent(responseContent),
         };
-        var expectedResult = """
-                       Status:
-                       "Succeeded"
-                       Result:
-                       ""
-                       Stdout:
-                       "Hello World!\n"
-                       Stderr:
-                       ""
-                       """;
+
         // Arrange
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
@@ -85,7 +80,10 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await plugin.ExecuteCodeAsync("print('hello world')");
 
         // Assert
-        Assert.Equal(expectedResult, result);
+        Assert.Equal("Succeeded", result.Status);
+        Assert.Equal("Hello World!\n", result.Result?.StdOut);
+        Assert.True(string.IsNullOrEmpty(result.Result?.StdErr));
+        Assert.True(string.IsNullOrEmpty(result.Result?.ExecutionResult));
     }
 
     [Theory]
@@ -97,7 +95,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         // Arrange
         var tokenProviderCalled = false;
 
-        Task<string> tokenProviderAsync()
+        Task<string> tokenProviderAsync(CancellationToken _)
         {
             tokenProviderCalled = true;
             return Task.FromResult("token");
@@ -330,6 +328,34 @@ public sealed class SessionsPythonPluginTests : IDisposable
             // Ignore exception if the endpoint is not allowed since we expect it
         }
 #pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    [Fact]
+    public async Task ItShouldAddHeadersAsync()
+    {
+        // Arrange
+        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseContent),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory, (_) => Task.FromResult("test-auth-token"));
+
+        // Act
+        var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+
+        var userAgentHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("User-Agent").ToArray();
+        Assert.Equal(2, userAgentHeaderValues.Length);
+        Assert.Equal($"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion}", userAgentHeaderValues[0]);
+        Assert.Equal("(Language=dotnet)", userAgentHeaderValues[1]);
+
+        var authorizationHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("Authorization");
+        Assert.Single(authorizationHeaderValues, value => value == "Bearer test-auth-token");
     }
 
     public void Dispose()
