@@ -232,10 +232,20 @@ class AgentActorBase(ActorBase):
         `StreamingChatMessageContent`), we check that the message is of the correct type before calling the callbacks.
         Since it will always be a `StreamingChatMessageContent`, this check is safe.
         """
-        if not isinstance(message, StreamingChatMessageContent):
-            raise TypeError(
-                f"Expected message to be of type 'StreamingChatMessageContent', "
-                f"but got '{type(message).__name__}' instead."
-            )
         await self._call_agent_response_callback(message)
-        await self._call_streaming_agent_response_callback(message, is_final=True)
+        if isinstance(message, StreamingChatMessageContent):
+            await self._call_streaming_agent_response_callback(message, is_final=True)
+        else:
+            # Convert to StreamingChatMessageContent if needed
+            streaming_message = StreamingChatMessageContent(  # type: ignore[misc]
+                message.role,
+                message.items,  # type: ignore[arg-type]
+                0,
+                name=message.name,
+                inner_content=message.inner_content,
+                encoding=message.encoding,
+                finish_reason=message.finish_reason,
+                ai_model_id=message.ai_model_id,
+                metadata=message.metadata,
+            )
+            await self._call_streaming_agent_response_callback(streaming_message, is_final=True)
