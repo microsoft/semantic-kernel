@@ -266,6 +266,14 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
+            else if (step is KernelProcessDelegateStepInfo delegateStep)
+            {
+                localStep = new LocalDelegateStep(delegateStep, this._kernel)
+                {
+                    ParentProcessId = this.Id,
+                    EventProxy = this.EventProxy,
+                };
+            }
             else if (step is KernelProcessMap mapStep)
             {
                 localStep =

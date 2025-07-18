@@ -53,6 +53,7 @@
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.5" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.Bot.ObjectModel" Version="2025.6.4-1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.73.1" />
@@ -60,6 +61,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
+    <PackageVersion Include="Microsoft.PowerFx.Interpreter" Version="1.3.1" />
     <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.58.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.58.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.58.0" />
