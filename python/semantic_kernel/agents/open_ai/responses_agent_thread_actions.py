@@ -1021,7 +1021,7 @@ class ResponsesAgentThreadActions:
 
         # TODO(evmattso): make sure to respect filters on FCB
         if kernel.plugins:
-            funcs = agent.kernel.get_full_list_of_function_metadata()
+            funcs = kernel.get_full_list_of_function_metadata()
             tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools
