@@ -240,7 +240,7 @@ min-file-size = 1
 
 [tool.bandit]
 targets = ["semantic_kernel"]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 
 [tool.flit.module]
 name = "semantic_kernel"
