@@ -224,6 +224,17 @@ class MCPPluginBase:
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
+    async def __aenter__(self) -> Self:
+        """Enter the context manager."""
+        await self.connect()
+        return self
+
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
+    ) -> None:
+        """Exit the context manager."""
+        await self.close()
+
     async def connect(self) -> None:
         """Connect to the MCP server."""
         ready_event = asyncio.Event()
@@ -231,10 +242,24 @@ class MCPPluginBase:
             self._current_task = asyncio.create_task(self._inner_connect(ready_event))
             await ready_event.wait()
         except KernelPluginInvalidConfigurationError:
+            ready_event.clear()
             raise
         except Exception as ex:
+            ready_event.clear()
             await self.close()
             raise FunctionExecutionException("Failed to enter context manager.") from ex
+
+    async def close(self) -> None:
+        """Disconnect from the MCP server."""
+        if self._stop_event:
+            # Signal the stop event, which asks the _inner_connect
+            # method to close the session with the exit stack
+            self._stop_event.set()
+        if self._current_task:
+            # After, the signal, we wait for it to close the exit stack.
+            await self._current_task
+            self._current_task = None
+        self.session = None
 
     async def _inner_connect(self, ready_event: asyncio.Event) -> None:
         if not self.session:
@@ -259,7 +284,6 @@ class MCPPluginBase:
                 )
             except Exception as ex:
                 await self._exit_stack.aclose()
-                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
@@ -287,7 +311,9 @@ class MCPPluginBase:
                 )
             except Exception:
                 logger.warning("Failed to set log level to %s", logger.level)
+        # Setting up is complete, will now signal the main loop that we are ready
         ready_event.set()
+        # Create a stop event to signal the exit stack to close
         self._stop_event = asyncio.Event()
         await self._stop_event.wait()
         try:
@@ -433,14 +459,6 @@ class MCPPluginBase:
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)
 
-    async def close(self) -> None:
-        """Disconnect from the MCP server."""
-        if self._stop_event:
-            self._stop_event.set()
-        if self._current_task:
-            await self._current_task
-        self.session = None
-
     @abstractmethod
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
         """Get an MCP client."""
@@ -480,17 +498,6 @@ class MCPPluginBase:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call prompt '{prompt_name}'.") from ex
-
-    async def __aenter__(self) -> Self:
-        """Enter the context manager."""
-        await self.connect()
-        return self
-
-    async def __aexit__(
-        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
-    ) -> None:
-        """Exit the context manager."""
-        await self.close()
 
     def added_to_kernel(self, kernel: Kernel) -> None:
         """Add the plugin to the kernel."""
