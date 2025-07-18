@@ -32,10 +32,11 @@ def test_init(openai_unit_test_env):
     assert openai_text_to_image.ai_model_id == openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"]
 
 
-def test_init_validation_fail() -> None:
+@pytest.mark.parametrize("exclude_list", [["OPENAI_TEXT_TO_IMAGE_MODEL_ID"]], indirect=True)
+def test_init_validation_fail(openai_unit_test_env) -> None:
     """Test that initialization fails when required parameters are missing."""
     with pytest.raises(ServiceInitializationError):
-        OpenAITextToImage(api_key="34523", ai_model_id=None)
+        OpenAITextToImage(api_key="34523", ai_model_id=None, env_file_path="test.env")
 
 
 def test_init_to_from_dict(openai_unit_test_env):
@@ -77,11 +78,11 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_text_to_image.get_prompt_execution_settings_class() == OpenAITextToImageExecutionSettings
 
 
-@patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
+@patch.object(AsyncImages, "generate", new_callable=AsyncMock)
 async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_env) -> None:
     """Test that generate_image calls the OpenAI API with correct parameters."""
-    mock_generate.return_value.data = [Image(url="abc")]
-    mock_generate.return_value.usage = None
+    mock_response = ImagesResponse(created=1, data=[Image(url="abc")], usage=None)
+    mock_generate.return_value = mock_response
 
     ai_model_id = "test_model_id"
     prompt = "painting of flowers in vase"
