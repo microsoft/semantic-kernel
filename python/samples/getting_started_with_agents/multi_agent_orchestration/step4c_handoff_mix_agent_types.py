@@ -26,10 +26,10 @@ The following agent types are used:
 - ChatCompletionAgent: A Chat Completion agent that is backed by an Azure OpenAI service.
 - AzureAssistantAgent: An Azure Assistant agent that is backed by the Azure OpenAI Assistant API.
 - AzureAIAgent: An Azure AI agent that is backed by the Azure AI Agent (a.k.a Foundry Agent) service.
+- OpenAIResponsesAgent: An Azure Responses agent that is backed by the Azure OpenAI Responses API.
 
 The Handoff orchestration doesn't support the following agent types:
 - BedrockAgent
-- OpenAIResponsesAgent
 - CopilotStudioAgent
 """
 
