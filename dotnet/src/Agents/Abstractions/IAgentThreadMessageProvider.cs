@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <para>
 /// <see cref="AgentThread"/> types that implement this interface can
 /// be used with Agents that do not maintain a server-side chat history, e.g. ChatCompletionAgent.
-/// These agents are typically implmented using simple LLMs and therefore
+/// These agents are typically implemented using simple LLMs and therefore
 /// require the entire chat history to be provided to the LLM for each invocation.
 /// </para>
 /// <para>
