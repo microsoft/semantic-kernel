@@ -334,7 +334,7 @@ public abstract class Agent
     /// <param name="messages">The messages to add to the thread once it is setup.</param>
     /// <param name="thread">The thread to create if it's null, validate it's type if not null, and start if it is not active.</param>
     /// <param name="constructThread">A callback to use to construct the thread if it's null.</param>
-    /// <param name="requiresThreadRetrieval">true if the thread must implement <see cref="IAgentThreadRetrievable"/> to allow message retrieval.</param>
+    /// <param name="requiresThreadRetrieval">true if the thread must implement <see cref="IAgentThreadMessageProvider"/> to allow message retrieval.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async task that completes once all update are complete.</returns>
     protected virtual async Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(
@@ -350,9 +350,9 @@ public abstract class Agent
             thread = constructThread();
         }
 
-        if (requiresThreadRetrieval && thread is not IAgentThreadRetrievable)
+        if (requiresThreadRetrieval && thread is not IAgentThreadMessageProvider)
         {
-            throw new KernelException($"{this.GetType().Name} requires agent threads that implement {nameof(IAgentThreadRetrievable)}.");
+            throw new KernelException($"{this.GetType().Name} requires agent threads that implement {nameof(IAgentThreadMessageProvider)}.");
         }
 
         if (thread is not TThreadType concreteThreadType)

@@ -8,24 +8,32 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Interface for any Semantic Kernel agent threads that allow the messages
-/// contained in them to be passed to an agent.
+/// Interface for any Semantic Kernel agent thread that allow the messages
+/// contained in it to be passed to an agent.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <see cref="AgentThread"/> types that implement this interface can
-/// be used with Agents that do not maintain a server-side chat history
-/// and require the entire set of messages, that are needed to generate
-/// a response, to be provided to the agent at invocation time.
+/// be used with Agents that do not maintain a server-side chat history, e.g. ChatCompletionAgent.
+/// These agents are typically implmented using simple LLMs and therefore
+/// require the entire chat history to be provided to the LLM for each invocation.
+/// </para>
+/// <para>
+/// This is in contrast to agents that maintain a server-side chat history, e.g. AzureAIAgentThread,
+/// where the chat history is stored on the server and managed by the agent service.
 /// </para>
 /// <para>
 /// The set of messages returned may be truncated or processed
 /// by the <see cref="AgentThread"/> as needed before passed to the
 /// agent to achieve a scalable and performant solution.
 /// </para>
+/// <para>
+/// This interface can be used to implement custom agent threads, that store messages
+/// in a database or 3rd party service, instead of in-memory like done by ChatHistoryAgentThread.
+/// </para>
 /// </remarks>
 [Experimental("SKEXP0110")]
-public interface IAgentThreadRetrievable
+public interface IAgentThreadMessageProvider
 {
     /// <summary>
     /// Asynchronously retrieves all messages to be used for the agent invocation.

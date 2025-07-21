@@ -74,7 +74,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             requiresThreadRetrieval: true,
             cancellationToken).ConfigureAwait(false);
-        var retrievableAgentThread = (IAgentThreadRetrievable)safeAgentThread;
+        var retrievableAgentThread = (IAgentThreadMessageProvider)safeAgentThread;
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -185,7 +185,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             requiresThreadRetrieval: true,
             cancellationToken).ConfigureAwait(false);
-        var retrievableAgentThread = (IAgentThreadRetrievable)safeAgentThread;
+        var retrievableAgentThread = (IAgentThreadMessageProvider)safeAgentThread;
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

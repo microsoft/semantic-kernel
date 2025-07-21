@@ -294,7 +294,7 @@ internal static class ResponseThreadActions
 
     private static async Task<ChatHistory> GetChatHistoryAsync(AgentThread agentThread, CancellationToken cancellationToken)
     {
-        if (agentThread is IAgentThreadRetrievable agentThreadRetrievable)
+        if (agentThread is IAgentThreadMessageProvider agentThreadRetrievable)
         {
             ChatHistory chatHistory = [];
             await foreach (var message in agentThreadRetrievable.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
