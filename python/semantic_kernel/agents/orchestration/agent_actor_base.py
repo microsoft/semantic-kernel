@@ -226,7 +226,7 @@ class AgentActorBase(ActorBase):
             await self._call_streaming_agent_response_callback(message, is_final=True)
         else:
             # Convert to StreamingChatMessageContent if needed
-            streaming_message = StreamingChatMessageContent(  # type: ignore[misc]
+            streaming_message = StreamingChatMessageContent(  # type: ignore[misc, call-overload]
                 role=message.role,
                 choice_index=0,
                 items=message.items,
