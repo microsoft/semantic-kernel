@@ -15,6 +15,7 @@ from azure.ai.agents.models import (
     MessageTextFilePathAnnotation,
     MessageTextUrlCitationAnnotation,
     RequiredFunctionToolCall,
+    RequiredMcpToolCall,
     RunStep,
     RunStepAzureAISearchToolCall,
     RunStepBingGroundingToolCall,
@@ -25,6 +26,7 @@ from azure.ai.agents.models import (
     RunStepDeltaFunctionToolCall,
     RunStepFileSearchToolCall,
     RunStepFunctionToolCall,
+    RunStepMcpToolCall,
     RunStepOpenAPIToolCall,
     ThreadMessage,
     ThreadRun,
@@ -774,3 +776,140 @@ def generate_streaming_annotation_content(
         title=title,
         citation_type=citation_type,
     )
+
+
+@experimental
+def generate_mcp_content(agent_name: str, mcp_tool_call: RunStepMcpToolCall) -> ChatMessageContent:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_call: The MCP tool call.
+
+    Returns:
+        The generated content.
+    """
+    mcp_result = FunctionResultContent(
+        function_name=mcp_tool_call.name,
+        id=mcp_tool_call.id,
+        result=mcp_tool_call.output,
+    )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=[mcp_result],
+        inner_content=mcp_tool_call,  # type: ignore
+    )
+
+
+@experimental
+def generate_mcp_call_content(agent_name: str, mcp_tool_calls: list[RequiredMcpToolCall]) -> ChatMessageContent:
+    """Generate MCP tool call content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The MCP tool calls.
+
+    Returns:
+        The generated content.
+    """
+    content_items: list[FunctionCallContent] = []
+    for mcp_call in mcp_tool_calls:
+        content_items.append(
+            FunctionCallContent(
+                id=mcp_call.id,
+                name=mcp_call.name,
+                function_name=mcp_call.name,
+                arguments=mcp_call.arguments,
+                server_label=mcp_call.server_label,
+            )
+        )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=content_items,  # type: ignore
+    )
+
+
+@experimental
+def generate_streaming_mcp_call_content(
+    agent_name: str, mcp_tool_calls: list["RequiredMcpToolCall"]
+) -> "StreamingChatMessageContent | None":
+    """Generate streaming MCP content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The mcp tool call details.
+
+    Returns:
+        The generated streaming content.
+    """
+    items: list[FunctionCallContent] = []
+    for index, tool in enumerate(mcp_tool_calls or []):
+        if isinstance(tool, RequiredMcpToolCall):
+            items.append(
+                FunctionCallContent(
+                    id=tool.id,
+                    index=index,
+                    name=tool.name,
+                    function_name=tool.name,
+                    arguments=tool.arguments,
+                    server_label=tool.server_label,
+                )
+            )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )
+
+
+@experimental
+def generate_streaming_mcp_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        step_details: The steps details with mcp tool call.
+
+    Returns:
+        The generated content.
+    """
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionResultContent] = []
+
+    for _, tool in enumerate(step_details.tool_calls):
+        if tool.type == "mcp":
+            mcp_tool_call = cast(RunStepMcpToolCall, tool)
+            if not mcp_tool_call.get("output"):
+                continue
+            mcp_result = FunctionResultContent(
+                function_name=mcp_tool_call.get("name"),
+                id=mcp_tool_call.get("id"),
+                result=mcp_tool_call.get("output"),
+            )
+            items.append(mcp_result)
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            inner_content=mcp_tool_call,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )  # type: ignore
