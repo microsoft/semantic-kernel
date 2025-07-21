@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// Common messages used for agent chat patterns.
 /// </summary>
-public static class GroupChatMessages
+internal static class GroupChatMessages
 {
     /// <summary>
     /// An empty message instance as a default.
@@ -79,7 +79,7 @@ public static class GroupChatMessages
     public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = messages };
 
     /// <summary>
-    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
+    /// Extension method to convert a <see cref="string"/> to a <see cref="Result"/>.
     /// </summary>
     public static Result AsResultMessage(this string text) => new() { Message = new(AuthorRole.Assistant, text) };
 }

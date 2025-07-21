@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Magentic;
 
@@ -76,4 +77,9 @@ public static class MagenticMessages
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/> message.
     /// </summary>
     public static Result AsResultMessage(this ChatMessageContent message) => new() { Message = message };
+
+    /// <summary>
+    /// Extension method to convert a <see cref="string"/> to a <see cref="Result"/>.
+    /// </summary>
+    public static Result AsResultMessage(this string text) => new() { Message = new(AuthorRole.Assistant, text) };
 }

@@ -9,7 +9,6 @@ using Xunit;
 
 namespace VectorData.ConformanceTests;
 
-#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CA2000 // Don't actually need to dispose FakeEmbeddingGenerator
 #pragma warning disable CS8605 // Unboxing a possibly null value.
 
