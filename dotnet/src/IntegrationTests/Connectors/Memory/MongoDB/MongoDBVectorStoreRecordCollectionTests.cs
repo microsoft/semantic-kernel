@@ -389,7 +389,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithFilter");
 
         await sut.EnsureCollectionExistsAsync();
 

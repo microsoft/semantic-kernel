@@ -67,7 +67,7 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     return;
                 }
 
-                switch (property.Type)
+                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
                 {
                     case var t when t == typeof(byte):
                         property.SetValue(record, reader.GetByte(ordinal)); // TINYINT
@@ -110,6 +110,9 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                         break;
 
 #if NET
+                    case var t when t == typeof(DateOnly):
+                        property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal)); // DATE
+                        break;
                     case var t when t == typeof(TimeOnly):
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
                         break;

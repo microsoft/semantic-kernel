@@ -528,14 +528,14 @@ public sealed class GeminiRequestTests
         var prompt = "prompt-example";
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            Labels = "Key1:Value1"
+            Labels = new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } }
         };
 
         // Act
         var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.NotNull(request.Configuration);
+        Assert.NotNull(request.Labels);
         Assert.Equal(executionSettings.Labels, request.Labels);
     }
 
@@ -569,7 +569,7 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage("user-message2");
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            Labels = "Key1:Value1"
+            Labels = new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } }
         };
 
         // Act

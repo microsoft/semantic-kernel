@@ -1,18 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extension methods for <see cref="StreamingChatMessageContent"/>.</summary>
-internal static class StreamingChatMessageContentExtensions
+[Experimental("SKEXP0001")]
+public static class StreamingChatMessageContentExtensions
 {
     /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatResponseUpdate ToChatResponseUpdate(this StreamingChatMessageContent content)
+    public static ChatResponseUpdate ToChatResponseUpdate(this StreamingChatMessageContent content)
     {
+        Verify.NotNull(content);
+
         ChatResponseUpdate update = new()
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,

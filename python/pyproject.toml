@@ -24,8 +24,8 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.1.0b1",
+    "azure-ai-projects >= 1.0.0b12",
+    "azure-ai-agents >= 1.1.0b4",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -68,7 +68,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.39.0",
+    "boto3>=1.36.4,<1.40.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -93,7 +93,7 @@ google = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 5.0",
+    "sentence-transformers >= 2.2,< 6.0",
     "torch == 2.7.1"
 ]
 mcp = [
@@ -107,7 +107,7 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.13",
+    "pymongo >= 4.8.0, < 4.14",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [

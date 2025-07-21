@@ -257,6 +257,7 @@ class GroupChatManagerActor(ActorBase):
         manager: GroupChatManager,
         internal_topic_type: str,
         participant_descriptions: dict[str, str],
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ):
         """Initialize the group chat manager actor.
@@ -265,8 +266,7 @@ class GroupChatManagerActor(ActorBase):
             manager (GroupChatManager): The group chat manager that manages the flow of the group chat.
             internal_topic_type (str): The topic type of the internal topic.
             participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
-                by the agents.
+            exception_callback (Callable[[BaseException], None]): A function that is called when an exception occurs.
             result_callback (Callable | None): A function that is called when the group chat manager produces a result.
         """
         self._manager = manager
@@ -275,7 +275,7 @@ class GroupChatManagerActor(ActorBase):
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
-        super().__init__(description="An actor for the group chat manager.")
+        super().__init__("An actor for the group chat manager.", exception_callback)
 
     @message_handler
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
@@ -304,6 +304,7 @@ class GroupChatManagerActor(ActorBase):
 
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
+    @ActorBase.exception_handler
     async def _determine_state_and_take_action(self, cancellation_token: CancellationToken) -> None:
         """Determine the state of the group chat and take action accordingly."""
         # User input state
@@ -448,14 +449,20 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type)
-        await self._register_manager(runtime, internal_topic_type, result_callback=result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback)
+        await self._register_manager(runtime, internal_topic_type, exception_callback, result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
-    async def _register_members(self, runtime: CoreRuntime, internal_topic_type: str) -> None:
+    async def _register_members(
+        self,
+        runtime: CoreRuntime,
+        internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
+    ) -> None:
         """Register the agents."""
         await asyncio.gather(*[
             GroupChatAgentActor.register(
@@ -464,6 +471,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 lambda agent=agent: GroupChatAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
+                    exception_callback=exception_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,
                 ),
@@ -475,6 +483,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the group chat manager."""
@@ -485,6 +494,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 self._manager,
                 internal_topic_type=internal_topic_type,
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )
