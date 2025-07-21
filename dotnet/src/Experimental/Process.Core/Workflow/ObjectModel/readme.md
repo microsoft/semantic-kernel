@@ -36,14 +36,14 @@ a pro-code workflow is how the builder is invoked:
 ```c#
 // Context defined by the runtime to provide configuration and channels
 HostingContext hostContext = ...;
-// Customer defined CPSDL workflow as YAML string
-string yamlText = ...;
+// Customer defined CPSDL workflow as YAML
+TextReader yamlReader = ...;
 // User input specific to this workflow execution
 string inputMessage = "Why is the sky blue?";
 
 // Parse the CPSDL yaml and provide the resulting KernelProcess instance
 // This is should be the _only_ difference compared to running a "pro-code" process
-KernelProcess process = ObjectModelBuilder.Build(yamlText, hostContext);
+KernelProcess process = ObjectModelBuilder.Build(yamlReader, hostContext);
 
 // Execute process with CPSDL specific extension
 process.StartAsync(inputMessage);
