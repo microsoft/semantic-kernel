@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit.Abstractions;
+// !!! The test suite is currently disabled due to the Azure AI service being unavailable. !!!
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithTextSearchBehaviorConformance;
+//using Xunit.Abstractions;
 
-public class AzureAIAgentWithTextSearchProviderTests(ITestOutputHelper output) : AgentWithTextSearchProvider<AzureAIAgentFixture>(() => new AzureAIAgentFixture(), output)
-{
-}
+//namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithTextSearchBehaviorConformance;
+
+//public class AzureAIAgentWithTextSearchProviderTests(ITestOutputHelper output) : AgentWithTextSearchProvider<AzureAIAgentFixture>(() => new AzureAIAgentFixture(), output)
+//{
+//}
