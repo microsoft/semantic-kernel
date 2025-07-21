@@ -41,7 +41,7 @@ internal static class OpenApiTypeConverter
                 {
                     string stringArgument => JsonValue.Create(long.Parse(stringArgument, CultureInfo.InvariantCulture)),
                     byte or sbyte or short or ushort or int or uint or long or ulong => JsonValue.Create(argument),
-                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && long.TryParse(jsonElement.ToString(), out var intValue) => JsonValue.Create(intValue),
+                    JsonElement jsonElement when jsonElement.TryGetInt64(out var intValue) => JsonValue.Create(intValue),
                     _ => null
                 },
                 "boolean" => argument switch
@@ -56,8 +56,8 @@ internal static class OpenApiTypeConverter
                     string stringArgument when long.TryParse(stringArgument, out var intValue) => JsonValue.Create(intValue),
                     string stringArgument when double.TryParse(stringArgument, out var doubleValue) => JsonValue.Create(doubleValue),
                     byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => JsonValue.Create(argument),
-                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && long.TryParse(jsonElement.ToString(), out var intValue) => JsonValue.Create(intValue),
-                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.Number && double.TryParse(jsonElement.ToString(), out var doubleValue) => JsonValue.Create(doubleValue),
+                    JsonElement jsonElement when jsonElement.TryGetInt64(out var intValue) => JsonValue.Create(intValue),
+                    JsonElement jsonElement when jsonElement.TryGetDouble(out var doubleValue) => JsonValue.Create(doubleValue),
                     _ => null
                 },
                 _ => schema is null
