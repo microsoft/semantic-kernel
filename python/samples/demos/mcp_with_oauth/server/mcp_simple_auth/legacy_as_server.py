@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 """
 Legacy Combined Authorization Server + Resource Server for MCP.
 

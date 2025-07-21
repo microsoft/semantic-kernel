@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 """
 Simple OAuth provider for MCP servers.
 
@@ -115,7 +117,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
             <p>This is a simplified authentication demo. Use the demo credentials below:</p>
             <p><strong>Username:</strong> demo_user<br>
             <strong>Password:</strong> demo_password</p>
-            
+
             <form action="{self.server_url.rstrip("/")}/login/callback" method="post">
                 <input type="hidden" name="state" value="{state}">
                 <div class="form-group">

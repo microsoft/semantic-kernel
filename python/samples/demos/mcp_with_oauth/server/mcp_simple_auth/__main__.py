@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 """Main entry point for simple MCP server with GitHub OAuth authentication."""
 
 import sys
