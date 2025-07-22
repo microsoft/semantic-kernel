@@ -1,7 +1,9 @@
+# TaskDialog
+# AgentDialog
 kind: AdaptiveDialog
 beginDialog:
   kind: OnActivity
-  id: main
+  id: activity_xyz123
   condition: =Global.OrchestratorRunning <> true
   type: Message
   actions:

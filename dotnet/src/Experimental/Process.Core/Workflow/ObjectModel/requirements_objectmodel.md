@@ -31,7 +31,7 @@ GetConversationMembers|✔|❓
 GotoAction|✔|✔
 HttpRequestAction|✔|❌
 InvokeAIBuilderModelAction|✔|❌
-InvokeAgent|❌|✔|Based on _Foundry_ agent identifier
+InvokeFoundryAgent|❌|✔|Based on _Foundry_ agent identifier
 InvokeConnectorAction|✔|❌
 InvokeCustomModelAction|✔|❌
 InvokeFlowAction|✔|❌

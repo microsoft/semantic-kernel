@@ -1,7 +1,7 @@
 kind: AdaptiveDialog
 beginDialog:
   kind: OnActivity
-  id: main
+  id: activity_xyz123
   type: Message
   actions:
     - kind: SetVariable
@@ -17,6 +17,7 @@ beginDialog:
     - kind: Foreach
       id: foreach_mVIecC
       items: ["a", "b", "c", "d", "e", "f"]
+      variable: Topic.LoopValue
       actions:
         - kind: SetVariable
           id: setVariable_A4iBtN
@@ -25,7 +26,7 @@ beginDialog:
           value: =Topic.Count + 1
         - kind: SendActivity
           id: sendActivity_Pkkmpq
-          activity: Looping (x{Topic.Count})
+          activity: Looping (x{Topic.Count}) - {Topic.LoopValue}
 
     - kind: SendActivity
       id: sendActivity_fJsbRz
