@@ -73,7 +73,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// </summary>
     internal string? RootProcessId { get; init; }
 
-    internal ProcessStorageManager? StorageManager { get; init; }
+    internal new ProcessStorageManager? StorageManager { get; init; }
 
     /// <summary>
     /// Starts the process with an initial event and an optional kernel.

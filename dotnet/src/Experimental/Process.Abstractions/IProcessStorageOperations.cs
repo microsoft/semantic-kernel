@@ -6,17 +6,62 @@ using Microsoft.SemanticKernel.Process.Models.Storage;
 
 namespace Microsoft.SemanticKernel;
 
-public interface IProcessStorageOperations
+internal interface IProcessStorageOperations
 {
+    /// <summary>
+    /// Initializes the storage connection to be used by the process.
+    /// </summary>
+    /// <returns></returns>
     Task<bool> InitializeAsync();
+    /// <summary>
+    /// Closes storage connection and cleans up resources.
+    /// </summary>
+    /// <returns></returns>
     Task<bool> CloseAsync();
+    /// <summary>
+    /// Fetches from storage the process data for a specific process.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     Task FetchProcessDataAsync(KernelProcess process);
+    /// <summary>
+    /// Get the process information already retrieved from storage, including parentId, version, mapping of steps and running ids.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     Task<StorageProcessInfo?> GetProcessInfoAsync(KernelProcess process);
+    /// <summary>
+    /// Saves the process information to storage, including parentId, version, mapping of steps and running ids.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     Task<bool> SaveProcessInfoAsync(KernelProcess process);
+    /// <summary>
+    /// Save process events to storage, including pending external events.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="pendingExternalEvents"></param>
+    /// <returns></returns>
     Task<bool> SaveProcessEventsAsync(KernelProcess process, List<KernelProcessEvent>? pendingExternalEvents = null);
+    /// <summary>
+    /// Saves all process related data to storage, including process info, events, and step data.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     Task<bool> SaveProcessDataToStorageAsync(KernelProcess process);
 
     // Step related operations to be applied to process children steps only
-    Task FetchStepDataAsync(KernelProcessStepInfo step);
-    Task<bool> SaveStepDataToStorageAsync(KernelProcessStepInfo step);
+    /// <summary>
+    /// Fetches from storage the step data for a specific process step.
+    /// </summary>
+    /// <param name="stepInfo"></param>
+    /// <returns></returns>
+    Task FetchStepDataAsync(KernelProcessStepInfo stepInfo);
+
+    /// <summary>
+    /// Saves the step data to storage.
+    /// </summary>
+    /// <param name="stepInfo"></param>
+    /// <returns></returns>
+    Task<bool> SaveStepDataToStorageAsync(KernelProcessStepInfo stepInfo);
 }
