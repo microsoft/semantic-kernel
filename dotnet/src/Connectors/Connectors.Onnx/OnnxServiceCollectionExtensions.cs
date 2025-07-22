@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -18,27 +18,35 @@ namespace Microsoft.SemanticKernel;
 public static class OnnxServiceCollectionExtensions
 {
     /// <summary>
-    /// Add OnnxRuntimeGenAI Chat Completion services to the specified service collection.
+    /// Adds the OnnxRuntimeGenAI Chat Completion services to the specified <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <param name="services">The service collection to add the OnnxRuntimeGenAI Text Generation service to.</param>
-    /// <param name="modelId">The name of the model.</param>
-    /// <param name="modelPath">The generative AI ONNX model path.</param>
-    /// <param name="serviceId">Optional service ID.</param>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization and deserialization required by the service.</param>
-    /// <returns>The updated service collection.</returns>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="modelId">Model Id.</param>
+    /// <param name="loggerFactory">Logger factory.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization, such as function argument deserialization, function result serialization, logging, etc., of the service.</param>
+    /// <param name="providers">Providers</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOnnxRuntimeGenAIChatCompletion(
         this IServiceCollection services,
-        string modelId,
         string modelPath,
-        string? serviceId = null,
-        JsonSerializerOptions? jsonSerializerOptions = null)
+        string serviceId,
+        string? modelId = null,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null,
+        List<string>? providers = null
+    )
     {
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (_, _) =>
             new OnnxRuntimeGenAIChatCompletionService(
-                modelId,
-                modelPath,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                jsonSerializerOptions));
+                modelPath: modelPath,
+                modelId: modelId,
+                loggerFactory: loggerFactory,
+                jsonSerializerOptions: jsonSerializerOptions,
+                providers: providers
+            )
+        );
 
         return services;
     }
