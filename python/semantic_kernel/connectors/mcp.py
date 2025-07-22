@@ -89,7 +89,7 @@ def _mcp_call_tool_result_to_kernel_contents(
 
 @experimental
 def _mcp_content_types_to_kernel_content(
-    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource,
+    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource | types.ResourceLink,
 ) -> TextContent | ImageContent | BinaryContent | AudioContent:
     """Convert a MCP type to a Semantic Kernel type."""
     if isinstance(mcp_type, types.TextContent):
@@ -98,6 +98,12 @@ def _mcp_content_types_to_kernel_content(
         return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
     if isinstance(mcp_type, types.AudioContent):
         return AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+    if isinstance(mcp_type, types.ResourceLink):
+        return BinaryContent(
+            uri=mcp_type.uri,  # type: ignore
+            mime_type=mcp_type.mimeType,
+            inner_content=mcp_type,
+        )
     # subtypes of EmbeddedResource
     if isinstance(mcp_type.resource, types.TextResourceContents):
         return TextContent(
@@ -215,14 +221,53 @@ class MCPPluginBase:
         self.session = session
         self.kernel = kernel or None
         self.request_timeout = request_timeout
+        self._current_task: asyncio.Task | None = None
+        self._stop_event: asyncio.Event | None = None
+
+    async def __aenter__(self) -> Self:
+        """Enter the context manager."""
+        await self.connect()
+        return self
+
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
+    ) -> None:
+        """Exit the context manager."""
+        await self.close()
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
+        ready_event = asyncio.Event()
+        try:
+            self._current_task = asyncio.create_task(self._inner_connect(ready_event))
+            await ready_event.wait()
+        except KernelPluginInvalidConfigurationError:
+            ready_event.clear()
+            raise
+        except Exception as ex:
+            ready_event.clear()
+            await self.close()
+            raise FunctionExecutionException("Failed to enter context manager.") from ex
+
+    async def close(self) -> None:
+        """Disconnect from the MCP server."""
+        if self._stop_event:
+            # Signal the stop event, which asks the _inner_connect
+            # method to close the session with the exit stack
+            self._stop_event.set()
+        if self._current_task:
+            # After, the signal, we wait for it to close the exit stack.
+            await self._current_task
+            self._current_task = None
+        self.session = None
+
+    async def _inner_connect(self, ready_event: asyncio.Event) -> None:
         if not self.session:
             try:
                 transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to connect to the MCP server. Please check your configuration."
                 ) from ex
@@ -242,7 +287,13 @@ class MCPPluginBase:
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
-            await session.initialize()
+            try:
+                await session.initialize()
+            except Exception as ex:
+                await self._exit_stack.aclose()
+                raise KernelPluginInvalidConfigurationError(
+                    "Failed to initialize session. Please check your configuration."
+                ) from ex
             self.session = session
         elif self.session._request_id == 0:
             # If the session is not initialized, we need to reinitialize it
@@ -260,6 +311,16 @@ class MCPPluginBase:
                 )
             except Exception:
                 logger.warning("Failed to set log level to %s", logger.level)
+        # Setting up is complete, will now signal the main loop that we are ready
+        ready_event.set()
+        # Create a stop event to signal the exit stack to close
+        self._stop_event = asyncio.Event()
+        await self._stop_event.wait()
+        try:
+            await self._exit_stack.aclose()
+        except Exception as e:
+            logger.exception("Error during exit stack close", exc_info=e)
+            pass
 
     async def sampling_callback(
         self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
@@ -398,11 +459,6 @@ class MCPPluginBase:
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)
 
-    async def close(self) -> None:
-        """Disconnect from the MCP server."""
-        await self._exit_stack.aclose()
-        self.session = None
-
     @abstractmethod
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
         """Get an MCP client."""
@@ -442,23 +498,6 @@ class MCPPluginBase:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call prompt '{prompt_name}'.") from ex
-
-    async def __aenter__(self) -> Self:
-        """Enter the context manager."""
-        try:
-            await self.connect()
-            return self
-        except KernelPluginInvalidConfigurationError:
-            raise
-        except Exception as ex:
-            await self._exit_stack.aclose()
-            raise FunctionExecutionException("Failed to enter context manager.") from ex
-
-    async def __aexit__(
-        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
-    ) -> None:
-        """Exit the context manager."""
-        await self.close()
 
     def added_to_kernel(self, kernel: Kernel) -> None:
         """Add the plugin to the kernel."""

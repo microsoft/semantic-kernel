@@ -24,8 +24,8 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.1.0b1",
+    "azure-ai-projects >= 1.0.0b12",
+    "azure-ai-agents >= 1.1.0b4",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -93,7 +93,7 @@ google = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 5.0",
+    "sentence-transformers >= 2.2,< 6.0",
     "torch == 2.7.1"
 ]
 mcp = [
@@ -240,7 +240,7 @@ min-file-size = 1
 
 [tool.bandit]
 targets = ["semantic_kernel"]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 
 [tool.flit.module]
 name = "semantic_kernel"

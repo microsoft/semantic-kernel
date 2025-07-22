@@ -52,7 +52,7 @@ internal static class OpenAIResponseExtensions
         }
         else if (item is ReasoningResponseItem reasoningResponseItem)
         {
-            if (reasoningResponseItem.SummaryTextParts is not null && reasoningResponseItem.SummaryTextParts.Count > 0)
+            if (reasoningResponseItem.SummaryParts is not null && reasoningResponseItem.SummaryParts.Count > 0)
             {
                 return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: reasoningResponseItem);
             }
@@ -77,7 +77,7 @@ internal static class OpenAIResponseExtensions
         }
         else if (item is ReasoningResponseItem reasoningResponseItem)
         {
-            return reasoningResponseItem.SummaryTextParts.ToChatMessageContentItemCollection();
+            return reasoningResponseItem.SummaryParts.ToChatMessageContentItemCollection();
         }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
@@ -195,12 +195,15 @@ internal static class OpenAIResponseExtensions
         return collection;
     }
 
-    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<string> texts)
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<ReasoningSummaryPart> parts)
     {
         var collection = new ChatMessageContentItemCollection();
-        foreach (var text in texts)
+        foreach (var part in parts)
         {
-            collection.Add(new TextContent(text, innerContent: null));
+            if (part is ReasoningSummaryTextPart text)
+            {
+                collection.Add(new TextContent(text.Text, innerContent: text));
+            }
         }
         return collection;
     }

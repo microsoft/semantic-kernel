@@ -48,6 +48,7 @@ class SequentialAgentActor(AgentActorBase):
         agent: Agent,
         internal_topic_type: str,
         next_agent_type: str,
+        exception_callback: Callable[[BaseException], None],
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
@@ -57,6 +58,7 @@ class SequentialAgentActor(AgentActorBase):
         super().__init__(
             agent=agent,
             internal_topic_type=internal_topic_type,
+            exception_callback=exception_callback,
             agent_response_callback=agent_response_callback,
             streaming_agent_response_callback=streaming_agent_response_callback,
         )
@@ -85,12 +87,13 @@ class CollectionActor(ActorBase):
     def __init__(
         self,
         description: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Initialize the collection actor."""
         self._result_callback = result_callback
 
-        super().__init__(description=description)
+        super().__init__(description, exception_callback)
 
     @message_handler
     async def _handle_message(self, message: SequentialRequestMessage, _: MessageContext) -> None:
@@ -123,16 +126,18 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type)
-        await self._register_collection_actor(runtime, internal_topic_type, result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback)
+        await self._register_collection_actor(runtime, internal_topic_type, exception_callback, result_callback)
 
     async def _register_members(
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
     ) -> None:
         """Register the members.
 
@@ -143,6 +148,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
         Args:
             runtime (CoreRuntime): The agent runtime.
             internal_topic_type (str): The internal topic type for the orchestration that this actor is part of.
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
 
         Returns:
             str: The first actor type in the sequence.
@@ -156,6 +162,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
                     agent,
                     internal_topic_type,
                     next_agent_type=next_actor_type,
+                    exception_callback=exception_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,
                 ),
@@ -167,6 +174,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the collection actor."""
@@ -175,6 +183,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
             self._get_collection_actor_type(internal_topic_type),
             lambda: CollectionActor(
                 description="An internal agent that is responsible for collection results",
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )
