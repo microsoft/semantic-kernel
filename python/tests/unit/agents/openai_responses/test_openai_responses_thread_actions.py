@@ -366,3 +366,15 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
 
         assert len(collected_stream_messages) == 2, "Expected exactly two final messages after tool call."
         assert collected_stream_messages[0].role == AuthorRole.ASSISTANT
+
+
+def test_get_tools(mock_agent, kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class)
+
+    tools = ResponsesAgentThreadActions._get_tools(
+        agent=mock_agent,
+        kernel=kernel,
+        function_choice_behavior=MagicMock(),
+    )
+
+    assert len(tools) == len(mock_agent.tools) + len(kernel.get_full_list_of_function_metadata())
