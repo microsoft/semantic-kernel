@@ -605,7 +605,7 @@ public class LocalProcessTests
 
     /// <summary>
     /// Process with branch that takes long time, other branch is short and needs external events.
-    /// Test helps validate persistance of external events received when process was already running but not ready to process them
+    /// Test helps validate persistence of external events received when process was already running but not ready to process them
     /// <code>
     ///                                    ┌──────────────────────────────┐
     ///                                    │                              │

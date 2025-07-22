@@ -59,6 +59,6 @@ public interface IProcessStepStorageOperations
     /// <returns></returns>
     Task<bool> SaveStepEventsAsync(KernelProcessStepInfo stepInfo, Dictionary<string, Dictionary<string, object?>>? edgeGroups = null);
     // Fot now step data can be saved to storage only by parent process only.
-    // This is to only save data to storage at the end of the process super step excecution.
+    // This is to only save data to storage at the end of the process super step execution.
     //Task<bool> SaveStepDataToStorageAsync(KernelProcessStepInfo step);
 }
