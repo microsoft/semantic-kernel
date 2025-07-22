@@ -70,6 +70,4 @@ public static class StorageStepExtensions
             EdgesData = edgeGroups?.PackStepEdgesValues()
         };
     }
-
- 
 }
