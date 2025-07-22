@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Models.Storage;
 using SemanticKernel.Process.TestsShared.Services;
 using SemanticKernel.Process.TestsShared.Services.Storage;
@@ -294,7 +293,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepDetails";
         var processKey = CommonProcesses.ProcessKeys.DelayedMergeProcess;
 
         var processStorage = new MockStorage();
@@ -322,13 +321,13 @@ public class LocalProcessTests
         processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry);
         Assert.NotNull(entry?.Content);
 
-        var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
-        Assert.NotNull(edgeData);
-        Assert.Single(edgeData.EdgesData);
+        var edgeData = JsonSerializer.Deserialize<StorageStepData>(entry.Content);
+        Assert.NotNull(edgeData?.StepEvents?.EdgesData);
+        Assert.Single(edgeData.StepEvents.EdgesData);
         // Only 2/3 events in merge step should have arrived and persisted in stepEdgesData
-        Assert.Equal(2, edgeData.EdgesData.First().Value?.Count);
-        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep22.DelayedEcho"));
-        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep33.DelayedEcho"));
+        Assert.Equal(2, edgeData.StepEvents.EdgesData.First().Value?.Count);
+        Assert.True(edgeData.StepEvents.EdgesData.First().Value?.ContainsKey("DelayedEchoStep22.DelayedEcho"));
+        Assert.True(edgeData.StepEvents.EdgesData.First().Value?.ContainsKey("DelayedEchoStep33.DelayedEcho"));
 
         // Act - 2
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
@@ -346,11 +345,11 @@ public class LocalProcessTests
         Assert.NotNull(entry2?.Content);
         Assert.IsType<string>(entry2?.Content);
 
-        var edgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(entry2.Content);
-        Assert.NotNull(edgeData2);
-        Assert.Single(edgeData2.EdgesData);
+        var edgeData2 = JsonSerializer.Deserialize<StorageStepData>(entry2.Content);
+        Assert.NotNull(edgeData2?.StepEvents?.EdgesData);
+        Assert.Single(edgeData2.StepEvents.EdgesData);
         // All parameters in merge step should have been processed and edge data should be empty
-        Assert.Empty(edgeData2.EdgesData.First().Value!);
+        Assert.Empty(edgeData2.StepEvents.EdgesData.First().Value!);
     }
 
     /// <summary>
@@ -364,7 +363,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepDetails";
         var processKey = CommonProcesses.ProcessKeys.SimpleMergeProcess;
 
         var processStorage = new MockStorage();
@@ -392,12 +391,12 @@ public class LocalProcessTests
         Assert.NotNull(entry?.Content);
         Assert.IsType<string>(entry?.Content);
 
-        var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
-        Assert.NotNull(edgeData);
-        Assert.Single(edgeData.EdgesData);
+        var edgeData = JsonSerializer.Deserialize<StorageStepData>(entry.Content);
+        Assert.NotNull(edgeData?.StepEvents?.EdgesData);
+        Assert.Single(edgeData.StepEvents.EdgesData);
         // Only 1/2 events in merge step should have arrived and persisted in stepEdgesData
-        Assert.Single(edgeData.EdgesData.First().Value);
-        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("SimpleMergeProcess.StartProcess"));
+        Assert.Single(edgeData.StepEvents.EdgesData.First().Value);
+        Assert.True(edgeData.StepEvents.EdgesData.First().Value?.ContainsKey("SimpleMergeProcess.StartProcess"));
 
         // Act - 2
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
@@ -414,11 +413,11 @@ public class LocalProcessTests
         Assert.NotNull(entry2?.Content);
         Assert.IsType<string>(entry2?.Content);
 
-        var edgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(entry2.Content);
-        Assert.NotNull(edgeData2);
-        Assert.Single(edgeData2.EdgesData);
+        var edgeData2 = JsonSerializer.Deserialize<StorageStepData>(entry2.Content);
+        Assert.NotNull(edgeData2?.StepEvents?.EdgesData);
+        Assert.Single(edgeData2.StepEvents.EdgesData);
         // All parameters in merge step should have been processed and edge data should be empty
-        Assert.Empty(edgeData2.EdgesData.First().Value!);
+        Assert.Empty(edgeData2.StepEvents.EdgesData.First().Value!);
     }
 
     [Fact]
@@ -426,9 +425,9 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
-        var outerCounterStorageEntry = "{0}.outerCounterStep.StepState";
-        var innerCounterStorageEntry = "{0}.counterStep.StepState";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepDetails";
+        var outerCounterStorageEntry = "{0}.outerCounterStep.StepDetails";
+        var innerCounterStorageEntry = "{0}.counterStep.StepDetails";
         var processKey = CommonProcesses.ProcessKeys.NestedCounterWithEvenDetectionAndMergeProcess;
 
         var processStorage = new MockStorage();
@@ -474,10 +473,10 @@ public class LocalProcessTests
             processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry);
             Assert.NotNull(mergeStorageEntry?.Content);
 
-            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry.Content);
-            Assert.NotNull(mergeEdgeData);
-            Assert.Single(mergeEdgeData.EdgesData);
-            Assert.NotEmpty(mergeEdgeData.EdgesData.Values);
+            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepData>(mergeStorageEntry.Content);
+            Assert.NotNull(mergeEdgeData?.StepEvents?.EdgesData);
+            Assert.Single(mergeEdgeData.StepEvents.EdgesData);
+            Assert.NotEmpty(mergeEdgeData.StepEvents.EdgesData.Values);
         }
 
         // Act - 4
@@ -502,19 +501,19 @@ public class LocalProcessTests
         processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry2);
         Assert.NotNull(mergeStorageEntry2?.Content);
 
-        var mergeEdgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry2.Content);
-        Assert.NotNull(mergeEdgeData2);
-        Assert.Single(mergeEdgeData2.EdgesData);
-        Assert.Empty(mergeEdgeData2.EdgesData.Values.First());
+        var mergeEdgeData2 = JsonSerializer.Deserialize<StorageStepData>(mergeStorageEntry2.Content);
+        Assert.NotNull(mergeEdgeData2?.StepEvents?.EdgesData);
+        Assert.Single(mergeEdgeData2.StepEvents.EdgesData);
+        Assert.Empty(mergeEdgeData2.StepEvents.EdgesData.Values.First());
     }
 
     private void AssertCounterState(MockStorage processStorage, string stepStorageEntry, int expectedCount)
     {
         processStorage._dbMock.TryGetValue(stepStorageEntry, out var outerCounterEntry);
         Assert.NotNull(outerCounterEntry?.Content);
-        var outerCounterData = JsonSerializer.Deserialize<KernelProcessStepStateMetadata>(outerCounterEntry?.Content!);
-        Assert.NotNull(outerCounterData?.State?.ToString());
-        var counterStateData = JsonSerializer.Deserialize<KernelProcessEventData>(outerCounterData.State.ToString()!)?.ToObject();
+        var outerCounterData = JsonSerializer.Deserialize<StorageStepData>(outerCounterEntry?.Content!);
+        Assert.NotNull(outerCounterData?.StepState?.State);
+        var counterStateData = outerCounterData.StepState.State.ToObject();
         Assert.NotNull(counterStateData);
         Assert.IsType<CommonSteps.CounterState>(counterStateData);
         Assert.Equal(expectedCount, ((CommonSteps.CounterState)counterStateData).Count);
@@ -525,7 +524,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepDetails";
         var processKey = CommonProcesses.ProcessKeys.InternalNestedCounterWithEvenDetectionAndMergeProcess;
 
         var processStorage = new MockStorage();
@@ -556,22 +555,22 @@ public class LocalProcessTests
             processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry);
             Assert.NotNull(mergeStorageEntry?.Content);
 
-            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry.Content);
-            Assert.NotNull(mergeEdgeData);
-            Assert.Single(mergeEdgeData.EdgesData);
-            Assert.Single(mergeEdgeData.EdgesData.Values);
+            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepData>(mergeStorageEntry.Content);
+            Assert.NotNull(mergeEdgeData?.StepEvents?.EdgesData);
+            Assert.Single(mergeEdgeData.StepEvents.EdgesData);
+            Assert.Single(mergeEdgeData.StepEvents.EdgesData.Values);
             if (i < 4)
             {
                 // outer merge is waiting on missing parameters pending from internal nested subprocess
                 // in the meantime on each iteration, the only piped event/parameter keeps changing
-                Assert.Single(mergeEdgeData.EdgesData.Values.First().Values);
-                var firstEventValue = mergeEdgeData.EdgesData.Values.First().Values.First()?.ToObject();
+                Assert.Single(mergeEdgeData.StepEvents.EdgesData.Values.First().Values);
+                var firstEventValue = mergeEdgeData.StepEvents.EdgesData.Values.First().Values.First()?.ToObject();
                 Assert.Equal(i.ToString(), firstEventValue?.ToString());
             }
             else
             {
                 // finally the missing event, that is piped for 2 parameters, arrived and now the merge edge data is empty since it was processed
-                Assert.Empty(mergeEdgeData.EdgesData.Values.First().Values);
+                Assert.Empty(mergeEdgeData.StepEvents.EdgesData.Values.First().Values);
             }
         }
     }
@@ -601,6 +600,115 @@ public class LocalProcessTests
 
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();
+    }
+
+
+    /// <summary>
+    /// Process with branch that takes long time, other branch is short and needs external events.
+    /// Test helps validate persistance of external events received when process was already running but not ready to process them
+    /// <code>
+    ///                                    ┌──────────────────────────────┐
+    ///                                    │                              │
+    ///                                ┌──►│       delayed emitter        ├─────┐
+    ///                                │   │                              │     │
+    ///                   ┌────────┐   │   └──────────────────────────────┘     │  ┌─────────────┐
+    ///                   │        ├───┘                                        │  │             │
+    ///  START ──────────►│  echo  │                                            └─►│  dual echo  │
+    /// PROCESS           │    1   │                                               │      2      │
+    ///                   │        ├───┐   ┌───────────┐      ┌───────────┐     ┌─►│             │
+    ///                   └────────┘   │   │           │      │           │     │  └─────────────┘
+    ///                                └──►│   echo    ├─────►│ dual echo ├─────┘
+    ///                                    │     2     │      │     1     │
+    ///                                    │           │  ┌──►│           │
+    ///                                    └───────────┘  │   └───────────┘
+    /// SECONDARY START ──────────────────────────────────┘
+    ///     PROCESS
+    ///
+    /// </code>
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task LongRunningProcessWith2BranchesAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var processStorage = new MockStorage();
+
+        Kernel kernel = new();
+        ProcessBuilder processBuilder = new(nameof(LongRunningProcessWith2BranchesAsync));
+
+        var echo1 = processBuilder.AddStepFromType<CommonSteps.EchoStep>("echo1");
+
+        var delayedEcho = processBuilder.AddStepFromType<CommonSteps.DelayedEchoStep>();
+
+        var echo2 = processBuilder.AddStepFromType<CommonSteps.EchoStep>("echo2");
+        var dualEcho1 = processBuilder.AddStepFromType<CommonSteps.DualEchoStep>("dualEcho1");
+
+        var dualEcho2 = processBuilder.AddStepFromType<CommonSteps.DualEchoStep>("dualEcho2");
+
+        processBuilder
+            .OnInputEvent(CommonProcesses.ProcessEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(echo1));
+
+        echo1
+            .OnEvent(CommonSteps.EchoStep.OutputEvents.EchoMessage)
+            .SendEventTo(new ProcessFunctionTargetBuilder(delayedEcho))
+            .SendEventTo(new ProcessFunctionTargetBuilder(echo2));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(CommonSteps.EchoStep.OutputEvents.EchoMessage, echo2),
+                new(CommonProcesses.ProcessEvents.OtherEvent, processBuilder)
+            ]).SendEventTo(new ProcessStepTargetBuilder(dualEcho1, inputMapping: (inputEvents) =>
+            {
+                // Map the inputs to the last step.
+                return new()
+                {
+                    { "message1", inputEvents[echo2.GetFullEventId(CommonSteps.EchoStep.OutputEvents.EchoMessage)] },
+                    { "message2", inputEvents[processBuilder.GetFullEventId(CommonProcesses.ProcessEvents.OtherEvent)] }
+                };
+            }));
+
+        processBuilder.ListenFor().AllOf(
+            [
+                new(CommonSteps.DualEchoStep.OutputEvents.EchoMessage, dualEcho1),
+                new(CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho, delayedEcho)
+            ]).SendEventTo(new ProcessStepTargetBuilder(dualEcho2, inputMapping: (inputEvents) =>
+            {
+                // Map the inputs to the last step.
+                return new()
+                {
+                    { "message1", inputEvents[dualEcho1.GetFullEventId(CommonSteps.DualEchoStep.OutputEvents.EchoMessage)] },
+                    { "message2", inputEvents[delayedEcho.GetFullEventId(CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho)] }
+                };
+            }));
+
+        KernelProcess process = processBuilder.Build();
+
+        var testInput = "Hello, World!";
+
+        var context = await process.CreateContextAsync(
+            kernel, processId, storageConnector: processStorage);
+
+        var runningProcessTask = Task.Run(() =>
+        {
+            context.StartWithEventKeepRunning(new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+                Data = testInput,
+            }, kernel);
+        });
+
+        // wait 3 seconds, then send event while process is still running
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        await context.SendEventAsync(new KernelProcessEvent()
+        {
+            Id = CommonProcesses.ProcessEvents.OtherEvent,
+            Data = "Secondary input",
+        });
+
+        await context.StopAsync();
     }
 
     /// <summary>

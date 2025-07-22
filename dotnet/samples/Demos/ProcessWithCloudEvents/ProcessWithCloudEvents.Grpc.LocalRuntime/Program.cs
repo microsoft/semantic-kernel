@@ -27,6 +27,7 @@ builder.Services.AddLogging((logging) =>
 });
 
 var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
+var cosmosDbOptions = config.GetValid<CosmosDBOptions>(CosmosDBOptions.SectionName);
 
 // Configure the Kernel with DI. This is required for dependency injection to work with processes.
 builder.Services.AddKernel();
@@ -65,7 +66,13 @@ builder.Services.AddSingleton<IReadOnlyDictionary<string, KernelProcess>>(sp =>
 // Registering storage used for persisting process state with Local Runtime
 string tempDirectoryPath = Path.Combine(Path.GetTempPath(), "MySKProcessStorage");
 var storageInstance = new JsonFileStorage(tempDirectoryPath);
-builder.Services.AddSingleton<IProcessStorageConnector>(storageInstance);
+
+var cloudStorageInstance = new CosmosDbProcessStorageConnector(
+    cosmosDbOptions.ConnectionString, cosmosDbOptions.DatabaseName, cosmosDbOptions.ContainerName
+);
+
+//builder.Services.AddSingleton<IProcessStorageConnector>(storageInstance);
+builder.Services.AddSingleton<IProcessStorageConnector>(cloudStorageInstance);
 
 // Enabling CORS for grpc-web when using webApp as client, remove if not needed
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", builder =>

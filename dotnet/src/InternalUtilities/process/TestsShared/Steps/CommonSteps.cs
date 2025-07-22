@@ -144,6 +144,32 @@ public static class CommonSteps
     }
 
     /// <summary>
+    /// A step that echos its input.
+    /// </summary>
+    public sealed class DualEchoStep : KernelProcessStep
+    {
+        /// <summary>
+        /// Output events emitted by <see cref="EchoStep"/>
+        /// </summary>
+        public static class OutputEvents
+        {
+            /// <summary>
+            /// Echo message event name
+            /// </summary>
+            public const string EchoMessage = nameof(EchoMessage);
+        }
+
+        [KernelFunction]
+        public async Task<string> EchoAsync(KernelProcessStepContext context, string message1, string message2)
+        {
+            var message = $"{message1} {message2}";
+            Console.WriteLine($"[DUAL-ECHO-{this.StepName}] {message}");
+            await context.EmitEventAsync(OutputEvents.EchoMessage, data: message, KernelProcessEventVisibility.Public);
+            return message;
+        }
+    }
+
+    /// <summary>
     /// A step that echos its input. Delays input for a specified amount of time.
     /// </summary>
     public sealed class DelayedEchoStep : KernelProcessStep
@@ -153,7 +179,7 @@ public static class CommonSteps
             public const string DelayedEcho = nameof(DelayedEcho);
         }
 
-        private readonly int _delayInMs = 1000;
+        private readonly int _delayInMs = 10000;
 
         [KernelFunction]
         public async Task<string> EchoAsync(KernelProcessStepContext context, string message)

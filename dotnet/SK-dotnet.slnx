@@ -79,6 +79,7 @@
   </Folder>
   <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
     <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
+    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc.LocalRuntime/ProcessWithCloudEvents.Grpc.LocalRuntime.csproj" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Processes/ProcessWithCloudEvents.Processes.csproj" />
   </Folder>
