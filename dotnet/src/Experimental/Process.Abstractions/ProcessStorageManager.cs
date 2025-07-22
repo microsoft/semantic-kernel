@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Process.Internal;
-using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Models.Storage;
 
 namespace Microsoft.SemanticKernel.Process;
@@ -11,22 +10,24 @@ namespace Microsoft.SemanticKernel.Process;
 /// <summary>
 /// Storage manager for storing step and process related data using the implementation of <see cref="IProcessStorageConnector"/>.
 /// </summary>
-public class ProcessStorageManager
+public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStorageOperations
 {
     internal static class StorageKeywords
     {
-        // Suffixes
-        public const string ParentProcess = nameof(ParentProcess);
         // Types
-        public const string ProcessState = nameof(ProcessState);
-        public const string StepState = nameof(StepState);
+        /// <summary>
+        /// To be used for storing process children data, parent info and external events
+        /// </summary>
+        public const string ProcessDetails = nameof(ProcessDetails);
 
-        public const string StepEdgesData = nameof(StepEdgesData);
+        public const string StepDetails = nameof(StepDetails);
     }
 
     private readonly IProcessStorageConnector _storageConnector;
 
     private bool _isInitialized = false;
+
+    private readonly ConcurrentDictionary<string, object> _softSaveStorage = [];
 
     /// <summary>
     /// Constructor for the <see cref="ProcessStorageManager"/> class.
@@ -74,127 +75,233 @@ public class ProcessStorageManager
         return $"{componentId}.{componentName}";
     }
 
-    private string GetParentId(string componentName, string componentId)
+    private string GetProcessEntryId(KernelProcess process)
     {
-        return $"{this.GetEntryId(componentName, componentId)}.{StorageKeywords.ParentProcess}";
+        Verify.NotNullOrWhiteSpace(process.StepId);
+        Verify.NotNullOrWhiteSpace(process.RunId);
+
+        return $"{this.GetEntryId(process.StepId, process.RunId)}.{StorageKeywords.ProcessDetails}";
+        //return process.RunId;
     }
 
-    private string GetStepStateId(string componentName, string componentId)
+    private string GetStepEntryId(KernelProcessStepInfo step)
     {
-        return $"{this.GetEntryId(componentName, componentId)}.{StorageKeywords.StepState}";
-    }
+        Verify.NotNullOrWhiteSpace(step.StepId);
+        Verify.NotNullOrWhiteSpace(step.RunId);
 
-    private string GetProcessStateId(string componentName, string componentId)
-    {
-        return $"{this.GetEntryId(componentName, componentId)}.{StorageKeywords.ProcessState}";
-    }
-
-    private string GetStepEdgesId(string componentName, string componentId)
-    {
-        return $"{this.GetEntryId(componentName, componentId)}.{StorageKeywords.StepEdgesData}";
+        return $"{this.GetEntryId(step.StepId, step.RunId)}.{StorageKeywords.StepDetails}";
+        //return step.RunId;
     }
 
     /// <summary>
     /// Get process data from storage
     /// </summary>
-    /// <param name="processName"></param>
-    /// <param name="processId"></param>
+    /// <param name="process"></param>
     /// <returns></returns>
-    public async Task<StorageProcessState?> GetProcessDataAsync(string processName, string processId)
+    public async Task FetchProcessDataAsync(KernelProcess process)
     {
-        var entryId = this.GetProcessStateId(processName, processId);
-        return await this._storageConnector.GetEntryAsync<StorageProcessState>(entryId).ConfigureAwait(false);
+        var entryId = this.GetProcessEntryId(process);
+
+        var storageState = await this._storageConnector.GetEntryAsync<StorageProcessData>(entryId).ConfigureAwait(false);
+        if (storageState != null)
+        {
+            this._softSaveStorage[entryId] = storageState;
+        }
+    }
+
+    public async Task<StorageProcessInfo?> GetProcessInfoAsync(KernelProcess process)
+    {
+        var entryId = this.GetProcessEntryId(process);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveProcessData) && softSaveProcessData is StorageProcessData processData)
+        {
+            return processData.ProcessInfo;
+        }
+        return null;
     }
 
     /// <summary>
     /// Save process data to storage
     /// </summary>
-    /// <param name="processName"></param>
-    /// <param name="processId"></param>
-    /// <param name="state"></param>
+    /// <param name="process"></param>
     /// <returns></returns>
-    public async Task<bool> SaveProcessDataAsync(string processName, string processId, KernelProcess state)
+    public async Task<bool> SaveProcessInfoAsync(KernelProcess process)
     {
-        var entryId = this.GetProcessStateId(processName, processId);
-        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ProcessState, state.ToKernelStorageProcessState()).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(process.RunId);
+
+        var entryId = this.GetProcessEntryId(process);
+        if (!this._softSaveStorage.TryGetValue(entryId, out var processSavedData))
+        {
+            processSavedData = new StorageProcessData() { InstanceId = process.RunId };
+            this._softSaveStorage.TryAdd(entryId, processSavedData);
+        }
+
+        if (processSavedData is StorageProcessData processData)
+        {
+            processData.ProcessInfo = process.ToKernelStorageProcessInfo();
+        }
+
+        return true;
+    }
+
+    public async Task<bool> SaveProcessEventsAsync(KernelProcess process, List<KernelProcessEvent>? pendingExternalEvents = null)
+    {
+        Verify.NotNullOrWhiteSpace(process.RunId);
+
+        var entryId = this.GetProcessEntryId(process);
+        if (!this._softSaveStorage.TryGetValue(entryId, out var processSavedData))
+        {
+            processSavedData = new StorageProcessData() { InstanceId = process.RunId };
+            this._softSaveStorage.TryAdd(entryId, processSavedData);
+        }
+
+        if (processSavedData is StorageProcessData processData)
+        {
+            processData.ProcessEvents = process.ToKernelStorageProcessEvents(pendingExternalEvents);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// To be called when process data is already saved in soft save storage and needs to be saved to the actual storage.
+    /// Should be called at the end of each super step in a process run.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
+    public async Task<bool> SaveProcessDataToStorageAsync(KernelProcess process)
+    {
+        var entryId = this.GetProcessEntryId(process);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveProcessData) && softSaveProcessData is StorageProcessData processData)
+        {
+            // for now process only has one entry - in the future the process state may be saved in a separate entity -> 2 storage calls
+            return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ProcessDetails, processData).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Fetches all step data related info like state, messages, info from the cloud and stores it locally
+    /// </summary>
+    /// <param name="step"></param>
+    /// <returns></returns>
+    public async Task FetchStepDataAsync(KernelProcessStepInfo step)
+    {
+        var entryId = this.GetStepEntryId(step);
+        var storageState = await this._storageConnector.GetEntryAsync<StorageStepData>(entryId).ConfigureAwait(false);
+
+        if (storageState != null)
+        {
+            this._softSaveStorage[entryId] = storageState;
+        }
+    }
+
+    public async Task<StorageStepInfo?> GetStepInfoAsync(KernelProcessStepInfo step)
+    {
+        var entryId = this.GetStepEntryId(step);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
+        {
+            return stepData.StepInfo;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Save step data to storage
+    /// </summary>
+    /// <param name="step"></param>
+    /// <returns></returns>
+    public async Task<bool> SaveStepInfoAsync(KernelProcessStepInfo step)
+    {
+        Verify.NotNullOrWhiteSpace(step.RunId);
+
+        var entryId = this.GetStepEntryId(step);
+        if (!this._softSaveStorage.TryGetValue(entryId, out var stepSavedData))
+        {
+            stepSavedData = new StorageStepData() { InstanceId = step.RunId };
+            this._softSaveStorage.TryAdd(entryId, stepSavedData);
+        }
+
+        if (stepSavedData is StorageStepData stepData)
+        {
+            stepData.StepInfo = step.ToStorageStepInfo();
+        }
+
+        return true;
     }
 
     /// <summary>
     /// Get step state data from storage
     /// </summary>
-    /// <param name="stepName"></param>
-    /// <param name="stepId"></param>
+    /// <param name="step"></param>
     /// <returns></returns>
-    public async Task<KernelProcessStepStateMetadata?> GetStepDataAsync(string stepName, string stepId)
+    public async Task<KernelProcessStepState?> GetStepStateAsync(KernelProcessStepInfo step)
     {
-        var entryId = this.GetStepStateId(stepName, stepId);
-        var data = await this._storageConnector.GetEntryAsync<StorageStepState>(entryId).ConfigureAwait(false);
-        return data?.ToKernelStepMetadata();
+        var entryId = this.GetStepEntryId(step);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
+        {
+            return stepData.ToKernelProcessStepState();
+        }
+
+        return null;
     }
 
-    /// <summary>
-    /// Save step state data to storage
-    /// </summary>
-    /// <param name="stepName"></param>
-    /// <param name="stepId"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public async Task<bool> SaveStepStateDataAsync(string stepName, string stepId, KernelProcessStepStateMetadata state)
+    public async Task<bool> SaveStepStateAsync(KernelProcessStepInfo step)
     {
-        var entryId = this.GetStepStateId(stepName, stepId);
-        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ProcessState, state.ToKernelStorageStepState()).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(step.RunId);
+
+        var entryId = this.GetStepEntryId(step);
+
+        if (!this._softSaveStorage.TryGetValue(entryId, out var stepSavedData))
+        {
+            stepSavedData = new StorageStepData() { InstanceId = step.RunId };
+            this._softSaveStorage.TryAdd(entryId, stepSavedData);
+        }
+
+        if (stepSavedData is StorageStepData stepData)
+        {
+            stepData.StepState = step.ToStorageStepState();
+        }
+
+        return true;
     }
 
-    /// <summary>
-    /// Get step edge data from storage
-    /// </summary>
-    /// <param name="stepName"></param>
-    /// <param name="stepId"></param>
-    /// <returns></returns>
-    public async Task<(bool, Dictionary<string, Dictionary<string, KernelProcessEventData?>>?)> GetStepEdgeDataAsync(string stepName, string stepId)
+    public async Task<StorageStepEvents?> GetStepEventsAsync(KernelProcessStepInfo step)
     {
-        var entryId = this.GetStepEdgesId(stepName, stepId);
-        var data = await this._storageConnector.GetEntryAsync<StorageStepEdgesData>(entryId).ConfigureAwait(false);
-        return (data?.IsGroupEdge ?? false, data?.EdgesData);
+        var entryId = this.GetStepEntryId(step);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
+        {
+            return stepData.StepEvents;
+        }
+
+        return null;
     }
 
-    /// <summary>
-    /// Save step edge data to storage
-    /// </summary>
-    /// <param name="stepName"></param>
-    /// <param name="stepId"></param>
-    /// <param name="stepEdgesData"></param>
-    /// <param name="isGroupEdge"></param>
-    /// <returns></returns>
-    public async Task<bool> SaveStepEdgeDataAsync(string stepName, string stepId, Dictionary<string, Dictionary<string, object?>?> stepEdgesData, bool isGroupEdge)
+    public async Task<bool> SaveStepEventsAsync(KernelProcessStepInfo step, Dictionary<string, Dictionary<string, object?>>? edgeGroups = null)
     {
-        var entryId = this.GetStepEdgesId(stepName, stepId);
-        var entryData = new StorageStepEdgesData() { EdgesData = stepEdgesData.PackStepEdgesValues() ?? [], IsGroupEdge = isGroupEdge };
-        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.StepEdgesData, entryData).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(step.RunId);
+        var entryId = this.GetStepEntryId(step);
+
+        if (!this._softSaveStorage.TryGetValue(entryId, out var stepSavedData))
+        {
+            stepSavedData = new StorageStepData() { InstanceId = step.RunId };
+            this._softSaveStorage.TryAdd(entryId, stepSavedData);
+        }
+        if (stepSavedData is StorageStepData stepData)
+        {
+            stepData.StepEvents = step.ToStorageStepEvents(edgeGroups);
+        }
+        return true;
     }
 
-    /// <summary>
-    /// Get parent data from storage
-    /// </summary>
-    /// <param name="entityKey"></param>
-    /// <param name="entityId"></param>
-    /// <returns></returns>
-    public async Task<StorageParentData?> GetParentDataAsync(string entityKey, string entityId)
+    public async Task<bool> SaveStepDataToStorageAsync(KernelProcessStepInfo step)
     {
-        var entryId = this.GetParentId(entityKey, entityId);
-        return await this._storageConnector.GetEntryAsync<StorageParentData>(entryId).ConfigureAwait(false);
-    }
+        var entryId = this.GetStepEntryId(step);
+        if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
+        {
+            return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.StepDetails, stepData).ConfigureAwait(false);
+        }
 
-    /// <summary>
-    /// Save parent data to storage
-    /// </summary>
-    /// <param name="entityKey"></param>
-    /// <param name="entityId"></param>
-    /// <param name="parentData"></param>
-    /// <returns></returns>
-    public async Task<bool> SaveParentDataAsync(string entityKey, string entityId, StorageParentData parentData)
-    {
-        var entryId = this.GetParentId(entityKey, entityId);
-        return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.ParentProcess, parentData).ConfigureAwait(false);
+        return false;
     }
 }

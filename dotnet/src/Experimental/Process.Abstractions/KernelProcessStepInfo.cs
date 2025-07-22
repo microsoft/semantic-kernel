@@ -31,6 +31,15 @@ public record KernelProcessStepInfo
         }
     }
 
+    /// <inheritdoc cref="KernelProcessStepState.RunId"/>
+    public string? RunId => this.State.RunId;
+
+    /// <inheritdoc cref="KernelProcessStepState.StepId"/>
+    public string? StepId => this.State.StepId;
+
+    /// <inheritdoc cref="KernelProcessStepState.ParentId"/>
+    public string? ParentId => this.State.ParentId;
+
     /// <summary>
     /// The semantic description of the Step. This is intended to be human and AI readable and is not required to be unique.
     /// </summary>
