@@ -11,7 +11,7 @@ from openai.types.responses.response_output_item_done_event import ResponseOutpu
 from openai.types.responses.response_output_message import ResponseOutputMessage
 from openai.types.responses.response_output_text import ResponseOutputText
 from openai.types.responses.response_stream_event import ResponseStreamEvent
-from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
+from openai.types.responses.response_text_delta_event import Logprob, ResponseTextDeltaEvent
 
 from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
@@ -250,6 +250,7 @@ async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mo
         delta="Test partial content",
         content_index=0,
         item_id="fake-item-id",
+        logprobs=[Logprob(token="test_token", logprob=0.3)],
         output_index=0,
         type="response.output_text.delta",
         sequence_number=0,
