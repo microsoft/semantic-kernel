@@ -59,7 +59,7 @@ public sealed class ClearAllVariablesActionTest(ITestOutputHelper output) : Proc
             {
                 Id = this.CreateActionId(),
                 DisplayName = this.FormatDisplayName(displayName),
-                Variables = VariablesToClearWrapper.Get(variableTarget),
+                Variables = EnumExpression<VariablesToClearWrapper>.Literal(VariablesToClearWrapper.Get(variableTarget)),
             };
 
         ClearAllVariables model = this.AssignParent<ClearAllVariables>(actionBuilder);

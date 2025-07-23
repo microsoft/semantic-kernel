@@ -19,7 +19,7 @@ internal sealed class ClearAllVariablesAction : ProcessAction<ClearAllVariables>
 
         if (literalValue is RecordDataValue recordValue)
         {
-            //recordValue.Properties; // %%% TODO ?!?!!?!
+            // %%% TODO ?!?!!?!
         }
 
         return Task.CompletedTask;
