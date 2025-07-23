@@ -36,12 +36,14 @@ internal static class FormulaValueExtensions
     {
         Type valueType = value.GetType();
 
+        // Lookup the handler for the specific type first
         if (s_handlers.TryGetValue(valueType, out GetFormulaValue? handler))
         {
             return $"{handler.Invoke(value)}";
         }
 
-        foreach (KeyValuePair<Type, GetFormulaValue> kvp in s_handlers) // %%% NEEDED ???
+        // Could be a derived type, so check all handlers
+        foreach (KeyValuePair<Type, GetFormulaValue> kvp in s_handlers)
         {
             if (kvp.Key.IsAssignableFrom(valueType))
             {

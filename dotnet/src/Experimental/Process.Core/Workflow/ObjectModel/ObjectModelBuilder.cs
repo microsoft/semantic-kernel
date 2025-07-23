@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Bot.ObjectModel.Yaml;
 using Microsoft.PowerFx.Types;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 using Microsoft.SemanticKernel.Process.Workflows;
 
@@ -118,14 +119,14 @@ public static class ObjectModelBuilder
 
         [KernelFunction(KernelDelegateProcessStep.FunctionName)]
         [Description("Initialize the process step")]
-        public void InitializeProcess(string message)
+        public void InitializeProcess(KernelProcessContext context, string message)
         {
             if (this._scopes == null)
             {
                 throw new KernelException("Scopes have not been initialized. Ensure that the step is activated before calling this function.");
             }
 
-            Console.WriteLine("!!! INIT WORKFLOW");
+            Console.WriteLine("!!! INIT WORKFLOW"); // %%% REMOVE
             this._scopes.Set("LastMessage", ActionScopeType.System, StringValue.New(message)); // %%% MAGIC CONST "LastMessage"
         }
     }

@@ -53,7 +53,7 @@ internal sealed class ProcessWorkflowBuilder
 
         if (parentNode.Children.Count == 0)
         {
-            throw new InvalidOperationException($"Cannot add a link from a node with no children: {parentId}."); // %%% TODO: EXCEPTION TYPE
+            throw new WorkflowBuilderException($"Cannot add a link from a node with no children: {parentId}.");
         }
 
         ProcessWorkflowNode sourceNode = parentNode.Children.Count == 1 ? parentNode : parentNode.Children[^2];
@@ -87,7 +87,7 @@ internal sealed class ProcessWorkflowBuilder
         {
             if (!this.Steps.TryGetValue(link.TargetId, out ProcessWorkflowNode? targetNode))
             {
-                throw new InvalidOperationException($"Unresolved target for {link.Source.Id}: {link.TargetId}."); // %%% TODO: Exception Type
+                throw new WorkflowBuilderException($"Unresolved target for {link.Source.Id}: {link.TargetId}.");
             }
 
             Console.WriteLine($"> CONNECT: {link.Source.Id} => {link.TargetId}"); // %%% LOGGER

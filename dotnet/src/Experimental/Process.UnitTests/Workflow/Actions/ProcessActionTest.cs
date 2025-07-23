@@ -28,7 +28,8 @@ public abstract class ProcessActionTest(ITestOutputHelper output) : WorkflowTest
             new ProcessActionContext(
                 RecalcEngineFactory.Create(this.Scopes, 5000),
                 this.Scopes,
-                kernel ?? new Kernel()),
+                kernel ?? new Kernel(),
+                this.Output),
             cancellationToken: default);
 
     internal void VerifyModel(DialogAction model, ProcessAction action)

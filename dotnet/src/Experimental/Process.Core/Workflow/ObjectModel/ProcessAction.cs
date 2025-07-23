@@ -38,12 +38,12 @@ internal abstract class ProcessAction(DialogAction model)
         }
         catch (ProcessWorkflowException exception)
         {
-            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% LOGGER
+            context.logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
             throw;
         }
         catch (Exception exception)
         {
-            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% LOGGER
+            context.logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
             throw new ProcessWorkflowException($"Unexpected failure executing action #{this.Id} [{this.GetType().Name}]", exception);
         }
     }

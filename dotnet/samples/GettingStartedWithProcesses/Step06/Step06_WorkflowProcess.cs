@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 namespace Step06;
@@ -29,8 +31,19 @@ public class Step06_WorkflowProcess : BaseTest
 
         Console.WriteLine("\nPROCESS INVOKE\n");
 
-        Kernel kernel = this.CreateKernelWithChatCompletion(); // %%% HOST CONTEXT
+        Kernel kernel = this.CreateKernel();
         await using LocalKernelProcessContext context = await process.StartAsync(kernel, new KernelProcessEvent() { Id = InputEventId, Data = "Why is the sky blue?" });
         Console.WriteLine("\nPROCESS DONE");
+    }
+
+    private Kernel CreateKernel()
+    {
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
+        kernelBuilder.Services.AddSingleton<ILoggerFactory>(this.LoggerFactory);
+        this.AddChatCompletionToKernel(kernelBuilder);
+        this.AddChatClientToKernel(kernelBuilder);
+
+        return kernelBuilder.Build();
     }
 }

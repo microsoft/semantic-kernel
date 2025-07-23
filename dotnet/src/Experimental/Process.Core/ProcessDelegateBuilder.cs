@@ -22,7 +22,7 @@ public class ProcessDelegateBuilder : ProcessStepBuilder
         this._stepFunction = stepFunction ?? throw new ArgumentNullException(nameof(stepFunction), "Step function cannot be null.");
     }
 
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null) // %%% METADATA ???
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null) // %%% NEEDED: stateMetadata ???
     {
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());

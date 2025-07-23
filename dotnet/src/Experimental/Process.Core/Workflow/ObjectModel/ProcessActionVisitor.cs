@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Actions;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
@@ -279,8 +278,6 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     protected override void Visit(BeginDialog item)
     {
         this.Trace(item);
-
-        this.ContinueWith(new BeginDialogAction(item));
     }
 
     protected override void Visit(UnknownDialogAction item)
@@ -397,7 +394,6 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this._workflowBuilder.AddLinkFromPeer(parentId, step.Id, condition);
     }
 
-
     private string RestartFrom(ProcessAction action) =>
         this.RestartFrom(action.Id, action.ParentId);
 
@@ -415,8 +411,8 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 actionId,
                 (kernel, context) =>
                 {
-                    Console.WriteLine($"!!! STEP CUSTOM [{actionId}]"); // %%% LOGGER
-                    stepAction?.Invoke(this.CreateActionContext(kernel));
+                    Console.WriteLine($"!!! STEP CUSTOM [{actionId}]"); // %%% REMOVE
+                    stepAction?.Invoke(this.CreateActionContext(actionId, kernel));
                     return Task.CompletedTask;
                 });
     }
@@ -430,18 +426,18 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 action.Id,
                 async (kernel, context) =>
                 {
-                    Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% LOGGER
+                    Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% REMOVE
 
                     if (action.Model.Disabled) // %%% VALIDATE
                     {
-                        Console.WriteLine($"!!! DISABLED {action.GetType().Name} [{action.Id}]"); // %%% LOGGER
+                        Console.WriteLine($"!!! DISABLED {action.GetType().Name} [{action.Id}]"); // %%% REMOVE
                         return;
                     }
 
                     try
                     {
                         await action.ExecuteAsync(
-                            this.CreateActionContext(kernel),
+                            this.CreateActionContext(action.Id, kernel),
                             cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
                     }
                     catch (ProcessActionException)
@@ -457,13 +453,12 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 });
     }
 
-    private ProcessActionContext CreateActionContext(Kernel kernel) => new(this.CreateEngine(), this._scopes, kernel, NullLogger.Instance); // %%% LOGGER
+    private ProcessActionContext CreateActionContext(string actionId, Kernel kernel) => new(this.CreateEngine(), this._scopes, kernel, kernel.LoggerFactory.CreateLogger(actionId));
 
     private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._context.MaximumExpressionLength);
 
     private void Trace(DialogAction item, bool isSkipped = true)
     {
-        //Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}{new string('\t', this._contextStack.Count - 1)} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% LOGGER
         Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}: {new string('\t', this._workflowBuilder.GetDepth(item.GetParentId()))}{FormatItem(item)} => {FormatParent(item)}"); // %%% LOGGER
     }
 
