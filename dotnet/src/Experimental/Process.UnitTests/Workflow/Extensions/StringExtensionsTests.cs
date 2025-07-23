@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows.Extensions;
 public class StringExtensionsTests
 {
     [Fact]
-    public void TrimJsonWithDelimeter()
+    public void TrimJsonWithDelimiter()
     {
         // Arrange
         const string input =
@@ -21,7 +21,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(
@@ -47,7 +47,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(
@@ -60,7 +60,7 @@ public class StringExtensionsTests
     }
 
     [Fact]
-    public void TrimJsonWithUnqualifiedDelimeter()
+    public void TrimJsonWithUnqualifiedDelimiter()
     {
         // Arrange
         const string input =
@@ -73,7 +73,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(
@@ -86,7 +86,7 @@ public class StringExtensionsTests
     }
 
     [Fact]
-    public void TrimJsonWithoutDelimeter()
+    public void TrimJsonWithoutDelimiter()
     {
         // Arrange
         const string input =
@@ -97,7 +97,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(
@@ -110,7 +110,7 @@ public class StringExtensionsTests
     }
 
     [Fact]
-    public void TrimJsonWithoutDelimeterWithPadding()
+    public void TrimJsonWithoutDelimiterWithPadding()
     {
         // Arrange
         const string input =
@@ -122,7 +122,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(
@@ -135,7 +135,7 @@ public class StringExtensionsTests
     }
 
     [Fact]
-    public void TrimMissingWithDelimeter()
+    public void TrimMissingWithDelimiter()
     {
         // Arrange
         const string input =
@@ -145,7 +145,7 @@ public class StringExtensionsTests
             """;
 
         // Act
-        string result = input.TrimJsonDelimeter();
+        string result = input.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -155,7 +155,7 @@ public class StringExtensionsTests
     public void TrimEmptyString()
     {
         // Act
-        string result = string.Empty.TrimJsonDelimeter();
+        string result = string.Empty.TrimJsonDelimiter();
 
         // Assert
         Assert.Equal(string.Empty, result);

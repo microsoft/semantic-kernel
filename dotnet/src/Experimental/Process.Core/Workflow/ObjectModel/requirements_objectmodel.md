@@ -9,7 +9,7 @@
 - ❌ **Thread**
     - Every workflow invocation is associated with a single "user thread"
     - Each agent is associated with its own dedicated thread that is implicitly managed.
-    - Exposing an explicit thread primative within a workflow introduces additional complexity that is not required.
+    - Exposing an explicit thread primitive within a workflow introduces additional complexity that is not required.
 
 ## **Actions**
 
@@ -77,7 +77,7 @@ WaitForConnectorTrigger|✔|❓||Not supported for v0.  Evaluate trigger actions
 
 ## Behaviors
 
-### Is a _Foundry_ workfow specific to a single _Foundry_ project?
+### Is a _Foundry_ workflow specific to a single _Foundry_ project?
 
 Always.
 This implies that a _Foundry_ workflow has access to the resources associated with its project, 

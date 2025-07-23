@@ -22,4 +22,4 @@ Emits execution events|❓|✔|❓
 - Do execute events need to be emitted for any process?  **YES**
 - Can a _Foundry_ workflow be hosted in different projects without modification? **NO**  
   (Agent identifiers differ even if model deployments match.)
-- Is a _Foundry_ workfow specific to a single _Foundry_ project? **YES**
+- Is a _Foundry_ workflow specific to a single _Foundry_ project? **YES**
