@@ -204,7 +204,7 @@ public sealed class SetVariableActionTest(ITestOutputHelper output) : ProcessAct
                 Value = valueExpression,
             };
 
-        SetVariable model = actionBuilder.Build();
+        SetVariable model = this.AssignParent<SetVariable>(actionBuilder);
 
         return model;
     }

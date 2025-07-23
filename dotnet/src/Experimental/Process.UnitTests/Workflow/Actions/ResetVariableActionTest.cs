@@ -62,7 +62,7 @@ public sealed class ResetVariableTest(ITestOutputHelper output) : ProcessActionT
                 Variable = InitializablePropertyPath.Create(variablePath),
             };
 
-        ResetVariable model = actionBuilder.Build();
+        ResetVariable model = this.AssignParent<ResetVariable>(actionBuilder);
 
         return model;
     }

@@ -14,7 +14,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 {
     private readonly ProcessBuilder _processBuilder;
     private readonly ProcessStepBuilder _unhandledErrorStep;
-    private readonly ProcessActionEnvironment _environment;
+    private readonly HostContext _context;
     private readonly ProcessActionScopes _scopes;
     private readonly Dictionary<ActionId, ProcessStepBuilder> _steps;
     private readonly Stack<ProcessActionVisitorContext> _contextStack;
@@ -22,7 +22,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     public ProcessActionVisitor(
         ProcessBuilder processBuilder,
-        ProcessActionEnvironment environment,
+        HostContext context,
         ProcessStepBuilder sourceStep,
         ProcessActionScopes scopes)
     {
@@ -32,7 +32,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this._steps = [];
         this._linkCache = [];
         this._processBuilder = processBuilder;
-        this._environment = environment;
+        this._context = context;
         this._scopes = scopes;
         this._unhandledErrorStep =
             processBuilder.AddStepFromFunction(
@@ -207,7 +207,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new SendActivityAction(item, this._environment.ActivityNotificationHandler));
+        this.AddAction(new SendActivityAction(item, this._context.ActivityNotificationHandler));
     }
 
     #region Not implemented
@@ -434,7 +434,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         return this.InitializeStep(
             this._processBuilder.AddStepFromFunction(
-                action.Id.Value,
+                action.Id,
                 async (kernel, context) =>
                 {
                     Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
@@ -477,7 +477,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.CurrentContext.Step = newStep;
     }
 
-    private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._environment.MaximumExpressionLength);
+    private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._context.MaximumExpressionLength);
 
     private void Trace(DialogAction item, bool isSkipped = true)
     {

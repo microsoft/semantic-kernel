@@ -62,7 +62,7 @@ public sealed class ClearAllVariablesActionTest(ITestOutputHelper output) : Proc
                 Variables = VariablesToClearWrapper.Get(variableTarget),
             };
 
-        ClearAllVariables model = actionBuilder.Build();
+        ClearAllVariables model = this.AssignParent<ClearAllVariables>(actionBuilder);
 
         return model;
     }

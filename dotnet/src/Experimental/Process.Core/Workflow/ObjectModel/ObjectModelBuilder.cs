@@ -21,7 +21,7 @@ public static class ObjectModelBuilder
     /// <summary>
     /// %%% COMMENT
     /// </summary>
-    /// <param name="yamlReader">The reader that provides the the workflow object model YAML.</param>
+    /// <param name="yamlReader">The reader that provides the workflow object model YAML.</param>
     /// <param name="failures"></param>
     /// <exception cref="KernelException"></exception>
     public static bool TryValidate(TextReader yamlReader, out ImmutableArray<ValidationFailure> failures)
@@ -58,7 +58,7 @@ public static class ObjectModelBuilder
     /// <summary>
     /// Builds a process from the provided YAML definition of a CPS Topic ObjectModel.
     /// </summary>
-    /// <param name="yamlReader">The reader that provides the the workflow object model YAML.</param>
+    /// <param name="yamlReader">The reader that provides the workflow object model YAML.</param>
     /// <param name="messageId">The identifier for the message.</param>
     /// <param name="environment">The environment for the process actions.</param>
     /// <returns>The <see cref="KernelProcess"/> that corresponds with the YAML object model.</returns>
@@ -75,7 +75,7 @@ public static class ObjectModelBuilder
         processBuilder.OnInputEvent(messageId).SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
         Console.WriteLine("@ INTERPRETING MODEL");
-        ProcessActionVisitor visitor = new(processBuilder, environment ?? HostContext.Default, scopes);
+        ProcessActionVisitor visitor = new(processBuilder, environment ?? HostContext.Default, initStep, scopes);
         ProcessActionWalker walker = new(rootElement, visitor);
 
         Console.WriteLine("@ FINALIZING PROCESS");

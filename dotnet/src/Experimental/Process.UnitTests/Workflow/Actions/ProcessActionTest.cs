@@ -51,4 +51,19 @@ public abstract class ProcessActionTest(ITestOutputHelper output) : WorkflowTest
     {
         Assert.Throws<KeyNotFoundException>(() => this.Scopes.Get(variableName, scope));
     }
+
+    protected TAction AssignParent<TAction>(DialogAction.Builder actionBuilder) where TAction : DialogAction
+    {
+        OnActivity.Builder activityBuilder =
+            new()
+            {
+                Id = new("root"),
+            };
+
+        activityBuilder.Actions.Add(actionBuilder);
+
+        OnActivity model = activityBuilder.Build();
+
+        return (TAction)model.Actions[0];
+    }
 }

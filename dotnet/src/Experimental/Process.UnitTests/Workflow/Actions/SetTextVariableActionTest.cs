@@ -65,7 +65,7 @@ public sealed class SetTextVariableActionTest(ITestOutputHelper output) : Proces
                 Value = TemplateLine.Parse(textValue),
             };
 
-        SetTextVariable model = actionBuilder.Build();
+        SetTextVariable model = this.AssignParent<SetTextVariable>(actionBuilder);
 
         return model;
     }

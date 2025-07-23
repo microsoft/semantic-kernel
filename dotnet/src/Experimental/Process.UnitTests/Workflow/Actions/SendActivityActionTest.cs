@@ -50,7 +50,7 @@ public sealed class SendActivityActionTest(ITestOutputHelper output) : ProcessAc
                 Activity = activityBuilder.Build(),
             };
 
-        SendActivity model = actionBuilder.Build();
+        SendActivity model = this.AssignParent<SendActivity>(actionBuilder);
 
         return model;
     }
