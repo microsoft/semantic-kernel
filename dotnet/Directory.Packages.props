@@ -10,13 +10,13 @@
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.3.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.3.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.3.1" />
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.3.8" />
-    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.4.7" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.1.1" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.14" />
-    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.1.1" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.4" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.4.10" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.2" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.17" />
+    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.2" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.2" />
-    <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.1.3" />
+    <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.1.6" />
     <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[2.2.0-beta.5]" />
