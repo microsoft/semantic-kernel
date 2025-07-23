@@ -269,7 +269,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         }
         if (stepSavedData is StorageStepData stepData && edgeGroups != null)
         {
-            stepData.StepEvents = stepInfo.ToStorageStepEvents(edgeGroups);
+            stepData.StepEvents = StorageStepExtensions.ToStorageStepEvents(edgeGroups!);
         }
         return Task.FromResult(true);
     }

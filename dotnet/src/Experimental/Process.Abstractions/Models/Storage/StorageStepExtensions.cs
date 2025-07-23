@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Process.Models.Storage;
 /// </summary>
 public static class StorageStepExtensions
 {
+    /// <summary>
+    /// Converts a KernelProcessStepInfo to a StorageStepInfo.
+    /// </summary>
+    /// <param name="step"></param>
+    /// <returns></returns>
     public static StorageStepInfo ToStorageStepInfo(this KernelProcessStepInfo step)
     {
         return new StorageStepInfo
@@ -23,7 +28,12 @@ public static class StorageStepExtensions
         };
     }
 
-    public static KernelProcessStepState ToKernelProcessStepState(this StorageStepData storageData)
+    /// <summary>
+    /// Converts a StorageStepData to a KernelProcessStepState.
+    /// </summary>
+    /// <param name="storageData"></param>
+    /// <returns></returns>
+    public static KernelProcessStepState? ToKernelProcessStepState(this StorageStepData storageData)
     {
         var stepState = new KernelProcessStepState(stepId: storageData.StepInfo.StepName, version: storageData.StepInfo.Version, runId: storageData.InstanceId)
         {
@@ -44,6 +54,11 @@ public static class StorageStepExtensions
         return stepState;
     }
 
+    /// <summary>
+    /// Converts a KernelProcessStepInfo to a StorageStepState.
+    /// </summary>
+    /// <param name="step"></param>
+    /// <returns></returns>
     public static StorageStepState? ToStorageStepState(this KernelProcessStepInfo step)
     {
         object? stepState = null;
@@ -63,7 +78,12 @@ public static class StorageStepExtensions
         return null;
     }
 
-    public static StorageStepEvents ToStorageStepEvents(this KernelProcessStepInfo step, Dictionary<string, Dictionary<string, object?>?>? edgeGroups = null)
+    /// <summary>
+    /// Converts edge group data to a StorageStepEvents.
+    /// </summary>
+    /// <param name="edgeGroups"></param>
+    /// <returns></returns>
+    public static StorageStepEvents ToStorageStepEvents(Dictionary<string, Dictionary<string, object?>?>? edgeGroups = null)
     {
         return new StorageStepEvents
         {
