@@ -16,6 +16,7 @@ internal static class ResponseCreationOptionsFactory
         AgentThread agentThread,
         AgentInvokeOptions? invokeOptions)
     {
+        var instructions = $"{agent.Instructions}{(string.IsNullOrEmpty(agent.Instructions) || string.IsNullOrEmpty(invokeOptions?.AdditionalInstructions) ? "" : "\n")}{invokeOptions?.AdditionalInstructions}";
         ResponseCreationOptions creationOptions;
         if (invokeOptions is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions &&
             responseAgentInvokeOptions.ResponseCreationOptions is not null)
@@ -23,7 +24,7 @@ internal static class ResponseCreationOptionsFactory
             creationOptions = new ResponseCreationOptions
             {
                 EndUserId = responseAgentInvokeOptions.ResponseCreationOptions.EndUserId ?? agent.GetDisplayName(),
-                Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",
+                Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? instructions,
                 StoredOutputEnabled = responseAgentInvokeOptions.ResponseCreationOptions.StoredOutputEnabled ?? agent.StoreEnabled,
                 Background = responseAgentInvokeOptions.ResponseCreationOptions.Background,
                 ReasoningOptions = responseAgentInvokeOptions.ResponseCreationOptions.ReasoningOptions,
@@ -32,15 +33,19 @@ internal static class ResponseCreationOptionsFactory
                 TruncationMode = responseAgentInvokeOptions.ResponseCreationOptions.TruncationMode,
                 ParallelToolCallsEnabled = responseAgentInvokeOptions.ResponseCreationOptions.ParallelToolCallsEnabled,
                 ToolChoice = responseAgentInvokeOptions.ResponseCreationOptions.ToolChoice,
+                Temperature = responseAgentInvokeOptions.ResponseCreationOptions.Temperature,
+                TopP = responseAgentInvokeOptions.ResponseCreationOptions.TopP,
+                PreviousResponseId = responseAgentInvokeOptions.ResponseCreationOptions.PreviousResponseId,
             };
             creationOptions.Tools.AddRange(responseAgentInvokeOptions.ResponseCreationOptions.Tools);
+            responseAgentInvokeOptions.ResponseCreationOptions.Metadata.ToList().ForEach(kvp => creationOptions.Metadata[kvp.Key] = kvp.Value);
         }
         else
         {
             creationOptions = new ResponseCreationOptions
             {
                 EndUserId = agent.GetDisplayName(),
-                Instructions = $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",
+                Instructions = instructions,
                 StoredOutputEnabled = agent.StoreEnabled,
             };
         }
