@@ -5,8 +5,8 @@
 ## Pregal Loop
 
 
-1. **Enqueue external events**: check `_externalMessages` and add them to current exectution `messageChannel` queue.
-2. **Enqueue Step Messages**: using `step.GetAllEvents()` get all events emitted by all steps in previous iteration and add them to current exectution `messageChannel` queue.
+1. **Enqueue external events**: check `_externalMessages` and add them to current execution `messageChannel` queue.
+2. **Enqueue Step Messages**: using `step.GetAllEvents()` get all events emitted by all steps in previous iteration and add them to current execution `messageChannel` queue.
 3. **Exit check**:
     - No more messages in `messageChannel` queue.
     - No more external messages getting added to `_externalMessages`.

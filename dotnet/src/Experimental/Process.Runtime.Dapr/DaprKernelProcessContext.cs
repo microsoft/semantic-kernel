@@ -88,7 +88,7 @@ public class DaprKernelProcessContext : KernelProcessContext
     {
         IDictionary<string, KernelProcessStepState> stepStates = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
 
-        // Build the process with thr new state
+        // Build the process with the new state
         List<KernelProcessStepInfo> kernelProcessSteps = [];
 
         foreach (var step in this._process.Steps)
