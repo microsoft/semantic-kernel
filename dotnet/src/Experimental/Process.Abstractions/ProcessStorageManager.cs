@@ -86,18 +86,14 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
 
     private string GetStepEntryId(KernelProcessStepInfo stepInfo)
     {
-        Verify.NotNullOrWhiteSpace(step.StepId);
-        Verify.NotNullOrWhiteSpace(step.RunId);
+        Verify.NotNullOrWhiteSpace(stepInfo.StepId);
+        Verify.NotNullOrWhiteSpace(stepInfo.RunId);
 
-        return $"{this.GetEntryId(step.StepId, step.RunId)}.{StorageKeywords.StepDetails}";
+        return $"{this.GetEntryId(stepInfo.StepId, stepInfo.RunId)}.{StorageKeywords.StepDetails}";
         //return step.RunId;
     }
 
-    /// <summary>
-    /// Get process data from storage
-    /// </summary>
-    /// <param name="process"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task FetchProcessDataAsync(KernelProcess process)
     {
         var entryId = this.GetProcessEntryId(process);
@@ -109,6 +105,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         }
     }
 
+    /// <inheritdoc/>
     public async Task<StorageProcessInfo?> GetProcessInfoAsync(KernelProcess process)
     {
         var entryId = this.GetProcessEntryId(process);
@@ -119,11 +116,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return null;
     }
 
-    /// <summary>
-    /// Save process data to storage
-    /// </summary>
-    /// <param name="process"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<bool> SaveProcessInfoAsync(KernelProcess process)
     {
         Verify.NotNullOrWhiteSpace(process.RunId);
@@ -143,6 +136,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return true;
     }
 
+    /// <inheritdoc/>
     public async Task<bool> SaveProcessEventsAsync(KernelProcess process, List<KernelProcessEvent>? pendingExternalEvents = null)
     {
         Verify.NotNullOrWhiteSpace(process.RunId);
@@ -162,12 +156,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return true;
     }
 
-    /// <summary>
-    /// To be called when process data is already saved in soft save storage and needs to be saved to the actual storage.
-    /// Should be called at the end of each super step in a process run.
-    /// </summary>
-    /// <param name="process"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<bool> SaveProcessDataToStorageAsync(KernelProcess process)
     {
         var entryId = this.GetProcessEntryId(process);
@@ -180,14 +169,10 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return false;
     }
 
-    /// <summary>
-    /// Fetches all step data related info like state, messages, info from the cloud and stores it locally
-    /// </summary>
-    /// <param name="step"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task FetchStepDataAsync(KernelProcessStepInfo stepInfo)
     {
-        var entryId = this.GetStepEntryId(step);
+        var entryId = this.GetStepEntryId(stepInfo);
         var storageState = await this._storageConnector.GetEntryAsync<StorageStepData>(entryId).ConfigureAwait(false);
 
         if (storageState != null)
@@ -196,9 +181,10 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         }
     }
 
+    /// <inheritdoc/>
     public async Task<StorageStepInfo?> GetStepInfoAsync(KernelProcessStepInfo stepInfo)
     {
-        var entryId = this.GetStepEntryId(step);
+        var entryId = this.GetStepEntryId(stepInfo);
         if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
         {
             return stepData.StepInfo;
@@ -206,38 +192,30 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return null;
     }
 
-    /// <summary>
-    /// Save step data to storage
-    /// </summary>
-    /// <param name="step"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<bool> SaveStepInfoAsync(KernelProcessStepInfo stepInfo)
     {
-        Verify.NotNullOrWhiteSpace(step.RunId);
+        Verify.NotNullOrWhiteSpace(stepInfo.RunId);
 
-        var entryId = this.GetStepEntryId(step);
+        var entryId = this.GetStepEntryId(stepInfo);
         if (!this._softSaveStorage.TryGetValue(entryId, out var stepSavedData))
         {
-            stepSavedData = new StorageStepData() { InstanceId = step.RunId };
+            stepSavedData = new StorageStepData() { InstanceId = stepInfo.RunId };
             this._softSaveStorage.TryAdd(entryId, stepSavedData);
         }
 
         if (stepSavedData is StorageStepData stepData)
         {
-            stepData.StepInfo = step.ToStorageStepInfo();
+            stepData.StepInfo = stepInfo.ToStorageStepInfo();
         }
 
         return true;
     }
 
-    /// <summary>
-    /// Get step state data from storage
-    /// </summary>
-    /// <param name="step"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<KernelProcessStepState?> GetStepStateAsync(KernelProcessStepInfo stepInfo)
     {
-        var entryId = this.GetStepEntryId(step);
+        var entryId = this.GetStepEntryId(stepInfo);
         if (this._softSaveStorage.TryGetValue(entryId, out var softSaveStepData) && softSaveStepData is StorageStepData stepData)
         {
             return stepData.ToKernelProcessStepState();
@@ -266,6 +244,7 @@ public class ProcessStorageManager : IProcessStepStorageOperations, IProcessStor
         return true;
     }
 
+    /// <inheritdoc/>
     public async Task<StorageStepEvents?> GetStepEventsAsync(KernelProcessStepInfo stepInfo)
     {
         var entryId = this.GetStepEntryId(stepInfo);
