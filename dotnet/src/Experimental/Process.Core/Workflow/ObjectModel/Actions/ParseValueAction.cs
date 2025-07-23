@@ -53,7 +53,7 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
 
     private static RecordValue ParseRecord(RecordDataType recordType, string rawText)
     {
-        string jsonText = rawText.TrimJsonDelimeter();
+        string jsonText = rawText.TrimJsonDelimiter();
         JsonDocument json = JsonDocument.Parse(jsonText);
         JsonElement currentElement = json.RootElement;
         return recordType.ParseRecord(currentElement);
