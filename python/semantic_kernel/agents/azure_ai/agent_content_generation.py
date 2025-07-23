@@ -18,6 +18,7 @@ from azure.ai.agents.models import (
     RequiredMcpToolCall,
     RunStep,
     RunStepAzureAISearchToolCall,
+    RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
@@ -283,16 +284,26 @@ def generate_function_result_content(
 
 @experimental
 def generate_bing_grounding_content(
-    agent_name: str, bing_tool_call: "RunStepBingGroundingToolCall"
+    agent_name: str, bing_tool_call: "RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall"
 ) -> ChatMessageContent:
-    """Generate function result content related to a Bing Grounding Tool."""
+    """Generate function result content related to a Bing Grounding Tool or Bing Custom Search Tool."""
     message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+
+    # Extract tool details based on the specific tool type
+    if isinstance(bing_tool_call, RunStepBingGroundingToolCall):
+        tool_details = bing_tool_call.bing_grounding
+    elif isinstance(bing_tool_call, RunStepBingCustomSearchToolCall):
+        tool_details = bing_tool_call.bing_custom_search
+    else:
+        # This should never happen with proper typing, but provides safety
+        raise TypeError(f"Unsupported Bing tool call type: {type(bing_tool_call)}")
+
     message_content.items.append(
         FunctionCallContent(
             id=bing_tool_call.id,
             name=bing_tool_call.type,
             function_name=bing_tool_call.type,
-            arguments=bing_tool_call.bing_grounding,
+            arguments=tool_details,
         )
     )
     return message_content
@@ -464,21 +475,27 @@ def generate_streaming_function_content(
 def generate_streaming_bing_grounding_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> StreamingChatMessageContent | None:
-    """Generate StreamingChatMessageContent for Bing Grounding tool calls, filtering out empty results."""
+    """Generate StreamingChatMessageContent for Bing Grounding and Bing Custom Search tool calls."""
     if not step_details.tool_calls:
         return None
 
     items: list[FunctionCallContent] = []
     for index, tool in enumerate(step_details.tool_calls):
-        if tool.type != "bing_grounding":
+        if tool.type not in ("bing_grounding", "bing_custom_search"):
             continue
 
-        arguments = tool.get("bing_grounding", {}) or {}
-        requesturl = arguments.get("requesturl", "")
-        response_metadata = arguments.get("response_metadata", None)
+        # Extract tool details based on the specific tool type
+        if tool.type == "bing_grounding":
+            tool_details = tool.get("bing_grounding", {})
+        elif tool.type == "bing_custom_search":
+            tool_details = tool.get("bing_custom_search", {})
+        else:
+            continue
 
-        # Only skip if BOTH are missing/empty
-        if requesturl == "" and response_metadata is None:
+        request_url = tool_details.get("requesturl", None)
+        response_metadata = tool_details.get("response_metadata", None)
+
+        if not request_url and not response_metadata:
             continue
 
         items.append(
@@ -487,7 +504,7 @@ def generate_streaming_bing_grounding_content(
                 index=index,
                 name=tool.type,
                 function_name=tool.type,
-                arguments=arguments,
+                arguments=tool_details,
             )
         )
 
