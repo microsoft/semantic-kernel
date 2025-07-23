@@ -28,7 +28,6 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
 
         // Create a plugin that defines the tools to be used by the agent.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
         agent.Kernel.Plugins.Add(plugin);
 
         ICollection<ChatMessageContent> messages =
@@ -139,7 +138,6 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
 
         // Create a plugin that defines the tools to be used by the agent.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
         agent.Kernel.Plugins.Add(plugin);
 
         ICollection<ChatMessageContent> messages =

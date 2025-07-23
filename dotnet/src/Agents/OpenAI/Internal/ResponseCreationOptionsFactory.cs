@@ -20,10 +20,20 @@ internal static class ResponseCreationOptionsFactory
         if (invokeOptions is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions &&
             responseAgentInvokeOptions.ResponseCreationOptions is not null)
         {
-            creationOptions = responseAgentInvokeOptions.ResponseCreationOptions;
-            creationOptions.EndUserId ??= agent.GetDisplayName();
-            creationOptions.Instructions ??= $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}";
-            creationOptions.StoredOutputEnabled ??= agent.StoreEnabled;
+            creationOptions = new ResponseCreationOptions
+            {
+                EndUserId = responseAgentInvokeOptions.ResponseCreationOptions.EndUserId ?? agent.GetDisplayName(),
+                Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",
+                StoredOutputEnabled = responseAgentInvokeOptions.ResponseCreationOptions.StoredOutputEnabled ?? agent.StoreEnabled,
+                Background = responseAgentInvokeOptions.ResponseCreationOptions.Background,
+                ReasoningOptions = responseAgentInvokeOptions.ResponseCreationOptions.ReasoningOptions,
+                MaxOutputTokenCount = responseAgentInvokeOptions.ResponseCreationOptions.MaxOutputTokenCount,
+                TextOptions = responseAgentInvokeOptions.ResponseCreationOptions.TextOptions,
+                TruncationMode = responseAgentInvokeOptions.ResponseCreationOptions.TruncationMode,
+                ParallelToolCallsEnabled = responseAgentInvokeOptions.ResponseCreationOptions.ParallelToolCallsEnabled,
+                ToolChoice = responseAgentInvokeOptions.ResponseCreationOptions.ToolChoice,
+            };
+            creationOptions.Tools.AddRange(responseAgentInvokeOptions.ResponseCreationOptions.Tools);
         }
         else
         {
