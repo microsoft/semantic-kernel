@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents a failure that occurred during validation.
 /// </summary>
 public class ValidationFailure
 {
@@ -13,7 +13,7 @@ public class ValidationFailure
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the message that describes the validation failure.
     /// </summary>
     public string Message { get; }
 

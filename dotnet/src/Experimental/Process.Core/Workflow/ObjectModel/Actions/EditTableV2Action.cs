@@ -46,7 +46,7 @@ internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
 
             IEnumerable<NamedValue> GetValues()
             {
-                // %%% expression.StructuredRecordExpression.Properties ???
+                // %%% TODO: expression.StructuredRecordExpression.Properties ???
                 foreach (NamedFormulaType fieldType in recordType.GetFieldTypes())
                 {
                     if (value is RecordValue recordValue)

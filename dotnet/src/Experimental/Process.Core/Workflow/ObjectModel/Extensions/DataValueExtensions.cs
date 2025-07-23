@@ -17,8 +17,8 @@ internal static class BotElementExtensions
             DateTimeDataValue dateTimeValue => FormulaValue.New(dateTimeValue.Value.DateTime),
             DateDataValue dateValue => FormulaValue.New(dateValue.Value),
             TimeDataValue timeValue => FormulaValue.New(timeValue.Value),
-            //RecordDataValue recordValue => FormulaValue.NewRecordFromFields(recordValue.Properties), // %%% TODO
-            //TableDataValue tableValue => FormulaValue.NewTable(), // %%% TODO
+            //RecordDataValue recordValue => FormulaValue.NewRecordFromFields(recordValue.Properties), // %%% SUPPORT
+            //TableDataValue tableValue => FormulaValue.NewTable(), // %%% SUPPORT
             _ => FormulaValue.NewError(new Microsoft.PowerFx.ExpressionError { Message = $"Unknown literal type: {value.GetType().Name}" }),
         };
 }

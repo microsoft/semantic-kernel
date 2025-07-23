@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows;

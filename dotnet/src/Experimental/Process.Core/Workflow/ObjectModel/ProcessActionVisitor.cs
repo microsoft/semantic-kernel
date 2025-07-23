@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Actions;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
@@ -13,127 +15,116 @@ namespace Microsoft.SemanticKernel.Process.Workflows;
 internal sealed class ProcessActionVisitor : DialogActionVisitor
 {
     private readonly ProcessBuilder _processBuilder;
-    private readonly ProcessStepBuilder _unhandledErrorStep;
+    private readonly ProcessWorkflowBuilder _workflowBuilder;
+    private readonly ProcessActionStack _actionStack;
     private readonly HostContext _context;
     private readonly ProcessActionScopes _scopes;
-    private readonly Dictionary<ActionId, ProcessStepBuilder> _steps;
-    private readonly Stack<ProcessActionVisitorContext> _contextStack;
-    private readonly List<(ActionId TargetId, ProcessStepEdgeBuilder SourceEdge)> _linkCache;
 
     public ProcessActionVisitor(
         ProcessBuilder processBuilder,
         HostContext context,
-        ProcessStepBuilder sourceStep,
         ProcessActionScopes scopes)
     {
-        ProcessActionVisitorContext rootContext = new(sourceStep);
-        this._contextStack = [];
-        this._contextStack.Push(rootContext);
-        this._steps = [];
-        this._linkCache = [];
+        this._actionStack = new ProcessActionStack();
+        this._workflowBuilder = new ProcessWorkflowBuilder(processBuilder.Steps.Single());
         this._processBuilder = processBuilder;
         this._context = context;
         this._scopes = scopes;
-        this._unhandledErrorStep =
-            processBuilder.AddStepFromFunction(
-                $"{processBuilder.Name}_unhandled_error",
-                (kernel, context) =>
-                {
-                    // Handle unhandled errors here
-                    Console.WriteLine("*** PROCESS ERROR - Unhandled error"); // %%% DEVTRACE
-                    return Task.CompletedTask;
-                });
     }
 
     public void Complete()
     {
-        // Close the current context
-        this.CurrentContext.Then().StopProcess();
-
         // Process the cached links
-        foreach ((ActionId targetId, ProcessStepEdgeBuilder sourceEdge) in this._linkCache)
-        {
-            // Link the queued context to the step
-            ProcessStepBuilder step = this._steps[targetId]; // %%% TRY
-            Console.WriteLine($"> CONNECTING {sourceEdge.Source.Id} => {targetId}");
-            sourceEdge.SendEventTo(new ProcessFunctionTargetBuilder(step));
-        }
-        this._linkCache.Clear();
-
-        // Visitor is complete, all actions have been processed
-        Console.WriteLine("> COMPLETE"); // %%% DEVTRACE
+        this._workflowBuilder.ConnectNodes();
     }
-
-    private ProcessActionVisitorContext CurrentContext => this._contextStack.Peek();
 
     protected override void Visit(ActionScope item)
     {
-        this.Trace(item, isSkipped: false);
+        this.Trace(item, isSkipped: true);
 
-        this.AddContainer(item.Id.Value);
+        //string parentId = item.GetParentId();
+        //this._workflowBuilder.AddNode(this.CreateEmptyStep(item.Id.Value), parentId);
+        //this._workflowBuilder.AddLink(parentId, item.Id.Value);
     }
 
     protected override void Visit(ConditionGroup item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new ConditionGroupAction(item));
+        this.ContinueWith(new ConditionGroupAction(item));
 
-        // Visit each action in the condition group
+        // %%% SUPPORT: item.ElseActions
+
         int index = 1;
         foreach (ConditionItem conditionItem in item.Conditions)
         {
-            ProcessStepBuilder step = this.CreateContainerStep(this.CurrentContext, conditionItem.Id ?? $"{item.Id.Value}_item{index}");
-            this._contextStack.Push(new ProcessActionVisitorContext(step));
+            //KernelProcessEdgeCondition? condition = null;
 
-            conditionItem.Accept(this);
+            //if (conditionItem.Condition is not null)
+            //{
+            //    // %%% VERIFY IF ONLY ONE CONDITION IS EXPECTED / ALLOWED
+            //    condition =
+            //        new((stepEvent, state) =>
+            //        {
+            //            RecalcEngine engine = this.CreateEngine();
+            //            bool result = engine.Eval(conditionItem.Condition.ExpressionText ?? "true").AsBoolean();
+            //            Console.WriteLine($"!!! CONDITION: {conditionItem.Condition.ExpressionText ?? "true"}={result}");
+            //            return Task.FromResult(result);
+            //        });
+            //}
 
-            ProcessActionVisitorContext conditionContext = this._contextStack.Pop();
-            KernelProcessEdgeCondition? condition = null;
+            ////this.AddScope(conditionItem.Id ?? $"{item.Id.Value}_item{index}", condition);
 
-            if (conditionItem.Condition is not null)
-            {
-                // %%% VERIFY IF ONLY ONE CONDITION IS EXPECTED / ALLOWED
-                condition =
-                    new((stepEvent, state) =>
-                    {
-                        RecalcEngine engine = this.CreateEngine();
-                        bool result = engine.Eval(conditionItem.Condition.ExpressionText ?? "true").AsBoolean();
-                        Console.WriteLine($"!!! CONDITION: {conditionItem.Condition.ExpressionText ?? "true"}={result}");
-                        return Task.FromResult(result);
-                    });
-            }
+            //// Visit each action in the condition item
+            //conditionItem.Accept(this);
 
-            this.CurrentContext.Then(conditionContext.Step, condition);
+            ////this._workflowBuilder.RemoveScope();
 
             ++index;
         }
+    }
+
+    public override void VisitConditionItem(ConditionItem item)
+    {
+        Console.WriteLine($"###### ITEM {item.Id}");
+        base.VisitConditionItem(item); // %%%
     }
 
     protected override void Visit(GotoAction item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddContainer(item.Id.Value);
-        // Store the link for processing after all actions have steps.
-        this._linkCache.Add((item.ActionId, this.CurrentContext.Then())); // %%% DRY
-        // Create an orphaned context for continuity
-        this.AddDead(item.Id.Value);
+        string parentId = item.GetParentId();
+        this.ContinueWith(this.CreateStep(item.Id.Value), parentId);
+        this._workflowBuilder.AddLink(item.Id.Value, item.ActionId.Value);
+        this.RestartFrom(item.Id.Value, parentId);
     }
 
     protected override void Visit(Foreach item)
     {
-        this.Trace(item);
+        this.Trace(item, isSkipped: false);
 
-        this.AddAction(new ForeachAction(item));
+        ForeachAction action = new(item);
+        this.ContinueWith(action);
+        string restartId = this.RestartFrom(action);
+        string loopId = $"next_{action.Id}";
+        this.ContinueWith(this.CreateStep(loopId, action.TakeNext), action.Id, callback: CompletionHandler);
+        this._workflowBuilder.AddLink(loopId, restartId, () => !action.HasValue);
+        this.ContinueWith(this.CreateStep($"start_{action.Id}"), action.Id, () => action.HasValue);
+        void CompletionHandler(string scopeId)
+        {
+            string completionId = $"end_{action.Id}";
+            this.ContinueWith(this.CreateStep(completionId), action.Id);
+            this._workflowBuilder.AddLink(completionId, loopId);
+        }
     }
 
-    protected override void Visit(BreakLoop item)
+    protected override void Visit(BreakLoop item) // %%% SUPPORT
     {
         this.Trace(item);
     }
 
-    protected override void Visit(ContinueLoop item)
+    protected override void Visit(ContinueLoop item) // %%% SUPPORT
     {
         this.Trace(item);
     }
@@ -142,46 +133,44 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new EndConversationAction(item));
-        // Stop the process, this is a terminal action
-        this.CurrentContext.Then().StopProcess();
-        // Create an orphaned context for continuity
-        this.AddDead(item.Id.Value);
+        EndConversationAction action = new(item);
+        this.ContinueWith(action);
+        this.RestartFrom(action);
     }
 
     protected override void Visit(AnswerQuestionWithAI item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new AnswerQuestionWithAIAction(item));
+        this.ContinueWith(new AnswerQuestionWithAIAction(item));
     }
 
     protected override void Visit(SetVariable item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new SetVariableAction(item));
+        this.ContinueWith(new SetVariableAction(item));
     }
 
     protected override void Visit(SetTextVariable item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new SetTextVariableAction(item));
+        this.ContinueWith(new SetTextVariableAction(item));
     }
 
     protected override void Visit(ClearAllVariables item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new ClearAllVariablesAction(item));
+        this.ContinueWith(new ClearAllVariablesAction(item));
     }
 
     protected override void Visit(ResetVariable item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new ResetVariableAction(item));
+        this.ContinueWith(new ResetVariableAction(item));
     }
 
     protected override void Visit(EditTable item)
@@ -193,21 +182,21 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new EditTableV2Action(item));
+        this.ContinueWith(new EditTableV2Action(item));
     }
 
     protected override void Visit(ParseValue item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new ParseValueAction(item));
+        this.ContinueWith(new ParseValueAction(item));
     }
 
     protected override void Visit(SendActivity item)
     {
         this.Trace(item, isSkipped: false);
 
-        this.AddAction(new SendActivityAction(item, this._context.ActivityNotificationHandler));
+        this.ContinueWith(new SendActivityAction(item, this._context.ActivityNotificationHandler));
     }
 
     #region Not implemented
@@ -291,7 +280,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item);
 
-        this.AddAction(new BeginDialogAction(item));
+        this.ContinueWith(new BeginDialogAction(item));
     }
 
     protected override void Visit(UnknownDialogAction item)
@@ -391,109 +380,97 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     #endregion
 
-    private void AddAction(ProcessAction? action)
+    private void ContinueWith(
+        ProcessAction action,
+        Func<bool>? condition = null,
+        ScopeCompletionAction? callback = null) =>
+        this.ContinueWith(this.CreateActionStep(action), action.ParentId, condition, callback);
+
+    private void ContinueWith(
+        ProcessStepBuilder step,
+        string parentId,
+        Func<bool>? condition = null,
+        ScopeCompletionAction? callback = null)
     {
-        if (action is not null)
-        {
-            // Add the action to the existing context
-            this.AddStep(this.CreateActionStep(this.CurrentContext, action));
-        }
+        this._actionStack.Recognize(parentId, callback);
+        this._workflowBuilder.AddNode(step, parentId);
+        this._workflowBuilder.AddLinkFromPeer(parentId, step.Id, condition);
     }
 
-    private void AddContainer(string contextId)
+
+    private string RestartFrom(ProcessAction action) =>
+        this.RestartFrom(action.Id, action.ParentId);
+
+    private string RestartFrom(string actionId, string parentId)
     {
-        this.AddStep(this.CreateContainerStep(this.CurrentContext, contextId));
+        string restartId = $"post_{actionId}";
+        this._workflowBuilder.AddNode(this.CreateStep(restartId), parentId);
+        return restartId;
     }
 
-    private void AddDead(string contextId)
+    private ProcessStepBuilder CreateStep(string actionId, Action<ProcessActionContext>? stepAction = null)
     {
-        this.CurrentContext.Step = this.CreateContainerStep(this.CurrentContext, $"dead_{contextId}");
-    }
-
-    private void AddStep(ProcessStepBuilder step)
-    {
-        this._steps[step.Id] = step;
-        this.ContinueWith(step);
-    }
-
-    private ProcessStepBuilder CreateContainerStep(ProcessActionVisitorContext currentContext, string contextId)
-    {
-        return this.InitializeStep(
+        return
             this._processBuilder.AddStepFromFunction(
-                contextId,
+                actionId,
                 (kernel, context) =>
                 {
-                    Console.WriteLine($"!!! STEP [{contextId}]"); // %%% DEVTRACE
+                    Console.WriteLine($"!!! STEP CUSTOM [{actionId}]"); // %%% LOGGER
+                    stepAction?.Invoke(this.CreateActionContext(kernel));
                     return Task.CompletedTask;
-                }));
+                });
     }
 
     // This implementation accepts the context as a parameter in order to pin the context closure.
     // The step cannot reference this.CurrentContext directly, as this will always be the final context.
-    private ProcessStepBuilder CreateActionStep(ProcessActionVisitorContext currentContext, ProcessAction action)
+    private ProcessStepBuilder CreateActionStep(ProcessAction action)
     {
-        return this.InitializeStep(
+        return
             this._processBuilder.AddStepFromFunction(
                 action.Id,
                 async (kernel, context) =>
                 {
-                    Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
+                    Console.WriteLine($"!!! STEP {action.GetType().Name} [{action.Id}]"); // %%% LOGGER
 
                     if (action.Model.Disabled) // %%% VALIDATE
                     {
-                        Console.WriteLine($"!!! DISABLED {action.GetType().Name} [{action.Id}]"); // %%% DEVTRACE
+                        Console.WriteLine($"!!! DISABLED {action.GetType().Name} [{action.Id}]"); // %%% LOGGER
                         return;
                     }
 
                     try
                     {
-                        ProcessActionContext actionContext = new(this.CreateEngine(), this._scopes, kernel);
-                        await action.ExecuteAsync(actionContext, cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
+                        await action.ExecuteAsync(
+                            this.CreateActionContext(kernel),
+                            cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
                     }
                     catch (ProcessActionException)
                     {
-                        Console.WriteLine($"*** STEP [{action.Id}] ERROR - Action failure"); // %%% DEVTRACE
+                        Console.WriteLine($"*** STEP [{action.Id}] ERROR - Action failure"); // %%% LOGGER
                         throw;
                     }
                     catch (Exception exception)
                     {
-                        Console.WriteLine($"*** STEP [{action.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
+                        Console.WriteLine($"*** STEP [{action.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% LOGGER
                         throw;
                     }
-                }));
+                });
     }
 
-    private ProcessStepBuilder InitializeStep(ProcessStepBuilder step)
-    {
-        // Capture unhandled errors for the given step
-        step.OnFunctionError(KernelDelegateProcessStep.FunctionName).SendEventTo(new ProcessFunctionTargetBuilder(this._unhandledErrorStep));
-
-        return step;
-    }
-
-    private void ContinueWith(ProcessStepBuilder newStep, KernelProcessEdgeCondition? condition = null)
-    {
-        this.CurrentContext.Then(newStep, condition);
-        this.CurrentContext.Step = newStep;
-    }
+    private ProcessActionContext CreateActionContext(Kernel kernel) => new(this.CreateEngine(), this._scopes, kernel, NullLogger.Instance); // %%% LOGGER
 
     private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._context.MaximumExpressionLength);
 
     private void Trace(DialogAction item, bool isSkipped = true)
     {
-        //Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}{new string('\t', this._contextStack.Count - 1)} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% DEVTRACE
-        Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")} x{this._contextStack.Count} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% DEVTRACE
+        //Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}{new string('\t', this._contextStack.Count - 1)} - {this.Format(item)} => {this.Format(item.Parent)}"); // %%% LOGGER
+        Console.WriteLine($"> {(isSkipped ? "EMPTY" : "VISIT")}: {new string('\t', this._workflowBuilder.GetDepth(item.GetParentId()))}{FormatItem(item)} => {FormatParent(item)}"); // %%% LOGGER
     }
 
-    private string Format(DialogAction action) => $"{action.GetType().Name} [{action.Id.Value}]";
+    private static string FormatItem(BotElement element) => $"{element.GetType().Name} ({element.GetId()})";
 
-    private string Format(BotElement? element) =>
-        element switch
-        {
-            null => "(root)",
-            DialogAction action => this.Format(action),
-            ConditionItem conditionItem => $"{conditionItem.GetType().Name} [{conditionItem.Id}]",
-            OnActivity activity => $"{activity.GetType().Name} (workflow)",
-            _ => $"{element.GetType().Name} (unknown element)"
-        };
+    private static string FormatParent(BotElement element) =>
+        element.Parent is null ?
+        throw new InvalidActionException($"Undefined parent for {element.GetType().Name} that is member of {element.GetId()}.") :
+        $"{element.Parent.GetType().Name} ({element.GetParentId()})";
 }

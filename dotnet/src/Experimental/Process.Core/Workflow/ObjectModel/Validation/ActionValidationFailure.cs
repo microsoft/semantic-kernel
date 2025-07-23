@@ -5,10 +5,15 @@ using Microsoft.Bot.ObjectModel;
 namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents a validation failure based on a <see cref="DialogAction"/>.
 /// </summary>
 public class ActionValidationFailure : ElementValidationFailure
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ActionValidationFailure"/> class with the specified action and error message.
+    /// </summary>
+    /// <param name="action">The <see cref="DialogAction"/> that caused the validation failure.</param>
+    /// <param name="message">The validation error message.</param>
     internal ActionValidationFailure(DialogAction action, string message)
         : base(action, message)
     {
@@ -16,7 +21,7 @@ public class ActionValidationFailure : ElementValidationFailure
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the identifier of the <see cref="DialogAction"/> that caused the validation failure.
     /// </summary>
     public string Id { get; }
 }

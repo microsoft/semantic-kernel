@@ -1,0 +1,45 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  type: Message
+  actions:
+
+    - kind: SendActivity
+      id: sendActivity_aGsbRo
+      activity: First
+
+    - kind: GotoAction
+      id: goto_skJ8u
+      actionId: sendActivity_fJsbRz
+
+    - kind: SendActivity
+      id: sendActivity_nev1
+      activity: NEVER!
+      
+    - kind: SendActivity
+      id: sendActivity_SVoNSV
+      activity: Last
+
+    - kind: GotoAction
+      id: goto_SVoNSV
+      actionId: end_SVoNSV
+
+    - kind: SendActivity
+      id: sendActivity_nev2
+      activity: NEVER!
+
+    - kind: SendActivity
+      id: sendActivity_fJsbRz
+      activity: Next
+
+    - kind: GotoAction
+      id: goto_ajd01z
+      actionId: sendActivity_SVoNSV
+
+    - kind: SendActivity
+      id: sendActivity_nev3
+      activity: NEVER!
+
+    - kind: EndConversation
+      id: end_SVoNSV

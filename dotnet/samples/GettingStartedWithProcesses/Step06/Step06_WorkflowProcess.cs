@@ -13,6 +13,8 @@ public class Step06_WorkflowProcess : BaseTest
         : base(output, redirectSystemConsoleOutput: true) { }
 
     [Theory]
+    [InlineData("testEnd")]
+    [InlineData("testGoto")]
     [InlineData("testLoop")]
     [InlineData("testCondition")]
     [InlineData("deepResearch")]

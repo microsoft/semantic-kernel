@@ -19,7 +19,7 @@ internal sealed class ResetVariableAction : AssignmentAction<ResetVariable>
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
         context.Engine.ClearScopedVariable(context.Scopes, ActionScopeType.Parse(this.Target.VariableScopeName), this.Target.VariableName!);
-        Console.WriteLine( // %%% DEVTRACE
+        Console.WriteLine( // %%% LOGGER
             $"""
             !!! CLEAR {this.GetType().Name} [{this.Id}]
                 NAME: {this.Model.Variable!.Format()}

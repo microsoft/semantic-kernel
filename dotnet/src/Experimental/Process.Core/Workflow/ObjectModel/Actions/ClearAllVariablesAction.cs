@@ -17,10 +17,7 @@ internal sealed class ClearAllVariablesAction : ProcessAction<ClearAllVariables>
     {
         DataValue literalValue = this.Model.Variables.GetLiteralValue();
 
-        if (literalValue is RecordDataValue recordValue)
-        {
-            // %%% TODO ?!?!!?!
-        }
+        // %%% TODO: VariablesToClear ?!?!!?!
 
         return Task.CompletedTask;
     }

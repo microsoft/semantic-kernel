@@ -28,7 +28,7 @@ internal class LocalDelegateStep : LocalStep
             this._functions.Add(f.Name, f);
         }
 
-        this._initialInputs = this.FindInputChannels(this._functions, logger: null, this.ExternalMessageChannel); // %%% LOGGER
+        this._initialInputs = this.FindInputChannels(this._functions, logger: null, this.ExternalMessageChannel);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
 #if !NETCOREAPP

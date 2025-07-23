@@ -34,7 +34,7 @@ internal abstract class AssignmentAction<TAction> : ProcessAction<TAction> where
         context.Engine.SetScopedVariable(context.Scopes, ActionScopeType.Parse(this.Target.VariableScopeName), this.Target.VariableName!, result);
         string? resultValue = result.Format();
         string valuePosition = (resultValue?.IndexOf('\n') ?? -1) >= 0 ? Environment.NewLine : " ";
-        Console.WriteLine( // %%% DEVTRACE
+        Console.WriteLine( // %%% LOGGER
             $"""
             !!! ASSIGN {this.GetType().Name} [{this.Id}]
                 NAME: {this.Target.Format()}

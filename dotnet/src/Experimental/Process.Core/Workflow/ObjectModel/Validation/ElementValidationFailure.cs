@@ -5,10 +5,15 @@ using Microsoft.Bot.ObjectModel;
 namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents a validation failure that is associated with a specific <see cref="BotElement"/>.
 /// </summary>
 public class ElementValidationFailure : ValidationFailure
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ElementValidationFailure"/> class with the specified element and error message.
+    /// </summary>
+    /// <param name="element">The <see cref="BotElement"/> that caused the validation failure.</param>
+    /// <param name="message">The validation error message.</param>
     internal ElementValidationFailure(BotElement element, string message)
         : base(message)
     {
@@ -18,17 +23,17 @@ public class ElementValidationFailure : ValidationFailure
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the kind of the <see cref="BotElement"/> that caused the validation failure.
     /// </summary>
     public BotElementKind Kind { get; }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the start position of the <see cref="BotElement"/> in the source, if available.
     /// </summary>
     public int? StartPosition { get; }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the end position of the <see cref="BotElement"/> in the source, if available.
     /// </summary>
     public int? EndPosition { get; }
 }

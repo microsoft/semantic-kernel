@@ -33,7 +33,7 @@ public sealed class KernelProcessEdge
     /// <summary>
     /// The condition that must be met for the edge to be activated.
     /// </summary>
-    public KernelProcessEdgeCondition Condition { get; init; }
+    public KernelProcessEdgeCondition? Condition { get; init; }
 
     /// <summary>
     /// The list of variable updates to be performed when the edge fires.
@@ -51,7 +51,7 @@ public sealed class KernelProcessEdge
         this.SourceStepId = sourceStepId;
         this.OutputTarget = outputTarget;
         this.GroupId = groupId;
-        this.Condition = condition ?? new KernelProcessEdgeCondition(callback: (_, _) => Task.FromResult(true));
+        this.Condition = condition;
         //this.Metadata = metadata ?? [];
         this.Update = update;
     }

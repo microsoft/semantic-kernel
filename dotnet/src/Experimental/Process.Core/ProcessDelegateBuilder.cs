@@ -17,9 +17,6 @@ public class ProcessDelegateBuilder : ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessDelegateBuilder"/> class.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="stepFunction"></param>
-    /// <param name="processBuilder"></param>
     public ProcessDelegateBuilder(string id, StepFunction stepFunction, ProcessBuilder? processBuilder) : base(id, processBuilder)
     {
         this._stepFunction = stepFunction ?? throw new ArgumentNullException(nameof(stepFunction), "Step function cannot be null.");
@@ -30,7 +27,7 @@ public class ProcessDelegateBuilder : ProcessStepBuilder
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
-        KernelProcessStepState stateObject = new(this.Name, "none", this.Id); // %%% VERSION IS NOT USED, BUT REQUIRED BY THE BASE CLASS
+        KernelProcessStepState stateObject = new(this.Name, "none", this.Id);
 
         return new KernelProcessDelegateStepInfo(stateObject, this._stepFunction, builtEdges);
     }

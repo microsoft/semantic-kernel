@@ -75,7 +75,7 @@ public static class ObjectModelBuilder
         processBuilder.OnInputEvent(messageId).SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
         Console.WriteLine("@ INTERPRETING MODEL");
-        ProcessActionVisitor visitor = new(processBuilder, environment ?? HostContext.Default, initStep, scopes);
+        ProcessActionVisitor visitor = new(processBuilder, environment ?? HostContext.Default, scopes);
         ProcessActionWalker walker = new(rootElement, visitor);
 
         Console.WriteLine("@ FINALIZING PROCESS");

@@ -4,12 +4,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel);
+internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger logger);
 
 internal abstract class ProcessAction<TAction>(TAction model) :
     ProcessAction(model)
@@ -37,12 +38,12 @@ internal abstract class ProcessAction(DialogAction model)
         }
         catch (ProcessWorkflowException exception)
         {
-            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
+            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% LOGGER
             throw;
         }
         catch (Exception exception)
         {
-            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% DEVTRACE
+            Console.WriteLine($"*** ACTION [{this.Id}] ERROR - {exception.GetType().Name}\n{exception.Message}"); // %%% LOGGER
             throw new ProcessWorkflowException($"Unexpected failure executing action #{this.Id} [{this.GetType().Name}]", exception);
         }
     }

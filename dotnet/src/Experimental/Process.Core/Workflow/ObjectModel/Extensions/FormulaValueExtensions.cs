@@ -55,6 +55,7 @@ internal static class FormulaValueExtensions
     // %%% TODO: Type conversion
     //VoidValue
     //NamedValue
+    //TableValue
     //BlobValue
     //ErrorValue
     //ColorValue

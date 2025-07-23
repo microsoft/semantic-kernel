@@ -45,11 +45,11 @@ public sealed class HostContext
         {
             if (!string.IsNullOrEmpty(messageActivity.Summary))
             {
-                Console.WriteLine($"\t{messageActivity.Summary}"); // %%% DEVTRACE
+                Console.WriteLine($"\t{messageActivity.Summary}"); // %%% LOGGER
             }
 
             string? activityText = engine.Format(messageActivity.Text);
-            Console.WriteLine(activityText + Environment.NewLine); // %%% DEVTRACE
+            Console.WriteLine(activityText + Environment.NewLine); // %%% LOGGER
         }
 
         return Task.CompletedTask;

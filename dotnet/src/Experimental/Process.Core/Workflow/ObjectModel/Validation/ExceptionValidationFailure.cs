@@ -5,10 +5,15 @@ using System;
 namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents a validation failure that is associated with an exception.
 /// </summary>
 public class ExceptionValidationFailure : ValidationFailure
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExceptionValidationFailure"/> class with the specified exception and message.
+    /// </summary>
+    /// <param name="exception">The exception that caused the validation failure.</param>
+    /// <param name="message">The validation failure message.</param>
     internal ExceptionValidationFailure(Exception exception, string message)
         : base(message)
     {
@@ -16,7 +21,7 @@ public class ExceptionValidationFailure : ValidationFailure
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the exception that caused the validation failure.
     /// </summary>
     public Exception Exception { get; }
 

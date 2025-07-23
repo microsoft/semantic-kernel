@@ -12,7 +12,7 @@ internal static class RecalcEngineExtensions
     public static void ClearScopedVariable(this RecalcEngine engine, ProcessActionScopes scopes, ActionScopeType scope, string varName)
     {
         // Validate inputs and assign value.
-        scopes.Remove(varName, scope); // %%% CONSIDER: SET TO BLANK ???
+        scopes.Remove(varName, scope);
 
         // Rebuild scope record and update engine
         RecordValue scopeRecord = scopes.BuildRecord(scope);
