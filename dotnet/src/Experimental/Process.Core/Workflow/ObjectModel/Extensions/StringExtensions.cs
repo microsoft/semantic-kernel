@@ -8,7 +8,7 @@ internal static class StringExtensions
 {
     private static readonly Regex s_regex = new(@"^```(?:\w*)\s*([\s\S]*?)\s*```$", RegexOptions.Compiled | RegexOptions.Multiline);
 
-    public static string TrimJsonDelimeter(this string value)
+    public static string TrimJsonDelimiter(this string value)
     {
         Match match = s_regex.Match(value.Trim());
         if (match.Success)
