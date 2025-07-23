@@ -7,12 +7,19 @@ using Xunit;
 
 namespace SemanticKernel.Process.Utilities.UnitTests;
 
+/// <summary>
+/// Tests for <see cref="ObservableChannel{T}"/>.
+/// </summary>
 public class ObservableChannelTests
 {
     private static readonly KernelProcessEvent s_testEvent1 = new() { Data = "someData1", Id = "myId1", Visibility = KernelProcessEventVisibility.Public };
     private static readonly KernelProcessEvent s_testEvent2 = new() { Data = "someData2", Id = "myId2", Visibility = KernelProcessEventVisibility.Public };
     private static readonly KernelProcessEvent s_testEvent3 = new() { Data = "someData3", Id = "myId3", Visibility = KernelProcessEventVisibility.Public };
 
+    /// <summary>
+    /// Tests that items added to the channel can be read and peeked correctly.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task VerifyAfterAddingWithWriteAsyncItemsGetSnapshotAsync()
     {
@@ -36,8 +43,12 @@ public class ObservableChannelTests
         Assert.Equal(s_testEvent1.Id, peakChannelItem?.Id);
     }
 
+    /// <summary>
+    /// Tests that items added to the channel can be read and peeked correctly using TryWriteAsync.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task VerifyAfterAddingWithTryWriteAsyncItemsGetSnapshotAsync()
+    public void VerifyAfterAddingWithTryWriteAsyncItemsGetSnapshot()
     {
         // Arrange
         var observableChannel = new ObservableChannel<KernelProcessEvent>(Channel.CreateUnbounded<KernelProcessEvent>());
@@ -59,8 +70,12 @@ public class ObservableChannelTests
         Assert.Equal(s_testEvent1.Id, peakChannelItem?.Id);
     }
 
+    /// <summary>
+    /// Tests that the channel returns an empty array when no items have been added.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task VerifyReturnsEmptyArrayWhenNoItemsAddedAsync()
+    public void VerifyReturnsEmptyArrayWhenNoItemsAdded()
     {
         // Arrange
         var observableChannel = new ObservableChannel<KernelProcessEvent>(Channel.CreateUnbounded<KernelProcessEvent>());
@@ -74,8 +89,12 @@ public class ObservableChannelTests
         Assert.Null(peakChannelItem);
     }
 
+    /// <summary>
+    /// Tests that the channel can be rehydrated from an initial state and returns the correct snapshot.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task VerifyChannelRehydratedProperlyFromInitialStateAsync()
+    public void VerifyChannelRehydratedProperlyFromInitialState()
     {
         // Arrange
         var initialState = new KernelProcessEvent[]
@@ -99,8 +118,12 @@ public class ObservableChannelTests
         Assert.Equal(s_testEvent1.Id, peakChannelItem?.Id);
     }
 
+    /// <summary>
+    /// Tests that the channel can be rehydrated from an initial state and reading an item after that returns the correct snapshot.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task VerifyChannelRehydratedProperlyFromInitialStateAndReadingItemAfterAsync()
+    public void VerifyChannelRehydratedProperlyFromInitialStateAndReadingItemAfter()
     {
         // Arrange
         var initialState = new KernelProcessEvent[]
@@ -126,7 +149,7 @@ public class ObservableChannelTests
     }
 
     [Fact]
-    public async Task VerifyChannelRehydratedProperlyFromInitialStateAndAddingItemAfterAsync()
+    public void VerifyChannelRehydratedProperlyFromInitialStateAndAddingItemAfter()
     {
         // Arrange
         var initialState = new KernelProcessEvent[]

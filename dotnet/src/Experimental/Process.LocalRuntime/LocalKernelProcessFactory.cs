@@ -36,7 +36,16 @@ public static class LocalKernelProcessFactory
         return processContext;
     }
 
-    public static async Task<LocalKernelProcessContext> CreateContextAsync(
+    /// <summary>
+    /// Create Local Kernel Process Context.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="kernel"></param>
+    /// <param name="processId"></param>
+    /// <param name="externalMessageChannel"></param>
+    /// <param name="storageConnector"></param>
+    /// <returns></returns>
+    public static LocalKernelProcessContext CreateContext(
         this KernelProcess process,
         Kernel kernel,
         //KernelProcessEvent initialEvent,
@@ -44,10 +53,7 @@ public static class LocalKernelProcessFactory
         IExternalKernelProcessMessageChannel? externalMessageChannel = null,
         IProcessStorageConnector? storageConnector = null)
     {
-        //Verify.NotNull(initialEvent, nameof(initialEvent));
-
         LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, instanceId: processId);
-        //await processContext.StartWithEventKeepRunning(initialEvent).ConfigureAwait(false);
 
         return processContext;
     }

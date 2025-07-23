@@ -687,8 +687,7 @@ public class LocalProcessTests
 
         var testInput = "Hello, World!";
 
-        var context = await process.CreateContextAsync(
-            kernel, processId, storageConnector: processStorage);
+        var context = process.CreateContext(kernel, processId, storageConnector: processStorage);
 
         var runningProcessTask = Task.Run(() =>
         {

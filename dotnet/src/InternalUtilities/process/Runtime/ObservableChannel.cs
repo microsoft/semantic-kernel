@@ -65,7 +65,7 @@ internal class ObservableChannel<T>
         {
             return await this._channel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }
@@ -80,7 +80,7 @@ internal class ObservableChannel<T>
             await this._channel.Writer.WriteAsync(item, cancellationToken).ConfigureAwait(false);
             this._snapshot.Enqueue(item);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }

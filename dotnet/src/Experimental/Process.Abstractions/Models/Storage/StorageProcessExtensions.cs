@@ -28,10 +28,9 @@ public static class StorageProcessExtension
     /// <summary>
     /// Converts a <see cref="KernelProcess"/> to a <see cref="StorageProcessInfo"/>.
     /// </summary>
-    /// <param name="kernelProcess">instance of <see cref="KernelProcess"/></param>
     /// <param name="pendingExternalEvents">list of ending external events to be processed</param>
     /// <returns></returns>
-    public static StorageProcessEvents ToKernelStorageProcessEvents(this KernelProcess kernelProcess, List<KernelProcessEvent>? pendingExternalEvents = null)
+    public static StorageProcessEvents ToKernelStorageProcessEvents(List<KernelProcessEvent>? pendingExternalEvents = null)
     {
         return new StorageProcessEvents
         {
