@@ -66,7 +66,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         Verify.NotNull(stepInfo.State.RunId);
 
         this.ParentProcessId = parentProcessId;
-        this._stepState = stepInfo.State;
+        this._stepState = stepInfo.State with { ParentId = parentProcessId };
         this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = this.Id;
