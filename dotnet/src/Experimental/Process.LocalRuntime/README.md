@@ -70,7 +70,7 @@ sequenceDiagram
         Step-->>-Process: Step Events Retrieved (if any)
 
         Process->>Process: Exit Check (any messages to be processed)
-        alt no messges to be processed
+        alt no messages to be processed
             Process->>External: Exit Process
         end
 
