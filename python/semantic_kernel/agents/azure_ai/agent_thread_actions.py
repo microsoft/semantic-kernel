@@ -16,6 +16,7 @@ from azure.ai.agents.models import (
     ResponseFormatJsonSchemaType,
     RunStep,
     RunStepAzureAISearchToolCall,
+    RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
@@ -340,11 +341,12 @@ class AgentThreadActions:
                                     | AgentsNamedToolChoiceType.BING_CUSTOM_SEARCH
                                 ):
                                     logger.debug(
-                                        f"Entering tool_calls (bing_grounding) for run [{run.id}], agent "
-                                        f" `{agent.name}` and thread `{thread_id}`"
+                                        f"Entering tool_calls (bing_grounding/bing_custom_search) for run [{run.id}], "
+                                        f"agent `{agent.name}` and thread `{thread_id}`"
                                     )
-                                    bing_call: RunStepBingGroundingToolCall = cast(
-                                        RunStepBingGroundingToolCall, tool_call
+                                    # Handle both Bing grounding and custom search tool calls
+                                    bing_call: RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall = cast(
+                                        RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall, tool_call
                                     )
                                     content = generate_bing_grounding_content(
                                         agent_name=agent.name, bing_tool_call=bing_call
