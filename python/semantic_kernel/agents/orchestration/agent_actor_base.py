@@ -220,22 +220,22 @@ class AgentActorBase(ActorBase):
         return [*base_messages, additional_messages]
 
     async def _handle_intermediate_message(self, message: ChatMessageContent) -> None:
-        """Handle intermediate messages from the agent.
-
-        This method is called with messages produced during streaming agent responses.
-        Although the parameter is typed as `ChatMessageContent` (to match the `invoke_stream` callback signature),
-        the actual object will always be a `StreamingChatMessageContent` (a subclass of `ChatMessageContent`).
-
-        The agent response callback expects a `ChatMessageContent`, so we can pass the message directly.
-        However, the streaming agent response callback specifically requires a `StreamingChatMessageContent`.
-        To avoid type errors from the static type checker due to down casting (from `ChatMessageContent` to
-        `StreamingChatMessageContent`), we check that the message is of the correct type before calling the callbacks.
-        Since it will always be a `StreamingChatMessageContent`, this check is safe.
-        """
-        if not isinstance(message, StreamingChatMessageContent):
-            raise TypeError(
-                f"Expected message to be of type 'StreamingChatMessageContent', "
-                f"but got '{type(message).__name__}' instead."
-            )
+        """Handle intermediate messages from the agent."""
         await self._call_agent_response_callback(message)
-        await self._call_streaming_agent_response_callback(message, is_final=True)
+        if isinstance(message, StreamingChatMessageContent):
+            await self._call_streaming_agent_response_callback(message, is_final=True)
+        else:
+            # Convert to StreamingChatMessageContent if needed
+            streaming_message = StreamingChatMessageContent(  # type: ignore[misc, call-overload]
+                role=message.role,
+                choice_index=0,
+                items=message.items,
+                content=message.content,
+                name=message.name,
+                inner_content=message.inner_content,
+                encoding=message.encoding,
+                finish_reason=message.finish_reason,
+                ai_model_id=message.ai_model_id,
+                metadata=message.metadata,
+            )
+            await self._call_streaming_agent_response_callback(streaming_message, is_final=True)
