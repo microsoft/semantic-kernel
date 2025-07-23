@@ -5,7 +5,7 @@ using Microsoft.PowerFx.Types;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
-internal static class DataValueExtensions
+internal static class BotElementExtensions
 {
     public static FormulaValue ToFormulaValue(this DataValue? value) =>
         value switch

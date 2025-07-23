@@ -19,12 +19,12 @@ public delegate Task ActivityNotificationHandler(ActivityTemplateBase activity, 
 /// <summary>
 /// %%% COMMENT
 /// </summary>
-public sealed class ProcessActionEnvironment
+public sealed class HostContext
 {
     /// <summary>
     /// %%% COMMENT
     /// </summary>
-    internal static ProcessActionEnvironment Default { get; } = new();
+    internal static HostContext Default { get; } = new();
 
     /// <summary>
     /// %%% COMMENT

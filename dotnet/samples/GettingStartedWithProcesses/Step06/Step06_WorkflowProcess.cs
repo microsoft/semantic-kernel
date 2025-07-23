@@ -20,16 +20,15 @@ public class Step06_WorkflowProcess : BaseTest
     {
         const string InputEventId = "question";
 
-        Console.WriteLine("$$$ PROCESS INIT");
+        Console.WriteLine("PROCESS INIT\n");
 
-        string yaml = File.ReadAllText(@$"{nameof(Step06)}\{fileName}.yaml");
-        KernelProcess process = ObjectModelBuilder.Build(fileName, yaml, InputEventId);
+        using StreamReader yamlReader = File.OpenText(@$"{nameof(Step06)}\{fileName}.yaml");
+        KernelProcess process = ObjectModelBuilder.Build(yamlReader, InputEventId);
 
-        Console.WriteLine("$$$ PROCESS INVOKE");
+        Console.WriteLine("\nPROCESS INVOKE\n");
 
-        Kernel kernel = this.CreateKernelWithChatCompletion();
+        Kernel kernel = this.CreateKernelWithChatCompletion(); // %%% HOST CONTEXT
         await using LocalKernelProcessContext context = await process.StartAsync(kernel, new KernelProcessEvent() { Id = InputEventId, Data = "Why is the sky blue?" });
-
-        Console.WriteLine("$$$ PROCESS DONE");
+        Console.WriteLine("\nPROCESS DONE");
     }
 }

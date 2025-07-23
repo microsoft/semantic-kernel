@@ -5,19 +5,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
 internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel);
 
-internal abstract class ProcessAction<TAction>(TAction model) : ProcessAction(model) where TAction : DialogAction
+internal abstract class ProcessAction<TAction>(TAction model) :
+    ProcessAction(model)
+    where TAction : DialogAction
 {
     public new TAction Model => (TAction)base.Model;
 }
 
 internal abstract class ProcessAction(DialogAction model)
 {
-    public ActionId Id => model.Id;
+    public string Id => model.Id.Value;
+
+    public string ParentId { get; } = model.GetParentId();
 
     public DialogAction Model => model;
 
