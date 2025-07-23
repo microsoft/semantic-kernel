@@ -16,28 +16,32 @@ internal static class ResponseCreationOptionsFactory
         AgentThread agentThread,
         AgentInvokeOptions? invokeOptions)
     {
+        ResponseCreationOptions creationOptions;
         if (invokeOptions is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions &&
             responseAgentInvokeOptions.ResponseCreationOptions is not null)
         {
-            // Use the options provided by the caller
-            return responseAgentInvokeOptions.ResponseCreationOptions;
+            creationOptions = responseAgentInvokeOptions.ResponseCreationOptions;
+            creationOptions.EndUserId ??= agent.GetDisplayName();
+            creationOptions.Instructions ??= $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}";
+            creationOptions.StoredOutputEnabled ??= agent.StoreEnabled;
         }
-
-        var responseTools = agent.GetKernel(invokeOptions).Plugins
-            .SelectMany(kp => kp.Select(kf => kf.ToResponseTool(kp.Name)));
-
-        var creationOptions = new ResponseCreationOptions
+        else
         {
-            EndUserId = agent.GetDisplayName(),
-            Instructions = $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",
-            StoredOutputEnabled = agent.StoreEnabled,
-        };
+            creationOptions = new ResponseCreationOptions
+            {
+                EndUserId = agent.GetDisplayName(),
+                Instructions = $"{agent.Instructions}\n{invokeOptions?.AdditionalInstructions}",
+                StoredOutputEnabled = agent.StoreEnabled,
+            };
+        }
 
         if (agent.StoreEnabled && agentThread.Id is not null)
         {
             creationOptions.PreviousResponseId = agentThread.Id;
         }
 
+        var responseTools = agent.GetKernel(invokeOptions).Plugins
+            .SelectMany(kp => kp.Select(kf => kf.ToResponseTool(kp.Name)));
         if (responseTools is not null && responseTools.Any())
         {
             creationOptions.Tools.AddRange(responseTools);
