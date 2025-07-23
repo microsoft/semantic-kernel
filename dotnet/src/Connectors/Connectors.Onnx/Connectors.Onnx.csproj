@@ -6,12 +6,14 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
-    <VersionSuffix>alpha</VersionSuffix>
     <NoWarn>$(NoWarn);SKEXP0001;SYSLIB1222</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <PropertyGroup>
+    <PackageVersion>1.60.1</PackageVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
@@ -44,5 +46,5 @@
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Condition=" '$(Configuration)' == 'Debug_Cuda' OR '$(Configuration)' == 'Release_Cuda' " />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Condition=" '$(Configuration)' == 'Debug_DirectML' OR '$(Configuration)' == 'Release_DirectML' " />    
   </ItemGroup>
-
+  
 </Project>
