@@ -37,6 +37,28 @@ public static class LocalKernelProcessFactory
     }
 
     /// <summary>
+    /// Create Local Kernel Process Context.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="kernel"></param>
+    /// <param name="processId"></param>
+    /// <param name="externalMessageChannel"></param>
+    /// <param name="storageConnector"></param>
+    /// <returns></returns>
+    public static LocalKernelProcessContext CreateContext(
+        this KernelProcess process,
+        Kernel kernel,
+        //KernelProcessEvent initialEvent,
+        string? processId = null,
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null,
+        IProcessStorageConnector? storageConnector = null)
+    {
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, instanceId: processId);
+
+        return processContext;
+    }
+
+    /// <summary>
     /// Starts the specified process and runs it to completion.
     /// </summary>
     /// <param name="process"></param>

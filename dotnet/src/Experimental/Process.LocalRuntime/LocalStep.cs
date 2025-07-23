@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -67,7 +66,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         Verify.NotNull(stepInfo.State.RunId);
 
         this.ParentProcessId = parentProcessId;
-        this._stepState = stepInfo.State;
+        this._stepState = stepInfo.State with { ParentId = parentProcessId };
         this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = this.Id;
@@ -126,7 +125,12 @@ internal class LocalStep : IKernelProcessMessageChannel
 
     internal IExternalKernelProcessMessageChannel? ExternalMessageChannel { get; init; }
 
-    internal ProcessStorageManager? StorageManager { get; init; }
+    internal IProcessStepStorageOperations? StorageManager { get; init; }
+
+    internal KernelProcessStepInfo StepInfo
+    {
+        get => this._stepInfo with { State = this._stepState };
+    }
 
     /// <summary>
     /// Retrieves all events that have been emitted by this step in the previous superstep.
@@ -240,14 +244,11 @@ internal class LocalStep : IKernelProcessMessageChannel
 
             if (!edgeGroupProcessor.TryGetResult(message, out Dictionary<string, object?>? result))
             {
-                // The edge group processor has not received all required messages yet.
-                await this.SaveStepEdgeDataAsync().ConfigureAwait(false);
-                // Step has not been activated, saving state props before execution
-                await this.SaveStepDataAsync().ConfigureAwait(false);
+                await this.SaveStepEventsAsync().ConfigureAwait(false);
                 return;
             }
             // Saving values with updated new edge value
-            await this.SaveStepEdgeDataAsync().ConfigureAwait(false);
+            await this.SaveStepEventsAsync().ConfigureAwait(false);
 
             // The edge group processor has received all required messages and has produced a result.
             message = message with { Values = result ?? [] };
@@ -260,8 +261,8 @@ internal class LocalStep : IKernelProcessMessageChannel
             // Add the message values to the inputs for the function
             this.AssignStepFunctionParameterValues(message);
 
-            // Not making use of edge groups, saving edge values only
-            await this.SaveStepEdgeDataAsync().ConfigureAwait(false);
+            // TODO: Add saving last message received when no edge groups are used
+            //await this.SaveStepEventsAsync(message).ConfigureAwait(false);
         }
 
         // If we're still waiting for inputs on all of our functions then don't do anything.
@@ -320,7 +321,6 @@ internal class LocalStep : IKernelProcessMessageChannel
             // Reset the inputs for the function that was just executed
             this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
 
-            await this.SaveStepDataAsync().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(message.GroupId) && this._edgeGroupProcessors != null)
             {
                 // Only clearing out edge processor with most recent group id received
@@ -330,14 +330,14 @@ internal class LocalStep : IKernelProcessMessageChannel
                 }
             }
 
-            await this.SaveStepEdgeDataAsync().ConfigureAwait(false);
+            await this.SaveStepStateAsync().ConfigureAwait(false);
+            await this.SaveStepEventsAsync().ConfigureAwait(false);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
-    private async Task<Dictionary<string, Dictionary<string, object?>?>?> TryGetCachedInputEdgesValuesAsync()
+    private async Task TryRestoreCachedUnprocessedInputValuesAsync()
     {
-        var storageKeyValues = this.GetStepStorageKeyValues();
         if (this._initialInputs == null)
         {
             throw new KernelException("Initial Inputs have not been initialize, cannot initialize step properly");
@@ -345,70 +345,18 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         if (this.StorageManager != null)
         {
-            var storedEdgesData = await this.StorageManager.GetStepEdgeDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
-            if (this._edgeGroupProcessors != null && storedEdgesData.Item1 && storedEdgesData.Item2 != null)
+            var stepEventData = await this.StorageManager.GetStepEventsAsync(this.StepInfo).ConfigureAwait(false);
+            if (this._edgeGroupProcessors != null && stepEventData?.EdgesData != null)
             {
                 foreach (var edgeGroup in this._edgeGroupProcessors)
                 {
-                    if (storedEdgesData.Item2.TryGetValue(edgeGroup.Key, out Dictionary<string, KernelProcessEventData?>? edgeGroupData) && edgeGroupData != null)
+                    if (stepEventData.EdgesData.TryGetValue(edgeGroup.Key, out Dictionary<string, KernelProcessEventData?>? edgeGroupData) && edgeGroupData != null)
                     {
                         edgeGroup.Value.RehydrateMessageData(edgeGroupData.ToDictionary(edgeGroupData => edgeGroupData.Key, edgeGroupData => edgeGroupData.Value?.ToObject()));
                     }
                 }
             }
-            // it is not an edge group, it is regular edge
-            else if (!storedEdgesData.Item1 && storedEdgesData.Item2 != null)
-            {
-                Dictionary<string, Dictionary<string, object?>?> inputValuesDictionary = [];
-                foreach (var function in this._initialInputs)
-                {
-                    if (storedEdgesData.Item2.TryGetValue(function.Key, out Dictionary<string, KernelProcessEventData?>? functionParameters) && functionParameters != null)
-                    {
-                        inputValuesDictionary[function.Key] = [];
-                        foreach (var parameter in function.Value ?? [])
-                        {
-                            if (functionParameters != null && functionParameters.TryGetValue(parameter.Key, out KernelProcessEventData? data) && data != null)
-                            {
-                                // If the parameter is a KernelProcessEventData, we need to convert it to the original type
-                                inputValuesDictionary[function.Key]![parameter.Key] = data.ToObject();
-                            }
-                            else
-                            {
-                                inputValuesDictionary[function.Key]![parameter.Key] = parameter.Value;
-                            }
-                        }
-                    }
-                }
-
-                return inputValuesDictionary;
-            }
         }
-
-        return null;
-    }
-
-    private async Task<KernelProcessStepState?> TryGetCachedStepStateAsync(Type stateType, Type? userStateType)
-    {
-        var storageKeyValues = this.GetStepStorageKeyValues();
-        if (this.StorageManager != null)
-        {
-            var storedMetadataState = await this.StorageManager.GetStepDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
-            if (storedMetadataState != null)
-            {
-                var stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, storedMetadataState.VersionInfo, this.Id);
-
-                if (userStateType != null)
-                {
-                    // it is a step with custom state
-                    stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, storedMetadataState.State);
-                }
-
-                stateObject?.InitializeUserState(stateType, userStateType);
-                return stateObject;
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -424,18 +372,25 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Populating step function inputs
-        this._inputs = await this.TryGetCachedInputEdgesValuesAsync().ConfigureAwait(false) ?? this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+        this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
         Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
-        KernelProcessStepState? stateObject = await this.TryGetCachedStepStateAsync(stateType, userStateType).ConfigureAwait(false);
+        KernelProcessStepState? stateObject = null;
+
+        if (this.StorageManager != null)
+        {
+            stateObject = await this.StorageManager.GetStepStateAsync(this.StepInfo).ConfigureAwait(false);
+            await this.TryRestoreCachedUnprocessedInputValuesAsync().ConfigureAwait(false);
+        }
 
         if (stateObject == null)
         {
             // no previous state in storage found, try using the default state instead
             stateObject = this._stepInfo.State;
-            stateObject.InitializeUserState(stateType, userStateType);
         }
+
+        stateObject.InitializeUserState(stateType, userStateType);
 
         if (stateObject is null)
         {
@@ -454,6 +409,8 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         await this._stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
         await activateTask.ConfigureAwait(false);
+
+        await this.SaveStepInfoAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -470,33 +427,32 @@ internal class LocalStep : IKernelProcessMessageChannel
         return (this._stepInfo.State.StepId, this._stepInfo.State.RunId!);
     }
 
-    internal virtual async Task SaveStepDataAsync()
+    internal virtual async Task SaveStepStateAsync()
     {
-        var storageKeyValues = this.GetStepStorageKeyValues();
-
-        var state = (this._stepInfo with { State = this._stepState }).ToProcessStateMetadata();
-
-        if (state != null && this.StorageManager != null)
+        if (this.StorageManager != null)
         {
-            bool stateSaved = await this.StorageManager.SaveStepStateDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, state).ConfigureAwait(false);
-            bool parentSaved = await this.StorageManager.SaveParentDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, new() { ParentId = this.ParentProcessId! }).ConfigureAwait(false);
+            await this.StorageManager.SaveStepStateAsync(this.StepInfo).ConfigureAwait(false);
         }
     }
 
-    internal async Task SaveStepEdgeDataAsync()
+    internal async Task SaveStepInfoAsync()
     {
-        bool fromEdgeGroup = false;
-        Dictionary<string, Dictionary<string, object?>?>? stepEdgesData = this._inputs;
-        if (this._edgeGroupProcessors != null && this._edgeGroupProcessors.Count > 0)
+        if (this.StorageManager != null)
         {
-            stepEdgesData = this._edgeGroupProcessors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.MessageData)!;
-            fromEdgeGroup = true;
+            await this.StorageManager.SaveStepInfoAsync(this.StepInfo).ConfigureAwait(false);
         }
+    }
 
-        var storageKeyValues = this.GetStepStorageKeyValues();
-        if (this.StorageManager != null && stepEdgesData != null)
+    /// <summary>
+    /// Helper function that isolate use of Local Runtime specific objects when calling StorageManager
+    /// </summary>
+    /// <returns></returns>
+    internal async Task SaveStepEventsAsync(ProcessMessage? lastMessageReceived = null)
+    {
+        var edgeGroupValues = this._edgeGroupProcessors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.MessageData);
+        if (this.StorageManager != null)
         {
-            bool edgeDataSaved = await this.StorageManager.SaveStepEdgeDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, stepEdgesData, fromEdgeGroup).ConfigureAwait(false);
+            await this.StorageManager.SaveStepEventsAsync(this.StepInfo, edgeGroupValues).ConfigureAwait(false);
         }
     }
 

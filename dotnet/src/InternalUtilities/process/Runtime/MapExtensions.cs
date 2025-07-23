@@ -172,7 +172,7 @@ internal static class MapExtensions
         var targetStep = registeredProcess.Steps.Where(s => s.State.StepId == stepId).FirstOrDefault();
         if (targetStep is null || targetStep is not T typedTarget)
         {
-            throw new InvalidOperationException("The specifiec step could not be found in the specified process.");
+            throw new InvalidOperationException("The specific step could not be found in the specified process.");
         }
 
         return typedTarget;

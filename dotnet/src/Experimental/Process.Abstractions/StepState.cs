@@ -20,5 +20,5 @@ public class StepState
     /// State
     /// </summary>
     [DataMember]
-    public object? State {  get; set; }
+    public object? State { get; set; }
 }

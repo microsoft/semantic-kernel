@@ -334,6 +334,7 @@ public sealed record StepState
 public static class ProcessTestsEvents
 {
     public const string StartProcess = "StartProcess";
+    public const string SecondaryStartProcess = "SecondaryStartProcess";
     public const string StartInnerProcess = "StartInnerProcess";
     public const string OutputReadyPublic = "OutputReadyPublic";
     public const string OutputReadySecondaryPublic = "OutputReadySecondaryPublic";

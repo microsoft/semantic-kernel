@@ -45,6 +45,13 @@ public record KernelProcessStepState
     public string? RunId { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier of the step parent.
+    /// </summary>
+    [DataMember]
+    [JsonPropertyName("parentId")]
+    public string? ParentId { get; set; }
+
+    /// <summary>
     /// The name of the Step. This is intended to be human readable and is not required to be unique. If
     /// not provided, the name will be derived from the steps .NET type.
     /// </summary>
@@ -104,5 +111,14 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
         this.RunId = runId;
         this.StepId = stepId;
         this.Version = version;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
+    /// </summary>
+    /// <param name="stepState"></param>
+    public KernelProcessStepState(KernelProcessStepState stepState)
+        : base(stepState.StepId, stepState.Version, stepState.RunId)
+    {
     }
 }

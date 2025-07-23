@@ -122,7 +122,7 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     {
         IDictionary<string, KernelProcessStepState> stepStates = await this.GetStepStatesAsync();
 
-        // Build the process with thr new state
+        // Build the process with the new state
         List<KernelProcessStepInfo> kernelProcessSteps = [];
 
         foreach (var step in this._process.Steps)
