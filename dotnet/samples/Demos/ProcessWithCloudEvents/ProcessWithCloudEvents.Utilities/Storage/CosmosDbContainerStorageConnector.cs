@@ -12,19 +12,19 @@ namespace ProcessWithCloudEvents.SharedComponents.Storage;
 
 // CosmosDB V3 has a dependency on Newtonsoft.Json, so need to add wrapper class for Cosmos DB entities:
 // https://brettmckenzie.net/posts/the-input-content-is-invalid-because-the-required-properties-id-are-missing/
-public record CosmosDbEntity<T>
+internal record CosmosDbEntity<T>
 {
     [JsonProperty("id")]
-    public string Id { get; init; }
+    public string Id { get; init; } = string.Empty;
 
     [JsonProperty("body")]
-    public T Body { get; init; }
+    public T Body { get; init; } = default!;
 
     [JsonProperty("instanceId")]
-    public string PartitionKey { get; init; }
+    public string PartitionKey { get; init; } = string.Empty;
 }
 
-internal sealed class CosmosDbProcessStorageConnector : IProcessStorageConnector
+internal sealed class CosmosDbProcessStorageConnector : IProcessStorageConnector, IDisposable
 {
     private readonly CosmosClient _cosmosClient;
     private readonly Microsoft.Azure.Cosmos.Container _container;
@@ -41,7 +41,7 @@ internal sealed class CosmosDbProcessStorageConnector : IProcessStorageConnector
 
     public async ValueTask OpenConnectionAsync()
     {
-        // Cosmos DB client handles connection pooling internally, so just ensure the client is initialized  
+        // Cosmos DB client handles connection pooling internally, so just ensure the client is initialized
         await Task.CompletedTask;
     }
 
@@ -99,5 +99,10 @@ internal sealed class CosmosDbProcessStorageConnector : IProcessStorageConnector
             // Item not found  
             return false;
         }
+    }
+
+    public void Dispose()
+    {
+        this._cosmosClient?.Dispose();
     }
 }

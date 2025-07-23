@@ -687,27 +687,28 @@ public class LocalProcessTests
 
         var testInput = "Hello, World!";
 
-        var context = process.CreateContext(kernel, processId, storageConnector: processStorage);
-
-        var runningProcessTask = Task.Run(() =>
+        await using (var context = process.CreateContext(kernel, processId, storageConnector: processStorage))
         {
-            context.StartWithEventKeepRunning(new KernelProcessEvent()
+            var runningProcessTask = Task.Run(() =>
             {
-                Id = CommonProcesses.ProcessEvents.StartProcess,
-                Data = testInput,
-            }, kernel);
-        });
+                context.StartWithEventKeepRunning(new KernelProcessEvent()
+                {
+                    Id = CommonProcesses.ProcessEvents.StartProcess,
+                    Data = testInput,
+                }, kernel);
+            });
 
-        // wait 3 seconds, then send event while process is still running
-        await Task.Delay(TimeSpan.FromSeconds(3));
+            // wait 3 seconds, then send event while process is still running
+            await Task.Delay(TimeSpan.FromSeconds(3));
 
-        await context.SendEventAsync(new KernelProcessEvent()
-        {
-            Id = CommonProcesses.ProcessEvents.OtherEvent,
-            Data = "Secondary input",
-        });
+            await context.SendEventAsync(new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.OtherEvent,
+                Data = "Secondary input",
+            });
 
-        await context.StopAsync();
+            await context.StopAsync();
+        }
     }
 
     /// <summary>
