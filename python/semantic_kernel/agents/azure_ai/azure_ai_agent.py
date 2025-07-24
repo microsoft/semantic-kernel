@@ -501,6 +501,11 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         if args:
             arguments = KernelArguments(**args)
 
+        # Handle arguments from kwargs, merging with any arguments from data
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            arguments = arguments | incoming_args if arguments is not None else incoming_args
+
         if spec.id:
             existing_definition = await client.agents.get_agent(spec.id)
 
