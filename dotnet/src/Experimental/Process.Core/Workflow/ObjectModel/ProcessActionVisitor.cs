@@ -195,7 +195,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item, isSkipped: false);
 
-        this.ContinueWith(new SendActivityAction(item, this._context.ActivityNotificationHandler));
+        this.ContinueWith(new SendActivityAction(item, this._context.ActivityChannel));
     }
 
     #region Not implemented
@@ -438,7 +438,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                     {
                         await action.ExecuteAsync(
                             this.CreateActionContext(action.Id, kernel),
-                            cancellationToken: default).ConfigureAwait(false); // %%% CANCEL TOKEN
+                            cancellationToken: default).ConfigureAwait(false); // %%% CANCELTOKEN
                     }
                     catch (ProcessActionException)
                     {

@@ -1,57 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
-using Microsoft.SemanticKernel.Process.Workflows.Extensions;
+using System.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// %%% COMMENT
-/// </summary>
-/// <param name="activity"></param>
-/// <param name="engine"></param>
-/// <returns></returns>
-public delegate Task ActivityNotificationHandler(ActivityTemplateBase activity, RecalcEngine engine);
-
-/// <summary>
-/// %%% COMMENT
+/// Provides configuration and services for workflow execution, including logging and output channels.
 /// </summary>
 public sealed class HostContext
 {
     /// <summary>
-    /// %%% COMMENT
-    /// </summary>
-    internal static HostContext Default { get; } = new();
-
-    /// <summary>
-    /// %%% COMMENT
+    /// Gets the maximum allowed length for expressions evaluated in the workflow.
     /// </summary>
     public int MaximumExpressionLength { get; init; } = 3000;
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the <see cref="TextWriter"/> used for activity output and diagnostics.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <param name="engine"></param>
-    /// <returns></returns>
-    public Task ActivityNotificationHandler(ActivityTemplateBase activity, RecalcEngine engine) // %%% TODO: CONFIGURABLE
-    {
-        Console.WriteLine($"\nACTIVITY: {activity.GetType().Name}");
+    public TextWriter ActivityChannel { get; init; } = Console.Out;
 
-        if (activity is MessageActivityTemplate messageActivity)
-        {
-            if (!string.IsNullOrEmpty(messageActivity.Summary))
-            {
-                Console.WriteLine($"\t{messageActivity.Summary}"); // %%% LOGGER
-            }
-
-            string? activityText = engine.Format(messageActivity.Text);
-            Console.WriteLine(activityText + Environment.NewLine); // %%% LOGGER
-        }
-
-        return Task.CompletedTask;
-    }
+    /// <summary>
+    /// Gets the <see cref="ILoggerFactory"/> used to create loggers for workflow components.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
 }

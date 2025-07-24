@@ -26,7 +26,7 @@ public sealed class SendActivityActionTest(ITestOutputHelper output) : ProcessAc
                 "Test activity message");
 
         // Act
-        SendActivityAction action = new(model, activitySink.Handler);
+        SendActivityAction action = new(model, this.Output);
         await this.ExecuteAction(action);
 
         // Assert

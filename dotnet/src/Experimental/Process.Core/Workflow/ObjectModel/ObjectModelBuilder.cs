@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Bot.ObjectModel.Yaml;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
 using Microsoft.SemanticKernel.Process.Workflows;
 
@@ -61,9 +60,9 @@ public static class ObjectModelBuilder
     /// </summary>
     /// <param name="yamlReader">The reader that provides the workflow object model YAML.</param>
     /// <param name="messageId">The identifier for the message.</param>
-    /// <param name="environment">The environment for the process actions.</param>
+    /// <param name="context">The hosting context for the workflow.</param>
     /// <returns>The <see cref="KernelProcess"/> that corresponds with the YAML object model.</returns>
-    public static KernelProcess Build(TextReader yamlReader, string messageId, HostContext? environment = null)
+    public static KernelProcess Build(TextReader yamlReader, string messageId, HostContext? context = null)
     {
         Console.WriteLine("@ PARSING YAML");
         BotElement rootElement = YamlSerializer.Deserialize<BotElement>(yamlReader) ?? throw new KernelException("Unable to parse YAML content.");
@@ -76,7 +75,7 @@ public static class ObjectModelBuilder
         processBuilder.OnInputEvent(messageId).SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
         Console.WriteLine("@ INTERPRETING MODEL");
-        ProcessActionVisitor visitor = new(processBuilder, environment ?? HostContext.Default, scopes);
+        ProcessActionVisitor visitor = new(processBuilder, context ?? new HostContext(), scopes);
         ProcessActionWalker walker = new(rootElement, visitor);
 
         Console.WriteLine("@ FINALIZING PROCESS");
