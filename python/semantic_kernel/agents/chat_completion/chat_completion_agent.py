@@ -255,6 +255,15 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         if "function_choice_behavior" in kwargs:
             fields["function_choice_behavior"] = kwargs["function_choice_behavior"]
 
+        # Handle arguments from kwargs, merging with any arguments from _normalize_spec_fields
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            if fields.get("arguments") is not None:
+                # Use KernelArguments' built-in merge operator, with incoming_args taking precedence
+                fields["arguments"] = fields["arguments"] | incoming_args
+            else:
+                fields["arguments"] = incoming_args
+
         return cls(**fields, kernel=kernel)
 
     # endregion
