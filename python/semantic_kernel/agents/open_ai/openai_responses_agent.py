@@ -537,6 +537,11 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         if args:
             arguments = KernelArguments(**args)
 
+        # Handle arguments from kwargs, merging with any arguments from data
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            arguments = arguments | incoming_args if arguments is not None else incoming_args
+
         if not (spec.model and spec.model.id):
             raise AgentInitializationException("model.id required when creating a new OpenAI Responses Agent.")
 
