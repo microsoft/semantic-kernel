@@ -41,7 +41,7 @@ internal class LocalAgentStep : LocalStep
     {
         if (this._stepInfo is KernelProcessAgentStep agentStep)
         {
-            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
+            this._initialInputs = this.FindInputChannels(this._functions, this._stepInfo.OutputEventsData, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
         }
         else
         {
@@ -97,7 +97,7 @@ internal class LocalAgentStep : LocalStep
             }
             if (this._stepInfo.Actions.CodeActions?.OnError is not null)
             {
-                this._stepInfo.Actions.CodeActions?.OnError(processError, new KernelProcessStepContext(this));
+                this._stepInfo.Actions.CodeActions?.OnError(processError, new KernelProcessStepContext(this, null));
             }
 
             return;
@@ -111,7 +111,7 @@ internal class LocalAgentStep : LocalStep
         }
         if (this._stepInfo.Actions.CodeActions?.OnComplete is not null)
         {
-            this._stepInfo.Actions.CodeActions?.OnComplete(result, new KernelProcessStepContext(this));
+            this._stepInfo.Actions.CodeActions?.OnComplete(result, new KernelProcessStepContext(this, null));
         }
     }
 

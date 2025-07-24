@@ -25,6 +25,10 @@ public sealed class KernelFunctionMetadata
     /// <summary>A static empty dictionary to default to when none is provided.</summary>
     internal static readonly ReadOnlyDictionary<string, object?> s_emptyDictionary = new(new Dictionary<string, object?>());
 
+    private ReadOnlyDictionary<string, KernelReturnParameterMetadata>? _processOutputEventTypes;
+
+    internal static readonly ReadOnlyDictionary<string, KernelReturnParameterMetadata> s_processOutputEventsEmptyDictionary = new(new Dictionary<string, KernelReturnParameterMetadata?>());
+
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
@@ -95,6 +99,16 @@ public sealed class KernelFunctionMetadata
         {
             Verify.NotNull(value);
             this._returnParameter = value;
+        }
+    }
+
+    public ReadOnlyDictionary<string, KernelReturnParameterMetadata> ProcessOutputEvents
+    {
+        get => this._processOutputEventTypes ??= s_processOutputEventsEmptyDictionary;
+        init
+        {
+            Verify.NotNull(value);
+            this._processOutputEventTypes = value;
         }
     }
 

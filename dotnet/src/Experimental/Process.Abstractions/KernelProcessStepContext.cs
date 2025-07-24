@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -10,14 +12,16 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelProcessStepContext
 {
     private readonly IKernelProcessMessageChannel _stepMessageChannel;
+    private readonly IReadOnlyDictionary<string, ProcessStepEventData> _outputEventsData;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
     /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
-    public KernelProcessStepContext(IKernelProcessMessageChannel channel)
+    public KernelProcessStepContext(IKernelProcessMessageChannel channel, IReadOnlyDictionary<string, ProcessStepEventData>? outputEventsData)
     {
         this._stepMessageChannel = channel;
+        this._outputEventsData = outputEventsData ?? new ReadOnlyDictionary<string, ProcessStepEventData>(new Dictionary<string, ProcessStepEventData>());
     }
 
     /// <summary>
@@ -25,9 +29,23 @@ public sealed class KernelProcessStepContext
     /// </summary>
     /// <param name="processEvent">An instance of <see cref="KernelProcessEvent"/> to be emitted from the <see cref="KernelProcessStep"/></param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
+    public ValueTask EmitEventAsync(KernelProcessEventBase processEvent)
     {
-        return this._stepMessageChannel.EmitEventAsync(processEvent);
+        var eventVisibility = KernelProcessEventVisibility.Internal;
+        if (this._outputEventsData.TryGetValue(processEvent.Id, out var eventData))
+        {
+            if (eventData.IsPublic)
+            {
+                eventVisibility = KernelProcessEventVisibility.Public;
+            }
+        }
+        else
+        {
+            // TODO: Log a warning that the event is not registered in the step metadata -> event mismatch between step implementation and step builder event usage
+            var t = "Event with ID '" + processEvent.Id + "' is not registered in the step metadata.";
+        }
+
+        return this._stepMessageChannel.EmitEventAsync(new KernelProcessEvent(processEvent) { Visibility = eventVisibility });
     }
 
     /// <summary>
