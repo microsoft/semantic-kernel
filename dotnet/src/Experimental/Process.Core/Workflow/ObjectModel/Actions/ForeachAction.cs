@@ -39,20 +39,21 @@ internal sealed class ForeachAction : ProcessAction<Foreach>
             FormulaValue value = this._values[this._index];
             this._index++;
 
-            context.Engine.SetScopedVariable(
-                context.Scopes,
-                ActionScopeType.Parse(this.Model.Value!.Path.VariableScopeName), // %%% NULL OVERRIDE
-                this.Model.Value.Path.VariableName!,
-                value);
+            context.Engine.SetScopedVariable(context.Scopes, Throw.IfNull(this.Model.Value), value);
 
-            if (this.Model.Index != null)
+            if (this.Model.Index is not null)
             {
-                context.Engine.SetScopedVariable(
-                    context.Scopes,
-                    ActionScopeType.Parse(this.Model.Index.Path.VariableScopeName),
-                    this.Model.Index.Path.VariableName!,
-                    FormulaValue.New(this._index));
+                context.Engine.SetScopedVariable(context.Scopes, this.Model.Index.Path, FormulaValue.New(this._index));
             }
+        }
+    }
+
+    public void Reset(ProcessActionContext context)
+    {
+        context.Engine.ClearScopedVariable(context.Scopes, Throw.IfNull(this.Model.Value));
+        if (this.Model.Index is not null)
+        {
+            context.Engine.ClearScopedVariable(context.Scopes, this.Model.Index);
         }
     }
 }

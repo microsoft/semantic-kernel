@@ -13,12 +13,8 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 internal sealed class AnswerQuestionWithAIAction : AssignmentAction<AnswerQuestionWithAI>
 {
     public AnswerQuestionWithAIAction(AnswerQuestionWithAI model)
-        : base(model, () => model.Variable?.Path)
+        : base(model, Throw.IfNull(model.Variable?.Path, $"{nameof(model)}.{nameof(model.Variable)}.{nameof(InitializablePropertyPath.Path)}"))
     {
-        if (string.IsNullOrWhiteSpace(model.UserInput?.ExpressionText))
-        {
-            throw new InvalidActionException($"{nameof(AnswerQuestionWithAI)} must define {nameof(AnswerQuestionWithAI.UserInput)}");
-        }
     }
 
     protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)

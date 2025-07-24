@@ -12,13 +12,13 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 internal sealed class ResetVariableAction : AssignmentAction<ResetVariable>
 {
     public ResetVariableAction(ResetVariable model)
-        : base(model, () => model.Variable)
+        : base(model, Throw.IfNull(model.Variable, $"{nameof(model)}.{nameof(model.Variable)}"))
     {
     }
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        context.Engine.ClearScopedVariable(context.Scopes, ActionScopeType.Parse(this.Target.VariableScopeName), this.Target.VariableName!);
+        context.Engine.ClearScopedVariable(context.Scopes, this.Target);
         Console.WriteLine( // %%% LOGGER
             $"""
             !!! CLEAR {this.GetType().Name} [{this.Id}]

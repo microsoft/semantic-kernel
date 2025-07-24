@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
 {
     public EditTableV2Action(EditTableV2 model)
-        : base(model, () => model.ItemsVariable?.Path)
+        : base(model, Throw.IfNull(model.ItemsVariable?.Path, $"{nameof(model)}.{nameof(model.ItemsVariable)}.{nameof(InitializablePropertyPath.Path)}"))
     {
     }
 

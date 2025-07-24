@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
-using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Actions;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,19 +18,20 @@ public sealed class SendActivityActionTest(ITestOutputHelper output) : ProcessAc
     public async Task CaptureActivity()
     {
         // Arrange
-        ActivitySink activitySink = new();
         SendActivity model =
             this.CreateModel(
                 this.FormatDisplayName(nameof(CaptureActivity)),
                 "Test activity message");
+        await using StringWriter activityWriter = new();
 
         // Act
-        SendActivityAction action = new(model, this.Output);
+        SendActivityAction action = new(model, activityWriter);
         await this.ExecuteAction(action);
+        activityWriter.Flush();
 
         // Assert
         this.VerifyModel(model, action);
-        Assert.Single(activitySink.Activities);
+        Assert.NotEmpty(activityWriter.ToString());
     }
 
     private SendActivity CreateModel(string displayName, string activityMessage, string? summary = null)
@@ -53,17 +53,5 @@ public sealed class SendActivityActionTest(ITestOutputHelper output) : ProcessAc
         SendActivity model = this.AssignParent<SendActivity>(actionBuilder);
 
         return model;
-    }
-
-    private sealed class ActivitySink
-    {
-        public List<ActivityTemplateBase> Activities { get; } = [];
-
-        public Task Handler(ActivityTemplateBase activity, RecalcEngine engine)
-        {
-            this.Activities.Add(activity);
-
-            return Task.CompletedTask;
-        }
     }
 }

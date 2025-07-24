@@ -10,28 +10,17 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
 internal abstract class AssignmentAction<TAction> : ProcessAction<TAction> where TAction : DialogAction
 {
-    protected AssignmentAction(TAction model, Func<PropertyPath?> resolver)
+    protected AssignmentAction(TAction model, PropertyPath assignmentTarget)
         : base(model)
     {
-        this.Target =
-            resolver.Invoke() ??
-            throw new InvalidActionException($"Action '{model.GetType().Name}' must have a variable path defined.");
-
-        if (string.IsNullOrWhiteSpace(this.Target.VariableScopeName))
-        {
-            throw new InvalidActionException($"Action '{model.GetType().Name}' must define a variable scope.");
-        }
-        if (string.IsNullOrWhiteSpace(this.Target.VariableName))
-        {
-            throw new InvalidActionException($"Action '{model.GetType().Name}' must define a variable name.");
-        }
+        this.Target = assignmentTarget;
     }
 
     public PropertyPath Target { get; }
 
     protected void AssignTarget(ProcessActionContext context, FormulaValue result)
     {
-        context.Engine.SetScopedVariable(context.Scopes, ActionScopeType.Parse(this.Target.VariableScopeName), this.Target.VariableName!, result);
+        context.Engine.SetScopedVariable(context.Scopes, this.Target, result);
         string? resultValue = result.Format();
         string valuePosition = (resultValue?.IndexOf('\n') ?? -1) >= 0 ? Environment.NewLine : " ";
         Console.WriteLine( // %%% LOGGER

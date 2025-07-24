@@ -6,7 +6,7 @@ using Microsoft.Bot.ObjectModel;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
-internal sealed class EndConversationAction : ProcessAction<EndConversation>
+internal sealed class EndConversationAction : ProcessAction<EndConversation> // %%% REMOVE ???
 {
     public EndConversationAction(EndConversation model)
         : base(model)

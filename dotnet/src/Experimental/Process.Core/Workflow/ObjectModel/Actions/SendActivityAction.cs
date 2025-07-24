@@ -16,11 +16,6 @@ internal sealed class SendActivityAction : ProcessAction<SendActivity>
     public SendActivityAction(SendActivity source, TextWriter activityWriter)
         : base(source)
     {
-        if (source.Activity is null)
-        {
-            throw new InvalidActionException($"{nameof(SendActivity)} action must have an activity defined.");
-        }
-
         this._activityWriter = activityWriter;
     }
 

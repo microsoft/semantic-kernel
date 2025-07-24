@@ -87,6 +87,8 @@ internal sealed class ProcessActionScopes
 
     public FormulaValue Get(string name, ActionScopeType? type = null) => this._scopes[type ?? ActionScopeType.Topic][name];
 
+    public void Clear(ActionScopeType type) => this._scopes[type].Clear();
+
     public void Remove(string name) => this.Remove(name, ActionScopeType.Topic);
 
     public void Remove(string name, ActionScopeType type) => this._scopes[type].Remove(name);

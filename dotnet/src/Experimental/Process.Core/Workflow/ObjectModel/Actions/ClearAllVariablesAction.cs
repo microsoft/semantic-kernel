@@ -3,6 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -15,9 +16,9 @@ internal sealed class ClearAllVariablesAction : ProcessAction<ClearAllVariables>
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        DataValue literalValue = this.Model.Variables.GetLiteralValue();
+        DataValue literalValue = this.Model.Variables.GetLiteralValue(); // %%% DON'T USE GetLiteralValue
 
-        // %%% TODO: VariablesToClear ?!?!!?!
+        context.Engine.ClearScope(context.Scopes, ActionScopeType.Topic); // %%% EVALUTE "Variables"
 
         return Task.CompletedTask;
     }

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflows;
 using Microsoft.SemanticKernel.Process.Workflows.Actions;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,7 +19,7 @@ public sealed class SetVariableActionTest(ITestOutputHelper output) : ProcessAct
     public void InvalidModel()
     {
         // Arrange, Act, Assert
-        Assert.Throws<InvalidActionException>(() => new SetVariableAction(new SetVariable()));
+        Assert.Throws<ArgumentNullException>(() => new SetVariableAction(new SetVariable()));
     }
 
     [Fact]

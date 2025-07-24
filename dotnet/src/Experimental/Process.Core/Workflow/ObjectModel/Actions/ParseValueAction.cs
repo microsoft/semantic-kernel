@@ -12,8 +12,8 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
 internal sealed class ParseValueAction : AssignmentAction<ParseValue>
 {
-    public ParseValueAction(ParseValue source)
-        : base(source, () => source.Variable?.Path)
+    public ParseValueAction(ParseValue model)
+        : base(model, Throw.IfNull(model.Variable?.Path, $"{nameof(model)}.{nameof(model.Variable)}.{nameof(InitializablePropertyPath.Path)}"))
     {
         if (this.Model.Value is null)
         {
@@ -23,15 +23,14 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        FormulaValue? parsedResult = null;
-
-        DataType valueType = this.Model.ValueType!; // %%% NULL OVERRIDE
         FormulaValue result = context.Engine.EvaluateExpression(this.Model.Value);
+
+        FormulaValue? parsedResult = null;
 
         if (result is StringValue stringValue)
         {
             parsedResult =
-                valueType switch
+                this.Model.ValueType switch
                 {
                     StringDataType => stringValue,
                     NumberDataType => NumberValue.New(stringValue.Value),
@@ -43,7 +42,7 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
 
         if (parsedResult is null)
         {
-            throw new ProcessActionException($"Unable to parse {valueType.GetType().Name}");
+            throw new ProcessActionException($"Unable to parse {result.Type.GetType().Name}");
         }
 
         this.AssignTarget(context, parsedResult);

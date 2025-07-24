@@ -12,12 +12,8 @@ namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 internal sealed class SetVariableAction : AssignmentAction<SetVariable>
 {
     public SetVariableAction(SetVariable model)
-        : base(model, () => model.Variable?.Path)
+        : base(model, Throw.IfNull(model.Variable?.Path, $"{nameof(model)}.{nameof(model.Variable)}.{nameof(InitializablePropertyPath.Path)}"))
     {
-        if (this.Model.Value is null)
-        {
-            throw new InvalidActionException($"{nameof(SetVariable)} must define {nameof(SetVariable.Value)}");
-        }
     }
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
