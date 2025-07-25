@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
+// !!! The test suite is currently disabled due to the Azure AI service being unavailable. !!!
 
-public class AzureAIAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
-{
-}
+//namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
+
+//public class AzureAIAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
+//{
+//}

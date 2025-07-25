@@ -12,6 +12,7 @@ from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
@@ -154,15 +155,29 @@ class ChatHistory(KernelBaseModel):
         """Add a tool message to the chat history.
 
         Args:
-            content: The content of the tool message, can be a string or a
-            list of KernelContent instances that are turned into a single ChatMessageContent.
-            **kwargs: Additional keyword arguments.
+            content: The content of the tool message. If a string, tool_call_id must be provided
+                as a keyword argument. If a list of KernelContent instances, they should contain
+                properly configured FunctionResultContent objects.
+            **kwargs: Additional keyword arguments. For string content, tool_call_id is required.
+                Optionally one may provide function_name to specify the tool function name. The
+                function_name is only used for bookkeeping purposes as part of ChatHistory and is
+                not included in the call to the model.
         """
         raise NotImplementedError
 
     @add_tool_message.register
     def _(self, content: str, **kwargs: Any) -> None:
-        """Add a tool message to the chat history."""
+        """Add a tool message to the chat history.
+
+        Args:
+            content: The result content of the tool call.
+            **kwargs: Additional keyword arguments. 'tool_call_id' is required when using string content.
+        """
+        if "tool_call_id" not in kwargs:
+            raise ContentInitializationError(
+                "tool_call_id is required when adding a tool message with string content. "
+                "Tool messages must reference the specific tool call they respond to."
+            )
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, content=content, **kwargs))
 
     @add_tool_message.register(list)
@@ -203,9 +218,21 @@ class ChatHistory(KernelBaseModel):
     ) -> dict[str, str]:
         """Prepare a message to be added to the history."""
         kwargs["role"] = role
-        if content:
+
+        if role == AuthorRole.TOOL and content and not items:
+            tool_call_id = kwargs.pop("tool_call_id", None)
+            function_name = kwargs.pop("function_name", "unknown")
+            function_result_content = FunctionResultContent(
+                function_name=function_name,
+                result=content,
+                id=tool_call_id,  # Set both id and call_id for compatibility
+                call_id=tool_call_id,
+                **kwargs,
+            )
+            kwargs["items"] = [function_result_content]
+        elif content:
             kwargs["content"] = content
-        if items:
+        elif items:
             kwargs["items"] = items
         return kwargs
 

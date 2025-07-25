@@ -28,7 +28,6 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
 
         // Create a plugin that defines the tools to be used by the agent.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
         agent.Kernel.Plugins.Add(plugin);
 
         ICollection<ChatMessageContent> messages =
@@ -126,5 +125,44 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         RequestOptions noThrowOptions = new() { ErrorOptions = ClientErrorBehaviors.NoThrow };
         this.FileClient.DeleteFile(file.Id, noThrowOptions);
         this.VectorStoreClient.DeleteVectorStore(createStoreOp.VectorStoreId, noThrowOptions);
+    }
+
+    [Fact]
+    public async Task InvokeAgentWithMultipleToolsAsync()
+    {
+        // Define the agent
+        OpenAIResponseAgent agent = new(this.Client)
+        {
+            StoreEnabled = false,
+        };
+
+        // Create a plugin that defines the tools to be used by the agent.
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
+        ICollection<ChatMessageContent> messages =
+        [
+            new ChatMessageContent(AuthorRole.User, "What is the special soup and its price?"),
+            new ChatMessageContent(AuthorRole.User, "What is the special drink and its price?"),
+        ];
+        foreach (ChatMessageContent message in messages)
+        {
+            WriteAgentChatMessage(message);
+        }
+
+        // ResponseCreationOptions allows you to specify tools for the agent.
+        ResponseCreationOptions creationOptions = new();
+        creationOptions.Tools.Add(ResponseTool.CreateWebSearchTool());
+        OpenAIResponseAgentInvokeOptions invokeOptions = new()
+        {
+            ResponseCreationOptions = creationOptions,
+        };
+
+        // Invoke the agent and output the response
+        var responseItems = agent.InvokeAsync(messages, options: invokeOptions);
+        await foreach (ChatMessageContent responseItem in responseItems)
+        {
+            WriteAgentChatMessage(responseItem);
+        }
     }
 }
