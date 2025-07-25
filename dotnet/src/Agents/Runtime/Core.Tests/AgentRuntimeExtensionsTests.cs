@@ -86,6 +86,7 @@ public class AgentRuntimeExtensionsTests
             string messageText2 = "Test message #1";
             await runtime.PublishMessageAsync(messageText1, topic1);
             await runtime.PublishMessageAsync(messageText2, topic2);
+            await runtime.RunUntilIdleAsync();
 
             // Get agent and verify it received messages
             AgentId registeredId = await runtime.GetAgentAsync(agentTypeName, lazy: false);
