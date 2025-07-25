@@ -105,6 +105,7 @@ internal static class StepExtensions
     /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
     /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
     /// <param name="agentDefinition">An instance of <see cref="AgentDefinition"/></param>
+    /// <param name="stateStore"></param>
     /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public static Dictionary<string, Dictionary<string, object?>?> FindInputChannels(
@@ -112,7 +113,8 @@ internal static class StepExtensions
         Dictionary<string, KernelFunction> functions,
         ILogger? logger,
         IExternalKernelProcessMessageChannel? externalMessageChannel = null,
-        AgentDefinition? agentDefinition = null)
+        AgentDefinition? agentDefinition = null,
+        IKernelProcessUserStateStore? stateStore = null)
     {
         if (functions is null)
         {
@@ -135,7 +137,7 @@ internal static class StepExtensions
                 // and are instantiated here.
                 if (param.ParameterType == typeof(KernelProcessStepContext))
                 {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(channel);
+                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(channel, stateStore);
                 }
                 else if (param.ParameterType == typeof(KernelProcessStepExternalContext))
                 {

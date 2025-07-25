@@ -38,12 +38,30 @@ public static class StorageProcessExtension
         };
     }
 
-    //public static StorageProcessState ToKernelStorageProcessState(this KernelProcess kernelProcess, List<ProcessVariables>? processVariables = null)
-    //{
-    //    return new StorageProcessState
-    //    {
-    //        ProcessInstance = kernelProcess.RunId ?? string.Empty,
-    //        Variables = pendingExternalEvents ?? new List<ProcessVariables>(),
-    //    };
-    //}
+    /// <summary>
+    /// Converts a <see cref="StorageProcessState"/> to a dictionary of shared variables for the kernel process.
+    /// </summary>
+    /// <param name="storageProcessState"></param>
+    /// <returns></returns>
+    public static Dictionary<string, object?> ToKernelProcessSharedVariables(this StorageProcessState storageProcessState)
+    {
+        return storageProcessState.SharedVariables.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value?.ToObject());
+    }
+
+    /// <summary>
+    /// Converts a <see cref="KernelProcess"/> to a <see cref="StorageProcessState"/>.
+    /// </summary>
+    /// <param name="processSharedVariables"></param>
+    /// <returns></returns>
+    public static StorageProcessState ToKernelStorageProcessState(Dictionary<string, object>? processSharedVariables = null)
+    {
+        return new StorageProcessState
+        {
+            SharedVariables = processSharedVariables?.ToDictionary(
+                kvp => kvp.Key,
+                kvp => KernelProcessEventData.FromObject(kvp.Value)) ?? []
+        };
+    }
 }
