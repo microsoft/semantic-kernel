@@ -100,6 +100,25 @@ class KernelFunction(KernelBaseModel):
         default_factory=_create_function_streaming_duration_histogram, exclude=True
     )
 
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> "KernelFunction":
+        """Create a deep copy of the kernel function, recreating uncopyable fields."""
+        if memo is None:
+            memo = {}
+        if id(self) in memo:
+            return memo[id(self)]
+
+        # Use model_copy to create a shallow copy of the pydantic model
+        # this is the recommended way to copy pydantic models
+        new_obj = self.model_copy(deep=False)
+        memo[id(self)] = new_obj
+
+        # now deepcopy the fields that are not the histograms
+        for key, value in self.__dict__.items():
+            if key not in ("invocation_duration_histogram", "streaming_duration_histogram"):
+                setattr(new_obj, key, deepcopy(value, memo))
+
+        return new_obj
+    
     @classmethod
     def from_prompt(
         cls,
