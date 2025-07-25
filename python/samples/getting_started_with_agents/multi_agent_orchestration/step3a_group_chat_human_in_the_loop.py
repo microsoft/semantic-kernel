@@ -2,9 +2,10 @@
 
 import asyncio
 import sys
+from typing import ClassVar
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration
-from semantic_kernel.agents.orchestration.group_chat import BooleanResult, RoundRobinGroupChatManager
+from semantic_kernel.agents.orchestration.group_chat import BooleanResult, MessageResult, RoundRobinGroupChatManager
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
@@ -42,7 +43,8 @@ def get_agents() -> list[Agent]:
         name="Writer",
         description="A content writer.",
         instructions=(
-            "You are an excellent content writer. You create new content and edit contents based on the feedback."
+            "You are an excellent content writer. "
+            "You create new content and edit contents based on the feedback from the reviewer and user."
         ),
         service=AzureChatCompletion(),
     )
@@ -50,7 +52,9 @@ def get_agents() -> list[Agent]:
         name="Reviewer",
         description="A content reviewer.",
         instructions=(
-            "You are an excellent content reviewer. You review the content and provide feedback to the writer."
+            "You are an excellent content reviewer. "
+            "You review the content and provide feedback. "
+            "Do not respond to the user directly, but provide feedback to the writer."
         ),
         service=AzureChatCompletion(),
     )
@@ -59,12 +63,33 @@ def get_agents() -> list[Agent]:
     return [writer, reviewer]
 
 
-class CustomRoundRobinGroupChatManager(RoundRobinGroupChatManager):
+class HumanInTheLoopGroupChatManager(RoundRobinGroupChatManager):
     """Custom round robin group chat manager to enable user input."""
+
+    APPROVE_MESSAGE: ClassVar[str] = "approve"
+
+    @override
+    async def filter_results(self, chat_history) -> MessageResult:
+        """Override the default behavior to return the result of the group chat.
+
+        The result of the group chat in this case is the last message from the writer agent.
+        """
+        if not chat_history.messages:
+            raise RuntimeError("Chat history is empty, cannot filter results.")
+
+        # Find the last message that is from the writer agent
+        for message in reversed(chat_history.messages):
+            if message.name == "Writer":
+                return MessageResult(
+                    result=message,
+                    reason="Returning the last message from the writer agent.",
+                )
+
+        raise RuntimeError("No message from the writer agent found in chat history.")
 
     @override
     async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
-        """Override the default behavior to request user input after the reviewer's message.
+        """Override the default behavior to request user input after the writer's message.
 
         The manager will check if input from human is needed after each agent message.
         """
@@ -74,15 +99,43 @@ class CustomRoundRobinGroupChatManager(RoundRobinGroupChatManager):
                 reason="No agents have spoken yet.",
             )
         last_message = chat_history.messages[-1]
-        if last_message.name == "Reviewer":
+        if last_message.name == "Writer":
             return BooleanResult(
                 result=True,
-                reason="User input is needed after the reviewer's message.",
+                reason="User input is needed after the writer's message.",
             )
 
         return BooleanResult(
             result=False,
             reason="User input is not needed if the last message is not from the reviewer.",
+        )
+
+    @override
+    async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
+        """Override the default behavior to terminate the chat.
+
+        The manager will check if the chat should be terminated after each agent message.
+        """
+        result = await super().should_terminate(chat_history)
+        if result.result:
+            return result
+
+        if len(chat_history.messages) == 0:
+            return BooleanResult(
+                result=False,
+                reason="No agents have spoken yet, cannot terminate.",
+            )
+
+        last_message = chat_history.messages[-1]
+        if last_message.role == AuthorRole.USER and last_message.content.lower() == self.APPROVE_MESSAGE:
+            return BooleanResult(
+                result=True,
+                reason="User has approved the content.",
+            )
+
+        return BooleanResult(
+            result=False,
+            reason="Chat should not be terminated yet since user has not approved the content.",
         )
 
 
@@ -93,7 +146,7 @@ def agent_response_callback(message: ChatMessageContent) -> None:
 
 async def human_response_function(chat_histoy: ChatHistory) -> ChatMessageContent:
     """Function to get user input."""
-    user_input = input("User: ")
+    user_input = input(f"User (Enter '{HumanInTheLoopGroupChatManager.APPROVE_MESSAGE}' to approve the content): ")
     return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
@@ -104,7 +157,7 @@ async def main():
     group_chat_orchestration = GroupChatOrchestration(
         members=agents,
         # max_rounds is odd, so that the writer gets the last round
-        manager=CustomRoundRobinGroupChatManager(
+        manager=HumanInTheLoopGroupChatManager(
             max_rounds=5,
             human_response_function=human_response_function,
         ),
@@ -130,26 +183,18 @@ async def main():
 
     """
     **Writer**
-    "Electrify Your Journey: Affordable Adventure Awaits!"
+    "Electrify Your Adventure: Affordable Fun Awaits!"
+    User (Enter 'approve' to approve the content): I'd like to make it rhyme
     **Reviewer**
-    Your slogan captures the essence of being both affordable and fun, which is great! However, you might want to ...
-    User: I'd like to also make it rhyme
+    Consider revising the slogan to incorporate rhyme while maintaining clarity and impact.
+    Here’s a suggestion: "Drive with a Smile, Save for a While!" This emphasizes the affordability
+    and enjoyment of the electric SUV. Additionally, ensure that the slogan aligns with the brand’s
+    voice and resonates with your target audience for maximum engagement.
     **Writer**
-    Sure! Here are a few rhyming slogan options for your electric SUV:
-
-    1. "Zoom Through the Streets, Feel the Beats!"
-    2. "Charge and Drive, Feel the Jive!"
-    3. "Electrify Your Ride, Let Fun Be Your Guide!"
-    4. "Zoom in Style, Drive with a Smile!"
-
-    Let me know if you'd like more options or variations!
-    **Reviewer**
-    These rhyming slogans are creative and energetic! They effectively capture the fun aspect while promoting ...
-    User: Please continue with the reviewer's suggestions
-    **Writer**
-    Absolutely! Let's refine and expand on the reviewer's suggestions for a more polished and appealing set of rhym...
+    "Charge Up the Fun, Drive On the Run!"
+    User (Enter 'approve' to approve the content): approve
     ***** Result *****
-    Absolutely! Let's refine and expand on the reviewer's suggestions for a more polished and appealing set of rhym...
+    "Charge Up the Fun, Drive On the Run!"
     """
 
 
