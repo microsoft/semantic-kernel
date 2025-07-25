@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// !!! The test suite is currently disabled due to the Azure AI service being unavailable. !!!
+using Xunit;
 
-//using Xunit;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
 
-//namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
-
-//[Collection("Sequential")]
-//public class AzureAIAgentInvokeStreamingTests() : InvokeStreamingTests(() => new AzureAIAgentFixture())
-//{
-//}
+[Collection("Sequential")]
+public class AzureAIAgentInvokeStreamingTests() : InvokeStreamingTests(() => new AzureAIAgentFixture())
+{
+}

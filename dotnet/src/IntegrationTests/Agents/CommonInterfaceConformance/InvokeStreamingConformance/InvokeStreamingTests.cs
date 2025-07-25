@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -183,9 +184,23 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
             });
 
         // Assert
-        var results = await asyncResults.ToListAsync();
-        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
-        Assert.Contains("Clam Chowder", resultString);
+        List<AgentResponseItem<StreamingChatMessageContent>> results = new();
+        StringBuilder textResultBuilder = new();
+        await foreach (var update in asyncResults)
+        {
+            textResultBuilder.Append(update.Message.Content);
+            if (textResultBuilder.ToString().Contains("Clam") is true)
+            {
+                // If the answer is being streamed, we should have already received the function call and function result content.
+                Assert.Equal(2, notifiedMessages.Count);
+                Assert.Contains(notifiedMessages.SelectMany(x => x.Items), x => x is FunctionCallContent);
+                Assert.Contains(notifiedMessages.SelectMany(x => x.Items), x => x is FunctionResultContent);
+            }
+
+            results.Add(update);
+        }
+
+        Assert.Contains("Clam Chowder", textResultBuilder.ToString());
 
         Assert.Equal(3, notifiedMessages.Count);
         Assert.Contains(notifiedMessages[0].Items, x => x is FunctionCallContent);
