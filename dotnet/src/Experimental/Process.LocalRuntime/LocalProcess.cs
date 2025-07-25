@@ -42,6 +42,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
     private ProcessStateManager? _processStateManager;
+    private readonly LocalUserStateStore _userStateStore;
 
     private List<string> _runningStepIds = [];
 
@@ -66,6 +67,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         // if parent id is null this is the root process
         this.RootProcessId = this.ParentProcessId == null ? this.Id : null;
         this._stepState.ParentId = this.ParentProcessId;
+        this._userStateStore = new LocalUserStateStore();
     }
 
     /// <summary>
@@ -289,7 +291,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         if (this.StorageManager != null)
         {
             await this.StorageManager.SaveProcessInfoAsync(this.Process).ConfigureAwait(false);
-            //await this.StorageManager.SaveProcessStepState(this.Process).ConfigureAwait(false);
+            await this.StorageManager.SaveProcessStateAsync(this.Process, this._userStateStore.UserState).ConfigureAwait(false);
             await this.StorageManager.SaveProcessEventsAsync(this.Process, this._externalEventChannel.GetChannelSnapshot()).ConfigureAwait(false);
         }
     }
@@ -305,17 +307,15 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
             foreach (var step in executedSteps)
             {
-                if (step is LocalProcess subprocessStep)
+                if (step is not LocalProcess subprocessStep)
                 {
-                    // May not be needed since each subprocess is going to already have saved its state
-                    await subprocessStep.SaveProcessAndChildrenDataToStorageAsync().ConfigureAwait(false);
-                }
-                else
-                {
+                    // Local Process when they run they do their own checkpointing, no need to do it again.
                     await this.StorageManager.SaveStepDataToStorageAsync(step.StepInfo).ConfigureAwait(false);
                 }
             }
             this._runningStepIds = [];
+
+            // TODO: Potentially call to "Runtime  -> WriteStateAsync() with actorId/processId should be called here
         }
     }
 
@@ -334,11 +334,28 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             await this.StorageManager.InitializeAsync().ConfigureAwait(false);
             await this.FetchSavedProcessDataAsync().ConfigureAwait(false);
 
+            // Trying to restore step running ids instances from storage before creation of steps
             var processInfo = await this.StorageManager.GetProcessInfoAsync(this.Process).ConfigureAwait(false);
             if (processInfo != null && processInfo.Steps.Count > 0)
             {
                 processInfoInstanceMap = processInfo.Steps;
             }
+
+            // Trying to restore process state variables from storage
+            var processStateVariables = await this.StorageManager.GetProcessStateVariablesAsync(this.Process).ConfigureAwait(false);
+            if (processStateVariables != null)
+            {
+                // Is UserStateStore used across subprocesses? or is it scoped to the process and children steps only?
+                this._userStateStore.ResetUserState(processStateVariables!);
+            }
+
+            // TODO: Need a better implementation of the external event channel instead of the workaround with ObservableChannel.
+            // Trying to restore process events from storage
+            //var pendingExternalEvents = await this.StorageManager.GetProcessExternalEventsAsync(this.Process).ConfigureAwait(false);
+            //if (pendingExternalEvents != null)
+            //{
+            //    this._externalEventChannel = new ObservableChannel<KernelProcessEvent>(Channel.CreateUnbounded<KernelProcessEvent>());
+            //}
         }
 
         bool usingExistingProcessInstances = processInfoInstanceMap.Count > 0;
@@ -439,10 +456,11 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 // The current step should already have an Id.
                 Verify.NotNull(stepInfo.State?.RunId);
 
+                // TODO: piping this._userStateStore to LocalStep temporarily since these changes don't include yet LocalDelegateStep
+                // LocalDelegateStep should be the only one with access to this._userStateStore
                 localStep =
-                    new LocalStep(stepInfo, this._kernel)
+                    new LocalStep(stepInfo, this._kernel, parentProcessId: this.Id, userStateStore: this._userStateStore)
                     {
-                        ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
                         StorageManager = this.StorageManager,
                     };
@@ -663,7 +681,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
     private void EnqueueExternalMessages(Queue<ProcessMessage> messageChannel)
     {
-        while (this._externalEventChannel.TryRead(out var externalEvent))
+        while (this._externalEventChannel.TryRead(out var externalEvent) && externalEvent != null)
         {
             if (this._outputEdges.TryGetValue(externalEvent.Id, out List<KernelProcessEdge>? edges) && edges is not null)
             {

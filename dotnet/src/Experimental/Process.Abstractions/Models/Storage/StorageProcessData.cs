@@ -24,11 +24,9 @@ public record StorageProcessData : StorageEntryBase
     [JsonPropertyName("processEvents")]
     public StorageProcessEvents ProcessEvents { get; set; } = new();
 
-    /* TODO: Plumb properly when proper support for ProcessState is added
     /// <summary>
     /// Process state/variables related data
     /// </summary>
     [JsonPropertyName("processState")]
-    public StorageProcessState? ProcessState { get; set; } = null;
-    */
+    public StorageProcessState ProcessState { get; set; } = new();
 }
