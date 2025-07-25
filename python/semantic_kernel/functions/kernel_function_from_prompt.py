@@ -355,12 +355,19 @@ through prompt_template_config or in the prompt_template."
         )
 
     @classmethod
-    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+    def from_directory(
+        cls, path: str, plugin_name: str | None = None, encoding: str = "utf-8"
+    ) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
 
         The directory needs to contain:
         - A prompt file named `skprompt.txt`
         - A config file named `config.json`
+
+        Args:
+            path: The path to the directory containing the prompt and config files.
+            plugin_name: The name of the plugin.
+            encoding: The encoding to use when reading the files. Defaults to "utf-8".
 
         Returns:
             KernelFunctionFromPrompt: The kernel function from prompt
@@ -387,11 +394,11 @@ through prompt_template_config or in the prompt_template."
 
         function_name = os.path.basename(path)
 
-        with open(config_path) as config_file:
+        with open(config_path, encoding=encoding) as config_file:
             prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
         prompt_template_config.name = function_name
 
-        with open(prompt_path) as prompt_file:
+        with open(prompt_path, encoding=encoding) as prompt_file:
             prompt_template_config.template = prompt_file.read()
 
         prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore

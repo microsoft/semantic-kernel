@@ -256,6 +256,7 @@ class KernelPlugin(KernelBaseModel):
         parent_directory: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
+        encoding: str = "utf-8",
     ) -> _T:
         """Create a plugin from a specified directory.
 
@@ -294,6 +295,7 @@ class KernelPlugin(KernelBaseModel):
             parent_directory (str): The parent directory path where the plugin directory resides
             description (str | None): The description of the plugin
             class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
+            encoding (str): The encoding to use when reading text files. Defaults to "utf-8".
 
         Returns:
             KernelPlugin: The created plugin of type KernelPlugin.
@@ -313,11 +315,11 @@ class KernelPlugin(KernelBaseModel):
                 if os.path.basename(object).startswith("__"):
                     continue
                 try:
-                    functions.append(KernelFunctionFromPrompt.from_directory(path=object))
+                    functions.append(KernelFunctionFromPrompt.from_directory(path=object, encoding=encoding))
                 except FunctionInitializationError:
                     logger.warning(f"Failed to create function from directory: {object}")
             elif object.endswith(".yaml") or object.endswith(".yml"):
-                with open(object) as file:
+                with open(object, encoding=encoding) as file:
                     try:
                         functions.append(KernelFunctionFromPrompt.from_yaml(file.read()))
                     except FunctionInitializationError:
