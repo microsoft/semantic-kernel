@@ -6,8 +6,6 @@ using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Xunit.Sdk;
-using YamlDotNet.Core;
 
 namespace GettingStarted.Orchestration;
 
