@@ -77,7 +77,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         string input = "Create a slogan for a new electric SUV that is affordable and fun to drive.";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 300));
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();
