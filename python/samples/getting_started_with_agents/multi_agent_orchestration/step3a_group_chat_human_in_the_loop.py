@@ -107,7 +107,7 @@ class HumanInTheLoopGroupChatManager(RoundRobinGroupChatManager):
 
         return BooleanResult(
             result=False,
-            reason="User input is not needed if the last message is not from the reviewer.",
+            reason="User input is not needed if the last message is not from the Writer.",
         )
 
     @override
