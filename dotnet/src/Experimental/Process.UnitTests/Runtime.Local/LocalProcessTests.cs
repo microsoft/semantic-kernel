@@ -803,7 +803,7 @@ public class LocalProcessTests
         }, processId: processId, storageConnector: processStorage);
 
         // Assert - 1
-        var expectedSharedVar1 = this.ValidateSpecifcProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        var expectedSharedVar1 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
         Assert.Equal(expectedOutput.Value, expectedSharedVar1.Value);
 
         // Act - 2
@@ -814,7 +814,7 @@ public class LocalProcessTests
         }, processId: processId, storageConnector: processStorage);
 
         // Assert - 2
-        var expectedSharedVar2 = this.ValidateSpecifcProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        var expectedSharedVar2 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
         Assert.Equal(expectedOutput.Value, expectedSharedVar2.Value);
         Assert.Equal(expectedOutput.Name, expectedSharedVar2.Name);
 
@@ -826,13 +826,13 @@ public class LocalProcessTests
         }, processId: processId, storageConnector: processStorage);
 
         // Assert - 3
-        var expectedSharedVar3 = this.ValidateSpecifcProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        var expectedSharedVar3 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
         Assert.Equal(expectedOutput.Value, expectedSharedVar3.Value);
         Assert.Equal(expectedOutput.Name, expectedSharedVar2.Name);
         Assert.Equal(expectedOutput.Flag, expectedSharedVar3.Flag);
     }
 
-    private T ValidateSpecifcProcessStateVariables<T>(MockStorage storage, string processEntryKey, string processVariableName) where T : class
+    private T ValidateSpecificProcessStateVariables<T>(MockStorage storage, string processEntryKey, string processVariableName) where T : class
     {
         Assert.True(storage._dbMock.ContainsKey(processEntryKey));
         var processData = JsonSerializer.Deserialize<StorageProcessData>(storage._dbMock[processEntryKey].Content);
