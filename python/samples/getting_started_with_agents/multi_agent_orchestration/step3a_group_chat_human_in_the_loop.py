@@ -144,7 +144,7 @@ def agent_response_callback(message: ChatMessageContent) -> None:
     print(f"**{message.name}**\n{message.content}")
 
 
-async def human_response_function(chat_histoy: ChatHistory) -> ChatMessageContent:
+async def human_response_function(chat_history: ChatHistory) -> ChatMessageContent:
     """Function to get user input."""
     user_input = input(f"User (Enter '{HumanInTheLoopGroupChatManager.APPROVE_MESSAGE}' to approve the content): ")
     return ChatMessageContent(role=AuthorRole.USER, content=user_input)
