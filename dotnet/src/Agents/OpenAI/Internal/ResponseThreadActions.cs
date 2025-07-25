@@ -34,7 +34,7 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread)];
+            overrideHistory = [.. await GetChatHistoryAsync(agentThread, cancellationToken).ConfigureAwait(false)];
         }
 
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
@@ -61,7 +61,7 @@ internal static class ResponseThreadActions
             }
 
             var message = response.ToChatMessageContent();
-            overrideHistory.Add(message);
+            history.Add(message);
             yield return message;
 
             // Reached maximum auto invocations
@@ -108,7 +108,7 @@ internal static class ResponseThreadActions
                 Role = AuthorRole.Tool,
                 Items = items,
             };
-            overrideHistory.Add(functionResultMessage);
+            history.Add(functionResultMessage);
             yield return functionResultMessage;
         }
     }
@@ -126,7 +126,7 @@ internal static class ResponseThreadActions
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread)];
+            overrideHistory = [.. await GetChatHistoryAsync(agentThread, cancellationToken).ConfigureAwait(false)];
         }
 
         var inputItems = overrideHistory.Select(m => m.ToResponseItem()).ToList();
@@ -159,7 +159,7 @@ internal static class ResponseThreadActions
                     case StreamingResponseCompletedUpdate completedUpdate:
                         response = completedUpdate.Response;
                         message = completedUpdate.Response.ToChatMessageContent();
-                        overrideHistory.Add(message);
+                        history.Add(message);
                         break;
 
                     case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
@@ -287,16 +287,22 @@ internal static class ResponseThreadActions
                     InnerContent = functionCallUpdateContent,
                     Items = [functionCallUpdateContent],
                 };
-            overrideHistory.Add(functionResultMessage);
+            history.Add(functionResultMessage);
             yield return streamingFunctionResultMessage;
         }
     }
 
-    private static ChatHistory GetChatHistory(AgentThread agentThread)
+    private static async Task<ChatHistory> GetChatHistoryAsync(AgentThread agentThread, CancellationToken cancellationToken)
     {
-        if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
+        if (agentThread is IAgentThreadMessageProvider agentThreadRetrievable)
         {
-            return chatHistoryAgentThread.ChatHistory;
+            ChatHistory chatHistory = [];
+            await foreach (var message in agentThreadRetrievable.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+            {
+                chatHistory.Add(message);
+            }
+
+            return chatHistory;
         }
 
         throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");

@@ -118,6 +118,7 @@ public sealed class BedrockAgent : Agent
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
@@ -200,6 +201,7 @@ public sealed class BedrockAgent : Agent
             [],
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Configure the agent request with the provided options
@@ -259,6 +261,7 @@ public sealed class BedrockAgent : Agent
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
@@ -342,6 +345,7 @@ public sealed class BedrockAgent : Agent
             [],
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Configure the agent request with the provided options

@@ -129,6 +129,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Create options that use the RunCreationOptions from the options param if provided or
@@ -236,6 +237,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         Kernel kernel = this.GetKernel(options);
