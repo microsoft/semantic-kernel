@@ -218,6 +218,7 @@ public static class OpenAIServiceCollectionExtensions
                    credential: new ApiKeyCredential(apiKey ?? SingleSpace),
                    options: ClientCore.GetOpenAIClientOptions(
                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                       endpoint: httpClient?.BaseAddress,
                        orgId: orgId))
                .GetEmbeddingClient(modelId)
                .AsIEmbeddingGenerator(dimensions)
