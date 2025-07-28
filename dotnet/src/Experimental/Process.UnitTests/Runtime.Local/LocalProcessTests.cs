@@ -602,7 +602,6 @@ public class LocalProcessTests
         Kernel kernel = new();
     }
 
-
     /// <summary>
     /// Process with branch that takes long time, other branch is short and needs external events.
     /// Test helps validate persistence of external events received when process was already running but not ready to process them
@@ -690,14 +689,13 @@ public class LocalProcessTests
 
         await using (var context = process.CreateContext(kernel, processId, storageConnector: processStorage))
         {
-            var runningProcessTask = Task.Run(() =>
+            var task = context.StartWithEventKeepRunning(new KernelProcessEvent()
             {
-                context.StartWithEventKeepRunning(new KernelProcessEvent()
-                {
-                    Id = CommonProcesses.ProcessEvents.StartProcess,
-                    Data = testInput,
-                }, kernel);
-            });
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+                Data = testInput,
+            }, kernel);
+
+            var runningProcessTask = Task.Run(() => task.Start());
 
             // wait 3 seconds, then send event while process is still running
             await Task.Delay(TimeSpan.FromSeconds(3));
@@ -852,7 +850,7 @@ public class LocalProcessTests
         public static readonly string CustomObjectValue = nameof(CustomObjectValue);
     }
 
-    internal record MyCustomClass
+    private sealed record MyCustomClass
     {
         public string Name { get; set; } = string.Empty;
         public int Value { get; set; } = 0;
