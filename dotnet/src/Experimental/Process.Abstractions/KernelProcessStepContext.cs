@@ -16,6 +16,7 @@ public sealed class KernelProcessStepContext
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
     /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
+    /// <param name="userStateStore">An instance of <see cref="IKernelProcessUserStateStore"/></param>
     public KernelProcessStepContext(IKernelProcessMessageChannel channel, IKernelProcessUserStateStore? userStateStore = null)
     {
         this._stepMessageChannel = channel;
