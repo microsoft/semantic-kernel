@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
-using Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+using Microsoft.SemanticKernel.Process.Workflow.Validation;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+namespace Microsoft.SemanticKernel.Process.Workflow.Validation;
 
 /// <summary>
 /// Represents a failure that occurred during validation.

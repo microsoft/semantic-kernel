@@ -2,7 +2,7 @@
 
 using Microsoft.Bot.ObjectModel;
 
-namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+namespace Microsoft.SemanticKernel.Process.Workflow.Validation;
 
 /// <summary>
 /// Represents a validation failure that is associated with a specific <see cref="BotElement"/>.

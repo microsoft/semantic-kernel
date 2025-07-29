@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.Bot.ObjectModel;
 
-namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+namespace Microsoft.SemanticKernel.Process.Workflow.Validation;
 
 internal sealed class ProcessValidationWalker : BotElementWalker
 {

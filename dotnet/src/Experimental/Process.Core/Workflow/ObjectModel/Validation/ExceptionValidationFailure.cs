@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+namespace Microsoft.SemanticKernel.Process.Workflow.Validation;
 
 /// <summary>
 /// Represents a validation failure that is associated with an exception.
