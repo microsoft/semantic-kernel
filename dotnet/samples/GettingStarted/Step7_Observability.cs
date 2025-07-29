@@ -17,7 +17,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
+        kernelBuilder.AddOpenAIChatClient(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 

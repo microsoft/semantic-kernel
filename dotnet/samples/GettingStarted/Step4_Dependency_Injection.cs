@@ -38,7 +38,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
     [Fact]
     public async Task PluginUsingDependencyInjection()
     {
-        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
+        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the Kernel class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
         var serviceProvider = BuildServiceProvider();
         var kernel = serviceProvider.GetRequiredService<Kernel>();
@@ -57,8 +57,12 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
         collection.AddSingleton<ILoggerFactory>(new XunitLogger(this.Output));
         collection.AddSingleton<IUserService>(new FakeUserService());
 
+        // Add ChatClient using OpenAI
+        collection.AddOpenAIChatClient(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.Services.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
         kernelBuilder.Plugins.AddFromType<UserInformation>();
 

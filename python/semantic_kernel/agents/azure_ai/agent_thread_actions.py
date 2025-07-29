@@ -12,21 +12,26 @@ from azure.ai.agents.models import (
     AsyncAgentRunStream,
     BaseAsyncAgentEventHandler,
     FunctionToolDefinition,
+    RequiredMcpToolCall,
     ResponseFormatJsonSchemaType,
     RunStep,
     RunStepAzureAISearchToolCall,
+    RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
     RunStepFileSearchToolCall,
+    RunStepMcpToolCall,
     RunStepMessageCreationDetails,
     RunStepOpenAPIToolCall,
     RunStepToolCallDetails,
     RunStepType,
+    SubmitToolApprovalAction,
     SubmitToolOutputsAction,
     ThreadMessage,
     ThreadRun,
+    ToolApproval,
     ToolDefinition,
     TruncationObject,
 )
@@ -40,12 +45,16 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_function_call_content,
     generate_function_call_streaming_content,
     generate_function_result_content,
+    generate_mcp_call_content,
+    generate_mcp_content,
     generate_message_content,
     generate_openapi_content,
     generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
     generate_streaming_file_search_content,
+    generate_streaming_mcp_call_content,
+    generate_streaming_mcp_content,
     generate_streaming_message_content,
     generate_streaming_openapi_content,
     get_function_call_contents,
@@ -199,31 +208,73 @@ class AgentThreadActions:
                 )
 
             # Check if function calling is required
-            if run.status == "requires_action" and isinstance(run.required_action, SubmitToolOutputsAction):
-                logger.debug(f"Run [{run.id}] requires tool action for agent `{agent.name}` and thread `{thread_id}`")
-                fccs = get_function_call_contents(run, function_steps)
-                if fccs:
+            if run.status == "requires_action":
+                if isinstance(run.required_action, SubmitToolOutputsAction):
                     logger.debug(
-                        f"Yielding generate_function_call_content for agent `{agent.name}` and "
-                        f"thread `{thread_id}`, visibility False"
+                        f"Run [{run.id}] requires tool action for agent `{agent.name}` and thread `{thread_id}`"
                     )
-                    yield False, generate_function_call_content(agent_name=agent.name, fccs=fccs)
+                    fccs = get_function_call_contents(run, function_steps)
+                    if fccs:
+                        logger.debug(
+                            f"Yielding generate_function_call_content for agent `{agent.name}` and "
+                            f"thread `{thread_id}`, visibility False"
+                        )
+                        yield False, generate_function_call_content(agent_name=agent.name, fccs=fccs)
 
-                    from semantic_kernel.contents.chat_history import ChatHistory
+                        from semantic_kernel.contents.chat_history import ChatHistory
 
-                    chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-                    _ = await cls._invoke_function_calls(
-                        kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                        chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
+                        _ = await cls._invoke_function_calls(
+                            kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                        )
+
+                        tool_outputs = cls._format_tool_outputs(fccs, chat_history)
+                        await agent.client.agents.runs.submit_tool_outputs(
+                            run_id=run.id,
+                            thread_id=thread_id,
+                            tool_outputs=tool_outputs,  # type: ignore
+                        )
+                        logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
+                        continue
+
+                # Check if MCP tool approval is required
+                elif isinstance(run.required_action, SubmitToolApprovalAction):
+                    logger.debug(
+                        f"Run [{run.id}] requires MCP tool approval for agent `{agent.name}` and thread `{thread_id}`"
                     )
+                    tool_calls = run.required_action.submit_tool_approval.tool_calls
+                    if not tool_calls:
+                        logger.warning(f"No tool calls provided for MCP approval - cancelling run [{run.id}]")
+                        await agent.client.agents.runs.cancel(run_id=run.id, thread_id=thread_id)
+                        continue
 
-                    tool_outputs = cls._format_tool_outputs(fccs, chat_history)
-                    await agent.client.agents.runs.submit_tool_outputs(
-                        run_id=run.id,
-                        thread_id=thread_id,
-                        tool_outputs=tool_outputs,  # type: ignore
-                    )
-                    logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
-                    continue
+                    mcp_tool_calls = [tc for tc in tool_calls if isinstance(tc, RequiredMcpToolCall)]
+                    if mcp_tool_calls:
+                        logger.debug(
+                            f"Yielding generate_mcp_call_content for agent `{agent.name}` and "
+                            f"thread `{thread_id}`, visibility False"
+                        )
+                        yield False, generate_mcp_call_content(agent_name=agent.name, mcp_tool_calls=mcp_tool_calls)
+
+                        # Create tool approvals for MCP calls
+                        tool_approvals = []
+                        for mcp_call in mcp_tool_calls:
+                            tool_approvals.append(
+                                ToolApproval(
+                                    tool_call_id=mcp_call.id,
+                                    # TODO(evmattso): we don't support manual tool calling yet
+                                    # so we always approve
+                                    approve=True,
+                                )
+                            )
+
+                        await agent.client.agents.runs.submit_tool_outputs(
+                            run_id=run.id,
+                            thread_id=thread_id,
+                            tool_approvals=tool_approvals,  # type: ignore
+                        )
+                        logger.debug(f"Submitted MCP tool approvals for agent `{agent.name}` and thread `{thread_id}`")
+                        continue
 
             steps: list[RunStep] = []
             async for steps_response in agent.client.agents.run_steps.list(thread_id=thread_id, run_id=run.id):
@@ -290,11 +341,12 @@ class AgentThreadActions:
                                     | AgentsNamedToolChoiceType.BING_CUSTOM_SEARCH
                                 ):
                                     logger.debug(
-                                        f"Entering tool_calls (bing_grounding) for run [{run.id}], agent "
-                                        f" `{agent.name}` and thread `{thread_id}`"
+                                        f"Entering tool_calls (bing_grounding/bing_custom_search) for run [{run.id}], "
+                                        f"agent `{agent.name}` and thread `{thread_id}`"
                                     )
-                                    bing_call: RunStepBingGroundingToolCall = cast(
-                                        RunStepBingGroundingToolCall, tool_call
+                                    # Handle both Bing grounding and custom search tool calls
+                                    bing_call: RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall = cast(
+                                        RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall, tool_call
                                     )
                                     content = generate_bing_grounding_content(
                                         agent_name=agent.name, bing_tool_call=bing_call
@@ -330,6 +382,16 @@ class AgentThreadActions:
                                     content = generate_openapi_content(
                                         agent_name=agent.name,
                                         openapi_tool_call=openapi_tool_call,
+                                    )
+                                case AgentsNamedToolChoiceType.MCP:
+                                    logger.debug(
+                                        f"Entering tool_calls (mcp) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    mcp_tool_call: RunStepMcpToolCall = cast(RunStepMcpToolCall, tool_call)
+                                    content = generate_mcp_content(
+                                        agent_name=agent.name,
+                                        mcp_tool_call=mcp_tool_call,
                                     )
 
                             if content:
@@ -552,6 +614,10 @@ class AgentThreadActions:
                                     content = generate_streaming_openapi_content(
                                         agent_name=agent.name, step_details=details
                                     )
+                                case AgentsNamedToolChoiceType.MCP:
+                                    content = generate_streaming_mcp_content(
+                                        agent_name=agent.name, step_details=details
+                                    )
                             if content:
                                 if output_messages is not None:
                                     output_messages.append(content)
@@ -564,41 +630,95 @@ class AgentThreadActions:
                         f"thread `{thread_id}` with event data: {event_data}"
                     )
                     run = cast(ThreadRun, event_data)
-                    action_result = await cls._handle_streaming_requires_action(
-                        agent_name=agent.name,
-                        kernel=kernel,
-                        run=run,
-                        function_steps=function_steps,
-                        arguments=arguments,
-                    )
-                    if action_result is None:
-                        raise RuntimeError(
-                            f"Function call required but no function steps found for agent `{agent.name}` "
-                            f"thread: {thread_id}."
+
+                    # Check if this is a function call request
+                    if isinstance(run.required_action, SubmitToolOutputsAction):
+                        action_result = await cls._handle_streaming_requires_action(
+                            agent_name=agent.name,
+                            kernel=kernel,
+                            run=run,
+                            function_steps=function_steps,
+                            arguments=arguments,
                         )
+                        if action_result is None:
+                            raise RuntimeError(
+                                f"Function call required but no function steps found for agent `{agent.name}` "
+                                f"thread: {thread_id}."
+                            )
 
-                    for content in (
-                        action_result.function_call_streaming_content,
-                        action_result.function_result_streaming_content,
-                    ):
-                        if content and output_messages is not None:
-                            output_messages.append(content)
+                        for content in (
+                            action_result.function_call_streaming_content,
+                            action_result.function_result_streaming_content,
+                        ):
+                            if content and output_messages is not None:
+                                output_messages.append(content)
 
-                    handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
-                    await agent.client.agents.runs.submit_tool_outputs_stream(
-                        run_id=run.id,
-                        thread_id=thread_id,
-                        tool_outputs=action_result.tool_outputs,  # type: ignore
-                        event_handler=handler,
-                    )
-                    # Pass the handler to the stream to continue processing
-                    stream = handler  # type: ignore
+                        handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
+                        await agent.client.agents.runs.submit_tool_outputs_stream(
+                            run_id=run.id,
+                            thread_id=thread_id,
+                            tool_outputs=action_result.tool_outputs,  # type: ignore
+                            event_handler=handler,
+                        )
+                        # Pass the handler to the stream to continue processing
+                        stream = handler  # type: ignore
 
-                    logger.debug(
-                        f"Submitted tool outputs stream for agent `{agent.name}` and "
-                        f"thread `{thread_id}` and run id `{run.id}`"
-                    )
-                    break
+                        logger.debug(
+                            f"Submitted tool outputs stream for agent `{agent.name}` and "
+                            f"thread `{thread_id}` and run id `{run.id}`"
+                        )
+                        break
+
+                    # Check if this is an MCP tool approval request
+                    elif isinstance(run.required_action, SubmitToolApprovalAction):
+                        tool_calls = run.required_action.submit_tool_approval.tool_calls
+                        if not tool_calls:
+                            logger.warning(f"No tool calls provided for MCP approval - cancelling run [{run.id}]")
+                            await agent.client.agents.runs.cancel(run_id=run.id, thread_id=thread_id)
+                            break
+
+                        mcp_tool_calls = [tc for tc in tool_calls if isinstance(tc, RequiredMcpToolCall)]
+                        if mcp_tool_calls:
+                            logger.debug(
+                                f"Processing MCP tool approvals for agent `{agent.name}` and "
+                                f"thread `{thread_id}` and run id `{run.id}`"
+                            )
+
+                            if output_messages is not None:
+                                content = generate_streaming_mcp_call_content(
+                                    agent_name=agent.name, mcp_tool_calls=mcp_tool_calls
+                                )
+                                if content:
+                                    output_messages.append(content)
+
+                            # Create tool approvals for MCP calls
+                            tool_approvals = []
+                            for mcp_call in mcp_tool_calls:
+                                tool_approvals.append(
+                                    ToolApproval(
+                                        tool_call_id=mcp_call.id,
+                                        approve=True,
+                                        # Note: headers would need to be provided by the MCP tool configuration
+                                        # This is a simplified implementation
+                                        headers={},
+                                    )
+                                )
+
+                            handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()  # type: ignore
+                            await agent.client.agents.runs.submit_tool_outputs_stream(
+                                run_id=run.id,
+                                thread_id=thread_id,
+                                tool_approvals=tool_approvals,  # type: ignore
+                                event_handler=handler,
+                            )
+                            # Pass the handler to the stream to continue processing
+                            stream = handler  # type: ignore
+
+                            logger.debug(
+                                f"Submitted MCP tool approvals stream for agent `{agent.name}` and "
+                                f"thread `{thread_id}` and run id `{run.id}`"
+                            )
+                            break
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
                     logger.debug(

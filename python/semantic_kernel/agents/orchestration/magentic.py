@@ -477,6 +477,7 @@ class MagenticManagerActor(ActorBase):
         manager: MagenticManagerBase,
         internal_topic_type: str,
         participant_descriptions: dict[str, str],
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Initialize the Magentic One manager actor.
@@ -485,6 +486,7 @@ class MagenticManagerActor(ActorBase):
             manager (MagenticManagerBase): The Magentic One manager.
             internal_topic_type (str): The internal topic type.
             participant_descriptions (dict[str, str]): The participant descriptions.
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
             result_callback (Callable | None): A callback function to handle the final answer.
         """
         self._manager = manager
@@ -494,9 +496,10 @@ class MagenticManagerActor(ActorBase):
         self._context: MagenticContext | None = None
         self._task_ledger: ChatMessageContent | None = None
 
-        super().__init__(description="Magentic One Manager")
+        super().__init__("Magentic One Manager", exception_callback)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_start_message(self, message: MagenticStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the Magentic One manager."""
         logger.debug(f"{self.id}: Received Magentic One start message.")
@@ -512,6 +515,7 @@ class MagenticManagerActor(ActorBase):
         await self._run_outer_loop(ctx.cancellation_token)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         """Handle the response message for the Magentic One manager."""
         if self._context is None or self._task_ledger is None:
@@ -795,14 +799,20 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type)
-        await self._register_manager(runtime, internal_topic_type, result_callback=result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback)
+        await self._register_manager(runtime, internal_topic_type, exception_callback, result_callback=result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
-    async def _register_members(self, runtime: CoreRuntime, internal_topic_type: str) -> None:
+    async def _register_members(
+        self,
+        runtime: CoreRuntime,
+        internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
+    ) -> None:
         """Register the agents."""
         await asyncio.gather(*[
             MagenticAgentActor.register(
@@ -811,6 +821,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
                 lambda agent=agent: MagenticAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
+                    exception_callback,
                     self._agent_response_callback,
                     self._streaming_agent_response_callback,
                 ),
@@ -822,6 +833,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the group chat manager."""
@@ -832,6 +844,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
                 self._manager,
                 internal_topic_type=internal_topic_type,
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )
