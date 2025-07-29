@@ -118,7 +118,7 @@ public static class ObjectModelBuilder
 
         [KernelFunction(KernelDelegateProcessStep.FunctionName)]
         [Description("Initialize the process step")]
-        public void InitializeProcess(string message)
+        public void InitializeProcess(string? message)
         {
             if (this._scopes == null)
             {

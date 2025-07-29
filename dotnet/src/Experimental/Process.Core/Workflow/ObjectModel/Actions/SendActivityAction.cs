@@ -25,13 +25,21 @@ internal sealed class SendActivityAction : ProcessAction<SendActivity>
 
         if (this.Model.Activity is MessageActivityTemplate messageActivity)
         {
-            if (!string.IsNullOrEmpty(messageActivity.Summary))
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            try
             {
-                this._activityWriter.WriteLine($"\t{messageActivity.Summary}");
-            }
+                if (!string.IsNullOrEmpty(messageActivity.Summary))
+                {
+                    this._activityWriter.WriteLine($"\t{messageActivity.Summary}");
+                }
 
-            string? activityText = context.Engine.Format(messageActivity.Text);
-            this._activityWriter.WriteLine(activityText + Environment.NewLine);
+                string? activityText = context.Engine.Format(messageActivity.Text);
+                this._activityWriter.WriteLine(activityText + Environment.NewLine);
+            }
+            finally
+            {
+                Console.ResetColor();
+            }
         }
 
         return Task.CompletedTask;

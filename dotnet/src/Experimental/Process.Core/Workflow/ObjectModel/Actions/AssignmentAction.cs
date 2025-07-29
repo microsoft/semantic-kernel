@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
@@ -23,11 +24,17 @@ internal abstract class AssignmentAction<TAction> : ProcessAction<TAction> where
         context.Engine.SetScopedVariable(context.Scopes, this.Target, result);
         string? resultValue = result.Format();
         string valuePosition = (resultValue?.IndexOf('\n') ?? -1) >= 0 ? Environment.NewLine : " ";
-        Console.WriteLine( // %%% LOGGER
-            $"""
-            !!! ASSIGN {this.GetType().Name} [{this.Id}]
-                NAME: {this.Target.Format()}
-                VALUE:{valuePosition}{result.Format()} ({result.GetType().Name})
-            """);
+        context.Logger.LogDebug(
+            """
+            !!! ASSIGN {ActionName} [{ActionId}]
+                NAME: {TargetName}
+                VALUE:{ValuePosition}{Result} ({ResultType})
+            """,
+            this.GetType().Name,
+            this.Id,
+            this.Target.Format(),
+            valuePosition,
+            result.Format(),
+            result.GetType().Name);
     }
 }

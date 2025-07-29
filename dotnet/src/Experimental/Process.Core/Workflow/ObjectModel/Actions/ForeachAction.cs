@@ -37,7 +37,6 @@ internal sealed class ForeachAction : ProcessAction<Foreach>
         if (this.HasValue = (this._index < this._values.Length))
         {
             FormulaValue value = this._values[this._index];
-            this._index++;
 
             context.Engine.SetScopedVariable(context.Scopes, Throw.IfNull(this.Model.Value), value);
 
@@ -45,6 +44,8 @@ internal sealed class ForeachAction : ProcessAction<Foreach>
             {
                 context.Engine.SetScopedVariable(context.Scopes, this.Model.Index.Path, FormulaValue.New(this._index));
             }
+
+            this._index++;
         }
     }
 

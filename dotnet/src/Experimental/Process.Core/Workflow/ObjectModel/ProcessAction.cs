@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger logger);
+internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger Logger);
 
 internal abstract class ProcessAction<TAction>(TAction model) :
     ProcessAction(model)
@@ -38,12 +38,12 @@ internal abstract class ProcessAction(DialogAction model)
         }
         catch (ProcessWorkflowException exception)
         {
-            context.logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
+            context.Logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
             throw;
         }
         catch (Exception exception)
         {
-            context.logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
+            context.Logger.LogError(exception, "*** ACTION [{Id}] ERROR - {TypeName}\n{Message}", this.Id, this.GetType().Name, exception.Message);
             throw new ProcessWorkflowException($"Unexpected failure executing action #{this.Id} [{this.GetType().Name}]", exception);
         }
     }

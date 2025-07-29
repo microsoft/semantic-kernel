@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
+using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -20,7 +21,7 @@ internal sealed class AnswerQuestionWithAIAction : AssignmentAction<AnswerQuesti
     protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
         IChatCompletionService chatCompletion = context.Kernel.Services.GetRequiredService<IChatCompletionService>();
-        FormulaValue expressionResult = context.Engine.Eval(this.Model.UserInput!.ExpressionText);
+        FormulaValue expressionResult = context.Engine.EvaluateExpression(this.Model.UserInput);
         if (expressionResult is not StringValue stringResult)
         {
             throw new InvalidActionException($"{nameof(AnswerQuestionWithAI)} requires text for {nameof(AnswerQuestionWithAI.UserInput)}");

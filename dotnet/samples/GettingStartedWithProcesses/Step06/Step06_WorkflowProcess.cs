@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 namespace Step06;
@@ -20,6 +19,7 @@ public class Step06_WorkflowProcess : BaseTest
     [InlineData("testLoop")]
     [InlineData("testCondition")]
     [InlineData("deepResearch")]
+    [InlineData("demo250729")]
     public async Task RunWorkflow(string fileName)
     {
         const string InputEventId = "question";
@@ -32,15 +32,18 @@ public class Step06_WorkflowProcess : BaseTest
         Console.WriteLine("\nPROCESS INVOKE\n");
 
         Kernel kernel = this.CreateKernel();
-        await using LocalKernelProcessContext context = await process.StartAsync(kernel, new KernelProcessEvent() { Id = InputEventId, Data = "Why is the sky blue?" });
+        await using LocalKernelProcessContext context = await process.StartAsync(kernel, new KernelProcessEvent() { Id = InputEventId, Data = "<placeholder>" });
         Console.WriteLine("\nPROCESS DONE");
     }
 
-    private Kernel CreateKernel()
+    private Kernel CreateKernel(bool withLogger = false)
     {
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.Services.AddSingleton<ILoggerFactory>(this.LoggerFactory);
+        if (withLogger)
+        {
+            kernelBuilder.Services.AddSingleton(this.LoggerFactory);
+        }
         this.AddChatCompletionToKernel(kernelBuilder);
         this.AddChatClientToKernel(kernelBuilder);
 
