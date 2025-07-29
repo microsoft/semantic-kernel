@@ -602,7 +602,6 @@ public class LocalProcessTests
         Kernel kernel = new();
     }
 
-
     /// <summary>
     /// Process with branch that takes long time, other branch is short and needs external events.
     /// Test helps validate persistence of external events received when process was already running but not ready to process them
@@ -627,6 +626,7 @@ public class LocalProcessTests
     /// </code>
     /// </summary>
     /// <returns></returns>
+    #region Experimental Tests not necessarily need to be ported
     [Fact]
     public async Task LongRunningProcessWith2BranchesAsync()
     {
@@ -689,14 +689,13 @@ public class LocalProcessTests
 
         await using (var context = process.CreateContext(kernel, processId, storageConnector: processStorage))
         {
-            var runningProcessTask = Task.Run(() =>
+            var task = context.StartWithEventKeepRunning(new KernelProcessEvent()
             {
-                context.StartWithEventKeepRunning(new KernelProcessEvent()
-                {
-                    Id = CommonProcesses.ProcessEvents.StartProcess,
-                    Data = testInput,
-                }, kernel);
-            });
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+                Data = testInput,
+            }, kernel);
+
+            var runningProcessTask = Task.Run(() => task.Start());
 
             // wait 3 seconds, then send event while process is still running
             await Task.Delay(TimeSpan.FromSeconds(3));
@@ -710,6 +709,200 @@ public class LocalProcessTests
             await context.StopAsync();
         }
     }
+
+    #region Test to validate KernelProcessUserState temporarily
+    // Temporarily plumbed localStep = new LocalStep(stepInfo, this._kernel, parentProcessId: this.Id, userStateStore: this._userStateStore)
+    // in LocalProcess.InitializeProcessAsync()
+    // Ideally this._userStateStore should be only plumbed to LocalDelegateStep only
+
+    /// <summary>
+    /// Validates that the process state is persisted after modifying it from 2 steps in first run and from 1 in next run
+    /// <code>
+    ///              ┌───────┐        ┌───────┐      ┌───────┐
+    ///              │       │        │       │      │       │
+    /// INPUT ──────►│  Int  ├───────►│  Str  ├─────►│  Int  │
+    ///  INT         │ Modif │        │ Modif │      │ Modif │
+    ///              │       │    ┌──►│       │      │       │
+    ///              └───────┘    │   └───────┘      └───────┘
+    /// INPUT ────────────────────┘
+    ///  STR
+    ///              ┌───────┐
+    ///              │       │
+    /// INPUT ──────►│  Int  │
+    ///  BOOL        │ Modif │
+    ///              │       │
+    ///              └───────┘
+    /// </code>
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task ValidateProcessStatePersistedAfterModifyingFromStepAsync()
+    {
+        // Arrange
+        var processName = nameof(ValidateProcessStatePersistedAfterModifyingFromStepAsync);
+        var processId = "myProcessId";
+        var processStorage = new MockStorage();
+        var processStateEntryKey = $"{processId}.{processName}.ProcessDetails";
+
+        var kernel = new Kernel();
+
+        var inputIntEvent = "InputInt";
+        var inputStringEvent = "InputString";
+        var inputBoolEvent = "InputBool";
+
+        var testInput = new MyCustomClass()
+        {
+            Name = "Hello",
+            Value = 3,
+            Flag = true
+        };
+
+        var expectedOutput = new MyCustomClass()
+        {
+            Name = "Hello Hello Hello",
+            Value = 3,
+            Flag = true,
+        };
+
+        var processBuilder = new ProcessBuilder(processName);
+
+        var intModifierStep = processBuilder.AddStepFromType<ProcessStateModifierStep>("IntModifier");
+        var stringModifierStep = processBuilder.AddStepFromType<ProcessStateModifierStep>("StringModifier");
+        var boolModifierStep = processBuilder.AddStepFromType<ProcessStateModifierStep>("BoolModifier");
+
+        processBuilder
+            .OnInputEvent(inputBoolEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(boolModifierStep, functionName: ProcessStateModifierStep.FunctionNames.SetFlag));
+
+        processBuilder
+            .OnInputEvent(inputIntEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(intModifierStep, functionName: ProcessStateModifierStep.FunctionNames.IncreaseInt));
+
+        processBuilder.ListenFor().AllOf([
+                new(inputStringEvent, processBuilder),
+                new(intModifierStep.GetFunctionResultEventId(ProcessStateModifierStep.FunctionNames.IncreaseInt), intModifierStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(stringModifierStep, functionName: ProcessStateModifierStep.FunctionNames.RepeatString, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "text", inputEvents[processBuilder.GetFullEventId(inputStringEvent)] },
+                    { "repeatCount", inputEvents[intModifierStep.GetFullEventId(functionName: ProcessStateModifierStep.FunctionNames.IncreaseInt)] },
+                };
+            }));
+
+        var process = processBuilder.Build();
+
+        // Act - 1
+        await using LocalKernelProcessContext runningProcess = await process.StartAsync(kernel, new KernelProcessEvent()
+        {
+            Id = inputIntEvent,
+            Data = testInput.Value,
+        }, processId: processId, storageConnector: processStorage);
+
+        // Assert - 1
+        var expectedSharedVar1 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        Assert.Equal(expectedOutput.Value, expectedSharedVar1.Value);
+
+        // Act - 2
+        await using LocalKernelProcessContext runningProcess2 = await process.StartAsync(kernel, new KernelProcessEvent()
+        {
+            Id = inputStringEvent,
+            Data = testInput.Name,
+        }, processId: processId, storageConnector: processStorage);
+
+        // Assert - 2
+        var expectedSharedVar2 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        Assert.Equal(expectedOutput.Value, expectedSharedVar2.Value);
+        Assert.Equal(expectedOutput.Name, expectedSharedVar2.Name);
+
+        // Act - 3
+        await using LocalKernelProcessContext runningProcess3 = await process.StartAsync(kernel, new KernelProcessEvent()
+        {
+            Id = inputBoolEvent,
+            Data = testInput.Flag,
+        }, processId: processId, storageConnector: processStorage);
+
+        // Assert - 3
+        var expectedSharedVar3 = this.ValidateSpecificProcessStateVariables<MyCustomClass>(processStorage, processStateEntryKey, MockProcessStateKeys.CustomObjectValue);
+        Assert.Equal(expectedOutput.Value, expectedSharedVar3.Value);
+        Assert.Equal(expectedOutput.Name, expectedSharedVar2.Name);
+        Assert.Equal(expectedOutput.Flag, expectedSharedVar3.Flag);
+    }
+
+    private T ValidateSpecificProcessStateVariables<T>(MockStorage storage, string processEntryKey, string processVariableName) where T : class
+    {
+        Assert.True(storage._dbMock.ContainsKey(processEntryKey));
+        var processData = JsonSerializer.Deserialize<StorageProcessData>(storage._dbMock[processEntryKey].Content);
+        Assert.NotNull(processData);
+        var processState = processData.ProcessState;
+        Assert.NotNull(processState?.SharedVariables);
+        Assert.True(processState?.SharedVariables.ContainsKey(MockProcessStateKeys.CustomObjectValue));
+        var modifiedSharedVariableObj = processState?.SharedVariables[MockProcessStateKeys.CustomObjectValue]?.ToObject();
+        Assert.IsType<T>(modifiedSharedVariableObj);
+        return (T)modifiedSharedVariableObj;
+    }
+
+    public static class MockProcessStateKeys
+    {
+        public static readonly string IntValue = nameof(IntValue);
+        public static readonly string StringValue = nameof(StringValue);
+        public static readonly string CustomObjectValue = nameof(CustomObjectValue);
+    }
+
+    private sealed record MyCustomClass
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Value { get; set; } = 0;
+
+        public bool Flag { get; set; } = false;
+    }
+
+    private sealed class ProcessStateModifierStep : KernelProcessStep
+    {
+        public static class FunctionNames
+        {
+            public const string IncreaseInt = nameof(IncreaseInt);
+            public const string RepeatString = nameof(RepeatString);
+            public const string SetFlag = nameof(SetFlag);
+        }
+
+        [KernelFunction(FunctionNames.IncreaseInt)]
+        public async Task<int> IncreaseIntAsync(KernelProcessStepContext context, int value)
+        {
+            var currentValue = await context.GetUserStateAsync<MyCustomClass>(MockProcessStateKeys.CustomObjectValue).ConfigureAwait(false) ?? new();
+            currentValue.Value += value;
+
+            await context.SetUserStateAsync(MockProcessStateKeys.CustomObjectValue, currentValue).ConfigureAwait(false);
+
+            return currentValue.Value;
+        }
+
+        [KernelFunction(FunctionNames.RepeatString)]
+        public async Task<string> IncreaseIntAsync(KernelProcessStepContext context, string text, int repeatCount = 2)
+        {
+            var currentValue = await context.GetUserStateAsync<MyCustomClass>(MockProcessStateKeys.CustomObjectValue).ConfigureAwait(false) ?? new();
+            currentValue.Name = string.Join(" ", Enumerable.Repeat(text, repeatCount));
+
+            await context.SetUserStateAsync(MockProcessStateKeys.CustomObjectValue, currentValue).ConfigureAwait(false);
+
+            return currentValue.Name;
+        }
+
+        [KernelFunction(FunctionNames.SetFlag)]
+        public async Task<bool> SetFlagAsync(KernelProcessStepContext context, bool updatedFlag)
+        {
+            var currentValue = await context.GetUserStateAsync<MyCustomClass>(MockProcessStateKeys.CustomObjectValue).ConfigureAwait(false) ?? new();
+            currentValue.Flag = updatedFlag;
+
+            await context.SetUserStateAsync(MockProcessStateKeys.CustomObjectValue, currentValue).ConfigureAwait(false);
+
+            return currentValue.Flag;
+        }
+    }
+
+    #endregion
+    #endregion
 
     /// <summary>
     /// A class that represents a step for testing.

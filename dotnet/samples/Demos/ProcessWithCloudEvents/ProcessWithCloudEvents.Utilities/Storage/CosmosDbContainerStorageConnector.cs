@@ -10,22 +10,22 @@ using Newtonsoft.Json;
 
 namespace ProcessWithCloudEvents.SharedComponents.Storage;
 
-// CosmosDB V3 has a dependency on Newtonsoft.Json, so need to add wrapper class for Cosmos DB entities:
-// https://brettmckenzie.net/posts/the-input-content-is-invalid-because-the-required-properties-id-are-missing/
-internal record CosmosDbEntity<T>
-{
-    [JsonProperty("id")]
-    public string Id { get; init; } = string.Empty;
-
-    [JsonProperty("body")]
-    public T Body { get; init; } = default!;
-
-    [JsonProperty("instanceId")]
-    public string PartitionKey { get; init; } = string.Empty;
-}
-
 internal sealed class CosmosDbProcessStorageConnector : IProcessStorageConnector, IDisposable
 {
+    // CosmosDB V3 has a dependency on Newtonsoft.Json, so need to add wrapper class for Cosmos DB entities:
+    // https://brettmckenzie.net/posts/the-input-content-is-invalid-because-the-required-properties-id-are-missing/
+    internal sealed record CosmosDbEntity<T>
+    {
+        [JsonProperty("id")]
+        public string Id { get; init; } = string.Empty;
+
+        [JsonProperty("body")]
+        public T Body { get; init; } = default!;
+
+        [JsonProperty("instanceId")]
+        public string PartitionKey { get; init; } = string.Empty;
+    }
+
     private readonly CosmosClient _cosmosClient;
     private readonly Microsoft.Azure.Cosmos.Container _container;
     private readonly string _databaseId;
