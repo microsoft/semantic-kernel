@@ -58,27 +58,13 @@ builder.AddOnnxRuntimeGenAIChatCompletion(
 Kernel kernel = builder.Build();
 
 ChatHistory history = [];
-history.AddSystemMessage("""
-                         You are a helpful assistant.
-                         You are not restricted to using the provided plugins,
-                         and you can use information from your training.
-                         Please explain your reasoning with the response.
-                         """);
 
 IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 OnnxRuntimeGenAIPromptExecutionSettings settings = new()
 {
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+    MaxTokens = 5120
 };
-
-Console.WriteLine("""
-                  Ask questions or give instructions to the copilot such as:
-                  - change the alarm to 8
-                  - what is the current alarm set?
-                  - is the light on?
-                  - turn the light off please
-                  - set an alarm for 6:00 am
-                  """);
 
 await DoLoop(history, chatCompletionService, settings, kernel);
 
