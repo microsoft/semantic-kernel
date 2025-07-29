@@ -40,7 +40,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         string? modelId = null,
         ILoggerFactory? loggerFactory = null,
         JsonSerializerOptions? jsonSerializerOptions = null,
-        List<string>? providers = null)
+        List<Provider>? providers = null)
     {
         Verify.NotNullOrWhiteSpace(modelPath);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
@@ -48,9 +48,13 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         if (providers != null)
         {
             this._config.ClearProviders();
-            foreach (string provider in providers)
+            foreach (Provider provider in providers)
             {
-                this._config.AppendProvider(provider);
+                this._config.AppendProvider(provider.Id);
+                foreach (KeyValuePair<string, string> option in provider.Options)
+                {
+                    this._config.SetProviderOption(provider.Id, option.Key, option.Value);
+                }
             }
         }
 

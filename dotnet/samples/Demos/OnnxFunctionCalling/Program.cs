@@ -57,10 +57,10 @@ string modelId = "Phi_4_multimodal_instruct";
 string modelPath = "D:\\VisionCATS_AI_Agent\\Development\\.cache\\models\\microsoft_Phi_4_multimodal_instruct_onnx-gpu_gpu_int4_rtn_block_32";
 
 IKernelBuilder builder = Kernel.CreateBuilder();
-builder.AddOnnxRuntimeGenAIFunctionCallingChatCompletion(
+builder.AddOnnxRuntimeGenAIChatCompletion(
     modelPath: modelPath,
     serviceId: "onnx",
-    providers: ["cuda"],
+    providers: [new Provider { Id = "cuda" }],
     loggerFactory: loggerFactory
 );
 builder.Plugins
@@ -95,7 +95,7 @@ Console.WriteLine("""
 
 await DoLoop(history, chatCompletionService, settings, kernel);
 
-if (chatCompletionService is OnnxRuntimeGenAIFunctionCallingChatCompletionService onnxService)
+if (chatCompletionService is OnnxRuntimeGenAIChatCompletionService onnxService)
 {
     onnxService.Dispose();
 }

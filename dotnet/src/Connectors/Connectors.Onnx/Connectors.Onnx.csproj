@@ -12,7 +12,7 @@
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <PropertyGroup>
-    <PackageVersion>1.60.1</PackageVersion>
+    <PackageVersion>1.60.0-camag-2</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

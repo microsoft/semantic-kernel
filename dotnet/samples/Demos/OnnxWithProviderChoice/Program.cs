@@ -46,13 +46,13 @@ async Task DoDemo(ChatHistory history, IChatCompletionService chatCompletionServ
     history.AddAssistantMessage(results.Content!);
 }
 
-string modelPath = "D:\\VisionCATS_AI_Agent\\Development\\.cache\\models\\microsoft_Phi_4_multimodal_instruct_onnx-gpu_gpu_int4_rtn_block_32";
+string modelPath = "D:\\VisionCATS_AI_Agent_experimental\\Development\\.cache\\models\\microsoft_Phi_4_mini_instruct_onnx-gpu_gpu_int4_rtn_block_32";
 
 IKernelBuilder builder = Kernel.CreateBuilder();
 builder.AddOnnxRuntimeGenAIChatCompletion(
     modelPath: modelPath,
     serviceId: "onnx",
-    providers: ["cuda"]
+    providers: [new Provider { Id = "cuda" }]
 );
 
 Kernel kernel = builder.Build();

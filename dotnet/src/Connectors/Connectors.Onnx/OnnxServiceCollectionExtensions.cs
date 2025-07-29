@@ -35,7 +35,7 @@ public static class OnnxServiceCollectionExtensions
         string? modelId = null,
         ILoggerFactory? loggerFactory = null,
         JsonSerializerOptions? jsonSerializerOptions = null,
-        List<string>? providers = null
+        List<Provider>? providers = null
     )
     {
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (_, _) =>
