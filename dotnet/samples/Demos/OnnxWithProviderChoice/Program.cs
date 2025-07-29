@@ -62,7 +62,6 @@ ChatHistory history = [];
 IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 OnnxRuntimeGenAIPromptExecutionSettings settings = new()
 {
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
     MaxTokens = 5120
 };
 
