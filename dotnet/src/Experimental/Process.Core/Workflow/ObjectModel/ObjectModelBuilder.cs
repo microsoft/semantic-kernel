@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Bot.ObjectModel.Yaml;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflow.ObjectModel.Validation;
+using Microsoft.SemanticKernel.Process.Workflow.Validation;
 using Microsoft.SemanticKernel.Process.Workflows;
 
 namespace Microsoft.SemanticKernel;
