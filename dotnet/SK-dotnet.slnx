@@ -35,6 +35,7 @@
     <Project Path="samples/Demos/BookingRestaurant/BookingRestaurant.csproj" />
     <Project Path="samples/Demos/CodeInterpreterPlugin/CodeInterpreterPlugin.csproj" />
     <Project Path="samples/Demos/ContentSafety/ContentSafety.csproj" />
+    <Project Path="samples/Demos/DeclarativeWorkflow/DeclarativeWorkflow.csproj" Id="de05e970-d552-4c4b-9d69-b64bb9baff3f" />
     <Project Path="samples/Demos/FunctionInvocationApproval/FunctionInvocationApproval.csproj" />
     <Project Path="samples/Demos/HomeAutomation/HomeAutomation.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
