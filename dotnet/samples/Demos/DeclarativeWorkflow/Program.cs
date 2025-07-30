@@ -16,21 +16,27 @@ internal static class Program
     {
         // Load configuration and create kernel with Azure OpenAI Chat Completion service
         IConfiguration config = InitializeConfig();
+        // Note: "Kernel" isn't required as part of the new "process framework".
         Kernel kernel = CreateKernel(config["AzureOpenAI:Endpoint"]!, config["AzureOpenAI:ChatDeploymentName"]!);
 
         Notify("PROCESS INIT\n");
 
         Stopwatch timer = Stopwatch.StartNew();
 
+        //////////////////////////////////////////////
         // Interpret the workflow YAML into a KernelProcess
         using StreamReader yamlReader = File.OpenText("demo250729.yaml");
         KernelProcess process = ObjectModelBuilder.Build(yamlReader, InputEventId);
+        //////////////////////////////////////////////
 
         Notify($"\nPROCESS DEFINED: {timer.Elapsed}\n");
 
         Notify("\nPROCESS INVOKE\n");
 
+        //////////////////////////////////////////////
         // Run the process, just like any other KernelProcess
+        // NOTE: The pattern here is expected to change in the new "process framework"
+        //       (ideally, it will become less complex)
         await using LocalKernelProcessContext context =
             await process.StartAsync(
                 kernel,
@@ -40,6 +46,7 @@ internal static class Program
                     // Pass the first argument as the input data for the process, if present.
                     Data = args.FirstOrDefault() ?? string.Empty
                 });
+        //////////////////////////////////////////////
 
         Notify("\nPROCESS DONE");
     }
