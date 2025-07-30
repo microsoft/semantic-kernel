@@ -58,6 +58,7 @@ from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
@@ -832,7 +833,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 # Emit tool-related messages only via callback
                 await on_intermediate_message(message)
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,

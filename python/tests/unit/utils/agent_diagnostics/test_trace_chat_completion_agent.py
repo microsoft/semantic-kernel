@@ -10,7 +10,29 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundEr
 
 
 @patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
-async def test_chat_completion_agent_invoke(mock_tracer, chat_history):
+async def test_chat_completion_agent_get_response(
+    mock_tracer,
+    chat_history,
+    model_diagnostics_unit_test_env,
+):
+    # Arrange
+    chat_completion_agent = ChatCompletionAgent()
+    thread = ChatHistoryAgentThread(chat_history=chat_history)
+    # Act
+    with pytest.raises(KernelServiceNotFoundError):
+        await chat_completion_agent.get_response(messages="test", thread=thread)
+    # Assert
+    mock_tracer.start_as_current_span.assert_called_once()
+    args, _ = mock_tracer.start_as_current_span.call_args
+    assert args[0] == f"invoke_agent {chat_completion_agent.name}"
+
+
+@patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
+async def test_chat_completion_agent_invoke(
+    mock_tracer,
+    chat_history,
+    model_diagnostics_unit_test_env,
+):
     # Arrange
     chat_completion_agent = ChatCompletionAgent()
     thread = ChatHistoryAgentThread(chat_history=chat_history)
@@ -19,11 +41,17 @@ async def test_chat_completion_agent_invoke(mock_tracer, chat_history):
         async for _ in chat_completion_agent.invoke(messages="test", thread=thread):
             pass
     # Assert
-    mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {chat_completion_agent.name}")
+    mock_tracer.start_as_current_span.assert_called_once()
+    args, _ = mock_tracer.start_as_current_span.call_args
+    assert args[0] == f"invoke_agent {chat_completion_agent.name}"
 
 
 @patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
-async def test_chat_completion_agent_invoke_stream(mock_tracer, chat_history):
+async def test_chat_completion_agent_invoke_stream(
+    mock_tracer,
+    chat_history,
+    model_diagnostics_unit_test_env,
+):
     # Arrange
     chat_completion_agent = ChatCompletionAgent()
     thread = ChatHistoryAgentThread(chat_history=chat_history)
@@ -32,4 +60,6 @@ async def test_chat_completion_agent_invoke_stream(mock_tracer, chat_history):
         async for _ in chat_completion_agent.invoke_stream(messages="test", thread=thread):
             pass
     # Assert
-    mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {chat_completion_agent.name}")
+    mock_tracer.start_as_current_span.assert_called_once()
+    args, _ = mock_tracer.start_as_current_span.call_args
+    assert args[0] == f"invoke_agent {chat_completion_agent.name}"

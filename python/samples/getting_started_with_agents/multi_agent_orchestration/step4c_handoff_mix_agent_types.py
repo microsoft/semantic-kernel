@@ -5,6 +5,7 @@ import asyncio
 from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
 
+from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import (
     Agent,
     AzureAIAgent,
@@ -180,6 +181,7 @@ def human_response_function() -> ChatMessageContent:
     return ChatMessageContent(role=AuthorRole.USER, content=user_input)
 
 
+@enable_observability
 async def main():
     """Main function to run the agents."""
     # 0. Initialize the Azure AI agent clients

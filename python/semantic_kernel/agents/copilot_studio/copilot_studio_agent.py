@@ -7,21 +7,10 @@ from os import environ, path
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from microsoft.agents.copilotstudio.client import (
-    AgentType,
-    CopilotClient,
-    PowerPlatformCloud,
-)
+from microsoft.agents.copilotstudio.client import AgentType, CopilotClient, PowerPlatformCloud
 from microsoft.agents.core.models import ActivityTypes
-from msal import (
-    ConfidentialClientApplication,
-    PublicClientApplication,
-)
-from msal_extensions import (
-    FilePersistence,
-    PersistedTokenCache,
-    build_encrypted_persistence,
-)
+from msal import ConfidentialClientApplication, PublicClientApplication
+from msal_extensions import FilePersistence, PersistedTokenCache, build_encrypted_persistence
 from pydantic import ValidationError
 
 from semantic_kernel.agents import Agent
@@ -47,6 +36,7 @@ from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 
 if sys.version_info >= (3, 12):
@@ -509,6 +499,7 @@ class CopilotStudioAgent(Agent):
         ):
             yield AgentResponseItem(message=response, thread=thread)
 
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,
