@@ -22,13 +22,13 @@ public class MyAlarmPlugin
     public string SetAlarm(string time)
     {
         this._hour = time;
-        return GetCurrentAlarm();
+        return this.GetCurrentAlarm();
     }
 
     [KernelFunction]
     [Description("Get current alarm set")]
     public string GetCurrentAlarm()
     {
-        return $"Alarm set for {_hour}";
+        return $"Alarm set for {this._hour}";
     }
 }

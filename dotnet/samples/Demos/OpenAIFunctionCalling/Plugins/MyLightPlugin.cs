@@ -15,13 +15,13 @@ public class MyLightPlugin(bool turnedOn = false)
 
     [KernelFunction]
     [Description("Returns whether this light is on")]
-    public bool IsTurnedOn() => _turnedOn;
+    public bool IsTurnedOn() => this._turnedOn;
 
     [KernelFunction]
     [Description("Turn on this light")]
-    public void TurnOn() => _turnedOn = true;
+    public void TurnOn() => this._turnedOn = true;
 
     [KernelFunction]
     [Description("Turn off this light")]
-    public void TurnOff() => _turnedOn = false;
+    public void TurnOff() => this._turnedOn = false;
 }
