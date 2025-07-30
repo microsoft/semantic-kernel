@@ -145,7 +145,7 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 21.0"
+    "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
     "weaviate-client>=4.10,<5.0",
