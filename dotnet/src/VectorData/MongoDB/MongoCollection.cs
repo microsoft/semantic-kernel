@@ -97,15 +97,17 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     {
     }
 
+    private static readonly Type[] validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId)];
+
     internal MongoCollection(IMongoDatabase mongoDatabase, string name, Func<MongoCollectionOptions, CollectionModel> modelFactory, MongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        if (!validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException("Only string, Guid and ObjectID keys are supported.");
         }
 
         options ??= MongoCollectionOptions.Default;
@@ -157,9 +159,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <inheritdoc />
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        Verify.NotNull(key);
 
-        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(stringKey), cancellationToken))
+        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(key), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -181,7 +183,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        Verify.NotNull(key);
 
         var includeVectors = options?.IncludeVectors ?? false;
         if (includeVectors && this._model.EmbeddingGenerationRequired)
@@ -190,7 +192,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         }
 
         using var cursor = await this
-            .FindAsync(this.GetFilterById(stringKey), top: 1, skip: null, includeVectors, sortDefinition: null, cancellationToken)
+            .FindAsync(this.GetFilterById(key), top: 1, skip: null, includeVectors, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         var record = await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -267,7 +269,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
-        var key = storageModel[MongoConstants.MongoReservedKeyPropertyName].AsString;
+        var key = storageModel[MongoConstants.MongoReservedKeyPropertyName];
 
         await this.RunOperationAsync(OperationName, async () =>
             await this._mongoCollection
@@ -673,11 +675,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         }
     }
 
-    private FilterDefinition<BsonDocument> GetFilterById(string id)
+    private FilterDefinition<BsonDocument> GetFilterById(object id)
         => Builders<BsonDocument>.Filter.Eq(document => document[MongoConstants.MongoReservedKeyPropertyName], id);
 
-    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<string> ids)
-        => Builders<BsonDocument>.Filter.In(document => document[MongoConstants.MongoReservedKeyPropertyName].AsString, ids);
+    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<object> ids)
+        => Builders<BsonDocument>.Filter.In(document => document[MongoConstants.MongoReservedKeyPropertyName], ids);
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
@@ -723,11 +725,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             operation,
             cancellationToken).ConfigureAwait(false);
 
-    private string GetStringKey(TKey key)
+    private object GetKey(TKey key)
     {
         Verify.NotNull(key);
 
-        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+        var stringKey = key as string ?? throw new UnreachableException(" key should have been validated during model building");
 
         Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
 
