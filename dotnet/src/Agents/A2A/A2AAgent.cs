@@ -51,6 +51,7 @@ public sealed class A2AAgent : Agent
             messages,
             thread,
             () => new A2AAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Invoke the agent.
@@ -78,6 +79,7 @@ public sealed class A2AAgent : Agent
             messages,
             thread,
             () => new A2AAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Invoke the agent.

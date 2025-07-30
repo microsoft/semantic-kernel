@@ -67,11 +67,14 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         Verify.NotNull(messages);
 
-        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        // Ensure the thread exists, is updated with our new messages, and is retrievable.
+        AgentThread safeAgentThread = await this.EnsureThreadExistsWithMessagesAsync<AgentThread>(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
+            requiresThreadRetrieval: true,
             cancellationToken).ConfigureAwait(false);
+        var retrievableAgentThread = (IAgentThreadMessageProvider)safeAgentThread;
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -81,7 +84,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         }
 
         // Get the context contributions from the AIContextProviders.
-        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        AIContext providersContext = await safeAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 
         // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
         if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
@@ -92,18 +95,20 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        // Invoke Chat Completion with the updated chat history.
+        // Retrieve the chat history from the thread.
         ChatHistory chatHistory = [];
-        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var existingMessage in retrievableAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
         }
+
+        // Invoke Chat Completion with the history that already contains our new messages.
         var invokeResults = this.InternalInvokeAsync(
             this.GetDisplayName(),
             chatHistory,
             async (m) =>
             {
-                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
+                await this.NotifyThreadOfNewMessage(safeAgentThread, m, cancellationToken).ConfigureAwait(false);
                 if (options?.OnIntermediateMessage is not null)
                 {
                     await options.OnIntermediateMessage(m).ConfigureAwait(false);
@@ -132,7 +137,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             // since the filter terminated the call, and therefore won't get executed.
             if (!result.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
-                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
+                await this.NotifyThreadOfNewMessage(safeAgentThread, result, cancellationToken).ConfigureAwait(false);
 
                 if (options?.OnIntermediateMessage is not null)
                 {
@@ -140,7 +145,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 }
             }
 
-            yield return new(result, chatHistoryAgentThread);
+            yield return new(result, safeAgentThread);
         }
     }
 
@@ -173,11 +178,14 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         Verify.NotNull(messages);
 
-        ChatHistoryAgentThread chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+        // Ensure the thread exists, is updated with our new messages, and is retrievable.
+        AgentThread safeAgentThread = await this.EnsureThreadExistsWithMessagesAsync<AgentThread>(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
+            requiresThreadRetrieval: true,
             cancellationToken).ConfigureAwait(false);
+        var retrievableAgentThread = (IAgentThreadMessageProvider)safeAgentThread;
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -187,7 +195,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         }
 
         // Get the context contributions from the AIContextProviders.
-        AIContext providersContext = await chatHistoryAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        AIContext providersContext = await safeAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 
         // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
         if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
@@ -198,19 +206,21 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        // Invoke Chat Completion with the updated chat history.
+        // Retrieve the chat history from the thread.
         ChatHistory chatHistory = [];
-        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var existingMessage in retrievableAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
         }
+
+        // Invoke Chat Completion with the history that already contains our new messages.
         string agentName = this.GetDisplayName();
         var invokeResults = this.InternalInvokeStreamingAsync(
             agentName,
             chatHistory,
             async (m) =>
             {
-                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
+                await this.NotifyThreadOfNewMessage(safeAgentThread, m, cancellationToken).ConfigureAwait(false);
                 if (options?.OnIntermediateMessage is not null)
                 {
                     await options.OnIntermediateMessage(m).ConfigureAwait(false);
@@ -223,7 +233,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            yield return new(result, chatHistoryAgentThread);
+            yield return new(result, safeAgentThread);
         }
     }
 

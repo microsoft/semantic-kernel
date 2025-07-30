@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.ClientModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 /// <summary>
 /// Contains setup and teardown for the <see cref="OpenAIResponseAgent"/> tests.
 /// </summary>
-public class OpenAIResponseAgentFixture : AgentFixture
+public class OpenAIResponseAgentFixture(bool storeEnabled) : AgentFixture
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -26,7 +27,7 @@ public class OpenAIResponseAgentFixture : AgentFixture
 
     private OpenAIResponseClient? _responseClient;
     private OpenAIResponseAgent? _agent;
-    private OpenAIResponseAgentThread? _thread;
+    private AgentThread? _thread;
     private OpenAIResponseAgentThread? _createdThread;
     private OpenAIResponseAgentThread? _serviceFailingAgentThread;
     private OpenAIResponseAgentThread? _createdServiceFailingAgentThread;
@@ -45,47 +46,66 @@ public class OpenAIResponseAgentFixture : AgentFixture
 
     public override AgentThread GetNewThread()
     {
-        return new OpenAIResponseAgentThread(this._responseClient!);
+        return storeEnabled ? new OpenAIResponseAgentThread(this._responseClient!) : new ChatHistoryAgentThread();
     }
 
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();
-        await foreach (var existingMessage in this._thread!.GetMessagesAsync().ConfigureAwait(false))
+
+        if (this._thread is ChatHistoryAgentThread chatHistoryAgentThread)
+        {
+            await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync().ConfigureAwait(false))
+            {
+                chatHistory.Add(existingMessage);
+            }
+            return chatHistory;
+        }
+
+        if (this._thread is not OpenAIResponseAgentThread openAIResponseAgentThread)
+        {
+            throw new InvalidOperationException("The thread is not an OpenAIResponseAgentThread or a ChatHistoryAgentThread.");
+        }
+
+        await foreach (var existingMessage in openAIResponseAgentThread.GetMessagesAsync().ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
         }
+
         return chatHistory;
     }
 
     public override async Task DisposeAsync()
     {
-        if (this._thread!.Id is not null)
+        if (storeEnabled)
         {
-            try
+            if (this._thread!.Id is not null)
             {
-                await this._responseClient!.DeleteResponseAsync(this._thread!.Id);
+                try
+                {
+                    await this._responseClient!.DeleteResponseAsync(this._thread!.Id);
+                }
+                catch (ClientResultException ex) when (ex.Status == 404)
+                {
+                }
             }
-            catch (ClientResultException ex) when (ex.Status == 404)
-            {
-            }
-        }
 
-        if (this._createdThread!.Id is not null)
-        {
-            try
+            if (this._createdThread!.Id is not null)
             {
-                await this._responseClient!.DeleteResponseAsync(this._createdThread!.Id);
-            }
-            catch (ClientResultException ex) when (ex.Status == 404)
-            {
+                try
+                {
+                    await this._responseClient!.DeleteResponseAsync(this._createdThread!.Id);
+                }
+                catch (ClientResultException ex) when (ex.Status == 404)
+                {
+                }
             }
         }
     }
 
     public override Task DeleteThread(AgentThread thread)
     {
-        return this._responseClient!.DeleteResponseAsync(thread.Id);
+        return storeEnabled ? this._responseClient!.DeleteResponseAsync(thread.Id) : Task.CompletedTask;
     }
 
     public override async Task InitializeAsync()
@@ -101,10 +121,10 @@ public class OpenAIResponseAgentFixture : AgentFixture
         {
             Name = "HelpfulAssistant",
             Instructions = "You are a helpful assistant.",
-            StoreEnabled = true,
+            StoreEnabled = storeEnabled,
             Kernel = kernel
         };
-        this._thread = new OpenAIResponseAgentThread(this._responseClient);
+        this._thread = storeEnabled ? new OpenAIResponseAgentThread(this._responseClient) : new ChatHistoryAgentThread();
 
         var response = await this._responseClient.CreateResponseAsync([ResponseItem.CreateUserMessageItem("Hello")]);
         this._createdThread = new OpenAIResponseAgentThread(this._responseClient, response.Value.Id);
