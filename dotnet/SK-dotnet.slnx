@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/samples/">
-    <File Path="samples/README.md" />
     <Project Path="samples/Concepts/Concepts.csproj" />
     <Project Path="samples/GettingStarted/GettingStarted.csproj" />
     <Project Path="samples/GettingStartedWithAgents/GettingStartedWithAgents.csproj" />
@@ -8,9 +7,9 @@
     <Project Path="samples/GettingStartedWithTextSearch/GettingStartedWithTextSearch.csproj" />
     <Project Path="samples/GettingStartedWithVectorStores/GettingStartedWithVectorStores.csproj" />
     <Project Path="samples/LearnResources/LearnResources.csproj" />
+    <File Path="samples/README.md" />
   </Folder>
   <Folder Name="/samples/Demos/">
-    <File Path="samples/Demos/README.md" />
     <Project Path="samples/Demos/AIModelRouter/AIModelRouter.csproj" />
     <Project Path="samples/Demos/AmazonBedrockModels/AmazonBedrockAIModels.csproj" />
     <Project Path="samples/Demos/AotCompatibility/AotCompatibility.csproj" />
@@ -22,9 +21,8 @@
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
-    <Project Path="samples/Demos/OnnxFunctionCalling/OnnxFunctionCalling.csproj"/>
-    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj"/>
-    <Project Path="samples/Demos/OnnxWithProviderChoice/OnnxWithProviderChoice.csproj"/>
+    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
+    <Project Path="samples/Demos/OnnxWithProviderChoice/OnnxWithProviderChoice.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
     <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
@@ -33,39 +31,40 @@
     <Project Path="samples/Demos/TelemetryWithAppInsights/TelemetryWithAppInsights.csproj" />
     <Project Path="samples/Demos/TimePlugin/TimePlugin.csproj" />
     <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
+    <File Path="samples/Demos/README.md" />
   </Folder>
   <Folder Name="/samples/Demos/A2AClientServer/">
     <Project Path="samples/Demos/A2AClientServer/A2AClient/A2AClient.csproj" />
     <Project Path="samples/Demos/A2AClientServer/A2AServer/A2AServer.csproj" />
   </Folder>
   <Folder Name="/samples/Demos/AgentFrameworkWithAspire/">
-    <File Path="samples/Demos/AgentFrameworkWithAspire/README.md" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.ApiService/ChatWithAgent.ApiService.csproj" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.AppHost/ChatWithAgent.AppHost.csproj" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.Configuration/ChatWithAgent.Configuration.csproj" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.ServiceDefaults/ChatWithAgent.ServiceDefaults.csproj" />
     <Project Path="samples/Demos/AgentFrameworkWithAspire/ChatWithAgent.Web/ChatWithAgent.Web.csproj" />
+    <File Path="samples/Demos/AgentFrameworkWithAspire/README.md" />
   </Folder>
   <Folder Name="/samples/Demos/ModelContextProtocolClientServer/">
-    <File Path="samples/Demos/ModelContextProtocolClientServer/README.md" />
     <Project Path="samples/Demos/ModelContextProtocolClientServer/MCPClient/MCPClient.csproj">
       <BuildDependency Project="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
     </Project>
     <Project Path="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
+    <File Path="samples/Demos/ModelContextProtocolClientServer/README.md" />
   </Folder>
   <Folder Name="/samples/Demos/ProcessFrameworkWithAspire/">
-    <File Path="samples/Demos/ProcessFrameworkWithAspire/README.md" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost/ProcessFramework.Aspire.AppHost.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ServiceDefaults/ProcessFramework.Aspire.ServiceDefaults.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.Shared/ProcessFramework.Aspire.Shared.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.SummaryAgent/ProcessFramework.Aspire.SummaryAgent.csproj" />
     <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.TranslatorAgent/ProcessFramework.Aspire.TranslatorAgent.csproj" />
+    <File Path="samples/Demos/ProcessFrameworkWithAspire/README.md" />
   </Folder>
   <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
-    <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Processes/ProcessWithCloudEvents.Processes.csproj" />
+    <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/IntegrationTests/IntegrationTests.csproj" />
