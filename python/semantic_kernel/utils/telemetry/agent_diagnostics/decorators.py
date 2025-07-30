@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import functools
+import json
 from collections.abc import AsyncIterable, Awaitable, Callable
 from functools import reduce
 from typing import ParamSpec, cast
@@ -65,7 +66,7 @@ def trace_agent_get_response(
     async def wrapper_decorator(
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
+    ) -> AgentResponseItem[ChatMessageContent]:
         if not are_model_diagnostics_enabled():
             # If model diagnostics are not enabled, just return the responses
             return await get_response_func(*args, **kwargs)
@@ -75,7 +76,7 @@ def trace_agent_get_response(
 
         with _start_as_current_span(agent) as span:
             try:
-                _set_agent_invocation_input(span, messages)
+                _set_agent_invocation_input(span, messages)  # type: ignore
                 response = await get_response_func(*args, **kwargs)
                 _set_agent_invocation_output(span, [response.message])
                 return response
@@ -110,7 +111,7 @@ def trace_agent_invocation(
         messages = args[1] if len(args) > 1 else None
 
         with _start_as_current_span(agent) as current_span:
-            _set_agent_invocation_input(current_span, messages)
+            _set_agent_invocation_input(current_span, messages)  # type: ignore
             try:
                 responses: list[ChatMessageContent] = []
                 async for response in invoke_func(*args, **kwargs):
@@ -140,29 +141,32 @@ def trace_agent_streaming_invocation(
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         if not are_model_diagnostics_enabled():
             # If model diagnostics are not enabled, just return the responses
-            async for response in invoke_func(*args, **kwargs):
-                yield response
+            async for chunk in invoke_func(*args, **kwargs):
+                yield chunk
             return
 
         agent = cast(Agent, args[0])
         messages = args[1] if len(args) > 1 else None
 
         with _start_as_current_span(agent) as current_span:
-            _set_agent_invocation_input(current_span, messages)
+            _set_agent_invocation_input(current_span, messages)  # type: ignore
             try:
-                responses: list[StreamingChatMessageContent] = []
-                async for response in invoke_func(*args, **kwargs):
-                    responses.append(response.message)
-                    yield response
+                chunks: list[StreamingChatMessageContent] = []
+                async for chunk in invoke_func(*args, **kwargs):
+                    chunks.append(chunk.message)
+                    yield chunk
                 # Concatenate the streaming chunks
-                response = reduce(lambda x, y: x + y, responses)
-                _set_agent_invocation_output(current_span, [responses])
+                if chunks:
+                    response = reduce(lambda x, y: x + y, chunks)
+                    _set_agent_invocation_output(current_span, [response])
+                else:
+                    _set_agent_invocation_output(current_span, [])
             except Exception as e:
                 _set_agent_invocation_error(current_span, e)
                 raise
 
     # Mark the wrapper decorator as an agent diagnostics decorator
-    wrapper_decorator.__agent_diagnostics__ = True
+    wrapper_decorator.__agent_diagnostics__ = True  # type: ignore
 
     return wrapper_decorator
 
@@ -194,14 +198,20 @@ def _set_agent_invocation_input(
 ) -> None:
     """Set the agent input attributes in the span."""
     if are_sensitive_events_enabled():
-        messages = _parse_agent_invocation_messages(messages)
-        current_span.set_attribute(gen_ai_attributes.AGENT_INVOCATION_INPUT, messages)
+        parsed_messages = _parse_agent_invocation_messages(messages)
+        current_span.set_attribute(
+            gen_ai_attributes.AGENT_INVOCATION_INPUT,
+            json.dumps([message.to_dict() for message in parsed_messages]),
+        )
 
 
 def _set_agent_invocation_output(current_span: Span, response: list[ChatMessageContent]) -> None:
     """Set the agent output attributes in the span."""
     if are_sensitive_events_enabled():
-        current_span.set_attribute(gen_ai_attributes.AGENT_INVOCATION_OUTPUT, response)
+        current_span.set_attribute(
+            gen_ai_attributes.AGENT_INVOCATION_OUTPUT,
+            json.dumps([message.to_dict() for message in response]),
+        )
 
 
 def _set_agent_invocation_error(current_span: Span, error: Exception) -> None:
