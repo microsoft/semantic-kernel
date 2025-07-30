@@ -210,7 +210,6 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.8.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.8.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.8.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu.Windows" Version="1.22.1" />
     <!-- SpectreConsole-->
     <PackageVersion Include="Spectre.Console" Version="0.49.1" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.49.1" />
