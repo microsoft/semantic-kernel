@@ -199,12 +199,15 @@ class AgentThreadActions:
             )
 
             if run.status in cls.error_message_states:
-                error_message = ""
+                error_message = "None"
                 if run.last_error and run.last_error.message:
                     error_message = run.last_error.message
+                incomplete_details_reason = "None"
+                if run.incomplete_details and run.incomplete_details.reason:
+                    incomplete_details_reason = run.incomplete_details.reason
                 raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{agent.name}` and thread `{thread_id}` "
-                    f"with error: {error_message}"
+                    f"with error: {error_message} and incomplete details reason: {incomplete_details_reason}"
                 )
 
             # Check if function calling is required
@@ -738,12 +741,16 @@ class AgentThreadActions:
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_FAILED:
                     run_failed = cast(ThreadRun, event_data)
-                    error_message = (
-                        run_failed.last_error.message if run_failed.last_error and run_failed.last_error.message else ""
-                    )
+                    error_message = "None"
+                    if run_failed.last_error and run_failed.last_error.message:
+                        error_message = run_failed.last_error.message
+                    incomplete_details_reason = "None"
+                    if run_failed.incomplete_details and run_failed.incomplete_details.reason:
+                        incomplete_details_reason = run_failed.incomplete_details.reason
                     raise RuntimeError(
                         f"Run failed with status: `{run_failed.status}` for agent `{agent.name}` "
-                        f"thread `{thread_id}` with error: {error_message}"
+                        f"thread `{thread_id}` with error: {error_message} and incomplete details reason: "
+                        f"{incomplete_details_reason}"
                     )
             else:
                 break

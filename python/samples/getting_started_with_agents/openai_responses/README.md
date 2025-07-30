@@ -15,12 +15,7 @@ In Semantic Kernel, we don't currently support the Computer User Agent Tool. Thi
 The Semantic Kernel Azure Responses Agent leverages Azure OpenAI's new stateful API. 
 It brings together the best capabilities from the chat completions and assistants API in one unified experience.
 
-Right now, there is no support with the `AzureResponsesAgent` for:
-
-- Structured outputs
-- tool_choice
-- image_url pointing to an internet address
-- The web search tool is also not supported, and is not part of the 2025-03-01-preview API.
+For `AzureResponsesAgent` limitations, please see the latest [Azure OpenAI Responses API Docs](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses?tabs=python-secure).
 
 #### API Support
 
