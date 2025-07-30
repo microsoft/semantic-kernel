@@ -93,7 +93,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         if not client and not nvidia_settings.api_key:
             raise ServiceInitializationError("The NVIDIA API key is required.")
         if not nvidia_settings.chat_model_id:
-            nvidia_settings.chat_model_id = "meta/llama3-8b-instruct"
+            nvidia_settings.chat_model_id = "meta/llama-3.1-8b-instruct"
             logger.warning(f"Default chat model set as: {nvidia_settings.chat_model_id}")
 
         # Create client if not provided
@@ -147,6 +147,9 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
+        # Handle structured output
+        self._handle_structured_output(settings)
+
         response = await self._send_request(settings)
         assert isinstance(response, ChatCompletion)  # nosec
         response_metadata = self._get_metadata_from_chat_response(response)
@@ -167,6 +170,9 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         settings.stream = True
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+
+        # Handle structured output
+        self._handle_structured_output(settings)
 
         response = await self._send_request(settings)
         assert isinstance(response, AsyncGenerator)  # nosec
@@ -269,6 +275,25 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
                 )
             ]
         return []
+
+    def _handle_structured_output(
+        self, request_settings: NvidiaChatPromptExecutionSettings
+    ) -> None:
+        """Handle structured output for NVIDIA models using nvext parameter."""
+        response_format = getattr(request_settings, "response_format", None)
+        if response_format:
+            # Convert Pydantic model to JSON schema for NVIDIA's guided_json
+            if hasattr(response_format, "model_json_schema"):
+                # It's a Pydantic model
+                schema = response_format.model_json_schema()
+                if not request_settings.extra_body:
+                    request_settings.extra_body = {}
+                request_settings.extra_body["nvext"] = {"guided_json": schema}
+            elif isinstance(response_format, dict):
+                # It's already a dict, use it directly
+                if not request_settings.extra_body:
+                    request_settings.extra_body = {}
+                request_settings.extra_body["nvext"] = {"guided_json": response_format}
 
     def _prepare_chat_history_for_request(
         self,

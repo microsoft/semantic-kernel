@@ -8,4 +8,3 @@ class NvidiaModelTypes(Enum):
 
     EMBEDDING = "embedding"
     CHAT = "chat"
-    TEXT = "text"
