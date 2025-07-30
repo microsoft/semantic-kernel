@@ -93,7 +93,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         if not client and not nvidia_settings.api_key:
             raise ServiceInitializationError("The NVIDIA API key is required.")
         if not nvidia_settings.chat_model_id:
-            nvidia_settings.chat_model_id = "nvidia/nv-llama3-8b-instruct"
+            nvidia_settings.chat_model_id = "meta/llama3-8b-instruct"
             logger.warning(f"Default chat model set as: {nvidia_settings.chat_model_id}")
 
         # Create client if not provided
