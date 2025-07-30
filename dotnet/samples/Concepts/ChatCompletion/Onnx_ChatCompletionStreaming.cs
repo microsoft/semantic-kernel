@@ -92,6 +92,7 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
 
         var kernel = Kernel.CreateBuilder()
             .AddOnnxRuntimeGenAIChatCompletion(
+                serviceId: "onnx",
                 modelId: TestConfiguration.Onnx.ModelId,
                 modelPath: TestConfiguration.Onnx.ModelPath)
             .Build();
