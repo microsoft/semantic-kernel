@@ -74,14 +74,4 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
 
     /// <inheritdoc/>
     public override Task<string> GetProcessIdAsync() => Task.FromResult(this._localProcess.Id);
-
-    /// <summary>
-    /// Read the step states in from the process.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="System.NotImplementedException"></exception>
-    public override Task<IDictionary<string, KernelProcessStepState>> GetStepStatesAsync()
-    {
-        throw new System.NotImplementedException();
-    }
 }

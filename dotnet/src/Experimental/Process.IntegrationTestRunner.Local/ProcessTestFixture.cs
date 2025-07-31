@@ -17,10 +17,11 @@ public class ProcessTestFixture
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">An optional initial event.</param>
     /// <param name="externalMessageChannel">channel used for external messages</param>
+    /// <param name="runId">The Id of the run.</param>
     /// <returns>A <see cref="Task{KernelProcessContext}"/></returns>
-    public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null, string? runId = null)
     {
-        return await process.StartAsync(kernel, initialEvent, externalMessageChannel);
+        return await process.StartAsync(kernel, initialEvent, processId: runId, externalMessageChannel: externalMessageChannel);
     }
 
     /// <summary>
