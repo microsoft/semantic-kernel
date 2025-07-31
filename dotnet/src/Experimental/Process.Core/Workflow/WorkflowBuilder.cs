@@ -325,10 +325,10 @@ internal class WorkflowBuilder
 
         Workflow workflow = new()
         {
-            Id = process.State.Id ?? throw new KernelException("The process must have an Id set"),
+            Id = process.State.RunId ?? throw new KernelException("The process must have an Id set"),
             Description = process.Description,
             FormatVersion = "1.0",
-            Name = process.State.Name,
+            Name = process.State.StepId,
             Nodes = [new Node { Id = "End", Type = "declarative", Version = "1.0", Description = "Terminal state" }],
             Variables = [],
         };
@@ -403,7 +403,7 @@ internal class WorkflowBuilder
 
     private static Node BuildNode(KernelProcessStepInfo step, List<OrchestrationStep> orchestrationSteps)
     {
-        Verify.NotNullOrWhiteSpace(step?.State?.Id, nameof(step.State.Id));
+        Verify.NotNullOrWhiteSpace(step?.State?.RunId, nameof(step.State.RunId));
 
         if (step is KernelProcessAgentStep agentStep)
         {
@@ -418,12 +418,12 @@ internal class WorkflowBuilder
 
         var node = new Node()
         {
-            Id = step.State.Id,
+            Id = step.State.RunId,
             Type = "dotnet",
             Agent = new AgentDefinition()
             {
                 Type = innerStepTypeString,
-                Id = step.State.Id
+                Id = step.State.RunId
             }
         };
 
@@ -433,7 +433,7 @@ internal class WorkflowBuilder
             {
                 ListenFor = new ListenCondition()
                 {
-                    From = step.State.Id,
+                    From = step.State.RunId,
                     Event = edge.Key,
                     Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
                 },
@@ -465,14 +465,14 @@ internal class WorkflowBuilder
     {
         Verify.NotNull(agentStep);
 
-        if (agentStep.AgentDefinition is null || string.IsNullOrWhiteSpace(agentStep.State?.Id) || string.IsNullOrWhiteSpace(agentStep.AgentDefinition.Type))
+        if (agentStep.AgentDefinition is null || string.IsNullOrWhiteSpace(agentStep.State?.RunId) || string.IsNullOrWhiteSpace(agentStep.AgentDefinition.Type))
         {
             throw new InvalidOperationException("Attempt to build a workflow node from step with no Id");
         }
 
         var node = new Node()
         {
-            Id = agentStep.State.Id!,
+            Id = agentStep.State.RunId!,
             Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
             HumanInLoopType = agentStep.HumanInLoopMode,
@@ -511,7 +511,7 @@ internal class WorkflowBuilder
             {
                 ListenFor = new ListenCondition()
                 {
-                    From = agentStep.State.Id,
+                    From = agentStep.State.RunId,
                     Event = ResolveEventName(edge.Key.key),
                     Condition = edge.Key.DeclarativeDefinition
                 },

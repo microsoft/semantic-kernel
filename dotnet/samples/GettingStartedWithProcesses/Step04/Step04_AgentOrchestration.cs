@@ -74,7 +74,7 @@ public class Step04_AgentOrchestration : BaseTest
 
         // Cleaning up created agents
         var processState = await localProcess.GetStateAsync();
-        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.Id == "Student").FirstOrDefault()!.State;
+        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.StepId == "Student").FirstOrDefault()!.State;
         var agentId = agentState?.State?.AgentId;
         if (agentId != null)
         {

@@ -17,13 +17,13 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
 
     internal DaprTestProcessContext(KernelProcess process, HttpClient httpClient)
     {
-        if (string.IsNullOrWhiteSpace(process.State.Id))
+        if (string.IsNullOrWhiteSpace(process.State.RunId))
         {
-            process = process with { State = process.State with { Id = Guid.NewGuid().ToString() } };
+            process = process with { State = process.State with { RunId = Guid.NewGuid().ToString() } };
         }
 
         this._process = process;
-        this._processId = process.State.Id;
+        this._processId = process.State.RunId;
         this._httpClient = httpClient;
 
         this._serializerOptions = new JsonSerializerOptions()
@@ -80,5 +80,5 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
         };
     }
 
-    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process.State.Id!);
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process.State.RunId!);
 }

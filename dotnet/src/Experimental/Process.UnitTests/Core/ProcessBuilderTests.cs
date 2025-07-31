@@ -143,7 +143,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.NotNull(kernelProcess);
-        Assert.Equal(ProcessName, kernelProcess.State.Name);
+        Assert.Equal(ProcessName, kernelProcess.State.StepId);
         Assert.Single(kernelProcess.Steps);
     }
 

@@ -46,12 +46,12 @@ internal class LocalStep : IKernelProcessMessageChannel
         Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // This special handling will be removed with the refactoring of KernelProcessState
-        if (string.IsNullOrEmpty(stepInfo.State.Id) && stepInfo is KernelProcess)
+        if (string.IsNullOrEmpty(stepInfo.State.RunId) && stepInfo is KernelProcess)
         {
-            stepInfo = stepInfo with { State = stepInfo.State with { Id = Guid.NewGuid().ToString() } };
+            stepInfo = stepInfo with { State = stepInfo.State with { RunId = Guid.NewGuid().ToString() } };
         }
 
-        Verify.NotNull(stepInfo.State.Id);
+        Verify.NotNull(stepInfo.State.RunId);
 
         this.ParentProcessId = parentProcessId;
         this._kernel = kernel;
@@ -72,12 +72,12 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    internal string Name => this._stepInfo.State.Name!;
+    internal string Name => this._stepInfo.State.StepId!;
 
     /// <summary>
     /// The Id of the step.
     /// </summary>
-    internal string Id => this._stepInfo.State.Id!;
+    internal string Id => this._stepInfo.State.RunId!;
 
     /// <summary>
     /// An event proxy that can be used to intercept events emitted by the step.
@@ -277,7 +277,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     {
         // Instantiate an instance of the inner step object
         this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.StepId);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)

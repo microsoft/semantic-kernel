@@ -387,7 +387,7 @@ public class LocalMapTests
     private static async Task<UnionState> GetUnionStateAsync(LocalKernelProcessContext processContext)
     {
         KernelProcess processState = await processContext.GetStateAsync();
-        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Single(s => s.State.Name == "Union").State;
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Single(s => s.State.StepId == "Union").State;
         Assert.NotNull(unionState);
         Assert.NotNull(unionState.State);
         return unionState.State;

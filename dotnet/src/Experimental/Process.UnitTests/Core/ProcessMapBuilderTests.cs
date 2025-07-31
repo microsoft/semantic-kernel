@@ -129,8 +129,8 @@ public class ProcessMapBuilderTests
         // Assert
         Assert.NotNull(processMap);
         Assert.IsType<KernelProcessMap>(processMap);
-        Assert.Equal(map.Name, processMap.State.Name);
-        Assert.Equal(map.Id, processMap.State.Id);
+        Assert.Equal(map.Name, processMap.State.StepId);
+        Assert.Equal(map.Id, processMap.State.RunId);
     }
 
     /// <summary>

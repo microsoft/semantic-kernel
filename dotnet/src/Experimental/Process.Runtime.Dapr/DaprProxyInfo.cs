@@ -27,7 +27,7 @@ public sealed record DaprProxyInfo : DaprStepInfo
         KernelProcessStepInfo processStepInfo = this.ToKernelProcessStepInfo();
         if (this.State is not KernelProcessStepState state)
         {
-            throw new KernelException($"Unable to read state from proxy with name '{this.State.Name}', Id '{this.State.Id}' and type {this.State.GetType()}.");
+            throw new KernelException($"Unable to read state from proxy with name '{this.State.StepId}', Id '{this.State.RunId}' and type {this.State.GetType()}.");
         }
 
         return new KernelProcessProxy(state, this.Edges)

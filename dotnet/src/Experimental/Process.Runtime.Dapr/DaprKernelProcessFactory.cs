@@ -20,13 +20,13 @@ public static class DaprKernelProcessFactory
     public static async Task<DaprKernelProcessContext> StartAsync(this KernelProcess process, KernelProcessEvent initialEvent, string? processId = null, IActorProxyFactory? actorProxyFactory = null)
     {
         Verify.NotNull(process);
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
+        Verify.NotNullOrWhiteSpace(process.State?.StepId);
         Verify.NotNull(initialEvent);
 
         // Assign the process Id if one is provided and the processes does not already have an Id.
-        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
+        if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.RunId))
         {
-            process = process with { State = process.State with { Id = processId } };
+            process = process with { State = process.State with { RunId = processId } };
         }
 
         DaprKernelProcessContext processContext = new(process, actorProxyFactory);

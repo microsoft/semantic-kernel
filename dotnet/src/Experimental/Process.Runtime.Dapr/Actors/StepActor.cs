@@ -107,7 +107,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepState = this._stepInfo.State;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._eventNamespace = $"{this._stepInfo.State.StepId}_{this._stepInfo.State.RunId}";
 
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
@@ -203,7 +203,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
+    protected virtual string Name => this._stepInfo?.State.StepId ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
 
     /// <summary>
     /// Emits an event from the step.
@@ -352,7 +352,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.StepId);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)

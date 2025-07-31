@@ -247,14 +247,14 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             LocalStep? localStep = null;
 
             // The current step should already have a name.
-            Verify.NotNull(step.State?.Name);
+            Verify.NotNull(step.State?.StepId);
 
             if (step is KernelProcess processStep)
             {
                 // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(processStep.State.Id))
+                if (string.IsNullOrWhiteSpace(processStep.State.RunId))
                 {
-                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
+                    processStep = processStep with { State = processStep.State with { RunId = Guid.NewGuid().ToString() } };
                 }
 
                 localStep =
@@ -296,7 +296,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             else
             {
                 // The current step should already have an Id.
-                Verify.NotNull(step.State?.Id);
+                Verify.NotNull(step.State?.RunId);
 
                 localStep =
                     new LocalStep(step, this._kernel)
@@ -453,7 +453,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         {
             foreach (KernelProcessEdge edge in defaultConditionedEdges)
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.RunId!, null, null);
                 messageChannel.Enqueue(message);
 
                 // TODO: Handle state here as well
@@ -482,7 +482,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             var processEvent = new ProcessEvent
             {
                 Namespace = this.Name,
-                SourceId = this._process.State.Id!,
+                SourceId = this._process.State.RunId!,
                 Data = null,
                 Visibility = KernelProcessEventVisibility.Internal
             };
