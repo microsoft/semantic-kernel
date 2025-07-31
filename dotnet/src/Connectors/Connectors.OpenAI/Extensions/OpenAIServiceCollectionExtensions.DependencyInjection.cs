@@ -218,7 +218,6 @@ public static class OpenAIServiceCollectionExtensions
                    credential: new ApiKeyCredential(apiKey ?? SingleSpace),
                    options: ClientCore.GetOpenAIClientOptions(
                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                       endpoint: httpClient?.BaseAddress,
                        orgId: orgId))
                .GetEmbeddingClient(modelId)
                .AsIEmbeddingGenerator(dimensions)
@@ -276,29 +275,4 @@ public static class OpenAIServiceCollectionExtensions
         });
     }
     #endregion
-
-    private static OpenAIClientOptions GetClientOptions(
-        Uri? endpoint = null,
-        string? orgId = null,
-        HttpClient? httpClient = null)
-    {
-        OpenAIClientOptions options = new();
-
-        if (endpoint is not null)
-        {
-            options.Endpoint = endpoint;
-        }
-
-        if (orgId is not null)
-        {
-            options.OrganizationId = orgId;
-        }
-
-        if (httpClient is not null)
-        {
-            options.Transport = new HttpClientPipelineTransport(httpClient);
-        }
-
-        return options;
-    }
 }

@@ -149,10 +149,7 @@ public class KernelBuilderExtensionsTests
     {
         // Arrange
         var customEndpoint = new Uri("https://custom.proxy.url/openai/v1/");
-        var httpClient = new System.Net.Http.HttpClient
-        {
-            BaseAddress = customEndpoint
-        };
+        using var httpClient = new System.Net.Http.HttpClient { BaseAddress = customEndpoint };
         var sut = Kernel.CreateBuilder();
 
         // Act
@@ -162,7 +159,7 @@ public class KernelBuilderExtensionsTests
 
         // Assert
         Assert.NotNull(service);
-        Assert.Equal("model", service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelId);
+        Assert.Equal(customEndpoint, service.GetService<EmbeddingGeneratorMetadata>()!.ProviderUri);
     }
 
     [Fact]
