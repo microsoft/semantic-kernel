@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Process;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// Integration test focusing on <see cref="KernelProcessMap"/>.

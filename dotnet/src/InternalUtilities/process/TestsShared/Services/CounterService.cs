@@ -2,7 +2,7 @@
 
 using System.Threading;
 
-namespace SemanticKernel.Process.TestsShared.Services;
+namespace Microsoft.SemanticKernel.Process.TestsShared.Services;
 
 internal sealed class CounterService : ICounterService
 {
@@ -16,5 +16,10 @@ internal sealed class CounterService : ICounterService
     {
         Interlocked.Increment(ref this._counter);
         return this._counter;
+    }
+
+    public void SetCount(int count)
+    {
+        this._counter = count;
     }
 }

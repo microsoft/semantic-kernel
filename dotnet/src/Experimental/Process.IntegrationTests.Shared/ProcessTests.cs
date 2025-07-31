@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.TestSettings;
-using SemanticKernel.Process.TestsShared.Steps;
+using Microsoft.SemanticKernel.Process.TestsShared.Steps;
+using Microsoft.SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// Integration tests for processes.
