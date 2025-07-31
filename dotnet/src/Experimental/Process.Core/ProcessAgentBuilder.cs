@@ -208,10 +208,8 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
     #endregion
 
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
-        KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
-
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var agentActions = new ProcessAgentActions(
@@ -226,14 +224,19 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
                 OnError = this.OnErrorBuilder?.Build()
             });
 
-        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState(this.StepId, "1.0");
 
         return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.DefaultThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: "message");
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: Constants.MessageParameterName);
+    }
+
+    internal static class Constants
+    {
+        public const string MessageParameterName = "message";
     }
 }
 

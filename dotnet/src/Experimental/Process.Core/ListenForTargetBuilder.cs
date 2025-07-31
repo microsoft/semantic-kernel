@@ -88,7 +88,20 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             }
 
             // Link all the source steps to the event listener
-            var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            ProcessStepEdgeBuilder? onEventBuilder = null;
+
+            if (messageSource.Source is ProcessBuilder processSource && !processSource.HasParentProcess)
+            {
+                // process has no parent, it is root process an only output event from root is external input events
+                onEventBuilder = processSource.OnInputEvent(messageSource.MessageType);
+            }
+            else
+            {
+                // if it is a process and has parent process, process is seen as step by other steps.
+                // if it is a step it seen as step by other steps
+                onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            }
+
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
 
             if (messageSource.Condition != null)

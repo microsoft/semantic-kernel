@@ -173,9 +173,9 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
+    public KernelProcess Build()
     {
-        return this._processBuilder.Build(stateMetadata);
+        return this._processBuilder.Build();
     }
 
     /// <summary>

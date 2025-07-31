@@ -325,7 +325,7 @@ internal class WorkflowBuilder
 
         Workflow workflow = new()
         {
-            Id = process.State.RunId ?? throw new KernelException("The process must have an Id set"),
+            Id = process.State.StepId ?? throw new KernelException("The process must have an Id set"),
             Description = process.Description,
             FormatVersion = "1.0",
             Name = process.State.StepId,
@@ -403,7 +403,7 @@ internal class WorkflowBuilder
 
     private static Node BuildNode(KernelProcessStepInfo step, List<OrchestrationStep> orchestrationSteps)
     {
-        Verify.NotNullOrWhiteSpace(step?.State?.RunId, nameof(step.State.RunId));
+        Verify.NotNullOrWhiteSpace(step?.State?.StepId, nameof(step.State.StepId));
 
         if (step is KernelProcessAgentStep agentStep)
         {
@@ -418,12 +418,12 @@ internal class WorkflowBuilder
 
         var node = new Node()
         {
-            Id = step.State.RunId,
+            Id = step.State.StepId,
             Type = "dotnet",
             Agent = new AgentDefinition()
             {
                 Type = innerStepTypeString,
-                Id = step.State.RunId
+                Id = step.State.StepId
             }
         };
 

@@ -47,10 +47,10 @@ public class ProcessSerializationTests
         // Assert
         Assert.NotNull(process);
 
-        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.RunId == "kickoff");
-        var stepA = process.Steps.FirstOrDefault(s => s.State.RunId == "a_step");
-        var stepB = process.Steps.FirstOrDefault(s => s.State.RunId == "b_step");
-        var stepC = process.Steps.FirstOrDefault(s => s.State.RunId == "c_step");
+        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.StepId == "kickoff");
+        var stepA = process.Steps.FirstOrDefault(s => s.State.StepId == "a_step");
+        var stepB = process.Steps.FirstOrDefault(s => s.State.StepId == "b_step");
+        var stepC = process.Steps.FirstOrDefault(s => s.State.StepId == "c_step");
 
         Assert.NotNull(stepKickoff);
         Assert.NotNull(stepA);
@@ -139,8 +139,8 @@ public class ProcessSerializationTests
 
         // Assert
         Assert.NotNull(process);
-        Assert.Contains(process.Steps, step => step.State.RunId == "GetProductInfo");
-        Assert.Contains(process.Steps, step => step.State.RunId == "Summarize");
+        Assert.Contains(process.Steps, step => step.State.StepId == "GetProductInfo");
+        Assert.Contains(process.Steps, step => step.State.StepId == "Summarize");
     }
 
     private KernelProcess GetProcess()
