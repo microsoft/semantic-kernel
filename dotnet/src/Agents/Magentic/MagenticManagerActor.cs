@@ -141,7 +141,16 @@ internal sealed class MagenticManagerActor :
 
                 if (this._invocationCount >= this._manager.MaximumInvocationCount)
                 {
-                    await this.PublishMessageAsync("Maximum number of invocations reached.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
+                    try
+                    {
+                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await this.PublishMessageAsync("I've reaches the maximum number of invocations. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
                     break;
                 }
 
@@ -157,7 +166,15 @@ internal sealed class MagenticManagerActor :
                 if (this._retryCount >= this._manager.MaximumResetCount)
                 {
                     this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
-                    await this.PublishMessageAsync("I've experienced multiple failures and am unable to continue.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await this.PublishMessageAsync("I've experienced multiple failures and am unable to continue. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
                     break;
                 }
 
