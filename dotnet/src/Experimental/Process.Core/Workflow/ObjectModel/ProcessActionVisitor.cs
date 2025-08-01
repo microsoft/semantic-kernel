@@ -16,12 +16,12 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     private readonly ProcessBuilder _processBuilder;
     private readonly ProcessWorkflowBuilder _workflowBuilder;
     private readonly ProcessActionStack _actionStack;
-    private readonly HostContext _context;
+    private readonly WorkflowContext _context;
     private readonly ProcessActionScopes _scopes;
 
     public ProcessActionVisitor(
         ProcessBuilder processBuilder,
-        HostContext context,
+        WorkflowContext context,
         ProcessActionScopes scopes)
     {
         this._actionStack = new ProcessActionStack();

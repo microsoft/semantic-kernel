@@ -62,7 +62,7 @@ public static class ObjectModelBuilder
     /// <param name="messageId">The identifier for the message.</param>
     /// <param name="context">The hosting context for the workflow.</param>
     /// <returns>The <see cref="KernelProcess"/> that corresponds with the YAML object model.</returns>
-    public static KernelProcess Build(TextReader yamlReader, string messageId, HostContext? context = null)
+    public static KernelProcess Build(TextReader yamlReader, string messageId, WorkflowContext? context = null)
     {
         Console.WriteLine("@ PARSING YAML");
         BotElement rootElement = YamlSerializer.Deserialize<BotElement>(yamlReader) ?? throw new KernelException("Unable to parse YAML content.");
@@ -75,7 +75,7 @@ public static class ObjectModelBuilder
         processBuilder.OnInputEvent(messageId).SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
         Console.WriteLine("@ INTERPRETING MODEL");
-        ProcessActionVisitor visitor = new(processBuilder, context ?? new HostContext(), scopes);
+        ProcessActionVisitor visitor = new(processBuilder, context ?? new WorkflowContext(), scopes);
         ProcessActionWalker walker = new(rootElement, visitor);
 
         Console.WriteLine("@ FINALIZING PROCESS");

@@ -7,7 +7,10 @@ namespace Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 internal static class RecalcEngineFactory
 {
-    public static RecalcEngine Create(ProcessActionScopes scopes, int maximumExpressionLength)
+    public static RecalcEngine Create(
+        ProcessActionScopes scopes,
+        int? maximumExpressionLength = null,
+        int? maximumCallDepth = null)
     {
         RecalcEngine engine = new(CreateConfig());
 
@@ -25,11 +28,17 @@ internal static class RecalcEngineFactory
 
         PowerFxConfig CreateConfig()
         {
-            PowerFxConfig config =
-                new(Features.PowerFxV1)
-                {
-                    MaximumExpressionLength = maximumExpressionLength
-                };
+            PowerFxConfig config = new(Features.PowerFxV1);
+
+            if (maximumExpressionLength is not null)
+            {
+                config.MaximumExpressionLength = maximumExpressionLength.Value;
+            }
+
+            if (maximumCallDepth is not null)
+            {
+                config.MaxCallDepth = maximumCallDepth.Value;
+            }
 
             config.EnableSetFunction();
 
