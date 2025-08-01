@@ -549,7 +549,7 @@ internal class WorkflowBuilder
         int index = eventName.IndexOf(ProcessConstants.EventIdSeparator);
         if (index > 0)
         {
-            eventName = eventName.Substring(index + 1);
+            eventName = eventName[(index + 1)..];
         }
 
         return eventName;

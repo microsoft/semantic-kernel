@@ -1,0 +1,18 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  type: Message
+  actions:
+
+    - kind: SendActivity
+      id: sendActivity_aGsbRo
+      activity: Starting
+
+    - kind: EndConversation
+      id: end_skJ8u
+      actionId: sendActivity_fJsbRz
+      
+    - kind: SendActivity
+      id: sendActivity_SVoNSV
+      activity: Never
