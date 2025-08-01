@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />

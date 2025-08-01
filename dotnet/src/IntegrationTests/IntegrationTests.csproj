@@ -42,7 +42,6 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Npgsql" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -95,6 +94,10 @@
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -199,7 +202,7 @@
     </None>
   </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources/gemini_cached_content.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>

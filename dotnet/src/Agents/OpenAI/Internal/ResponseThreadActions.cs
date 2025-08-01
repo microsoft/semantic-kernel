@@ -88,7 +88,7 @@ internal static class ResponseThreadActions
                     functionOptions,
                     agent.GetKernel(options),
                     isStreaming: false,
-                    cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items
@@ -259,7 +259,7 @@ internal static class ResponseThreadActions
                     functionOptions,
                     agent.GetKernel(options),
                     isStreaming: true,
-                    cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items

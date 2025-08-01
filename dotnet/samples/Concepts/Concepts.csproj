@@ -44,7 +44,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.OpenApi" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="AWSSDK.Core" />
     <PackageReference Include="AWSSDK.SecurityToken" />
@@ -97,6 +96,10 @@
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />

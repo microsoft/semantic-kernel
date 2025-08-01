@@ -32,11 +32,14 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />

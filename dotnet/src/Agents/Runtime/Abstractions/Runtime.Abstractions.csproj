@@ -32,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Agents.Runtime.Abstractions.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

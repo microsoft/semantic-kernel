@@ -181,7 +181,11 @@ internal static class AgentThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken: cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            List<RunStep> steps = [];
+            await foreach (var step in client.GetStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false))
+            {
+                steps.Add(step);
+            }
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -204,7 +208,7 @@ internal static class AgentThreadActions
                             functionOptions,
                             kernel,
                             isStreaming: false,
-                            cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                            cancellationToken).ConfigureAwait(false);
 
                     // Capture function-call for message processing
                     foreach (FunctionResultContent functionCall in functionResults)
@@ -458,10 +462,14 @@ internal static class AgentThreadActions
 
             if (run.Status == RunStatus.RequiresAction)
             {
-                RunStep[] activeSteps =
-                    await client.GetStepsAsync(run, cancellationToken)
-                    .Where(step => step.Status == RunStepStatus.InProgress)
-                    .ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                List<RunStep> activeSteps = [];
+                await foreach (var step in client.GetStepsAsync(run, cancellationToken).ConfigureAwait(false))
+                {
+                    if (step.Status == RunStepStatus.InProgress)
+                    {
+                        activeSteps.Add(step);
+                    }
+                }
 
                 // Capture map between the tool call and its associated step
                 Dictionary<string, string> toolMap = [];
@@ -489,7 +497,7 @@ internal static class AgentThreadActions
                             functionOptions,
                             kernel,
                             isStreaming: true,
-                            cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                            cancellationToken).ConfigureAwait(false);
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);

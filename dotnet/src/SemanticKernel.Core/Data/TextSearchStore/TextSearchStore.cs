@@ -262,7 +262,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
-            .SelectAsync(x => x.Record, cancellationToken)
+            .Select(x => x.Record, cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
