@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
@@ -47,7 +48,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 """
                 You are an art director who has opinions about copywriting born of a love for David Ogilvy.
                 The goal is to determine if the given copy is acceptable to print.
-                If so, state that it is approved.
+                If so, state: "I Approve".
                 If not, provide insight on how to refine suggested copy without example.
                 """);
 
@@ -57,7 +58,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         OrchestrationMonitor monitor = new();
         // Define the orchestration
         GroupChatOrchestration orchestration =
-            new(new RoundRobinGroupChatManager()
+            new(new AuthorCriticManager(writer.Name!, editor.Name!)
             {
                 MaximumInvocationCount = 5
             },
@@ -85,6 +86,33 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         foreach (ChatMessageContent message in monitor.History)
         {
             this.WriteAgentChatMessage(message);
+        }
+    }
+
+    private sealed class AuthorCriticManager(string authorName, string criticName) : RoundRobinGroupChatManager
+    {
+        public override ValueTask<GroupChatManagerResult<string>> FilterResults(ChatHistory history, CancellationToken cancellationToken = default)
+        {
+            ChatMessageContent finalResult = history.Last(message => message.AuthorName == authorName);
+            return ValueTask.FromResult(new GroupChatManagerResult<string>($"{finalResult}") { Reason = "The approved copy." });
+        }
+
+        /// <inheritdoc/>
+        public override async ValueTask<GroupChatManagerResult<bool>> ShouldTerminate(ChatHistory history, CancellationToken cancellationToken = default)
+        {
+            // Has the maximum invocation count been reached?
+            GroupChatManagerResult<bool> result = await base.ShouldTerminate(history, cancellationToken);
+            if (!result.Value)
+            {
+                // If not, check if the reviewer has approved the copy.
+                ChatMessageContent? lastMessage = history.LastOrDefault();
+                if (lastMessage is not null && lastMessage.AuthorName == criticName && $"{lastMessage}".Contains("I Approve", StringComparison.OrdinalIgnoreCase))
+                {
+                    // If the reviewer approves, we terminate the chat.
+                    result = new GroupChatManagerResult<bool>(true) { Reason = "The reviewer has approved the copy." };
+                }
+            }
+            return result;
         }
     }
 }
