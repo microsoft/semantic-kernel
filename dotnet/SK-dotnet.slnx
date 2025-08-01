@@ -41,7 +41,7 @@
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
     <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
-    <Project Path="samples/Demos/ProcessWithDapr/ProcessWithLocalRuntime.csproj" />
+    <Project Path="samples/Demos/ProcessWithLocalRuntime/ProcessWithLocalRuntime.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
     <Project Path="samples/Demos/StepwisePlannerMigration/StepwisePlannerMigration.csproj" />
     <Project Path="samples/Demos/StructuredDataPlugin/StructuredDataPlugin.csproj" />
