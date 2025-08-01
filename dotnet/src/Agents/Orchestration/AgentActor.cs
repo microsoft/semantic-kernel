@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public abstract class AgentActor : OrchestrationActor
 {
     private AgentInvokeOptions? _options;
+    private ChatMessageContent? _lastResponse;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentActor"/> class.
@@ -94,9 +95,9 @@ public abstract class AgentActor : OrchestrationActor
     {
         this.Context.Cancellation.ThrowIfCancellationRequested();
 
-        ChatMessageContent? response = null;
+        this._lastResponse = null;
 
-        AgentInvokeOptions options = this.GetInvokeOptions(HandleMessage);
+        AgentInvokeOptions options = this.GetInvokeOptions(HandleMessageAsync);
         if (this.Context.StreamingResponseCallback == null)
         {
             // No need to utilize streaming if no callback is provided
@@ -107,11 +108,11 @@ public abstract class AgentActor : OrchestrationActor
             await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
         }
 
-        return response ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
+        return this._lastResponse ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
 
-        async Task HandleMessage(ChatMessageContent message)
+        async Task HandleMessageAsync(ChatMessageContent message)
         {
-            response = message; // Keep track of most recent response for both invocation modes
+            this._lastResponse = message; // Keep track of most recent response for both invocation modes
 
             if (this.Context.ResponseCallback is not null && !this.ResponseCallbackFilter(message))
             {
