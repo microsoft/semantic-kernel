@@ -18,7 +18,7 @@ internal sealed class ClearAllVariablesAction : ProcessAction<ClearAllVariables>
     {
         DataValue literalValue = this.Model.Variables.GetLiteralValue(); // %%% DON'T USE GetLiteralValue
 
-        context.Engine.ClearScope(context.Scopes, ActionScopeType.Topic); // %%% EVALUTE "Variables"
+        context.Engine.ClearScope(context.Scopes, ActionScopeType.Topic); // %%% EVALUATE "Variables"
 
         return Task.CompletedTask;
     }

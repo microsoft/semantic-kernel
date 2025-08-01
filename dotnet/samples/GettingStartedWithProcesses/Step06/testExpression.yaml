@@ -1,0 +1,37 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  type: Message
+  actions:
+    - kind: SetVariable
+      id: setVariable1
+      variable: Topic.TestList
+      value: =["zaz", "zbz", "zcz", "zdz", "zez", "zfz"]
+
+    - kind: SetVariable
+      id: setVariable2
+      variable: Topic.TestResult
+      value:  |-
+         =CountIf(Topic.TestList, !IsBlank(Find("e", Value))) > 0 &&
+          !IsBlank(3)
+
+#      value: =CountIf(Topic.TestList, !IsBlank(Find("e", Value))) > 0
+      #value: =CountIf(Topic.TestList, 1)
+#      value: =!IsBlank(Topic.TestList)
+
+    - kind: SetVariable
+      id: setVariable3
+      variable: Topic.TestFind
+      value: =Find("e", "abcdefg")
+      #value: =CountIf(Topic.TestList, 1)
+#      value: =!IsBlank(Topic.TestList)
+
+    - kind: SendActivity
+      id: sendActivity2
+      activity: "Result (CountIf): {Topic.TestResult}"
+
+      
+    - kind: SendActivity
+      id: sendActivity3
+      activity: "Result (Find): {Topic.TestFind}"
