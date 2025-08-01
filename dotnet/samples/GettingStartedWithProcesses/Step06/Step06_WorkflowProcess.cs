@@ -18,6 +18,7 @@ public class Step06_WorkflowProcess : BaseTest
     [InlineData("testGoto")]
     [InlineData("testLoop")]
     [InlineData("testCondition")]
+    [InlineData("testExpression")]
     [InlineData("deepResearch")]
     [InlineData("demo250729")]
     public async Task RunWorkflow(string fileName)
