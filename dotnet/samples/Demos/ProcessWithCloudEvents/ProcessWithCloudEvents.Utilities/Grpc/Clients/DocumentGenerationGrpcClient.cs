@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Grpc.Net.Client;
 using Microsoft.SemanticKernel;
-using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
+using ProcessWithCloudEvents.Grpc.Contract;
 using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Processes.Models;
 
@@ -14,13 +14,15 @@ namespace ProcessWithCloudEvents.Grpc.Clients;
 /// </summary>
 public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
 {
+    public static string Key => nameof(DocumentGenerationGrpcClient);
+
     private GrpcChannel? _grpcChannel;
     private GrpcDocumentationGeneration.GrpcDocumentationGenerationClient? _grpcClient;
 
     /// <inheritdoc/>
     public async ValueTask Initialize()
     {
-        this._grpcChannel = GrpcChannel.ForAddress("http://localhost:58641");
+        this._grpcChannel = GrpcChannel.ForAddress("http://localhost:5641");
         this._grpcClient = new GrpcDocumentationGeneration.GrpcDocumentationGenerationClient(this._grpcChannel);
     }
 

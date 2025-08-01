@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace ProcessWithCloudEvents.Grpc.Options;
+namespace ProcessWithCloudEvents.SharedComponents.Options;
 
 /// <summary>
 /// Configuration for OpenAI chat completion service.

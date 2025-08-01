@@ -7,6 +7,7 @@
 // Additionally update the AppPagesDetails map to include the new process sample and its details.
 export enum AppPages {
     DocumentGeneration = "DocumentGeneration",
+    TeacherStudentInteraction = "TeacherStudentInteraction",
 }
 
 interface EnumDetails {
@@ -23,6 +24,14 @@ export const AppPagesDetails = new Map<AppPages, EnumDetails>([
                 "Demo used to show case document generation using different cloud technologies with SK Processes",
         },
     ],
+    [
+        AppPages.TeacherStudentInteraction,
+        {
+            name: "Teacher Student Interaction",
+            description:
+                "Demo used to show case teacher student interaction using different cloud technologies and declarative agents with SK Processes",
+        }
+    ]
 ]);
 
 // When more cloud technologies are added, add them to this enum and the CloudTechnologiesDetails map below.

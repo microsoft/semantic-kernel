@@ -14,13 +14,6 @@ builder.Services.AddLogging((logging) =>
 // Configure the Kernel with DI. This is required for dependency injection to work with processes.
 builder.Services.AddKernel();
 
-// Configure Dapr
-builder.Services.AddActors(static options =>
-{
-    // Register the actors required to run Processes
-    options.AddProcessActors();
-});
-
 builder.Services.AddControllers();
 var app = builder.Build();
 
@@ -36,5 +29,4 @@ else
 }
 
 app.MapControllers();
-app.MapActorsHandlers();
 app.Run();

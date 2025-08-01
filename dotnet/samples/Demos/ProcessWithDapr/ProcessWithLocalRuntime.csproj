@@ -11,12 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\Experimental\Process.Core\Process.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Experimental\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Dapr.Actors" />
-    <PackageReference Include="Dapr.Actors.AspNetCore" />
+    <ProjectReference Include="..\..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
   </ItemGroup>
 
 </Project>

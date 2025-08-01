@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Concurrent;
-using Dapr.Actors.Client;
 using Grpc.Core;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.Threading;
 using ProcessWithCloudEvents.Grpc.Clients;
-using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
+using ProcessWithCloudEvents.Grpc.Contract;
 using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Processes.Models;
 
-namespace ProcessWithCloudEvents.Grpc.Services;
+namespace ProcessWithCloudEvents.Grpc.LocalRuntime.Services;
 
 /// <summary>
 /// This gRPC service handles the generation of documents using/invoking a SK Process
@@ -19,7 +18,11 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
 {
     private readonly ILogger<DocumentGenerationService> _logger;
     private readonly Kernel _kernel;
-    private readonly IActorProxyFactory _actorProxyFactory;
+
+    private readonly KernelProcess _kernelProcess;
+    private readonly IExternalKernelProcessMessageChannel _externalMessageChannel;
+    private readonly IProcessStorageConnector _storageConnector;
+
     private readonly ConcurrentDictionary<string, ConcurrentBag<IServerStreamWriter<DocumentationContentRequest>>> _docReviewSubscribers;
     private readonly ConcurrentDictionary<string, ConcurrentBag<IServerStreamWriter<DocumentationContentRequest>>> _publishDocumentSubscribers;
     /// <summary>
@@ -27,14 +30,23 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="kernel"></param>
-    /// <param name="actorProxy"></param>
-    public DocumentGenerationService(ILogger<DocumentGenerationService> logger, Kernel kernel, IActorProxyFactory actorProxy)
+    /// <param name="externalMessageChannel"></param>
+    /// <param name="storageConnector"></param>
+    public DocumentGenerationService(
+        ILogger<DocumentGenerationService> logger,
+        Kernel kernel,
+        [FromKeyedServices("DocumentGenerationGrpcClient")] IExternalKernelProcessMessageChannel externalMessageChannel,
+        IProcessStorageConnector storageConnector)
     {
         this._logger = logger;
         this._kernel = kernel;
-        this._actorProxyFactory = actorProxy;
         this._docReviewSubscribers = new();
         this._publishDocumentSubscribers = new();
+
+        this._kernelProcess = DocumentGenerationProcess.CreateProcessBuilder().Build();
+
+        this._externalMessageChannel = externalMessageChannel;
+        this._storageConnector = storageConnector;
     }
 
     /// <summary>
@@ -48,16 +60,13 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
     public override async Task<ProcessData> UserRequestFeatureDocumentation(FeatureDocumentationRequest request, ServerCallContext context)
     {
         var processId = string.IsNullOrEmpty(request.ProcessId) ? Guid.NewGuid().ToString() : request.ProcessId;
-        var process = DocumentGenerationProcess.CreateProcessBuilder().Build();
 
-        var processContext = await process.StartAsync(new KernelProcessEvent()
+        var processContext = await this._kernelProcess.StartAsync(this._kernel, new KernelProcessEvent()
         {
             Id = DocumentGenerationProcess.DocGenerationEvents.StartDocumentGeneration,
             // The object ProductInfo is sent because this is the type the GatherProductInfoStep is expecting
             Data = new ProductInfo() { Title = request.Title, Content = request.Content, UserInput = request.UserDescription },
-        },
-        processId,
-        this._actorProxyFactory);
+        }, processId, this._externalMessageChannel, this._storageConnector);
 
         return new ProcessData { ProcessId = processId };
     }
@@ -119,8 +128,6 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
     /// <returns></returns>
     public override async Task<Empty> UserReviewedDocumentation(DocumentationApprovalRequest request, ServerCallContext context)
     {
-        var process = DocumentGenerationProcess.CreateProcessBuilder().Build();
-
         KernelProcessEvent processEvent;
         if (request.DocumentationApproved)
         {
@@ -139,7 +146,8 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
             };
         }
 
-        var processContext = await process.StartAsync(processEvent, request.ProcessData.ProcessId);
+        var processId = request.ProcessData.ProcessId;
+        var processContext = await this._kernelProcess.StartAsync(this._kernel, processEvent, processId, this._externalMessageChannel, this._storageConnector);
 
         return new Empty();
     }

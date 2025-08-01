@@ -32,7 +32,7 @@ public class ProcessController : ControllerBase
     public async Task<IActionResult> PostAsync(string processId)
     {
         var process = this.GetProcess();
-        var processContext = await process.StartAsync(new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
+        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
         var finalState = await processContext.GetStateAsync();
 
         return this.Ok(processId);
@@ -65,15 +65,25 @@ public class ProcessController : ControllerBase
             .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
-        // When AStep finishes, send its output to CStep.
-        myAStep
-            .OnEvent(CommonEvents.AStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
-
-        // When BStep finishes, send its output to CStep also.
-        myBStep
-            .OnEvent(CommonEvents.BStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
+        // When step A and step B have finished, trigger the CStep.
+        processBuilder
+            .ListenFor()
+                .AllOf(new()
+                {
+                    new(messageType: CommonEvents.AStepDone, source: myAStep),
+                    new(messageType: CommonEvents.BStepDone, source: myBStep)
+                })
+                .SendEventTo(new ProcessStepTargetBuilder(myCStep, inputMapping: (inputEvents) =>
+                {
+                    // Map the input events to the CStep's input parameters.
+                    // In this case, we are mapping the output of AStep to the first input parameter of CStep
+                    // and the output of BStep to the second input parameter of CStep.
+                    return new()
+                    {
+                        { "astepdata", inputEvents[$"{nameof(AStep)}.{CommonEvents.AStepDone}"] },
+                        { "bstepdata", inputEvents[$"{nameof(BStep)}.{CommonEvents.BStepDone}"] }
+                    };
+                }));
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep
