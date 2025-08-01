@@ -56,7 +56,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         // When the userInput step emits a user input event, send it to the assistantResponse step
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(responseStep, parameterName: "userMessage"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(responseStep));
 
         // When the assistantResponse step emits a response, send it to the userInput step
         responseStep
@@ -68,9 +68,9 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // Generate a Mermaid diagram for the process and print it to the console
         string mermaidGraph = kernelProcess.ToMermaid();
-        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.StepId}' ===");
         Console.WriteLine(mermaidGraph);
-        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.StepId}' ===");
 
         // Generate an image from the Mermaid diagram
         string generatedImagePath = await MermaidRenderer.GenerateMermaidImageAsync(mermaidGraph, "ChatBotProcess.png");

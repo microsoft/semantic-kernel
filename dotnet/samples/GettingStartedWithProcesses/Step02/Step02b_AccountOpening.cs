@@ -45,7 +45,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         // Function names are necessary when the step has multiple public functions like CompleteNewCustomerFormStep: NewAccountWelcome and NewAccountProcessUserInfo
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountProcessUserInfo, "userMessage"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountProcessUserInfo));
 
         userInputStep
             .OnEvent(CommonEvents.Exit)

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Tools;
+using Microsoft.SemanticKernel.Process.TestsShared.Services.Storage;
 using Step03.Processes;
 using Utilities;
 
@@ -39,9 +39,9 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         var process = FishSandwichProcess.CreateProcess();
 
         string mermaidGraph = process.ToMermaid(1);
-        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.StepId}' ===");
         Console.WriteLine(mermaidGraph);
-        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.StepId}' ===");
 
         await UsePrepareSpecificProductAsync(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
     }
@@ -67,10 +67,10 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
 
         // Assert
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
-        await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, externalTriggerEvent, "Order 1");
-        await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, externalTriggerEvent, "Order 2");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
+        await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, null, externalTriggerEvent, "Order 1");
+        await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, null, externalTriggerEvent, "Order 2");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     /// <summary>
@@ -87,11 +87,11 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = processBuilder.Build();
 
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 1");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 2");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 3");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 1");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 2");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 3");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     [Fact]
@@ -103,143 +103,90 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = processBuilder.Build();
 
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 1");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 2");
-        await ExecuteProcessWithStateAsync(kernelProcess, kernel, externalTriggerEvent, "Order 3");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 1");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 2");
+        await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 3");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
-    private async Task<KernelProcess> ExecuteProcessWithStateAsync(KernelProcess process, Kernel kernel, string externalTriggerEvent, string orderLabel = "Order 1")
+    private async Task<KernelProcess> ExecuteProcessWithStateAsync(KernelProcess process, Kernel kernel, IProcessStorageConnector? storageConnector, string externalTriggerEvent, string orderLabel = "Order 1", string? processId = null)
     {
         Console.WriteLine($"=== {orderLabel} ===");
         var runningProcess = await process.StartAsync(kernel, new KernelProcessEvent()
         {
             Id = externalTriggerEvent,
             Data = new List<string>()
-        });
+        }, processId, storageConnector: storageConnector);
         return await runningProcess.GetStateAsync();
     }
-
-    #region Running processes and saving Process State Metadata in a file locally
-    [Fact]
-    public async Task RunAndStoreStatefulFriedFishProcessStateAsync()
-    {
-        Kernel kernel = CreateKernelWithChatCompletion();
-        ProcessBuilder builder = FriedFishProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess friedFishProcess = builder.Build();
-
-        var executedProcess = await ExecuteProcessWithStateAsync(friedFishProcess, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
-        var processState = executedProcess.ToProcessStateMetadata();
-        DumpProcessStateMetadataLocally(processState, _statefulFriedFishProcessFilename);
-    }
-
-    [Fact]
-    public async Task RunAndStoreStatefulFishSandwichProcessStateAsync()
-    {
-        Kernel kernel = CreateKernelWithChatCompletion();
-        ProcessBuilder builder = FishSandwichProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess friedFishProcess = builder.Build();
-
-        var executedProcess = await ExecuteProcessWithStateAsync(friedFishProcess, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
-        var processState = executedProcess.ToProcessStateMetadata();
-        DumpProcessStateMetadataLocally(processState, _statefulFishSandwichProcessFilename);
-    }
-    #endregion
 
     #region Reading State from local file and apply to existing ProcessBuilder
     [Fact]
     public async Task RunStatefulFriedFishProcessFromFileAsync()
     {
-        var processState = LoadProcessStateMetadata(this._statefulFriedFishProcessFilename);
-        Assert.NotNull(processState);
+        var processStatePath = GetSampleStep03DirPath(this._statefulFriedFishProcessFoldername);
+        var stateFileStorage = new JsonFileStorage(processStatePath);
 
         Kernel kernel = CreateKernelWithChatCompletion();
         ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess processFromFile = processBuilder.Build(processState);
+        KernelProcess processFromFile = processBuilder.Build();
 
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, stateFileStorage, FriedFishProcess.ProcessEvents.PrepareFriedFish, processId: this._processId);
     }
 
     [Fact]
     public async Task RunStatefulFriedFishProcessWithLowStockFromFileAsync()
     {
-        var processState = LoadProcessStateMetadata(this._statefulFriedFishLowStockProcessFilename);
-        Assert.NotNull(processState);
+        var processStatePath = GetSampleStep03DirPath(this._statefulFriedFishLowStockProcessFoldername);
+        var stateFileStorage = new JsonFileStorage(processStatePath);
 
         Kernel kernel = CreateKernelWithChatCompletion();
         ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess processFromFile = processBuilder.Build(processState);
+        KernelProcess processFromFile = processBuilder.Build();
 
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, stateFileStorage, FriedFishProcess.ProcessEvents.PrepareFriedFish, processId: this._processId);
     }
 
     [Fact]
     public async Task RunStatefulFriedFishProcessWithNoStockFromFileAsync()
     {
-        var processState = LoadProcessStateMetadata(this._statefulFriedFishNoStockProcessFilename);
-        Assert.NotNull(processState);
+        var processStatePath = GetSampleStep03DirPath(this._statefulFriedFishNoStockProcessFoldername);
+        var stateFileStorage = new JsonFileStorage(processStatePath);
 
         Kernel kernel = CreateKernelWithChatCompletion();
         ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess processFromFile = processBuilder.Build(processState);
+        KernelProcess processFromFile = processBuilder.Build();
 
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, stateFileStorage, FriedFishProcess.ProcessEvents.PrepareFriedFish, processId: this._processId);
     }
 
     [Fact]
     public async Task RunStatefulFishSandwichProcessFromFileAsync()
     {
-        var processState = LoadProcessStateMetadata(this._statefulFishSandwichProcessFilename);
-        Assert.NotNull(processState);
+        var processStatePath = GetSampleStep03DirPath(this._statefulFishSandwichProcessFoldername);
+        var stateFileStorage = new JsonFileStorage(processStatePath);
 
         Kernel kernel = CreateKernelWithChatCompletion();
         ProcessBuilder processBuilder = FishSandwichProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess processFromFile = processBuilder.Build(processState);
+        KernelProcess processFromFile = processBuilder.Build();
 
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, stateFileStorage, FishSandwichProcess.ProcessEvents.PrepareFishSandwich, processId: this._processId);
     }
 
     [Fact]
     public async Task RunStatefulFishSandwichProcessWithLowStockFromFileAsync()
     {
-        var processState = LoadProcessStateMetadata(this._statefulFishSandwichLowStockProcessFilename);
-        Assert.NotNull(processState);
+        var processStatePath = GetSampleStep03DirPath(this._statefulFishSandwichLowStockProcessFoldername);
+        var stateFileStorage = new JsonFileStorage(processStatePath);
 
         Kernel kernel = CreateKernelWithChatCompletion();
         ProcessBuilder processBuilder = FishSandwichProcess.CreateProcessWithStatefulStepsV1();
-        KernelProcess processFromFile = processBuilder.Build(processState);
+        KernelProcess processFromFile = processBuilder.Build();
 
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, stateFileStorage, FishSandwichProcess.ProcessEvents.PrepareFishSandwich, processId: this._processId);
     }
 
-    #region Versioning compatibiily scenarios: Loading State generated with previous version of process
-    [Fact]
-    public async Task RunStatefulFriedFishV2ProcessWithLowStockV1StateFromFileAsync()
-    {
-        var processState = LoadProcessStateMetadata(this._statefulFriedFishLowStockProcessFilename);
-        Assert.NotNull(processState);
-
-        Kernel kernel = CreateKernelWithChatCompletion();
-        ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulStepsV2();
-        KernelProcess processFromFile = processBuilder.Build(processState);
-
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
-    }
-
-    [Fact]
-    public async Task RunStatefulFishSandwichV2ProcessWithLowStockV1StateFromFileAsync()
-    {
-        var processState = LoadProcessStateMetadata(this._statefulFishSandwichLowStockProcessFilename);
-        Assert.NotNull(processState);
-
-        Kernel kernel = CreateKernelWithChatCompletion();
-        ProcessBuilder processBuilder = FishSandwichProcess.CreateProcessWithStatefulStepsV2();
-        KernelProcess processFromFile = processBuilder.Build(processState);
-
-        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
-    }
-    #endregion
     #endregion
     #endregion
     protected async Task UsePrepareSpecificProductAsync(ProcessBuilder processBuilder, string externalTriggerEvent)
@@ -251,36 +198,26 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         KernelProcess kernelProcess = processBuilder.Build();
 
         // Assert
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
         await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
             Id = externalTriggerEvent, Data = new List<string>()
         });
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     // Step03a Utils for saving and loading SK Processes from/to repository
-    private readonly string _step03RelativePath = Path.Combine("Step03", "ProcessesStates");
-    private readonly string _statefulFriedFishProcessFilename = "FriedFishProcessStateSuccess.json";
-    private readonly string _statefulFriedFishLowStockProcessFilename = "FriedFishProcessStateSuccessLowStock.json";
-    private readonly string _statefulFriedFishNoStockProcessFilename = "FriedFishProcessStateSuccessNoStock.json";
-    private readonly string _statefulFishSandwichProcessFilename = "FishSandwichStateProcessSuccess.json";
-    private readonly string _statefulFishSandwichLowStockProcessFilename = "FishSandwichStateProcessSuccessLowStock.json";
+    private readonly string _processId = "myId";
+    private readonly string _step03RelativePath = Path.Combine("Step03", "States");
+    private readonly string _statefulFriedFishProcessFoldername = "FriedFishSuccess";
+    private readonly string _statefulFriedFishLowStockProcessFoldername = "FriedFishSuccessLowStock";
+    private readonly string _statefulFriedFishNoStockProcessFoldername = "FriedFishSuccessNoStock";
+    private readonly string _statefulFishSandwichProcessFoldername = "FishSandwichSuccess";
+    private readonly string _statefulFishSandwichLowStockProcessFoldername = "FishSandwichSuccessLowStock";
 
-    private void DumpProcessStateMetadataLocally(KernelProcessStateMetadata processStateInfo, string jsonFilename)
+    private string GetSampleStep03DirPath(string dir)
     {
-        var sampleRelativePath = GetSampleStep03Filepath(jsonFilename);
-        ProcessStateMetadataUtilities.DumpProcessStateMetadataLocally(processStateInfo, sampleRelativePath);
-    }
-
-    private KernelProcessStateMetadata? LoadProcessStateMetadata(string jsonFilename)
-    {
-        var sampleRelativePath = GetSampleStep03Filepath(jsonFilename);
-        return ProcessStateMetadataUtilities.LoadProcessStateMetadata(sampleRelativePath);
-    }
-
-    private string GetSampleStep03Filepath(string jsonFilename)
-    {
-        return Path.Combine(this._step03RelativePath, jsonFilename);
+        var relativeDir = Path.Combine(this._step03RelativePath, dir);
+        return FileStorageUtilities.GetRepositoryProcessStateFilepath(relativeDir, checkFilepathExists: true);
     }
 }

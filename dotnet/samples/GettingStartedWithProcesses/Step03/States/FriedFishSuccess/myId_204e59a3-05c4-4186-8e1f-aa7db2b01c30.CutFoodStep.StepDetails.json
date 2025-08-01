@@ -1,0 +1,13 @@
+{
+  "stepInfo": {
+    "stepName": "CutFoodStep",
+    "parentId": null,
+    "version": "CutFoodStep.V1",
+    "instanceId": "myId_204e59a3-05c4-4186-8e1f-aa7db2b01c30"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": null,
+  "instanceId": "myId_204e59a3-05c4-4186-8e1f-aa7db2b01c30"
+}

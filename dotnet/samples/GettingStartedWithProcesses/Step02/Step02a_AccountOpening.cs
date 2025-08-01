@@ -45,7 +45,7 @@ public class Step02a_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         // Function names are necessary when the step has multiple public functions like CompleteNewCustomerFormStep: NewAccountWelcome and NewAccountProcessUserInfo
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountProcessUserInfo, "userMessage"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountProcessUserInfo));
 
         userInputStep
             .OnEvent(CommonEvents.Exit)
@@ -64,68 +64,90 @@ public class Step02a_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         // When the newCustomerForm is completed...
         newCustomerFormStep
             .OnEvent(AccountOpeningEvents.NewCustomerFormCompleted)
-            // The information gets passed to the core system record creation step
-            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.ProcessStepFunctions.DetermineCreditScore, parameterName: "customerDetails"))
-            // The information gets passed to the fraud detection step for validation
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "customerDetails"))
-            // The information gets passed to the core system record creation step
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "customerDetails"));
-
-        // When the newCustomerForm is completed, the user interaction transcript with the user is passed to the core system record creation step
-        newCustomerFormStep
-            .OnEvent(AccountOpeningEvents.CustomerInteractionTranscriptReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "interactionTranscript"));
+            // The information gets passed to the credit check step record creation step
+            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.ProcessStepFunctions.DetermineCreditScore));
 
         // When the creditScoreCheck step results in Rejection, the information gets to the mailService step to notify the user about the state of the application and the reasons
         customerCreditCheckStep
             .OnEvent(AccountOpeningEvents.CreditScoreCheckRejected)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep, functionName: MailServiceStep.ProcessStepFunctions.SendMailToUserWithDetails, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
 
-        // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
-        customerCreditCheckStep
-            .OnEvent(AccountOpeningEvents.CreditScoreCheckApproved)
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.ProcessStepFunctions.FraudDetectionCheck, parameterName: "previousCheckSucceeded"));
+        process
+            .ListenFor()
+            .AllOf([
+                // When the newCustomerForm is completed the information gets passed to the fraud detection step for validation
+                new(AccountOpeningEvents.NewCustomerFormCompleted, newCustomerFormStep),
+               // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
+                new(AccountOpeningEvents.CreditScoreCheckApproved, customerCreditCheckStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(fraudDetectionCheckStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "customerDetails", inputEvents[newCustomerFormStep.GetFullEventId(AccountOpeningEvents.NewCustomerFormCompleted)] },
+                    { "previousCheckSucceeded", inputEvents[customerCreditCheckStep.GetFullEventId(AccountOpeningEvents.CreditScoreCheckApproved)] },
+                };
+            }));
 
         // When the fraudDetectionCheck step fails, the information gets to the mailService step to notify the user about the state of the application and the reasons
         fraudDetectionCheckStep
             .OnEvent(AccountOpeningEvents.FraudDetectionCheckFailed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep, functionName: MailServiceStep.ProcessStepFunctions.SendMailToUserWithDetails, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
 
-        // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
-        fraudDetectionCheckStep
-            .OnEvent(AccountOpeningEvents.FraudDetectionCheckPassed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.ProcessStepFunctions.CreateNewAccount, parameterName: "previousCheckSucceeded"));
+        process
+            .ListenFor()
+            .AllOf(
+            [
+                // When the newCustomerForm is completed, the information gets passed to the core system record creation step
+                new(AccountOpeningEvents.NewCustomerFormCompleted, newCustomerFormStep),
+                // When the newCustomerForm is completed, the user interaction transcript with the user is passed to the core system record creation step
+                new(AccountOpeningEvents.CustomerInteractionTranscriptReady, newCustomerFormStep),
+                // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
+                new(AccountOpeningEvents.FraudDetectionCheckPassed, fraudDetectionCheckStep),
+            ]).SendEventTo(new ProcessStepTargetBuilder(coreSystemRecordCreationStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "customerDetails", inputEvents[newCustomerFormStep.GetFullEventId(AccountOpeningEvents.NewCustomerFormCompleted)] },
+                    { "interactionTranscript", inputEvents[newCustomerFormStep.GetFullEventId(AccountOpeningEvents.CustomerInteractionTranscriptReady)] },
+                    { "previousCheckSucceeded", inputEvents[fraudDetectionCheckStep.GetFullEventId(AccountOpeningEvents.FraudDetectionCheckPassed)] },
+                };
+            }));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new marketing entry through the marketingRecordCreation step
         coreSystemRecordCreationStep
             .OnEvent(AccountOpeningEvents.NewMarketingRecordInfoReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(marketingRecordCreationStep, functionName: NewMarketingEntryStep.ProcessStepFunctions.CreateNewMarketingEntry, parameterName: "userDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(marketingRecordCreationStep));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new CRM entry through the crmRecord step
         coreSystemRecordCreationStep
             .OnEvent(AccountOpeningEvents.CRMRecordInfoReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(crmRecordStep, functionName: CRMRecordCreationStep.ProcessStepFunctions.CreateCRMEntry, parameterName: "userInteractionDetails"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(crmRecordStep));
 
-        // ParameterName is necessary when the step has multiple input arguments like welcomePacketStep.CreateWelcomePacketAsync
-        // When the coreSystemRecordCreation step successfully creates a new accountId, it will pass the account information details to the welcomePacket step
-        coreSystemRecordCreationStep
-            .OnEvent(AccountOpeningEvents.NewAccountDetailsReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(welcomePacketStep, parameterName: "accountDetails"));
-
-        // When the marketingRecordCreation step successfully creates a new marketing entry, it will notify the welcomePacket step it is ready
-        marketingRecordCreationStep
-            .OnEvent(AccountOpeningEvents.NewMarketingEntryCreated)
-            .SendEventTo(new ProcessFunctionTargetBuilder(welcomePacketStep, parameterName: "marketingEntryCreated"));
-
-        // When the crmRecord step successfully creates a new CRM entry, it will notify the welcomePacket step it is ready
-        crmRecordStep
-            .OnEvent(AccountOpeningEvents.CRMRecordInfoEntryCreated)
-            .SendEventTo(new ProcessFunctionTargetBuilder(welcomePacketStep, parameterName: "crmRecordCreated"));
+        process
+            .ListenFor()
+            .AllOf([
+                // When the coreSystemRecordCreation step successfully creates a new accountId, it will pass the account information details to the welcomePacket step
+                new(AccountOpeningEvents.NewAccountDetailsReady, coreSystemRecordCreationStep),
+                // When the marketingRecordCreation step successfully creates a new marketing entry, it will notify the welcomePacket step it is ready
+                new(AccountOpeningEvents.NewMarketingEntryCreated, marketingRecordCreationStep),
+                // When the crmRecord step successfully creates a new CRM entry, it will notify the welcomePacket step it is ready
+                new(AccountOpeningEvents.CRMRecordInfoEntryCreated, crmRecordStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(welcomePacketStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "accountDetails", inputEvents[coreSystemRecordCreationStep.GetFullEventId(AccountOpeningEvents.NewAccountDetailsReady)] },
+                    { "marketingEntryCreated", inputEvents[marketingRecordCreationStep.GetFullEventId(AccountOpeningEvents.NewMarketingEntryCreated)] },
+                    { "crmRecordCreated", inputEvents[crmRecordStep.GetFullEventId(AccountOpeningEvents.CRMRecordInfoEntryCreated)] },
+                };
+            }));
 
         // After crmRecord and marketing gets created, a welcome packet is created to then send information to the user with the mailService step
         welcomePacketStep
             .OnEvent(AccountOpeningEvents.WelcomePacketCreated)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep, functionName: MailServiceStep.ProcessStepFunctions.SendMailToUserWithDetails, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
 
         // All possible paths end up with the user being notified about the account creation decision throw the mailServiceStep completion
         mailServiceStep
