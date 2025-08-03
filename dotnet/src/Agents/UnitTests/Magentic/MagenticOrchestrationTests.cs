@@ -248,7 +248,7 @@ public class MagenticOrchestrationTests
         StandardMagenticManager manager = new(chatServiceMock.Object, settings)
         {
             MaximumResetCount = 1, // Fast failure for testing but at least one response
-            MaximumStallCount = 2,
+            MaximumStallCount = 2, // Allow some stalls for at least one response
         };
 
         MagenticOrchestration orchestration = new(manager, [mockAgent1, mockAgent2, mockAgent3]);
