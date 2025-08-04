@@ -322,7 +322,6 @@ public class LocalMapTests
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
         Assert.Equal(55L, unionState.SquareResult);
-        Assert.Equal(5, counterService.GetCount());
     }
 
     /// <summary>

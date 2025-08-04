@@ -1,0 +1,5 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+@host = https://localhost:5000
+@customProcessId = myProcessId123
+
+GET {{host}}/processes/{{customProcessId}}

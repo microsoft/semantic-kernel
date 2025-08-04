@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.TestsShared.Services.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,13 @@ builder.Services.AddLogging((logging) =>
 builder.Services.AddKernel();
 
 builder.Services.AddControllers();
+
+// Registering storage used for persisting process state with Local Runtime
+string tempDirectoryPath = Path.Combine(Path.GetTempPath(), "ProcessWithLocalRuntimeStorage");
+var storageInstance = new JsonFileStorage(tempDirectoryPath);
+
+builder.Services.AddSingleton<IProcessStorageConnector>(storageInstance);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

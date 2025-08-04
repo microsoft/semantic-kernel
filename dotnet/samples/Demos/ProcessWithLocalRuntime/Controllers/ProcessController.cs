@@ -13,14 +13,17 @@ namespace ProcessWithDapr.Controllers;
 public class ProcessController : ControllerBase
 {
     private readonly Kernel _kernel;
+    private readonly IProcessStorageConnector _storageConnector;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessController"/> class.
     /// </summary>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public ProcessController(Kernel kernel)
+    /// <param name="storageConnector">An implementation of instance of <see cref="IProcessStorageConnector"/> </param>
+    public ProcessController(Kernel kernel, IProcessStorageConnector storageConnector)
     {
         this._kernel = kernel;
+        this._storageConnector = storageConnector;
     }
 
     /// <summary>
@@ -32,7 +35,7 @@ public class ProcessController : ControllerBase
     public async Task<IActionResult> PostAsync(string processId)
     {
         var process = this.GetProcess();
-        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
+        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId, storageConnector: this._storageConnector);
         var finalState = await processContext.GetStateAsync();
 
         return this.Ok(processId);
