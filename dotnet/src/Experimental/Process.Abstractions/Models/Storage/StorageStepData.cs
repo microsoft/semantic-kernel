@@ -13,7 +13,7 @@ public record StorageStepData : StorageEntryBase
     /// Process runtime details like id, parent id, step id mapping, etc.
     /// </summary>
     [JsonPropertyName("stepInfo")]
-    public StorageStepInfo StepInfo { get; set; }
+    public StorageStepInfo? StepInfo { get; set; } = null;
 
     /// <summary>
     /// Process runtime unprocessed events

@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Process.TestsShared.Services.Storage;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class MockStorage : IProcessStorageConnector
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     internal readonly Dictionary<string, MockStorageEntry> _dbMock = [];
 

@@ -425,7 +425,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     }
     #endregion
 
-
     /// <summary>
     /// Initializes this process as a step within another process.
     /// </summary>

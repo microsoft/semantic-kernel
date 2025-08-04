@@ -6,7 +6,9 @@ using Microsoft.SemanticKernel;
 
 namespace ProcessWithCloudEvents.SharedComponents.Storage;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class JsonFileStorage : IProcessStorageConnector
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     private readonly string _storageDirectory;
 

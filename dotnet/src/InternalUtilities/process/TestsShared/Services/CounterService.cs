@@ -6,7 +6,9 @@ using System.Threading;
 
 namespace Microsoft.SemanticKernel.Process.TestsShared.Services;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class CounterService : ICounterService
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     internal int _counter = 0;
     public int GetCount()
