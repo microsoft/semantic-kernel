@@ -660,7 +660,7 @@ class MagenticManagerActor(ActorBase):
 
         if hit_round_limit or hit_reset_limit:
             limit_type = "round" if hit_round_limit else "reset"
-            logger.debug(f"Max {limit_type} count reached.")
+            logger.error(f"Max {limit_type} count reached.")
 
             # Retrieve the latest assistant content produced so far
             partial_result = next(
