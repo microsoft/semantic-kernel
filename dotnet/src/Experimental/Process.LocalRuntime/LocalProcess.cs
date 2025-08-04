@@ -399,7 +399,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         if (this.StorageManager != null)
         {
             await this.StorageManager.SaveProcessInfoAsync(this.Process).ConfigureAwait(false);
-            // TODO: Add other process related components to be persisited: shared state, external undelivered messages, etc
+            // TODO: Add other process related components to be persisted: shared state, external undelivered messages, etc
         }
     }
 

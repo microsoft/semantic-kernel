@@ -60,7 +60,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy and not KernelProcessAgentStep)
         {
-            // Special intialization occurs with specific substep types
+            // Special initialization occurs with specific substep types
             this.InitializeStepInitialInputs();
         }
 
