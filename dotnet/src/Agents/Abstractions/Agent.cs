@@ -350,7 +350,7 @@ public abstract class Agent
 
         if (thread is not TThreadType concreteThreadType)
         {
-            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
+            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {typeof(TThreadType).Name}.");
         }
 
         // We have to explicitly call create here to ensure that the thread is created

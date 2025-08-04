@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -23,9 +25,22 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
+        const string ErrorMessage = "The message could not be added to the thread due to an error response from the service.";
+
         foreach (ChatMessageContent message in history)
         {
-            await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ClientResultException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+            catch (AggregateException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
         }
     }
 

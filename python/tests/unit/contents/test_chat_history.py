@@ -108,11 +108,29 @@ def test_add_assistant_message_list(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == AuthorRole.ASSISTANT
 
 
+def test_add_tool_message_raises_without_tool_call_id(chat_history: ChatHistory):
+    content = "Tool message"
+    with pytest.raises(ContentInitializationError):
+        chat_history.add_tool_message(content)
+
+
 def test_add_tool_message(chat_history: ChatHistory):
     content = "Tool message"
-    chat_history.add_tool_message(content)
-    assert chat_history.messages[-1].content == content
+    chat_history.add_tool_message(content, tool_call_id="call_123")
+
+
+def test_add_tool_message_to_dict_succeeds(chat_history: ChatHistory):
+    content = "Tool message"
+    chat_history.add_tool_message(content, tool_call_id="call_123", function_name="test_function")
     assert chat_history.messages[-1].role == AuthorRole.TOOL
+
+    msg = chat_history.messages[-1]
+    assert isinstance(msg.items[0], FunctionResultContent)
+    assert msg.items[0].function_name == "test_function"
+    result = msg.to_dict()
+    assert result["content"] == content
+    assert result["role"] == AuthorRole.TOOL
+    assert result["tool_call_id"] == "call_123"
 
 
 def test_add_tool_message_list(chat_history: ChatHistory):

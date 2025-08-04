@@ -15,8 +15,10 @@ from azure.ai.agents.models import (
     MessageTextFilePathAnnotation,
     MessageTextUrlCitationAnnotation,
     RequiredFunctionToolCall,
+    RequiredMcpToolCall,
     RunStep,
     RunStepAzureAISearchToolCall,
+    RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
@@ -25,6 +27,7 @@ from azure.ai.agents.models import (
     RunStepDeltaFunctionToolCall,
     RunStepFileSearchToolCall,
     RunStepFunctionToolCall,
+    RunStepMcpToolCall,
     RunStepOpenAPIToolCall,
     ThreadMessage,
     ThreadRun,
@@ -281,16 +284,26 @@ def generate_function_result_content(
 
 @experimental
 def generate_bing_grounding_content(
-    agent_name: str, bing_tool_call: "RunStepBingGroundingToolCall"
+    agent_name: str, bing_tool_call: "RunStepBingGroundingToolCall | RunStepBingCustomSearchToolCall"
 ) -> ChatMessageContent:
-    """Generate function result content related to a Bing Grounding Tool."""
+    """Generate function result content related to a Bing Grounding Tool or Bing Custom Search Tool."""
     message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+
+    # Extract tool details based on the specific tool type
+    if isinstance(bing_tool_call, RunStepBingGroundingToolCall):
+        tool_details = bing_tool_call.bing_grounding
+    elif isinstance(bing_tool_call, RunStepBingCustomSearchToolCall):
+        tool_details = bing_tool_call.bing_custom_search
+    else:
+        # This should never happen with proper typing, but provides safety
+        raise TypeError(f"Unsupported Bing tool call type: {type(bing_tool_call)}")
+
     message_content.items.append(
         FunctionCallContent(
             id=bing_tool_call.id,
             name=bing_tool_call.type,
             function_name=bing_tool_call.type,
-            arguments=bing_tool_call.bing_grounding,
+            arguments=tool_details,
         )
     )
     return message_content
@@ -299,26 +312,33 @@ def generate_bing_grounding_content(
 @experimental
 def generate_azure_ai_search_content(
     agent_name: str, azure_ai_search_tool_call: "RunStepAzureAISearchToolCall"
-) -> ChatMessageContent:
+) -> ChatMessageContent | None:
     """Generate function result content related to an Azure AI Search Tool."""
-    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
     # Azure AI Search tool call contains both tool call input and output
-    message_content.items.append(
-        FunctionCallContent(
-            id=azure_ai_search_tool_call.id,
-            name=azure_ai_search_tool_call.type,
-            function_name=azure_ai_search_tool_call.type,
-            arguments=azure_ai_search_tool_call.azure_ai_search.get("input"),
+    arguments = azure_ai_search_tool_call.azure_ai_search.get("input")
+    if arguments:
+        items.append(
+            FunctionCallContent(
+                id=azure_ai_search_tool_call.id,
+                name=azure_ai_search_tool_call.type,
+                function_name=azure_ai_search_tool_call.type,
+                arguments=arguments,
+                inner_content=azure_ai_search_tool_call,
+            )
         )
-    )
-    message_content.items.append(
-        FunctionResultContent(
-            function_name=azure_ai_search_tool_call.type,
-            id=azure_ai_search_tool_call.id,
-            result=azure_ai_search_tool_call.azure_ai_search.get("output"),
+    result = azure_ai_search_tool_call.azure_ai_search.get("output")
+    if result:
+        items.append(
+            FunctionResultContent(
+                function_name=azure_ai_search_tool_call.type,
+                id=azure_ai_search_tool_call.id,
+                result=result,
+                inner_content=azure_ai_search_tool_call,
+            )
         )
-    )
-    return message_content
+    return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=items) if items else None  # type: ignore
 
 
 @experimental
@@ -455,21 +475,27 @@ def generate_streaming_function_content(
 def generate_streaming_bing_grounding_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> StreamingChatMessageContent | None:
-    """Generate StreamingChatMessageContent for Bing Grounding tool calls, filtering out empty results."""
+    """Generate StreamingChatMessageContent for Bing Grounding and Bing Custom Search tool calls."""
     if not step_details.tool_calls:
         return None
 
     items: list[FunctionCallContent] = []
     for index, tool in enumerate(step_details.tool_calls):
-        if tool.type != "bing_grounding":
+        if tool.type not in ("bing_grounding", "bing_custom_search"):
             continue
 
-        arguments = tool.get("bing_grounding", {}) or {}
-        requesturl = arguments.get("requesturl", "")
-        response_metadata = arguments.get("response_metadata", None)
+        # Extract tool details based on the specific tool type
+        if tool.type == "bing_grounding":
+            tool_details = tool.get("bing_grounding", {})
+        elif tool.type == "bing_custom_search":
+            tool_details = tool.get("bing_custom_search", {})
+        else:
+            continue
 
-        # Only skip if BOTH are missing/empty
-        if requesturl == "" and response_metadata is None:
+        request_url = tool_details.get("requesturl", None)
+        response_metadata = tool_details.get("response_metadata", None)
+
+        if not request_url and not response_metadata:
             continue
 
         items.append(
@@ -478,7 +504,7 @@ def generate_streaming_bing_grounding_content(
                 index=index,
                 name=tool.type,
                 function_name=tool.type,
-                arguments=arguments,
+                arguments=tool_details,
             )
         )
 
@@ -506,29 +532,39 @@ def generate_streaming_azure_ai_search_content(
     for index, tool in enumerate(step_details.tool_calls):
         if tool.type == "azure_ai_search":
             azure_ai_search_tool = cast(RunStepAzureAISearchToolCall, tool)
-            arguments = getattr(azure_ai_search_tool, "azure_ai_search", None)
-            items.append(
-                FunctionCallContent(
-                    id=azure_ai_search_tool.id,
-                    index=index,
-                    name=azure_ai_search_tool.type,
-                    function_name=azure_ai_search_tool.type,
-                    arguments=arguments,
+            azure_ai_search_dict: dict = azure_ai_search_tool.get("azure_ai_search", None)
+            arguments = azure_ai_search_dict.get("input", {}) if azure_ai_search_dict else None
+            if arguments:
+                items.append(
+                    FunctionCallContent(
+                        id=azure_ai_search_tool.id,
+                        index=index,
+                        name=azure_ai_search_tool.type,
+                        function_name=azure_ai_search_tool.type,
+                        arguments=arguments,
+                        inner_content=azure_ai_search_tool,
+                    )
                 )
-            )
-            items.append(
-                FunctionResultContent(
-                    function_name=azure_ai_search_tool.type,
-                    id=azure_ai_search_tool.id,
-                    result=azure_ai_search_tool.azure_ai_search.get("output"),
+            result = azure_ai_search_dict.get("output", {}) if azure_ai_search_dict else None
+            if result:
+                items.append(
+                    FunctionResultContent(
+                        function_name=azure_ai_search_tool.type,
+                        id=azure_ai_search_tool.id,
+                        result=result,
+                        inner_content=azure_ai_search_tool,
+                    )
                 )
-            )
 
-    return StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT,
-        name=agent_name,
-        choice_index=0,
-        items=items,  # type: ignore
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            choice_index=0,
+            items=items,  # type: ignore
+        )
+        if items
+        else None
     )  # type: ignore
 
 
@@ -757,3 +793,140 @@ def generate_streaming_annotation_content(
         title=title,
         citation_type=citation_type,
     )
+
+
+@experimental
+def generate_mcp_content(agent_name: str, mcp_tool_call: RunStepMcpToolCall) -> ChatMessageContent:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_call: The MCP tool call.
+
+    Returns:
+        The generated content.
+    """
+    mcp_result = FunctionResultContent(
+        function_name=mcp_tool_call.name,
+        id=mcp_tool_call.id,
+        result=mcp_tool_call.output,
+    )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=[mcp_result],
+        inner_content=mcp_tool_call,  # type: ignore
+    )
+
+
+@experimental
+def generate_mcp_call_content(agent_name: str, mcp_tool_calls: list[RequiredMcpToolCall]) -> ChatMessageContent:
+    """Generate MCP tool call content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The MCP tool calls.
+
+    Returns:
+        The generated content.
+    """
+    content_items: list[FunctionCallContent] = []
+    for mcp_call in mcp_tool_calls:
+        content_items.append(
+            FunctionCallContent(
+                id=mcp_call.id,
+                name=mcp_call.name,
+                function_name=mcp_call.name,
+                arguments=mcp_call.arguments,
+                server_label=mcp_call.server_label,
+            )
+        )
+
+    return ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        items=content_items,  # type: ignore
+    )
+
+
+@experimental
+def generate_streaming_mcp_call_content(
+    agent_name: str, mcp_tool_calls: list["RequiredMcpToolCall"]
+) -> "StreamingChatMessageContent | None":
+    """Generate streaming MCP content.
+
+    Args:
+        agent_name: The name of the agent.
+        mcp_tool_calls: The mcp tool call details.
+
+    Returns:
+        The generated streaming content.
+    """
+    items: list[FunctionCallContent] = []
+    for index, tool in enumerate(mcp_tool_calls or []):
+        if isinstance(tool, RequiredMcpToolCall):
+            items.append(
+                FunctionCallContent(
+                    id=tool.id,
+                    index=index,
+                    name=tool.name,
+                    function_name=tool.name,
+                    arguments=tool.arguments,
+                    server_label=tool.server_label,
+                )
+            )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )
+
+
+@experimental
+def generate_streaming_mcp_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate MCP tool content.
+
+    Args:
+        agent_name: The name of the agent.
+        step_details: The steps details with mcp tool call.
+
+    Returns:
+        The generated content.
+    """
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionResultContent] = []
+
+    for _, tool in enumerate(step_details.tool_calls):
+        if tool.type == "mcp":
+            mcp_tool_call = cast(RunStepMcpToolCall, tool)
+            if not mcp_tool_call.get("output"):
+                continue
+            mcp_result = FunctionResultContent(
+                function_name=mcp_tool_call.get("name"),
+                id=mcp_tool_call.get("id"),
+                result=mcp_tool_call.get("output"),
+            )
+            items.append(mcp_result)
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            inner_content=mcp_tool_call,  # type: ignore
+            choice_index=0,
+        )
+        if items
+        else None
+    )  # type: ignore

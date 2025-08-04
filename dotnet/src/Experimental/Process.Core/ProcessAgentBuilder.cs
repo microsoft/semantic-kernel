@@ -243,7 +243,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 /// <summary>
 /// Builder for a process step that represents an agent.
 /// </summary>
-public class ProcessAgentBuilder : ProcessAgentBuilder<FoundryProcessDefaultState>
+public class ProcessAgentBuilder : ProcessAgentBuilder<ProcessDefaultState>
 {
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.

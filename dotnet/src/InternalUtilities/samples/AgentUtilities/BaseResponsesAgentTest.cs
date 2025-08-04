@@ -36,7 +36,7 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
 
     protected VectorStoreClient VectorStoreClient { get; set; }
 
-    protected bool EnableLogging { get; set; } = true;
+    protected bool EnableLogging { get; set; } = false;
 
     /// <inheritdoc/>
     protected override OpenAIResponseClient Client { get; }
