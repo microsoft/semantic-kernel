@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 namespace Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
 /// <summary>

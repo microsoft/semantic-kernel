@@ -1,23 +1,16 @@
 # Semantic Kernel Processes in Dapr
 
-This demo contains an ASP.NET core API that uses Dapr to run a Semantic Kernel Process. Dapr is a portable, event-driven runtime that can simplify the process of building resilient, stateful application that run in the cloud and/or edge. Dapr is a natural fit for hosting Semantic Kernel Processes and allows you to scale your processes in size and quantity without sacrificing performance, or reliability.
+This demo contains an ASP.NET core API that uses Local Runtime to run a Semantic Kernel Process. Local Runtime is a portable, event-driven runtime that can simplify the process of building resilient, stateful application that run in the cloud and/or edge. Local Runtime is a natural fit for hosting Semantic Kernel Processes and allows you to scale your processes in size and quantity without sacrificing performance, or reliability.
 
-For more information about Semantic Kernel Processes and Dapr, see the following documentation:
+For more information about Semantic Kernel Processes, see the following documentation:
 
 #### Semantic Kernel Processes
 
 - [Overview of the Process Framework (docs)](https://learn.microsoft.com/semantic-kernel/frameworks/process/process-framework)
 - [Getting Started with Processes (samples)](../../GettingStartedWithProcesses/)
 
-#### Dapr
-
-- [Dapr documentation](https://docs.dapr.io/)
-- [Dapr Actor documentation](https://v1-10.docs.dapr.io/developing-applications/building-blocks/actors/)
-- [Dapr local development](https://docs.dapr.io/getting-started/install-dapr-selfhost/)
 
 ## Running the Demo
-
-Before running this Demo, make sure to configure Dapr for local development following the links above. The Dapr containers must be running for this demo application to run.
 
 ```mermaid
 flowchart LR
@@ -35,8 +28,8 @@ flowchart LR
     End((End))
 ```
 
-1. Build and run the sample. Running the Dapr service locally can be done using the Dapr Cli or with the Dapr VS Code extension. The VS Code extension is the recommended approach if you want to debug the code as it runs.
-1. When the service is up and running, it will expose a single API in localhost port 5000.
+1. Build and run the sample.
+2. When the service is up and running, it will expose a single API in localhost port 5000.
 
 #### Invoking the process:
 
@@ -94,17 +87,4 @@ Below are the key aspects of the code that show how Dapr and Semantic Kernel Pro
   - `dotnet add package Microsoft.SemanticKernel.Process.Core --version 1.24.0-alpha`
   - `dotnet add package Microsoft.SemanticKernel.Process.Runtime.Dapr --version 1.24.0-alpha`
 
-  **_Dapr Packages_**
-
-  - `dotnet add package Dapr.Actors.AspNetCore --version 1.14.0`
-
-- Configure `program.cs` to use Dapr and the Process framework:
-  ```csharp
-  // Configure Dapr
-  builder.Services.AddActors(static options =>
-  {
-      // Register the actors required to run Processes
-      options.AddProcessActors();
-  });
-  ```
 - Build and run a Process as you normally would. For this Demo we run a simple example process from with a Controller's action method in response to a GET request. [See Controller here](./Controllers/ProcessController.cs).

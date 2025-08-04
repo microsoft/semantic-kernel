@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Process.TestsShared.Services;
 
 namespace Microsoft.SemanticKernel.Process.TestsShared.Steps;
