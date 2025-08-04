@@ -35,7 +35,7 @@ public static class StorageStepExtensions
     /// <returns></returns>
     public static KernelProcessStepState? ToKernelProcessStepState(this StorageStepData storageData)
     {
-        var stepState = new KernelProcessStepState(stepId: storageData.StepInfo.StepName, version: storageData.StepInfo.Version, runId: storageData.InstanceId)
+        var stepState = new KernelProcessStepState(stepId: storageData.StepInfo!.StepName, version: storageData.StepInfo.Version, runId: storageData.InstanceId)
         {
             ParentId = storageData.StepInfo.ParentId,
         };
