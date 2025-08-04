@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using SemanticKernel.Process.IntegrationTests;
-using SemanticKernel.Process.TestsShared.CloudEvents;
+using Microsoft.SemanticKernel.Process.IntegrationTests;
+using Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -5,9 +5,9 @@ using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Serialization;
-using SemanticKernel.Process.TestsShared.CloudEvents;
+using Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
 
-namespace SemanticKernel.Process.IntegrationTests.Controllers;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests.Controllers;
 
 /// <summary>
 /// A controller for starting and managing processes.

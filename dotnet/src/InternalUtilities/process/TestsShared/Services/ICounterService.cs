@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Process.TestsShared.Services;
+namespace Microsoft.SemanticKernel.Process.TestsShared.Services;
 
 /// <summary>
 /// Interface for Counter Service used by <see cref="TestsShared.Steps.CommonSteps.CountStep"/>
@@ -17,4 +17,11 @@ public interface ICounterService
     /// </summary>
     /// <returns></returns>
     int GetCount();
+
+    /// <summary>
+    /// Set counter to specific value
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    void SetCount(int count);
 }

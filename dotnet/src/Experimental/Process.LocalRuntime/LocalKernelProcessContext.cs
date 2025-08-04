@@ -12,27 +12,30 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    private readonly ProcessStorageManager? _storageConnector;
+
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null, IProcessStorageConnector? storageConnector = null, string? instanceId = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
+        Verify.NotNullOrWhiteSpace(process.State?.StepId);
+
+        if (storageConnector != null)
+        {
+            this._storageConnector = new(storageConnector);
+        }
 
         this._kernel = kernel;
-        this._localProcess = new LocalProcess(process, kernel)
+        this._localProcess = new LocalProcess(process, kernel, instanceId)
         {
             EventProxy = eventProxy,
             ExternalMessageChannel = externalMessageChannel,
+            StorageManager = this._storageConnector,
         };
     }
 
     internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
         this._localProcess.RunOnceAsync(initialEvent, kernel);
-
-    //internal RunUntilEndAsync(KernelProcessEvent initialEvent, Kernel? kernel = null, TimeSpan? timeout = null)
-    //{
-
-    //}
 
     /// <summary>
     /// Sends a message to the process.

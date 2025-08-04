@@ -2,9 +2,8 @@
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.TestsShared.CloudEvents;
+namespace Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
 
 /// <summary>
 /// Mock cloud event data used for testing purposes only

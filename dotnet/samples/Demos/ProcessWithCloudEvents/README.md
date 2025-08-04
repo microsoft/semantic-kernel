@@ -5,7 +5,7 @@ The following demos describe how to use the SK Process Framework to emit and rec
 | Project | Description |
 | --- | --- |
 | ProcessWithCloudEvents.Processes | Project that contains Process Builders definitions, related steps, models and structures independent of runtime |
-| ProcessWithCloudEvents.Grpc | Project that contains a gRPC server using DAPR, that interacts with processes defined in the Processes project using gRPC |
+| ProcessWithCloudEvents.Grpc.LocalRuntime | Project that contains a gRPC server using LocalRuntime, that interacts with processes defined in the Processes project using gRPC |
 | ProcessWithCloudEvents.Client | Project that contains a ReactJS App to showcase sending and receiving cloud events to and from a running SK Process in a server |
 
 ## Processes

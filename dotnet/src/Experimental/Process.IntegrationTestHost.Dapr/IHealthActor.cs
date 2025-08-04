@@ -2,7 +2,7 @@
 
 using Dapr.Actors;
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// An interface for a health actor that is only used for testing the health of the Dapr runtime.

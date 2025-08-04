@@ -9,13 +9,14 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.TestSettings;
-using SemanticKernel.Process.TestsShared.CloudEvents;
-using SemanticKernel.Process.TestsShared.Steps;
+using Microsoft.SemanticKernel.IntegrationTests.TestSettings;
+using Microsoft.SemanticKernel.Process.IntegrationTests;
+using Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
+using Microsoft.SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// Integration tests for processes.
@@ -187,8 +188,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
         echoStep
-            .OnFunctionResult(nameof(CommonSteps.EchoStep.Echo))
-            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
+            .OnFunctionResult()
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep));
 
         echoStep
             .OnFunctionResult()

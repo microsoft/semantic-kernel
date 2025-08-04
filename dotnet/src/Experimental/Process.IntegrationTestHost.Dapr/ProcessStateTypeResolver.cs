@@ -3,9 +3,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// An implementation of <see cref="JsonTypeInfoResolver"/> that resolves the type information for <see cref="KernelProcessStepState{T}"/>.

@@ -30,7 +30,7 @@ public sealed record DaprProcessInfo : DaprStepInfo
         var processStepInfo = this.ToKernelProcessStepInfo();
         if (this.State is not KernelProcessState state)
         {
-            throw new KernelException($"Unable to read state from process with name '{this.State.Name}' and Id '{this.State.Id}'.");
+            throw new KernelException($"Unable to read state from process with name '{this.State.StepId}' and Id '{this.State.RunId}'.");
         }
 
         List<KernelProcessStepInfo> steps = [];

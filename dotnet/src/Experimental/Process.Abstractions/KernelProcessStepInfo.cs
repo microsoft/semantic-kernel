@@ -31,6 +31,15 @@ public record KernelProcessStepInfo
         }
     }
 
+    /// <inheritdoc cref="KernelProcessStepState.RunId"/>
+    public string? RunId => this.State.RunId;
+
+    /// <inheritdoc cref="KernelProcessStepState.StepId"/>
+    public string? StepId => this.State.StepId;
+
+    /// <inheritdoc cref="KernelProcessStepState.ParentId"/>
+    public string? ParentId => this.State.ParentId;
+
     /// <summary>
     /// The semantic description of the Step. This is intended to be human and AI readable and is not required to be unique.
     /// </summary>
@@ -39,7 +48,7 @@ public record KernelProcessStepInfo
     /// <summary>
     /// A read-only dictionary of output edges from the Step.
     /// </summary>
-    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; }
+    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; init; }
 
     /// <summary>
     /// A dictionary of input mappings for the grouped edges.
