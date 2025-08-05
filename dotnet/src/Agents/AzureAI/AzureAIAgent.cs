@@ -135,6 +135,7 @@ public sealed partial class AzureAIAgent : Agent
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         Kernel kernel = this.GetKernel(options);
@@ -238,6 +239,7 @@ public sealed partial class AzureAIAgent : Agent
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         Kernel kernel = this.GetKernel(options);

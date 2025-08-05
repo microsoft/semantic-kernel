@@ -57,6 +57,7 @@ public sealed partial class CopilotStudioAgent : Agent
             messages,
             thread,
             () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Invoke the agent
@@ -95,6 +96,7 @@ public sealed partial class CopilotStudioAgent : Agent
             messages,
             thread,
             () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Invoke the agent
