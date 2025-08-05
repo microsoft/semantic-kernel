@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.IntegrationTests.TestSettings;
 using Microsoft.SemanticKernel.Process.TestsShared.Steps;
-using Microsoft.SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
