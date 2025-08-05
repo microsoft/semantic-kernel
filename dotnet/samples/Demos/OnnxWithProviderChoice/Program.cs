@@ -1,62 +1,48 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 
-async Task DoLoop(ChatHistory history, IChatCompletionService chatCompletionService, OnnxRuntimeGenAIPromptExecutionSettings settings, Kernel kernel)
-{
-    while (true)
-    {
-        Console.Write("User > ");
-        string userMessage = Console.ReadLine()!;
-        if (userMessage == "exit" || userMessage == "quit")
-        {
-            break;
-        }
-
-        if (string.IsNullOrEmpty(userMessage))
-        {
-            continue;
-        }
-
-        history.AddUserMessage(userMessage);
-
-        try
-        {
-            ChatMessageContent results = await chatCompletionService.GetChatMessageContentAsync(history, settings, kernel);
-            Console.WriteLine($"Assistant > {results.Content}");
-            history.AddAssistantMessage(results.Content!);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
-    }
-}
-
+// Path to the folder of your downloaded ONNX CUDA model
+// i.e: D:\huggingface\Phi-3-mini-4k-instruct-onnx\cuda\cuda-int4-rtn-block-32
 string modelPath = "MODEL_PATH";
 
 IKernelBuilder builder = Kernel.CreateBuilder();
-builder.AddOnnxRuntimeGenAIChatCompletion(
-    modelId: "onnx",
+builder.AddOnnxRuntimeGenAIChatClient(
     modelPath: modelPath,
-    providers: [new Provider { Id = "cuda" }]
+
+    // Specify the provider you want to use, e.g., "cuda" for GPU support
+    // For other execution providers, check: https://onnxruntime.ai/docs/genai/reference/config#provideroptions
+    providers: [new Provider("cuda")] // 
 );
 
 Kernel kernel = builder.Build();
 
-ChatHistory history = [];
+using IChatClient chatClient = kernel.GetRequiredService<IChatClient>();
 
-IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-OnnxRuntimeGenAIPromptExecutionSettings settings = new()
+List<ChatMessage> chatHistory = [];
+
+while (true)
 {
-    MaxTokens = 5120
-};
+    Console.Write("User > ");
+    string userMessage = Console.ReadLine()!;
+    if (string.IsNullOrEmpty(userMessage))
+    {
+        break;
+    }
 
-await DoLoop(history, chatCompletionService, settings, kernel);
+    chatHistory.Add(new ChatMessage(ChatRole.User, userMessage));
 
-if (chatCompletionService is OnnxRuntimeGenAIChatCompletionService onnxService)
-{
-    onnxService.Dispose();
+    try
+    {
+        ChatResponse result = await chatClient.GetResponseAsync(chatHistory, new() { MaxOutputTokens = 1024 });
+        Console.WriteLine($"Assistant > {result.Text}");
+
+        chatHistory.AddRange(result.Messages);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
 }

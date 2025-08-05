@@ -24,7 +24,6 @@ public static class OnnxKernelBuilderExtensions
     /// <param name="modelId">Model Id.</param>
     /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="providers">Providers</param>
     /// <param name="loggerFactory">Logger factory.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization, such as function argument deserialization, function result serialization, logging, etc., of the service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -33,10 +32,43 @@ public static class OnnxKernelBuilderExtensions
         string modelId,
         string modelPath,
         string? serviceId = null,
-        List<Provider>? providers = null,
         ILoggerFactory? loggerFactory = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+            new OnnxRuntimeGenAIChatCompletionService(
+                modelId,
+                modelPath: modelPath,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                jsonSerializerOptions));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds OnnxRuntimeGenAI Chat Completion services to the specified <see cref="IKernelBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">Model Id.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="providers">Providers</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="loggerFactory">Logger factory.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization, such as function argument deserialization, function result serialization, logging, etc., of the service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddOnnxRuntimeGenAIChatCompletion(
+        this IKernelBuilder builder,
+        string modelId,
+        string modelPath,
+        List<Provider> providers,
+        string? serviceId = null,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+        Verify.NotNull(builder);
+
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OnnxRuntimeGenAIChatCompletionService(
                 modelId,
