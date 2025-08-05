@@ -78,6 +78,8 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 this._config.SetProviderOption(provider.Id, option.Key, option.Value);
             }
         }
+
+        this._model = new Model(this._config);
     }
 
     private IChatCompletionService GetChatCompletionService()
