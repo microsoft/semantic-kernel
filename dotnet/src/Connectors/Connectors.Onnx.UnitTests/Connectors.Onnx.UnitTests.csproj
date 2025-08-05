@@ -33,10 +33,4 @@
     <ProjectReference Include="..\Connectors.Onnx\Connectors.Onnx.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Resources\genai_config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

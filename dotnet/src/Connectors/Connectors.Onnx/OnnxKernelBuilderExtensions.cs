@@ -6,9 +6,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Onnx;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel;
 
@@ -37,12 +35,12 @@ public static class OnnxKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new OnnxRuntimeGenAIChatCompletionService(
-                modelId,
-                modelPath: modelPath,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                jsonSerializerOptions));
+        builder.Services.AddOnnxRuntimeGenAIChatCompletion(
+            modelId,
+            modelPath,
+            serviceId,
+            loggerFactory,
+            jsonSerializerOptions);
 
         return builder;
     }
@@ -69,13 +67,13 @@ public static class OnnxKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new OnnxRuntimeGenAIChatCompletionService(
-                modelId,
-                modelPath: modelPath,
-                providers: providers,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                jsonSerializerOptions));
+        builder.Services.AddOnnxRuntimeGenAIChatCompletion(
+            modelId,
+            modelPath,
+            providers,
+            serviceId,
+            loggerFactory,
+            jsonSerializerOptions);
 
         return builder;
     }
@@ -96,9 +94,11 @@ public static class OnnxKernelBuilderExtensions
         BertOnnxOptions? options = null,
         string? serviceId = null)
     {
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelPath, vocabPath, options));
+        builder.Services.AddBertOnnxTextEmbeddingGeneration(
+            onnxModelPath,
+            vocabPath,
+            options,
+            serviceId);
 
         return builder;
     }
@@ -118,9 +118,11 @@ public static class OnnxKernelBuilderExtensions
         BertOnnxOptions? options = null,
         string? serviceId = null)
     {
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options));
+        builder.Services.AddBertOnnxTextEmbeddingGeneration(
+            onnxModelStream,
+            vocabStream,
+            options,
+            serviceId);
 
         return builder;
     }
