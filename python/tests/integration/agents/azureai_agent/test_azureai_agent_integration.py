@@ -160,7 +160,7 @@ class TestAzureAIAgentIntegration:
     async def test_code_interpreter_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3
@@ -176,7 +176,7 @@ Dolphin  2
     async def test_code_interpreter_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3
@@ -194,7 +194,7 @@ Dolphin  2
     async def test_code_interpreter_invoke_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter streaming."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3
