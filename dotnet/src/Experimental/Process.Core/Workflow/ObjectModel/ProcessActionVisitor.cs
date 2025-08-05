@@ -94,9 +94,9 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.Trace(item, isSkipped: false);
 
         string parentId = item.GetParentId();
-        this.ContinueWith(this.CreateStep(item.Id.Value), parentId);
+        this.ContinueWith(this.CreateStep(item.Id.Value, nameof(GotoAction)), parentId);
         this._workflowBuilder.AddLink(item.Id.Value, item.ActionId.Value);
-        this.RestartFrom(item.Id.Value, parentId);
+        this.RestartFrom(item.Id.Value, nameof(GotoAction), parentId);
     }
 
     protected override void Visit(Foreach item)
@@ -107,13 +107,13 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         this.ContinueWith(action);
         string restartId = this.RestartFrom(action);
         string loopId = $"next_{action.Id}";
-        this.ContinueWith(this.CreateStep(loopId, action.TakeNext), action.Id, callback: CompletionHandler);
+        this.ContinueWith(this.CreateStep(loopId, $"{nameof(ForeachAction)}_Next", action.TakeNext), action.Id, callback: CompletionHandler);
         this._workflowBuilder.AddLink(loopId, restartId, () => !action.HasValue);
-        this.ContinueWith(this.CreateStep($"start_{action.Id}"), action.Id, () => action.HasValue);
+        this.ContinueWith(this.CreateStep($"start_{action.Id}", $"{nameof(ForeachAction)}_Start"), action.Id, () => action.HasValue);
         void CompletionHandler(string scopeId)
         {
             string completionId = $"end_{action.Id}";
-            this.ContinueWith(this.CreateStep(completionId), action.Id);
+            this.ContinueWith(this.CreateStep(completionId, $"{nameof(ForeachAction)}_End"), action.Id);
             this._workflowBuilder.AddLink(completionId, loopId);
         }
     }
@@ -395,23 +395,23 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     }
 
     private string RestartFrom(ProcessAction action) =>
-        this.RestartFrom(action.Id, action.ParentId);
+        this.RestartFrom(action.Id, action.GetType().Name, action.ParentId);
 
-    private string RestartFrom(string actionId, string parentId)
+    private string RestartFrom(string actionId, string name, string parentId)
     {
         string restartId = $"post_{actionId}";
-        this._workflowBuilder.AddNode(this.CreateStep(restartId), parentId);
+        this._workflowBuilder.AddNode(this.CreateStep(restartId, $"{name}_Restart"), parentId);
         return restartId;
     }
 
-    private ProcessStepBuilder CreateStep(string actionId, Action<ProcessActionContext>? stepAction = null)
+    private ProcessStepBuilder CreateStep(string actionId, string name, Action<ProcessActionContext>? stepAction = null)
     {
         return
             this._processBuilder.AddStepFromFunction(
                 actionId,
                 (kernel, context) =>
                 {
-                    Console.WriteLine($"!!! STEP CUSTOM [{actionId}]"); // %%% REMOVE
+                    Console.WriteLine($"!!! STEP {name} [{actionId}]"); // %%% REMOVE
                     stepAction?.Invoke(this.CreateActionContext(actionId, kernel));
                     return Task.CompletedTask;
                 });

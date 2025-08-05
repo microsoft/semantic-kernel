@@ -435,7 +435,7 @@ internal class WorkflowBuilder
                 {
                     From = step.State.Id,
                     Event = edge.Key,
-                    Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
+                    Condition = edge.Value.FirstOrDefault()?.Condition?.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e =>
                 {
