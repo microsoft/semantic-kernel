@@ -39,6 +39,6 @@ Update the `Program.cs` file lines below with the paths to the models you downlo
 
 ```csharp
 // i.e. Running on Windows
-string modelPath = "D:\\huggingface\\Phi-3-mini-4k-instruct-onnx\\cuda\\cuda-int4-rtn-block-32";
+string modelPath = "D:\\repo\\huggingface\\Phi-3-mini-4k-instruct-onnx\\cuda\\cuda-int4-rtn-block-32";
 ```
 

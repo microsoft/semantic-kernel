@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 
 // Path to the folder of your downloaded ONNX CUDA model
-// i.e: D:\huggingface\Phi-3-mini-4k-instruct-onnx\cuda\cuda-int4-rtn-block-32
+// i.e: D:\repo\huggingface\Phi-3-mini-4k-instruct-onnx\cuda\cuda-int4-rtn-block-32
 string modelPath = "MODEL_PATH";
 
 IKernelBuilder builder = Kernel.CreateBuilder();
