@@ -14,10 +14,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
   
   <ItemGroup>

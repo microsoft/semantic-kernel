@@ -35,13 +35,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
   
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />

@@ -54,6 +54,7 @@
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
     <PackageReference Include="Testcontainers.MongoDB" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
@@ -87,17 +88,12 @@
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
-    <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

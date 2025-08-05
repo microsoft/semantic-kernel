@@ -26,6 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +41,6 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/HttpHeaderConstant.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

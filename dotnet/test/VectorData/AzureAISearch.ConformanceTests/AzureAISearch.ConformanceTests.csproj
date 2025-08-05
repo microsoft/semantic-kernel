@@ -22,15 +22,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"/>
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj"/>
     <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
