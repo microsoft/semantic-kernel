@@ -118,7 +118,7 @@ class KernelFunction(KernelBaseModel):
                 setattr(new_obj, key, deepcopy(value, memo))
 
         return new_obj
-    
+
     @classmethod
     def from_prompt(
         cls,
