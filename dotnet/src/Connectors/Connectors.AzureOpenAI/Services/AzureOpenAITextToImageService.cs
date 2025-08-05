@@ -4,6 +4,7 @@ using System;
 using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// Azure OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0010")]
-public class AzureOpenAITextToImageService : ITextToImageService
+public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageService
 {
     private readonly AzureClientCore _client;
 
@@ -127,4 +128,37 @@ public class AzureOpenAITextToImageService : ITextToImageService
     /// <inheritdoc/>
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
+
+    public Task<IReadOnlyList<ImageContent>> EditImageAsync(
+    Stream image,
+    string prompt,
+    Stream? mask = null,
+    PromptExecutionSettings? executionSettings = null,
+    Kernel? kernel = null,
+    CancellationToken cancellationToken = default)
+    {
+        // Determine file names based on stream type or use defaults
+        var imageFileName = GetFileNameFromStream(image, "image.png");
+        var maskFileName = mask is not null ? GetFileNameFromStream(mask, "mask.png") : null;
+
+        return this._client.EditImageAsync(
+            this._client.ModelId,
+            image,
+            imageFileName,
+            prompt,
+            mask,
+            maskFileName,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
+
+    private static string GetFileNameFromStream(Stream stream, string defaultName)
+    {
+        if (stream is FileStream fileStream)
+        {
+            return Path.GetFileName(fileStream.Name);
+        }
+        return defaultName;
+    }
 }

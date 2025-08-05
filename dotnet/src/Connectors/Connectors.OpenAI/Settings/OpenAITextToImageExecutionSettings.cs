@@ -21,12 +21,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// <list type="bullet">
     /// <item>Must be one of <c>256x256, 512x512, or 1024x1024</c> for <c>dall-e-2</c> model.</item>
     /// <item>Must be one of <c>1024x1024, 1792x1024, 1024x1792</c> for <c>dall-e-3</c> model.</item>
+    /// <item>Must be one of <c>1024x1024, 1024x1536, 1536x1024</c> for <c>gpt-image-1</c> model.</item>
     /// </list>
     /// </remarks>
     public (int Width, int Height)? Size
     {
         get => this._size;
-
         set
         {
             this.ThrowIfFrozen();
@@ -38,18 +38,23 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// The quality of the image that will be generated.
     /// </summary>
     /// <remarks>
-    /// Must be one of <c>standard</c> or <c>hd</c> or <c>high</c>.
+    /// For <c>dall-e-3</c>:
     /// <list type="bullet">
     /// <item><c>standard</c>: creates images with standard quality. This is the default.</item>
     /// <item><c>hd</c> OR <c>high</c>: creates images with finer details and greater consistency.</item>
     /// </list>
-    /// This param is only supported for <c>dall-e-3</c> model.
+    /// For <c>gpt-image-1</c>:
+    /// <list type="bullet">
+    /// <item><c>low</c>: fastest generation with basic quality</item>
+    /// <item><c>medium</c>: balanced speed and quality</item>
+    /// <item><c>high</c>: highest quality but slower generation</item>
+    /// </list>
+    /// This param is only supported for <c>dall-e-3</c> and <c>gpt-image-1</c> models.
     /// </remarks>
     [JsonPropertyName("quality")]
     public string? Quality
     {
         get => this._quality;
-
         set
         {
             this.ThrowIfFrozen();
@@ -72,7 +77,6 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     public string? Style
     {
         get => this._style;
-
         set
         {
             this.ThrowIfFrozen();
@@ -114,6 +118,101 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// The number of images to generate.
+    /// </summary>
+    /// <remarks>
+    /// Must be between 1 and 10. Default is 1.
+    /// Supported by <c>dall-e-2</c>, <c>dall-e-3</c>, and <c>gpt-image-1</c> models.
+    /// </remarks>
+    [JsonPropertyName("n")]
+    public int? NumberOfImages
+    {
+        get => this._numberOfImages;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._numberOfImages = value;
+        }
+    }
+
+    /// <summary>
+    /// The content moderation level.
+    /// </summary>
+    /// <remarks>
+    /// Must be one of <c>auto</c> or <c>low</c>.
+    /// <list type="bullet">
+    /// <item><c>auto</c>: applies standard filtering (default)</item>
+    /// <item><c>low</c>: applies less restrictive filtering</item>
+    /// </list>
+    /// This param is only supported for <c>gpt-image-1</c> model.
+    /// </remarks>
+    [JsonPropertyName("moderation")]
+    public string? Moderation
+    {
+        get => this._moderation;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._moderation = value;
+        }
+    }
+
+    /// <summary>
+    /// The output file format of the generated image.
+    /// </summary>
+    /// <remarks>
+    /// Must be one of <c>png</c>, <c>jpeg</c>, or <c>webp</c>.
+    /// Only supported for <c>gpt-image-1</c> model.
+    /// Default is <c>png</c>.
+    /// </remarks>
+    [JsonPropertyName("output_format")]
+    public string? OutputFormat
+    {
+        get => this._outputFormat;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._outputFormat = value;
+        }
+    }
+
+    /// <summary>
+    /// The compression factor for the output image.
+    /// </summary>
+    /// <remarks>
+    /// Must be between 1 and 100. Lower values mean higher compression.
+    /// Only supported for <c>gpt-image-1</c> model.
+    /// </remarks>
+    [JsonPropertyName("output_compression")]
+    public int? OutputCompression
+    {
+        get => this._outputCompression;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._outputCompression = value;
+        }
+    }
+
+    /// <summary>
+    /// The background transparency setting for the generated image.
+    /// </summary>
+    /// <remarks>
+    /// Must be one of <c>auto</c> or <c>transparent</c>.
+    /// Only supported for <c>gpt-image-1</c> model.
+    /// </remarks>
+    [JsonPropertyName("background")]
+    public string? Background
+    {
+        get => this._background;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._background = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -132,7 +231,16 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Size = this.Size
+            Size = this.Size,
+            Quality = this.Quality,
+            Style = this.Style,
+            ResponseFormat = this.ResponseFormat,
+            EndUserId = this.EndUserId,
+            NumberOfImages = this.NumberOfImages,
+            Moderation = this.Moderation,
+            OutputFormat = this.OutputFormat,
+            OutputCompression = this.OutputCompression,
+            Background = this.Background
         };
     }
 
@@ -196,6 +304,11 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     private string? _style;
     private object? _responseFormat;
     private string? _endUserId;
+    private int? _numberOfImages;
+    private string? _moderation;
+    private string? _outputFormat;
+    private int? _outputCompression;
+    private string? _background;
 
     #endregion
 }

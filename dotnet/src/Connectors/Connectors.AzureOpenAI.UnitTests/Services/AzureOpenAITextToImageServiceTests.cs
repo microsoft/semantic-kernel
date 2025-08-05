@@ -375,6 +375,150 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
     };
 
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-response.json")]
+    [InlineData(2, "./TestData/text-to-image-multiple-response.json")]
+    [InlineData(3, "./TestData/text-to-image-3-images-response.json")]
+    [InlineData(4, "./TestData/text-to-image-4-images-response.json")]
+    [InlineData(5, "./TestData/text-to-image-5-images-response.json")]
+    [InlineData(10, "./TestData/text-to-image-10-images-response.json")]
+    public async Task GetImageContentsWithMultipleImagesWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync(
+            "generate multiple images",
+            new OpenAITextToImageExecutionSettings { NumberOfImages = numberOfImages });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.NotNull(result[i].Uri);
+            Assert.NotNull(result[i].InnerContent);
+            Assert.IsType<GeneratedImage>(result[i].InnerContent);
+        }
+    }
+
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-b64_json-format-response.json")]
+    [InlineData(2, "./TestData/text-to-image-2-images-b64-response.json")]
+    [InlineData(4, "./TestData/text-to-image-4-images-b64-response.json")]
+    public async Task GetImageContentsWithMultipleBytesImagesWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync(
+            "generate multiple images",
+            new OpenAITextToImageExecutionSettings
+            {
+                NumberOfImages = numberOfImages,
+                ResponseFormat = "b64_json"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.True(result[i].CanRead);
+            Assert.Equal("image/png", result[i].MimeType);
+            Assert.NotNull(result[i].InnerContent);
+            Assert.IsType<GeneratedImage>(result[i].InnerContent);
+
+            var breakingGlass = result[i].InnerContent as GeneratedImage;
+            // For the single b64_json file, the revised prompt is just "my prompt", not "my prompt 0"
+            var expectedPrompt = numberOfImages == 1 ? "my prompt" : $"my prompt {i}";
+            Assert.Equal(expectedPrompt, breakingGlass!.RevisedPrompt);
+        }
+    }
+
+    [Theory]
+    [InlineData("dall-e-2")]
+    [InlineData("dall-e-3")]
+    [InlineData("gpt-image-1")]
+    public async Task GetImageContentsWithDifferentModelsWorksCorrectlyAsync(string modelId)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, modelId, this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("test prompt");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+        Assert.Equal(modelId, sut.Attributes["ModelId"]);
+    }
+
+    [Fact]
+    public async Task GetImageContentsValidatesInputAsync()
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            sut.GetImageContentsAsync(null!));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-10)]
+    public async Task GetImageContentsWithInvalidNumberOfImagesThrowsAsync(int invalidNumber)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sut.GetImageContentsAsync("test", new OpenAITextToImageExecutionSettings { NumberOfImages = invalidNumber }));
+    }
+
+    [Theory]
+    [InlineData("standard", "dall-e-2")]
+    [InlineData("hd", "dall-e-3")]
+    public async Task GetImageContentsWithQualitySettingsWorksCorrectlyAsync(string quality, string modelId)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, modelId, this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("test prompt", new OpenAITextToImageExecutionSettings { Quality = quality });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        // AzureOpenAI uses deployment names in requests, so we expect "hd" to be normalized for DALL-E models
+        var expectedQuality = string.Equals(quality.ToLowerInvariant(), "hd", StringComparison.Ordinal) ? "hd" : "standard";
+        Assert.Contains($"\"quality\":\"{expectedQuality}\"", requestBody);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

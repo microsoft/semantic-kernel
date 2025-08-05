@@ -1,20 +1,26 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using System.Threading;
 using Microsoft.SemanticKernel.TextToImage;
+using Microsoft.SemanticKernel;
+using System.IO;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
+/// <remarks>
+/// Supports multiple image generation models including:
+/// - dall-e-2: Original DALL-E model (256x256, 512x512, 1024x1024)
+/// - dall-e-3: Enhanced DALL-E model with quality and style options (1024x1024, 1792x1024, 1024x1792)
+/// - gpt-image-1: Latest multimodal image generation model with advanced features (1024x1024, 1024x1536, 1536x1024)
+/// </remarks>
 [Experimental("SKEXP0010")]
-public class OpenAITextToImageService : ITextToImageService
+public class OpenAITextToImageService : ITextToImageService, IImageToImageService
 {
     private readonly ClientCore _client;
 
@@ -26,7 +32,7 @@ public class OpenAITextToImageService : ITextToImageService
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="modelId">The model to use for image generation.</param>
+    /// <param name="modelId">The model to use for image generation. Defaults to "dall-e-2". Supported models: dall-e-2, dall-e-3, gpt-image-1</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextToImageService(
@@ -40,10 +46,44 @@ public class OpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+    public Task<IReadOnlyList<Microsoft.SemanticKernel.ImageContent>> GetImageContentsAsync(
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ImageContent>> EditImageAsync(
+        Stream image,
+        string prompt,
+        Stream? mask = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Determine file names based on stream type or use defaults
+        var imageFileName = GetFileNameFromStream(image, "image.png");
+        var maskFileName = mask is not null ? GetFileNameFromStream(mask, "mask.png") : null;
+
+        return this._client.EditImageAsync(
+            this._client.ModelId,
+            image,
+            imageFileName,
+            prompt,
+            mask,
+            maskFileName,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
+
+    private static string GetFileNameFromStream(Stream stream, string defaultName)
+    {
+        if (stream is FileStream fileStream)
+        {
+            return Path.GetFileName(fileStream.Name);
+        }
+        return defaultName;
+    }
 }
