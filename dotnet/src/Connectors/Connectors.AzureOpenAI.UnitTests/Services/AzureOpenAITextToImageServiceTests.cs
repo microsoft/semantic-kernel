@@ -84,9 +84,11 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         var request = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent); // {"prompt":"description","model":"deployment","response_format":"url","size":"179x124"}
         Assert.NotNull(request);
         Assert.Equal("description", request["prompt"]?.ToString());
-        Assert.Equal("deployment", request["model"]?.ToString());
+        Assert.Equal(modelId, request["model"]?.ToString());
         Assert.Null(request["response_format"]);
         Assert.Equal($"{width}x{height}", request["size"]?.ToString());
+
+
     }
 
     [Theory]
@@ -517,6 +519,84 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         // AzureOpenAI uses deployment names in requests, so we expect "hd" to be normalized for DALL-E models
         var expectedQuality = string.Equals(quality.ToLowerInvariant(), "hd", StringComparison.Ordinal) ? "hd" : "standard";
         Assert.Contains($"\"quality\":\"{expectedQuality}\"", requestBody);
+    }
+ [Fact]
+    public async Task EditImageWorksCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(imageStream, "make the sky purple");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+    }
+
+    [Fact]
+    public async Task EditImageWithMaskWorksCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+        using var maskStream = new MemoryStream(Encoding.UTF8.GetBytes("fake mask data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(imageStream, "add a rainbow", maskStream);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+    }
+
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-response.json")]
+    [InlineData(3, "./TestData/text-to-image-3-images-response.json")]
+    [InlineData(5, "./TestData/text-to-image-5-images-response.json")]
+    public async Task EditImageWithMultipleOutputsWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(
+            imageStream,
+            "make it colorful",
+            executionSettings: new OpenAITextToImageExecutionSettings { NumberOfImages = numberOfImages });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.NotNull(result[i].Uri);
+        }
     }
 
     public void Dispose()

@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -264,13 +263,13 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
             Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
         };
 
-        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient) as IImageToImageService;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
         Assert.NotNull(sut);
 
         using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
 
         // Act
-        var result = await sut.EditImageAsync(imageStream, "make the sky purple");
+        var result = await sut.GenerateEditImageAsync(imageStream, "make the sky purple");
 
         // Assert
         Assert.NotNull(result);
@@ -287,14 +286,14 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
             Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
         };
 
-        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient) as IImageToImageService;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
         Assert.NotNull(sut);
 
         using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
         using var maskStream = new MemoryStream(Encoding.UTF8.GetBytes("fake mask data"));
 
         // Act
-        var result = await sut.EditImageAsync(imageStream, "add a rainbow", maskStream);
+        var result = await sut.GenerateEditImageAsync(imageStream, "add a rainbow", maskStream);
 
         // Assert
         Assert.NotNull(result);
@@ -314,13 +313,13 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
             Content = new StringContent(File.ReadAllText(responseFile))
         };
 
-        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient) as IImageToImageService;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
         Assert.NotNull(sut);
 
         using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
 
         // Act
-        var result = await sut.EditImageAsync(
+        var result = await sut.GenerateEditImageAsync(
             imageStream,
             "make it colorful",
             executionSettings: new OpenAITextToImageExecutionSettings { NumberOfImages = numberOfImages });

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
@@ -27,5 +28,46 @@ public interface ITextToImageService : IAIService
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Generate edited images based on an original image and a text prompt.
+    /// </summary>
+    /// <param name="image">The image to edit</param>
+    /// <param name="prompt">Text prompt describing the desired edits</param>
+    /// <param name="mask">Optional mask indicating areas to edit</param>
+    /// <param name="executionSettings">Execution settings</param>
+    /// <param name="kernel">Kernel instance</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Generated image contents</returns>
+    [Experimental("SKEXP0001")]
+    Task<IReadOnlyList<ImageContent>> GenerateEditImageAsync(
+        Stream image,
+        string prompt,
+        Stream? mask = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Generate edited images based on file paths and a text prompt.
+    /// </summary>
+    /// <param name="imageFilePath">Path to the image file to edit</param>
+    /// <param name="prompt">Text prompt describing the desired edits</param>
+    /// <param name="maskFilePath">Optional path to mask file indicating areas to edit</param>
+    /// <param name="executionSettings">Execution settings</param>
+    /// <param name="kernel">Kernel instance</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Generated image contents</returns>
+    [Experimental("SKEXP0001")]
+    Task<IReadOnlyList<ImageContent>> GenerateEditImageAsync(
+        string imageFilePath,
+        string prompt,
+        string? maskFilePath = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    );
 }

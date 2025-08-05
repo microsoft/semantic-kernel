@@ -52,7 +52,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// This param is only supported for <c>dall-e-3</c> and <c>gpt-image-1</c> models.
     /// </remarks>
     [JsonPropertyName("quality")]
-    public string? Quality
+    public object? Quality
     {
         get => this._quality;
         set
@@ -148,7 +148,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// This param is only supported for <c>gpt-image-1</c> model.
     /// </remarks>
     [JsonPropertyName("moderation")]
-    public string? Moderation
+    public object? Moderation
     {
         get => this._moderation;
         set
@@ -167,7 +167,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// Default is <c>png</c>.
     /// </remarks>
     [JsonPropertyName("output_format")]
-    public string? OutputFormat
+    public object? OutputFormat
     {
         get => this._outputFormat;
         set
@@ -203,7 +203,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// Only supported for <c>gpt-image-1</c> model.
     /// </remarks>
     [JsonPropertyName("background")]
-    public string? Background
+    public object? Background
     {
         get => this._background;
         set
@@ -300,15 +300,15 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     }
 
     private (int Width, int Height)? _size;
-    private string? _quality;
+    private object? _quality;
     private string? _style;
     private object? _responseFormat;
     private string? _endUserId;
     private int? _numberOfImages;
-    private string? _moderation;
-    private string? _outputFormat;
+    private object? _moderation;
+    private object? _outputFormat;
     private int? _outputCompression;
-    private string? _background;
+    private object? _background;
 
     #endregion
 }

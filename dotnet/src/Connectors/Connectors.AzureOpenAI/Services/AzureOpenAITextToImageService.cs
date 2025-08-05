@@ -20,9 +20,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// Azure OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0010")]
-public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageService
+public class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly AzureClientCore _client;
+    private readonly string? _modelId;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
@@ -44,22 +45,36 @@ public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageS
         string? modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        string? apiVersion = null)
+        string? apiVersion = null
+    )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint)
+            ? endpoint!
+            : httpClient?.BaseAddress?.AbsoluteUri;
         if (connectorEndpoint is null)
         {
-            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException(
+                $"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided."
+            );
         }
 
         var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
-        var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), new ApiKeyCredential(apiKey), options);
+        var azureOpenAIClient = new AzureOpenAIClient(
+            new Uri(connectorEndpoint),
+            new ApiKeyCredential(apiKey),
+            options
+        );
 
-        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(
+            deploymentName,
+            azureOpenAIClient,
+            loggerFactory?.CreateLogger(this.GetType())
+        );
 
+        this._modelId = modelId;
         if (modelId is not null)
         {
             this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
@@ -83,19 +98,36 @@ public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageS
         string? modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        string? apiVersion = null)
+        string? apiVersion = null
+    )
     {
         Verify.NotNull(credential);
 
-        var connectorEndpoint = (!string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri)
-            ?? throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+        var connectorEndpoint =
+            (
+                !string.IsNullOrWhiteSpace(endpoint)
+                    ? endpoint!
+                    : httpClient?.BaseAddress?.AbsoluteUri
+            )
+            ?? throw new ArgumentException(
+                $"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided."
+            );
 
         var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
-        var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), credential, options);
+        var azureOpenAIClient = new AzureOpenAIClient(
+            new Uri(connectorEndpoint),
+            credential,
+            options
+        );
 
-        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(
+            deploymentName,
+            azureOpenAIClient,
+            loggerFactory?.CreateLogger(this.GetType())
+        );
 
+        this._modelId = modelId;
         if (modelId is not null)
         {
             this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
@@ -113,12 +145,18 @@ public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageS
         string deploymentName,
         AzureOpenAIClient azureOpenAIClient,
         string? modelId,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null
+    )
     {
         Verify.NotNull(azureOpenAIClient);
 
-        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(
+            deploymentName,
+            azureOpenAIClient,
+            loggerFactory?.CreateLogger(this.GetType())
+        );
 
+        this._modelId = modelId;
         if (modelId is not null)
         {
             this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
@@ -126,23 +164,53 @@ public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageS
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
+    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+        TextContent input,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        this._client.GetImageContentsAsync(
+            this._modelId ?? this._client.DeploymentName, // Use ModelId if available, otherwise fallback to DeploymentName
+            input,
+            executionSettings,
+            kernel,
+            cancellationToken
+        );
 
-    public Task<IReadOnlyList<ImageContent>> EditImageAsync(
-    Stream image,
-    string prompt,
-    Stream? mask = null,
-    PromptExecutionSettings? executionSettings = null,
-    Kernel? kernel = null,
-    CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ImageContent>> GenerateImagesAsync(
+        TextContent input,
+        int imageCount,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        this._client.GenerateImagesAsync(
+            this._modelId ?? this._client.DeploymentName,
+            input,
+            imageCount,
+            executionSettings,
+            kernel,
+            cancellationToken
+        );
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ImageContent>> GenerateEditImageAsync(
+        Stream image,
+        string prompt,
+        Stream? mask = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    )
     {
         // Determine file names based on stream type or use defaults
         var imageFileName = GetFileNameFromStream(image, "image.png");
         var maskFileName = mask is not null ? GetFileNameFromStream(mask, "mask.png") : null;
 
-        return this._client.EditImageAsync(
-            this._client.ModelId,
+        return this._client.GenerateEditImageAsync(
+            this._modelId ?? this._client.DeploymentName,
             image,
             imageFileName,
             prompt,
@@ -150,7 +218,54 @@ public class AzureOpenAITextToImageService : ITextToImageService, IImageToImageS
             maskFileName,
             executionSettings,
             kernel,
-            cancellationToken);
+            cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Generates an edited image based on file paths and a prompt.
+    /// </summary>
+    /// <param name="imageFilePath">Path to the image file to edit</param>
+    /// <param name="prompt">Text prompt describing the desired edits</param>
+    /// <param name="maskFilePath">Optional path to mask file indicating areas to edit</param>
+    /// <param name="executionSettings">Execution settings for the image edit</param>
+    /// <param name="kernel">Kernel instance</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Generated image contents</returns>
+    public async Task<IReadOnlyList<ImageContent>> GenerateEditImageAsync(
+        string imageFilePath,
+        string prompt,
+        string? maskFilePath = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var imageStream = File.OpenRead(imageFilePath);
+
+        if (!string.IsNullOrEmpty(maskFilePath))
+        {
+            using var maskStream = File.OpenRead(maskFilePath);
+            return await this.GenerateEditImageAsync(
+                    imageStream,
+                    prompt,
+                    maskStream,
+                    executionSettings,
+                    kernel,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+        }
+
+        return await this.GenerateEditImageAsync(
+                imageStream,
+                prompt,
+                null,
+                executionSettings,
+                kernel,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     private static string GetFileNameFromStream(Stream stream, string defaultName)
