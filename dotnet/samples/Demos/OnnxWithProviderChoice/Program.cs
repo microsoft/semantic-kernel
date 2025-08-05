@@ -35,7 +35,7 @@ async Task DoLoop(ChatHistory history, IChatCompletionService chatCompletionServ
     }
 }
 
-string modelPath = @"MODEL_PATH";
+string modelPath = "MODEL_PATH";
 
 IKernelBuilder builder = Kernel.CreateBuilder();
 builder.AddOnnxRuntimeGenAIChatCompletion(
