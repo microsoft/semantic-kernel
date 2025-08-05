@@ -379,3 +379,61 @@ def test_get_tools(mock_agent, kernel, custom_plugin_class):
     )
 
     assert len(tools) == len(mock_agent.tools) + len(kernel.get_full_list_of_function_metadata())
+
+
+def test_prepare_chat_history_multiple_images_no_duplication():
+    """Test that multiple images in a message don't get duplicated in the request."""
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.image_content import ImageContent
+    from semantic_kernel.contents.text_content import TextContent
+
+    # Create a chat history with a message containing text and multiple images
+    chat_history = ChatHistory()
+
+    message_items = [
+        TextContent(text="How many pictures do you get?"),
+        ImageContent(uri="https://example.com/image1.jpg"),
+        ImageContent(uri="https://example.com/image2.jpg"),
+        ImageContent(uri="https://example.com/image3.jpg"),
+        ImageContent(uri="https://example.com/image4.jpg"),
+    ]
+
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.utils.author_role import AuthorRole
+
+    message = ChatMessageContent(role=AuthorRole.USER, items=message_items)
+    chat_history.add_message(message)
+
+    # Call the method that was causing duplication
+    result = ResponsesAgentThreadActions._prepare_chat_history_for_request(chat_history)
+
+    # Verify we have exactly one message in the result
+    assert len(result) == 1, f"Expected 1 message, got {len(result)}"
+
+    # Get the content from the message
+    message_content = result[0]["content"]
+
+    # Count text and image items
+    text_items = [item for item in message_content if item["type"] == "input_text"]
+    image_items = [item for item in message_content if item["type"] == "input_image"]
+
+    # Verify counts
+    assert len(text_items) == 1, f"Expected 1 text item, got {len(text_items)}"
+    assert len(image_items) == 4, f"Expected 4 image items, got {len(image_items)}"
+
+    # Verify the text content
+    assert text_items[0]["text"] == "How many pictures do you get?"
+
+    # Verify the image URLs are correct and not duplicated
+    expected_urls = [
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg",
+        "https://example.com/image3.jpg",
+        "https://example.com/image4.jpg",
+    ]
+
+    actual_urls = [item["image_url"] for item in image_items]
+    assert actual_urls == expected_urls, f"Expected {expected_urls}, got {actual_urls}"
+
+    # Verify total content items equals expected (1 text + 4 images = 5)
+    assert len(message_content) == 5, f"Expected 5 total content items, got {len(message_content)}"

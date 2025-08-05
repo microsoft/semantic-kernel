@@ -44,6 +44,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 
 logger = logging.getLogger(__name__)
@@ -458,7 +459,7 @@ class BedrockAgent(BedrockAgentBase):
             "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
         )
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,
