@@ -40,9 +40,9 @@ To find model supports by AWS regions, refer to this [AWS documentation](https:/
 
 ### Inference profiles
 
-you can create inference profiles in AWS Bedrock to monitor and optimize the performance of your foundation models. Refer to the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html) for more information.
+You can create inference profiles in AWS Bedrock to monitor and optimize the performance of your foundation models. Refer to the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html) for more information.
 
-when you are using an Application Inference Profile, you must specify the `BEDROCK_MODEL_PROVIDER` environment variable to the model provider you are using. For example, if you are using Amazon Titan, you must set `BEDROCK_MODEL_PROVIDER=amazon`. This is because an Application Inference Profile doesn't contain the model provider information, and the Bedrock connector needs to know which model provider to use so that it can create the correct request body to the Bedrock API.
+When you are using an Application Inference Profile, you must specify the `BEDROCK_MODEL_PROVIDER` environment variable to the model provider you are using. For example, if you are using Amazon Titan, you must set `BEDROCK_MODEL_PROVIDER=amazon`. This is because an Application Inference Profile doesn't contain the model provider information, and the Bedrock connector needs to know which model provider to use so that it can create the correct request body to the Bedrock API.
 
 > An Application Inference Profile ARN is usually formatted as followed: `arn:aws:bedrock:<region>:<account-id>:application-inference-profile/<profile-id>`.
 
