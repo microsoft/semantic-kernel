@@ -3,7 +3,6 @@
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
@@ -15,7 +14,7 @@ internal static class RecalcEngineExtensions
         scopes.Clear(scope);
 
         // Rebuild scope record and update engine
-        UpdateScope(engine, scopes, scope);
+        engine.UpdateScope(scopes, scope);
     }
 
     public static void ClearScopedVariable(this RecalcEngine engine, ProcessActionScopes scopes, PropertyPath variablePath) =>
@@ -27,7 +26,7 @@ internal static class RecalcEngineExtensions
         scopes.Remove(varName, scope);
 
         // Rebuild scope record and update engine
-        UpdateScope(engine, scopes, scope);
+        engine.UpdateScope(scopes, scope);
     }
 
     public static void SetScopedVariable(this RecalcEngine engine, ProcessActionScopes scopes, PropertyPath variablePath, FormulaValue value) =>
@@ -39,41 +38,18 @@ internal static class RecalcEngineExtensions
         scopes.Set(varName, scope, value);
 
         // Rebuild scope record and update engine
-        UpdateScope(engine, scopes, scope);
+        engine.UpdateScope(scopes, scope);
     }
 
-    public static FormulaValue EvaluateExpression(this RecalcEngine engine, ExpressionBase? value)
+    public static void SetScope(this RecalcEngine engine, string scopeName, RecordValue scopeRecord)
     {
-        if (value is null)
-        {
-            return BlankValue.NewBlank();
-        }
-
-        if (value.IsVariableReference)
-        {
-            return engine.Eval(value.VariableReference?.Format());
-        }
-
-        if (value.IsExpression)
-        {
-            return engine.Eval(value.ExpressionText);
-        }
-
-        if (value.IsLiteral)
-        {
-            return value.GetLiteralValue().ToFormulaValue(); // %%% GetLiteralValue
-        }
-
-        // %%% TODO: value.StructuredRecordExpression ???
-        // %%% TODO: ArrayExpression
-
-        return BlankValue.NewBlank();
+        engine.DeleteFormula(scopeName);
+        engine.UpdateVariable(scopeName, scopeRecord);
     }
 
-    private static void UpdateScope(RecalcEngine engine, ProcessActionScopes scopes, ActionScopeType scope)
+    private static void UpdateScope(this RecalcEngine engine, ProcessActionScopes scopes, ActionScopeType scope)
     {
         RecordValue scopeRecord = scopes.BuildRecord(scope);
-        engine.DeleteFormula(scope.Name);
-        engine.UpdateVariable(scope.Name, scopeRecord);
+        engine.SetScope(scope.Name, scopeRecord);
     }
 }

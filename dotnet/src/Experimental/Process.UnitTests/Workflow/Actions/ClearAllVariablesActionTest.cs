@@ -15,15 +15,15 @@ namespace Microsoft.SemanticKernel.Process.UnitTests.Workflows.Actions;
 public sealed class ClearAllVariablesActionTest(ITestOutputHelper output) : ProcessActionTest(output)
 {
     [Fact]
-    public async Task ClearUserScope()
+    public async Task ClearWorkflowScope()
     {
         // Arrange
         this.Scopes.Set("NoVar", FormulaValue.New("Old value"));
 
         ClearAllVariables model =
             this.CreateModel(
-                this.FormatDisplayName(nameof(ClearUserScope)),
-                VariablesToClear.UserScopedVariables);
+                this.FormatDisplayName(nameof(ClearWorkflowScope)),
+                VariablesToClear.ConversationScopedVariables);
 
         // Act
         ClearAllVariablesAction action = new(model);

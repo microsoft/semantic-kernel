@@ -3,9 +3,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Bot.ObjectModel.Abstractions;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -18,9 +18,16 @@ internal sealed class SetVariableAction : AssignmentAction<SetVariable>
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        FormulaValue result = context.Engine.EvaluateExpression(this.Model.Value).ThrowIfError();
+        if (this.Model.Value is null)
+        {
+            this.AssignTarget(context, FormulaValue.NewBlank());
+        }
+        else
+        {
+            EvaluationResult<DataValue> result = context.ExpressionEngine.GetValue(this.Model.Value, context.Scopes); // %%% FAILURE CASE (CATCH)
 
-        this.AssignTarget(context, result);
+            this.AssignTarget(context, result.Value.ToFormulaValue());
+        }
 
         return Task.CompletedTask;
     }

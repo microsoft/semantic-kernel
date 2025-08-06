@@ -14,5 +14,5 @@ public abstract class RecalcEngineTest(ITestOutputHelper output) : WorkflowTest(
 {
     internal ProcessActionScopes Scopes { get; } = new();
 
-    protected RecalcEngine CreateEngine(int maximumExpressionLength = 100) => RecalcEngineFactory.Create(this.Scopes, maximumExpressionLength);
+    protected RecalcEngine CreateEngine(int maximumExpressionLength = 500) => RecalcEngineFactory.Create(this.Scopes, maximumExpressionLength);
 }

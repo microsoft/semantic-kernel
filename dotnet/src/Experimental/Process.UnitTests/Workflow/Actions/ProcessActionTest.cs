@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
@@ -50,7 +49,7 @@ public abstract class ProcessActionTest(ITestOutputHelper output) : WorkflowTest
 
     internal void VerifyUndefined(string variableName, ActionScopeType scope)
     {
-        Assert.Throws<KeyNotFoundException>(() => this.Scopes.Get(variableName, scope));
+        Assert.IsType<BlankValue>(this.Scopes.Get(variableName, scope));
     }
 
     protected TAction AssignParent<TAction>(DialogAction.Builder actionBuilder) where TAction : DialogAction

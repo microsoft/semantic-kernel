@@ -7,25 +7,44 @@ using Microsoft.Bot.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
+using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger Logger);
+internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger Logger)
+{
+    private FoundryExpressionEngine? _expressionEngine;
 
-internal abstract class ProcessAction<TAction>(TAction model) :
-    ProcessAction(model)
+    public FoundryExpressionEngine ExpressionEngine => this._expressionEngine ??= new FoundryExpressionEngine(this.Engine);
+}
+
+internal abstract class ProcessAction<TAction>(TAction model) : ProcessAction(model)
     where TAction : DialogAction
 {
     public new TAction Model => (TAction)base.Model;
 }
 
-internal abstract class ProcessAction(DialogAction model)
+internal abstract class ProcessAction
 {
-    public string Id => model.Id.Value;
+    public const string RootActionId = "(root)";
 
-    public string ParentId { get; } = model.GetParentId();
+    private string? _parentId;
 
-    public DialogAction Model => model;
+    public string Id => this.Model.Id.Value;
+
+    public string ParentId => this._parentId ??= this.Model.GetParentId() ?? RootActionId;
+
+    public DialogAction Model { get; }
+
+    protected ProcessAction(DialogAction model)
+    {
+        if (!model.HasRequiredProperties)
+        {
+            throw new InvalidActionException($"Action {this.GetType().Name} [{model.Id}]");
+        }
+
+        this.Model = model;
+    }
 
     public async Task ExecuteAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {

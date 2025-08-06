@@ -16,6 +16,7 @@ internal static class RecalcEngineFactory
 
         SetScope(ActionScopeType.Topic);
         SetScope(ActionScopeType.Global);
+        SetScope(ActionScopeType.Env);
         SetScope(ActionScopeType.System);
 
         return engine;

@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Bot.ObjectModel.Abstractions;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -24,8 +25,8 @@ internal sealed class EditTableV2Action : AssignmentAction<EditTableV2>
         EditTableOperation? changeType = this.Model.ChangeType;
         if (changeType is AddItemOperation addItemOperation)
         {
-            FormulaValue result = context.Engine.EvaluateExpression(addItemOperation.Value);
-            RecordValue newRecord = BuildRecord(tableValue.Type.ToRecord(), result);
+            EvaluationResult<DataValue> result = context.ExpressionEngine.GetValue(addItemOperation.Value!, context.Scopes); // %%% FAILURE CASE (CATCH) & NULL OVERRIDE
+            RecordValue newRecord = BuildRecord(tableValue.Type.ToRecord(), result.Value.ToFormulaValue());
             await tableValue.AppendAsync(newRecord, cancellationToken).ConfigureAwait(false);
             this.AssignTarget(context, tableValue);
         }

@@ -4,9 +4,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Bot.ObjectModel.Abstractions;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -23,26 +23,33 @@ internal sealed class ParseValueAction : AssignmentAction<ParseValue>
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        FormulaValue result = context.Engine.EvaluateExpression(this.Model.Value);
+        EvaluationResult<DataValue> result = context.ExpressionEngine.GetValue(this.Model.Value!, context.Scopes); // %%% FAILURE CASE (CATCH) & NULL OVERRIDE
 
         FormulaValue? parsedResult = null;
 
-        if (result is StringValue stringValue)
+        if (result.Value is StringDataValue stringValue)
         {
-            parsedResult =
-                this.Model.ValueType switch
-                {
-                    StringDataType => stringValue,
-                    NumberDataType => NumberValue.New(stringValue.Value),
-                    BooleanDataType => BooleanValue.New(stringValue.Value),
-                    RecordDataType recordType => ParseRecord(recordType, stringValue.Value),
-                    _ => null
-                };
+            if (string.IsNullOrWhiteSpace(stringValue.Value))
+            {
+                parsedResult = FormulaValue.NewBlank();
+            }
+            else
+            {
+                parsedResult =
+                    this.Model.ValueType switch
+                    {
+                        StringDataType => StringValue.New(stringValue.Value),
+                        NumberDataType => NumberValue.New(stringValue.Value),
+                        BooleanDataType => BooleanValue.New(stringValue.Value),
+                        RecordDataType recordType => ParseRecord(recordType, stringValue.Value),
+                        _ => null
+                    };
+            }
         }
 
         if (parsedResult is null)
         {
-            throw new ProcessActionException($"Unable to parse {result.Type.GetType().Name}");
+            throw new ProcessActionException($"Unable to parse {result.Value.GetType().Name}");
         }
 
         this.AssignTarget(context, parsedResult);

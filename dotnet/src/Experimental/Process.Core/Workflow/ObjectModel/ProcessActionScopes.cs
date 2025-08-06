@@ -3,19 +3,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Microsoft.Bot.ObjectModel;
 using Microsoft.PowerFx.Types;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
 /// <summary>
 /// Describes the type of action scope.
 /// </summary>
-internal sealed class ActionScopeType
+internal sealed class ActionScopeType // %%% NEEDED
 {
-    public static readonly ActionScopeType Env = new(nameof(Env));
-    public static readonly ActionScopeType Topic = new(nameof(Topic));
-    public static readonly ActionScopeType Global = new(nameof(Global));
-    public static readonly ActionScopeType System = new(nameof(System));
+    // https://msazure.visualstudio.com/CCI/_git/ObjectModel?path=/src/ObjectModel/Nodes/VariableScopeNames.cs&_a=contents&version=GBmain
+    public static readonly ActionScopeType Env = new(VariableScopeNames.Environment);
+    public static readonly ActionScopeType Topic = new(VariableScopeNames.Topic);
+    public static readonly ActionScopeType Global = new(VariableScopeNames.Global);
+    public static readonly ActionScopeType System = new(VariableScopeNames.System);
 
     public static ActionScopeType Parse(string? scope)
     {
@@ -37,6 +40,8 @@ internal sealed class ActionScopeType
 
     public string Name { get; }
 
+    public string Format(string name) => $"{this.Name}.{name}";
+
     public override string ToString() => this.Name;
 
     public override int GetHashCode() => this.Name.GetHashCode();
@@ -49,7 +54,33 @@ internal sealed class ActionScopeType
 /// <summary>
 /// The set of variables for a specific action scope.
 /// </summary>
-internal sealed class ProcessActionScope : Dictionary<string, FormulaValue>;
+internal sealed class ProcessActionScope : Dictionary<string, FormulaValue>
+{
+    public RecordValue BuildRecord()
+    {
+        return FormulaValue.NewRecordFromFields(GetFields());
+
+        IEnumerable<NamedValue> GetFields()
+        {
+            foreach (KeyValuePair<string, FormulaValue> kvp in this)
+            {
+                yield return new NamedValue(kvp.Key, kvp.Value);
+            }
+        }
+    }
+
+    public RecordDataValue BuildState()
+    {
+        RecordDataValue.Builder recordBuilder = new();
+
+        foreach (KeyValuePair<string, FormulaValue> kvp in this)
+        {
+            recordBuilder.Properties.Add(kvp.Key, kvp.Value.GetDataValue());
+        }
+
+        return recordBuilder.Build();
+    }
+}
 
 /// <summary>
 /// Contains all action scopes for a process.
@@ -72,20 +103,30 @@ internal sealed class ProcessActionScopes
         this._scopes = scopes.ToImmutableDictionary();
     }
 
-    public RecordValue BuildRecord(ActionScopeType scope)
-    {
-        return FormulaValue.NewRecordFromFields(GetFields());
+    public RecordValue BuildRecord(ActionScopeType scope) => this._scopes[scope].BuildRecord();
 
-        IEnumerable<NamedValue> GetFields()
+    public RecordDataValue BuildState()
+    {
+        return RecordDataValue.RecordFromFields(BuildStateFields());
+
+        IEnumerable<KeyValuePair<string, DataValue>> BuildStateFields()
         {
-            foreach (KeyValuePair<string, FormulaValue> kvp in this._scopes[scope])
+            foreach (KeyValuePair<ActionScopeType, ProcessActionScope> kvp in this._scopes)
             {
-                yield return new NamedValue(kvp.Key, kvp.Value);
+                yield return new(kvp.Key.Name, kvp.Value.BuildState());
             }
         }
     }
 
-    public FormulaValue Get(string name, ActionScopeType? type = null) => this._scopes[type ?? ActionScopeType.Topic][name];
+    public FormulaValue Get(string name, ActionScopeType? type = null)
+    {
+        if (this._scopes[type ?? ActionScopeType.Topic].TryGetValue(name, out FormulaValue? value))
+        {
+            return value;
+        }
+
+        return FormulaValue.NewBlank();
+    }
 
     public void Clear(ActionScopeType type) => this._scopes[type].Clear();
 

@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Bot.ObjectModel.Yaml;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.Process.Workflow.Validation;
 using Microsoft.SemanticKernel.Process.Workflows;
 
 namespace Microsoft.SemanticKernel;
@@ -18,43 +16,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class ObjectModelBuilder
 {
-    /// <summary>
-    /// %%% COMMENT
-    /// </summary>
-    /// <param name="yamlReader">The reader that provides the workflow object model YAML.</param>
-    /// <param name="failures"></param>
-    /// <exception cref="KernelException"></exception>
-    public static bool TryValidate(TextReader yamlReader, out ImmutableArray<ValidationFailure> failures)
-    {
-        BotElement? rootElement = null;
-        try
-        {
-            rootElement = YamlSerializer.Deserialize<BotElement>(yamlReader);
-        }
-#pragma warning disable CA1031 // Do not catch general exception types
-        catch (Exception exception)
-#pragma warning restore CA1031 // Do not catch general exception types
-        {
-            failures = SingleFailure(new ExceptionValidationFailure(exception, "Unable to serialize object model"));
-            return false;
-        }
-        if (rootElement is null)
-        {
-            failures = SingleFailure(new ValidationFailure("Root element is null. Ensure the YAML content is valid."));
-            return false;
-        }
-
-        ProcessValidationWalker walker = new(rootElement);
-        failures = walker.Failures;
-        return walker.IsValid;
-
-        static ImmutableArray<ValidationFailure> SingleFailure(ValidationFailure failure)
-        {
-            ValidationFailure[] failures = [failure];
-            return failures.ToImmutableArray();
-        }
-    }
-
     /// <summary>
     /// Builds a process from the provided YAML definition of a CPS Topic ObjectModel.
     /// </summary>

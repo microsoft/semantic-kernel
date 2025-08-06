@@ -3,11 +3,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Bot.ObjectModel.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerFx.Types;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
-using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
 
@@ -21,11 +21,7 @@ internal sealed class AnswerQuestionWithAIAction : AssignmentAction<AnswerQuesti
     protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
         IChatCompletionService chatCompletion = context.Kernel.Services.GetRequiredService<IChatCompletionService>();
-        FormulaValue expressionResult = context.Engine.EvaluateExpression(this.Model.UserInput);
-        if (expressionResult is not StringValue stringResult)
-        {
-            throw new InvalidActionException($"{nameof(AnswerQuestionWithAI)} requires text for {nameof(AnswerQuestionWithAI.UserInput)}");
-        }
+        EvaluationResult<string> result = context.ExpressionEngine.GetValue(this.Model.UserInput!, context.Scopes); // %%% FAILURE CASE (CATCH) & NULL OVERRIDE
 
         ChatHistory history = [];
         if (this.Model.AdditionalInstructions is not null)
@@ -36,7 +32,7 @@ internal sealed class AnswerQuestionWithAIAction : AssignmentAction<AnswerQuesti
                 history.AddSystemMessage(instructions);
             }
         }
-        history.AddUserMessage(stringResult.Value);
+        history.AddUserMessage(result.Value);
         ChatMessageContent response = await chatCompletion.GetChatMessageContentAsync(history, cancellationToken: cancellationToken).ConfigureAwait(false);
         StringValue responseValue = FormulaValue.New(response.ToString());
 

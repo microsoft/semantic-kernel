@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Bot.ObjectModel.Abstractions;
 using Microsoft.PowerFx.Types;
+using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
@@ -24,11 +26,18 @@ internal sealed class ForeachAction : ProcessAction<Foreach>
 
     protected override Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        // %%% TODO: HACK: Assumes array
         this._index = 0;
-        FormulaValue values = context.Engine.EvaluateExpression(this.Model.Items);
-        TableValue tableValue = (TableValue)values;
-        this._values = [.. tableValue.Rows.Select(row => row.Value.Fields.First().Value)];
+
+        if (this.Model.Items is null)
+        {
+            this._values = [];
+            this.HasValue = false;
+            return Task.CompletedTask;
+        }
+
+        EvaluationResult<DataValue> result = context.ExpressionEngine.GetValue(this.Model.Items, context.Scopes);
+        TableDataValue tableValue = (TableDataValue)result.Value; // %%% CAST - TYPE ASSUMPTION (TableDataValue)
+        this._values = [.. tableValue.Values.Select(value => value.Properties.Values.First().ToFormulaValue())];
         return Task.CompletedTask;
     }
 
