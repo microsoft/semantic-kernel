@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using A2A;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
-using A2A;
 
 namespace GettingStarted.A2A;
 
