@@ -388,7 +388,7 @@ internal static class AgentThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent[]> stepFunctionResults = [];
-        List<RunStep> stepsToProcess = [];
+        List<RunStep> messageCreationStepsToProcess = [];
 
         FunctionCallsProcessor functionProcessor = new(logger);
         // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
@@ -401,7 +401,7 @@ internal static class AgentThreadActions
             // Check for cancellation
             cancellationToken.ThrowIfCancellationRequested();
 
-            stepsToProcess.Clear();
+            messageCreationStepsToProcess.Clear();
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
             {
@@ -440,9 +440,14 @@ internal static class AgentThreadActions
                 {
                     switch (stepUpdate.UpdateKind)
                     {
-                        case StreamingUpdateReason.RunStepCompleted:
-                            stepsToProcess.Add(stepUpdate.Value);
+                        case StreamingUpdateReason.RunStepCompleted when stepUpdate.Value.StepDetails is RunStepToolCallDetails toolDetails:
+                            ProcessToolCallStep(stepUpdate.Value, toolDetails, agent, messages, threadId, stepFunctionResults);
                             break;
+
+                        case StreamingUpdateReason.RunStepCompleted when stepUpdate.Value.StepDetails is RunStepMessageCreationDetails:
+                            messageCreationStepsToProcess.Add(stepUpdate.Value);
+                            break;
+
                         default:
                             break;
                     }
@@ -510,53 +515,73 @@ internal static class AgentThreadActions
                 }
             }
 
-            if (stepsToProcess.Count > 0)
+            if (messageCreationStepsToProcess.Count > 0)
             {
                 logger.LogAzureAIAgentProcessingRunMessages(nameof(InvokeAsync), run!.Id, threadId);
 
-                foreach (RunStep step in stepsToProcess)
+                foreach (RunStep step in messageCreationStepsToProcess)
                 {
                     if (step.StepDetails is RunStepMessageCreationDetails messageDetails)
                     {
-                        PersistentThreadMessage? message =
-                            await RetrieveMessageAsync(
-                                client,
-                                threadId,
-                                messageDetails.MessageCreation.MessageId,
-                                agent.PollingOptions.MessageSynchronizationDelay,
-                                cancellationToken).ConfigureAwait(false);
-
-                        if (message != null)
-                        {
-                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step, logger);
-                            messages?.Add(content);
-                        }
-                    }
-                    else if (step.StepDetails is RunStepToolCallDetails toolDetails)
-                    {
-                        foreach (RunStepToolCall toolCall in toolDetails.ToolCalls)
-                        {
-                            if (toolCall is RunStepFunctionToolCall functionCall)
-                            {
-                                messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
-                                stepFunctionResults.Remove(step.Id);
-                                break;
-                            }
-
-                            if (toolCall is RunStepCodeInterpreterToolCall codeCall)
-                            {
-                                messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), codeCall.Input, step));
-                            }
-                        }
+                        await ProcessMessageCreationStepAsync(step, messageDetails, agent, client, messages, threadId, logger, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
-                logger.LogAzureAIAgentProcessedRunMessages(nameof(InvokeAsync), stepsToProcess.Count, run!.Id, threadId);
+                logger.LogAzureAIAgentProcessedRunMessages(nameof(InvokeAsync), messageCreationStepsToProcess.Count, run!.Id, threadId);
             }
         }
         while (run?.Status != RunStatus.Completed);
 
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
+    }
+
+    private static async Task ProcessMessageCreationStepAsync(
+        RunStep step,
+        RunStepMessageCreationDetails messageDetails,
+        AzureAIAgent agent,
+        PersistentAgentsClient client,
+        IList<ChatMessageContent>? messages,
+        string threadId,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        PersistentThreadMessage? message =
+            await RetrieveMessageAsync(
+                client,
+                threadId,
+                messageDetails.MessageCreation.MessageId,
+                agent.PollingOptions.MessageSynchronizationDelay,
+                cancellationToken).ConfigureAwait(false);
+
+        if (message != null)
+        {
+            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step, logger);
+            messages?.Add(content);
+        }
+    }
+
+    private static void ProcessToolCallStep(
+        RunStep step,
+        RunStepToolCallDetails toolDetails,
+        AzureAIAgent agent,
+        IList<ChatMessageContent>? messages,
+        string threadId,
+        Dictionary<string, FunctionResultContent[]> stepFunctionResults)
+    {
+        foreach (RunStepToolCall toolCall in toolDetails.ToolCalls)
+        {
+            if (toolCall is RunStepFunctionToolCall functionCall)
+            {
+                messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
+                stepFunctionResults.Remove(step.Id);
+                break;
+            }
+
+            if (toolCall is RunStepCodeInterpreterToolCall codeCall)
+            {
+                messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), codeCall.Input, step));
+            }
+        }
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, PersistentThreadMessage message, RunStep? completedStep = null, ILogger? logger = null)
