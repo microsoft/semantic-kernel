@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SharpA2A.Core;
+using A2A;
 
 namespace Microsoft.SemanticKernel.Agents.A2A;
 

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
-using SharpA2A.Core;
 
 namespace A2A;
 
@@ -61,14 +60,14 @@ internal sealed class HostClientAgent
 
     private async Task<A2AAgent> CreateAgentAsync(string agentUri)
     {
+        var url = new Uri(agentUri);
         var httpClient = new HttpClient
         {
-            BaseAddress = new Uri(agentUri),
             Timeout = TimeSpan.FromSeconds(60)
         };
 
-        var client = new A2AClient(httpClient);
-        var cardResolver = new A2ACardResolver(httpClient);
+        var client = new A2AClient(url, httpClient);
+        var cardResolver = new A2ACardResolver(url, httpClient);
         var agentCard = await cardResolver.GetAgentCardAsync();
 
         return new A2AAgent(client, agentCard!);

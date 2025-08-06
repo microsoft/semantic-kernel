@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpA2A.Core" />
-    <PackageReference Include="SharpA2A.AspNetCore" />
+    <PackageReference Include="A2A.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

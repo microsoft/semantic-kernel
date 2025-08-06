@@ -6,8 +6,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using A2A;
 using Microsoft.SemanticKernel.ChatCompletion;
-using SharpA2A.Core;
 
 namespace Microsoft.SemanticKernel.Agents.A2A;
 
@@ -175,7 +175,7 @@ public sealed class A2AAgent : Agent
             }
         };
 
-        A2AResponse response = await this.Client.SendMessageAsync(messageSendParams).ConfigureAwait(false);
+        A2AResponse response = await this.Client.SendMessageAsync(messageSendParams, cancellationToken).ConfigureAwait(false);
         if (response is AgentTask agentTask)
         {
             if (agentTask.Artifacts != null && agentTask.Artifacts.Count > 0)

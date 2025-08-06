@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class OpenAIResponseAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<OpenAIResponseAgentFixture>(() => new OpenAIResponseAgentFixture())
-{
-}
+public class OpenAIResponseAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<OpenAIResponseAgentFixture>(() => new OpenAIResponseAgentFixture());
