@@ -73,21 +73,34 @@ STREAMING_TEXT_COMPLETION_RESPONSE_MAPPING: dict[
 }
 
 
-def get_text_completion_request_body(model_id: str, prompt: str, settings: BedrockTextPromptExecutionSettings) -> dict:
+def get_text_completion_request_body(
+    model_id: str,
+    prompt: str,
+    settings: BedrockTextPromptExecutionSettings,
+    model_provider: BedrockModelProvider | None = None,
+) -> dict:
     """Get the request body for text completion for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return TEXT_COMPLETION_REQUEST_BODY_MAPPING[model_provider](prompt, settings)
 
 
-def parse_text_completion_response(model_id: str, response: dict) -> list[TextContent]:
+def parse_text_completion_response(
+    model_id: str,
+    response: dict,
+    model_provider: BedrockModelProvider | None = None,
+) -> list[TextContent]:
     """Parse the response from text completion for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return TEXT_COMPLETION_RESPONSE_MAPPING[model_provider](response, model_id)
 
 
-def parse_streaming_text_completion_response(model_id: str, chunk: dict) -> StreamingTextContent:
+def parse_streaming_text_completion_response(
+    model_id: str,
+    chunk: dict,
+    model_provider: BedrockModelProvider | None = None,
+) -> StreamingTextContent:
     """Parse the response from streaming text completion for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return STREAMING_TEXT_COMPLETION_RESPONSE_MAPPING[model_provider](chunk, model_id)
 
 
@@ -109,10 +122,12 @@ CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING: dict[
 
 
 def get_chat_completion_additional_model_request_fields(
-    model_id: str, settings: BedrockChatPromptExecutionSettings
+    model_id: str,
+    settings: BedrockChatPromptExecutionSettings,
+    model_provider: BedrockModelProvider | None = None,
 ) -> dict[str, Any] | None:
     """Get the additional model request fields for chat completion for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING[model_provider](settings)
 
 
@@ -134,16 +149,23 @@ TEXT_EMBEDDING_RESPONSE_MAPPING: dict[BedrockModelProvider, Callable[[dict], lis
 
 
 def get_text_embedding_request_body(
-    model_id: str, text: str, settings: BedrockEmbeddingPromptExecutionSettings
+    model_id: str,
+    text: str,
+    settings: BedrockEmbeddingPromptExecutionSettings,
+    model_provider: BedrockModelProvider | None = None,
 ) -> dict:
     """Get the request body for text embedding for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return TEXT_EMBEDDING_REQUEST_BODY_MAPPING[model_provider](text, settings)
 
 
-def parse_text_embedding_response(model_id: str, response: dict) -> list[float]:
+def parse_text_embedding_response(
+    model_id: str,
+    response: dict,
+    model_provider: BedrockModelProvider | None = None,
+) -> list[float]:
     """Parse the response from text embedding for Amazon Bedrock models."""
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    model_provider = model_provider or BedrockModelProvider.to_model_provider(model_id)
     return TEXT_EMBEDDING_RESPONSE_MAPPING[model_provider](response)
 
 

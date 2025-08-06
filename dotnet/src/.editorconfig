@@ -1,5 +1,6 @@
 # Setting errors for SDK projects under dotnet folder
 [*.cs]
+dotnet_diagnostic.CS1998.severity = suggestion # Async method lacks 'await' operators and will run synchronously
 dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
 dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
 dotnet_diagnostic.IDE1006.severity = error # Naming rule violations

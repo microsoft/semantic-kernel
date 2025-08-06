@@ -376,7 +376,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
-            .SelectAsync(result => result.Record, cancellationToken);
+            .Select(result => result.Record, cancellationToken);
     }
 
     #region Search

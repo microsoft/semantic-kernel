@@ -96,7 +96,7 @@ public abstract class TestStore
 
         var vector = dummyVector ?? new ReadOnlyMemory<float>(Enumerable.Range(0, vectorSize ?? 3).Select(i => (float)i).ToArray());
 
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < 200; i++)
         {
             var results = collection.SearchAsync(
                 vector,

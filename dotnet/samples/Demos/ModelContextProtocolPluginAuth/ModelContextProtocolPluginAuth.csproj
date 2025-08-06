@@ -15,8 +15,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\Agents\Core\Agents.Core.csproj" />

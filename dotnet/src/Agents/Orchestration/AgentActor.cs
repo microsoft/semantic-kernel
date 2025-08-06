@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -123,14 +122,19 @@ public abstract class AgentActor : OrchestrationActor
 
     private async Task InvokeAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)
     {
-        AgentResponseItem<ChatMessageContent>? lastResponse =
-            await this.Agent.InvokeAsync(
-                input,
-                this.Thread,
-                options,
-                cancellationToken).LastOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var last = default(AgentResponseItem<ChatMessageContent>)!;
+        var hasLast = false;
 
-        this.Thread ??= lastResponse?.Thread;
+        await foreach (var item in this.Agent.InvokeAsync(input, this.Thread, options, cancellationToken).ConfigureAwait(false))
+        {
+            hasLast = true;
+            last = item;
+        }
+
+        if (this.Thread is null && hasLast)
+        {
+            this.Thread = last.Thread;
+        }
     }
 
     private async Task InvokeStreamingAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)
