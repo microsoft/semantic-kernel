@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -246,16 +245,17 @@ internal sealed class FunctionCallsProcessor
     /// <param name="isStreaming">Boolean flag which indicates whether an operation is invoked within streaming or non-streaming mode.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
-    public async IAsyncEnumerable<FunctionResultContent> InvokeFunctionCallsAsync(
+    public async ValueTask<FunctionResultContent[]> InvokeFunctionCallsAsync(
         ChatMessageContent chatMessageContent,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
         FunctionChoiceBehaviorOptions options,
         Kernel kernel,
         bool isStreaming,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         FunctionCallContent[] functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToArray();
         ChatHistory history = [chatMessageContent];
+        List<FunctionResultContent> results = [];
 
         this._logger.LogFunctionCalls(functionCalls);
 
@@ -270,7 +270,7 @@ internal sealed class FunctionCallsProcessor
             // Check if the function call is valid to execute.
             if (!TryValidateFunctionCall(functionCall, checkIfFunctionAdvertised, kernel, out KernelFunction? function, out string? errorMessage))
             {
-                yield return this.GenerateResultContent(functionCall, result: null, errorMessage);
+                results.Add(this.GenerateResultContent(functionCall, result: null, errorMessage));
                 continue;
             }
 
@@ -298,10 +298,12 @@ internal sealed class FunctionCallsProcessor
         // Wait for all of the function invocations to complete, then add the results to the chat, but stop when we hit a
         // function for which termination was requested.
         FunctionResultContext[] resultContexts = await Task.WhenAll(functionTasks).ConfigureAwait(false);
-        foreach (FunctionResultContext resultContext in resultContexts)
+        foreach (var context in resultContexts)
         {
-            yield return this.GenerateResultContent(resultContext);
+            results.Add(this.GenerateResultContent(context));
         }
+
+        return [.. results];
     }
 
     private static bool TryValidateFunctionCall(
