@@ -31,14 +31,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="SharpA2A.Core" />
+    <PackageReference Include="A2A"/>
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Agents.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
+  </ItemGroup> 
 
 </Project>
