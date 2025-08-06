@@ -10,6 +10,7 @@ import pytest
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    BedrockModelProvider,
     get_text_completion_request_body,
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -28,6 +29,9 @@ def test_bedrock_text_completion_init(mock_client, bedrock_unit_test_env) -> Non
     assert bedrock_text_completion.ai_model_id == bedrock_unit_test_env["BEDROCK_TEXT_MODEL_ID"]
     assert bedrock_text_completion.service_id == bedrock_unit_test_env["BEDROCK_TEXT_MODEL_ID"]
 
+    assert bedrock_text_completion.bedrock_model_provider == BedrockModelProvider(
+        bedrock_unit_test_env["BEDROCK_MODEL_PROVIDER"]
+    )
     assert bedrock_text_completion.bedrock_client is not None
     assert bedrock_text_completion.bedrock_runtime_client is not None
 
@@ -88,6 +92,16 @@ def test_bedrock_text_completion_init_custom_runtime_client(mock_client, bedrock
     assert isinstance(bedrock_text_completion.bedrock_runtime_client, MockBedrockRuntimeClient)
 
 
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_completion_init_custom_bedrock_model_provider(mock_client, bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Text Completion service"""
+    bedrock_text_completion = BedrockTextCompletion(
+        model_provider=BedrockModelProvider.AMAZON,
+    )
+
+    assert bedrock_text_completion.bedrock_model_provider == BedrockModelProvider.AMAZON
+
+
 @pytest.mark.parametrize("exclude_list", [["BEDROCK_TEXT_MODEL_ID"]], indirect=True)
 def test_bedrock_text_completion_client_init_with_empty_model_id(bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Text Completion service with empty model id"""
@@ -101,6 +115,14 @@ def test_bedrock_text_completion_client_init_invalid_settings(bedrock_unit_test_
         ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Text Completion Service."
     ):
         BedrockTextCompletion(model_id=123)  # Model ID must be a string
+
+
+def test_bedrock_text_completion_client_init_invalid_model_provider(bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Text Completion service with invalid settings"""
+    with pytest.raises(
+        ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Text Completion Service."
+    ):
+        BedrockTextCompletion(model_provider="invalid_provider")
 
 
 @patch.object(boto3, "client", return_value=Mock())
@@ -134,7 +156,7 @@ async def test_bedrock_text_completion(
     mock_bedrock_text_completion_response,
     output_text,
 ) -> None:
-    """Test Amazon Bedrock Chat Completion complete method"""
+    """Test Amazon Bedrock Text Completion complete method"""
     with patch.object(
         MockBedrockRuntimeClient, "invoke_model", return_value=mock_bedrock_text_completion_response
     ) as mock_model_invoke:
@@ -168,6 +190,47 @@ async def test_bedrock_text_completion(
     # These are fake model ids with the supported prefixes
     "model_id",
     [
+        "arn:aws:bedrock:us-east-1:972143716085:application-inference-profile/123456",
+    ],
+    indirect=True,
+)
+async def test_bedrock_text_completion_with_application_inference_profile(
+    model_id,
+    mock_bedrock_text_completion_response,
+    output_text,
+    model_provider,
+) -> None:
+    """Test Amazon Bedrock Text Completion complete method"""
+    with patch.object(
+        MockBedrockRuntimeClient,
+        "invoke_model",
+        return_value=mock_bedrock_text_completion_response,
+    ) as mock_model_invoke:
+        # Setup
+        bedrock_text_completion = BedrockTextCompletion(
+            model_id=model_id,
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+            model_provider=model_provider,
+        )
+
+        # Act
+        settings = BedrockTextPromptExecutionSettings()
+        await bedrock_text_completion.get_text_contents("Hello!", settings=settings)
+
+        # Assert
+        mock_model_invoke.assert_called_once_with(
+            body=json.dumps(get_text_completion_request_body(model_id, "Hello!", settings, model_provider)),
+            modelId=model_id,
+            accept="application/json",
+            contentType="application/json",
+        )
+
+
+@pytest.mark.parametrize(
+    # These are fake model ids with the supported prefixes
+    "model_id",
+    [
         "amazon.titan",
     ],
     indirect=True,
@@ -177,7 +240,7 @@ async def test_bedrock_streaming_text_completion(
     mock_bedrock_streaming_text_completion_response,
     output_text,
 ) -> None:
-    """Test Amazon Bedrock Chat Completion complete method"""
+    """Test Amazon Bedrock Text Completion complete method"""
     with patch.object(
         MockBedrockRuntimeClient,
         "invoke_model_with_response_stream",
@@ -211,6 +274,51 @@ async def test_bedrock_streaming_text_completion(
         assert response.text == output_text
         assert response.choice_index == 0
         assert isinstance(response.inner_content, list)
+
+
+@pytest.mark.parametrize(
+    # These are fake model ids with the supported prefixes
+    "model_id",
+    [
+        "arn:aws:bedrock:us-east-1:972143716085:application-inference-profile/123456",
+    ],
+    indirect=True,
+)
+async def test_bedrock_streaming_text_completion_with_application_inference_profile(
+    model_id,
+    mock_bedrock_streaming_text_completion_response,
+    output_text,
+    model_provider,
+) -> None:
+    """Test Amazon Bedrock Chat Completion complete method"""
+    with patch.object(
+        MockBedrockRuntimeClient,
+        "invoke_model_with_response_stream",
+        return_value=mock_bedrock_streaming_text_completion_response,
+    ) as mock_invoke_model_with_response_stream:
+        # Setup
+        bedrock_text_completion = BedrockTextCompletion(
+            model_id=model_id,
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+            model_provider=model_provider,
+        )
+
+        # Act
+        settings = BedrockTextPromptExecutionSettings()
+        chunks: list[StreamingTextContent] = []
+        async for streaming_responses in bedrock_text_completion.get_streaming_text_contents(
+            "Hello!", settings=settings
+        ):
+            chunks.extend(streaming_responses)
+
+        # Assert
+        mock_invoke_model_with_response_stream.assert_called_once_with(
+            body=json.dumps(get_text_completion_request_body(model_id, "Hello!", settings, model_provider)),
+            modelId=model_id,
+            accept="application/json",
+            contentType="application/json",
+        )
 
 
 # endregion

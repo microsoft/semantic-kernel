@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download coverage report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -39,7 +39,7 @@ jobs:
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@v1.1.53
+        uses: MishaKav/pytest-coverage-comment@v1.1.54
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           issue-number: ${{ env.PR_NUMBER }}

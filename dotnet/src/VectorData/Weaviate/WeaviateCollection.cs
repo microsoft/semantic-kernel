@@ -388,7 +388,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             this._hasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
-            .SelectAsync(result => result.Record, cancellationToken: cancellationToken);
+            .Select(result => result.Record, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />

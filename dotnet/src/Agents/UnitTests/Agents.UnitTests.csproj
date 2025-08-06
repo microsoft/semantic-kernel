@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.0.5" />
+		<PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
