@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using A2A;
 using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using A2A;
 
 namespace A2AServer;
 

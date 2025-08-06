@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using A2A;
+using A2A.AspNetCore;
 using A2AServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.A2A;
-using A2A.AspNetCore;
 
 string agentId = string.Empty;
 string agentType = string.Empty;
