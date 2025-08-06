@@ -93,7 +93,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
     {
         this.Trace(item, isSkipped: false);
 
-        string parentId = item.GetParentId();
+        string parentId = Throw.IfNull(item.GetParentId(), nameof(BotElement.Parent)); // %%% NULL PARENT CASE ???
         this.ContinueWith(this.CreateStep(item.Id.Value, nameof(GotoAction)), parentId);
         this._workflowBuilder.AddLink(item.Id.Value, item.ActionId.Value);
         this.RestartFrom(item.Id.Value, nameof(GotoAction), parentId);
@@ -120,12 +120,30 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
 
     protected override void Visit(BreakLoop item) // %%% SUPPORT
     {
-        this.Trace(item);
+        this.Trace(item, isSkipped: false);
+
+        string? loopId = this._workflowBuilder.LocateParent<ForeachAction>(item.GetParentId());
+        if (loopId is not null)
+        {
+            string parentId = Throw.IfNull(item.GetParentId(), nameof(BotElement.Parent)); // %%% NULL PARENT CASE ???
+            this.ContinueWith(this.CreateStep(item.Id.Value, nameof(BreakLoop)), parentId);
+            this._workflowBuilder.AddLink(item.Id.Value, $"post_{loopId}"); // %%% TODO: DRY
+            this.RestartFrom(item.Id.Value, nameof(BreakLoop), parentId);
+        }
     }
 
     protected override void Visit(ContinueLoop item) // %%% SUPPORT
     {
-        this.Trace(item);
+        this.Trace(item, isSkipped: false);
+
+        string? loopId = this._workflowBuilder.LocateParent<ForeachAction>(item.GetParentId());
+        if (loopId is not null)
+        {
+            string parentId = Throw.IfNull(item.GetParentId(), nameof(BotElement.Parent)); // %%% NULL PARENT CASE ???
+            this.ContinueWith(this.CreateStep(item.Id.Value, nameof(ContinueLoop)), parentId);
+            this._workflowBuilder.AddLink(item.Id.Value, $"next_{loopId}"); // %%% TODO: DRY
+            this.RestartFrom(item.Id.Value, nameof(ContinueLoop), parentId);
+        }
     }
 
     protected override void Visit(EndConversation item)
@@ -381,16 +399,17 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
         ProcessAction action,
         Func<bool>? condition = null,
         ScopeCompletionAction? callback = null) =>
-        this.ContinueWith(this.CreateActionStep(action), action.ParentId, condition, callback);
+        this.ContinueWith(this.CreateActionStep(action), action.ParentId, condition, action.GetType(), callback);
 
     private void ContinueWith(
         ProcessStepBuilder step,
         string parentId,
         Func<bool>? condition = null,
+        Type? actionType = null,
         ScopeCompletionAction? callback = null)
     {
         this._actionStack.Recognize(parentId, callback);
-        this._workflowBuilder.AddNode(step, parentId);
+        this._workflowBuilder.AddNode(step, parentId, actionType);
         this._workflowBuilder.AddLinkFromPeer(parentId, step.Id, condition);
     }
 

@@ -32,14 +32,14 @@ internal sealed class ProcessWorkflowBuilder
         return sourceNode.Depth;
     }
 
-    public void AddNode(ProcessStepBuilder step, string parentId)
+    public void AddNode(ProcessStepBuilder step, string parentId, Type? actionType = null)
     {
         if (!this.Steps.TryGetValue(parentId, out ProcessWorkflowNode? parentNode))
         {
             throw new UnknownActionException($"Unresolved parent for {step.Id}: {parentId}.");
         }
 
-        ProcessWorkflowNode stepNode = this.DefineNode(step, parentNode);
+        ProcessWorkflowNode stepNode = this.DefineNode(step, parentNode, actionType);
 
         parentNode.Children.Add(stepNode);
     }
@@ -98,15 +98,40 @@ internal sealed class ProcessWorkflowBuilder
         }
     }
 
-    private ProcessWorkflowNode DefineNode(ProcessStepBuilder step, ProcessWorkflowNode? parentNode = null)
+    private ProcessWorkflowNode DefineNode(ProcessStepBuilder step, ProcessWorkflowNode? parentNode = null, Type? actionType = null)
     {
-        ProcessWorkflowNode stepNode = new(step, parentNode);
+        ProcessWorkflowNode stepNode = new(step, parentNode, actionType);
         this.Steps[stepNode.Id] = stepNode;
 
         return stepNode;
     }
 
-    private sealed class ProcessWorkflowNode(ProcessStepBuilder step, ProcessWorkflowNode? parent = null)
+    internal string? LocateParent<TAction>(string? itemId)
+    {
+        if (string.IsNullOrEmpty(itemId))
+        {
+            return null;
+        }
+
+        while (itemId != null)
+        {
+            if (!this.Steps.TryGetValue(itemId, out ProcessWorkflowNode? itemNode))
+            {
+                throw new UnknownActionException($"Unresolved child: {itemId}.");
+            }
+
+            if (itemNode.ActionType == typeof(TAction))
+            {
+                return itemNode.Id;
+            }
+
+            itemId = itemNode.Parent?.Id;
+        }
+
+        return null;
+    }
+
+    private sealed class ProcessWorkflowNode(ProcessStepBuilder step, ProcessWorkflowNode? parent = null, Type? actionType = null)
     {
         public string Id => step.Id;
 
@@ -117,6 +142,8 @@ internal sealed class ProcessWorkflowBuilder
         public List<ProcessWorkflowNode> Children { get; } = [];
 
         public int Depth => this.Parent?.Depth + 1 ?? 0;
+
+        public Type? ActionType => actionType;
     }
 
     private sealed record class ProcessWorkflowLink(ProcessWorkflowNode Source, string TargetId, Func<bool>? Condition = null)

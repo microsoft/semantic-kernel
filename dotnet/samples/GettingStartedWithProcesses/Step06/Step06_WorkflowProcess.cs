@@ -17,6 +17,8 @@ public class Step06_WorkflowProcess : BaseTest
     [InlineData("testEnd")]
     [InlineData("testGoto")]
     [InlineData("testLoop")]
+    [InlineData("testLoopBreak")]
+    [InlineData("testLoopContinue")]
     [InlineData("testCondition")]
     [InlineData("testExpression")]
     [InlineData("deepResearch")]
