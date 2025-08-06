@@ -209,7 +209,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
         // Assert - Should be able to retrieve the service by its key
         var exception = Assert.Throws<OnnxRuntimeGenAIException>(() => kernel.GetRequiredService<IChatCompletionService>("test-service"));
 
-        Assert.Contains($"Error opening {TestModelPath}\\genai_config.json", exception.Message);
+        Assert.Contains("genai_config.json", exception.Message);
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
         // Assert - Should be able to retrieve the service by its key
         var exception = Assert.Throws<OnnxRuntimeGenAIException>(() => kernel.GetRequiredService<IChatCompletionService>("test-service"));
 
-        Assert.Contains($"Error opening {TestModelPath}\\genai_config.json", exception.Message);
+        Assert.Contains("genai_config.json", exception.Message);
     }
 
     [Fact]

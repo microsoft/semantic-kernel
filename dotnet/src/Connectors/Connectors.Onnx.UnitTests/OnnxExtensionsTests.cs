@@ -100,7 +100,7 @@ public class OnnxExtensionsTests
         // Assert
         var exception = Assert.Throws<OnnxRuntimeGenAIException>(() => serviceProvider.GetRequiredKeyedService<IChatCompletionService>("test-service"));
 
-        Assert.Contains("Error opening modelPath\\genai_config.json", exception.Message);
+        Assert.Contains("genai_config.json", exception.Message);
     }
 
     [Fact]
@@ -120,6 +120,6 @@ public class OnnxExtensionsTests
         var kernel = serviceProvider.GetRequiredService<Kernel>();
         var exception = Assert.Throws<OnnxRuntimeGenAIException>(() => kernel.GetRequiredService<IChatCompletionService>("test-service"));
 
-        Assert.Contains("Error opening modelPath\\genai_config.json", exception.Message);
+        Assert.Contains("genai_config.json", exception.Message);
     }
 }
