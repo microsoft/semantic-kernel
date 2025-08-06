@@ -2,18 +2,18 @@ version = 1
 revision = 2
 requires-python = ">=3.10"
 resolution-markers = [
-    "python_full_version >= '4.0' and sys_platform == 'darwin'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'darwin'",
+    "python_full_version >= '4' and sys_platform == 'darwin'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'darwin'",
     "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
     "python_full_version < '3.11' and sys_platform == 'darwin'",
-    "python_full_version >= '4.0' and sys_platform == 'linux'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'linux'",
+    "python_full_version >= '4' and sys_platform == 'linux'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and sys_platform == 'linux'",
     "python_full_version == '3.11.*' and sys_platform == 'linux'",
     "python_full_version < '3.11' and sys_platform == 'linux'",
-    "python_full_version >= '4.0' and sys_platform == 'win32'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'win32'",
+    "python_full_version >= '4' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'win32'",
     "python_full_version < '3.11' and sys_platform == 'win32'",
@@ -2248,16 +2248,16 @@ name = "ipython"
 version = "9.3.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '4.0' and sys_platform == 'darwin'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'darwin'",
+    "python_full_version >= '4' and sys_platform == 'darwin'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'darwin'",
     "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
-    "python_full_version >= '4.0' and sys_platform == 'linux'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'linux'",
+    "python_full_version >= '4' and sys_platform == 'linux'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and sys_platform == 'linux'",
     "python_full_version == '3.11.*' and sys_platform == 'linux'",
-    "python_full_version >= '4.0' and sys_platform == 'win32'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'win32'",
+    "python_full_version >= '4' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'win32'",
 ]
@@ -3157,16 +3157,16 @@ name = "networkx"
 version = "3.5"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '4.0' and sys_platform == 'darwin'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'darwin'",
+    "python_full_version >= '4' and sys_platform == 'darwin'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'darwin'",
     "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
-    "python_full_version >= '4.0' and sys_platform == 'linux'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'linux'",
+    "python_full_version >= '4' and sys_platform == 'linux'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and sys_platform == 'linux'",
     "python_full_version == '3.11.*' and sys_platform == 'linux'",
-    "python_full_version >= '4.0' and sys_platform == 'win32'",
-    "python_full_version >= '3.13' and python_full_version < '4.0' and sys_platform == 'win32'",
+    "python_full_version >= '4' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and python_full_version < '4' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'win32'",
 ]
@@ -3859,7 +3859,7 @@ dependencies = [
     { name = "pinecone-plugin-interface", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "urllib3", marker = "(python_full_version < '4.0' and sys_platform == 'darwin') or (python_full_version < '4.0' and sys_platform == 'linux') or (python_full_version < '4.0' and sys_platform == 'win32')" },
+    { name = "urllib3", marker = "(python_full_version < '4' and sys_platform == 'darwin') or (python_full_version < '4' and sys_platform == 'linux') or (python_full_version < '4' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1a/44/7b799265f4817bb4e232dc817acdf3ee4a811562128b0fcbf9d3f878b4f0/pinecone-7.2.0.tar.gz", hash = "sha256:003d78cd8ab55c08578e7d827e4324689192e4deb58b192457c49e779968d52d", size = 212436, upload-time = "2025-06-18T18:45:04.347Z" }
 wheels = [
@@ -3873,7 +3873,7 @@ asyncio = [
 ]
 grpc = [
     { name = "googleapis-common-protos", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "grpcio", marker = "(python_full_version < '4.0' and sys_platform == 'darwin') or (python_full_version < '4.0' and sys_platform == 'linux') or (python_full_version < '4.0' and sys_platform == 'win32')" },
+    { name = "grpcio", marker = "(python_full_version < '4' and sys_platform == 'darwin') or (python_full_version < '4' and sys_platform == 'linux') or (python_full_version < '4' and sys_platform == 'win32')" },
     { name = "lz4", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "protobuf", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "protoc-gen-openapiv2", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -5717,7 +5717,7 @@ requires-dist = [
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=6.0" },
     { name = "redisvl", marker = "extra == 'redis'", specifier = "~=0.4" },
     { name = "scipy", specifier = ">=1.15.1" },
-    { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<5.0" },
+    { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<6.0" },
     { name = "torch", marker = "extra == 'hugging-face'", specifier = "==2.7.1" },
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },

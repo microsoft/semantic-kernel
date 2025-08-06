@@ -910,21 +910,23 @@ def create_mcp_server_from_kernel(
                 ] = []
                 if isinstance(value, list):
                     for item in value:
-                        if isinstance(
-                            value, (TextContent, ImageContent, BinaryContent, AudioContent, ChatMessageContent)
-                        ):
-                            messages.extend(_kernel_content_to_mcp_content_types(item))
-                        else:
-                            messages.append(
-                                types.TextContent(type="text", text=str(item)),
-                            )
+                        match item:
+                            case (
+                                TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent()
+                            ):
+                                messages.extend(_kernel_content_to_mcp_content_types(item))
+                            case _:
+                                messages.append(
+                                    types.TextContent(type="text", text=str(item)),
+                                )
                 else:
-                    if isinstance(value, (TextContent, ImageContent, BinaryContent, AudioContent, ChatMessageContent)):
-                        messages.extend(_kernel_content_to_mcp_content_types(value))
-                    else:
-                        messages.append(
-                            types.TextContent(type="text", text=str(value)),
-                        )
+                    match value:
+                        case TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent():
+                            messages.extend(_kernel_content_to_mcp_content_types(value))
+                        case _:
+                            messages.append(
+                                types.TextContent(type="text", text=str(value)),
+                            )
                 return messages
             raise McpError(
                 error=types.ErrorData(
