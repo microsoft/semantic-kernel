@@ -93,7 +93,7 @@ internal static class FormulaValueExtensions
         TableDataValue.TableFromRecords(value.Rows.Select(row => row.Value.ToDataValue()).ToImmutableArray());
 
     public static RecordDataValue ToDataValue(this RecordValue value) =>
-        RecordDataValue.RecordFromFields(value.Fields.Select(field => field.GetKeyValuePair()).ToImmutableArray());
+        RecordDataValue.RecordFromFields(value.OriginalFields.Select(field => field.GetKeyValuePair()).ToImmutableArray());
 
     private static KeyValuePair<string, DataValue> GetKeyValuePair(this NamedValue value) => new(value.Name, value.Value.GetDataValue());
 }
