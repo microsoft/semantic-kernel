@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeConformance;
 
-public class OpenAIAssistantAgentInvokeTests() : InvokeTests(() => new OpenAIAssistantAgentFixture())
-{
-}
+public class OpenAIAssistantAgentInvokeTests() : InvokeTests(() => new OpenAIAssistantAgentFixture());
