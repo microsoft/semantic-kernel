@@ -2,7 +2,7 @@
 
 using System;
 using Microsoft.SemanticKernel.ChatCompletion;
-using SharpA2A.Core;
+using A2A;
 
 namespace Microsoft.SemanticKernel.Agents.A2A;
 

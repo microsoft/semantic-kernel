@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using SharpA2A.Core;
+using A2A;
 
 namespace A2AServer;
 

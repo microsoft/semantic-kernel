@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
-using SharpA2A.Core;
+using A2A;
 
 namespace GettingStarted.A2A;
 
@@ -18,9 +18,10 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task UseA2AAgent()
     {
         // Create an A2A agent instance
+        var url = new Uri("http://localhost/");
         using var httpClient = CreateHttpClient();
-        var client = new A2AClient(httpClient);
-        var cardResolver = new A2ACardResolver(httpClient);
+        var client = new A2AClient(url, httpClient);
+        var cardResolver = new A2ACardResolver(url, httpClient);
         var agentCard = await cardResolver.GetAgentCardAsync();
         Console.WriteLine(JsonSerializer.Serialize(agentCard, s_jsonSerializerOptions));
         var agent = new A2AAgent(client, agentCard);
@@ -36,9 +37,10 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task UseA2AAgentStreaming()
     {
         // Create an A2A agent instance
+        var url = new Uri("http://localhost/");
         using var httpClient = CreateHttpClient();
-        var client = new A2AClient(httpClient);
-        var cardResolver = new A2ACardResolver(httpClient);
+        var client = new A2AClient(url, httpClient);
+        var cardResolver = new A2ACardResolver(url, httpClient);
         var agentCard = await cardResolver.GetAgentCardAsync();
         Console.WriteLine(JsonSerializer.Serialize(agentCard, s_jsonSerializerOptions));
         var agent = new A2AAgent(client, agentCard);

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.A2A;
-using SharpA2A.AspNetCore;
+using A2A.AspNetCore;
 
 string agentId = string.Empty;
 string agentType = string.Empty;
@@ -96,6 +96,6 @@ else
     throw new ArgumentException("Either A2AServer:ApiKey or A2AServer:ConnectionString & agentId must be provided");
 }
 
-app.MapA2A(hostAgent!.TaskManager!, "");
+app.MapA2A(hostAgent!.TaskManager!, "/");
 
 await app.RunAsync();
