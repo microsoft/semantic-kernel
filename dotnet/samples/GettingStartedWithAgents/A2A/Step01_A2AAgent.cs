@@ -18,7 +18,7 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task UseA2AAgent()
     {
         // Create an A2A agent instance
-        var url = new Uri("http://localhost/");
+        var url = TestConfiguration.A2A.AgentUrl;
         using var httpClient = CreateHttpClient();
         var client = new A2AClient(url, httpClient);
         var cardResolver = new A2ACardResolver(url, httpClient);
@@ -37,7 +37,7 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task UseA2AAgentStreaming()
     {
         // Create an A2A agent instance
-        var url = new Uri("http://localhost/");
+        var url = TestConfiguration.A2A.AgentUrl;
         using var httpClient = CreateHttpClient();
         var client = new A2AClient(url, httpClient);
         var cardResolver = new A2ACardResolver(url, httpClient);
@@ -58,16 +58,10 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAgentsTest(output)
         if (this.EnableLogging)
         {
             var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-            return new HttpClient(handler)
-            {
-                BaseAddress = TestConfiguration.A2A.AgentUrl
-            };
+            return new HttpClient(handler);
         }
 
-        return new HttpClient()
-        {
-            BaseAddress = TestConfiguration.A2A.AgentUrl
-        };
+        return new HttpClient();
     }
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
