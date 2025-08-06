@@ -42,7 +42,7 @@
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
     <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
-    <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
+    <Project Path="samples/Demos/ProcessWithLocalRuntime/ProcessWithLocalRuntime.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
     <Project Path="samples/Demos/StepwisePlannerMigration/StepwisePlannerMigration.csproj" />
     <Project Path="samples/Demos/StructuredDataPlugin/StructuredDataPlugin.csproj" />
@@ -80,7 +80,7 @@
   </Folder>
   <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
     <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
-    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
+    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc.LocalRuntime/ProcessWithCloudEvents.Grpc.LocalRuntime.csproj" />
     <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Processes/ProcessWithCloudEvents.Processes.csproj" />
   </Folder>
   <Folder Name="/src/">
@@ -159,14 +159,10 @@
   <Folder Name="/src/experimental/process/">
     <Project Path="src/Experimental/Process.Abstractions/Process.Abstractions.csproj" />
     <Project Path="src/Experimental/Process.Core/Process.Core.csproj" />
-    <Project Path="src/Experimental/Process.IntegrationTestHost.Dapr/Process.IntegrationTestHost.Dapr.csproj" />
-    <Project Path="src/Experimental/Process.IntegrationTestRunner.Dapr/Process.IntegrationTestRunner.Dapr.csproj" />
     <Project Path="src/Experimental/Process.IntegrationTestRunner.Local/Process.IntegrationTestRunner.Local.csproj" />
     <Project Path="src/Experimental/Process.IntegrationTests.Resources/Process.IntegrationTests.Resources.csproj" />
     <Project Path="src/Experimental/Process.IntegrationTests.Shared/Process.IntegrationTests.Shared.csproj" />
     <Project Path="src/Experimental/Process.LocalRuntime/Process.LocalRuntime.csproj" />
-    <Project Path="src/Experimental/Process.Runtime.Dapr.UnitTests/Process.Runtime.Dapr.UnitTests.csproj" />
-    <Project Path="src/Experimental/Process.Runtime.Dapr/Process.Runtime.Dapr.csproj" />
     <Project Path="src/Experimental/Process.UnitTests/Process.UnitTests.csproj" />
     <Project Path="src/Experimental/Process.Utilities.UnitTests/Process.Utilities.UnitTests.csproj" />
   </Folder>

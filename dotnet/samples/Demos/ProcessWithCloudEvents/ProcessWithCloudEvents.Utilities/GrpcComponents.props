@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/Grpc/**/*.cs" Link="Grpc/%(RecursiveDir)/%(Filename)%(Extension)" />
+    <Protobuf Include="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/Grpc/**/*.proto" Link="Grpc/%(RecursiveDir)/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -62,9 +62,9 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     internal KernelProcessEdge Build(ProcessBuilder? processBuilder = null)
     {
-        Verify.NotNull(this.Source?.Id);
+        Verify.NotNull(this.Source?.StepId);
 
-        if (this.Target is null || this.Source?.Id is null)
+        if (this.Target is null || this.Source?.StepId is null)
         {
             throw new InvalidOperationException("A target and Source must be specified before building the edge.");
         }
@@ -73,13 +73,13 @@ public class ProcessStepEdgeBuilder
         {
             if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
             {
-                var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
+                var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.StepId)).ToList();
                 var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
                 functionTargetBuilder.Step.RegisterGroupInputMapping(edgeGroup);
             }
         }
 
-        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId, this.Condition, this.VariableUpdate);
+        return new KernelProcessEdge(this.Source.StepId, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId, this.Condition, this.VariableUpdate);
     }
 
     /// <summary>
