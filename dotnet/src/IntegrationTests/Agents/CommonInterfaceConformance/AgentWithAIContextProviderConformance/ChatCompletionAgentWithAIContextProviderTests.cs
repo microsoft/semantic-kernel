@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class ChatCompletionAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<ChatCompletionAgentFixture>(() => new ChatCompletionAgentFixture())
-{
-}
+public class ChatCompletionAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<ChatCompletionAgentFixture>(() => new ChatCompletionAgentFixture());
