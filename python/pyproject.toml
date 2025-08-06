@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.91.1",
+    "openai >= 1.98.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -145,7 +145,7 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 21.0"
+    "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
     "weaviate-client>=4.10,<5.0",
