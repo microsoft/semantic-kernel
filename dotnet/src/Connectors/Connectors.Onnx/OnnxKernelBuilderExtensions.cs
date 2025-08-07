@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Onnx;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,27 +16,64 @@ namespace Microsoft.SemanticKernel;
 public static class OnnxKernelBuilderExtensions
 {
     /// <summary>
-    /// Add OnnxRuntimeGenAI Chat Completion services to the kernel builder.
+    /// Adds OnnxRuntimeGenAI Chat Completion services to the specified <see cref="IKernelBuilder"/>.
     /// </summary>
-    /// <param name="builder">The kernel builder.</param>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">Model Id.</param>
-    /// <param name="modelPath">The generative AI ONNX model path.</param>
-    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="loggerFactory">Logger factory.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization, such as function argument deserialization, function result serialization, logging, etc., of the service.</param>
-    /// <returns>The updated kernel builder.</returns>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOnnxRuntimeGenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         string modelPath,
         string? serviceId = null,
+        ILoggerFactory? loggerFactory = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new OnnxRuntimeGenAIChatCompletionService(
-                modelId,
-                modelPath: modelPath,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                jsonSerializerOptions));
+        Verify.NotNull(builder);
+
+        builder.Services.AddOnnxRuntimeGenAIChatCompletion(
+            modelId,
+            modelPath,
+            serviceId,
+            loggerFactory,
+            jsonSerializerOptions);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds OnnxRuntimeGenAI Chat Completion services to the specified <see cref="IKernelBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">Model Id.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="providers">Providers</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="loggerFactory">Logger factory.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization, such as function argument deserialization, function result serialization, logging, etc., of the service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddOnnxRuntimeGenAIChatCompletion(
+        this IKernelBuilder builder,
+        string modelId,
+        string modelPath,
+        List<Provider> providers,
+        string? serviceId = null,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOnnxRuntimeGenAIChatCompletion(
+            modelId,
+            modelPath,
+            providers,
+            serviceId,
+            loggerFactory,
+            jsonSerializerOptions);
 
         return builder;
     }
@@ -59,9 +94,11 @@ public static class OnnxKernelBuilderExtensions
         BertOnnxOptions? options = null,
         string? serviceId = null)
     {
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelPath, vocabPath, options));
+        builder.Services.AddBertOnnxTextEmbeddingGeneration(
+            onnxModelPath,
+            vocabPath,
+            options,
+            serviceId);
 
         return builder;
     }
@@ -81,9 +118,11 @@ public static class OnnxKernelBuilderExtensions
         BertOnnxOptions? options = null,
         string? serviceId = null)
     {
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options));
+        builder.Services.AddBertOnnxTextEmbeddingGeneration(
+            onnxModelStream,
+            vocabStream,
+            options,
+            serviceId);
 
         return builder;
     }
