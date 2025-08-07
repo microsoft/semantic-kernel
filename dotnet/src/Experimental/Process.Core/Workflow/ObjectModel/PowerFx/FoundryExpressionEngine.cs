@@ -44,20 +44,17 @@ internal class FoundryExpressionEngine : IExpressionEngine
 
     public EvaluationResult<double> GetValue(NumberExpression expression, RecordDataValue state) => this.GetValue(expression, state, this.EvaluateState);
 
-    public EvaluationResult<TValue?> GetValue<TValue>(ObjectExpression<TValue> expression, RecordDataValue state) where TValue : BotElement
-    {
-        throw new NotImplementedException(); // %%% TODO: IMPLEMENT
-    }
+    public EvaluationResult<TValue?> GetValue<TValue>(ObjectExpression<TValue> expression, ProcessActionScopes state) where TValue : BotElement => this.GetValue(expression, state, this.EvaluateScope);
 
-    public ImmutableArray<T> GetValue<T>(ArrayExpression<T> expression, RecordDataValue state)
-    {
-        throw new NotImplementedException(); // %%% TODO: IMPLEMENT
-    }
+    public EvaluationResult<TValue?> GetValue<TValue>(ObjectExpression<TValue> expression, RecordDataValue state) where TValue : BotElement => this.GetValue(expression, state, this.EvaluateState);
 
-    public ImmutableArray<T> GetValue<T>(ArrayExpressionOnly<T> expression, RecordDataValue state)
-    {
-        throw new NotImplementedException(); // %%% TODO: IMPLEMENT
-    }
+    public ImmutableArray<T> GetValue<T>(ArrayExpression<T> expression, ProcessActionScopes state) => this.GetValue(expression, state, this.EvaluateScope).Value;
+
+    public ImmutableArray<T> GetValue<T>(ArrayExpression<T> expression, RecordDataValue state) => this.GetValue(expression, state, this.EvaluateState).Value;
+
+    public ImmutableArray<T> GetValue<T>(ArrayExpressionOnly<T> expression, ProcessActionScopes state) => this.GetValue(expression, state, this.EvaluateScope).Value;
+
+    public ImmutableArray<T> GetValue<T>(ArrayExpressionOnly<T> expression, RecordDataValue state) => this.GetValue(expression, state, this.EvaluateState).Value;
 
     public EvaluationResult<TValue> GetValue<TValue>(EnumExpression<TValue> expression, ProcessActionScopes state) where TValue : EnumWrapper =>
         this.GetValue<TValue, ProcessActionScopes>(expression, state, this.EvaluateScope);
@@ -80,135 +77,220 @@ internal class FoundryExpressionEngine : IExpressionEngine
         throw new NotSupportedException();
     }
 
-    private EvaluationResult<bool> GetValue<TState>(BoolExpression expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator)
+    private EvaluationResult<bool> GetValue<TState>(BoolExpression expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<bool>(expression.LiteralValue, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<bool>(expression.LiteralValue, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        if (expressionValue is BlankValue)
+        if (expressionResult.Value is BlankValue)
         {
-            return new EvaluationResult<bool>(default, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<bool>(default, SensitivityLevel.None);
         }
 
-        if (expressionValue is not BooleanValue formulaValue)
+        if (expressionResult.Value is not BooleanValue formulaValue)
         {
-            throw new InvalidExpressionOutputTypeException(expressionValue.GetDataType(), DataType.Boolean);
+            throw new InvalidExpressionOutputTypeException(expressionResult.Value.GetDataType(), DataType.Boolean);
         }
 
-        return new EvaluationResult<bool>(formulaValue.Value, SensitivityLevel.None); // %%% SENSITIVITY ???
+        return new EvaluationResult<bool>(formulaValue.Value, expressionResult.Sensitivity);
     }
 
-    private EvaluationResult<string> GetValue<TState>(StringExpression expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator)
+    private EvaluationResult<string> GetValue<TState>(StringExpression expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<string>(expression.LiteralValue, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<string>(expression.LiteralValue, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        if (expressionValue is BlankValue)
+        if (expressionResult.Value is BlankValue)
         {
-            return new EvaluationResult<string>(string.Empty, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<string>(string.Empty, expressionResult.Sensitivity);
         }
 
-        if (expressionValue is RecordValue recordValue)
+        if (expressionResult.Value is RecordValue recordValue)
         {
-            return new EvaluationResult<string>(JsonSerializer.Serialize(recordValue, s_options), SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<string>(JsonSerializer.Serialize(recordValue, s_options), expressionResult.Sensitivity);
         }
 
-        if (expressionValue is not StringValue formulaValue)
+        if (expressionResult.Value is not StringValue formulaValue)
         {
-            throw new InvalidExpressionOutputTypeException(expressionValue.GetDataType(), DataType.String);
+            throw new InvalidExpressionOutputTypeException(expressionResult.Value.GetDataType(), DataType.String);
         }
 
-        return new EvaluationResult<string>(formulaValue.Value, SensitivityLevel.None); // %%% SENSITIVITY ???
+        return new EvaluationResult<string>(formulaValue.Value, expressionResult.Sensitivity);
     }
 
-    private EvaluationResult<long> GetValue<TState>(IntExpression expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator)
+    private EvaluationResult<long> GetValue<TState>(IntExpression expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<long>(expression.LiteralValue, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<long>(expression.LiteralValue, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        if (expressionValue is not PrimitiveValue<int> formulaValue) // %%% CORRECT ???
+        if (expressionResult.Value is not PrimitiveValue<int> formulaValue) // %%% CORRECT ???
         {
-            throw new InvalidExpressionOutputTypeException(expressionValue.GetDataType(), DataType.Number);
+            throw new InvalidExpressionOutputTypeException(expressionResult.Value.GetDataType(), DataType.Number);
         }
 
-        return new EvaluationResult<long>(formulaValue.Value, SensitivityLevel.None); // %%% SENSITIVITY ???
+        return new EvaluationResult<long>(formulaValue.Value, expressionResult.Sensitivity);
     }
 
-    private EvaluationResult<double> GetValue<TState>(NumberExpression expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator)
+    private EvaluationResult<double> GetValue<TState>(NumberExpression expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<double>(expression.LiteralValue, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<double>(expression.LiteralValue, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        if (expressionValue is not NumberValue formulaValue)
+        if (expressionResult.Value is not NumberValue formulaValue)
         {
-            throw new InvalidExpressionOutputTypeException(expressionValue.GetDataType(), DataType.Number);
+            throw new InvalidExpressionOutputTypeException(expressionResult.Value.GetDataType(), DataType.Number);
         }
 
-        return new EvaluationResult<double>(formulaValue.Value, SensitivityLevel.None); // %%% SENSITIVITY ???
+        return new EvaluationResult<double>(formulaValue.Value, expressionResult.Sensitivity);
     }
 
-    private EvaluationResult<DataValue> GetValue<TState>(ValueExpression expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator)
+    private EvaluationResult<DataValue> GetValue<TState>(ValueExpression expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<DataValue>(expression.LiteralValue ?? BlankDataValue.Instance, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<DataValue>(expression.LiteralValue ?? BlankDataValue.Instance, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        return new EvaluationResult<DataValue>(expressionValue.GetDataValue(), SensitivityLevel.None); // %%% SENSITIVITY ???
+        return new EvaluationResult<DataValue>(expressionResult.Value.GetDataValue(), expressionResult.Sensitivity);
     }
 
-    private EvaluationResult<TValue> GetValue<TValue, TState>(EnumExpression<TValue> expression, TState state, Func<ExpressionBase, TState, FormulaValue> evaluator) where TValue : EnumWrapper
+    private EvaluationResult<TValue> GetValue<TValue, TState>(EnumExpression<TValue> expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator) where TValue : EnumWrapper
     {
         Throw.IfNull(expression, nameof(expression));
 
         if (expression.IsLiteral)
         {
-            return new EvaluationResult<TValue>(expression.LiteralValue, SensitivityLevel.None); // %%% SENSITIVITY ???
+            return new EvaluationResult<TValue>(expression.LiteralValue, SensitivityLevel.None);
         }
 
-        FormulaValue expressionValue = evaluator.Invoke(expression, state);
-        SensitivityLevel expressionSensitivity = SensitivityLevel.None; // %%% SENSITIVITY ???
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
 
-        return expressionValue switch
+        return expressionResult.Value switch
         {
-            BlankValue => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(0), expressionSensitivity),
-            StringValue s when s.Value is not null => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(s.Value), expressionSensitivity),
-            StringValue => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(0), expressionSensitivity),
-            NumberValue number => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>((int)number.Value), expressionSensitivity),
-            //OptionDataValue option => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(option.Value.Value), expressionSensitivity),
-            _ => throw new InvalidExpressionOutputTypeException(expressionValue.GetDataType(), DataType.String),
+            BlankValue => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(0), expressionResult.Sensitivity),
+            StringValue s when s.Value is not null => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(s.Value), expressionResult.Sensitivity),
+            StringValue => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(0), expressionResult.Sensitivity),
+            NumberValue number => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>((int)number.Value), expressionResult.Sensitivity),
+            //OptionDataValue option => new EvaluationResult<TValue>(EnumWrapper.Create<TValue>(option.Value.Value), expressionResult.Sensitivity), // %%% SUPPORT
+            _ => throw new InvalidExpressionOutputTypeException(expressionResult.Value.GetDataType(), DataType.String),
         };
     }
 
-    private FormulaValue EvaluateState(ExpressionBase expression, RecordDataValue state)
+    private EvaluationResult<TValue?> GetValue<TValue, TState>(ObjectExpression<TValue> expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator) where TValue : BotElement
+    {
+        Throw.IfNull(expression, nameof(expression));
+
+        if (expression.LiteralValue != null)
+        {
+            return new EvaluationResult<TValue?>(expression.LiteralValue, SensitivityLevel.None);
+        }
+
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
+
+        if (expressionResult.Value is BlankValue)
+        {
+            return new EvaluationResult<TValue?>(null, expressionResult.Sensitivity);
+        }
+
+        if (expressionResult.Value is not RecordValue formulaValue)
+        {
+            throw new CannotParseObjectExpressionOutputException(typeof(TValue), expressionResult.Value.GetDataType());
+        }
+
+        try
+        {
+            return new EvaluationResult<TValue?>(ObjectExpressionParser<TValue>.Parse(formulaValue.ToDataValue()), expressionResult.Sensitivity);
+        }
+        catch (Exception exception)
+        {
+            throw new CannotParseObjectExpressionOutputException(typeof(TValue), exception);
+        }
+    }
+
+    private EvaluationResult<ImmutableArray<TValue>> GetValue<TState, TValue>(ArrayExpression<TValue> expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
+    {
+        Throw.IfNull(expression, nameof(expression));
+
+        if (expression.IsLiteral)
+        {
+            return new EvaluationResult<ImmutableArray<TValue>>(expression.LiteralValue, SensitivityLevel.None);
+        }
+
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
+
+        return new EvaluationResult<ImmutableArray<TValue>>(ParseArrayResults<TValue>(expressionResult.Value), expressionResult.Sensitivity);
+    }
+
+    private EvaluationResult<ImmutableArray<TValue>> GetValue<TState, TValue>(ArrayExpressionOnly<TValue> expression, TState state, Func<ExpressionBase, TState, EvaluationResult<FormulaValue>> evaluator)
+    {
+        Throw.IfNull(expression, nameof(expression));
+
+        EvaluationResult<FormulaValue> expressionResult = evaluator.Invoke(expression, state);
+
+        return new EvaluationResult<ImmutableArray<TValue>>(ParseArrayResults<TValue>(expressionResult.Value), expressionResult.Sensitivity);
+    }
+
+    private static ImmutableArray<TValue> ParseArrayResults<TValue>(FormulaValue value)
+    {
+        if (value is BlankValue)
+        {
+            return ImmutableArray.Create<TValue>();
+        }
+
+        if (value is not TableValue tableValue)
+        {
+            throw new CannotParseObjectExpressionOutputException(typeof(ImmutableArray<TValue>), value.GetDataType());
+        }
+
+        TableDataValue tableDataValue = tableValue.ToDataValue();
+        try
+        {
+            List<TValue> list = [];
+            foreach (RecordDataValue row in tableDataValue.Values)
+            {
+                TValue? s = TableItemParser<TValue>.Parse(row);
+                if (s != null)
+                {
+                    list.Add(s);
+                }
+            }
+            return list.ToImmutableArray();
+        }
+        catch (Exception exception)
+        {
+            throw new CannotParseObjectExpressionOutputException(typeof(TValue), exception);
+        }
+    }
+
+    private EvaluationResult<FormulaValue> EvaluateState(ExpressionBase expression, RecordDataValue state)
     {
         foreach (KeyValuePair<string, DataValue> kvp in state.Properties)
         {
@@ -221,7 +303,7 @@ internal class FoundryExpressionEngine : IExpressionEngine
         return this.Evaluate(expression);
     }
 
-    private FormulaValue EvaluateScope(ExpressionBase expression, ProcessActionScopes state)
+    private EvaluationResult<FormulaValue> EvaluateScope(ExpressionBase expression, ProcessActionScopes state)
     {
         this._engine.SetScope(ActionScopeType.System.Name, state.BuildRecord(ActionScopeType.System));
         this._engine.SetScope(ActionScopeType.Env.Name, state.BuildRecord(ActionScopeType.Env));
@@ -231,13 +313,13 @@ internal class FoundryExpressionEngine : IExpressionEngine
         return this.Evaluate(expression);
     }
 
-    private FormulaValue Evaluate(ExpressionBase expression)
+    private EvaluationResult<FormulaValue> Evaluate(ExpressionBase expression)
     {
         string? expressionText =
             expression.IsVariableReference ?
             expression.VariableReference?.Format() :
             expression.ExpressionText;
 
-        return this._engine.Eval(expressionText);
+        return new(this._engine.Eval(expressionText), SensitivityLevel.None);
     }
 }

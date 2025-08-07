@@ -27,7 +27,7 @@ public abstract class ProcessActionTest(ITestOutputHelper output) : WorkflowTest
             new ProcessActionContext(
                 RecalcEngineFactory.Create(this.Scopes, 5000),
                 this.Scopes,
-                kernel ?? new Kernel(),
+                () => null!, // %%% FIX
                 this.Output),
             cancellationToken: default);
 
