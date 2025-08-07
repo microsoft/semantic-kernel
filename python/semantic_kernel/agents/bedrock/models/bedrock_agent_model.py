@@ -22,3 +22,5 @@ class BedrockAgentModel(KernelBaseModel):
     agent_version: str | None = Field(default=None, alias="agentVersion", description="The version of the agent.")
     foundation_model: str | None = Field(default=None, alias="foundationModel", description="The foundation model.")
     agent_status: str | None = Field(default=None, alias="agentStatus", description="The status of the agent.")
+    instruction: str | None = Field(default=None, alias="instruction", description="The instructions for the agent.")
+    description: str | None = Field(default=None, alias="description", description="The description of the agent.")

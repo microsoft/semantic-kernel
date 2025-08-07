@@ -180,6 +180,7 @@ class BedrockAgent(BedrockAgentBase):
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
         arguments: KernelArguments | None = None,
+        description: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> "BedrockAgent":
@@ -199,6 +200,7 @@ class BedrockAgent(BedrockAgentBase):
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
                 the kernel functions and filters. Only FunctionChoiceType.AUTO is supported.
             arguments (KernelArguments, optional): The kernel arguments.
+            description (str, optional): The description of the agent.
             prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
             env_file_path (str, optional): The path to the environment file.
             env_file_encoding (str, optional): The encoding of the environment file.
@@ -222,15 +224,21 @@ class BedrockAgent(BedrockAgentBase):
         bedrock_runtime_client = bedrock_runtime_client or boto3.client("bedrock-agent-runtime")
         bedrock_client = bedrock_client or boto3.client("bedrock-agent")
 
+        request_body = {
+            "agentName": name,
+            "foundationModel": bedrock_agent_settings.foundation_model,
+            "agentResourceRoleArn": bedrock_agent_settings.agent_resource_role_arn,
+            "instruction": instructions,
+        }
+        if description:
+            request_body["description"] = description
+
         try:
             response = await run_in_executor(
                 None,
                 partial(
                     bedrock_client.create_agent,
-                    agentName=name,
-                    foundationModel=bedrock_agent_settings.foundation_model,
-                    agentResourceRoleArn=bedrock_agent_settings.agent_resource_role_arn,
-                    instruction=instructions,
+                    **request_body,
                 ),
             )
         except ClientError as e:
@@ -381,6 +389,11 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
+        if isinstance(messages, list):
+            if len(messages) != 1:
+                raise AgentInvokeException("If messages is a list, it must contain exactly one item for BedrockAgent.")
+            messages = messages[0]
+
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
 
@@ -486,6 +499,11 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
+        if isinstance(messages, list):
+            if len(messages) != 1:
+                raise AgentInvokeException("If messages is a list, it must contain exactly one item for BedrockAgent.")
+            messages = messages[0]
+
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
 

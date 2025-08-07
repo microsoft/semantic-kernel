@@ -69,6 +69,8 @@ class BedrockAgentBase(Agent):
             "agent_model": agent_model,
             "id": agent_model.agent_id,
             "name": agent_model.agent_name,
+            "instructions": agent_model.instruction,
+            "description": agent_model.description,
             "bedrock_runtime_client": bedrock_runtime_client or boto3.client("bedrock-agent-runtime"),
             "bedrock_client": bedrock_client or boto3.client("bedrock-agent"),
             **kwargs,
@@ -363,6 +365,16 @@ class BedrockAgentBase(Agent):
             raise ValueError("Only user messages are supported for invoking a Bedrock agent.")
 
         agent_alias = agent_alias or self.WORKING_DRAFT_AGENT_ALIAS
+
+        # Remove keyword arguments that are not supported by the Bedrock Agent Runtime
+        kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if k
+            not in [
+                "on_intermediate_message",
+            ]
+        }
 
         try:
             return await run_in_executor(

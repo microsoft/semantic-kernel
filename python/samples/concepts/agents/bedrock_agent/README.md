@@ -46,8 +46,6 @@ bedrock_agent = BedrockAgent.create_and_prepare_agent(
 | [bedrock_agent_with_kernel_function_streaming.py](bedrock_agent_with_kernel_function_streaming.py) | Shows how to use the Bedrock agent with a kernel function with streaming. |
 | [bedrock_agent_with_code_interpreter.py](bedrock_agent_with_code_interpreter.py) | Example of using the Bedrock agent with a code interpreter. |
 | [bedrock_agent_with_code_interpreter_streaming.py](bedrock_agent_with_code_interpreter_streaming.py) | Example of using the Bedrock agent with a code interpreter and streaming. |
-| [bedrock_mixed_chat_agents.py](bedrock_mixed_chat_agents.py) | Example of using multiple chat agents in a single script. |
-| [bedrock_mixed_chat_agents_streaming.py](bedrock_mixed_chat_agents_streaming.py) | Example of using multiple chat agents in a single script with streaming. |
 
 ## Before running the samples
 
