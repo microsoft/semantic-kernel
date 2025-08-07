@@ -725,16 +725,5 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             operation,
             cancellationToken).ConfigureAwait(false);
 
-    private object GetKey(TKey key)
-    {
-        Verify.NotNull(key);
-
-        var stringKey = key as string ?? throw new UnreachableException(" key should have been validated during model building");
-
-        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
-
-        return stringKey;
-    }
-
     #endregion
 }
