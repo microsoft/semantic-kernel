@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,11 @@ public sealed class WorkflowContext
     /// Defines the maximum allowed length for expressions evaluated in the workflow.
     /// </summary>
     public int? MaximumExpressionLength { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="System.Net.Http.HttpClient"/> instance used to send HTTP requests.
+    /// </summary>
+    public HttpClient? HttpClient { get; init; }
 
     /// <summary>
     /// Gets the <see cref="ILoggerFactory"/> used to create loggers for workflow components.

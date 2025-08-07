@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.PowerFx;
@@ -11,7 +12,7 @@ using Microsoft.SemanticKernel.Process.Workflows.PowerFx;
 
 namespace Microsoft.SemanticKernel.Process.Workflows;
 
-internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Kernel Kernel, ILogger Logger)
+internal sealed record class ProcessActionContext(RecalcEngine Engine, ProcessActionScopes Scopes, Func<PersistentAgentsClient> ClientFactory, ILogger Logger)
 {
     private FoundryExpressionEngine? _expressionEngine;
 

@@ -1,0 +1,26 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  type: Message
+  actions:
+
+    - kind: SetVariable
+      id: setVariable_u4cBtN
+      displayName: Invocation count
+      variable: Topic.FirstValue
+      value: ABC
+
+    - kind: SetVariable
+      id: setVariable_a8ybTn
+      displayName: Invocation count
+      variable: Workflow.SecondValue
+      value: 123
+      
+    - kind: SendActivity
+      id: sendActivity_SVoNSV
+      activity: {Workflow.FirstValue}
+
+    - kind: SendActivity
+      id: sendActivity_fJsbRz
+      activity: {Topic.SecondValue}

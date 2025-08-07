@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Bot.ObjectModel;
 using Microsoft.Bot.ObjectModel.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerFx.Types;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
 
 namespace Microsoft.SemanticKernel.Process.Workflows.Actions;
@@ -20,21 +22,27 @@ internal sealed class AnswerQuestionWithAIAction : AssignmentAction<AnswerQuesti
 
     protected override async Task HandleAsync(ProcessActionContext context, CancellationToken cancellationToken)
     {
-        IChatCompletionService chatCompletion = context.Kernel.Services.GetRequiredService<IChatCompletionService>();
-        EvaluationResult<string> result = context.ExpressionEngine.GetValue(this.Model.UserInput!, context.Scopes); // %%% FAILURE CASE (CATCH) & NULL OVERRIDE
+        PersistentAgentsClient client = context.ClientFactory.Invoke();
+        PersistentAgent model = await client.Administration.GetAgentAsync("asst_ueIjfGxAjsnZ4A61LlbjG9vJ", cancellationToken).ConfigureAwait(false);
+        AzureAIAgent agent = new(model, client);
 
-        ChatHistory history = [];
-        if (this.Model.AdditionalInstructions is not null)
+        string? userInput = null;
+        if (this.Model.UserInput is not null)
         {
-            string? instructions = context.Engine.Format(this.Model.AdditionalInstructions);
-            if (!string.IsNullOrWhiteSpace(instructions))
-            {
-                history.AddSystemMessage(instructions);
-            }
+            EvaluationResult<string> result = context.ExpressionEngine.GetValue(this.Model.UserInput!, context.Scopes); // %%% FAILURE CASE (CATCH) & NULL OVERRIDE
+            userInput = result.Value;
         }
-        history.AddUserMessage(result.Value);
-        ChatMessageContent response = await chatCompletion.GetChatMessageContentAsync(history, cancellationToken: cancellationToken).ConfigureAwait(false);
-        StringValue responseValue = FormulaValue.New(response.ToString());
+
+        AgentInvokeOptions options =
+            new()
+            {
+                AdditionalInstructions = context.Engine.Format(this.Model.AdditionalInstructions) ?? string.Empty,
+            };
+        AgentResponseItem<ChatMessageContent> response =
+            userInput != null ?
+                await agent.InvokeAsync(userInput, thread: null, options, cancellationToken).LastAsync(cancellationToken).ConfigureAwait(false) :
+                await agent.InvokeAsync(thread: null, options, cancellationToken).LastAsync(cancellationToken).ConfigureAwait(false);
+        StringValue responseValue = FormulaValue.New(response.Message.ToString());
 
         this.AssignTarget(context, responseValue);
     }

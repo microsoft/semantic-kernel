@@ -1,0 +1,16 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  actions:
+
+    # Use AI to answer the question
+    - kind: AnswerQuestionWithAI
+      id: question_wEJ456
+      variable: Topic.Answer
+      userInput: Why is the sky blue?
+
+    # Display the AI's answer
+    - kind: SendActivity
+      id: sendActivity_zA3f0p
+      activity: "AI - {Topic.Answer}"

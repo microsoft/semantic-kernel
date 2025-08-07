@@ -43,7 +43,7 @@ internal sealed class ClearAllVariablesAction : ProcessAction<ClearAllVariables>
 
         public void HandleUnknownValue()
         {
-            throw new System.NotImplementedException(); // %%% LOG / NO EXCEPTION
+            // No scope to clear for unknown values.
         }
 
         public void HandleUserScopedVariables()

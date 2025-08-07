@@ -2,8 +2,14 @@
 
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.AI.Agents.Persistent;
+using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.Bot.ObjectModel;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.PowerFx;
 using Microsoft.SemanticKernel.Process.Workflows.Actions;
 using Microsoft.SemanticKernel.Process.Workflows.Extensions;
@@ -431,7 +437,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 (kernel, context) =>
                 {
                     Console.WriteLine($"!!! STEP {name} [{actionId}]"); // %%% REMOVE
-                    stepAction?.Invoke(this.CreateActionContext(actionId, kernel));
+                    stepAction?.Invoke(this.CreateActionContext(actionId));
                     return Task.CompletedTask;
                 });
     }
@@ -456,7 +462,7 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                     try
                     {
                         await action.ExecuteAsync(
-                            this.CreateActionContext(action.Id, kernel),
+                            this.CreateActionContext(action.Id),
                             cancellationToken: default).ConfigureAwait(false); // %%% CANCELTOKEN
                     }
                     catch (ProcessActionException)
@@ -472,7 +478,20 @@ internal sealed class ProcessActionVisitor : DialogActionVisitor
                 });
     }
 
-    private ProcessActionContext CreateActionContext(string actionId, Kernel kernel) => new(this.CreateEngine(), this._scopes, kernel, kernel.LoggerFactory.CreateLogger(actionId));
+    private ProcessActionContext CreateActionContext(string actionId) => new(this.CreateEngine(), this._scopes, this.CreateClient, this._context.LoggerFactory.CreateLogger(actionId));
+
+    private PersistentAgentsClient CreateClient()
+    {
+        PersistentAgentsAdministrationClientOptions clientOptions = new();
+
+        if (this._context.HttpClient is not null)
+        {
+            clientOptions.Transport = new HttpClientTransport(this._context.HttpClient);
+            //clientOptions.RetryPolicy = new RetryPolicy(maxRetries: 0);
+        }
+
+        return new PersistentAgentsClient(this._context.ProjectEndpoint, this._context.ProjectCredentials, clientOptions);
+    }
 
     private RecalcEngine CreateEngine() => RecalcEngineFactory.Create(this._scopes, this._context.MaximumExpressionLength);
 
