@@ -1,0 +1,17 @@
+{
+  "created": 1702575371,
+  "data": [
+    {
+      "revised_prompt": "my prompt 0",
+      "url": "https://image-url/0"
+    },
+    {
+      "revised_prompt": "my prompt 1",
+      "url": "https://image-url/1"
+    },
+    {
+      "revised_prompt": "my prompt 2",
+      "url": "https://image-url/2"
+    }
+  ]
+}
