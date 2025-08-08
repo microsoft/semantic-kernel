@@ -145,6 +145,24 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
+    public void ItCanAddEmbeddingGeneratorWithHttpClient()
+    {
+        // Arrange
+        var customEndpoint = new Uri("https://custom.proxy.url/openai/v1/");
+        using var httpClient = new System.Net.Http.HttpClient { BaseAddress = customEndpoint };
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var kernel = sut.AddOpenAIEmbeddingGenerator("model", "key", httpClient: httpClient)
+            .Build();
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal(customEndpoint, service.GetService<EmbeddingGeneratorMetadata>()!.ProviderUri);
+    }
+
+    [Fact]
     [Obsolete(ObsoleteMessage)]
     public void ItCanAddFileService()
     {
