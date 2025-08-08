@@ -2,9 +2,6 @@
 
 This connector uses the SQL Server database engine to implement [Vector Store](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp) capability in Semantic Kernel. 
 
-> [!IMPORTANT]  
-> The features needed to use this connector are available in preview in Azure SQL only at the moment. Please take a look at the [Public Preview of Native Vector Support in Azure SQL Database](https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/) for more information.
-
 Here's an example of how to use the SQL Server Vector Store connector in your Semantic Kernel application:
 
 ```csharp
