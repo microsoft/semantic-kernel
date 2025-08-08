@@ -1,0 +1,57 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  actions:
+
+    # Capture optional agent instructions
+    - kind: SetVariable
+      id: setVariable_NZ2u0l
+      variable: Topic.Instructions
+      value: =System.LastMessage.Text
+
+    # Assign a list of inputs in JSON format to a variable
+    - kind: SetVariable
+      id: setVariable_aASlmF
+      displayName: List all of questions for LLM
+      variable: Topic.Questions
+      value: |-
+        =[
+          "Why is the sky blue?",
+          "What is the capital of France?",
+          "Where do rainbows come from?",
+         ]
+
+    # Loop over each question in the list
+    - kind: Foreach
+      id: foreach_mVIecC
+      items: =Topic.Questions
+      index: Topic.LoopIndex
+      value: Topic.Question
+      actions:
+
+        # Display the current question
+        - kind: SendActivity
+          id: sendActivity_lMn07p
+          activity: "Question {Topic.LoopIndex + 1} - {Topic.Question}"
+
+        # Use AI to answer the question
+        - kind: AnswerQuestionWithAI
+          id: question_wEJ456
+          variable: Topic.Answer
+          userInput: =Topic.Question
+          additionalInstructions: "{Topic.Instructions}"
+
+        # Display the AI's answer
+        - kind: SendActivity
+          id: sendActivity_zA3f0p
+          activity: "AI - {Topic.Answer}"
+
+    # After processing all questions, display a completion message
+    - kind: SendActivity
+      id: sendActivity_SVoNSV
+      activity: Complete!
+
+    # End the conversation
+    - kind: EndConversation
+      id: end_8nXE8H

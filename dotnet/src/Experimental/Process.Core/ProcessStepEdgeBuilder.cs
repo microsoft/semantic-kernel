@@ -97,9 +97,8 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public ProcessStepEdgeBuilder OnCondition(KernelProcessEdgeCondition condition)
+    public ProcessStepEdgeBuilder OnCondition(KernelProcessEdgeCondition? condition)
     {
-        Verify.NotNull(condition, nameof(condition));
         this.Condition = condition;
         return this;
     }
@@ -129,7 +128,7 @@ public class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder, this.Condition);
+        return this;
     }
 
     /// <summary>

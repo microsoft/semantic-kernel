@@ -1,0 +1,34 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: activity_xyz123
+  type: Message
+  actions:
+    - kind: SetVariable
+      id: setVariable_u4cBtN
+      displayName: Invocation count
+      variable: Topic.Count
+      value: =0
+
+    - kind: SendActivity
+      id: sendActivity_aGsbRo
+      activity: Starting
+
+    - kind: Foreach
+      id: foreach_mVIecC
+      items: =["a", "b", "c", "d", "e", "f"]
+      index: Topic.LoopIndex
+      value: Topic.LoopValue
+      actions:
+        - kind: SetVariable
+          id: setVariable_A4iBtN
+          displayName: Invocation count
+          variable: Topic.Count
+          value: =Topic.Count + 1
+        - kind: SendActivity
+          id: sendActivity_Pkkmpq
+          activity: Looping (x{Topic.Count}) - {Topic.LoopValue} [{Topic.LoopIndex}]
+
+    - kind: SendActivity
+      id: sendActivity_fJsbRz
+      activity: Complete! (x{Topic.Count})
