@@ -27,14 +27,14 @@ public sealed class A2AAgentTests : BaseA2AClientTest
 
         // Arrange & Act & Assert
         Assert.Throws<ArgumentNullException>(() => new A2AAgent(null!, new()));
-        Assert.Throws<ArgumentNullException>(() => new A2AAgent(new(httpClient), null!));
+        Assert.Throws<ArgumentNullException>(() => new A2AAgent(this.Client, null!));
     }
 
     [Fact]
-    public void VerifyConstructor()
+    public async Task VerifyConstructor()
     {
         // Arrange & Act
-        var agent = new A2AAgent(this.Client, this.CreateAgentCard());
+        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
 
         // Assert
         Assert.NotNull(agent);
@@ -49,7 +49,7 @@ public sealed class A2AAgentTests : BaseA2AClientTest
         this.MessageHandlerStub.ResponsesToReturn.Add(
             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
         );
-        var agent = new A2AAgent(this.Client, this.CreateAgentCard());
+        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
 
         // Act
         var responseItems = agent.InvokeAsync("List the latest invoices for Contoso?");
@@ -68,7 +68,7 @@ public sealed class A2AAgentTests : BaseA2AClientTest
         this.MessageHandlerStub.ResponsesToReturn.Add(
             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
         );
-        var agent = new A2AAgent(this.Client, this.CreateAgentCard());
+        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
 
         // Act
         var responseItems = agent.InvokeStreamingAsync("List the latest invoices for Contoso?");
