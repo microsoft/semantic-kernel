@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -326,6 +327,8 @@ public static class MongoServiceCollectionExtensions
     private static MongoClientSettings CreateClientSettings(string connectionString)
     {
         var settings = MongoClientSettings.FromConnectionString(connectionString);
+        var version = typeof(MongoServiceCollectionExtensions).Assembly.GetName().Version;
+        settings.LibraryInfo = new LibraryInfo("Microsoft.Extensions.VectorData", version?.ToString() ?? "0.0.0.0");
         settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
         return settings;
     }
