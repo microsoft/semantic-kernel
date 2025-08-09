@@ -20,6 +20,7 @@ from semantic_kernel.contents.realtime_events import (
     RealtimeImageEvent,
     RealtimeTextEvent,
 )
+from semantic_kernel.contents.reasoning_content import ReasoningContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -49,6 +50,7 @@ __all__ = [
     "RealtimeFunctionResultEvent",
     "RealtimeImageEvent",
     "RealtimeTextEvent",
+    "ReasoningContent",
     "StreamingAnnotationContent",
     "StreamingChatMessageContent",
     "StreamingFileReferenceContent",

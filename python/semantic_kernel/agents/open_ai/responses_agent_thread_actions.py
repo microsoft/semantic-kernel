@@ -22,6 +22,7 @@ from openai.types.responses.response_output_item_added_event import ResponseOutp
 from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
 from openai.types.responses.response_output_message import ResponseOutputMessage
 from openai.types.responses.response_output_text import ResponseOutputText
+from openai.types.responses.response_reasoning_item import ResponseReasoningItem
 from openai.types.responses.response_stream_event import ResponseStreamEvent
 from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
 
@@ -38,6 +39,7 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.reasoning_content import ReasoningContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -98,7 +100,7 @@ class ResponsesAgentThreadActions:
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         polling_options: "RunPollingOptions | None" = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
+        reasoning: Literal["minimal", "low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
@@ -135,6 +137,9 @@ class ResponsesAgentThreadActions:
         Returns:
             An async iterable of tuple of the visibility of the message and the chat message content.
         """
+        # Validate reasoning effort parameter
+        cls._validate_reasoning_effort_parameter(reasoning)
+
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
@@ -280,7 +285,7 @@ class ResponsesAgentThreadActions:
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
+        reasoning: Literal["minimal", "low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
@@ -316,6 +321,9 @@ class ResponsesAgentThreadActions:
         Returns:
             An async iterable of tuple of the visibility of the message and the chat message content.
         """
+        # Validate reasoning effort parameter
+        cls._validate_reasoning_effort_parameter(reasoning)
+
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
@@ -653,13 +661,25 @@ class ResponsesAgentThreadActions:
     ) -> Any:
         """Prepare the chat history for a request.
 
-        We must skip any items of type
-        AnnotationContent, StreamingAnnotationContent, FileReferenceContent,
-        or StreamingFileReferenceContent, and always map the role to either user,
-        assistant, or developer.
+        Uses a pass-through approach: raw output items from responses are passed
+        directly to the next request, while only converting user messages to input format.
+        This ensures all response items (including function calls and reasoning) are preserved intact.
         """
         response_inputs: list[Any] = []  # type: ignore
+
         for message in chat_history.messages:
+            # Check if this message has raw output items from a response
+            if (
+                hasattr(message, "inner_content")
+                and message.inner_content
+                and hasattr(message.inner_content, "output")
+                and message.inner_content.output
+            ):
+                # Pass through raw output items directly to preserve API compliance
+                response_inputs.extend(message.inner_content.output)
+                continue
+
+            # For user messages and other content, convert to input format
             allowed_items = [
                 i
                 for i in message.items
@@ -668,6 +688,7 @@ class ResponsesAgentThreadActions:
                     (
                         AnnotationContent,
                         StreamingAnnotationContent,
+                        ReasoningContent,  # Skip reasoning content - preserved via raw output pass-through
                     ),
                 )
             ]
@@ -681,6 +702,7 @@ class ResponsesAgentThreadActions:
                 original_role = AuthorRole.ASSISTANT
             contents: list[dict[str, Any]] = []
 
+            # Process content items
             for content in filtered_msg.items:
                 match content:
                     case TextContent() | StreamingTextContent():
@@ -705,15 +727,6 @@ class ResponsesAgentThreadActions:
                             )
 
                         contents.append({"type": "input_image", "image_url": image_url})
-                    case FunctionCallContent():
-                        fc_dict = {
-                            "type": "function_call",
-                            "id": content.id,
-                            "call_id": content.call_id,
-                            "name": content.name,
-                            "arguments": content.arguments,
-                        }
-                        response_inputs.append(fc_dict)
                     case FunctionResultContent():
                         rfrc_dict = {
                             "type": "function_call_output",
@@ -721,6 +734,9 @@ class ResponsesAgentThreadActions:
                             "call_id": content.call_id,
                         }
                         response_inputs.append(rfrc_dict)
+                    case FunctionCallContent():
+                        # Skip function calls - preserved via raw output pass-through
+                        pass
                     case BinaryContent() if content.can_read:
                         # Generate filename with appropriate extension based on mime type
                         extension = ""
@@ -766,7 +782,7 @@ class ResponsesAgentThreadActions:
                             "file_data": file_data_uri,
                         })
 
-            # Add the collected contents to response_inputs only once per message
+            # Add the collected contents to response_inputs
             if contents:
                 response_inputs.append({"role": original_role, "content": contents})
 
@@ -792,6 +808,19 @@ class ResponsesAgentThreadActions:
                     )
                 )
         return function_calls
+
+    @classmethod
+    def _get_reasoning_items_from_output(
+        cls: type[_T], output: list[ResponseOutputItem | ResponseOutputMessage]
+    ) -> list[ReasoningContent]:
+        """Get reasoning items from a response output."""
+        reasoning_items: list[ReasoningContent] = []
+
+        # Filter to only process ResponseReasoningItem objects
+        for item in output:
+            if isinstance(item, ResponseReasoningItem):
+                reasoning_items.append(ReasoningContent.from_response_reasoning_item(item))
+        return reasoning_items
 
     @classmethod
     def _get_metadata_from_response(cls: type[_T], response: Response | ResponseItem) -> dict[str, Any]:
@@ -899,6 +928,7 @@ class ResponsesAgentThreadActions:
         """Aggregate items from the various output types."""
         items = []
         items.extend(cls._get_tool_calls_from_output(output))
+        items.extend(cls._get_reasoning_items_from_output(output))
 
         for msg in filter(lambda output_msg: isinstance(output_msg, (ResponseOutputMessage)), output or []):
             assert isinstance(msg, ResponseOutputMessage)  # nosec
@@ -911,6 +941,7 @@ class ResponsesAgentThreadActions:
         """Aggregate items from the various output types."""
         items = []
         items.extend(cls._get_tool_calls_from_output(output))
+        items.extend(cls._get_reasoning_items_from_output(output))
 
         for msg in filter(lambda msg: isinstance(msg, (ResponseInputText, ResponseOutputText)), output or []):
             if isinstance(msg, ResponseInputText):
@@ -982,6 +1013,7 @@ class ResponsesAgentThreadActions:
             "temperature": temperature if temperature is not None else agent.temperature,
             "top_p": top_p if top_p is not None else agent.top_p,
             "metadata": metadata if metadata is not None else agent.metadata,
+            "agent_reasoning_effort": getattr(agent, "reasoning_effort", None),
             **kwargs,
         }
 
@@ -989,11 +1021,35 @@ class ResponsesAgentThreadActions:
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
         """Generate a dictionary of options that can be passed directly to create_run."""
         merged = cls._merge_options(**kwargs)
+
+        # Extract individual options
         truncation = merged.get("truncation", None)
         max_output_tokens = merged.get("max_output_tokens", None)
         parallel_tool_calls = merged.get("parallel_tool_calls", None)
-        return {
-            "model": merged.get("model"),
+        reasoning = merged.get("reasoning", None)
+        reasoning_effort = merged.get("reasoning_effort", None)  # Support both parameter names
+        model = merged.get("model")
+        agent_reasoning_effort = merged.get("agent_reasoning_effort")
+
+        # Apply reasoning effort priority hierarchy: per-invocation > constructor > model default
+        effective_reasoning = cls._resolve_reasoning_effort(
+            per_invocation_reasoning=reasoning or reasoning_effort,
+            agent_reasoning_effort=agent_reasoning_effort,
+            model=model,
+            reasoning_explicitly_provided="reasoning" in merged or "reasoning_effort" in merged,
+        )
+
+        # Transform reasoning string to object structure expected by OpenAI API
+        reasoning_object = None
+        if effective_reasoning is not None:
+            reasoning_object = {
+                "effort": effective_reasoning,
+                "generate_summary": None,  # Can be set to control summary generation
+            }
+
+        # Build the options dictionary, only including reasoning if it's not None
+        options = {
+            "model": model,
             "top_p": merged.get("top_p"),
             "text": merged.get("text"),
             "temperature": merged.get("temperature"),
@@ -1002,6 +1058,96 @@ class ResponsesAgentThreadActions:
             "max_output_tokens": max_output_tokens,
             "parallel_tool_calls": parallel_tool_calls,
         }
+
+        # Only include reasoning if it's actually set
+        if reasoning_object is not None:
+            options["reasoning"] = reasoning_object
+
+        return options
+
+    @classmethod
+    def _resolve_reasoning_effort(
+        cls: type[_T],
+        per_invocation_reasoning: str | None,
+        agent_reasoning_effort: str | None,
+        model: str | None,
+        reasoning_explicitly_provided: bool = False,
+    ) -> str | None:
+        """Resolve the effective reasoning effort using priority hierarchy.
+
+        Priority order: per-invocation > constructor > model default
+
+        Args:
+            per_invocation_reasoning: Reasoning effort specified for this invocation
+            agent_reasoning_effort: The agent's constructor-level reasoning effort
+            model: The model name (for auto-detection of O-series models)
+            reasoning_explicitly_provided: Whether reasoning was explicitly provided (even if None)
+
+        Returns:
+            The effective reasoning effort to use, or None if no reasoning should be applied
+        """
+        # If reasoning was explicitly provided (even if None), respect that choice
+        if reasoning_explicitly_provided:
+            return per_invocation_reasoning
+
+        # Priority 1: Per-invocation reasoning (highest priority)
+        if per_invocation_reasoning is not None:
+            return per_invocation_reasoning
+
+        # Priority 2: Agent constructor default reasoning
+        if agent_reasoning_effort is not None:
+            return agent_reasoning_effort
+
+        # Priority 3: Model default reasoning (lowest priority, only for O-series models)
+        if model and cls._is_o_series_model(model):
+            return cls._get_default_reasoning_for_model(model)
+
+        return None
+
+    @classmethod
+    def _is_o_series_model(cls: type[_T], model_name: str) -> bool:
+        """Check if model is an O-series reasoning model.
+
+        Args:
+            model_name: The model name to check
+
+        Returns:
+            True if this is an O-series model that supports reasoning
+        """
+        if not model_name:
+            return False
+        model_lower = model_name.lower()
+        # Check for O-series models: o1, o3, o4 (and their variants like o1-mini, o3-mini, etc.)
+        return model_lower.startswith("o1") or model_lower.startswith("o3") or model_lower.startswith("o4")
+
+    @classmethod
+    def _get_default_reasoning_for_model(cls: type[_T], model_name: str) -> str:
+        """Get the default reasoning effort for a specific O-series model.
+
+        Args:
+            model_name: The O-series model name
+
+        Returns:
+            The default reasoning effort for this model
+        """
+        # O4 models use medium by default, others use high
+        return "medium" if "o4" in model_name.lower() else "high"
+
+    @classmethod
+    def _validate_reasoning_effort_parameter(cls: type[_T], reasoning_effort: str | None) -> None:
+        """Validate that the reasoning effort parameter is valid.
+
+        Args:
+            reasoning_effort: The reasoning effort to validate.
+
+        Raises:
+            AgentInvokeException: If the reasoning effort is invalid.
+        """
+        if reasoning_effort is not None and reasoning_effort not in ["minimal", "low", "medium", "high"]:
+            raise AgentInvokeException(
+                f"Invalid reasoning effort '{reasoning_effort}'. "
+                f"Must be one of: 'minimal', 'low', 'medium', 'high', or None."
+            )
 
     @classmethod
     def _get_tools(
