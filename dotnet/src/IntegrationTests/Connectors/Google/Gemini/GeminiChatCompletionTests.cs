@@ -631,4 +631,27 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         Assert.NotNull(streamResponses[0].Content);
         Assert.NotNull(responses[0].Content);
     }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationReturnsResponseGroundingMetadataAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Call me by my name and expand this abbreviation: LLM");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        var geminiMetadata = response.Metadata as GeminiMetadata;
+        Assert.NotNull(geminiMetadata);
+        this.Output.WriteLine($"ResponseGroundingMetadata: {JsonSerializer.Serialize(geminiMetadata.GroundingMetadata)}");
+        Assert.NotNull(geminiMetadata.GroundingMetadata);
+    }
 }
