@@ -289,7 +289,7 @@ class GroupChatManagerActor(ActorBase):
         """
         self._manager = manager
         self._internal_topic_type = internal_topic_type
-        self._chat_history = chat_history or ChatHistory()
+        self._chat_history = chat_history if chat_history is not None else ChatHistory()
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
