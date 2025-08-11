@@ -267,6 +267,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "trace": "disabled",
             }
 
+        print("Prepared settings for request:")
+        print(prepared_settings)
+
         return prepared_settings
 
     def _create_chat_message_content(self, response: dict[str, Any]) -> ChatMessageContent:
