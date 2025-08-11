@@ -57,6 +57,13 @@ class GroupChatResponseMessage(KernelBaseModel):
     body: ChatMessageContent
 
 
+@experimental
+class GroupChatHistorySyncMessage(KernelBaseModel):
+    """A message type to synchronize chat history from manager to agents."""
+
+    history: list[ChatMessageContent]
+
+
 _TGroupChatManagerResult = TypeVar("_TGroupChatManagerResult", ChatMessageContent, str, bool)
 
 
@@ -118,6 +125,14 @@ class GroupChatAgentActor(AgentActorBase):
     async def _handle_response_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received group chat response message.")
         self._message_cache.add_message(message.body)
+
+    @message_handler
+    async def _handle_history_sync_message(self, message: GroupChatHistorySyncMessage, ctx: MessageContext) -> None:
+        """Handle chat history synchronization from the manager."""
+        logger.debug(f"{self.id}: Received group chat history sync message with {len(message.history)} messages.")
+        self._message_cache.clear()
+        for msg in message.history:
+            self._message_cache.add_message(msg)
 
     @message_handler
     async def _handle_request_message(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
@@ -259,6 +274,7 @@ class GroupChatManagerActor(ActorBase):
         participant_descriptions: dict[str, str],
         exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
+        chat_history: ChatHistory | None = None,
     ):
         """Initialize the group chat manager actor.
 
@@ -268,40 +284,74 @@ class GroupChatManagerActor(ActorBase):
             participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
             exception_callback (Callable[[BaseException], None]): A function that is called when an exception occurs.
             result_callback (Callable | None): A function that is called when the group chat manager produces a result.
+            chat_history (ChatHistory | None): A chat history instance to use. If None, creates a new ChatHistory.
+                This can be a ChatHistoryReducer subclass for context management.
         """
         self._manager = manager
         self._internal_topic_type = internal_topic_type
-        self._chat_history = ChatHistory()
+        self._chat_history = chat_history or ChatHistory()
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
         super().__init__("An actor for the group chat manager.", exception_callback)
+
+    async def _sync_history_to_agents(self, cancellation_token: CancellationToken) -> None:
+        """Synchronize the manager's chat history to all agents."""
+        # FIXED: Publish sync message and add small delay to ensure processing completes
+        # before request message is published (avoids race condition in concurrent handlers)
+        await self.publish_message(
+            GroupChatHistorySyncMessage(history=self._chat_history.messages),
+            TopicId(self._internal_topic_type, self.id.key),
+            cancellation_token=cancellation_token,
+        )
+
+        # Small delay to allow sync message processing to complete
+        # This ensures agent caches are populated before request processing
+        await asyncio.sleep(0.01)  # 10ms should be sufficient for message processing
 
     @message_handler
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
         if isinstance(message.body, ChatMessageContent):
-            self._chat_history.add_message(message.body)
+            # Use add_message_async for reducers, fallback to add_message for regular ChatHistory
+            if hasattr(self._chat_history, "add_message_async"):
+                await self._chat_history.add_message_async(message.body)
+            else:
+                self._chat_history.add_message(message.body)
         elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
             for m in message.body:
-                self._chat_history.add_message(m)
+                if hasattr(self._chat_history, "add_message_async"):
+                    await self._chat_history.add_message_async(m)
+                else:
+                    self._chat_history.add_message(m)
         else:
             raise ValueError(f"Invalid message body type: {type(message.body)}. Expected {DefaultTypeAlias}.")
 
+        # Sync history to agents after adding messages
+        await self._sync_history_to_agents(ctx.cancellation_token)
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
     @message_handler
     async def _handle_response_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
         if message.body.role != AuthorRole.USER:
-            self._chat_history.add_message(
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    content=f"Transferred to {message.body.name}",
-                )
+            transfer_message = ChatMessageContent(
+                role=AuthorRole.USER,
+                content=f"Transferred to {message.body.name}",
             )
-        self._chat_history.add_message(message.body)
+            if hasattr(self._chat_history, "add_message_async"):
+                await self._chat_history.add_message_async(transfer_message)
+            else:
+                self._chat_history.add_message(transfer_message)
 
+        # Add the main message
+        if hasattr(self._chat_history, "add_message_async"):
+            await self._chat_history.add_message_async(message.body)
+        else:
+            self._chat_history.add_message(message.body)
+
+        # Sync history to agents after adding messages
+        await self._sync_history_to_agents(ctx.cancellation_token)
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
     @ActorBase.exception_handler
@@ -314,7 +364,13 @@ class GroupChatManagerActor(ActorBase):
         if should_request_user_input.result and self._manager.human_response_function:
             logger.debug(f"Group chat manager requested user input. Reason: {should_request_user_input.reason}")
             user_input_message = await self._call_human_response_function()
-            self._chat_history.add_message(user_input_message)
+            # Add user input message with proper async handling for reducers
+            if hasattr(self._chat_history, "add_message_async"):
+                await self._chat_history.add_message_async(user_input_message)
+            else:
+                self._chat_history.add_message(user_input_message)
+            # Sync history to agents after adding user input
+            await self._sync_history_to_agents(cancellation_token)
             await self.publish_message(
                 GroupChatResponseMessage(body=user_input_message),
                 TopicId(self._internal_topic_type, self.id.key),
@@ -377,6 +433,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
+        chat_history: ChatHistory | None = None,
     ) -> None:
         """Initialize the group chat orchestration.
 
@@ -392,8 +449,11 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 by the agents.
             streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
                 is produced by the agents.
+            chat_history (ChatHistory | None): A chat history instance to use for the manager. If None, creates a new
+                ChatHistory. This can be a ChatHistoryReducer subclass for context management.
         """
         self._manager = manager
+        self._chat_history = chat_history
 
         for member in members:
             if member.description is None:
@@ -496,6 +556,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
                 exception_callback=exception_callback,
                 result_callback=result_callback,
+                chat_history=self._chat_history,
             ),
         )
 
