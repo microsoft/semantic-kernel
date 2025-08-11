@@ -187,6 +187,8 @@ class ResponsesAgentThreadActions:
 
             if store_enabled:
                 thread.response_id = response.id
+                # Chain subsequent requests to this response so tool outputs are associated correctly
+                previous_response_id = response.id
 
             if response.status in cls.error_message_states:
                 error_message = ""
@@ -216,7 +218,10 @@ class ResponsesAgentThreadActions:
 
             response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
             yield False, response_message
+            # Update both histories so subsequent requests include tool call context
             chat_history.add_message(message=response_message)
+            if override_history is not chat_history:
+                override_history.add_message(message=response_message)
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -227,7 +232,7 @@ class ResponsesAgentThreadActions:
                 *[
                     kernel.invoke_function_call(
                         function_call=function_call,
-                        chat_history=chat_history,
+                        chat_history=override_history,
                         arguments=kwargs.get("arguments"),
                         execution_settings=None,
                         function_call_count=fc_count,
@@ -239,7 +244,7 @@ class ResponsesAgentThreadActions:
             )
 
             terminate_flag = any(result.terminate for result in results if result is not None)
-            for msg in merge_function_results(chat_history.messages[-len(results) :]):
+            for msg in merge_function_results(override_history.messages[-len(results) :]):
                 # Terminate flag should only be true when the filter's terminate is true
                 yield terminate_flag, msg
         else:
@@ -376,6 +381,8 @@ class ResponsesAgentThreadActions:
                             logger.debug(f"Agent response created with ID: {event.response.id}")
                             if store_enabled:
                                 thread.response_id = event.response.id
+                                # Ensure subsequent requests link to this response context
+                                previous_response_id = event.response.id
                         case ResponseOutputItemAddedEvent():
                             function_calls = cls._get_tool_calls_from_output([event.item])  # type: ignore
                             if function_calls:
@@ -435,6 +442,8 @@ class ResponsesAgentThreadActions:
                 output_messages.append(full_completion)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
+            if override_history is not chat_history:
+                override_history.add_message(message=full_completion)
 
             fc_count = len(function_calls)
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -446,7 +455,7 @@ class ResponsesAgentThreadActions:
                 *[
                     kernel.invoke_function_call(
                         function_call=function_call,
-                        chat_history=chat_history,
+                        chat_history=override_history,
                         arguments=kwargs.get("arguments"),
                         is_streaming=True,
                         execution_settings=None,
@@ -462,7 +471,7 @@ class ResponsesAgentThreadActions:
             # Include the ai_model_id so we can later add two streaming messages together
             # Some settings may not have an ai_model_id, so we need to check for it
             function_result_messages = cls._merge_streaming_function_results(
-                messages=chat_history.messages[-len(results) :],  # type: ignore
+                messages=override_history.messages[-len(results) :],  # type: ignore
                 name=agent.name,
                 ai_model_id=agent.ai_model_id,  # type: ignore
                 function_invoke_attempt=request_index,
@@ -493,7 +502,9 @@ class ResponsesAgentThreadActions:
     ) -> Response | AsyncStream[ResponseStreamEvent]:
         try:
             response: Response = await agent.client.responses.create(
-                input=cls._prepare_chat_history_for_request(chat_history),
+                input=cls._prepare_chat_history_for_request(
+                    chat_history, store_output_enabled if store_output_enabled is not None else agent.store_enabled
+                ),
                 instructions=merged_instructions or agent.instructions,
                 previous_response_id=previous_response_id,
                 store=store_output_enabled,
@@ -650,6 +661,7 @@ class ResponsesAgentThreadActions:
     def _prepare_chat_history_for_request(
         cls: type[_T],
         chat_history: "ChatHistory",
+        store_enabled: bool,
     ) -> Any:
         """Prepare the chat history for a request.
 
@@ -706,14 +718,14 @@ class ResponsesAgentThreadActions:
 
                         contents.append({"type": "input_image", "image_url": image_url})
                     case FunctionCallContent():
-                        fc_dict = {
-                            "type": "function_call",
-                            "id": content.id,
-                            "call_id": content.call_id,
-                            "name": content.name,
-                            "arguments": content.arguments,
-                        }
-                        response_inputs.append(fc_dict)
+                        if not store_enabled:
+                            fc_dict = {
+                                "type": "function_call",
+                                "call_id": content.call_id,
+                                "name": content.name,
+                                "arguments": content.arguments,
+                            }
+                            response_inputs.append(fc_dict)
                     case FunctionResultContent():
                         rfrc_dict = {
                             "type": "function_call_output",
@@ -864,7 +876,7 @@ class ResponsesAgentThreadActions:
             metadata=metadata,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status) if hasattr(response, "status") else None,
+            status=Status(response.status) if getattr(response, "status", None) is not None else None,
         )
 
     @classmethod
