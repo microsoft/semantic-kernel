@@ -70,7 +70,7 @@ internal sealed class MongoTestStore : TestStore
 
         return base.GenerateKey<TKey>(value);
     }
-        
+
     protected override async Task StopAsync()
     {
         if (this._container != null)
