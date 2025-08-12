@@ -75,6 +75,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <summary>Number of nearest neighbors to use during the vector search.</summary>
     private readonly int? _numCandidates;
 
+    /// <summary>Types of keys permitted.</summary>
+    private readonly Type[] _validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId)];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -97,15 +100,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     {
     }
 
-    private static readonly Type[] validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId)];
-
     internal MongoCollection(IMongoDatabase mongoDatabase, string name, Func<MongoCollectionOptions, CollectionModel> modelFactory, MongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (!validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
+        if (!this._validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
         {
             throw new NotSupportedException("Only string, Guid and ObjectID keys are supported.");
         }
