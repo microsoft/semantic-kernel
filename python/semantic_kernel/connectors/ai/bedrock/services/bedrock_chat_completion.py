@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
 MODELS_WITH_PROMPT_CACHING: list = ["us.anthropic.claude-3-7-sonnet-20250219-v1:0",
                                     "eu.anthropic.claude-3-7-sonnet-20250219-v1:0"]
+EU_MODEL_LIST: list = ["eu.anthropic.claude-3-5-sonnet-20240620-v1:0"]
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
@@ -211,6 +212,22 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         # Flush any remaining tool messages buffer
         if tool_message_buffer:
             messages.append(tool_message_buffer)
+
+        # Function to move toolUse last to handle AWS Bedrock issues in EU
+        def moved_tooluse_last(messages):
+            out = []
+            for entry in messages:
+                if isinstance(entry, dict) and isinstance(entry.get('content'), list):
+                    content = entry['content']
+                    if any(isinstance(c, dict) and 'toolUse' in c for c in content):
+                        entry = {**entry,
+                                 'content': sorted(content, key=lambda c: isinstance(c, dict) and 'toolUse' in c)}
+                out.append(entry)
+            return out
+
+        if os.getenv("MODEL_ID") in EU_MODEL_LIST:
+            sorted_messages = moved_tooluse_last(messages)
+            return sorted_messages
 
         return messages
 
