@@ -629,15 +629,14 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextToImageService(
-                deploymentName,
-                endpoint,
-                credentials,
-                modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                apiVersion));
+        builder.Services.AddAzureOpenAITextToImage(
+            deploymentName,
+            endpoint,
+            credentials,
+            modelId,
+            serviceId,
+            apiVersion,
+            httpClient);
 
         return builder;
     }
@@ -669,15 +668,14 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextToImageService(
-                deploymentName,
-                endpoint,
-                apiKey,
-                modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                apiVersion));
+        builder.Services.AddAzureOpenAITextToImage(
+            deploymentName: deploymentName,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            serviceId: serviceId,
+            modelId: modelId,
+            apiVersion: apiVersion,
+            httpClient: httpClient);
 
         return builder;
     }
