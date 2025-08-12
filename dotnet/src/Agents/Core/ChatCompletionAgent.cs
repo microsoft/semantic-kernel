@@ -158,10 +158,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         string agentName = this.GetDisplayName();
 
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeAsync(agentName, history, (m) => Task.CompletedTask, arguments, kernel, null, cancellationToken),
-            cancellationToken);
+        return this.InternalInvokeAsync(agentName, history, (m) => Task.CompletedTask, arguments, kernel, null, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -242,7 +239,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         string agentName = this.GetDisplayName();
 
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, history),
             () => this.InternalInvokeStreamingAsync(
                 agentName,
                 history,
@@ -355,12 +352,15 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
                 executionSettings,
                 kernel,
                 cancellationToken).ConfigureAwait(false);
+
 
         this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, agentName, serviceType, messages.Count);
 
@@ -381,6 +381,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
             yield return message;
         }
+
+        activity?.SetAgentResponse(messages);
     }
 
     private async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
@@ -404,6 +406,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(
                 chat,
@@ -416,6 +420,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         int messageIndex = messageCount;
         AuthorRole? role = null;
         StringBuilder builder = new();
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
             role = message.Role;
@@ -435,6 +440,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 history.Add(chatMessage);
             }
 
+            streamedContents?.Add(message);
             yield return message;
         }
 
@@ -444,6 +450,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             await onNewMessage(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name }).ConfigureAwait(false);
             history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
         }
+
+        activity?.EndAgentStreamingResponse(streamedContents);
     }
 
     #endregion

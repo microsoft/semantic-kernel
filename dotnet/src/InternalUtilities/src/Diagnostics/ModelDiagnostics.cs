@@ -145,7 +145,8 @@ internal static class ModelDiagnostics
     internal static Activity? StartAgentInvocationActivity(
         string agentId,
         string agentName,
-        string? agentDescription)
+        string? agentDescription,
+        ICollection<ChatMessageContent> messages)
     {
         if (!IsModelDiagnosticsEnabled())
         {
@@ -168,7 +169,71 @@ internal static class ModelDiagnostics
             activity?.SetTag(ModelDiagnosticsTags.AgentDescription, agentDescription);
         }
 
+        if (IsSensitiveEventsEnabled())
+        {
+            activity?.SetTag(
+                ModelDiagnosticsTags.AgentInvocationInput,
+                JsonSerializer.Serialize(messages.Select(m => ToGenAIConventionsFormat(m))));
+        }
+
         return activity;
+    }
+
+    /// <summary>
+    /// Set the agent response for a given activity.
+    /// </summary>
+    internal static void SetAgentResponse(this Activity activity, IEnumerable<ChatMessageContent> responses)
+    {
+        if (!IsModelDiagnosticsEnabled())
+        {
+            return;
+        }
+
+        if (s_enableSensitiveEvents)
+        {
+            activity?.SetTag(
+                ModelDiagnosticsTags.AgentInvocationOutput,
+                JsonSerializer.Serialize(responses.Select(r => ToGenAIConventionsFormat(r))));
+        }
+    }
+
+    /// <summary>
+    /// End the agent streaming response for a given activity.
+    /// </summary>
+    internal static void EndAgentStreamingResponse(
+        this Activity activity,
+        IEnumerable<StreamingChatMessageContent>? contents)
+    {
+        if (IsModelDiagnosticsEnabled())
+        {
+            if (contents is null)
+            {
+                return;
+            }
+
+            Dictionary<int, List<StreamingKernelContent>> choices = [];
+            foreach (var content in contents)
+            {
+                if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
+                {
+                    choiceContents = [];
+                    choices[content.ChoiceIndex] = choiceContents;
+                }
+
+                choiceContents.Add(content);
+            }
+
+            var chatCompletions = choices.Select(choiceContents =>
+                {
+                    var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
+                    var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                    return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
+                }).ToList();
+
+            activity?.SetTag(
+               ModelDiagnosticsTags.AgentInvocationOutput,
+               JsonSerializer.Serialize(chatCompletions.Select(r => ToGenAIConventionsFormat(r))));
+        }
     }
 
     /// <summary>
@@ -287,6 +352,11 @@ internal static class ModelDiagnostics
         {
             sb.Append(", \"tool_calls\": ");
             ToGenAIConventionsFormat(chatMessage.Items, sb);
+        }
+        if (!string.IsNullOrEmpty(chatMessage.AuthorName))
+        {
+            sb.Append(", \"name\": ");
+            sb.Append(chatMessage.AuthorName);
         }
         sb.Append('}');
 
@@ -547,6 +617,8 @@ internal static class ModelDiagnostics
         public const string AgentId = "gen_ai.agent.id";
         public const string AgentName = "gen_ai.agent.name";
         public const string AgentDescription = "gen_ai.agent.description";
+        public const string AgentInvocationInput = "gen_ai.agent.invocation_input";
+        public const string AgentInvocationOutput = "gen_ai.agent.invocation_output";
 
         // Activity events
         public const string EventName = "gen_ai.event.content";

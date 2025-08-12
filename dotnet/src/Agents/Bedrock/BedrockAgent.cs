@@ -410,7 +410,7 @@ public sealed class BedrockAgent : Agent
         return invokeAgentRequest.StreamingConfigurations != null && (invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false)
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
             : ActivityExtensions.RunWithActivityAsync(
-                () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+                () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []),
                 InvokeInternal,
                 cancellationToken);
 
@@ -472,7 +472,7 @@ public sealed class BedrockAgent : Agent
         }
 
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []),
             InvokeInternal,
             cancellationToken);
 

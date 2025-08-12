@@ -162,7 +162,7 @@ public sealed partial class AzureAIAgent : Agent
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
             () => InternalInvokeAsync(),
             cancellationToken);
 
@@ -268,7 +268,7 @@ public sealed partial class AzureAIAgent : Agent
         // a chat history to receive complete messages.
         ChatHistory newMessagesReceiver = [];
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
             () => AgentThreadActions.InvokeStreamingAsync(
                 this,
                 this.Client,

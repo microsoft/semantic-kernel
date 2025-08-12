@@ -159,7 +159,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
             () => InternalInvokeAsync(),
             cancellationToken);
 
@@ -268,7 +268,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         ChatHistory newMessagesReceiver = [];
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
             () => InternalInvokeStreamingAsync(),
             cancellationToken);
 #pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
