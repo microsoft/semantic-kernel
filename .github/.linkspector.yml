@@ -9,8 +9,6 @@ ignorePatterns:
   - pattern: "./pulls"
   - pattern: "https:\/\/platform.openai.com"
   - pattern: "https:\/\/outlook.office.com/bookings"
-excludedFiles:
-  # Files that are temporarily excluded because they contain links that are temporarily unavailable.
 excludedDirs:
   # Folders which include links to localhost, since it's not ignored with regular expressions
   - ./python/samples/demos/telemetry
