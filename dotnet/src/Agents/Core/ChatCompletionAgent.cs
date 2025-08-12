@@ -238,16 +238,13 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         string agentName = this.GetDisplayName();
 
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, history),
-            () => this.InternalInvokeStreamingAsync(
-                agentName,
-                history,
-                (newMessage) => Task.CompletedTask,
-                arguments,
-                kernel,
-                null,
-                cancellationToken),
+        return this.InternalInvokeStreamingAsync(
+            agentName,
+            history,
+            (newMessage) => Task.CompletedTask,
+            arguments,
+            kernel,
+            null,
             cancellationToken);
     }
 

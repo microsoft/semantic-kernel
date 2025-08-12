@@ -161,10 +161,16 @@ public sealed partial class AzureAIAgent : Agent
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
-            () => InternalInvokeAsync(),
-            cancellationToken);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+
+        await foreach (var result in InternalInvokeAsync().ConfigureAwait(false))
+        {
+            yield return new(result, azureAIAgentThread);
+            chatMessageContents?.Add(result);
+        }
+
+        activity?.SetAgentResponse(messages);
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
@@ -190,12 +196,6 @@ public sealed partial class AzureAIAgent : Agent
                     yield return message;
                 }
             }
-        }
-
-        // Notify the thread of new messages and return them to the caller.
-        await foreach (var result in invokeResults.ConfigureAwait(false))
-        {
-            yield return new(result, azureAIAgentThread);
         }
     }
 
@@ -264,21 +264,21 @@ public sealed partial class AzureAIAgent : Agent
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+
         // Invoke the Agent with the thread that we already added our message to, and with
         // a chat history to receive complete messages.
         ChatHistory newMessagesReceiver = [];
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages),
-            () => AgentThreadActions.InvokeStreamingAsync(
-                this,
-                this.Client,
-                azureAIAgentThread.Id!,
-                newMessagesReceiver,
-                extensionsContextOptions.ToAzureAIInvocationOptions(),
-                this.Logger,
-                kernel,
-                options?.KernelArguments,
-                cancellationToken),
+        var invokeResults = AgentThreadActions.InvokeStreamingAsync(
+            this,
+            this.Client,
+            azureAIAgentThread.Id!,
+            newMessagesReceiver,
+            extensionsContextOptions.ToAzureAIInvocationOptions(),
+            this.Logger,
+            kernel,
+            options?.KernelArguments,
             cancellationToken);
 
         // Return the chunks to the caller.
@@ -289,10 +289,13 @@ public sealed partial class AzureAIAgent : Agent
             await NotifyMessagesAsync().ConfigureAwait(false);
 
             yield return new(result, azureAIAgentThread);
+            streamedContents?.Add(result);
         }
 
         // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
         await NotifyMessagesAsync().ConfigureAwait(false);
+
+        activity?.EndAgentStreamingResponse(streamedContents);
 
         async Task NotifyMessagesAsync()
         {
