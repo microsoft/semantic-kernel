@@ -111,6 +111,9 @@ def locate_safe_reduction_index(
         
         message_index -= 1
 
+    # This is our initial target truncation index
+    target_index = message_index
+
     # Attempt to see if there's a user message in the threshold window
     while message_index >= threshold_index:
         if history[message_index].role == AuthorRole.USER:
