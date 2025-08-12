@@ -469,7 +469,14 @@ class WeaviateCollection(
                     )
                 return node.id
             case ast.Constant():
-                return node.value
+                value = node.value
+                if isinstance(value, str):
+                    return value.replace("'", "''")
+                if isinstance(value, bytes):
+                    return value.decode("utf-8").replace("'", "''")
+                if isinstance(value, (int, float, bool)) or value is None:
+                    return value
+                raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     async def _inner_vectorized_search(

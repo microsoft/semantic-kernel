@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <NoWarn>$(NoWarn);CA2007,CA2208,CS1591,CA1024,IDE0009,IDE0055,IDE0073,IDE0211,VSTHRD111,SKEXP0001</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--    
+          TODO: fix this WORKAROUND 
+              CUDA provider set up with Microsoft.ML.OnnxRuntimeGenAI.Cuda 0.8.3 + Microsoft.ML.OnnxRuntime.Gpu 1.22.1 
+              - doesn't work with Microsoft.ML.OnnxRuntime 1.22.1
+              - works with Microsoft.ML.OnnxRuntime 1.22.0
+    -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" VersionOverride="1.22.0" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda"/>
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj"/>
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj"/>
+  </ItemGroup>
+</Project>

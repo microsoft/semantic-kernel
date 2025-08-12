@@ -21,6 +21,7 @@
 - [Azure AI Agent Declarative with OpenAPI Interpreter](./agents/azure_ai_agent/azure_ai_agent_declarative_openapi.py)
 - [Azure AI Agent Declarative with Existing Agent ID](./agents/azure_ai_agent/azure_ai_agent_declarative_with_existing_agent_id.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent MCP Streaming](./agents/azure_ai_agent/azure_ai_agent_mcp_streaming.py)
 - [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
 - [Azure AI Agent Message Callback Streaming](./agents/azure_ai_agent/azure_ai_agent_message_callback_streaming.py)
 - [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
@@ -216,8 +217,8 @@
 
 ### RAG - Different ways of `RAG` (Retrieval-Augmented Generation)
 
-- [RAG with Text Memory Plugin](./rag/rag_with_text_memory_plugin.py)
-- [Self-Critique RAG](./rag/self-critique_rag.py)
+- [RAG with Vector Collection](./rag/rag_with_vector_collection.py)
+- [Self-Critique RAG](./rag/self_critique_rag.py)
 
 ### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
 

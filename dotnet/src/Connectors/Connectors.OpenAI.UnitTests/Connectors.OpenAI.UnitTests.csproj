@@ -7,7 +7,7 @@
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812;OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

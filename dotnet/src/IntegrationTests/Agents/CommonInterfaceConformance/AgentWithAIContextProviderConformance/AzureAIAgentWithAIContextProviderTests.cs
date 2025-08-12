@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class AzureAIAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
-{
-}
+public class AzureAIAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture());

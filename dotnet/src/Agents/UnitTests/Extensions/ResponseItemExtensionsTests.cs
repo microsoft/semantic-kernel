@@ -66,7 +66,7 @@ public class ResponseItemExtensionsTests
     {
         // Arrange
         var fileBytes = new ReadOnlyMemory<byte>([1, 2, 3, 4, 5]);
-        IEnumerable<ResponseContentPart> contentParts = [ResponseContentPart.CreateInputFilePart("fileId", "fileName", new(fileBytes))];
+        IEnumerable<ResponseContentPart> contentParts = [ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(fileBytes), "text/plain", "fileName")];
         MessageResponseItem responseItem = ResponseItem.CreateUserMessageItem(contentParts);
 
         // Act
@@ -102,7 +102,7 @@ public class ResponseItemExtensionsTests
     public void VerifyToChatMessageContentFromReasoning()
     {
         // Arrange
-        IEnumerable<string> summaryParts = ["Foo"];
+        IEnumerable<ReasoningSummaryPart> summaryParts = [ReasoningSummaryPart.CreateTextPart("Foo")];
         ReasoningResponseItem responseItem = ResponseItem.CreateReasoningItem(summaryParts);
 
         // Act

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -34,11 +35,9 @@ public sealed class OpenAIChatResponseFormatBuilderTests
 
         // Act
         var chatResponseFormat = OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(jsonElement);
-        var responseFormat = this.GetResponseFormat(chatResponseFormat);
+        var (jsonSchema, schema) = this.GetResponseFormatJsonSchema(chatResponseFormat);
 
         // Assert
-        Assert.True(responseFormat.TryGetProperty("JsonSchema", out var jsonSchema));
-        Assert.True(jsonSchema.TryGetProperty("Schema", out var schema));
         Assert.True(jsonSchema.TryGetProperty("Name", out var name));
         Assert.True(jsonSchema.TryGetProperty("Strict", out var strict));
 
@@ -145,10 +144,28 @@ public sealed class OpenAIChatResponseFormatBuilderTests
 
     #region private
 
-    private JsonElement GetResponseFormat(ChatResponseFormat chatResponseFormat)
+    private (JsonElement JsonSchema, JsonElement JsonSchemaSchema) GetResponseFormatJsonSchema(ChatResponseFormat chatResponseFormat)
     {
-        var settings = new OpenAIPromptExecutionSettings { ResponseFormat = chatResponseFormat };
-        return JsonDocument.Parse(JsonSerializer.Serialize(settings, this._options)).RootElement.GetProperty("response_format");
+        var jsonSchemaProperty = chatResponseFormat.GetType().GetProperty("JsonSchema", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        // Assert
+        Assert.NotNull(jsonSchemaProperty);
+        var jsonSchemaPropertyValue = jsonSchemaProperty.GetValue(chatResponseFormat);
+
+        Assert.NotNull(jsonSchemaPropertyValue);
+        var schemaProperty = jsonSchemaPropertyValue.GetType().GetProperty("Schema", BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.NotNull(schemaProperty);
+        var schemaPropertyValue = schemaProperty.GetValue(jsonSchemaPropertyValue);
+
+        Assert.NotNull(schemaPropertyValue);
+
+        var jsonSchema = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(jsonSchemaProperty.GetValue(chatResponseFormat)));
+
+        // Schema property gets serialized into a non-readable pattern in the jsonSchema JsonElement variable and needs to be returned separately.
+        var schema = JsonSerializer.Deserialize<JsonElement>(schemaPropertyValue.ToString()!);
+
+        return (jsonSchema, schema);
     }
 
     private sealed class BinaryDataJsonConverter : JsonConverter<BinaryData>

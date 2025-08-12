@@ -692,7 +692,6 @@ class ResponsesAgentThreadActions:
                                 final_text = str(final_text)
                         text_type = "input_text" if original_role == AuthorRole.USER else "output_text"
                         contents.append({"type": text_type, "text": final_text})
-                        response_inputs.append({"role": original_role, "content": contents})
                     case ImageContent():
                         image_url = ""
                         if content.data_uri:
@@ -706,7 +705,6 @@ class ResponsesAgentThreadActions:
                             )
 
                         contents.append({"type": "input_image", "image_url": image_url})
-                        response_inputs.append({"role": original_role, "content": contents})
                     case FunctionCallContent():
                         fc_dict = {
                             "type": "function_call",
@@ -767,7 +765,10 @@ class ResponsesAgentThreadActions:
                             "filename": filename,
                             "file_data": file_data_uri,
                         })
-                        response_inputs.append({"role": original_role, "content": contents})
+
+            # Add the collected contents to response_inputs only once per message
+            if contents:
+                response_inputs.append({"role": original_role, "content": contents})
 
         return response_inputs
 
@@ -1021,7 +1022,7 @@ class ResponsesAgentThreadActions:
 
         # TODO(evmattso): make sure to respect filters on FCB
         if kernel.plugins:
-            funcs = agent.kernel.get_full_list_of_function_metadata()
+            funcs = kernel.get_full_list_of_function_metadata()
             tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools
