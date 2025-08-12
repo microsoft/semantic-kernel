@@ -96,16 +96,20 @@ def locate_safe_reduction_index(
     message_index = total_count - target_count
 
     # Move backward to avoid cutting function calls / results
-    # also skip over developer/system messages
+    # Stop if we encounter developer/system or a non-call/result message
     while message_index >= offset_count:
-        if history[message_index].role not in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
+        msg = history[message_index]
+        if msg.role in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
             break
-        if not contains_function_call_or_result(history[message_index]):
+        # If current is not a call/result, we've reached a safe boundary
+        if not contains_function_call_or_result(msg):
             break
+        # Avoid stepping back past a user message boundary when current is a call/result
+        prev_idx = message_index - 1
+        if (prev_idx < offset_count) or not contains_function_call_or_result(history[prev_idx]):
+            break
+        
         message_index -= 1
-
-    # This is our initial target truncation index
-    target_index = message_index
 
     # Attempt to see if there's a user message in the threshold window
     while message_index >= threshold_index:
