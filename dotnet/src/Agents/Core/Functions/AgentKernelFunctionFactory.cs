@@ -53,8 +53,12 @@ public static class AgentKernelFunctionFactory
             }
 
             var response = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, queryString), null, options, cancellationToken);
-            var responseItems = await response.ToArrayAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            var chatMessages = responseItems.Select(i => i.Message).ToArray();
+
+            List<ChatMessageContent> chatMessages = [];
+            await foreach (var item in response.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                chatMessages.Add(item.Message);
+            }
             return new FunctionResult(function, chatMessages, kernel.Culture);
         }
 

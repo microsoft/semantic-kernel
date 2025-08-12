@@ -65,7 +65,7 @@ class MockOrchestration(OrchestrationBase[TIn, TOut]):
     async def _start(self, task, runtime, internal_topic_type, collection_agent_type):
         pass
 
-    async def _prepare(self, runtime, internal_topic_type, result_callback):
+    async def _prepare(self, runtime, internal_topic_type, exception_callback, result_callback):
         pass
 
 

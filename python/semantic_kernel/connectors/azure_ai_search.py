@@ -675,7 +675,18 @@ class AzureAISearchCollection(
             case ast.Name():
                 raise NotImplementedError("Constants are not supported, make sure to use a value or a attribute.")
             case ast.Constant():
-                return str(node.value) if isinstance(node.value, float | int) else f"'{node.value}'"
+                value = node.value
+                if isinstance(value, str):
+                    return "'" + value.replace("'", "''") + "'"
+                if isinstance(value, bytes):
+                    return "'" + value.decode("utf-8").replace("'", "''") + "'"
+                if isinstance(value, bool):
+                    return str(value).lower()
+                if value is None:
+                    return "null"
+                if isinstance(value, (int, float)):
+                    return str(value)
+                raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override

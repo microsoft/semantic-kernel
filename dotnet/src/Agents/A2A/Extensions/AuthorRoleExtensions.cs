@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using A2A;
 using Microsoft.SemanticKernel.ChatCompletion;
-using SharpA2A.Core;
 
 namespace Microsoft.SemanticKernel.Agents.A2A;
 

@@ -2,6 +2,7 @@
 
 from typing import ClassVar
 
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import BedrockModelProvider
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -25,6 +26,11 @@ class BedrockSettings(KernelBaseSettings):
             (Env var BEDROCK_TEXT_MODEL_ID)
         - embedding_model_id: str | None - The Amazon Bedrock embedding model ID to use.
             (Env var BEDROCK_EMBEDDING_MODEL_ID)
+        - model_provider: BedrockModelProvider | None - The Bedrock model provider to use.
+            If not provided, the model provider will be extracted from the model ID.
+            When using an Application Inference Profile where the model provider is not part
+            of the model ID, this setting must be provided.
+            (Env var BEDROCK_MODEL_PROVIDER)
     """
 
     env_prefix: ClassVar[str] = "BEDROCK_"
@@ -32,3 +38,4 @@ class BedrockSettings(KernelBaseSettings):
     chat_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None
+    model_provider: BedrockModelProvider | None = None

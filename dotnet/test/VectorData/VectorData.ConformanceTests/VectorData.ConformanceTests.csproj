@@ -12,12 +12,15 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" />
-    <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
