@@ -876,7 +876,7 @@ class ResponsesAgentThreadActions:
             metadata=metadata,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status) if getattr(response, "status", None) is not None else None,
+            status=Status(response.status) if getattr(response, "status", None) is not None else None,  # type: ignore
         )
 
     @classmethod
