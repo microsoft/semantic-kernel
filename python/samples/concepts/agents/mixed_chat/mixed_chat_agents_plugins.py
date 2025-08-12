@@ -1,15 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import sys
 from typing import Annotated
 
-from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
-from semantic_kernel.agents.strategies import TerminationStrategy
-from semantic_kernel.connectors.ai import FunctionChoiceBehavior
+from semantic_kernel.agents import (
+    AzureAssistantAgent,
+    BooleanResult,
+    ChatCompletionAgent,
+    GroupChatOrchestration,
+    MessageResult,
+    RoundRobinGroupChatManager,
+)
+from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
-from semantic_kernel.contents import AuthorRole
-from semantic_kernel.functions import KernelArguments, kernel_function
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.contents import (
+    AuthorRole,
+    ChatHistory,
+    ChatMessageContent,
+    FunctionCallContent,
+    FunctionResultContent,
+)
+from semantic_kernel.functions import kernel_function
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -17,24 +34,7 @@ assistant using either Azure OpenAI or OpenAI, a chat completion
 agent and have them participate in a group chat to work towards
 the user's requirement. The ChatCompletionAgent uses a plugin
 that is part of the agent group chat.
-
-Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
-no longer maintained. For a replacement, consider using the `GroupChatOrchestration`.
-
-Read more about the `GroupChatOrchestration` here:
-https://learn.microsoft.com/semantic-kernel/frameworks/agent/agent-orchestration/group-chat?pivots=programming-language-python
-
-Here is a migration guide from `AgentGroupChat` to `GroupChatOrchestration`:
-https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchestration-migration-guide?pivots=programming-language-python
 """
-
-
-class ApprovalTerminationStrategy(TerminationStrategy):
-    """A strategy for determining when an agent should terminate."""
-
-    async def should_agent_terminate(self, agent, history):
-        """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
 
 
 REVIEWER_NAME = "ArtDirector"
@@ -45,6 +45,7 @@ If so, state that it is approved. Only include the word "approved" if it is so.
 If not, provide insight on how to refine suggested copy without example.
 You should always tie the conversation back to the food specials offered by the plugin.
 """
+REVIEWER_DESCRIPTION = "An art director who has opinions about copywriting born of a love for David Ogilvy."
 
 COPYWRITER_NAME = "CopyWriter"
 COPYWRITER_INSTRUCTIONS = """
@@ -55,6 +56,7 @@ You're laser focused on the goal at hand.
 Don't waste time with chit chat.
 Consider suggestions when refining an idea.
 """
+COPYWRITER_DESCRIPTION = "A copywriter with ten years of experience and known for brevity and a dry humor."
 
 
 class MenuPlugin:
@@ -75,57 +77,101 @@ class MenuPlugin:
         return "$9.99"
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
-    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
-    return kernel
+class ApprovalRoundRobinGroupChatManager(RoundRobinGroupChatManager):
+    @override
+    async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
+        """Check if the group chat should terminate.
+
+        Args:
+            chat_history (ChatHistory): The chat history of the group chat.
+        """
+        result = await super().should_terminate(chat_history)
+        if result.result:
+            return result
+
+        # Check if the last message from the reviewer contains "approved"
+        last_message = chat_history[-1]
+        if (
+            last_message.role == AuthorRole.ASSISTANT
+            and last_message.name == REVIEWER_NAME
+            and "approved" in last_message.content.lower()
+        ):
+            return BooleanResult(result=True, reason="The reviewer approved the content.")
+
+        return BooleanResult(result=False, reason="The group chat is not ready to terminate.")
+
+    @override
+    async def filter_results(self, chat_history: ChatHistory) -> MessageResult:
+        """Filter the chat history to only include relevant messages."""
+        last_writer_message = next(
+            (msg for msg in reversed(chat_history) if msg.role == AuthorRole.ASSISTANT and msg.name == COPYWRITER_NAME),
+            None,
+        )
+        if last_writer_message:
+            return MessageResult(
+                result=last_writer_message,
+                reason="Returning the last message from the writer as the result.",
+            )
+        return MessageResult(
+            result=None,
+            reason="No relevant message found from the writer.",
+        )
+
+
+def agent_response_callback(message: ChatMessageContent) -> None:
+    """Observer function to print the messages from the agents."""
+    print(f"{message.name}: {message.content}")
+    for item in message.items:
+        if isinstance(item, FunctionCallContent):
+            print(f"Calling '{item.name}' with arguments '{item.arguments}'")
+        if isinstance(item, FunctionResultContent):
+            print(f"Result from '{item.name}' is '{item.result}'")
 
 
 async def main():
-    kernel = _create_kernel_with_chat_completion("artdirector")
-    settings = kernel.get_prompt_execution_settings_from_service_id(service_id="artdirector")
-    # Configure the function choice behavior to auto invoke kernel functions
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+    # Create the agent reviewer agent
     agent_reviewer = ChatCompletionAgent(
-        kernel=kernel,
         name=REVIEWER_NAME,
         instructions=REVIEWER_INSTRUCTIONS,
-        arguments=KernelArguments(settings=settings),
+        description=REVIEWER_DESCRIPTION,
+        service=AzureChatCompletion(),
+        plugins=[MenuPlugin()],
     )
 
-    # Create the Assistant Agent using Azure OpenAI resources
+    # Create the agent writer agent
     client = AzureAssistantAgent.create_client()
-
-    # Create the assistant definition
     definition = await client.beta.assistants.create(
         model=AzureOpenAISettings().chat_deployment_name,
         name=COPYWRITER_NAME,
         instructions=COPYWRITER_INSTRUCTIONS,
+        description=COPYWRITER_DESCRIPTION,
     )
-
-    # Create the AzureAssistantAgent instance using the client and the assistant definition
     agent_writer = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
 
-    chat = AgentGroupChat(
-        agents=[agent_writer, agent_reviewer],
-        termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
-    )
-
-    input = "Write copy based on the food specials."
     try:
-        await chat.add_chat_message(input)
-        print(f"# {AuthorRole.USER}: '{input}'")
+        group_chat_orchestration = GroupChatOrchestration(
+            members=[agent_writer, agent_reviewer],
+            # max_rounds is odd, so that the writer gets the last round
+            manager=ApprovalRoundRobinGroupChatManager(max_rounds=10),
+            agent_response_callback=agent_response_callback,
+        )
 
-        async for content in chat.invoke():
-            print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        runtime = InProcessRuntime()
+        runtime.start()
+        orchestration_result = await group_chat_orchestration.invoke(
+            task="Write copy based on the food specials.",
+            runtime=runtime,
+        )
 
-        print(f"# IS COMPLETE: {chat.is_complete}")
+        value = await orchestration_result.get()
+        print(f"***** Result *****\n{value}")
     finally:
+        # Delete the agent
         await agent_writer.client.beta.assistants.delete(agent_writer.id)
+        await runtime.stop_when_idle()
 
 
 if __name__ == "__main__":
