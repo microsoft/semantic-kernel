@@ -216,14 +216,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             return out
 
         if os.getenv("MODEL_ID") in EU_MODEL_LIST:
-            # print("sorted_messages")
             sorted_messages = moved_tooluse_last(messages)
-            # print(sorted_messages)
             return sorted_messages
-        else:
-            # print("unsorted_messages")
-            # print(messages)
-            return messages
+
         return messages
 
     # endregion
