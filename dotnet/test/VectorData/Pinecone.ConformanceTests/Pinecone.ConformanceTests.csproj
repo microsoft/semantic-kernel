@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- We don't test Full Framework because to does not support Http 2.0 which seems to be enforced by the local emulator. -->
@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
@@ -33,8 +32,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Pinecone.Client" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\Pinecone\Pinecone.csproj"/>
     <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>

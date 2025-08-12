@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Extensions;
@@ -26,8 +25,11 @@ public static class ChatHistoryExtensions
     /// Enumerates a history in descending order asynchronously.
     /// </summary>
     /// <param name="history">The chat history to sort.</param>
-    public static IAsyncEnumerable<ChatMessageContent> ToDescendingAsync(this ChatHistory history)
+    public static async IAsyncEnumerable<ChatMessageContent> ToDescendingAsync(this ChatHistory history)
     {
-        return history.ToDescending().ToAsyncEnumerable();
+        for (int index = history.Count; index > 0; --index)
+        {
+            yield return history[index - 1];
+        }
     }
 }

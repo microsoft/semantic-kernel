@@ -16,8 +16,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\InMemory\InMemory.csproj"/>
     <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>

@@ -13,9 +13,7 @@ internal sealed class MongoTestStore : TestStore
 {
     public static MongoTestStore Instance { get; } = new();
 
-    private readonly MongoDbContainer _container = new MongoDbBuilder()
-        .WithImage("mongodb/mongodb-atlas-local:7.0.6")
-        .Build();
+    private MongoDbContainer? _container;
 
     public MongoClient? _client { get; private set; }
     public IMongoDatabase? _database { get; private set; }
@@ -32,21 +30,40 @@ internal sealed class MongoTestStore : TestStore
 
     protected override async Task StartAsync()
     {
+        var clientSettings = MongoTestEnvironment.IsConnectionInfoDefined
+            ? MongoClientSettings.FromConnectionString(MongoTestEnvironment.ConnectionUrl)
+            : await this.StartMongoDbContainerAsync();
+
+        this._client = new MongoClient(clientSettings);
+        this._database = this._client.GetDatabase("VectorSearchTests");
+        this.DefaultVectorStore = new MongoVectorStore(this._database);
+    }
+
+    private async Task<MongoClientSettings> StartMongoDbContainerAsync()
+    {
+        this._container = new MongoDbBuilder()
+            .WithImage("mongodb/mongodb-atlas-local:7.0.6")
+            .Build();
+
         using CancellationTokenSource cts = new();
         cts.CancelAfter(TimeSpan.FromSeconds(60));
         await this._container.StartAsync(cts.Token);
 
-        this._client = new MongoClient(new MongoClientSettings
+        return new MongoClientSettings
         {
             Server = new MongoServerAddress(this._container.Hostname, this._container.GetMappedPublicPort(MongoDbBuilder.MongoDbPort)),
             DirectConnection = true,
             // ReadConcern = ReadConcern.Linearizable,
             // WriteConcern = WriteConcern.WMajority
-        });
-        this._database = this._client.GetDatabase("VectorSearchTests");
-        this.DefaultVectorStore = new MongoVectorStore(this._database);
+        };
     }
 
-    protected override Task StopAsync()
-        => this._container.StopAsync();
+    protected override async Task StopAsync()
+    {
+        if (this._container != null)
+        {
+            await this._container.StopAsync();
+            this._container = null;
+        }
+    }
 }
