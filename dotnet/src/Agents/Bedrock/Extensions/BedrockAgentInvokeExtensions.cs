@@ -44,7 +44,7 @@ internal static class BedrockAgentInvokeExtensions
             }
 
             List<FunctionCallContent> functionCallContents = [];
-            await foreach (var responseEvent in invokeAgentResponse.Completion.ToAsyncEnumerable().ConfigureAwait(false))
+            foreach (var responseEvent in invokeAgentResponse.Completion)
             {
                 if (responseEvent is BedrockAgentRuntimeEventStreamException bedrockAgentRuntimeEventStreamException)
                 {

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -595,6 +596,60 @@ def test_add_plugin_from_directory(kernel: Kernel):
     assert func is not None
     func_handlebars = plugin.functions["TestFunctionHandlebars"]
     assert func_handlebars is not None
+
+
+def test_add_plugin_from_directory_with_encoding(kernel: Kernel):
+    """Test kernel.add_plugin with custom encoding parameter."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create a plugin directory with UTF-8 content
+        plugin_dir = os.path.join(temp_dir, "test_encoding_plugin")
+        os.makedirs(plugin_dir)
+
+        function_dir = os.path.join(plugin_dir, "test_function")
+        os.makedirs(function_dir)
+
+        prompt_path = os.path.join(function_dir, "skprompt.txt")
+        config_path = os.path.join(function_dir, "config.json")
+
+        # UTF-8 content with international characters
+        # Hello World Test
+        prompt_content = """Multi-language assistant:
+        Chinese: 你好世界!
+        Japanese: こんにちは世界!
+        Question: {{$input}}
+        """
+
+        config_content = """{
+    "schema": 1,
+    "description": "Test encoding function",
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "User's question",
+            "required": true
+        }
+    ]
+}"""
+
+        # Write files with UTF-8 encoding
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Test with explicit encoding
+        plugin = kernel.add_plugin(parent_directory=temp_dir, plugin_name="test_encoding_plugin", encoding="utf-8")
+
+        assert plugin is not None
+        assert plugin.name == "test_encoding_plugin"
+        assert "test_function" in plugin.functions
+
+        function = plugin.functions["test_function"]
+        template = function.prompt_template.prompt_template_config.template
+        # Assert "Hello World"
+        assert "你好世界" in template
+        assert "こんにちは世界" in template
+        assert function.description == "Test encoding function"
 
 
 def test_plugin_no_plugin(kernel: Kernel):

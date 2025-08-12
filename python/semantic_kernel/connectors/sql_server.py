@@ -637,9 +637,11 @@ class SqlServerCollection(
                         )
                     return f"[{node.id}]"
                 case ast.Constant():
-                    # Always use parameterization for constants
-                    command.add_parameter(node.value)
-                    return "?"
+                    value = node.value
+                    if isinstance(value, (str, int, float, bool, bytes)) or value is None:
+                        command.add_parameter(str(value))
+                        return "?"
+                    raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
                 case ast.List():
                     # For IN/NOT IN lists, parameterize each element
                     placeholders = []

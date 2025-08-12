@@ -282,19 +282,29 @@ public sealed partial class AzureAIAgent : Agent
             cancellationToken);
 
         // Return the chunks to the caller.
+        int messageIndex = 0;
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            // Notify the thread of any messages that were assembled from the streaming response during this iteration.
+            await NotifyMessagesAsync().ConfigureAwait(false);
+
             yield return new(result, azureAIAgentThread);
         }
 
-        // Notify the thread of any new messages that were assembled from the streaming response.
-        foreach (var newMessage in newMessagesReceiver)
-        {
-            await this.NotifyThreadOfNewMessage(azureAIAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
+        // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
+        await NotifyMessagesAsync().ConfigureAwait(false);
 
-            if (options?.OnIntermediateMessage is not null)
+        async Task NotifyMessagesAsync()
+        {
+            for (; messageIndex < newMessagesReceiver.Count; messageIndex++)
             {
-                await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
+                ChatMessageContent newMessage = newMessagesReceiver[messageIndex];
+                await this.NotifyThreadOfNewMessage(azureAIAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
+
+                if (options?.OnIntermediateMessage is not null)
+                {
+                    await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
+                }
             }
         }
     }
