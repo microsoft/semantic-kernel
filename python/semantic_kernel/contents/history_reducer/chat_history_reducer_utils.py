@@ -108,7 +108,7 @@ def locate_safe_reduction_index(
         prev_idx = message_index - 1
         if (prev_idx < offset_count) or not contains_function_call_or_result(history[prev_idx]):
             break
-        
+
         message_index -= 1
 
     # This is our initial target truncation index
