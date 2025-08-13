@@ -263,7 +263,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
             if function_tracer.are_sensitive_events_enabled():
-                current_span.set_attribute(TOOL_CALL_ARGUMENTS, json.dumps(arguments))
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
 
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
@@ -278,9 +278,11 @@ class KernelFunction(KernelBaseModel):
                 KernelFunctionLogMessages.log_function_result_value(logger, function_context.result)
 
                 if function_tracer.are_sensitive_events_enabled():
-                    current_span.set_attribute(
-                        TOOL_CALL_RESULT, json.dumps(function_context.result.value if function_context.result else None)
-                    )
+                    try:
+                        result = str(function_context.result.value)
+                    except Exception as e:
+                        result = e
+                    current_span.set_attribute(TOOL_CALL_RESULT, result)
 
                 return function_context.result
             except Exception as e:
@@ -333,7 +335,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
             if function_tracer.are_sensitive_events_enabled():
-                current_span.set_attribute(TOOL_CALL_ARGUMENTS, json.dumps(arguments))
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
 
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
@@ -359,7 +361,12 @@ class KernelFunction(KernelBaseModel):
                         yield function_context.result
 
                 if function_tracer.are_sensitive_events_enabled():
-                    current_span.set_attribute(TOOL_CALL_RESULT, json.dumps(function_results))
+                    results: list[str] = []
+                    try:
+                        results.append(str(function_results))
+                    except Exception as e:
+                        results.append(str(e))
+                    current_span.set_attribute(TOOL_CALL_RESULT, json.dumps(results))
             except Exception as e:
                 self._handle_exception(current_span, e, attributes)
                 raise e
