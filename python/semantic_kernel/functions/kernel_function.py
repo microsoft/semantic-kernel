@@ -279,9 +279,9 @@ class KernelFunction(KernelBaseModel):
 
                 if function_tracer.are_sensitive_events_enabled():
                     try:
-                        result = str(function_context.result.value)
+                        result = str(function_context.result.value) if function_context.result else None
                     except Exception as e:
-                        result = e
+                        result = str(e)
                     current_span.set_attribute(TOOL_CALL_RESULT, result)
 
                 return function_context.result
