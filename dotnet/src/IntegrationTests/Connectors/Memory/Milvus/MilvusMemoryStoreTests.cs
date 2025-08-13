@@ -43,7 +43,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await this.Store.CreateCollectionAsync("collection1");
         await this.Store.CreateCollectionAsync("collection2");
 
-        List<string> collections = this.Store.GetCollectionsAsync().ToEnumerable().ToList();
+        List<string> collections = await this.Store.GetCollectionsAsync().ToListAsync();
         Assert.Contains("collection1", collections);
         Assert.Contains("collection2", collections);
     }
@@ -112,7 +112,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await this.Store.CreateCollectionAsync(CollectionName);
         await this.InsertSampleDataAsync();
 
-        List<MemoryRecord> records = this.Store.GetBatchAsync(CollectionName, ["Some id", "Some other id"], withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+        List<MemoryRecord> records = await this.Store.GetBatchAsync(CollectionName, ["Some id", "Some other id"], withEmbeddings: withEmbeddings).ToListAsync();
 
         Assert.Collection(records.OrderBy(r => r.Metadata.Id),
             r =>
@@ -185,7 +185,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await Task.Delay(1000);
 
         List<(MemoryRecord Record, double SimilarityScore)> results =
-            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+            await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync();
 
         Assert.All(results, t => Assert.True(t.SimilarityScore > 0));
 
@@ -234,7 +234,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
 
         //Search with Ip metric, run correctly
         List<(MemoryRecord Record, double SimilarityScore)> ipResults =
-            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+            await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync();
 
         Assert.All(ipResults, t => Assert.True(t.SimilarityScore > 0));
 
@@ -242,7 +242,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         this.Store = new(this._milvusFixture.Host, vectorSize: 5, port: this._milvusFixture.Port, metricType: SimilarityMetricType.Cosine, consistencyLevel: ConsistencyLevel.Strong);
 
         //An exception will be thrown here, the exception message includes "metric type not match"
-        MilvusException milvusException = Assert.Throws<MilvusException>(() => this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList());
+        MilvusException milvusException = await Assert.ThrowsAsync<MilvusException>(async () => await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync());
 
         Assert.NotNull(milvusException);
 
@@ -256,7 +256,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
 
         //Search with Ip metric, run correctly
         List<(MemoryRecord Record, double SimilarityScore)> cosineResults =
-            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+            await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync();
 
         Assert.All(cosineResults, t => Assert.True(t.SimilarityScore > 0));
     }
@@ -268,12 +268,12 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await this.InsertSampleDataAsync();
 
         List<(MemoryRecord Record, double SimilarityScore)> results =
-            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToEnumerable().ToList();
+            await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToListAsync();
 
         string firstId = results[0].Record.Metadata.Id;
         double firstSimilarityScore = results[0].SimilarityScore;
 
-        results = this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToEnumerable().ToList();
+        results = await this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToListAsync();
 
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }

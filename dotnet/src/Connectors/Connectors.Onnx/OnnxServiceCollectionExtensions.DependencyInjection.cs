@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.AI;
@@ -85,17 +86,7 @@ public static class OnnxServiceCollectionExtensions
 
             var chatClient = new OnnxRuntimeGenAIChatClient(modelPath, chatClientOptions ?? new OnnxRuntimeGenAIChatClientOptions()
             {
-                PromptFormatter = static (messages, _) =>
-                {
-                    StringBuilder promptBuilder = new();
-                    foreach (var message in messages)
-                    {
-                        promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
-                    }
-                    promptBuilder.Append("<|end|>\n<|assistant|>");
-
-                    return promptBuilder.ToString();
-                }
+                PromptFormatter = DefaultPromptFormatter
             });
 
             var builder = chatClient.AsBuilder()
@@ -112,5 +103,73 @@ public static class OnnxServiceCollectionExtensions
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
 
         return services;
+    }
+
+    /// <summary>
+    /// Add OnnxRuntimeGenAI Chat Client to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="providers">The providers to use for the chat client.</param>
+    /// <param name="chatClientOptions">The options for the chat client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOnnxRuntimeGenAIChatClient(
+        this IServiceCollection services,
+        string modelPath,
+        IEnumerable<Provider> providers,
+        OnnxRuntimeGenAIChatClientOptions? chatClientOptions = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelPath);
+        Verify.NotNull(providers);
+
+        IChatClient Factory(IServiceProvider serviceProvider, object? _)
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var config = new Config(modelPath);
+            config.ClearProviders();
+            foreach (Provider provider in providers)
+            {
+                config.AppendProvider(provider.Id);
+                foreach (KeyValuePair<string, string> option in provider.Options)
+                {
+                    config.SetProviderOption(provider.Id, option.Key, option.Value);
+                }
+            }
+
+            var chatClient = new OnnxRuntimeGenAIChatClient(config, true, chatClientOptions ?? new OnnxRuntimeGenAIChatClientOptions()
+            {
+                PromptFormatter = DefaultPromptFormatter
+            });
+
+            var builder = chatClient.AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        }
+
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
+
+        return services;
+    }
+
+    private static string DefaultPromptFormatter(IEnumerable<ChatMessage> messages, ChatOptions? options)
+    {
+        StringBuilder promptBuilder = new();
+        foreach (var message in messages)
+        {
+            promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
+        }
+        promptBuilder.Append("<|end|>\n<|assistant|>");
+
+        return promptBuilder.ToString();
     }
 }
