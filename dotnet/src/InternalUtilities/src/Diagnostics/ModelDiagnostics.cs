@@ -182,9 +182,9 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Set the agent response for a given activity.
     /// </summary>
-    internal static void SetAgentResponse(this Activity activity, IEnumerable<ChatMessageContent> responses)
+    internal static void SetAgentResponse(this Activity activity, IEnumerable<ChatMessageContent>? responses)
     {
-        if (!IsModelDiagnosticsEnabled())
+        if (!IsModelDiagnosticsEnabled() || responses is null)
         {
             return;
         }
@@ -204,36 +204,33 @@ internal static class ModelDiagnostics
         this Activity activity,
         IEnumerable<StreamingChatMessageContent>? contents)
     {
-        if (IsModelDiagnosticsEnabled())
+        if (!IsModelDiagnosticsEnabled() || contents is null)
         {
-            if (contents is null)
-            {
-                return;
-            }
-
-            Dictionary<int, List<StreamingKernelContent>> choices = [];
-            foreach (var content in contents)
-            {
-                if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
-                {
-                    choiceContents = [];
-                    choices[content.ChoiceIndex] = choiceContents;
-                }
-
-                choiceContents.Add(content);
-            }
-
-            var chatCompletions = choices.Select(choiceContents =>
-                {
-                    var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
-                    var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
-                    return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
-                }).ToList();
-
-            activity?.SetTag(
-               ModelDiagnosticsTags.AgentInvocationOutput,
-               JsonSerializer.Serialize(chatCompletions.Select(r => ToGenAIConventionsFormat(r))));
+            return;
         }
+
+        Dictionary<int, List<StreamingKernelContent>> choices = [];
+        foreach (var content in contents)
+        {
+            if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
+            {
+                choiceContents = [];
+                choices[content.ChoiceIndex] = choiceContents;
+            }
+
+            choiceContents.Add(content);
+        }
+
+        var chatCompletions = choices.Select(choiceContents =>
+            {
+                var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
+                var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
+            }).ToList();
+
+        activity?.SetTag(
+            ModelDiagnosticsTags.AgentInvocationOutput,
+            JsonSerializer.Serialize(chatCompletions.Select(r => ToGenAIConventionsFormat(r))));
     }
 
     /// <summary>

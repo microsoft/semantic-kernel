@@ -170,7 +170,7 @@ public sealed partial class AzureAIAgent : Agent
             chatMessageContents?.Add(result);
         }
 
-        activity?.SetAgentResponse(messages);
+        activity?.SetAgentResponse(chatMessageContents);
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {

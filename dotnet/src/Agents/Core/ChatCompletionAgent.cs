@@ -358,7 +358,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 kernel,
                 cancellationToken).ConfigureAwait(false);
 
-
         this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, agentName, serviceType, messages.Count);
 
         // Capture mutated messages related function calling / tools

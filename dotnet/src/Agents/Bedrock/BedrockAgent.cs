@@ -158,7 +158,7 @@ public sealed class BedrockAgent : Agent
             chatMessageContents?.Add(result);
         }
 
-        activity?.SetAgentResponse(messages);
+        activity?.SetAgentResponse(chatMessageContents);
     }
 
     /// <summary>
@@ -491,10 +491,7 @@ public sealed class BedrockAgent : Agent
             throw new ArgumentException("The streaming configuration must have StreamFinalResponse set to true.");
         }
 
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []),
-            InvokeInternal,
-            cancellationToken);
+        return InvokeInternal();
 
         async IAsyncEnumerable<StreamingChatMessageContent> InvokeInternal()
         {
