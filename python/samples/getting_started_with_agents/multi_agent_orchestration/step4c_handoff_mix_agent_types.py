@@ -4,6 +4,7 @@ import asyncio
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
+from opentelemetry.trace import NoOpTracerProvider
 
 from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import (
@@ -197,7 +198,7 @@ async def main():
     )
 
     # 2. Create a runtime and start it
-    runtime = InProcessRuntime()
+    runtime = InProcessRuntime(tracer_provider=NoOpTracerProvider())
     runtime.start()
 
     try:
