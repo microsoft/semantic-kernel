@@ -6,6 +6,7 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -33,6 +34,12 @@ class MenuPlugin:
         self, menu_item: Annotated[str, "The name of the menu item."]
     ) -> Annotated[str, "Returns the price of the menu item."]:
         return "$9.99"
+
+
+async def on_intermediate_msg(msg: ChatMessageContent) -> None:
+    """Callback for intermediate messages."""
+    if msg.metadata.get("message_id"):
+        print(f"Intermediate msg for {msg.content} with thread message id: {msg.metadata['thread_message_id']}")
 
 
 async def main() -> None:
@@ -75,7 +82,9 @@ async def main() -> None:
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'")
                 first_chunk = True
-                async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                async for response in agent.invoke_stream(
+                    messages=user_input, thread=thread, on_intermediate_message=on_intermediate_msg
+                ):
                     if first_chunk:
                         print(f"# {response.role}: ", end="", flush=True)
                         first_chunk = False

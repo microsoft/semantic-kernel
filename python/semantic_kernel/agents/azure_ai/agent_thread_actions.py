@@ -550,6 +550,7 @@ class AgentThreadActions:
         output_messages: "list[ChatMessageContent] | None" = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
+        thread_msg_id = None
         while True:
             # Use 'async with' only if the stream supports async context management (main agent stream).
             # Tool output handlers only support async iteration, not context management.
@@ -567,8 +568,14 @@ class AgentThreadActions:
                     run_step = cast(RunStep, event_data)
                     logger.info(f"Assistant run in progress with ID: {run_step.id}")
 
+                elif event_type == AgentStreamEvent.THREAD_MESSAGE_CREATED:
+                    thread_msg_id = event_data.id
+                    if thread_msg_id and thread_msg_id != event_data.id:
+                        thread_msg_id = event_data.id
+                    logger.info(f"Assistant message created with ID: {thread_msg_id}")
+
                 elif event_type == AgentStreamEvent.THREAD_MESSAGE_DELTA:
-                    yield generate_streaming_message_content(agent.name, event_data)
+                    yield generate_streaming_message_content(agent.name, event_data, thread_msg_id)
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_STEP_COMPLETED:
                     step_completed = cast(RunStep, event_data)

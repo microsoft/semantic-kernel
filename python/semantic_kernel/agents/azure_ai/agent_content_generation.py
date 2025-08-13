@@ -150,7 +150,9 @@ def generate_message_content(
 
 @experimental
 def generate_streaming_message_content(
-    assistant_name: str, message_delta_event: "MessageDeltaChunk"
+    assistant_name: str,
+    message_delta_event: "MessageDeltaChunk",
+    thread_msg_id: str | None = None,
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
@@ -196,7 +198,11 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
+    metadata: dict[str, Any] | None = None
+    if thread_msg_id:
+        metadata = {"thread_message_id": thread_msg_id}
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
 @experimental
