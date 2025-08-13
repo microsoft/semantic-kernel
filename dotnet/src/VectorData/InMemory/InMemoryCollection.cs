@@ -420,6 +420,23 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     }
 
     /// <summary>
+    /// Updates the collection dictionary with any matches values from the provided dictionary.
+    /// </summary>
+    /// <param name="updates">Updates to apply to the collection dictionary.</param>
+    internal void UpdateCollectionDictionary(Dictionary<object, object> updates)
+    {
+        if (!this._internalCollections.TryGetValue(this.Name, out var collectionDictionary))
+        {
+            throw new VectorStoreException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
+        }
+
+        foreach (var update in updates)
+        {
+            collectionDictionary.AddOrUpdate(update.Key, update.Value, (key, currentValue) => update.Value);
+        }
+    }
+
+    /// <summary>
     /// The user provides a filter expression accepting a Record, but we internally store it wrapped in an InMemoryVectorRecordWrapper.
     /// This method converts a filter expression accepting a Record to one accepting an InMemoryVectorRecordWrapper.
     /// </summary>
