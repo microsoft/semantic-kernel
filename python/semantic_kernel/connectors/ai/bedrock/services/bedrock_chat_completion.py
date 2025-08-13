@@ -58,7 +58,6 @@ if TYPE_CHECKING:
 
 MODELS_WITH_PROMPT_CACHING: list = ["us.anthropic.claude-3-7-sonnet-20250219-v1:0",
                                     "eu.anthropic.claude-3-7-sonnet-20250219-v1:0"]
-EU_MODEL_LIST: list = ["eu.anthropic.claude-3-5-sonnet-20240620-v1:0"]
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
@@ -225,11 +224,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 out.append(entry)
             return out
 
-        if os.getenv("MODEL_ID") in EU_MODEL_LIST:
-            sorted_messages = moved_tooluse_last(messages)
-            return sorted_messages
-
-        return messages
+        # Sort toolUse content to the end of the messages
+        return moved_tooluse_last(messages)
 
     # endregion
 
