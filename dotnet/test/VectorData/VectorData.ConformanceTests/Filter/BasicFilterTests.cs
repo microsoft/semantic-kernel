@@ -217,6 +217,30 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r.Int <= 10,
             r => (int)r["Int"] <= 10);
 
+    [ConditionalFact]
+    public virtual Task GreaterThan_with_DateTimeOffset()
+        => this.TestFilterAsync(
+            r => r.DateTimeOffset > new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            r => (DateTimeOffset)r["DateTimeOffset"] > new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+    [ConditionalFact]
+    public virtual Task GreaterThanOrEqual_with_DateTimeOffset()
+        => this.TestFilterAsync(
+            r => r.DateTimeOffset >= new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            r => (DateTimeOffset)r["DateTimeOffset"] >= new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+    [ConditionalFact]
+    public virtual Task LessThan_with_DateTimeOffset()
+        => this.TestFilterAsync(
+            r => r.DateTimeOffset < new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            r => (DateTimeOffset)r["DateTimeOffset"] < new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+    [ConditionalFact]
+    public virtual Task LessThanOrEqual_with_DateTimeOffset()
+        => this.TestFilterAsync(
+            r => r.DateTimeOffset <= new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            r => (DateTimeOffset)r["DateTimeOffset"] <= new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
     #endregion Comparison
 
     #region Logical operators
@@ -550,6 +574,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
         public int Int2 { get; set; }
         public string[] StringArray { get; set; } = null!;
         public List<string> StringList { get; set; } = null!;
+        public DateTimeOffset DateTimeOffset { get; set; }
     }
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, FilterRecord>
@@ -594,7 +619,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     new VectorStoreDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
                     new VectorStoreDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
                     new VectorStoreDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
-                    new VectorStoreDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
+                    new VectorStoreDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.DateTimeOffset), typeof(DateTimeOffset)) { IsIndexed = true }
                 ]
             };
 
@@ -611,7 +637,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 80,
                     StringArray = ["x", "y"],
                     StringList = ["x", "y"],
-                    Vector = this.GetVector(3)
+                    Vector = this.GetVector(3),
+                    DateTimeOffset = new DateTimeOffset(2025, 1, 1, 0, 0, 0, new TimeSpan(1, 0, 0))
                 },
                 new()
                 {
@@ -622,7 +649,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 90,
                     StringArray = ["a", "b"],
                     StringList = ["a", "b"],
-                    Vector = this.GetVector(3)
+                    Vector = this.GetVector(3),
+                    DateTimeOffset = new DateTimeOffset(2024, 12, 31, 23, 0, 0, TimeSpan.Zero)
                 },
                 new()
                 {
@@ -633,7 +661,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 9,
                     StringArray = ["x"],
                     StringList = ["x"],
-                    Vector = this.GetVector(3)
+                    Vector = this.GetVector(3),
+                    DateTimeOffset = new DateTimeOffset(2024, 12, 31, 23, 0, 0, new TimeSpan(-1, 0, 0))
                 },
                 new()
                 {
@@ -644,7 +673,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 100,
                     StringArray = ["x", "y", "z"],
                     StringList = ["x", "y", "z"],
-                    Vector = this.GetVector(3)
+                    Vector = this.GetVector(3),
+                    DateTimeOffset = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
                 },
                 new()
                 {
@@ -655,7 +685,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 101,
                     StringArray = ["y", "z"],
                     StringList = ["y", "z"],
-                    Vector = this.GetVector(3)
+                    Vector = this.GetVector(3),
+                    DateTimeOffset = new DateTimeOffset(2025, 1, 1, 1, 0, 1, new TimeSpan(1, 0, 0))
                 }
             ];
         }
