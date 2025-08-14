@@ -3,6 +3,8 @@
 import pytest
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -16,6 +18,24 @@ def chat_messages():
     msgs.append(ChatMessageContent(role=AuthorRole.USER, content="User message 2"))
     msgs.append(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant message 2"))
     return msgs
+
+
+@pytest.fixture
+def chat_messages_with_tools():
+    return [
+        ChatMessageContent(role=AuthorRole.SYSTEM, content="System message."),
+        ChatMessageContent(role=AuthorRole.USER, content="User message 1"),
+        ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="123", function_name="search", plugin_name="plugin", arguments={"q": "x"})],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=[FunctionResultContent(id="123", function_name="search", plugin_name="plugin", result="RESULT")],
+        ),
+        ChatMessageContent(role=AuthorRole.USER, content="User message 2"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant message 2"),
+    ]
 
 
 def test_truncation_reducer_init():
@@ -66,6 +86,22 @@ async def test_truncation_reducer_truncation(chat_messages):
     # We expect only 2 messages remain after truncation
     assert result is not None
     assert len(result) == 2
-    # They should be the last 2 messages
+    # They should be the last 4 messages while tool result is not orphaned
     assert result[0] == chat_messages[-2]
     assert result[1] == chat_messages[-1]
+
+
+async def test_truncation_reducer_truncation_with_tools(chat_messages_with_tools):
+    # Force a smaller target so we do need to reduce
+    reducer = ChatHistoryTruncationReducer(target_count=3, threshold_count=0)
+    reducer.messages = chat_messages_with_tools
+    result = await reducer.reduce()
+    # We expect 4 messages remain after truncation
+    # Tool results are not orphaned, so we expect to keep them
+    assert result is not None
+    assert len(result) == 4
+    # They should be the last 4 messages
+    assert result[0] == chat_messages_with_tools[-4]
+    assert result[1] == chat_messages_with_tools[-3]
+    assert result[2] == chat_messages_with_tools[-2]
+    assert result[3] == chat_messages_with_tools[-1]
