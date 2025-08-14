@@ -1,17 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import sys
 
-from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
-from semantic_kernel.agents.strategies import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
-from semantic_kernel.contents import AuthorRole
-from semantic_kernel.kernel import Kernel
+from azure.identity.aio import DefaultAzureCredential
+
+from semantic_kernel.agents import (
+    AzureAIAgent,
+    AzureAIAgentSettings,
+    BooleanResult,
+    ChatCompletionAgent,
+    GroupChatOrchestration,
+    MessageResult,
+    RoundRobinGroupChatManager,
+)
+from semantic_kernel.agents.runtime import InProcessRuntime
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import AuthorRole, ChatHistory, StreamingChatMessageContent
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 
 """
-The following sample demonstrates how to create an OpenAI
-assistant using either Azure OpenAI or OpenAI, a chat completion
-agent and have them participate in a group chat to work towards
+The following sample demonstrates how to create a Azure AI Foundry Agent, 
+a chat completion agent and have them participate in a group chat to work towards
 the user's requirement.
 
 Note: This sample use the `AgentGroupChat` feature of Semantic Kernel, which is
@@ -25,82 +40,136 @@ https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchest
 """
 
 
-class ApprovalTerminationStrategy(TerminationStrategy):
-    """A strategy for determining when an agent should terminate."""
+REVIEWER_NAME = "ArtDirector"
+REVIEWER_INSTRUCTIONS = """
+You are an art director who has opinions about copywriting born of a love for David Ogilvy.
+The goal is to determine if the given copy is acceptable to print.
+If so, state that it is approved. Only include the word "approved" if it is so.
+If not, provide insight on how to refine suggested copy without example.
+"""
+REVIEWER_DESCRIPTION = "An art director who has opinions about copywriting born of a love for David Ogilvy."
 
-    async def should_agent_terminate(self, agent, history):
-        """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
+
+COPYWRITER_NAME = "CopyWriter"
+COPYWRITER_INSTRUCTIONS = """
+You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+The goal is to refine and decide on the single best copy as an expert in the field.
+Only provide a single proposal per response.
+You're laser focused on the goal at hand.
+Don't waste time with chit chat.
+Consider suggestions when refining an idea.
+"""
+COPYWRITER_DESCRIPTION = "A copywriter with ten years of experience and known for brevity and a dry humor."
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
-    return kernel
+class ApprovalRoundRobinGroupChatManager(RoundRobinGroupChatManager):
+    @override
+    async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
+        """Check if the group chat should terminate.
+
+        Args:
+            chat_history (ChatHistory): The chat history of the group chat.
+        """
+        result = await super().should_terminate(chat_history)
+        if result.result:
+            return result
+
+        # Check if the last message from the reviewer contains "approved"
+        last_message = chat_history[-1]
+        if (
+            last_message.role == AuthorRole.ASSISTANT
+            and last_message.name == REVIEWER_NAME
+            and "approved" in last_message.content.lower()
+        ):
+            return BooleanResult(result=True, reason="The reviewer approved the content.")
+
+        return BooleanResult(result=False, reason="The group chat is not ready to terminate.")
+
+    @override
+    async def filter_results(self, chat_history: ChatHistory) -> MessageResult:
+        """Filter the chat history to only include relevant messages."""
+        last_writer_message = next(
+            (msg for msg in reversed(chat_history) if msg.role == AuthorRole.ASSISTANT and msg.name == COPYWRITER_NAME),
+            None,
+        )
+        if last_writer_message:
+            return MessageResult(
+                result=last_writer_message,
+                reason="Returning the last message from the writer as the result.",
+            )
+        return MessageResult(
+            result=None,
+            reason="No relevant message found from the writer.",
+        )
+
+
+# Flag to indicate if a new message is being received
+is_new_message = True
+
+
+def streaming_agent_response_callback(message: StreamingChatMessageContent, is_final: bool) -> None:
+    """Observer function to print the messages from the agents.
+
+    Args:
+        message (StreamingChatMessageContent): The streaming message content from the agent.
+        is_final (bool): Indicates if this is the final part of the message.
+    """
+    global is_new_message
+    if is_new_message:
+        print(f"# {message.name}")
+        is_new_message = False
+    print(message.content, end="", flush=True)
+    if is_final:
+        print()
+        is_new_message = True
 
 
 async def main():
-    # First create a ChatCompletionAgent
-    agent_reviewer = ChatCompletionAgent(
-        kernel=_create_kernel_with_chat_completion("artdirector"),
-        name="ArtDirector",
-        instructions="""
-            You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-            The goal is to determine if the given copy is acceptable to print.
-            If so, state that it is approved. Only include the word "approved" if it is so.
-            If not, provide insight on how to refine suggested copy without example.
-            """,
-    )
+    async with (
+        # 1. Login to Azure and create a Azure AI Project Client
+        DefaultAzureCredential() as creds,
+        AzureAIAgent.create_client(credential=creds) as client,
+    ):
+        # 2. Create agents
+        agent_writer = AzureAIAgent(
+            client=client,
+            definition=await client.agents.create_agent(
+                model=AzureAIAgentSettings().model_deployment_name,
+                name=COPYWRITER_NAME,
+                instructions=COPYWRITER_INSTRUCTIONS,
+                description=COPYWRITER_DESCRIPTION,
+            ),
+        )
+        agent_reviewer = ChatCompletionAgent(
+            service=AzureChatCompletion(),
+            name=REVIEWER_NAME,
+            instructions=REVIEWER_INSTRUCTIONS,
+            description=REVIEWER_DESCRIPTION,
+        )
 
-    # Next, we will create the AzureAssistantAgent
+        try:
+            # 3. Create the group chat orchestration
+            group_chat_orchestration = GroupChatOrchestration(
+                members=[agent_writer, agent_reviewer],
+                # max_rounds is odd, so that the writer gets the last round
+                manager=ApprovalRoundRobinGroupChatManager(max_rounds=10),
+                streaming_agent_response_callback=streaming_agent_response_callback,
+            )
 
-    # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+            # 4. Start the orchestration
+            runtime = InProcessRuntime()
+            runtime.start()
+            orchestration_result = await group_chat_orchestration.invoke(
+                task="a slogan for a new line of electric cars.",
+                runtime=runtime,
+            )
 
-    # Create the assistant definition
-    definition = await client.beta.assistants.create(
-        model=AzureOpenAISettings().chat_deployment_name,
-        name="CopyWriter",
-        instructions="""
-        You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-        The goal is to refine and decide on the single best copy as an expert in the field.
-        Only provide a single proposal per response.
-        You're laser focused on the goal at hand.
-        Don't waste time with chit chat.
-        Consider suggestions when refining an idea.
-        """,
-    )
-
-    # Create the AzureAssistantAgent instance using the client and the assistant definition
-    agent_writer = AzureAssistantAgent(
-        client=client,
-        definition=definition,
-    )
-
-    # Create the AgentGroupChat object, which will manage the chat between the agents
-    chat = AgentGroupChat(
-        agents=[agent_writer, agent_reviewer],
-        termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
-    )
-
-    input = "a slogan for a new line of electric cars."
-
-    try:
-        await chat.add_chat_message(input)
-        print(f"# {AuthorRole.USER}: '{input}'")
-
-        last_agent = None
-        async for message in chat.invoke_stream():
-            if message.content is not None:
-                if last_agent != message.name:
-                    print(f"\n# {message.name}: ", end="", flush=True)
-                    last_agent = message.name
-                print(f"{message.content}", end="", flush=True)
-
-        print()
-        print(f"# IS COMPLETE: {chat.is_complete}")
-    finally:
-        await agent_writer.client.beta.assistants.delete(agent_writer.id)
+            value = await orchestration_result.get()
+            print(f"***** Result *****\n{value}")
+        finally:
+            # 5. Delete the agent
+            await client.agents.delete_agent(agent_writer.definition.id)
+            await runtime.stop_when_idle()
 
 
 if __name__ == "__main__":
