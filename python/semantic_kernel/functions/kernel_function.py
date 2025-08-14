@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 import time
 from abc import abstractmethod
@@ -32,6 +33,7 @@ from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptT
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.telemetry.model_diagnostics import function_tracer
+from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import TOOL_CALL_ARGUMENTS, TOOL_CALL_RESULT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -260,6 +262,9 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
+            if function_tracer.are_sensitive_events_enabled():
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
+
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
@@ -271,6 +276,13 @@ class KernelFunction(KernelBaseModel):
 
                 KernelFunctionLogMessages.log_function_invoked_success(logger, self.fully_qualified_name)
                 KernelFunctionLogMessages.log_function_result_value(logger, function_context.result)
+
+                if function_tracer.are_sensitive_events_enabled():
+                    try:
+                        result = str(function_context.result.value) if function_context.result else None
+                    except Exception as e:
+                        result = str(e)
+                    current_span.set_attribute(TOOL_CALL_RESULT, result)
 
                 return function_context.result
             except Exception as e:
@@ -322,6 +334,9 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
+            if function_tracer.are_sensitive_events_enabled():
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
+
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
@@ -331,15 +346,27 @@ class KernelFunction(KernelBaseModel):
                 )
                 await stack(function_context)
 
+                function_results: list[Any] = []
                 if function_context.result is not None:
                     if isasyncgen(function_context.result.value):
                         async for partial in function_context.result.value:
+                            function_results.append(partial)
                             yield partial
                     elif isgenerator(function_context.result.value):
                         for partial in function_context.result.value:
+                            function_results.append(partial)
                             yield partial
                     else:
+                        function_results.append(function_context.result.value)
                         yield function_context.result
+
+                if function_tracer.are_sensitive_events_enabled():
+                    results: list[str] = []
+                    try:
+                        results.append(str(function_results))
+                    except Exception as e:
+                        results.append(str(e))
+                    current_span.set_attribute(TOOL_CALL_RESULT, json.dumps(results))
             except Exception as e:
                 self._handle_exception(current_span, e, attributes)
                 raise e
