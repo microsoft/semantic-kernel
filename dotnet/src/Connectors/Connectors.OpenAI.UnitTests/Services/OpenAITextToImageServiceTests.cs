@@ -252,6 +252,291 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
     }
 
+    // Add these tests to OpenAITextToImageServiceTests.cs
+
+    [Fact]
+    public async Task EditImageWorksCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(imageStream, "make the sky purple");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+    }
+
+    [Fact]
+    public async Task EditImageWithMaskWorksCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+        using var maskStream = new MemoryStream(Encoding.UTF8.GetBytes("fake mask data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(imageStream, "add a rainbow", maskStream);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+    }
+
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-response.json")]
+    [InlineData(3, "./TestData/text-to-image-3-images-response.json")]
+    [InlineData(5, "./TestData/text-to-image-5-images-response.json")]
+    public async Task EditImageWithMultipleOutputsWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        Assert.NotNull(sut);
+
+        using var imageStream = new MemoryStream(Encoding.UTF8.GetBytes("fake image data"));
+
+        // Act
+        var result = await sut.GenerateEditImageAsync(
+            imageStream,
+            "make it colorful",
+            executionSettings: new OpenAITextToImageExecutionSettings { NumberOfImages = numberOfImages });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.NotNull(result[i].Uri);
+        }
+    }
+
+    [Theory]
+    [InlineData("low", "low")]
+    [InlineData("medium", "medium")]
+    [InlineData("high", "high")]
+    public async Task GptImage1QualityRequestWorksCorrectlyAsync(string quality, string expectedQuality)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", modelId: "gpt-image-1", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("my prompt", new OpenAITextToImageExecutionSettings { Quality = quality });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.Contains($"\"quality\":\"{expectedQuality}\"", requestBody);
+    }
+
+    [Theory]
+    [InlineData("auto", "auto")]
+    [InlineData("low", "low")]
+    public async Task GptImage1ModerationRequestWorksCorrectlyAsync(string moderation, string expectedModeration)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", modelId: "gpt-image-1", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("my prompt", new OpenAITextToImageExecutionSettings { Moderation = moderation });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.Contains($"\"moderation\":\"{expectedModeration}\"", requestBody);
+    }
+
+    [Theory]
+    [InlineData("png", "png")]
+    [InlineData("jpeg", "jpeg")]
+    [InlineData("webp", "webp")]
+    public async Task GptImage1OutputFormatRequestWorksCorrectlyAsync(string format, string expectedFormat)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", modelId: "gpt-image-1", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("my prompt", new OpenAITextToImageExecutionSettings { OutputFormat = format });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.Contains($"\"output_format\":\"{expectedFormat}\"", requestBody);
+    }
+
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-response.json")]
+    [InlineData(2, "./TestData/text-to-image-multiple-response.json")]
+    [InlineData(4, "./TestData/text-to-image-4-images-response.json")]
+    [InlineData(10, "./TestData/text-to-image-10-images-response.json")]
+    public async Task GetImageContentsWithMultipleImagesWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync(
+            "generate multiple images",
+            new OpenAITextToImageExecutionSettings { NumberOfImages = numberOfImages });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.NotNull(result[i].Uri);
+            Assert.NotNull(result[i].InnerContent);
+            Assert.IsType<GeneratedImage>(result[i].InnerContent);
+        }
+    }
+
+    [Theory]
+    [InlineData(1, "./TestData/text-to-image-b64_json-format-response.json")]
+    [InlineData(2, "./TestData/text-to-image-2-images-b64-response.json")]
+    [InlineData(4, "./TestData/text-to-image-4-images-b64-response.json")]
+    public async Task GetImageContentsWithMultipleBytesImagesWorksCorrectlyAsync(int numberOfImages, string responseFile)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(responseFile))
+        };
+
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync(
+            "generate multiple images",
+            new OpenAITextToImageExecutionSettings
+            {
+                NumberOfImages = numberOfImages,
+                ResponseFormat = "b64_json"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(numberOfImages, result.Count);
+        for (int i = 0; i < numberOfImages; i++)
+        {
+            Assert.True(result[i].CanRead);
+            Assert.Equal("image/png", result[i].MimeType);
+            Assert.NotNull(result[i].InnerContent);
+            Assert.IsType<GeneratedImage>(result[i].InnerContent);
+
+            var breakingGlass = result[i].InnerContent as GeneratedImage;
+            // For the single b64_json file, the revised prompt is just "my prompt", not "my prompt 0"
+            var expectedPrompt = numberOfImages == 1 ? "my prompt" : $"my prompt {i}";
+            Assert.Equal(expectedPrompt, breakingGlass!.RevisedPrompt);
+        }
+    }
+
+    [Theory]
+    [InlineData("dall-e-2")]
+    [InlineData("dall-e-3")]
+    [InlineData("gpt-image-1")]
+    public async Task GetImageContentsWithDifferentModelsWorksCorrectlyAsync(string modelId)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", modelId: modelId, httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("test prompt");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(new Uri("https://image-url/"), result[0].Uri);
+        Assert.Equal(modelId, sut.Attributes["ModelId"]);
+    }
+
+    [Fact]
+    public async Task GetImageContentsValidatesInputAsync()
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            sut.GetImageContentsAsync(null!));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-10)]
+    public async Task GetImageContentsWithInvalidNumberOfImagesThrowsAsync(int invalidNumber)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sut.GetImageContentsAsync("test", new OpenAITextToImageExecutionSettings { NumberOfImages = invalidNumber }));
+    }
+
+    [Theory]
+    [InlineData("standard", "dall-e-2")]
+    [InlineData("hd", "dall-e-3")]
+    [InlineData("low", "gpt-image-1")]
+    [InlineData("medium", "gpt-image-1")]
+    [InlineData("high", "gpt-image-1")]
+    public async Task GetImageContentsWithQualitySettingsWorksCorrectlyAsync(string quality, string modelId)
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", modelId: modelId, httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("test prompt", new OpenAITextToImageExecutionSettings { Quality = quality });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        if (string.Equals(modelId, "gpt-image-1", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Contains($"\"quality\":\"{quality.ToLowerInvariant()}\"", requestBody);
+        }
+        else
+        {
+            var expectedQuality = string.Equals(quality.ToLowerInvariant(), "hd", StringComparison.Ordinal) ? "hd" : "standard";
+            Assert.Contains($"\"quality\":\"{expectedQuality}\"", requestBody);
+        }
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
