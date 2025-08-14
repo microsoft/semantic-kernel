@@ -1457,7 +1457,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
                     get_args["top"] = kwargs.pop("top", None)
                 if "skip" in kwargs:
                     get_args["skip"] = kwargs.pop("skip", None)
-                order_by: dict[str, bool] | None = None
+                order_by: dict[str, bool] | None = None  # type: ignore
                 if kw_order_by is not None:
                     order_by = {}
                     if isinstance(kw_order_by, str):

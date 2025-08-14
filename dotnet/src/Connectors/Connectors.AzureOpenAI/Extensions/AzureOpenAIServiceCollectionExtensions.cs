@@ -315,6 +315,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
@@ -324,7 +325,8 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         TokenCredential credentials,
         string? modelId = null,
         string? serviceId = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -336,7 +338,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
                 endpoint,
                 credentials,
                 modelId,
-                HttpClientProvider.GetHttpClient(serviceProvider),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
     }
@@ -352,6 +354,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
@@ -362,7 +365,8 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? serviceId = null,
         string? modelId = null,
         int maxRetryCount = 5,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -374,7 +378,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
                 endpoint,
                 apiKey,
                 modelId,
-                HttpClientProvider.GetHttpClient(serviceProvider),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
     }

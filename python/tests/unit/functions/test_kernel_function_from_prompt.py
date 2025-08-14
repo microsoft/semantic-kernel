@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+from copy import deepcopy
 from unittest.mock import patch
 
 import pytest
@@ -626,3 +627,22 @@ def test_from_directory_backward_compatibility():
         function = KernelFunctionFromPrompt.from_directory(temp_dir)
         assert function.description == "Basic function"
         assert function.prompt_template.prompt_template_config.template == "Basic ASCII content: {{$input}}"
+
+
+def test_kernel_function_from_prompt_deepcopy():
+    """Test deepcopying a KernelFunctionFromPrompt."""
+    function = KernelFunctionFromPrompt(
+        function_name="test_function",
+        plugin_name="test_plugin",
+        prompt="Hello, world!",
+        description="A test function.",
+    )
+    copied_function = deepcopy(function)
+    assert copied_function is not function
+    assert copied_function.name == function.name
+    assert copied_function.plugin_name == function.plugin_name
+    assert copied_function.description == function.description
+    assert copied_function.prompt_template.prompt_template_config.template == (
+        function.prompt_template.prompt_template_config.template
+    )
+    assert copied_function.prompt_template is not function.prompt_template
