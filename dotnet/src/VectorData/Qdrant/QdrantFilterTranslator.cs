@@ -133,10 +133,10 @@ internal class QdrantFilterTranslator
                             Key = property.StorageName,
                             DatetimeRange = new DatetimeRange
                             {
-                                Gt = Timestamp.FromDateTimeOffset(v),
-                                Gte = Timestamp.FromDateTimeOffset(v),
-                                Lt = Timestamp.FromDateTimeOffset(v),
-                                Lte = Timestamp.FromDateTimeOffset(v)
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan ? Timestamp.FromDateTimeOffset(v) : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual ? Timestamp.FromDateTimeOffset(v) : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan ? Timestamp.FromDateTimeOffset(v) : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(v) : null
                             }
                         },
 
