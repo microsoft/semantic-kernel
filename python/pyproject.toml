@@ -100,7 +100,7 @@ mcp = [
     "mcp>=1.8",
 ]
 milvus = [
-    "pymilvus >= 2.3,< 2.6",
+    "pymilvus >= 2.3,< 2.7",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
