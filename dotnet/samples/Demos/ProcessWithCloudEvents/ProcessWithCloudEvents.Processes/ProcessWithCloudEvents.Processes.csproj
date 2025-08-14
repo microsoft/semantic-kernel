@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\src\Experimental\Process.Core\Process.Core.csproj" />
