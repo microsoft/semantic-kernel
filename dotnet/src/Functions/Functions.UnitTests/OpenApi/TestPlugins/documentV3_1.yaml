@@ -57,6 +57,7 @@ paths:
         - name: secret-name
           in: path
           required: true
+          description: The name of the secret
           schema:
             type: string
         - name: api-version

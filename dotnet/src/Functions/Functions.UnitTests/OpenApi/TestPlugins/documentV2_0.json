@@ -83,6 +83,7 @@
             "in": "path",
             "name": "secret-name",
             "required": true,
+            "description": "The name of the secret",
             "type": "string"
           },
           {
