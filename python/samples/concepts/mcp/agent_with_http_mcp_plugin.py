@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -22,25 +21,22 @@ If this is not set, it will try to use DefaultAzureCredential.
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "What are the latest 5 python issues in Microsoft/semantic-kernel?",
-    "Are there any untriaged python issues?",
-    "What is the status of issue #10785?",
+    "How do I make a Python chat completion request in Semantic Kernel using Azure OpenAI?",
 ]
 
 
 async def main():
     # 1. Create the agent
     async with MCPStreamableHttpPlugin(
-        name="Github",
-        description="Github Plugin",
-        url="https://api.githubcopilot.com/mcp/",
-        headers={"Authorization": f"Bearer {os.getenv('GITHUB_PERSONAL_ACCESS_TOKEN')}"},
-    ) as github_plugin:
+        name="LearnSite",
+        description="Learn Docs Plugin",
+        url="https://learn.microsoft.com/api/mcp",
+    ) as learn_plugin:
         agent = ChatCompletionAgent(
             service=AzureChatCompletion(),
-            name="IssueAgent",
-            instructions="Answer questions about the Microsoft semantic-kernel github project.",
-            plugins=[github_plugin],
+            name="DocsAgent",
+            instructions="Answer questions about the Microsoft's Semantic Kernel SDK.",
+            plugins=[learn_plugin],
         )
 
         for user_input in USER_INPUTS:
@@ -61,64 +57,79 @@ async def main():
 
 """
 Sample output:
-GitHub MCP Server running on stdio
-# User: What are the latest 5 python issues in Microsoft/semantic-kernel?
-# IssueAgent: Here are the latest 5 Python issues in the
-[Microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel) repository:
 
-1. **[Issue #11358](https://github.com/microsoft/semantic-kernel/pull/11358)**
-   **Title:** Python: Bump Python version to 1.27.0 for a release.
-   **Created by:** [moonbox3](https://github.com/moonbox3)
-   **Created at:** April 3, 2025
-   **State:** Open
-   **Comments:** 1
-   **Description:** Bump Python version to 1.27.0 for a release.
+# User: How do I make a Python chat completion request in Semantic Kernel using Azure OpenAI?
+# DocsAgent: To make a **Python chat completion request in Semantic Kernel using Azure OpenAI**, follow these steps:
 
-2. **[Issue #11357](https://github.com/microsoft/semantic-kernel/pull/11357)**
-   **Title:** .Net: Version 1.45.0
-   **Created by:** [markwallace-microsoft](https://github.com/markwallace-microsoft)
-   **Created at:** April 3, 2025
-   **State:** Open
-   **Comments:** 0
-   **Description:** Version bump for release 1.45.0.
+---
 
-3. **[Issue #11356](https://github.com/microsoft/semantic-kernel/pull/11356)**
-   **Title:** .Net: Fix bug in sqlite filter logic
-   **Created by:** [westey-m](https://github.com/westey-m)
-   **Created at:** April 3, 2025
-   **State:** Open
-   **Comments:** 0
-   **Description:** Fix bug in sqlite filter logic.
+### 1. Install Semantic Kernel
 
-4. **[Issue #11355](https://github.com/microsoft/semantic-kernel/issues/11355)**
-   **Title:** .Net: [MEVD] Validate that the collection generic key parameter corresponds to the model
-   **Created by:** [roji](https://github.com/roji)
-   **Created at:** April 3, 2025
-   **State:** Open
-   **Comments:** 0
-   **Description:** We currently have validation for the TKey generic type parameter passed to the collection type,
-   and we have validation for the key property type on the model.
+```bash
+pip install semantic-kernel
+```
 
-5. **[Issue #11354](https://github.com/microsoft/semantic-kernel/issues/11354)**
-   **Title:** .Net: How to add custom JsonSerializer on a builder level
-   **Created by:** [PawelStadnicki](https://github.com/PawelStadnicki)
-   **Created at:** April 3, 2025
-   **State:** Open
-   **Comments:** 0
-   **Description:** Inquiry about adding a custom JsonSerializer for handling F# types within the SDK.
+---
 
-If you need more details about a specific issue, let me know!
-# User: Are there any untriaged python issues?
-# IssueAgent: There are no untriaged Python issues in the Microsoft semantic-kernel repository.
-# User: What is the status of issue #10785?
-# IssueAgent: The status of issue #10785 in the Microsoft Semantic Kernel repository is **open**.
+### 2. Import Necessary Libraries
 
-- **Title**: Port dotnet feature: Create MCP Sample
-- **Created at**: March 4, 2025
-- **Comments**: 0
-- **Labels**: python
+```python
+import semantic_kernel as sk
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+```
 
-You can view the issue [here](https://github.com/microsoft/semantic-kernel/issues/10785).
+---
+
+### 3. Initialize the Kernel and Add Azure OpenAI Service
+
+```python
+# Initialize the kernel
+kernel = sk.Kernel()
+
+# Set your Azure OpenAI details
+deployment_name = "your-chat-deployment"
+endpoint = "https://your-resource-name.openai.azure.com/"
+api_key = "your-azure-openai-api-key"
+
+# Add Azure Chat Completion service
+kernel.add_chat_service(
+    "azure_chat",
+    AzureChatCompletion(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+    ),
+)
+```
+
+---
+
+### 4. Create a Chat History and Send a Request
+
+```python
+# Create an initial chat history
+history = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What can you do?"},
+]
+
+# Get chat completion
+result = kernel.chat.complete(
+    chat_history=history,
+    max_tokens=100,
+    temperature=0.7,
+    top_p=0.95,
+)
+
+print(result)
+```
+
+---
+
+## Example Summary
+
+This makes a chat completion request to Azure OpenAI through Semantic Kernel in Python. You can add more user/assistant 
+turns to `history`.
 """
 
 
