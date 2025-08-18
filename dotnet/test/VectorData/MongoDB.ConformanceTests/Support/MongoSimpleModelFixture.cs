@@ -4,7 +4,8 @@ using VectorData.ConformanceTests.Support;
 
 namespace MongoDB.ConformanceTests.Support;
 
-public class MongoSimpleModelFixture : SimpleModelFixture<string>
+public class MongoSimpleModelFixture<TKey> : SimpleModelFixture<TKey>
+    where TKey : notnull
 {
     public override TestStore TestStore => MongoTestStore.Instance;
 }
