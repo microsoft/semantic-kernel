@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -43,9 +44,9 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string";
+        supportedTypes = "string, Guid, ObjectId";
 
-        return type == typeof(string);
+        return type == typeof(string) || type == typeof(Guid) || type == typeof(ObjectId);
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

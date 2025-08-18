@@ -5,6 +5,4 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
 
 [Collection("Sequential")]
-public class AzureAIAgentInvokeStreamingTests() : InvokeStreamingTests(() => new AzureAIAgentFixture())
-{
-}
+public class AzureAIAgentInvokeStreamingTests() : InvokeStreamingTests(() => new AzureAIAgentFixture());

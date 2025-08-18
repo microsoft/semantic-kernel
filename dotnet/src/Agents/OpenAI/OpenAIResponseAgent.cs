@@ -79,6 +79,7 @@ public sealed class OpenAIResponseAgent : Agent
         // Invoke responses with the updated chat history.
         ChatHistory chatHistory = [.. messages];
         int messageCount = chatHistory.Count;
+        int messageIndex = chatHistory.Count;
         var invokeResults = ResponseThreadActions.InvokeStreamingAsync(
             this,
             chatHistory,
@@ -89,17 +90,26 @@ public sealed class OpenAIResponseAgent : Agent
         // Return streaming chat message content to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            // Notify the thread of any messages that were assembled from the streaming response during this iteration.
+            await NotifyMessagesAsync().ConfigureAwait(false);
+
             yield return new(result, agentThread);
         }
 
-        // Notify the thread of new messages
-        for (int i = messageCount; i < chatHistory.Count; i++)
-        {
-            await this.NotifyThreadOfNewMessage(agentThread, chatHistory[i], cancellationToken).ConfigureAwait(false);
+        // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
+        await NotifyMessagesAsync().ConfigureAwait(false);
 
-            if (options?.OnIntermediateMessage is not null)
+        async Task NotifyMessagesAsync()
+        {
+            for (; messageIndex < chatHistory.Count; messageIndex++)
             {
-                await options.OnIntermediateMessage(chatHistory[i]).ConfigureAwait(false);
+                ChatMessageContent newMessage = chatHistory[messageIndex];
+                await this.NotifyThreadOfNewMessage(agentThread, newMessage, cancellationToken).ConfigureAwait(false);
+
+                if (options?.OnIntermediateMessage is not null)
+                {
+                    await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
+                }
             }
         }
     }

@@ -19,7 +19,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
+        kernelBuilder.AddOpenAIChatClient(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
         Kernel kernel = kernelBuilder.Build();
@@ -33,12 +33,12 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
     }
 
     /// <summary>
-    /// Shows how to transform an Open API <see cref="KernelPlugin"/> instance to support dependency injection.
+    /// Shows how to transform an Open API <see cref="KernelPlugin"/> instance to support dependency injection with ChatClient.
     /// </summary>
     [Fact]
     public async Task TransformOpenAPIPlugins()
     {
-        // Create a kernel with OpenAI chat completion
+        // Create a kernel with ChatClient and dependency injection
         var serviceProvider = BuildServiceProvider();
         var kernel = serviceProvider.GetRequiredService<Kernel>();
 
@@ -61,8 +61,12 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
         var collection = new ServiceCollection();
         collection.AddSingleton<IMechanicService>(new FakeMechanicService());
 
+        // Add ChatClient using OpenAI
+        collection.AddOpenAIChatClient(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.Services.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         return collection.BuildServiceProvider();
     }

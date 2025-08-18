@@ -7,7 +7,7 @@ using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
-namespace SqliteIntegrationTests;
+namespace SqliteVec.ConformanceTests;
 
 public class SqliteEmbeddingTypeTests(SqliteEmbeddingTypeTests.Fixture fixture)
     : EmbeddingTypeTests<string>(fixture), IClassFixture<SqliteEmbeddingTypeTests.Fixture>
