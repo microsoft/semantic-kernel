@@ -87,7 +87,7 @@ public sealed class CalendarPlugin
 
         const string SelectString = "start,subject,organizer,location";
 
-        IEnumerable<CalendarEvent> events = await this._connector.GetEventsAsync(
+        IEnumerable<CalendarEvent>? events = await this._connector.GetEventsAsync(
             top: maxResults,
             skip: skip,
             select: SelectString,

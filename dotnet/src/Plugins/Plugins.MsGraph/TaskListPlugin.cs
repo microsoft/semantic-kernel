@@ -72,14 +72,14 @@ public sealed class TaskListPlugin
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
 
-        await this._connector.AddTaskAsync(defaultTaskList.Id, task, cancellationToken).ConfigureAwait(false);
+        await this._connector.AddTaskAsync(defaultTaskList.Id!, task, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Get tasks from the default task list.
     /// </summary>
     [KernelFunction, Description("Get tasks from the default task list.")]
-    public async Task<string> GetDefaultTasksAsync(
+    public async Task<string?> GetDefaultTasksAsync(
         [Description("Whether to include completed tasks (optional)")] string includeCompleted = "false",
         CancellationToken cancellationToken = default)
     {
@@ -91,7 +91,7 @@ public sealed class TaskListPlugin
             this._logger.LogWarning("Invalid value for '{0}' variable: '{1}'", nameof(includeCompleted), includeCompleted);
         }
 
-        IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompletedValue, cancellationToken).ConfigureAwait(false);
+        IEnumerable<TaskManagementTask>? tasks = await this._connector.GetTasksAsync(defaultTaskList.Id!, includeCompletedValue, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Serialize(tasks);
     }
 }

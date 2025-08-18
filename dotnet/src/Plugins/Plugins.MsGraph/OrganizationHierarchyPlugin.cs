@@ -42,7 +42,7 @@ public sealed class OrganizationHierarchyPlugin
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the email address of the manager of the current user.</returns>
     [KernelFunction, Description("Get my manager's email address.")]
-    public async Task<string> GetMyManagerEmailAsync(CancellationToken cancellationToken = default)
+    public async Task<string?> GetMyManagerEmailAsync(CancellationToken cancellationToken = default)
         => await this._connector.GetManagerEmailAsync(cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -51,6 +51,6 @@ public sealed class OrganizationHierarchyPlugin
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the name of the manager of the current user.</returns>
     [KernelFunction, Description("Get my manager's name.")]
-    public async Task<string> GetMyManagerNameAsync(CancellationToken cancellationToken = default)
+    public async Task<string?> GetMyManagerNameAsync(CancellationToken cancellationToken = default)
         => await this._connector.GetManagerNameAsync(cancellationToken).ConfigureAwait(false);
 }

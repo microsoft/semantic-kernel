@@ -45,7 +45,7 @@ public sealed class EmailPlugin
     /// Get my email address.
     /// </summary>
     [KernelFunction, Description("Gets the email address for me.")]
-    public async Task<string> GetMyEmailAddressAsync()
+    public async Task<string?> GetMyEmailAddressAsync()
         => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
@@ -78,7 +78,7 @@ public sealed class EmailPlugin
     /// Get email messages with specified optional clauses used to query for messages.
     /// </summary>
     [KernelFunction, Description("Get email messages.")]
-    public async Task<string> GetEmailMessagesAsync(
+    public async Task<string?> GetEmailMessagesAsync(
         [Description("Optional limit of the number of message to retrieve.")] int? maxResults = 10,
         [Description("Optional number of message to skip before retrieving results.")] int? skip = 0,
         CancellationToken cancellationToken = default)
@@ -87,12 +87,17 @@ public sealed class EmailPlugin
 
         const string SelectString = "subject,receivedDateTime,bodyPreview";
 
-        IEnumerable<EmailMessage> messages = await this._connector.GetMessagesAsync(
+        IEnumerable<EmailMessage>? messages = await this._connector.GetMessagesAsync(
                 top: maxResults,
                 skip: skip,
                 select: SelectString,
                 cancellationToken)
             .ConfigureAwait(false);
+
+        if (messages is null)
+        {
+            return null;
+        }
 
         return JsonSerializer.Serialize(value: messages, options: s_options);
     }
