@@ -71,7 +71,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
-    <PackageVersion Include="OllamaSharp" Version="5.2.3" />
+    <PackageVersion Include="OllamaSharp" Version="5.3.5" />
     <PackageVersion Include="OpenAI" Version="[2.3.0]" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
