@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel import Kernel
 from semantic_kernel.agents import (
@@ -70,7 +70,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         # Create the agent definition
@@ -93,7 +93,7 @@ async def main() -> None:
         )
 
         refund_agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=creds),
             name="RefundAgent",
             instructions=(
                 "You specialize in addressing customer inquiries regarding refunds. "
@@ -106,7 +106,7 @@ async def main() -> None:
         )
 
         triage_agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=creds),
             kernel=kernel,
             name="TriageAgent",
             instructions=(

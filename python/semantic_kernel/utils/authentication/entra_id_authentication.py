@@ -3,20 +3,21 @@
 import logging
 
 from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
+from azure.identity import ChainedTokenCredential
 
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_entra_auth_token(token_endpoint: str) -> str | None:
+def get_entra_auth_token(credential: "ChainedTokenCredential", token_endpoint: str) -> str | None:
     """Retrieve a Microsoft Entra Auth Token for a given token endpoint.
 
     The token endpoint may be specified as an environment variable, via the .env
     file or as an argument. If the token endpoint is not provided, the default is None.
 
     Args:
+        credential: The credential to use to retrieve the authentication token.
         token_endpoint: The token endpoint to use to retrieve the authentication token.
 
     Returns:
@@ -26,8 +27,6 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
         raise ServiceInvalidAuthError(
             "A token endpoint must be provided either in settings, as an environment variable, or as an argument."
         )
-
-    credential = DefaultAzureCredential()
 
     try:
         auth_token = credential.get_token(token_endpoint)

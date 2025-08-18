@@ -3,7 +3,7 @@
 import asyncio
 
 from azure.ai.projects.aio import AIProjectClient
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 from opentelemetry.trace import NoOpTracerProvider
 
 from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
@@ -35,13 +35,13 @@ The Handoff orchestration doesn't support the following agent types:
 - CopilotStudioAgent
 """
 
-azure_credential: DefaultAzureCredential | None = None
+azure_credential: AzureCliCredential | None = None
 azure_ai_agent_client: AIProjectClient | None = None
 
 
 async def init_azure_ai_agent_clients():
     global azure_credential, azure_ai_agent_client
-    azure_credential = DefaultAzureCredential()
+    azure_credential = AzureCliCredential()
     azure_ai_agent_client = AzureAIAgent.create_client(credential=azure_credential)
 
 

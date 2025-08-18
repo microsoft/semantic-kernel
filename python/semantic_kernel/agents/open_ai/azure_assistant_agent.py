@@ -5,6 +5,7 @@ from collections.abc import Awaitable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from pydantic import ValidationError
 
@@ -58,6 +59,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         token_scope: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> tuple[AsyncAzureOpenAI, str]:
         """A method to create the Azure OpenAI client and the deployment name/model from the provided arguments.
@@ -76,6 +78,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             env_file_path: The environment file path
             env_file_encoding: The environment file encoding, defaults to utf-8
             token_scope: The token scope
+            credential: The credential to use for authentication.
             kwargs: Additional keyword arguments
 
         Returns:
@@ -100,13 +103,14 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             and ad_token_provider is None
             and ad_token is None
             and azure_openai_settings.token_endpoint
+            and credential
         ):
-            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+            ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
 
         # If we still have no credentials, we can't proceed
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not credential:
             raise AgentInitializationException(
-                "Please provide either an api_key, ad_token or ad_token_provider for authentication."
+                "Please provide either an api_key, ad_token, ad_token_provider or credential for authentication."
             )
 
         merged_headers = dict(copy(default_headers)) if default_headers else {}
@@ -148,6 +152,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         token_scope: str | None = None,
+        credential: TokenCredential | None,
         **kwargs: Any,
     ) -> AsyncAzureOpenAI:
         """A method to create the Azure OpenAI client.
@@ -166,6 +171,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             env_file_path: The environment file path
             env_file_encoding: The environment file encoding, defaults to utf-8
             token_scope: The token scope
+            credential: The credential to use for authentication.
             kwargs: Additional keyword arguments
 
         Returns:
@@ -190,13 +196,14 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             and ad_token_provider is None
             and ad_token is None
             and azure_openai_settings.token_endpoint
+            and credential
         ):
-            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+            ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
 
         # If we still have no credentials, we can't proceed
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not credential:
             raise AgentInitializationException(
-                "Please provide either an api_key, ad_token or ad_token_provider for authentication."
+                "Please provide either an api_key, ad_token, ad_token_provider or credential for authentication."
             )
 
         merged_headers = dict(copy(default_headers)) if default_headers else {}

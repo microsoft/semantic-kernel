@@ -17,7 +17,7 @@ It uses the Azure OpenAI service to create a agent, so make sure to
 set the required environment variables for the Azure AI Foundry service:
 - AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
 - Optionally: AZURE_OPENAI_API_KEY 
-If this is not set, it will try to use DefaultAzureCredential.
+If this is not set, it's also possible to pass AsyncTokenCredential to the service, e.g. AzureCliCredential.
 """
 
 

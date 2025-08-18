@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentGroupChat, AzureAIAgent, AzureAIAgentSettings, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
@@ -55,7 +55,7 @@ Consider suggestions when refining an idea.
 async def main():
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 2. Create agents
@@ -68,7 +68,7 @@ async def main():
             ),
         )
         agent_reviewer = ChatCompletionAgent(
-            service=AzureChatCompletion(service_id="artdirector"),
+            service=AzureChatCompletion(service_id="artdirector", credential=creds),
             name=REVIEWER_NAME,
             instructions=REVIEWER_INSTRUCTIONS,
         )

@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 from azure.cosmos.partition_key import PartitionKey
@@ -47,9 +48,6 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
-from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
-    AsyncDefaultAzureCredentialWrapper,
-)
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -568,6 +566,7 @@ class CosmosNoSqlBase(KernelBaseModel):
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: "AsyncTokenCredential" | None = None,
         **kwargs,
     ):
         """Initialize the CosmosNoSqlBase.
@@ -583,6 +582,7 @@ class CosmosNoSqlBase(KernelBaseModel):
                                     Defaults to False.
             env_file_path (str): The path to the .env file. Defaults to None.
             env_file_encoding (str): The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
             kwargs: Additional keyword arguments.
         """
         try:
@@ -605,9 +605,11 @@ class CosmosNoSqlBase(KernelBaseModel):
                     str(cosmos_db_nosql_settings.url), credential=cosmos_db_nosql_settings.key.get_secret_value()
                 )
             else:
-                cosmos_client = CosmosClient(
-                    str(cosmos_db_nosql_settings.url), credential=AsyncDefaultAzureCredentialWrapper()
-                )
+                if credential is None:
+                    raise VectorStoreInitializationException(
+                        "The 'credential' parameter is required for authentication."
+                    )
+                cosmos_client = CosmosClient(str(cosmos_db_nosql_settings.url), credential=credential)
 
         super().__init__(
             cosmos_client=cosmos_client,
@@ -680,6 +682,7 @@ class CosmosNoSqlCollection(
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: "AsyncTokenCredential" | None = None,
     ):
         """Initializes a new instance of the CosmosNoSqlCollection class.
 
@@ -700,6 +703,7 @@ class CosmosNoSqlCollection(
                                     Defaults to False.
             env_file_path: The path to the .env file. Defaults to None.
             env_file_encoding: The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
         """
         if not collection_name:
             collection_name = _get_collection_name_from_model(record_type, definition)
@@ -722,6 +726,7 @@ class CosmosNoSqlCollection(
             collection_name=collection_name,
             managed_client=cosmos_client is None,
             embedding_generator=embedding_generator,
+            credential=credential,
         )
 
     @override
@@ -1023,6 +1028,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: "AsyncTokenCredential" | None = None,
     ):
         """Initialize the CosmosNoSqlStore.
 
@@ -1038,6 +1044,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
             embedding_generator: The embedding generator to use for generating embeddings.
             env_file_path: The path to the .env file. Defaults to None.
             env_file_encoding: The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
         """
         super().__init__(
             url=url,
@@ -1048,6 +1055,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
             embedding_generator=embedding_generator,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
+            credential=credential,
         )
 
     @override
