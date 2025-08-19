@@ -39,9 +39,9 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-
-chat_service = AzureChatCompletion(credential=AzureCliCredential())
-audio_to_text_service = AzureAudioToText()
+credential = AzureCliCredential()
+chat_service = AzureChatCompletion(credential=credential)
+audio_to_text_service = AzureAudioToText(credential=credential)
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")

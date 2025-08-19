@@ -46,10 +46,10 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-
-chat_service = AzureChatCompletion(credential=AzureCliCredential())
-text_to_audio_service = AzureTextToAudio()
-audio_to_text_service = AzureAudioToText()
+credential = AzureCliCredential()
+chat_service = AzureChatCompletion(credential=credential)
+text_to_audio_service = AzureTextToAudio(credential=credential)
+audio_to_text_service = AzureAudioToText(credential=credential)
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")

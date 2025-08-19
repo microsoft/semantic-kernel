@@ -76,6 +76,7 @@ class EmbeddingServiceTestBase:
                     api_version=api_version,
                     default_headers={"Test-User-X-ID": "test"},
                 ),
+                credential=credential,
             )
             azure_ai_inference_client = AzureAIInferenceTextEmbedding(
                 ai_model_id=deployment_name,
@@ -88,7 +89,10 @@ class EmbeddingServiceTestBase:
 
         return {
             "openai": (OpenAITextEmbedding(), OpenAIEmbeddingPromptExecutionSettings),
-            "azure": (AzureTextEmbedding() if azure_openai_setup else None, OpenAIEmbeddingPromptExecutionSettings),
+            "azure": (
+                AzureTextEmbedding(credential=credential) if azure_openai_setup else None,
+                OpenAIEmbeddingPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, OpenAIEmbeddingPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceEmbeddingPromptExecutionSettings),
             "mistral_ai": (
