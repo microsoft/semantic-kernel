@@ -375,7 +375,23 @@ internal sealed class GeminiRequest
                         {
                             propertyObj["type"] = JsonValue.Create("string");
                         }
-                        else if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode))
+
+                        // Strip unsupported format fields for string types
+                        // Google API only supports "enum" and "date-time" formats for string types
+                        if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode) &&
+                            typeNode is JsonValue typeValue &&
+                            typeValue.GetValue<string>() == "string" &&
+                            propertyObj.TryGetPropertyValue("format", out JsonNode? formatNode) &&
+                            formatNode is JsonValue formatValue)
+                        {
+                            var format = formatValue.GetValue<string>();
+                            if (format != "enum" && format != "date-time")
+                            {
+                                propertyObj.Remove("format");
+                            }
+                        }
+
+                        if (propertyObj.TryGetPropertyValue("type", out typeNode))
                         {
                             if (typeNode is JsonArray typeArray)
                             {
@@ -387,7 +403,7 @@ internal sealed class GeminiRequest
                                     propertyObj["nullable"] = JsonValue.Create(true);
                                 }
                             }
-                            else if (typeNode is JsonValue typeValue && typeValue.GetValue<string>() == "array")
+                            else if (typeNode is JsonValue typeVal && typeVal.GetValue<string>() == "array")
                             {
                                 if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
                                 {
