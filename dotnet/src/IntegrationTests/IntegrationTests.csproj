@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110,SKEXP0130,OPENAI001,MEVD9000</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0080,SKEXP0110,SKEXP0130,OPENAI001,MEVD9000</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -42,7 +42,6 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Npgsql" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -55,6 +54,7 @@
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
     <PackageReference Include="Testcontainers.MongoDB" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
@@ -88,7 +88,6 @@
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
-    <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
@@ -199,7 +198,7 @@
     </None>
   </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources/gemini_cached_content.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>

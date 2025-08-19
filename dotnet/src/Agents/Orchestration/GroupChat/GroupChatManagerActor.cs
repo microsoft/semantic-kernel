@@ -88,13 +88,13 @@ internal sealed class GroupChatManagerActor :
         {
             GroupChatManagerResult<string> filterResult = await this._manager.FilterResults(this._chat, messageContext.CancellationToken).ConfigureAwait(false);
             this.Logger.LogChatManagerResult(this.Id, filterResult.Value, filterResult.Reason);
-            await this.SendMessageAsync(filterResult.Value.AsResultMessage(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
+            await this.PublishMessageAsync(filterResult.Value.AsResultMessage(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
             return;
         }
 
         GroupChatManagerResult<string> selectionResult = await this._manager.SelectNextAgent(this._chat, this._team, messageContext.CancellationToken).ConfigureAwait(false);
         AgentType selectionType = this._team[selectionResult.Value].Type;
         this.Logger.LogChatManagerSelect(this.Id, selectionType);
-        await this.SendMessageAsync(new GroupChatMessages.Speak(), selectionType, messageContext.CancellationToken).ConfigureAwait(false);
+        await this.PublishMessageAsync(new GroupChatMessages.Speak(), selectionType, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

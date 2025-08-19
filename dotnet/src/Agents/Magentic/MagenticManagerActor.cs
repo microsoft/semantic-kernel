@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -101,7 +100,7 @@ internal sealed class MagenticManagerActor :
                 if (status.IsTaskComplete)
                 {
                     ChatMessageContent finalAnswer = await this._manager.PrepareFinalAnswerAsync(context, cancellationToken).ConfigureAwait(false);
-                    await this.SendMessageAsync(finalAnswer.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    await this.PublishMessageAsync(finalAnswer.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
                     break;
                 }
 
@@ -142,14 +141,23 @@ internal sealed class MagenticManagerActor :
 
                 if (this._invocationCount >= this._manager.MaximumInvocationCount)
                 {
-                    await this.SendMessageAsync("Maximum number of invocations reached.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
+                    try
+                    {
+                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await this.PublishMessageAsync("I've reaches the maximum number of invocations. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
                     break;
                 }
 
                 ChatMessageContent instruction = new(AuthorRole.Assistant, agentInstruction);
                 this._chat.Add(instruction);
                 await this.PublishMessageAsync(instruction.AsGroupMessage(), this.Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
-                await this.SendMessageAsync(new MagenticMessages.Speak(), agent.Type, cancellationToken).ConfigureAwait(false);
+                await this.PublishMessageAsync(new MagenticMessages.Speak(), agent.Type, cancellationToken).ConfigureAwait(false);
                 break;
             }
 
@@ -158,7 +166,15 @@ internal sealed class MagenticManagerActor :
                 if (this._retryCount >= this._manager.MaximumResetCount)
                 {
                     this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
-                    await this.SendMessageAsync("I've experienced multiple failures and am unable to continue.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await this.PublishMessageAsync("I've experienced multiple failures and am unable to continue. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    }
                     break;
                 }
 

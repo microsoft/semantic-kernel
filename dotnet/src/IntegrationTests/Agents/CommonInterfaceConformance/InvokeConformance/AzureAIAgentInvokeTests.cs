@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeConformance;
 
-public class AzureAIAgentInvokeTests() : InvokeTests(() => new AzureAIAgentFixture())
-{
-}
+public class AzureAIAgentInvokeTests() : InvokeTests(() => new AzureAIAgentFixture());

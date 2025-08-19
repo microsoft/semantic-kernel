@@ -2,8 +2,10 @@
 
 
 import inspect
+import logging
 import sys
 from collections.abc import Awaitable, Callable
+from functools import wraps
 from typing import Any
 
 from semantic_kernel.agents.agent import Agent, AgentThread
@@ -18,10 +20,26 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 @experimental
 class ActorBase(RoutedAgent):
     """A base class for actors running in the AgentRuntime."""
+
+    def __init__(
+        self,
+        description: str,
+        exception_callback: Callable[[BaseException], None],
+    ):
+        """Initialize the actor with a description and an exception callback.
+
+        Args:
+            description (str): A description of the actor.
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
+        """
+        super().__init__(description=description)
+        self._exception_callback = exception_callback
 
     @override
     async def on_message_impl(self, message: Any, ctx: MessageContext) -> Any | None:
@@ -34,6 +52,46 @@ class ActorBase(RoutedAgent):
 
         return await super().on_message_impl(message, ctx)
 
+    @staticmethod
+    def exception_handler(func: Callable[..., Any]) -> Callable[..., Any]:
+        """Decorator that wraps a function in a try-catch block and calls the exception callback on errors.
+
+        This decorator can be used on both synchronous and asynchronous functions. When an exception
+        occurs during function execution, it will call the exception_callback with the exception
+        and then re-raise the exception.
+
+        Args:
+            func: The function to be wrapped.
+
+        Returns:
+            The wrapped function.
+        """
+        log_message_template = "Exception occurred in agent {agent_id}:\n{exception}"
+
+        if inspect.iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(self, *args, **kwargs):
+                try:
+                    return await func(self, *args, **kwargs)
+                except BaseException as e:
+                    self._exception_callback(e)
+                    logger.error(log_message_template.format(agent_id=self.id, exception=e))
+                    raise
+
+            return async_wrapper
+
+        @wraps(func)
+        def sync_wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except BaseException as e:
+                self._exception_callback(e)
+                logger.error(log_message_template.format(agent_id=self.id, exception=e))
+                raise
+
+        return sync_wrapper
+
 
 @experimental
 class AgentActorBase(ActorBase):
@@ -43,6 +101,7 @@ class AgentActorBase(ActorBase):
         self,
         agent: Agent,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
@@ -52,6 +111,7 @@ class AgentActorBase(ActorBase):
         Args:
             agent (Agent): An agent to be run in the container.
             internal_topic_type (str): The topic type of the internal topic.
+            exception_callback (Callable): A function that is called when an exception occurs.
             agent_response_callback (Callable | None): A function that is called when a full response is produced
                 by the agents.
             streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
@@ -63,10 +123,10 @@ class AgentActorBase(ActorBase):
         self._streaming_agent_response_callback = streaming_agent_response_callback
 
         self._agent_thread: AgentThread | None = None
-        # Chat history to temporarily store messages before the agent thread is created
-        self._chat_history = ChatHistory()
+        # Chat history to temporarily store messages before each invoke.
+        self._message_cache: ChatHistory = ChatHistory()
 
-        ActorBase.__init__(self, description=agent.description or "Semantic Kernel Agent")
+        super().__init__(agent.description or "Semantic Kernel Actor", exception_callback)
 
     async def _call_agent_response_callback(self, message: DefaultTypeAlias) -> None:
         """Call the agent_response_callback function if it is set.
@@ -97,6 +157,7 @@ class AgentActorBase(ActorBase):
             else:
                 self._streaming_agent_response_callback(message_chunk, is_final)
 
+    @ActorBase.exception_handler
     async def _invoke_agent(self, additional_messages: DefaultTypeAlias | None = None, **kwargs) -> ChatMessageContent:
         """Invoke the agent with the current chat history or thread and optionally additional messages.
 
@@ -111,7 +172,12 @@ class AgentActorBase(ActorBase):
         streaming_message_buffer: list[StreamingChatMessageContent] = []
         messages = self._create_messages(additional_messages)
 
-        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):  # type: ignore[arg-type]
+        async for response_item in self._agent.invoke_stream(
+            messages,  # type: ignore[arg-type]
+            thread=self._agent_thread,
+            on_intermediate_message=self._handle_intermediate_message,
+            **kwargs,
+        ):
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:
@@ -141,7 +207,10 @@ class AgentActorBase(ActorBase):
         Returns:
             list[ChatMessageContent]: A list of messages to be sent to the agent.
         """
-        base_messages = self._chat_history.messages[:] if self._agent_thread is None else []
+        base_messages = self._message_cache.messages[:]
+
+        # Clear the message cache for the next invoke.
+        self._message_cache.clear()
 
         if additional_messages is None:
             return base_messages
@@ -149,3 +218,24 @@ class AgentActorBase(ActorBase):
         if isinstance(additional_messages, list):
             return base_messages + additional_messages
         return [*base_messages, additional_messages]
+
+    async def _handle_intermediate_message(self, message: ChatMessageContent) -> None:
+        """Handle intermediate messages from the agent."""
+        await self._call_agent_response_callback(message)
+        if isinstance(message, StreamingChatMessageContent):
+            await self._call_streaming_agent_response_callback(message, is_final=True)
+        else:
+            # Convert to StreamingChatMessageContent if needed
+            streaming_message = StreamingChatMessageContent(  # type: ignore[misc, call-overload]
+                role=message.role,
+                choice_index=0,
+                items=message.items,
+                content=message.content,
+                name=message.name,
+                inner_content=message.inner_content,
+                encoding=message.encoding,
+                finish_reason=message.finish_reason,
+                ai_model_id=message.ai_model_id,
+                metadata=message.metadata,
+            )
+            await self._call_streaming_agent_response_callback(streaming_message, is_final=True)

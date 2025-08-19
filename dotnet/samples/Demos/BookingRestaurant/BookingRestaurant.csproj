@@ -17,7 +17,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Graph" VersionOverride="5.49.0" />
-    <PackageReference Include="Microsoft.Identity.Client" />
   </ItemGroup>
 
   <ItemGroup>

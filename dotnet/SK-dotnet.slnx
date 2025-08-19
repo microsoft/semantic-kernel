@@ -9,11 +9,13 @@
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
     <File Path="docs/EXPERIMENTS.md" />
+    <File Path="global.json" />
   </Folder>
   <Folder Name="/Solution Items/nuget/">
     <File Path="nuget/icon.png" />
     <File Path="nuget/nuget-package.props" />
     <File Path="nuget/NUGET.md" />
+    <File Path="nuget/VECTORDATA-CONNECTORS-NUGET.md" />
   </Folder>
   <Folder Name="/samples/">
     <File Path="samples/README.md" />
@@ -36,8 +38,10 @@
     <Project Path="samples/Demos/FunctionInvocationApproval/FunctionInvocationApproval.csproj" />
     <Project Path="samples/Demos/HomeAutomation/HomeAutomation.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
+    <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
     <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
+    <Project Path="samples/Demos/OnnxSimpleChatWithCuda/OnnxSimpleChatWithCuda.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
     <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
@@ -46,6 +50,10 @@
     <Project Path="samples/Demos/TelemetryWithAppInsights/TelemetryWithAppInsights.csproj" />
     <Project Path="samples/Demos/TimePlugin/TimePlugin.csproj" />
     <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
+  </Folder>
+  <Folder Name="/samples/Demos/A2AClientServer/">
+    <Project Path="samples/Demos/A2AClientServer/A2AClient/A2AClient.csproj" />
+    <Project Path="samples/Demos/A2AClientServer/A2AServer/A2AServer.csproj" />
   </Folder>
   <Folder Name="/samples/Demos/AgentFrameworkWithAspire/">
     <File Path="samples/Demos/AgentFrameworkWithAspire/README.md" />
@@ -91,6 +99,7 @@
     <Project Path="src/SemanticKernel.UnitTests/SemanticKernel.UnitTests.csproj" />
   </Folder>
   <Folder Name="/src/agents/">
+    <Project Path="src/Agents/A2A/Agents.A2A.csproj" />
     <Project Path="src/Agents/Abstractions/Agents.Abstractions.csproj" />
     <Project Path="src/Agents/AzureAI/Agents.AzureAI.csproj" />
     <Project Path="src/Agents/Bedrock/Agents.Bedrock.csproj" />
@@ -132,6 +141,7 @@
     <Project Path="src/Connectors/Connectors.OpenAI/Connectors.OpenAI.csproj" />
   </Folder>
   <Folder Name="/src/VectorData/">
+    <File Path="src/VectorData/Directory.Build.props" />
     <Project Path="src/VectorData/AzureAISearch/AzureAISearch.csproj" />
     <Project Path="src/VectorData/Chroma/Chroma.csproj" />
     <Project Path="src/VectorData/CosmosMongoDB/CosmosMongoDB.csproj" />

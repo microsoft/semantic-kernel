@@ -4,12 +4,14 @@ from typing import TYPE_CHECKING, Any
 
 from opentelemetry import trace
 
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import (
     OPERATION,
     TOOL_CALL_ID,
     TOOL_DESCRIPTION,
     TOOL_NAME,
 )
+from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -18,6 +20,20 @@ if TYPE_CHECKING:
 # The operation name is defined by OTeL GenAI semantic conventions:
 # https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/#execute-tool-span
 OPERATION_NAME = "execute_tool"
+
+# To enable these features, set one of the following environment variables to true:
+#    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS
+#    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE
+MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings()
+
+
+@experimental
+def are_sensitive_events_enabled() -> bool:
+    """Check if sensitive events are enabled.
+
+    Sensitive events are enabled if the diagnostic with sensitive events is enabled.
+    """
+    return MODEL_DIAGNOSTICS_SETTINGS.enable_otel_diagnostics_sensitive
 
 
 def start_as_current_span(

@@ -9,11 +9,8 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
     BedrockEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_embedding import BedrockTextEmbedding
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceInvalidRequestError,
-    ServiceInvalidResponseError,
-)
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import BedrockModelProvider
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
 
 # region init
@@ -27,6 +24,9 @@ def test_bedrock_text_embedding_init(mock_client, bedrock_unit_test_env) -> None
     assert bedrock_text_embedding.ai_model_id == bedrock_unit_test_env["BEDROCK_EMBEDDING_MODEL_ID"]
     assert bedrock_text_embedding.service_id == bedrock_unit_test_env["BEDROCK_EMBEDDING_MODEL_ID"]
 
+    assert bedrock_text_embedding.bedrock_model_provider == BedrockModelProvider(
+        bedrock_unit_test_env["BEDROCK_MODEL_PROVIDER"]
+    )
     assert bedrock_text_embedding.bedrock_client is not None
     assert bedrock_text_embedding.bedrock_runtime_client is not None
 
@@ -87,6 +87,16 @@ def test_bedrock_text_embedding_init_custom_runtime_client(mock_client, bedrock_
     assert isinstance(bedrock_text_embedding.bedrock_runtime_client, MockBedrockRuntimeClient)
 
 
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init_custom_bedrock_model_provider(mock_client, bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Text Embedding service"""
+    bedrock_text_embedding = BedrockTextEmbedding(
+        model_provider=BedrockModelProvider.AMAZON,
+    )
+
+    assert bedrock_text_embedding.bedrock_model_provider == BedrockModelProvider.AMAZON
+
+
 @pytest.mark.parametrize("exclude_list", [["BEDROCK_EMBEDDING_MODEL_ID"]], indirect=True)
 def test_bedrock_text_embedding_client_init_with_empty_model_id(bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service with empty model id"""
@@ -100,6 +110,14 @@ def test_bedrock_text_embedding_client_init_invalid_settings(bedrock_unit_test_e
         ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Text Embedding Service."
     ):
         BedrockTextEmbedding(model_id=123)  # Model ID must be a string
+
+
+def test_bedrock_text_embedding_client_init_invalid_model_provider(bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Text Embedding service with invalid settings"""
+    with pytest.raises(
+        ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Text Embedding Service."
+    ):
+        BedrockTextEmbedding(model_provider="invalid_provider")
 
 
 @patch.object(boto3, "client", return_value=Mock())
@@ -149,38 +167,45 @@ async def test_bedrock_text_embedding(model_id, mock_bedrock_text_embedding_resp
         assert len(response) == 2
 
 
-async def test_bedrock_text_embedding_with_unsupported_model_input_modality(model_id) -> None:
-    """Test Bedrock text embedding generation with unsupported model"""
+@pytest.mark.parametrize(
+    # These are fake model ids with the supported prefixes
+    "model_id",
+    [
+        "arn:aws:bedrock:us-east-1:972143716085:application-inference-profile/123456",
+    ],
+    indirect=True,
+)
+async def test_bedrock_text_embedding_with_application_inference_profile(
+    model_id,
+    mock_bedrock_text_embedding_response,
+    model_provider,
+) -> None:
+    """Test Bedrock text embedding generation"""
     with patch.object(
-        MockBedrockClient, "get_foundation_model", return_value={"modelDetails": {"inputModalities": ["IMAGE"]}}
-    ):
+        MockBedrockRuntimeClient, "invoke_model", return_value=mock_bedrock_text_embedding_response
+    ) as mock_model_invoke:
         # Setup
         bedrock_text_embedding = BedrockTextEmbedding(
             model_id=model_id,
             runtime_client=MockBedrockRuntimeClient(),
             client=MockBedrockClient(),
+            model_provider=BedrockModelProvider.AMAZON,
         )
 
-        with pytest.raises(ServiceInvalidRequestError):
-            await bedrock_text_embedding.generate_embeddings(["hello", "world"])
+        # Act
+        settings = BedrockEmbeddingPromptExecutionSettings()
+        response = await bedrock_text_embedding.generate_embeddings(["hello", "world"], settings)
 
-
-async def test_bedrock_text_embedding_with_unsupported_model_output_modality(model_id) -> None:
-    """Test Bedrock text embedding generation with unsupported model"""
-    with patch.object(
-        MockBedrockClient,
-        "get_foundation_model",
-        return_value={"modelDetails": {"inputModalities": ["TEXT"], "outputModalities": ["TEXT"]}},
-    ):
-        # Setup
-        bedrock_text_embedding = BedrockTextEmbedding(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
+        # Assert
+        mock_model_invoke.assert_called_with(
+            body=ANY,
+            modelId=model_id,
+            accept="application/json",
+            contentType="application/json",
         )
+        assert mock_model_invoke.call_count == 2
 
-        with pytest.raises(ServiceInvalidRequestError):
-            await bedrock_text_embedding.generate_embeddings(["hello", "world"])
+        assert len(response) == 2
 
 
 @pytest.mark.parametrize(

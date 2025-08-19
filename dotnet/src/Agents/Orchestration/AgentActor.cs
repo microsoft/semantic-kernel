@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -18,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public abstract class AgentActor : OrchestrationActor
 {
     private AgentInvokeOptions? _options;
+    private ChatMessageContent? _lastResponse;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentActor"/> class.
@@ -51,10 +50,7 @@ public abstract class AgentActor : OrchestrationActor
     /// <summary>
     /// Optionally overridden to create custom invocation options for the agent.
     /// </summary>
-    protected virtual AgentInvokeOptions? CreateInvokeOptions()
-    {
-        return null;
-    }
+    protected virtual AgentInvokeOptions CreateInvokeOptions(Func<ChatMessageContent, Task> messageHandler) => new() { OnIntermediateMessage = messageHandler };
 
     /// <summary>
     /// Optionally overridden to introduce customer filtering logic for the response callback.
@@ -89,8 +85,7 @@ public abstract class AgentActor : OrchestrationActor
     }
 
     /// <summary>
-    /// Invokes the agent with multiple chat messages.
-    /// Processes the response items and consolidates the messages into a single <see cref="ChatMessageContent"/>.
+    /// Invokes the agent with input messages and respond with both streamed and regular messages.
     /// </summary>
     /// <param name="input">The list of chat messages to send.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
@@ -99,51 +94,82 @@ public abstract class AgentActor : OrchestrationActor
     {
         this.Context.Cancellation.ThrowIfCancellationRequested();
 
-        AgentResponseItem<ChatMessageContent>[] responses =
-            await this.Agent.InvokeAsync(
+        this._lastResponse = null;
+
+        AgentInvokeOptions options = this.GetInvokeOptions(HandleMessageAsync);
+        if (this.Context.StreamingResponseCallback == null)
+        {
+            // No need to utilize streaming if no callback is provided
+            await this.InvokeAsync(input, options, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
+        }
+
+        return this._lastResponse ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
+
+        async Task HandleMessageAsync(ChatMessageContent message)
+        {
+            this._lastResponse = message; // Keep track of most recent response for both invocation modes
+
+            if (this.Context.ResponseCallback is not null && !this.ResponseCallbackFilter(message))
+            {
+                await this.Context.ResponseCallback.Invoke(message).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task InvokeAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)
+    {
+        var last = default(AgentResponseItem<ChatMessageContent>)!;
+        var hasLast = false;
+
+        await foreach (var item in this.Agent.InvokeAsync(input, this.Thread, options, cancellationToken).ConfigureAwait(false))
+        {
+            hasLast = true;
+            last = item;
+        }
+
+        if (this.Thread is null && hasLast)
+        {
+            this.Thread = last.Thread;
+        }
+    }
+
+    private async Task InvokeStreamingAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)
+    {
+        IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> streamedResponses =
+            this.Agent.InvokeStreamingAsync(
                 input,
                 this.Thread,
-                this.GetInvokeOptions(),
-                cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                options,
+                cancellationToken);
 
-        AgentResponseItem<ChatMessageContent>? firstResponse = responses.FirstOrDefault();
-        this.Thread ??= firstResponse?.Thread;
-
-        // The vast majority of responses will be a single message.  Responses with multiple messages will have their content merged.
-        ChatMessageContent response = new(firstResponse?.Message.Role ?? AuthorRole.Assistant, string.Join("\n\n", responses.Select(response => response.Message)))
+        StreamingChatMessageContent? lastStreamedResponse = null;
+        await foreach (AgentResponseItem<StreamingChatMessageContent> streamedResponse in streamedResponses.ConfigureAwait(false))
         {
-            AuthorName = firstResponse?.Message.AuthorName,
-        };
+            this.Context.Cancellation.ThrowIfCancellationRequested();
 
-        if (this.Context.ResponseCallback is not null && !this.ResponseCallbackFilter(response))
-        {
-            await this.Context.ResponseCallback.Invoke(response).ConfigureAwait(false);
+            this.Thread ??= streamedResponse.Thread;
+
+            await HandleStreamedMessage(lastStreamedResponse, isFinal: false).ConfigureAwait(false);
+
+            lastStreamedResponse = streamedResponse.Message;
         }
 
-        return response;
-    }
+        await HandleStreamedMessage(lastStreamedResponse, isFinal: true).ConfigureAwait(false);
 
-    /// <summary>
-    /// Invokes the agent and streams chat message responses asynchronously.
-    /// Yields each streaming message as it becomes available.
-    /// </summary>
-    /// <param name="input">The chat message content to send.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the stream.</param>
-    /// <returns>An asynchronous stream of <see cref="StreamingChatMessageContent"/> responses.</returns>
-    protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatMessageContent input, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        this.Context.Cancellation.ThrowIfCancellationRequested();
-
-        var responseStream = this.Agent.InvokeStreamingAsync([input], this.Thread, this.GetInvokeOptions(), cancellationToken);
-
-        await foreach (AgentResponseItem<StreamingChatMessageContent> response in responseStream.ConfigureAwait(false))
+        async ValueTask HandleStreamedMessage(StreamingChatMessageContent? streamedResponse, bool isFinal)
         {
-            this.Thread ??= response.Thread;
-            yield return response.Message;
+            if (this.Context.StreamingResponseCallback != null && streamedResponse != null)
+            {
+                await this.Context.StreamingResponseCallback.Invoke(streamedResponse, isFinal).ConfigureAwait(false);
+            }
         }
     }
 
-    private AgentInvokeOptions? GetInvokeOptions() => this._options ??= this.CreateInvokeOptions();
+    private AgentInvokeOptions GetInvokeOptions(Func<ChatMessageContent, Task> messageHandler) => this._options ??= this.CreateInvokeOptions(messageHandler);
 
     private static string VerifyDescription(Agent agent)
     {

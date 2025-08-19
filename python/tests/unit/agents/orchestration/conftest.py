@@ -38,8 +38,8 @@ class MockAgent(Agent):
     @override
     async def get_response(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> AgentResponseItem[ChatMessageContent]:
@@ -48,8 +48,8 @@ class MockAgent(Agent):
     @override
     async def invoke(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -59,8 +59,8 @@ class MockAgent(Agent):
     @override
     async def invoke_stream(
         self,
-        *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
@@ -88,6 +88,35 @@ class MockAgent(Agent):
             ),
             thread=thread or MockAgentThread(),
         )
+
+
+class MockAgentWithException(MockAgent):
+    """A mock agent that raises an exception for testing purposes."""
+
+    @override
+    async def invoke_stream(
+        self,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        *,
+        thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        **kwargs,
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
+        """Simulate streaming response from the agent that raises an exception."""
+        # Simulate some processing time
+        await asyncio.sleep(0.05)
+
+        yield AgentResponseItem[StreamingChatMessageContent](
+            message=StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                name=self.name,
+                content="mock",
+                choice_index=0,
+            ),
+            thread=thread or MockAgentThread(),
+        )
+
+        raise RuntimeError("Mock agent exception")
 
 
 class MockRuntime(CoreRuntime):

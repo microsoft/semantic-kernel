@@ -21,9 +21,11 @@
 - [Azure AI Agent Declarative with OpenAPI Interpreter](./agents/azure_ai_agent/azure_ai_agent_declarative_openapi.py)
 - [Azure AI Agent Declarative with Existing Agent ID](./agents/azure_ai_agent/azure_ai_agent_declarative_with_existing_agent_id.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent MCP Streaming](./agents/azure_ai_agent/azure_ai_agent_mcp_streaming.py)
 - [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
 - [Azure AI Agent Message Callback Streaming](./agents/azure_ai_agent/azure_ai_agent_message_callback_streaming.py)
 - [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
+- [Azure AI Agent Retrieve Messages from Thread](./agents/azure_ai_agent/azure_ai_agent_retrieve_messages_from_thread.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 - [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
 - [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
@@ -44,11 +46,13 @@
 
 - [Chat Completion Agent as Kernel Function](./agents/chat_completion_agent/chat_completion_agent_as_kernel_function.py)
 - [Chat Completion Agent Function Termination](./agents/chat_completion_agent/chat_completion_agent_function_termination.py)
-- [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
 - [Chat Completion Agent Message Callback Streaming](./agents/chat_completion_agent/chat_completion_agent_message_callback_streaming.py)
 - [Chat Completion Agent Message Callback](./agents/chat_completion_agent/chat_completion_agent_message_callback.py)
+- [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
+- [Chat Completion Agent Streaming Token Usage](./agents/chat_completion_agent/chat_completion_agent_streaming_token_usage.py)
 - [Chat Completion Agent Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_agent_chat.py)
 - [Chat Completion Agent Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_single_agent.py)
+- [Chat Completion Agent Token Usage](./agents/chat_completion_agent/chat_completion_agent_token_usage.py)
 - [Chat Completion Agent Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_agent_chat.py)
 - [Chat Completion Agent Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_single_agent.py)
 
@@ -95,6 +99,7 @@
 - [OpenAI Responses Agent Declarative File Search](./agents/openai_responses/openai_responses_agent_declarative_file_search.py)
 - [OpenAI Responses Agent Declarative Function Calling From File](./agents/openai_responses/openai_responses_agent_declarative_function_calling_from_file.py)
 - [OpenAI Responses Agent Declarative Web Search](./agents/openai_responses/openai_responses_agent_declarative_web_search.py)
+- [OpenAI Responses Binary Content Upload](./agents/openai_responses/responses_agent_binary_content_upload.py)
 - [OpenAI Responses Message Callback Streaming](./agents/openai_responses/responses_agent_message_callback_streaming.py)
 - [OpenAI Responses Message Callback](./agents/openai_responses/responses_agent_message_callback.py)
 - [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)
@@ -212,8 +217,8 @@
 
 ### RAG - Different ways of `RAG` (Retrieval-Augmented Generation)
 
-- [RAG with Text Memory Plugin](./rag/rag_with_text_memory_plugin.py)
-- [Self-Critique RAG](./rag/self-critique_rag.py)
+- [RAG with Vector Collection](./rag/rag_with_vector_collection.py)
+- [Self-Critique RAG](./rag/self_critique_rag.py)
 
 ### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
 

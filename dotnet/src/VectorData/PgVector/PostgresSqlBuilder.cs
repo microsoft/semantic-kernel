@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
@@ -15,41 +17,36 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <summary>
 /// Provides methods to build SQL commands for managing vector store collections in PostgreSQL.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
 internal static class PostgresSqlBuilder
 {
-    /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
+    internal static void BuildDoesTableExistCommand(NpgsqlCommand command, string schema, string tableName)
     {
-        return new PostgresSqlCommandInfo(
-            commandText: """
+        command.CommandText = """
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = $1
     AND table_type = 'BASE TABLE'
     AND table_name = $2
-""",
-            parameters: [
-                new NpgsqlParameter() { Value = schema },
-                new NpgsqlParameter() { Value = tableName }
-            ]
-        );
+""";
+
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new() { Value = schema });
+        command.Parameters.Add(new() { Value = tableName });
     }
 
-    /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetTablesCommand(string schema)
+    internal static void BuildGetTablesCommand(NpgsqlCommand command, string schema)
     {
-        return new PostgresSqlCommandInfo(
-            commandText: """
+        command.CommandText = """
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = $1 AND table_type = 'BASE TABLE'
-""",
-            parameters: [new NpgsqlParameter() { Value = schema }]
-        );
+""";
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new() { Value = schema });
     }
 
-    /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, CollectionModel model, bool ifNotExists = true)
+    internal static string BuildCreateTableSql(string schema, string tableName, CollectionModel model, bool ifNotExists = true)
     {
         if (string.IsNullOrWhiteSpace(tableName))
         {
@@ -63,14 +60,14 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
         // Add the key column
         var keyPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(model.KeyProperty.Type);
-        createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType} {(keyPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+        createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType}{(keyPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
 
         // Add the data columns
         foreach (var dataProperty in model.DataProperties)
         {
             string columnName = dataProperty.StorageName;
             var dataPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(dataProperty.Type);
-            createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType} {(dataPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+            createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType}{(dataPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
         }
 
         // Add the vector columns
@@ -78,26 +75,24 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         {
             string columnName = vectorProperty.StorageName;
             var vectorPgTypeInfo = PostgresPropertyMapping.GetPgVectorTypeName(vectorProperty);
-            createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType} {(vectorPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
+            createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType}{(vectorPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
         }
 
         createTableCommand.AppendLine($"    PRIMARY KEY (\"{keyName}\")");
 
         createTableCommand.AppendLine(");");
 
-        return new PostgresSqlCommandInfo(commandText: createTableCommand.ToString());
+        return createTableCommand.ToString();
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildCreateIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
+    internal static string BuildCreateIndexSql(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
     {
         var indexName = $"{tableName}_{columnName}_index";
 
         if (!isVector)
         {
-            return new PostgresSqlCommandInfo(commandText:
-                $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")}""{indexName}"" ON {schema}.""{tableName}"" (""{columnName}"");"
-            );
+            return $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")}""{indexName}"" ON {schema}.""{tableName}"" (""{columnName}"")";
         }
 
         // Only support creating HNSW index creation through the connector.
@@ -121,92 +116,135 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
         };
 
-        return new PostgresSqlCommandInfo(
-            commandText: $@"
-                CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{columnName}"" {indexOps});"
-        );
+        return $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{columnName}"" {indexOps})";
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildDropTableCommand(string schema, string tableName)
+    internal static void BuildDropTableCommand(NpgsqlCommand command, string schema, string tableName)
     {
-        return new PostgresSqlCommandInfo(
-            commandText: $@"DROP TABLE IF EXISTS {schema}.""{tableName}"""
-        );
-    }
-
-    /// <inheritdoc/>
-    internal static PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, string keyColumn, Dictionary<string, object?> row)
-    {
-        var columns = row.Keys.ToList();
-        var columnNames = string.Join(", ", columns.Select(k => $"\"{k}\""));
-        var valuesParams = string.Join(", ", columns.Select((k, i) => $"${i + 1}"));
-        var columnsWithIndex = columns.Select((k, i) => (col: k, idx: i));
-        var updateColumnsWithParams = string.Join(", ", columnsWithIndex.Where(c => c.col != keyColumn).Select(c => $"\"{c.col}\"=${c.idx + 1}"));
-        var commandText = $"""
-INSERT INTO {schema}."{tableName}" ({columnNames})
-VALUES ({valuesParams})
-ON CONFLICT ("{keyColumn}")
-DO UPDATE SET {updateColumnsWithParams};
-""";
-
-        return new PostgresSqlCommandInfo(commandText)
-        {
-            Parameters = columns.Select(c =>
-                PostgresPropertyMapping.GetNpgsqlParameter(row[c])
-            ).ToList()
-        };
+        command.CommandText = $@"DROP TABLE IF EXISTS {schema}.""{tableName}""";
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildUpsertBatchCommand(string schema, string tableName, string keyColumn, List<Dictionary<string, object?>> rows)
+    internal static bool BuildUpsertCommand(
+        NpgsqlCommand command,
+        string schema,
+        string tableName,
+        CollectionModel model,
+        IEnumerable<object> records,
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings)
     {
-        if (rows == null || rows.Count == 0)
+        StringBuilder sql = new();
+
+        sql
+            .Append("INSERT INTO ")
+            .Append(schema)
+            .Append(".\"")
+            .Append(tableName)
+            .Append("\" (");
+
+        for (var i = 0; i < model.Properties.Count; i++)
         {
-            throw new ArgumentException("Rows cannot be null or empty", nameof(rows));
-        }
+            var property = model.Properties[i];
 
-        var firstRow = rows[0];
-        var columns = firstRow.Keys.ToList();
-
-        // Generate column names and parameter placeholders
-        var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
-        var valuePlaceholders = string.Join(", ", columns.Select((c, i) => $"${i + 1}"));
-        var valuesRows = string.Join(", ",
-            rows.Select((row, rowIndex) =>
-                $"({string.Join(", ",
-                    columns.Select((c, colIndex) => $"${(rowIndex * columns.Count) + colIndex + 1}"))})"));
-
-        // Generate the update set clause
-        var updateSetClause = string.Join(", ", columns.Where(c => c != keyColumn).Select(c => $"\"{c}\" = EXCLUDED.\"{c}\""));
-
-        // Generate the SQL command
-        var commandText = $"""
-INSERT INTO {schema}."{tableName}" ({columnNames})
-VALUES {valuesRows}
-ON CONFLICT ("{keyColumn}")
-DO UPDATE SET {updateSetClause};
-""";
-
-        // Generate the parameters
-        var parameters = new List<NpgsqlParameter>();
-        for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
-        {
-            var row = rows[rowIndex];
-            foreach (var column in columns)
+            if (i > 0)
             {
-                parameters.Add(new NpgsqlParameter()
-                {
-                    Value = row[column] ?? DBNull.Value
-                });
+                sql.Append(", ");
             }
+
+            sql.Append('"').Append(property.StorageName).Append('"');
         }
 
-        return new PostgresSqlCommandInfo(commandText, parameters);
+        sql
+            .AppendLine(")")
+            .Append("VALUES ");
+
+        var recordIndex = 0;
+        var parameterIndex = 1;
+
+        foreach (var record in records)
+        {
+            if (recordIndex > 0)
+            {
+                sql.Append(", ");
+            }
+
+            sql.Append('(');
+
+            for (var i = 0; i < model.Properties.Count; i++)
+            {
+                var property = model.Properties[i];
+
+                if (i > 0)
+                {
+                    sql.Append(", ");
+                }
+
+                var value = property.GetValueAsObject(record);
+
+                if (property is VectorPropertyModel vectorProperty)
+                {
+                    if (generatedEmbeddings?[vectorProperty] is IReadOnlyList<Embedding> ge)
+                    {
+                        value = ge[recordIndex];
+                    }
+
+                    value = PostgresPropertyMapping.MapVectorForStorageModel(value);
+                }
+
+                command.Parameters.Add(new() { Value = value ?? DBNull.Value });
+                sql.Append('$').Append(parameterIndex++);
+            }
+
+            sql.Append(')');
+
+            recordIndex++;
+        }
+
+        // No records to insert, return false to indicate no command was built.
+        if (recordIndex == 0)
+        {
+            return false;
+        }
+
+        sql
+            .AppendLine()
+            .Append("ON CONFLICT (\"")
+            .Append(model.KeyProperty.StorageName)
+            .Append("\")");
+
+        sql
+            .AppendLine()
+            .AppendLine("DO UPDATE SET ");
+
+        var propertyIndex = 0;
+        foreach (var property in model.Properties)
+        {
+            if (property is KeyPropertyModel)
+            {
+                continue;
+            }
+
+            if (propertyIndex++ > 0)
+            {
+                sql.AppendLine(", ");
+            }
+
+            sql
+                .Append("    \"")
+                .Append(property.StorageName)
+                .Append("\" = EXCLUDED.\"")
+                .Append(property.StorageName)
+                .Append('"');
+        }
+
+        command.CommandText = sql.ToString();
+
+        return true;
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false)
+    internal static void BuildGetCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
         List<string> queryColumns = new();
@@ -218,18 +256,17 @@ DO UPDATE SET {updateSetClause};
 
         var queryColumnList = string.Join(", ", queryColumns);
 
-        return new PostgresSqlCommandInfo(
-            commandText: $"""
+        command.CommandText = $"""
 SELECT {queryColumnList}
 FROM {schema}."{tableName}"
 WHERE "{model.KeyProperty.StorageName}" = ${1};
-""",
-            parameters: [new NpgsqlParameter() { Value = key }]
-        );
+""";
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new() { Value = key });
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, CollectionModel model, List<TKey> keys, bool includeVectors = false)
+    internal static void BuildGetBatchCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
         NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
@@ -243,33 +280,33 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
         var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
         var keyParams = string.Join(", ", keys.Select((k, i) => $"${i + 1}"));
 
-        // Generate the SQL command
-        var commandText = $"""
+        command.CommandText = $"""
 SELECT {columnNames}
 FROM {schema}."{tableName}"
 WHERE "{model.KeyProperty.StorageName}" = ANY($1);
 """;
 
-        return new PostgresSqlCommandInfo(commandText)
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new()
         {
-            Parameters = [new NpgsqlParameter() { Value = keys.ToArray(), NpgsqlDbType = NpgsqlDbType.Array | keyType.Value }]
-        };
+            Value = keys.ToArray(),
+            NpgsqlDbType = NpgsqlDbType.Array | keyType.Value
+        });
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key)
+    internal static void BuildDeleteCommand<TKey>(NpgsqlCommand command, string schema, string tableName, string keyColumn, TKey key)
     {
-        return new PostgresSqlCommandInfo(
-            commandText: $"""
+        command.CommandText = $"""
 DELETE FROM {schema}."{tableName}"
 WHERE "{keyColumn}" = ${1};
-""",
-            parameters: [new NpgsqlParameter() { Value = key }]
-        );
+""";
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new() { Value = key });
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
+    internal static void BuildDeleteBatchCommand<TKey>(NpgsqlCommand command, string schema, string tableName, string keyColumn, List<TKey> keys)
     {
         NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
 
@@ -281,21 +318,19 @@ WHERE "{keyColumn}" = ${1};
             }
         }
 
-        var commandText = $"""
+        command.CommandText = $"""
 DELETE FROM {schema}."{tableName}"
 WHERE "{keyColumn}" = ANY($1);
 """;
 
-        return new PostgresSqlCommandInfo(commandText)
-        {
-            Parameters = [new NpgsqlParameter() { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value }]
-        };
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new() { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value });
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
-        string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
+    internal static void BuildGetNearestMatchCommand<TRecord>(
+        NpgsqlCommand command, string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
         VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
         var columns = string.Join(" ,", model.Properties.Select(property => $"\"{property.StorageName}\""));
@@ -356,14 +391,19 @@ FROM ({commandText}) AS subquery
 """;
         }
 
-        return new PostgresSqlCommandInfo(commandText)
+        command.CommandText = commandText;
+
+        Debug.Assert(command.Parameters.Count == 0);
+        command.Parameters.Add(new NpgsqlParameter { Value = vectorValue });
+
+        foreach (var parameter in parameters)
         {
-            Parameters = [new NpgsqlParameter { Value = vectorValue }, .. parameters.Select(p => new NpgsqlParameter { Value = p })]
-        };
+            command.Parameters.Add(new NpgsqlParameter { Value = parameter });
+        }
     }
 
-    internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
-        string schema, string tableName, CollectionModel model,
+    internal static void BuildSelectWhereCommand<TRecord>(
+        NpgsqlCommand command, string schema, string tableName, CollectionModel model,
         Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord> options)
     {
         StringBuilder query = new(200);
@@ -402,10 +442,13 @@ FROM ({commandText}) AS subquery
         query.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
         query.AppendFormat("LIMIT {0}", top).AppendLine();
 
-        return new PostgresSqlCommandInfo(query.ToString())
+        command.CommandText = query.ToString();
+
+        Debug.Assert(command.Parameters.Count == 0);
+        foreach (var parameter in translator.ParameterValues)
         {
-            Parameters = translator.ParameterValues.Select(p => new NpgsqlParameter { Value = p }).ToList()
-        };
+            command.Parameters.Add(new NpgsqlParameter { Value = parameter });
+        }
     }
 
     internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(CollectionModel model, LambdaExpression newFilter, int startParamIndex)

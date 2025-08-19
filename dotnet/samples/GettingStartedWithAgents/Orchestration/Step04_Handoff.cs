@@ -16,29 +16,31 @@ namespace GettingStarted.Orchestration;
 /// </summary>
 public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
-    [Fact]
-    public async Task OrderSupportAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrderSupportAsync(bool streamedResponse)
     {
         // Define the agents & tools
         ChatCompletionAgent triageAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "A customer support agent that triages issues.",
                 name: "TriageAgent",
                 description: "Handle customer requests.");
         ChatCompletionAgent statusAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "OrderStatusAgent",
                 instructions: "Handle order status requests.",
                 description: "A customer support agent that checks order status.");
         statusAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderStatusPlugin()));
         ChatCompletionAgent returnAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "OrderReturnAgent",
                 instructions: "Handle order return requests.",
                 description: "A customer support agent that handles order returns.");
         returnAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderReturnPlugin()));
         ChatCompletionAgent refundAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "OrderRefundAgent",
                 instructions: "Handle order refund requests.",
                 description: "A customer support agent that handles order refund.");
@@ -76,8 +78,9 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
                     Console.WriteLine($"\n# INPUT: {input}\n");
                     return ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input));
                 },
+                LoggerFactory = this.LoggerFactory,
                 ResponseCallback = monitor.ResponseCallback,
-                LoggerFactory = this.LoggerFactory
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime

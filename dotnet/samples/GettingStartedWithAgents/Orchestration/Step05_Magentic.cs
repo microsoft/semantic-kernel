@@ -28,13 +28,15 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
     /// </summary>
     protected override bool ForceOpenAI => true;
 
-    [Fact]
-    public async Task MagenticTaskAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MagenticTaskAsync(bool streamedResponse)
     {
         // Define the agents
         Kernel researchKernel = CreateKernelWithOpenAIChatCompletion(ResearcherModel);
         ChatCompletionAgent researchAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "ResearchAgent",
                 description: "A helpful assistant with access to web search. Ask it to perform web searches.",
                 instructions: "You are a Researcher. You find information without additional computation or quantitative analysis.",
@@ -64,8 +66,9 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
         MagenticOrchestration orchestration =
             new(manager, researchAgent, coderAgent)
             {
-                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory,
+                ResponseCallback = monitor.ResponseCallback,
+                StreamingResponseCallback = streamedResponse ? monitor.StreamingResultCallback : null,
             };
 
         // Start the runtime
@@ -83,7 +86,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
             """;
         Console.WriteLine($"\n# INPUT:\n{input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 10));
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 20));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -17,13 +18,16 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </summary>
 public sealed class PostgresVectorStore : VectorStore
 {
-    private readonly PostgresDbClient _client;
-
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>Data source used to interact with the database.</summary>
+    private readonly NpgsqlDataSource _dataSource;
+    private readonly NpgsqlDataSourceArc? _dataSourceArc;
+    private readonly string _databaseName;
 
     /// <summary>The database schema.</summary>
     private readonly string _schema;
@@ -42,12 +46,14 @@ public sealed class PostgresVectorStore : VectorStore
 
         this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
         this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._client = new PostgresDbClient(dataSource, this._schema, ownsDataSource);
+        this._dataSource = dataSource;
+        this._dataSourceArc = ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null;
+        this._databaseName = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString).Database!;
 
         this._metadata = new()
         {
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._client.DatabaseName
+            VectorStoreName = this._databaseName
         };
     }
 
@@ -66,7 +72,7 @@ public sealed class PostgresVectorStore : VectorStore
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        this._client.Dispose();
+        this._dataSourceArc?.Dispose();
         base.Dispose(disposing);
     }
 
@@ -74,10 +80,26 @@ public sealed class PostgresVectorStore : VectorStore
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._client.GetTablesAsync(cancellationToken),
+            GetTablesAsync(cancellationToken),
             "ListCollectionNames",
-            this._metadata
-        );
+            this._metadata);
+
+        async IAsyncEnumerable<string> GetTablesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            await using (connection)
+            using (var command = connection.CreateCommand())
+            {
+                PostgresSqlBuilder.BuildGetTablesCommand(command, this._schema);
+                using NpgsqlDataReader dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+                while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    yield return dataReader.GetString(dataReader.GetOrdinal("table_name"));
+                }
+            }
+        }
     }
 
 #pragma warning disable IDE0090 // Use 'new(...)'
@@ -92,7 +114,8 @@ public sealed class PostgresVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new PostgresCollection<TKey, TRecord>(
-                () => this._client.Share(),
+                this._dataSource,
+                this._dataSourceArc,
                 name,
                 new()
                 {
@@ -109,7 +132,8 @@ public sealed class PostgresVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new PostgresDynamicCollection(
-            () => this._client.Share(),
+            this._dataSource,
+            this._dataSourceArc,
             name,
             new()
             {
@@ -142,7 +166,7 @@ public sealed class PostgresVectorStore : VectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
+            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

@@ -25,15 +25,15 @@ public class Step01a_ConcurrentWithStructuredOutput(ITestOutputHelper output) : 
     {
         // Define the agents
         ChatCompletionAgent agent1 =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an expert in identifying themes in articles. Given an article, identify the main themes.",
                 description: "An expert in identifying themes in articles");
         ChatCompletionAgent agent2 =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an expert in sentiment analysis. Given an article, identify the sentiment.",
                 description: "An expert in sentiment analysis");
         ChatCompletionAgent agent3 =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an expert in entity recognition. Given an article, extract the entities.",
                 description: "An expert in entity recognition");
 

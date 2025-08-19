@@ -96,20 +96,16 @@ public abstract class TestStore
 
         var vector = dummyVector ?? new ReadOnlyMemory<float>(Enumerable.Range(0, vectorSize ?? 3).Select(i => (float)i).ToArray());
 
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < 200; i++)
         {
             var results = collection.SearchAsync(
                 vector,
-                top: recordCount,
+                top: recordCount is 0 ? 1 : recordCount,
                 new() { Filter = filter });
             var count = await results.CountAsync();
             if (count == recordCount)
             {
                 return;
-            }
-            if (count > recordCount)
-            {
-                throw new InvalidOperationException($"Expected at most {recordCount} records, but found {count}.");
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

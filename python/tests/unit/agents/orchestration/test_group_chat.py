@@ -17,7 +17,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
+from tests.unit.agents.orchestration.conftest import MockAgent, MockAgentWithException, MockRuntime
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -90,7 +90,7 @@ async def test_invoke():
                 manager=RoundRobinGroupChatManager(max_rounds=3),
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            result = await orchestration_result.get()
+            result = await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
@@ -128,15 +128,15 @@ async def test_invoke_with_list():
                 manager=RoundRobinGroupChatManager(max_rounds=2),
             )
             orchestration_result = await orchestration.invoke(task=messages, runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
         assert mock_invoke_stream.call_count == 2
-        # Two messages + one message added internally to steer the conversation
-        assert len(mock_invoke_stream.call_args_list[0][1]["messages"]) == 3
-        # Two messages + two message added internally to steer the conversation + response from agent A
-        assert len(mock_invoke_stream.call_args_list[1][1]["messages"]) == 5
+        # Two messages
+        assert len(mock_invoke_stream.call_args_list[0][0][1]) == 2
+        # Two messages + response from agent A
+        assert len(mock_invoke_stream.call_args_list[1][0][1]) == 3
 
 
 async def test_invoke_with_response_callback():
@@ -285,6 +285,29 @@ async def test_invoke_cancel_after_completion():
 
         with pytest.raises(RuntimeError, match="The invocation has already been completed."):
             orchestration_result.cancel()
+    finally:
+        await runtime.stop_when_idle()
+
+
+async def test_invoke_with_agent_raising_exception():
+    """Test the invoke method of the GroupChatOrchestration with an agent raising an exception."""
+    agent_a = MockAgent(description="test agent")
+    agent_b = MockAgentWithException(description="test agent")
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    try:
+        orchestration = GroupChatOrchestration(
+            members=[agent_a, agent_b],
+            manager=RoundRobinGroupChatManager(max_rounds=3),
+        )
+
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+
+        with pytest.raises(RuntimeError, match="Mock agent exception"):
+            await orchestration_result.get(1.0)
+        assert orchestration_result.exception is not None
     finally:
         await runtime.stop_when_idle()
 

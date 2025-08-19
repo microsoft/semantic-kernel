@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
-using OllamaSharp.Models.Chat;
 
 namespace ChatCompletion;
 
@@ -14,14 +14,49 @@ namespace ChatCompletion;
 public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// This example demonstrates chat completion streaming using Ollama.
+    /// This example demonstrates chat completion streaming using <see cref="IChatClient"/> directly.
     /// </summary>
     [Fact]
-    public async Task UsingServiceStreamingWithOllama()
+    public async Task UsingChatClientStreaming()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
-        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingServiceStreamingWithOllama)} ========");
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingChatClientStreaming)} ========");
+
+        using IChatClient ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.System, "You are a librarian, expert about books")];
+        this.OutputLastMessage(chatHistory);
+
+        // First user message
+        chatHistory.Add(new(ChatRole.User, "Hi, I'm looking for book suggestions"));
+        this.OutputLastMessage(chatHistory);
+
+        // First assistant message
+        await StreamChatClientMessageOutputAsync(ollamaClient, chatHistory);
+
+        // Second user message
+        chatHistory.Add(new(Microsoft.Extensions.AI.ChatRole.User, "I love history and philosophy, I'd like to learn something new about Greece, any suggestion?"));
+        this.OutputLastMessage(chatHistory);
+
+        // Second assistant message
+        await StreamChatClientMessageOutputAsync(ollamaClient, chatHistory);
+    }
+
+    /// <summary>
+    /// This example demonstrates chat completion streaming using <see cref="IChatCompletionService"/> directly.
+    /// </summary>
+    [Fact]
+    public async Task UsingChatCompletionServiceStreamingWithOllama()
+    {
+        Assert.NotNull(TestConfiguration.Ollama.ModelId);
+
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingChatCompletionServiceStreamingWithOllama)} ========");
 
         using var ollamaClient = new OllamaApiClient(
             uriString: TestConfiguration.Ollama.Endpoint,
@@ -51,38 +86,36 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
     /// <summary>
-    /// This example demonstrates retrieving underlying library information through chat completion streaming inner contents.
+    /// This example demonstrates retrieving underlying OllamaSharp library information through <see cref="IChatClient" /> streaming raw representation (breaking glass) approach.
     /// </summary>
     /// <remarks>
     /// This is a breaking glass scenario and is more susceptible to break on newer versions of OllamaSharp library.
     /// </remarks>
     [Fact]
-    public async Task UsingServiceStreamingInnerContentsWithOllama()
+    public async Task UsingChatClientStreamingRawContentsWithOllama()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
-        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingServiceStreamingInnerContentsWithOllama)} ========");
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingChatClientStreamingRawContentsWithOllama)} ========");
 
-        using var ollamaClient = new OllamaApiClient(
+        using IChatClient ollamaClient = new OllamaApiClient(
             uriString: TestConfiguration.Ollama.Endpoint,
             defaultModel: TestConfiguration.Ollama.ModelId);
-
-        var chatService = ollamaClient.AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = new ChatHistory("You are a librarian, expert about books");
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.System, "You are a librarian, expert about books")];
         this.OutputLastMessage(chatHistory);
 
         // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        chatHistory.Add(new(ChatRole.User, "Hi, I'm looking for book suggestions"));
         this.OutputLastMessage(chatHistory);
 
-        await foreach (var chatUpdate in chatService.GetStreamingChatMessageContentsAsync(chatHistory))
+        await foreach (var chatUpdate in ollamaClient.GetStreamingResponseAsync(chatHistory))
         {
-            var innerContent = chatUpdate.InnerContent as ChatResponseStream;
-            OutputInnerContent(innerContent!);
+            var rawRepresentation = chatUpdate.RawRepresentation as OllamaSharp.Models.Chat.ChatResponseStream;
+            OutputOllamaSharpContent(rawRepresentation!);
         }
     }
 
@@ -90,11 +123,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// Demonstrates how you can template a chat history call while using the <see cref="Kernel"/> for invocation.
     /// </summary>
     [Fact]
-    public async Task UsingKernelChatPromptStreamingWithOllama()
+    public async Task UsingKernelChatPromptStreaming()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
-        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingKernelChatPromptStreamingWithOllama)} ========");
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingKernelChatPromptStreaming)} ========");
 
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
@@ -102,7 +135,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -124,11 +157,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// This is a breaking glass scenario and is more susceptible to break on newer versions of OllamaSharp library.
     /// </remarks>
     [Fact]
-    public async Task UsingKernelChatPromptStreamingInnerContentsWithOllama()
+    public async Task UsingKernelChatPromptStreamingRawRepresentation()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
-        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingKernelChatPromptStreamingInnerContentsWithOllama)} ========");
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingKernelChatPromptStreamingRawRepresentation)} ========");
 
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
@@ -136,7 +169,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                                        """);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion(
+            .AddOllamaChatClient(
                 endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
                 modelId: TestConfiguration.Ollama.ModelId)
             .Build();
@@ -148,8 +181,8 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         await foreach (var chatUpdate in kernel.InvokePromptStreamingAsync<StreamingChatMessageContent>(chatPrompt.ToString()))
         {
-            var innerContent = chatUpdate.InnerContent as ChatResponseStream;
-            OutputInnerContent(innerContent!);
+            var innerContent = chatUpdate.InnerContent as OllamaSharp.Models.Chat.ChatResponseStream;
+            OutputOllamaSharpContent(innerContent!);
         }
     }
 
@@ -159,11 +192,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// and alternatively via the StreamingChatMessageContent.Items property.
     /// </summary>
     [Fact]
-    public async Task UsingStreamingTextFromChatCompletionWithOllama()
+    public async Task UsingStreamingTextFromChatCompletion()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
-        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingStreamingTextFromChatCompletionWithOllama)} ========");
+        Console.WriteLine($"======== Ollama - Chat Completion - {nameof(UsingStreamingTextFromChatCompletion)} ========");
 
         using var ollamaClient = new OllamaApiClient(
             uriString: TestConfiguration.Ollama.Endpoint,
@@ -212,6 +245,29 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         return fullMessage;
     }
 
+    private async Task StreamChatClientMessageOutputAsync(IChatClient chatClient, List<ChatMessage> chatHistory)
+    {
+        bool roleWritten = false;
+        string fullMessage = string.Empty;
+        List<ChatResponseUpdate> chatUpdates = [];
+        await foreach (var chatUpdate in chatClient.GetStreamingResponseAsync(chatHistory))
+        {
+            chatUpdates.Add(chatUpdate);
+            if (!roleWritten && !string.IsNullOrEmpty(chatUpdate.Text))
+            {
+                Console.Write($"Assistant: {chatUpdate.Text}");
+                roleWritten = true;
+            }
+            else if (!string.IsNullOrEmpty(chatUpdate.Text))
+            {
+                Console.Write(chatUpdate.Text);
+            }
+        }
+
+        Console.WriteLine("\n------------------------");
+        chatHistory.AddRange(chatUpdates.ToChatResponse().Messages);
+    }
+
     /// <summary>
     /// Retrieve extra information from each streaming chunk response.
     /// </summary>
@@ -220,7 +276,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// This is a breaking glass scenario, any attempt on running with different versions of OllamaSharp library that introduces breaking changes
     /// may cause breaking changes in the code below.
     /// </remarks>
-    private void OutputInnerContent(ChatResponseStream streamChunk)
+    private void OutputOllamaSharpContent(OllamaSharp.Models.Chat.ChatResponseStream streamChunk)
     {
         Console.WriteLine($$"""
             Model: {{streamChunk.Model}}
@@ -230,8 +286,8 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             Done: {{streamChunk.Done}}
             """);
 
-        /// The last message in the chunk is a <see cref="ChatDoneResponseStream"/> type with additional metadata.
-        if (streamChunk is ChatDoneResponseStream doneStream)
+        /// The last message in the chunk is a <see cref="OllamaSharp.Models.Chat.ChatDoneResponseStream"/> type with additional metadata.
+        if (streamChunk is OllamaSharp.Models.Chat.ChatDoneResponseStream doneStream)
         {
             Console.WriteLine($$"""
                 Done Reason: {{doneStream.DoneReason}}
@@ -244,5 +300,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 """);
         }
         Console.WriteLine("------------------------");
+    }
+
+    private void OutputLastMessage(List<ChatMessage> chatHistory)
+    {
+        var message = chatHistory.Last();
+        Console.WriteLine($"{message.Role}: {message.Text}");
     }
 }

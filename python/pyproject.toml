@@ -24,8 +24,8 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.0.0",
+    "azure-ai-projects >= 1.0.0b12",
+    "azure-ai-agents >= 1.1.0b4",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.67",
+    "openai >= 1.98.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -68,7 +68,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.39.0",
+    "boto3>=1.36.4,<1.41.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -88,13 +88,13 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.93.0",
+    "google-cloud-aiplatform == 1.97.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.7.0"
+    "sentence-transformers >= 2.2,< 6.0",
+    "torch == 2.7.1"
 ]
 mcp = [
     "mcp>=1.8",
@@ -107,7 +107,7 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.13",
+    "pymongo >= 4.8.0, < 4.14",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
@@ -123,7 +123,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone[asyncio, grpc] ~= 6.0"
+    "pinecone[asyncio, grpc] ~= 7.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -132,7 +132,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 5,< 6",
+    "redis[hiredis] ~= 6.0",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -145,10 +145,10 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 21.0"
+    "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<5.0",
+    "weaviate-client>=4.10,<5.0,!=4.16.7",
 ]
 
 [tool.uv]
@@ -215,6 +215,7 @@ select = [
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "D418", #allow docstring on overloaded function
     "TD003", #allow missing link to todo issue
     "FIX002" #allow todo
 ]
@@ -239,7 +240,7 @@ min-file-size = 1
 
 [tool.bandit]
 targets = ["semantic_kernel"]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 
 [tool.flit.module]
 name = "semantic_kernel"

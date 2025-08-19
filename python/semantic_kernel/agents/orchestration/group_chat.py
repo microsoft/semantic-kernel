@@ -107,41 +107,17 @@ class GroupChatAgentActor(AgentActorBase):
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
         if isinstance(message.body, ChatMessageContent):
-            if self._agent_thread:
-                await self._agent_thread.on_new_message(message.body)
-            else:
-                self._chat_history.add_message(message.body)
+            self._message_cache.add_message(message.body)
         elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
-            if self._agent_thread:
-                for m in message.body:
-                    await self._agent_thread.on_new_message(m)
-            else:
-                for m in message.body:
-                    self._chat_history.add_message(m)
+            for m in message.body:
+                self._message_cache.add_message(m)
         else:
             raise ValueError(f"Invalid message body type: {type(message.body)}. Expected {DefaultTypeAlias}.")
 
     @message_handler
     async def _handle_response_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received group chat response message.")
-        if self._agent_thread is not None:
-            if message.body.role != AuthorRole.USER:
-                await self._agent_thread.on_new_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            if message.body.role != AuthorRole.USER:
-                self._chat_history.add_message(
-                    ChatMessageContent(
-                        role=AuthorRole.USER,
-                        content=f"Transferred to {message.body.name}",
-                    )
-                )
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
@@ -150,11 +126,7 @@ class GroupChatAgentActor(AgentActorBase):
 
         logger.debug(f"{self.id}: Received group chat request message.")
 
-        persona_adoption_message = ChatMessageContent(
-            role=AuthorRole.USER,
-            content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-        )
-        response = await self._invoke_agent(additional_messages=persona_adoption_message)
+        response = await self._invoke_agent()
 
         logger.debug(f"{self.id} responded with {response}.")
 
@@ -285,6 +257,7 @@ class GroupChatManagerActor(ActorBase):
         manager: GroupChatManager,
         internal_topic_type: str,
         participant_descriptions: dict[str, str],
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ):
         """Initialize the group chat manager actor.
@@ -293,8 +266,7 @@ class GroupChatManagerActor(ActorBase):
             manager (GroupChatManager): The group chat manager that manages the flow of the group chat.
             internal_topic_type (str): The topic type of the internal topic.
             participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
-            agent_response_callback (Callable | None): A function that is called when a response is produced
-                by the agents.
+            exception_callback (Callable[[BaseException], None]): A function that is called when an exception occurs.
             result_callback (Callable | None): A function that is called when the group chat manager produces a result.
         """
         self._manager = manager
@@ -303,7 +275,7 @@ class GroupChatManagerActor(ActorBase):
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
-        super().__init__(description="An actor for the group chat manager.")
+        super().__init__("An actor for the group chat manager.", exception_callback)
 
     @message_handler
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
@@ -332,6 +304,7 @@ class GroupChatManagerActor(ActorBase):
 
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
+    @ActorBase.exception_handler
     async def _determine_state_and_take_action(self, cancellation_token: CancellationToken) -> None:
         """Determine the state of the group chat and take action accordingly."""
         # User input state
@@ -476,14 +449,20 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type)
-        await self._register_manager(runtime, internal_topic_type, result_callback=result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback)
+        await self._register_manager(runtime, internal_topic_type, exception_callback, result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
-    async def _register_members(self, runtime: CoreRuntime, internal_topic_type: str) -> None:
+    async def _register_members(
+        self,
+        runtime: CoreRuntime,
+        internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
+    ) -> None:
         """Register the agents."""
         await asyncio.gather(*[
             GroupChatAgentActor.register(
@@ -492,6 +471,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 lambda agent=agent: GroupChatAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
+                    exception_callback=exception_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,
                 ),
@@ -503,6 +483,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the group chat manager."""
@@ -513,6 +494,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 self._manager,
                 internal_topic_type=internal_topic_type,
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )

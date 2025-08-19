@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
-    <NoWarn>$(NoWarn);CS8618,IDE0009,IDE1006,CA1051,CA1050,CA1707,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0101,SKEXP0110,OPENAI001,CA1724,IDE1006,IDE0009,MEVD9000</NoWarn>
+    <NoWarn>$(NoWarn);CS8618,IDE0009,IDE1006,CA1051,CA1050,CA1707,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0101,SKEXP0110,OPENAI001,CA1724,IDE1006,IDE0009,MEVD9000</NoWarn>
     <OutputType>Library</OutputType>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
@@ -44,7 +44,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.OpenApi" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="AWSSDK.Core" />
     <PackageReference Include="AWSSDK.SecurityToken" />
@@ -97,6 +96,10 @@
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/AsyncEnumerable.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />

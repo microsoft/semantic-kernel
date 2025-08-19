@@ -8,9 +8,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using Qdrant.Client.Grpc;
+using Expression = System.Linq.Expressions.Expression;
 using Range = Qdrant.Client.Grpc.Range;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -80,12 +82,13 @@ internal class QdrantFilterTranslator
                     Key = propertyStorageName,
                     Match = value switch
                     {
-                        string stringValue => new Match { Keyword = stringValue },
-                        int intValue => new Match { Integer = intValue },
-                        long longValue => new Match { Integer = longValue },
-                        bool boolValue => new Match { Boolean = boolValue },
+                        string v => new Match { Keyword = v },
+                        int v => new Match { Integer = v },
+                        long v => new Match { Integer = v },
+                        bool v => new Match { Boolean = v },
+                        DateTimeOffset v => new Match { Keyword = v.ToString("o") },
 
-                        _ => throw new InvalidOperationException($"Unsupported filter value type '{value.GetType().Name}'.")
+                        _ => throw new NotSupportedException($"Unsupported filter value type '{value.GetType().Name}'.")
                     }
                 }
             };
@@ -114,35 +117,49 @@ internal class QdrantFilterTranslator
 
         bool TryProcessComparison(Expression first, Expression second, [NotNullWhen(true)] out Filter? result)
         {
-            // TODO: Nullable
             if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
-                double doubleConstantValue = constantValue switch
-                {
-                    double d => d,
-                    int i => i,
-                    long l => l,
-                    _ => throw new NotSupportedException($"Can't perform comparison on type '{constantValue?.GetType().Name}', which isn't convertible to double")
-                };
-
                 result = new Filter();
                 result.Must.Add(new Condition
                 {
-                    Field = new FieldCondition
+                    Field = constantValue switch
+                    {
+                        double v => DoubleFieldCondition(v),
+                        int v => DoubleFieldCondition(v),
+                        long v => DoubleFieldCondition(v),
+
+                        DateTimeOffset v => new FieldCondition
+                        {
+                            Key = property.StorageName,
+                            DatetimeRange = new DatetimeRange
+                            {
+                                Gt = Timestamp.FromDateTimeOffset(v),
+                                Gte = Timestamp.FromDateTimeOffset(v),
+                                Lt = Timestamp.FromDateTimeOffset(v),
+                                Lte = Timestamp.FromDateTimeOffset(v)
+                            }
+                        },
+
+                        _ => throw new NotSupportedException($"Can't perform comparison on type '{constantValue?.GetType().Name}'")
+                    }
+                });
+
+                return true;
+
+                FieldCondition DoubleFieldCondition(double d)
+                    => new()
                     {
                         Key = property.StorageName,
                         Range = comparison.NodeType switch
                         {
-                            ExpressionType.GreaterThan => new Range { Gt = doubleConstantValue },
-                            ExpressionType.GreaterThanOrEqual => new Range { Gte = doubleConstantValue },
-                            ExpressionType.LessThan => new Range { Lt = doubleConstantValue },
-                            ExpressionType.LessThanOrEqual => new Range { Lte = doubleConstantValue },
+                            ExpressionType.GreaterThan => new Range { Gt = d },
+                            ExpressionType.GreaterThanOrEqual => new Range { Gte = d },
+                            ExpressionType.LessThan => new Range { Lt = d },
+                            ExpressionType.LessThanOrEqual => new Range { Lte = d },
 
                             _ => throw new InvalidOperationException("Unreachable")
                         }
-                    }
-                });
-                return true;
+                    };
             }
 
             result = null;
@@ -380,11 +397,12 @@ internal class QdrantFilterTranslator
         }
 
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
         unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != property.Type && convertType != typeof(object))
+            if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
             }

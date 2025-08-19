@@ -32,7 +32,7 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, short, int, long, double, float, decimal, bool, DateTime, DateTimeOffset, DateOnly, TimeOnly, Guid, byte[]";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -49,8 +49,9 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(bool) // BIT
             || type == typeof(DateTime) // DATETIME2
 #if NET
-            // We don't support mapping TimeSpan to TIME on purpose
-            // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
+            || type == typeof(DateOnly) // DATE
+                                        // We don't support mapping TimeSpan to TIME on purpose
+                                        // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
             || type == typeof(TimeOnly) // TIME
 #endif
             || type == typeof(decimal) // DECIMAL

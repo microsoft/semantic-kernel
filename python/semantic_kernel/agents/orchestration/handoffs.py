@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from functools import partial
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.orchestration.agent_actor_base import AgentActorBase
+from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
@@ -161,6 +161,7 @@ class HandoffAgentActor(AgentActorBase):
         agent: Agent,
         internal_topic_type: str,
         handoff_connections: AgentHandoffs,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
@@ -181,6 +182,7 @@ class HandoffAgentActor(AgentActorBase):
         super().__init__(
             agent=agent,
             internal_topic_type=internal_topic_type,
+            exception_callback=exception_callback,
             agent_response_callback=agent_response_callback,
             streaming_agent_response_callback=streaming_agent_response_callback,
         )
@@ -250,16 +252,10 @@ class HandoffAgentActor(AgentActorBase):
     async def _handle_start_message(self, message: HandoffStartMessage, cts: MessageContext) -> None:
         logger.debug(f"{self.id}: Received handoff start message.")
         if isinstance(message.body, ChatMessageContent):
-            if self._agent_thread:
-                await self._agent_thread.on_new_message(message.body)
-            else:
-                self._chat_history.add_message(message.body)
+            self._message_cache.add_message(message.body)
         elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
             for m in message.body:
-                if self._agent_thread:
-                    await self._agent_thread.on_new_message(m)
-                else:
-                    self._chat_history.add_message(m)
+                self._message_cache.add_message(m)
         else:
             raise ValueError(f"Invalid message body type: {type(message.body)}. Expected {DefaultTypeAlias}.")
 
@@ -267,10 +263,7 @@ class HandoffAgentActor(AgentActorBase):
     async def _handle_response_message(self, message: HandoffResponseMessage, cts: MessageContext) -> None:
         """Handle a response message from an agent in the handoff group."""
         logger.debug(f"{self.id}: Received handoff response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: HandoffRequestMessage, cts: MessageContext) -> None:
@@ -279,14 +272,7 @@ class HandoffAgentActor(AgentActorBase):
             return
         logger.debug(f"{self.id}: Received handoff request message.")
 
-        persona_adoption_message = ChatMessageContent(
-            role=AuthorRole.USER,
-            content=f"Transferred to {self._agent.name}, adopt the persona immediately.",
-        )
-        response = await self._invoke_agent_with_potentially_no_response(
-            additional_messages=persona_adoption_message,
-            kernel=self._kernel,
-        )
+        response = await self._invoke_agent_with_potentially_no_response(kernel=self._kernel)
 
         while not self._task_completed:
             if self._handoff_agent_name:
@@ -332,6 +318,7 @@ class HandoffAgentActor(AgentActorBase):
             return await self._human_response_function()
         return self._human_response_function()  # type: ignore[return-value]
 
+    @ActorBase.exception_handler
     async def _invoke_agent_with_potentially_no_response(
         self, additional_messages: DefaultTypeAlias | None = None, **kwargs
     ) -> ChatMessageContent | None:
@@ -348,7 +335,12 @@ class HandoffAgentActor(AgentActorBase):
         streaming_message_buffer: list[StreamingChatMessageContent] = []
         messages = self._create_messages(additional_messages)
 
-        async for response_item in self._agent.invoke_stream(messages=messages, thread=self._agent_thread, **kwargs):  # type: ignore[arg-type]
+        async for response_item in self._agent.invoke_stream(
+            messages,  # type: ignore[arg-type]
+            thread=self._agent_thread,
+            on_intermediate_message=self._handle_intermediate_message,
+            **kwargs,
+        ):
             # Buffer message chunks and stream them with correct is_final flag.
             streaming_message_buffer.append(response_item.message)
             if len(streaming_message_buffer) > 1:
@@ -464,16 +456,18 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type, result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback, result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
     async def _register_members(
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the members with the runtime."""
@@ -487,6 +481,7 @@ class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
                     agent,
                     internal_topic_type,
                     handoff_connections,
+                    exception_callback,
                     result_callback=result_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,

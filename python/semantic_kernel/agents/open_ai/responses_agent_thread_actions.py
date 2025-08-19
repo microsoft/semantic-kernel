@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import uuid
 from collections.abc import AsyncIterable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
@@ -31,6 +32,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -185,6 +187,8 @@ class ResponsesAgentThreadActions:
 
             if store_enabled:
                 thread.response_id = response.id
+                # Chain subsequent requests to this response so tool outputs are associated correctly
+                previous_response_id = response.id
 
             if response.status in cls.error_message_states:
                 error_message = ""
@@ -214,7 +218,10 @@ class ResponsesAgentThreadActions:
 
             response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
             yield False, response_message
+            # Update both histories so subsequent requests include tool call context
             chat_history.add_message(message=response_message)
+            if override_history is not chat_history:
+                override_history.add_message(message=response_message)
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -225,7 +232,7 @@ class ResponsesAgentThreadActions:
                 *[
                     kernel.invoke_function_call(
                         function_call=function_call,
-                        chat_history=chat_history,
+                        chat_history=override_history,
                         arguments=kwargs.get("arguments"),
                         execution_settings=None,
                         function_call_count=fc_count,
@@ -237,7 +244,7 @@ class ResponsesAgentThreadActions:
             )
 
             terminate_flag = any(result.terminate for result in results if result is not None)
-            for msg in merge_function_results(chat_history.messages[-len(results) :]):
+            for msg in merge_function_results(override_history.messages[-len(results) :]):
                 # Terminate flag should only be true when the filter's terminate is true
                 yield terminate_flag, msg
         else:
@@ -374,6 +381,8 @@ class ResponsesAgentThreadActions:
                             logger.debug(f"Agent response created with ID: {event.response.id}")
                             if store_enabled:
                                 thread.response_id = event.response.id
+                                # Ensure subsequent requests link to this response context
+                                previous_response_id = event.response.id
                         case ResponseOutputItemAddedEvent():
                             function_calls = cls._get_tool_calls_from_output([event.item])  # type: ignore
                             if function_calls:
@@ -433,6 +442,8 @@ class ResponsesAgentThreadActions:
                 output_messages.append(full_completion)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
+            if override_history is not chat_history:
+                override_history.add_message(message=full_completion)
 
             fc_count = len(function_calls)
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -444,7 +455,7 @@ class ResponsesAgentThreadActions:
                 *[
                     kernel.invoke_function_call(
                         function_call=function_call,
-                        chat_history=chat_history,
+                        chat_history=override_history,
                         arguments=kwargs.get("arguments"),
                         is_streaming=True,
                         execution_settings=None,
@@ -460,7 +471,7 @@ class ResponsesAgentThreadActions:
             # Include the ai_model_id so we can later add two streaming messages together
             # Some settings may not have an ai_model_id, so we need to check for it
             function_result_messages = cls._merge_streaming_function_results(
-                messages=chat_history.messages[-len(results) :],  # type: ignore
+                messages=override_history.messages[-len(results) :],  # type: ignore
                 name=agent.name,
                 ai_model_id=agent.ai_model_id,  # type: ignore
                 function_invoke_attempt=request_index,
@@ -491,7 +502,9 @@ class ResponsesAgentThreadActions:
     ) -> Response | AsyncStream[ResponseStreamEvent]:
         try:
             response: Response = await agent.client.responses.create(
-                input=cls._prepare_chat_history_for_request(chat_history),
+                input=cls._prepare_chat_history_for_request(
+                    chat_history, store_output_enabled if store_output_enabled is not None else agent.store_enabled
+                ),
                 instructions=merged_instructions or agent.instructions,
                 previous_response_id=previous_response_id,
                 store=store_output_enabled,
@@ -648,6 +661,7 @@ class ResponsesAgentThreadActions:
     def _prepare_chat_history_for_request(
         cls: type[_T],
         chat_history: "ChatHistory",
+        store_enabled: bool,
     ) -> Any:
         """Prepare the chat history for a request.
 
@@ -690,7 +704,6 @@ class ResponsesAgentThreadActions:
                                 final_text = str(final_text)
                         text_type = "input_text" if original_role == AuthorRole.USER else "output_text"
                         contents.append({"type": text_type, "text": final_text})
-                        response_inputs.append({"role": original_role, "content": contents})
                     case ImageContent():
                         image_url = ""
                         if content.data_uri:
@@ -699,19 +712,20 @@ class ResponsesAgentThreadActions:
                             image_url = str(content.uri)
 
                         if not image_url:
-                            ValueError("ImageContent must have either a data_uri or uri set to be used in the request.")
+                            raise ValueError(
+                                "ImageContent must have either a data_uri or uri set to be used in the request."
+                            )
 
                         contents.append({"type": "input_image", "image_url": image_url})
-                        response_inputs.append({"role": original_role, "content": contents})
                     case FunctionCallContent():
-                        fc_dict = {
-                            "type": "function_call",
-                            "id": content.id,
-                            "call_id": content.call_id,
-                            "name": content.name,
-                            "arguments": content.arguments,
-                        }
-                        response_inputs.append(fc_dict)
+                        if not store_enabled:
+                            fc_dict = {
+                                "type": "function_call",
+                                "call_id": content.call_id,
+                                "name": content.name,
+                                "arguments": content.arguments,
+                            }
+                            response_inputs.append(fc_dict)
                     case FunctionResultContent():
                         rfrc_dict = {
                             "type": "function_call_output",
@@ -719,6 +733,54 @@ class ResponsesAgentThreadActions:
                             "call_id": content.call_id,
                         }
                         response_inputs.append(rfrc_dict)
+                    case BinaryContent() if content.can_read:
+                        # Generate filename with appropriate extension based on mime type
+                        extension = ""
+                        if content.mime_type == "application/pdf":
+                            extension = ".pdf"
+                        elif content.mime_type.startswith("text/"):
+                            extension = ".txt"
+                        elif content.mime_type.startswith("image/"):
+                            # For image content, warn that ImageContent class should be used instead
+                            logger.warning(
+                                f"Using BinaryContent for image type '{content.mime_type}'. "
+                                "Use ImageContent for handling of images."
+                            )
+                            extension = f".{content.mime_type.split('/')[-1]}"
+                        elif content.mime_type.startswith("audio/"):
+                            # For audio content, warn that AudioContent class should be used instead
+                            logger.warning(
+                                f"Use BinaryContent for audio type '{content.mime_type}'. "
+                                "Use AudioContent for handling of audio."
+                            )
+                            extension = f".{content.mime_type.split('/')[-1]}"
+                        else:
+                            # For other binary types, use generic extension based on MIME type
+                            # or fallback to .bin for application/octet-stream
+                            mime_subtype = (
+                                content.mime_type.split("/")[-1]
+                                if "/" in content.mime_type
+                                else "application/octet-stream"
+                            )
+                            extension = f".{mime_subtype}"
+                            logger.warning(
+                                f"Using binary content with mime type '{content.mime_type}' "
+                                f"which may not be supported by the OpenAI Responses API"
+                            )
+
+                        filename = f"{uuid.uuid4()}{extension}"
+
+                        # Format according to OpenAI Responses API specification
+                        file_data_uri = f"data:{content.mime_type};base64,{content.data_string}"
+                        contents.append({
+                            "type": "input_file",
+                            "filename": filename,
+                            "file_data": file_data_uri,
+                        })
+
+            # Add the collected contents to response_inputs only once per message
+            if contents:
+                response_inputs.append({"role": original_role, "content": contents})
 
         return response_inputs
 
@@ -814,7 +876,7 @@ class ResponsesAgentThreadActions:
             metadata=metadata,
             role=AuthorRole(role_str),
             items=items,
-            status=Status(response.status) if hasattr(response, "status") else None,
+            status=Status(response.status) if getattr(response, "status", None) is not None else None,  # type: ignore
         )
 
     @classmethod
@@ -972,7 +1034,7 @@ class ResponsesAgentThreadActions:
 
         # TODO(evmattso): make sure to respect filters on FCB
         if kernel.plugins:
-            funcs = agent.kernel.get_full_list_of_function_metadata()
+            funcs = kernel.get_full_list_of_function_metadata()
             tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools

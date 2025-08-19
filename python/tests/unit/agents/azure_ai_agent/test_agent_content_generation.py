@@ -28,6 +28,8 @@ from azure.ai.agents.models import (
     MessageTextUrlCitationDetails,
     RequiredFunctionToolCall,
     RunStep,
+    RunStepBingCustomSearchToolCall,
+    RunStepBingGroundingToolCall,
     RunStepDeltaFunction,
     RunStepDeltaFunctionToolCall,
     RunStepDeltaToolCallObject,
@@ -38,6 +40,7 @@ from azure.ai.agents.models import (
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_annotation_content,
+    generate_bing_grounding_content,
     generate_code_interpreter_content,
     generate_function_call_content,
     generate_function_result_content,
@@ -407,3 +410,53 @@ def test_generate_code_interpreter_content():
 def test_generate_streaming_code_interpreter_content_no_calls():
     step_details = type("Details", (), {"tool_calls": None})
     assert generate_streaming_code_interpreter_content("my_agent", step_details) is None
+
+
+def test_generate_bing_grounding_content():
+    """Test generate_bing_grounding_content with RunStepBingGroundingToolCall."""
+    bing_grounding_tool_call = RunStepBingGroundingToolCall(
+        id="call_gvgTmSL4hgdxWP4O7LLnwMlt",
+        bing_grounding={
+            "requesturl": "https://api.bing.microsoft.com/v7.0/search?q=search",
+            "response_metadata": "{'market': 'en-US', 'num_docs_retrieved': 5, 'num_docs_actually_used': 5}",
+        },
+    )
+
+    msg = generate_bing_grounding_content("my_agent", bing_grounding_tool_call)
+
+    assert len(msg.items) == 1
+    assert msg.role == AuthorRole.ASSISTANT
+    assert isinstance(msg.items[0], FunctionCallContent)
+    assert msg.items[0].id == "call_gvgTmSL4hgdxWP4O7LLnwMlt"
+    assert msg.items[0].name == "bing_grounding"
+    assert msg.items[0].function_name == "bing_grounding"
+    assert msg.items[0].arguments["requesturl"] == "https://api.bing.microsoft.com/v7.0/search?q=search"
+    assert msg.items[0].arguments["response_metadata"] == (
+        "{'market': 'en-US', 'num_docs_retrieved': 5, 'num_docs_actually_used': 5}"
+    )
+
+
+def test_generate_bing_custom_search_content():
+    """Test generate_bing_grounding_content with RunStepBingCustomSearchToolCall."""
+    bing_custom_search_tool_call = RunStepBingCustomSearchToolCall(
+        id="call_abc123def456ghi",
+        bing_custom_search={
+            "query": "semantic kernel python",
+            "custom_config_id": "config_123",
+            "search_results": "{'num_results': 10, 'top_result': 'Microsoft Semantic Kernel'}",
+        },
+    )
+
+    msg = generate_bing_grounding_content("my_agent", bing_custom_search_tool_call)
+
+    assert len(msg.items) == 1
+    assert msg.role == AuthorRole.ASSISTANT
+    assert isinstance(msg.items[0], FunctionCallContent)
+    assert msg.items[0].id == "call_abc123def456ghi"
+    assert msg.items[0].name == "bing_custom_search"
+    assert msg.items[0].function_name == "bing_custom_search"
+    assert msg.items[0].arguments["query"] == "semantic kernel python"
+    assert msg.items[0].arguments["custom_config_id"] == "config_123"
+    assert msg.items[0].arguments["search_results"] == (
+        "{'num_results': 10, 'top_result': 'Microsoft Semantic Kernel'}"
+    )

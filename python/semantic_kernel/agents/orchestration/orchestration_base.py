@@ -34,6 +34,7 @@ TOut = TypeVar("TOut", default=DefaultTypeAlias)
 class OrchestrationResult(KernelBaseModel, Generic[TOut]):
     """The result of an invocation of an orchestration."""
 
+    background_task: asyncio.Task | None = None
     value: TOut | None = None
     exception: BaseException | None = None
     event: asyncio.Event = Field(default_factory=asyncio.Event)
@@ -205,6 +206,11 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             orchestration_result.value = transformed_result
             orchestration_result.event.set()
 
+        def inner_exception_callback(exception: BaseException) -> None:
+            nonlocal orchestration_result
+            orchestration_result.exception = exception
+            orchestration_result.event.set()
+
         # This unique topic type is used to isolate the orchestration run from others.
         internal_topic_type = uuid.uuid4().hex
 
@@ -212,6 +218,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             runtime,
             internal_topic_type=internal_topic_type,
             result_callback=result_callback,
+            exception_callback=inner_exception_callback,
         )
 
         if isinstance(task, str):
@@ -235,8 +242,8 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             )
         )
 
-        # Add a callback to surface any exceptions that occur during the task execution.
-        def exception_callback(task: asyncio.Task) -> None:
+        # Add a callback to surface any exceptions that occur during outside of the runtime.
+        def outer_exception_callback(task: asyncio.Task) -> None:
             nonlocal orchestration_result
             try:
                 task.result()
@@ -244,7 +251,8 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
                 orchestration_result.exception = e
                 orchestration_result.event.set()
 
-        background_task.add_done_callback(exception_callback)
+        background_task.add_done_callback(outer_exception_callback)
+        orchestration_result.background_task = background_task
 
         return orchestration_result
 
@@ -271,6 +279,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions.
@@ -278,8 +287,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
         Args:
             runtime (CoreRuntime): The runtime environment for the agents.
             internal_topic_type (str): The internal topic type for the orchestration that this actor is part of.
-            external_topic_type (str | None): The external topic type for the orchestration.
-            direct_actor_type (str | None): The direct actor type for which this actor will relay the output message to.
+            exception_callback (Callable): A function that is called when an exception occurs.
             result_callback (Callable): A function that is called when the result is available.
         """
         pass

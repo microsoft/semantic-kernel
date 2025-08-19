@@ -31,7 +31,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
+from tests.unit.agents.orchestration.conftest import MockAgent, MockAgentWithException, MockRuntime
 
 
 class MockChatCompletionService(ChatCompletionClientBase):
@@ -200,7 +200,7 @@ async def test_invoke():
         try:
             orchestration = MagenticOrchestration(members=[agent_a, agent_b], manager=manager)
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            result = await orchestration_result.get()
+            result = await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 
@@ -242,7 +242,42 @@ async def test_invoke_with_list_error():
     ):
         orchestration = MagenticOrchestration(members=[agent_a, agent_b], manager=manager)
         orchestration_result = await orchestration.invoke(task=messages, runtime=runtime)
-        await orchestration_result.get()
+        await orchestration_result.get(1.0)
+
+
+async def test_invoke_with_agent_raising_exception():
+    """Test the invoke method of the MagenticOrchestration with a list of messages which raises an error."""
+    with (
+        patch.object(
+            MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
+        ) as mock_get_chat_message_content,
+        patch.object(
+            StandardMagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
+        ),
+    ):
+        mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
+        chat_completion_service = MockChatCompletionService(ai_model_id="test")
+        prompt_execution_settings = MockPromptExecutionSettings()
+
+        manager = StandardMagenticManager(
+            chat_completion_service=chat_completion_service,
+            prompt_execution_settings=prompt_execution_settings,
+        )
+
+        agent_a = MockAgentWithException(name="agent_a", description="test agent")
+        agent_b = MockAgent(name="agent_b", description="test agent")
+
+        runtime = InProcessRuntime()
+        runtime.start()
+
+        orchestration = MagenticOrchestration(members=[agent_a, agent_b], manager=manager)
+        try:
+            orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+            with pytest.raises(RuntimeError, match="Mock agent exception"):
+                await orchestration_result.get(1.0)
+            assert orchestration_result.exception is not None
+        finally:
+            await runtime.stop_when_idle()
 
 
 @pytest.mark.skipif(
@@ -425,7 +460,8 @@ async def test_invoke_with_max_round_count_exceeded():
         finally:
             await runtime.stop_when_idle()
 
-        assert result.content == "Max round count reached."
+        # Partial result will be returned when max round count is exceeded.
+        assert result.content == mock_get_chat_message_content.return_value.content
         assert mock_invoke_stream.call_count == 1
         # Planning will be called once, so the facts and plan will be created once.
         assert mock_get_chat_message_content.call_count == 2
@@ -472,7 +508,9 @@ async def test_invoke_with_max_reset_count_exceeded():
         finally:
             await runtime.stop_when_idle()
 
-        assert result.content == "Max reset count reached."
+        # Partial result will be returned when max reset count is exceeded. The test emits content based on the prompt
+        # so check that the content is not None and not an exact match to a mock response.
+        assert result.content is not None
         assert mock_invoke_stream.call_count == 1
         # Planning and replanning will be each called once, so the facts and plan will be created twice.
         assert mock_get_chat_message_content.call_count == 4
@@ -513,7 +551,7 @@ async def test_invoke_with_unknown_speaker():
                 ),
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
-            await orchestration_result.get()
+            await orchestration_result.get(1.0)
         finally:
             await runtime.stop_when_idle()
 

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -18,9 +20,22 @@ internal sealed class AzureAIChannel(PersistentAgentsClient client, string threa
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
+        const string ErrorMessage = "The message could not be added to the thread due to an error response from the service.";
+
         foreach (ChatMessageContent message in history)
         {
-            await AgentThreadActions.CreateMessageAsync(client, threadId, message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await AgentThreadActions.CreateMessageAsync(client, threadId, message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (RequestFailedException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+            catch (AggregateException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
         }
     }
 

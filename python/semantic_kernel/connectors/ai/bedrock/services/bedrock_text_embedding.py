@@ -20,12 +20,13 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    BedrockModelProvider,
     get_text_embedding_request_body,
     parse_text_embedding_response,
 )
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.async_utils import run_in_executor
 
 if TYPE_CHECKING:
@@ -38,6 +39,7 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
     def __init__(
         self,
         model_id: str | None = None,
+        model_provider: BedrockModelProvider | None = None,
         service_id: str | None = None,
         runtime_client: Any | None = None,
         client: Any | None = None,
@@ -48,6 +50,7 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
 
         Args:
             model_id: The Amazon Bedrock text embedding model ID to use.
+            model_provider: The Bedrock model provider to use.
             service_id: The Service ID for the text embedding service.
             runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
@@ -57,6 +60,7 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
         try:
             bedrock_settings = BedrockSettings(
                 embedding_model_id=model_id,
+                model_provider=model_provider,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -71,6 +75,7 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
             service_id=service_id or bedrock_settings.embedding_model_id,
             runtime_client=runtime_client,
             client=client,
+            bedrock_model_provider=bedrock_settings.model_provider,
         )
 
     @override
@@ -80,13 +85,6 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> ndarray:
-        model_info = await self.get_foundation_model_info(self.ai_model_id)
-        if "TEXT" not in model_info.get("inputModalities", []):
-            # Image embedding is not supported yet in SK
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support text input.")
-        if "EMBEDDING" not in model_info.get("outputModalities", []):
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support embedding output.")
-
         if not settings:
             settings = BedrockEmbeddingPromptExecutionSettings()
         elif not isinstance(settings, BedrockEmbeddingPromptExecutionSettings):
@@ -94,12 +92,25 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
         assert isinstance(settings, BedrockEmbeddingPromptExecutionSettings)  # nosec
 
         results = await asyncio.gather(*[
-            self._async_invoke_model(get_text_embedding_request_body(self.ai_model_id, text, settings))
+            self._async_invoke_model(
+                get_text_embedding_request_body(
+                    self.ai_model_id,
+                    text,
+                    settings,
+                    model_provider=self.bedrock_model_provider,
+                )
+            )
             for text in texts
         ])
 
         return array([
-            array(parse_text_embedding_response(self.ai_model_id, json.loads(result.get("body").read())))
+            array(
+                parse_text_embedding_response(
+                    self.ai_model_id,
+                    json.loads(result.get("body").read()),
+                    model_provider=self.bedrock_model_provider,
+                )
+            )
             for result in results
         ])
 

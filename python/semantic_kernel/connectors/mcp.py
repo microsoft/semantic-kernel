@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import re
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
@@ -24,6 +25,7 @@ from mcp.shared.session import RequestResponder
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -80,20 +82,28 @@ def _mcp_prompt_message_to_kernel_content(
 @experimental
 def _mcp_call_tool_result_to_kernel_contents(
     mcp_type: types.CallToolResult,
-) -> list[TextContent | ImageContent | BinaryContent]:
+) -> list[TextContent | ImageContent | BinaryContent | AudioContent]:
     """Convert a MCP container type to a Semantic Kernel type."""
     return [_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]
 
 
 @experimental
 def _mcp_content_types_to_kernel_content(
-    mcp_type: types.ImageContent | types.TextContent | types.EmbeddedResource,
-) -> TextContent | ImageContent | BinaryContent:
+    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource | types.ResourceLink,
+) -> TextContent | ImageContent | BinaryContent | AudioContent:
     """Convert a MCP type to a Semantic Kernel type."""
     if isinstance(mcp_type, types.TextContent):
         return TextContent(text=mcp_type.text, inner_content=mcp_type)
     if isinstance(mcp_type, types.ImageContent):
         return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+    if isinstance(mcp_type, types.AudioContent):
+        return AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+    if isinstance(mcp_type, types.ResourceLink):
+        return BinaryContent(
+            uri=mcp_type.uri,  # type: ignore
+            mime_type=mcp_type.mimeType,
+            inner_content=mcp_type,
+        )
     # subtypes of EmbeddedResource
     if isinstance(mcp_type.resource, types.TextResourceContents):
         return TextContent(
@@ -110,13 +120,15 @@ def _mcp_content_types_to_kernel_content(
 
 @experimental
 def _kernel_content_to_mcp_content_types(
-    content: TextContent | ImageContent | BinaryContent | ChatMessageContent,
-) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    content: TextContent | ImageContent | BinaryContent | AudioContent | ChatMessageContent,
+) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
     """Convert a kernel content type to a MCP type."""
     if isinstance(content, TextContent):
         return [types.TextContent(type="text", text=content.text)]
     if isinstance(content, ImageContent):
         return [types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type)]
+    if isinstance(content, AudioContent):
+        return [types.AudioContent(type="audio", data=content.data_string, mimeType=content.mime_type)]
     if isinstance(content, BinaryContent):
         return [
             types.EmbeddedResource(
@@ -127,9 +139,9 @@ def _kernel_content_to_mcp_content_types(
             )
         ]
     if isinstance(content, ChatMessageContent):
-        messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
+        messages: list[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource] = []
         for item in content.items:
-            if isinstance(item, (TextContent, ImageContent, BinaryContent)):
+            if isinstance(item, (TextContent, ImageContent, BinaryContent, AudioContent)):
                 messages.extend(_kernel_content_to_mcp_content_types(item))
             else:
                 logger.debug("Unsupported content type: %s", type(item))
@@ -177,6 +189,12 @@ def _get_parameter_dicts_from_mcp_tool(tool: types.Tool) -> list[dict[str, Any]]
     return params
 
 
+@experimental
+def _normalize_mcp_name(name: str) -> str:
+    """Normalize MCP tool/prompt names to allowed identifier pattern (A-Za-z0-9_.-)."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "-", name)
+
+
 # region: MCP Plugin
 
 
@@ -203,14 +221,53 @@ class MCPPluginBase:
         self.session = session
         self.kernel = kernel or None
         self.request_timeout = request_timeout
+        self._current_task: asyncio.Task | None = None
+        self._stop_event: asyncio.Event | None = None
+
+    async def __aenter__(self) -> Self:
+        """Enter the context manager."""
+        await self.connect()
+        return self
+
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
+    ) -> None:
+        """Exit the context manager."""
+        await self.close()
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
+        ready_event = asyncio.Event()
+        try:
+            self._current_task = asyncio.create_task(self._inner_connect(ready_event))
+            await ready_event.wait()
+        except KernelPluginInvalidConfigurationError:
+            ready_event.clear()
+            raise
+        except Exception as ex:
+            ready_event.clear()
+            await self.close()
+            raise FunctionExecutionException("Failed to enter context manager.") from ex
+
+    async def close(self) -> None:
+        """Disconnect from the MCP server."""
+        if self._stop_event:
+            # Signal the stop event, which asks the _inner_connect
+            # method to close the session with the exit stack
+            self._stop_event.set()
+        if self._current_task:
+            # After, the signal, we wait for it to close the exit stack.
+            await self._current_task
+            self._current_task = None
+        self.session = None
+
+    async def _inner_connect(self, ready_event: asyncio.Event) -> None:
         if not self.session:
             try:
                 transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to connect to the MCP server. Please check your configuration."
                 ) from ex
@@ -230,7 +287,13 @@ class MCPPluginBase:
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
-            await session.initialize()
+            try:
+                await session.initialize()
+            except Exception as ex:
+                await self._exit_stack.aclose()
+                raise KernelPluginInvalidConfigurationError(
+                    "Failed to initialize session. Please check your configuration."
+                ) from ex
             self.session = session
         elif self.session._request_id == 0:
             # If the session is not initialized, we need to reinitialize it
@@ -248,6 +311,16 @@ class MCPPluginBase:
                 )
             except Exception:
                 logger.warning("Failed to set log level to %s", logger.level)
+        # Setting up is complete, will now signal the main loop that we are ready
+        ready_event.set()
+        # Create a stop event to signal the exit stack to close
+        self._stop_event = asyncio.Event()
+        await self._stop_event.wait()
+        try:
+            await self._exit_stack.aclose()
+        except Exception as e:
+            logger.exception("Error during exit stack close", exc_info=e)
+            pass
 
     async def sampling_callback(
         self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
@@ -366,11 +439,12 @@ class MCPPluginBase:
         except Exception:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
-            func = kernel_function(name=prompt.name, description=prompt.description)(
+            local_name = _normalize_mcp_name(prompt.name)
+            func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
             func.__kernel_function_parameters__ = _get_parameter_dict_from_mcp_prompt(prompt)
-            setattr(self, prompt.name, func)
+            setattr(self, local_name, func)
 
     async def load_tools(self):
         """Load tools from the MCP server."""
@@ -380,14 +454,10 @@ class MCPPluginBase:
             tool_list = None
             # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
-            func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
+            local_name = _normalize_mcp_name(tool.name)
+            func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
-            setattr(self, tool.name, func)
-
-    async def close(self) -> None:
-        """Disconnect from the MCP server."""
-        await self._exit_stack.aclose()
-        self.session = None
+            setattr(self, local_name, func)
 
     @abstractmethod
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
@@ -428,23 +498,6 @@ class MCPPluginBase:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call prompt '{prompt_name}'.") from ex
-
-    async def __aenter__(self) -> Self:
-        """Enter the context manager."""
-        try:
-            await self.connect()
-            return self
-        except KernelPluginInvalidConfigurationError:
-            raise
-        except Exception as ex:
-            await self._exit_stack.aclose()
-            raise FunctionExecutionException("Failed to enter context manager.") from ex
-
-    async def __aexit__(
-        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: Any
-    ) -> None:
-        """Exit the context manager."""
-        await self.close()
 
     def added_to_kernel(self, kernel: Kernel) -> None:
         """Add the plugin to the kernel."""
@@ -882,29 +935,37 @@ def create_mcp_server_from_kernel(
             return tools
 
         @server.call_tool()
-        async def _call_tool(*args: Any) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        async def _call_tool(
+            *args: Any,
+        ) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
             """Call a tool in the kernel."""
             await _log(level="debug", data=f"Calling tool with args: {args}")
             function_name, arguments = args[0], args[1]
             result = await _call_kernel_function(function_name, arguments)
             if result:
                 value = result.value
-                messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
+                messages: list[
+                    types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource
+                ] = []
                 if isinstance(value, list):
                     for item in value:
-                        if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
-                            messages.extend(_kernel_content_to_mcp_content_types(item))
-                        else:
-                            messages.append(
-                                types.TextContent(type="text", text=str(item)),
-                            )
+                        match item:
+                            case (
+                                TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent()
+                            ):
+                                messages.extend(_kernel_content_to_mcp_content_types(item))
+                            case _:
+                                messages.append(
+                                    types.TextContent(type="text", text=str(item)),
+                                )
                 else:
-                    if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
-                        messages.extend(_kernel_content_to_mcp_content_types(value))
-                    else:
-                        messages.append(
-                            types.TextContent(type="text", text=str(value)),
-                        )
+                    match value:
+                        case TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent():
+                            messages.extend(_kernel_content_to_mcp_content_types(value))
+                        case _:
+                            messages.append(
+                                types.TextContent(type="text", text=str(value)),
+                            )
                 return messages
             raise McpError(
                 error=types.ErrorData(
