@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -295,7 +297,7 @@ public static partial class OpenApiKernelPluginFactory
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
                 ParameterType = ConvertParameterDataType(p),
-                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
+                Schema = GetSchema(p)
             })
             .ToList();
 
@@ -327,6 +329,28 @@ public static partial class OpenApiKernelPluginFactory
                 LoggerFactory = loggerFactory,
                 AdditionalMetadata = new ReadOnlyDictionary<string, object?>(additionalMetadata),
             });
+    }
+
+    private static KernelJsonSchema? GetSchema(RestApiParameter p)
+    {
+        // Add description to the schema.
+        if (p.Schema is not null && !string.IsNullOrEmpty(p.Description))
+        {
+            const string DescriptionPropertyName = "description";
+
+            // If the schema does not already have a description, add it.
+            if (!p.Schema.RootElement.TryGetProperty(DescriptionPropertyName, out var _))
+            {
+                var originalSchema = JsonSerializer.Serialize(p.Schema.RootElement);
+                if (JsonNode.Parse(originalSchema) is JsonObject obj)
+                {
+                    obj.Add(DescriptionPropertyName, p.Description);
+                    p.Schema = KernelJsonSchema.Parse(obj.ToString());
+                }
+            }
+        }
+
+        return p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}"""));
     }
 
     #region private
