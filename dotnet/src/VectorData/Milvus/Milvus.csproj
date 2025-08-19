@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Milvus.Client"/>
+    <PackageReference Include="System.Text.Json"/>
   </ItemGroup>
 
   <ItemGroup>
