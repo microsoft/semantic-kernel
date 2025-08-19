@@ -8,6 +8,7 @@ from collections.abc import Awaitable, Callable
 from io import BytesIO
 from typing import Annotated, Any
 
+from azure.core.credentials import TokenCredential
 from httpx import AsyncClient, HTTPStatusError
 from pydantic import ValidationError
 
@@ -46,6 +47,7 @@ class SessionsPythonTool(KernelBaseModel):
         http_client: AsyncClient | None = None,
         env_file_path: str | None = None,
         token_endpoint: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
@@ -66,7 +68,7 @@ class SessionsPythonTool(KernelBaseModel):
             http_client = AsyncClient(timeout=5)
 
         if auth_callback is None:
-            auth_callback = self._default_auth_callback(aca_settings)
+            auth_callback = self._default_auth_callback(aca_settings, credential)
 
         super().__init__(
             pool_management_endpoint=aca_settings.pool_management_endpoint,
@@ -77,9 +79,11 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
     # region Helper Methods
-    def _default_auth_callback(self, aca_settings: ACASessionsSettings) -> Callable[..., Any | Awaitable[Any]]:
+    def _default_auth_callback(
+        self, aca_settings: ACASessionsSettings, credential: TokenCredential
+    ) -> Callable[..., Any | Awaitable[Any]]:
         """Generates a default authentication callback using the ACA settings."""
-        token = aca_settings.get_sessions_auth_token()
+        token = aca_settings.get_sessions_auth_token(credential=credential)
 
         if token is None:
             raise FunctionInitializationError("Failed to retrieve the client auth token.")

@@ -18,10 +18,11 @@ from semantic_kernel.kernel import Kernel
 kernel = Kernel()
 
 service_id = "sessions-tool"
-chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
+credential = AzureCliCredential()
+chat_service = AzureChatCompletion(service_id=service_id, credential=credential)
 kernel.add_service(chat_service)
 
-sessions_tool = SessionsPythonTool()
+sessions_tool = SessionsPythonTool(credential=credential)
 
 kernel.add_plugin(sessions_tool, "SessionsTool")
 kernel.add_plugin(TimePlugin(), "Time")

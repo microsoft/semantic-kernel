@@ -27,12 +27,14 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
 
 
 async def main():
+    credential = AzureCliCredential()
+
     # 1. Create the python code interpreter tool using the SessionsPythonTool
-    python_code_interpreter = SessionsPythonTool()
+    python_code_interpreter = SessionsPythonTool(credential=credential)
 
     # 2. Create the agent
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(credential=AzureCliCredential()),
+        service=AzureChatCompletion(credential=credential),
         name="Host",
         instructions="Answer questions about the menu.",
         plugins=[python_code_interpreter],

@@ -13,10 +13,11 @@ async def main():
     kernel = Kernel()
 
     service_id = "python-code-interpreter"
-    chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
+    credential = AzureCliCredential()
+    chat_service = AzureChatCompletion(service_id=service_id, credential=credential)
     kernel.add_service(chat_service)
 
-    python_code_interpreter = SessionsPythonTool()
+    python_code_interpreter = SessionsPythonTool(credential=credential)
 
     sessions_tool = kernel.add_plugin(python_code_interpreter, "PythonCodeInterpreter")
 
