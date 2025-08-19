@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
 from semantic_kernel.kernel import Kernel
@@ -11,9 +13,7 @@ async def main():
     kernel = Kernel()
 
     service_id = "python-code-interpreter"
-    chat_service = AzureChatCompletion(
-        service_id=service_id,
-    )
+    chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
     kernel.add_service(chat_service)
 
     python_code_interpreter = SessionsPythonTool()

@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -77,7 +79,7 @@ class MenuPlugin:
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()))
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
     return kernel
 

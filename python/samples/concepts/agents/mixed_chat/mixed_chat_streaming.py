@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
@@ -35,7 +37,7 @@ class ApprovalTerminationStrategy(TerminationStrategy):
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()))
     return kernel
 
 

@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
@@ -38,7 +40,7 @@ async def main():
         env={"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")},
     ) as github_plugin:
         agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=AzureCliCredential()),
             name="IssueAgent",
             instructions="Answer questions about the Microsoft semantic-kernel github project.",
             plugins=[github_plugin],

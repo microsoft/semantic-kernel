@@ -566,7 +566,7 @@ class CosmosNoSqlBase(KernelBaseModel):
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        credential: "AsyncTokenCredential" | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs,
     ):
         """Initialize the CosmosNoSqlBase.
@@ -682,7 +682,7 @@ class CosmosNoSqlCollection(
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        credential: "AsyncTokenCredential" | None = None,
+        credential: AsyncTokenCredential | None = None,
     ):
         """Initializes a new instance of the CosmosNoSqlCollection class.
 
@@ -1028,7 +1028,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        credential: "AsyncTokenCredential" | None = None,
+        credential: AsyncTokenCredential | None = None,
     ):
         """Initialize the CosmosNoSqlStore.
 

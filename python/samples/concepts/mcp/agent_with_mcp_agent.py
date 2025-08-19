@@ -4,6 +4,8 @@ import asyncio
 import os
 from pathlib import Path
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
@@ -54,7 +56,7 @@ async def main():
         ) as booking_agent,
     ):
         agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=AzureCliCredential()),
             name="PersonalAssistant",
             instructions="Help the user with restaurant bookings.",
             plugins=[restaurant_agent, booking_agent, TimePlugin()],

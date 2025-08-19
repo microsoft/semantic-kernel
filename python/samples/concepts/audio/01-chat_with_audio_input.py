@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.audio.audio_recorder import AudioRecorder
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAudioToText,
@@ -38,7 +40,7 @@ flowery prose.
 """
 
 
-chat_service = AzureChatCompletion()
+chat_service = AzureChatCompletion(credential=AzureCliCredential())
 audio_to_text_service = AzureAudioToText()
 
 history = ChatHistory()

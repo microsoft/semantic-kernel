@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
@@ -16,9 +18,7 @@ from semantic_kernel.kernel import Kernel
 kernel = Kernel()
 
 service_id = "sessions-tool"
-chat_service = AzureChatCompletion(
-    service_id=service_id,
-)
+chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
 kernel.add_service(chat_service)
 
 sessions_tool = SessionsPythonTool()

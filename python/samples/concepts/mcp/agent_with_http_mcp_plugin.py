@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.mcp import MCPStreamableHttpPlugin
@@ -32,7 +34,7 @@ async def main():
         url="https://learn.microsoft.com/api/mcp",
     ) as learn_plugin:
         agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=AzureCliCredential()),
             name="DocsAgent",
             instructions="Answer questions about the Microsoft's Semantic Kernel SDK.",
             plugins=[learn_plugin],

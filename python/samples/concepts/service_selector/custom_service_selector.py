@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -46,7 +48,7 @@ class CustomServiceSelector(AIServiceSelector):
 
 
 kernel = Kernel(ai_service_selector=CustomServiceSelector())
-kernel.add_service(AzureChatCompletion(service_id="gpt-4o"))
+kernel.add_service(AzureChatCompletion(service_id="gpt-4o", credential=AzureCliCredential()))
 kernel.add_service(OpenAIChatCompletion(service_id="gpt-3.5-turbo", ai_model_id="gpt-3.5-turbo"))
 
 kernel.add_function(

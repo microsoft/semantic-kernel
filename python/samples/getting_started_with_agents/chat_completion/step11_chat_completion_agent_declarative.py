@@ -3,6 +3,7 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel import Kernel
@@ -91,7 +92,7 @@ async def main():
 
     # 7. Create the agent from YAML + inject the AI service
     agent: ChatCompletionAgent = await AgentRegistry.create_from_yaml(
-        AGENT_YAML, kernel=kernel, service=AzureChatCompletion(), arguments=arguments
+        AGENT_YAML, kernel=kernel, service=AzureChatCompletion(credential=AzureCliCredential()), arguments=arguments
     )
 
     # 8. Create a thread to hold the conversation

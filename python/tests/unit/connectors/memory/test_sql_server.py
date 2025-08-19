@@ -271,7 +271,7 @@ async def test_get_mssql_connection(connection_string):
 
         settings = SqlSettings(connection_string=connection_string)
         with patch("semantic_kernel.connectors.sql_server.AsyncTokenCredential", return_value=credential):
-            connection = await _get_mssql_connection(settings)
+            connection = await _get_mssql_connection(settings, credential=credential)
             assert connection is not None
             assert isinstance(connection, MagicMock)
             if "uid" in connection_string:

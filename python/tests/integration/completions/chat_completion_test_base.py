@@ -125,7 +125,10 @@ class ChatCompletionTestBase(CompletionTestBase):
 
         return {
             "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
-            "azure": (AzureChatCompletion() if azure_openai_setup else None, AzureChatPromptExecutionSettings),
+            "azure": (
+                AzureChatCompletion(credential=credential) if azure_openai_setup else None,
+                AzureChatPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
             "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
