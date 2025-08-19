@@ -152,7 +152,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         token_scope: str | None = None,
-        credential: TokenCredential | None,
+        credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> AsyncAzureOpenAI:
         """A method to create the Azure OpenAI client.

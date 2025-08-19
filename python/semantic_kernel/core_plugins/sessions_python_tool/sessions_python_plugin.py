@@ -80,7 +80,7 @@ class SessionsPythonTool(KernelBaseModel):
 
     # region Helper Methods
     def _default_auth_callback(
-        self, aca_settings: ACASessionsSettings, credential: TokenCredential
+        self, aca_settings: ACASessionsSettings, credential: TokenCredential | None
     ) -> Callable[..., Any | Awaitable[Any]]:
         """Generates a default authentication callback using the ACA settings."""
         token = aca_settings.get_sessions_auth_token(credential=credential)
