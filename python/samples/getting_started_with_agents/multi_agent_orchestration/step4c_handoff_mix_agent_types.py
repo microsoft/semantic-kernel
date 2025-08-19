@@ -110,7 +110,7 @@ async def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
     )
 
     # An Azure Responses agent that is backed by the Azure OpenAI Responses API
-    azure_responses_agent_client = AzureResponsesAgent.create_client()
+    azure_responses_agent_client = AzureResponsesAgent.create_client(credential=credential)
     order_status_agent = AzureResponsesAgent(
         ai_model_id=AzureOpenAISettings().responses_deployment_name,
         client=azure_responses_agent_client,
