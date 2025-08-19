@@ -68,7 +68,7 @@ public class CloudDrivePluginTests
         CloudDrivePlugin target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetFileContentAsync(anyFilePath);
+        string? actual = await target.GetFileContentAsync(anyFilePath);
 
         // Assert
         Assert.Equal(expectedContent, actual);
