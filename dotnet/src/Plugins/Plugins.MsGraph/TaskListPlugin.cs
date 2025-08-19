@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -20,16 +21,24 @@ public sealed class TaskListPlugin
 {
     private readonly ITaskManagementConnector _connector;
     private readonly ILogger _logger;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+    private static readonly JsonSerializerOptions s_options = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskListPlugin"/> class.
     /// </summary>
     /// <param name="connector">Task list connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public TaskListPlugin(ITaskManagementConnector connector, ILoggerFactory? loggerFactory = null)
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization. If null, default options will be used.</param>
+    public TaskListPlugin(ITaskManagementConnector connector, ILoggerFactory? loggerFactory = null, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
+        this._jsonSerializerOptions = jsonSerializerOptions ?? s_options;
         this._connector = connector;
         this._logger = loggerFactory?.CreateLogger(typeof(TaskListPlugin)) ?? NullLogger.Instance;
     }
@@ -92,6 +101,6 @@ public sealed class TaskListPlugin
         }
 
         IEnumerable<TaskManagementTask>? tasks = await this._connector.GetTasksAsync(defaultTaskList.Id!, includeCompletedValue, cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Serialize(tasks);
+        return JsonSerializer.Serialize(tasks, s_options);
     }
 }

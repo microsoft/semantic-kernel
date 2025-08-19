@@ -22,6 +22,7 @@ public sealed class CalendarPlugin
 {
     private readonly ICalendarConnector _connector;
     private readonly ILogger _logger;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
@@ -34,9 +35,12 @@ public sealed class CalendarPlugin
     /// </summary>
     /// <param name="connector">Calendar connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public CalendarPlugin(ICalendarConnector connector, ILoggerFactory? loggerFactory = null)
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization. If null, default options will be used.</param>
+    public CalendarPlugin(ICalendarConnector connector, ILoggerFactory? loggerFactory = null, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Ensure.NotNull(connector, nameof(connector));
+
+        this._jsonSerializerOptions = jsonSerializerOptions ?? s_options;
 
         this._connector = connector;
         this._logger = loggerFactory?.CreateLogger(typeof(CalendarPlugin)) ?? NullLogger.Instance;
@@ -94,6 +98,6 @@ public sealed class CalendarPlugin
             cancellationToken
         ).ConfigureAwait(false);
 
-        return JsonSerializer.Serialize(value: events, options: s_options);
+        return JsonSerializer.Serialize(value: events, options: this._jsonSerializerOptions);
     }
 }
