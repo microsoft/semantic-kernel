@@ -85,16 +85,18 @@ async def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 
     Feel free to add or remove agents and handoff connections.
     """
+    credential = AzureCliCredential()
+
     # A Chat Completion agent that is backed by an Azure OpenAI service
     support_agent = ChatCompletionAgent(
         name="TriageAgent",
         description="A customer support agent that triages issues.",
         instructions="Handle customer requests.",
-        service=AzureChatCompletion(credential=AzureCliCredential()),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # An Azure Assistant agent that is backed by the Azure OpenAI Assistant API
-    azure_assistant_agent_client = AzureAssistantAgent.create_client()
+    azure_assistant_agent_client = AzureAssistantAgent.create_client(credential=credential)
     azure_assistant_agent_definition = await azure_assistant_agent_client.beta.assistants.create(
         model=AzureOpenAISettings().chat_deployment_name,
         description="A customer support agent that handles refunds.",

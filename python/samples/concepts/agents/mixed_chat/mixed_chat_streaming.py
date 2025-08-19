@@ -2,6 +2,7 @@
 
 import asyncio
 
+from azure.core.credentials import TokenCredential
 from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
@@ -35,16 +36,18 @@ class ApprovalTerminationStrategy(TerminationStrategy):
         return "approved" in history[-1].content.lower()
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, credential: TokenCredential) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
     return kernel
 
 
 async def main():
+    credential = AzureCliCredential()
+
     # First create a ChatCompletionAgent
     agent_reviewer = ChatCompletionAgent(
-        kernel=_create_kernel_with_chat_completion("artdirector"),
+        kernel=_create_kernel_with_chat_completion("artdirector", credential),
         name="ArtDirector",
         instructions="""
             You are an art director who has opinions about copywriting born of a love for David Ogilvy.
@@ -57,7 +60,7 @@ async def main():
     # Next, we will create the AzureAssistantAgent
 
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=credential)
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(

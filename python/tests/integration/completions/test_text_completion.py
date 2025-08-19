@@ -213,7 +213,10 @@ class TestTextCompletion(CompletionTestBase):
 
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
-            "azure": (AzureTextCompletion() if azure_openai_setup else None, OpenAITextPromptExecutionSettings),
+            "azure": (
+                AzureTextCompletion(credential=credential) if azure_openai_setup else None,
+                OpenAITextPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
