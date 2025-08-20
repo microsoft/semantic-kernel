@@ -67,6 +67,14 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
             Template = template,
             TemplateFormat = "liquid",
             Name = "ContosoChatPrompt",
+            InputVariables = new()
+            {
+                // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+                // Consider encoding for each argument to prevent prompt injection attacks.
+                // If argument value is string, encoding will be performed automatically.
+                new() { Name = "customer", AllowDangerouslySetContent = true },
+                new() { Name = "history", AllowDangerouslySetContent = true },
+            }
         };
 
         // Render the prompt
@@ -93,7 +101,14 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
         var liquidPromptYaml = EmbeddedResource.Read("LiquidPrompt.yaml");
 
         // Create the prompt function from the YAML resource
-        var templateFactory = new LiquidPromptTemplateFactory();
+        var templateFactory = new LiquidPromptTemplateFactory()
+        {
+            // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+            // Consider encoding for each argument to prevent prompt injection attacks.
+            // If argument value is string, encoding will be performed automatically.
+            AllowDangerouslySetContent = true
+        };
+
         var function = kernel.CreateFunctionFromPromptYaml(liquidPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution

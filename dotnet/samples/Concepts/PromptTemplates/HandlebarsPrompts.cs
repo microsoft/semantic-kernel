@@ -67,6 +67,14 @@ public class HandlebarsPrompts(ITestOutputHelper output) : BaseTest(output)
             Template = template,
             TemplateFormat = "handlebars",
             Name = "ContosoChatPrompt",
+            InputVariables = new()
+            {
+                // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+                // Consider encoding for each argument to prevent prompt injection attacks.
+                // If argument value is string, encoding will be performed automatically.
+                new() { Name = "customer", AllowDangerouslySetContent = true },
+                new() { Name = "history", AllowDangerouslySetContent = true },
+            }
         };
 
         // Render the prompt
@@ -93,7 +101,14 @@ public class HandlebarsPrompts(ITestOutputHelper output) : BaseTest(output)
         var handlebarsPromptYaml = EmbeddedResource.Read("HandlebarsPrompt.yaml");
 
         // Create the prompt function from the YAML resource
-        var templateFactory = new HandlebarsPromptTemplateFactory();
+        var templateFactory = new HandlebarsPromptTemplateFactory()
+        {
+            // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+            // Consider encoding for each argument to prevent prompt injection attacks.
+            // If argument value is string, encoding will be performed automatically.
+            AllowDangerouslySetContent = true
+        };
+
         var function = kernel.CreateFunctionFromPromptYaml(handlebarsPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution
