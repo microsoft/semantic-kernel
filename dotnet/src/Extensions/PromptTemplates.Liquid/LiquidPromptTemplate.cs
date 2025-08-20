@@ -180,15 +180,8 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    var value = (object)kvp.Value;
-                    if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
-                    {
-                        ctx.SetValue(kvp.Key, value.ToString()?.Replace(ColonString, ReservedString));
-                    }
-                    else
-                    {
-                        ctx.SetValue(kvp.Key, value);
-                    }
+                    var encodedValue = this.GetEncodedValueOrDefault(this._config, kvp.Key, kvp.Value);
+                    ctx.SetValue(kvp.Key, encodedValue);
                 }
             }
         }
@@ -196,22 +189,79 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         return ctx;
     }
 
-    private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    /// <summary>
+    /// Encodes argument value if necessary, or throws an exception if encoding is not supported.
+    /// </summary>
+    /// <param name="promptTemplateConfig">The prompt template configuration.</param>
+    /// <param name="propertyName">The name of the property/argument.</param>
+    /// <param name="propertyValue">The value of the property/argument.</param>
+    private object GetEncodedValueOrDefault(PromptTemplateConfig promptTemplateConfig, string propertyName, object propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
+        if (this._allowDangerouslySetContent)
         {
-            return false;
+            return propertyValue;
         }
 
         foreach (var inputVariable in promptTemplateConfig.InputVariables)
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowDangerouslySetContent;
+                if (inputVariable.AllowDangerouslySetContent)
+                {
+                    return propertyValue;
+                }
+
+                break;
             }
         }
 
-        return true;
+        var valueType = propertyValue.GetType();
+
+        var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+
+        if (underlyingType == typeof(string))
+        {
+            var stringValue = (string)propertyValue;
+            return stringValue.Replace(ColonString, ReservedString);
+        }
+
+        if (this.IsSafeType(underlyingType))
+        {
+            return propertyValue;
+        }
+
+        // For complex types, throw an exception if dangerous content is not allowed
+        throw new NotSupportedException(
+            $"Argument '{propertyName}' has a value that could potentially be used for prompt injection. " +
+            $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this input variable and implement custom encoding, " +
+            "or provide the value as a string.");
+    }
+
+    /// <summary>
+    /// Determines if a type is considered safe and doesn't require encoding.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is safe, false otherwise.</returns>
+    private bool IsSafeType(Type type)
+    {
+        return type == typeof(byte) ||
+               type == typeof(sbyte) ||
+               type == typeof(bool) ||
+               type == typeof(ushort) ||
+               type == typeof(short) ||
+               type == typeof(char) ||
+               type == typeof(uint) ||
+               type == typeof(int) ||
+               type == typeof(ulong) ||
+               type == typeof(long) ||
+               type == typeof(float) ||
+               type == typeof(double) ||
+               type == typeof(decimal) ||
+               type == typeof(TimeSpan) ||
+               type == typeof(DateTime) ||
+               type == typeof(DateTimeOffset) ||
+               type == typeof(Guid) ||
+               type.IsEnum;
     }
 
     /// <summary>
