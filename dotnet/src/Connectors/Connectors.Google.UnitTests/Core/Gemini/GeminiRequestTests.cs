@@ -694,6 +694,86 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
     }
 
+    [Fact]
+    public void ResponseSchemaStripsUnsupportedFormatFields()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var schemaWithUnsupportedFormats = """
+            {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "unique identifier"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "user email"
+                    },
+                    "status": {
+                        "type": "string",
+                        "format": "enum",
+                        "enum": ["active", "inactive"],
+                        "description": "user status"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "creation timestamp"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "format": "phone",
+                        "description": "phone number"
+                    }
+                }
+            }
+            """;
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithUnsupportedFormats)
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration?.ResponseSchema);
+        var properties = request.Configuration.ResponseSchema.Value.GetProperty("properties");
+
+        // UUID format should be stripped
+        var idProperty = properties.GetProperty("id");
+        Assert.Equal("string", idProperty.GetProperty("type").GetString());
+        Assert.False(idProperty.TryGetProperty("format", out _));
+
+        // Email format should be stripped
+        var emailProperty = properties.GetProperty("email");
+        Assert.Equal("string", emailProperty.GetProperty("type").GetString());
+        Assert.False(emailProperty.TryGetProperty("format", out _));
+
+        // Enum format should be preserved
+        var statusProperty = properties.GetProperty("status");
+        Assert.Equal("string", statusProperty.GetProperty("type").GetString());
+        Assert.True(statusProperty.TryGetProperty("format", out var statusFormat));
+        Assert.Equal("enum", statusFormat.GetString());
+
+        // Date-time format should be preserved
+        var createdAtProperty = properties.GetProperty("createdAt");
+        Assert.Equal("string", createdAtProperty.GetProperty("type").GetString());
+        Assert.True(createdAtProperty.TryGetProperty("format", out var createdAtFormat));
+        Assert.Equal("date-time", createdAtFormat.GetString());
+
+        // Phone format should be stripped
+        var phoneProperty = properties.GetProperty("phoneNumber");
+        Assert.Equal("string", phoneProperty.GetProperty("type").GetString());
+        Assert.False(phoneProperty.TryGetProperty("format", out _));
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 
