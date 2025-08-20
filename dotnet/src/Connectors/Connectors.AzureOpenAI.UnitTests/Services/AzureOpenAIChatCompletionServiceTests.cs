@@ -2148,6 +2148,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
     public static TheoryData<string?, string?> Versions => new()
     {
+        { "V2025_04_01_preview", "2025-04-01-preview" },
+        { "V2025_04_01_PREVIEW", "2025-04-01-preview" },
+        { "2025_04_01_Preview", "2025-04-01-preview" },
+        { "2025-04-01-preview", "2025-04-01-preview" },
         { "V2025_03_01_preview", "2025-03-01-preview" },
         { "V2025_03_01_PREVIEW", "2025-03-01-preview" },
         { "2025_03_01_Preview", "2025-03-01-preview" },
@@ -2178,6 +2182,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { "V2024_10_21", "2024-10-21" },
         { "2024_10_21", "2024-10-21" },
         { "2024-10-21", "2024-10-21" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_04_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2025_03_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview.ToString(), null },
@@ -2185,7 +2190,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_21.ToString(), null }
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_21.ToString(), null },
+        { null, null } // No version specified
     };
 
     public void Dispose()
