@@ -20,7 +20,7 @@ jobs:
     env:
       UV_PYTHON: "3.10"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Save the PR number to a file since the workflow_run event
       # in the coverage report workflow does not have access to it
       - name: Save PR number
