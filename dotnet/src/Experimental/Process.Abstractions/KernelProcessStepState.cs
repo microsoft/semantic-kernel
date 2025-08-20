@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -40,34 +41,44 @@ public record KernelProcessStepState
     /// This may be null until a process containing this step has been invoked.
     /// </summary>
     [DataMember]
-    public string? Id { get; init; }
+    [JsonPropertyName("runId")]
+    public string? RunId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identifier of the step parent.
+    /// </summary>
+    [DataMember]
+    [JsonPropertyName("parentId")]
+    public string? ParentId { get; set; }
 
     /// <summary>
     /// The name of the Step. This is intended to be human readable and is not required to be unique. If
     /// not provided, the name will be derived from the steps .NET type.
     /// </summary>
     [DataMember]
-    public string Name { get; init; }
+    [JsonPropertyName("stepId")]
+    public string StepId { get; init; }
 
     /// <summary>
     /// Version of the state
     /// </summary>
     [DataMember]
+    [JsonPropertyName("version")]
     public string Version { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
-    /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="stepId">The name of the associated <see cref="KernelProcessStep"/></param>
     /// <param name="version">version id of the process step state</param>
-    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string name, string version, string? id = null)
+    /// <param name="runId">The Id of the associated running instance</param>
+    public KernelProcessStepState(string stepId, string version, string? runId = null)
     {
-        Verify.NotNullOrWhiteSpace(name, nameof(name));
+        Verify.NotNullOrWhiteSpace(stepId, nameof(stepId));
         Verify.NotNullOrWhiteSpace(version, nameof(version));
 
-        this.Id = id;
-        this.Name = name;
+        this.RunId = runId;
+        this.StepId = stepId;
         this.Version = version;
     }
 }
@@ -88,16 +99,25 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
-    /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="stepId">The name of the associated <see cref="KernelProcessStep"/></param>
     /// <param name="version">version id of the process step state</param>
-    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string name, string version, string? id = null)
-        : base(name, version, id)
+    /// <param name="runId">The Id of the associated <see cref="KernelProcessStep"/></param>
+    public KernelProcessStepState(string stepId, string version, string? runId = null)
+        : base(stepId, version, runId)
     {
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(stepId);
 
-        this.Id = id;
-        this.Name = name;
+        this.RunId = runId;
+        this.StepId = stepId;
         this.Version = version;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
+    /// </summary>
+    /// <param name="stepState"></param>
+    public KernelProcessStepState(KernelProcessStepState stepState)
+        : base(stepState.StepId, stepState.Version, stepState.RunId)
+    {
     }
 }
