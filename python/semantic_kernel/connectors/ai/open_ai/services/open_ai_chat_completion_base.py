@@ -116,7 +116,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
             assert isinstance(chunk, ChatCompletionChunk)  # nosec
             chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
-            if chunk.usage is not None:
+            if len(chunk.choices) == 0 and chunk.usage is not None:
                 # Usage is contained in the last chunk where the choices are empty
                 # We are duplicating the usage metadata to all the choices in the response
                 yield [
