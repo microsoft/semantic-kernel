@@ -232,8 +232,8 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
         // For complex types, throw an exception if dangerous content is not allowed
         throw new NotSupportedException(
-            $"Argument '{propertyName}' has a value that could potentially be used for prompt injection. " +
-            $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this input variable and implement custom encoding, " +
+            $"Argument '{propertyName}' has a value that doesn't support automatic encoding. " +
+            $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this argument and implement custom encoding, " +
             "or provide the value as a string.");
     }
 
