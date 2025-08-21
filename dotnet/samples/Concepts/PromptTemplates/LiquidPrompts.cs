@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Resources;
@@ -43,14 +44,15 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
             """;
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
                     age = 30,
-                    membership = "Gold",
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]
@@ -112,14 +114,15 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
         var function = kernel.CreateFunctionFromPromptYaml(liquidPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
                     age = 30,
-                    membership = "Gold",
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]

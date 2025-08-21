@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
@@ -43,14 +44,15 @@ public class HandlebarsPrompts(ITestOutputHelper output) : BaseTest(output)
             """;
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
-                    age = 30,
-                    membership = "Gold",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
+                    age = HttpUtility.HtmlEncode(30),
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]
@@ -112,14 +114,15 @@ public class HandlebarsPrompts(ITestOutputHelper output) : BaseTest(output)
         var function = kernel.CreateFunctionFromPromptYaml(handlebarsPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
-                    age = 30,
-                    membership = "Gold",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
+                    age = HttpUtility.HtmlEncode(30),
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]
