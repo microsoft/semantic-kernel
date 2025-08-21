@@ -8,25 +8,27 @@ from semantic_kernel.contents.reasoning_content import ReasoningContent
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent
-with reasoning capabilities using either OpenAI or Azure OpenAI. The sample
-shows how to enable basic reasoning and reasoning with summaries, which exposes
-the agent's internal thought process via the on_intermediate_message callback.
+with reasoning capabilities using streaming patterns with either OpenAI or 
+Azure OpenAI. The sample shows how to enable basic reasoning and reasoning 
+with summaries that stream the agent's internal thought process.
 
-Two reasoning configurations are demonstrated:
+Two streaming reasoning configurations are demonstrated:
 
-1. Basic reasoning:
+1. Basic reasoning streaming:
    - Works for all OpenAI organizations
    - Reasoning happens internally but no intermediate thoughts are exposed
    - Still benefits from the model's reasoning process in final responses
+   - Uses invoke_stream for real-time response streaming
 
-2. Reasoning with summary:
+2. Reasoning with summary streaming:
    - Requires verified OpenAI organization access
    - Exposes the model's internal thought process via ReasoningContent
    - Shows step-by-step reasoning through the intermediate message callback
+   - Streams both reasoning summaries and final responses in real-time
 
 The reasoning content shows the internal thought process of models that
-support reasoning (like gpt-5, o3, o1-mini). This sample uses non-streaming
-invocation patterns.
+support reasoning (like gpt-5, o3, o1-mini). This sample uses streaming
+invocation patterns with invoke_stream.
 """
 
 
@@ -44,7 +46,6 @@ async def create_reasoning_agent():
             reasoning={"effort": "high"},
         )
 
-    # Fallback to Azure OpenAI
     azure_settings = AzureOpenAISettings()
     if azure_settings.endpoint and azure_settings.responses_deployment_name:
         client = AzureResponsesAgent.create_client()
@@ -60,7 +61,7 @@ async def create_reasoning_agent():
 
 
 async def create_reasoning_agent_with_summary():
-    """Create a reasoning-enabled agent with summary (requires verified org)."""
+    """Create a reasoning-enabled agent with summaries (requires verified org)."""
     openai_settings = OpenAISettings()
     model_id = openai_settings.responses_model_id or openai_settings.chat_model_id
     if openai_settings.api_key and model_id:
@@ -88,11 +89,11 @@ async def create_reasoning_agent_with_summary():
 
 
 async def handle_reasoning_message(message):
-    """Handle reasoning content from the agent's intermediate messages.
+    """Handle reasoning content from the agent's intermediate messages during streaming.
 
     This callback function will be called for each intermediate message
     when reasoning summaries are enabled, allowing access to the model's
-    internal thought process via ReasoningContent items.
+    internal thought process via ReasoningContent items during streaming.
 
     Args:
         message: The intermediate message containing potential ReasoningContent items.
@@ -104,47 +105,60 @@ async def handle_reasoning_message(message):
 
 
 async def main():
-    """The main function that demonstrates OpenAI Reasoning responses."""
-    # Define the query to test reasoning capabilities
-    query = "Plan a birthday party for 15 people with a $500 budget. What are the key decisions I need to make?"
+    """The main function that demonstrates OpenAI Reasoning responses with streaming."""
+    print("OpenAI ResponsesAgent Reasoning (streaming)")
+    print("=" * 60)
 
-    # 1. Create and use a basic reasoning agent
+    # 1. Create and use a basic reasoning agent with streaming
     try:
-        reasoning_agent = await create_reasoning_agent()
-        if not reasoning_agent:
-            print("Failed to create reasoning agent. Please check your API configuration.")
+        agent = await create_reasoning_agent()
+        if agent is None:
+            print("No configuration detected. Set either OpenAI or Azure OpenAI environment variables:")
+            print("- OpenAI: OPENAI_API_KEY and OPENAI_RESPONSES_MODEL_ID (or OPENAI_CHAT_MODEL_ID)")
+            print("- Azure:  AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY and AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME")
             return
 
-        print("===== Basic Reasoning =====")
-        print(f"Query: {query}")
-        print("\nResponse:")
-        await reasoning_agent.add_chat_message(content=query, role="user")
-        reasoning_response = await reasoning_agent.invoke()
-        print(f"{reasoning_response.content}")
+        user_input = "Plan a weekend camping trip for 4 people. What essential items should we pack?"
+        print(f"\n=== Basic reasoning (streaming, no summary) ===\n# User: '{user_input}'")
+        thread = None
+        first_chunk = True
+        async for response in agent.invoke_stream(messages=user_input, thread=thread):
+            thread = response.thread
+            if first_chunk:
+                print(f"# {response.name}: ", end="", flush=True)
+                first_chunk = False
+            print(response.content, end="", flush=True)
+        print()
     except Exception as e:
-        print(f"Basic reasoning example failed. Error: {e}")
+        print(f"\nBasic reasoning example failed. Error: {e}")
         print("Please check your API configuration and model availability.")
         return
 
-    # 2. Create and use a reasoning agent with summaries enabled
+    # 2. Create and use a reasoning agent with summaries and streaming
     try:
-        reasoning_with_summary_agent = await create_reasoning_agent_with_summary()
-        if not reasoning_with_summary_agent:
-            print("Failed to create reasoning agent with summary. This requires verified OpenAI organization access.")
-            print("===== Done! =====")
+        agent_summary = await create_reasoning_agent_with_summary()
+        if agent_summary is None:
+            print("\nNo configuration available for reasoning summaries.")
             return
 
-        print("\n\n===== Reasoning with Summaries =====")
-        print(f"Query: {query}")
+        user_input2 = "Compare the benefits and drawbacks of renewable energy sources like solar and wind power."
+        print(f"\n=== Reasoning with summaries (streaming) ===\n# User: '{user_input2}'")
         print("\nReasoning summary:")
-        await reasoning_with_summary_agent.add_chat_message(content=query, role="user")
-        summary_response = await reasoning_with_summary_agent.invoke(handle_reasoning_message)
-        print(f"\n\nAnswer: {summary_response.content}")
+        first_chunk = True
+        async for response in agent_summary.invoke_stream(
+            messages=user_input2, thread=thread, on_intermediate_message=handle_reasoning_message
+        ):
+            thread = response.thread
+            if first_chunk:
+                print(f"\n# {response.name}: ", end="", flush=True)
+                first_chunk = False
+            print(response.content, end="", flush=True)
+        print()
     except Exception as e:
         print(f"\nSummary examples require a verified organization. Error: {e}")
         print("The reasoning summary feature is only available to verified OpenAI organizations.")
 
-    print("\n\n===== Done! =====")
+    print("\n===== Done! =====")
 
 
 if __name__ == "__main__":
