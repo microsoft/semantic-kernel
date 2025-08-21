@@ -426,7 +426,7 @@ def test_streaming_reasoning_content_default_text():
     """Test StreamingReasoningContent with default text value."""
     # Test with no text parameter (should default to empty string)
     reasoning_default = StreamingReasoningContent(choice_index=0)
-    assert reasoning_default.text == ""
+    assert reasoning_default.text is None
     assert str(reasoning_default) == ""
     assert bytes(reasoning_default) == b""
 

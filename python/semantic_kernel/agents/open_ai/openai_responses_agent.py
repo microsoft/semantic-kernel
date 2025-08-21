@@ -191,6 +191,7 @@ class ResponsesAgentThread(AgentThread):
         """Get the thread ID."""
         return self.response_id
 
+    @override
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
         if self._is_deleted:
@@ -838,12 +839,12 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         polling_options: RunPollingOptions | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
         top_p: float | None = None,
         truncation: str | None = None,
-        reasoning: Reasoning | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.

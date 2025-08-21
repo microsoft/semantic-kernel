@@ -18,17 +18,28 @@ _T = TypeVar("_T", bound="ReasoningContent")
 class ReasoningContent(KernelContent):
     """Represents reasoning content.
 
-    Mirrors the .NET ReasoningContent which only exposes text. Any provider-specific
-    fields (like ids, encrypted blobs, statuses) should be placed in `metadata`.
+    Exposes a human-readable reasoning ``text``. Any provider-specific fields (for example: ids, encrypted blobs,
+    statuses, token info) must be carried in ``metadata`` on the base ``KernelContent``.
+
+    Attributes:
+        content_type: Literal identifying this instance as reasoning content.
+        tag: XML tag name used when serializing to/from XML.
+        text: The reasoning text to surface to callers.
+
+    Methods:
+        __str__: Return the reasoning text.
+        to_element: Serialize to an XML Element using ``tag`` and ``text``.
+        from_element: Deserialize from an XML Element into a ReasoningContent.
+        to_dict: Serialize to a dict suitable for message payloads.
     """
 
     content_type: Literal[ContentTypes.REASONING_CONTENT] = Field(REASONING_CONTENT_TAG, init=False)
     tag: ClassVar[str] = REASONING_CONTENT_TAG
-    text: str = ""
+    text: str | None = None
 
     def __str__(self) -> str:
         """Return the text of the reasoning content."""
-        return self.text
+        return self.text or ""
 
     def to_element(self) -> Element:
         """Convert the instance to an XML Element."""
@@ -45,4 +56,4 @@ class ReasoningContent(KernelContent):
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary suitable for message serialization."""
-        return {"type": "reasoning", "text": self.text}
+        return {"type": "reasoning", "text": self.text or ""}
