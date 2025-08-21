@@ -39,12 +39,18 @@ public sealed class CloudDrivePlugin
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the file content.</returns>
     [KernelFunction, Description("Get the contents of a file in a cloud drive.")]
-    public async Task<string> GetFileContentAsync(
+    public async Task<string?> GetFileContentAsync(
         [Description("Path to file")] string filePath,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+        Stream? fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+
+        if (fileContentStream is null)
+        {
+            this._logger.LogDebug("File content stream for '{0}' is null", filePath);
+            return null;
+        }
 
         using StreamReader sr = new(fileContentStream);
         return await sr.ReadToEndAsync(
