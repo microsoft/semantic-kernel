@@ -7,7 +7,7 @@ using OpenAI.Audio;
 public class TextToSpeechService
 {
     // Text-to-Speech synthesis constants
-    private static readonly GeneratedSpeechVoice DefaultSpeechVoice = GeneratedSpeechVoice.Alloy;  // OpenAI voice selection for TTS
+    private static readonly GeneratedSpeechVoice s_defaultSpeechVoice = GeneratedSpeechVoice.Alloy;  // OpenAI voice selection for TTS
 
     private readonly ILogger<TextToSpeechService> _logger;
     private readonly AudioClient _audioClient;
@@ -28,7 +28,7 @@ public class TextToSpeechService
         Tools.ExecutePipelineOperationAsync(
             operation: async () =>
             {
-                BinaryData speech = await this._audioClient.GenerateSpeechAsync(text, DefaultSpeechVoice, null, token);
+                BinaryData speech = await this._audioClient.GenerateSpeechAsync(text, s_defaultSpeechVoice, null, token);
                 return speech.ToArray();
             },
             operationName: "TTS",
