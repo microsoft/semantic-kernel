@@ -102,7 +102,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// <inheritdoc/>
     public ValueTask PublishMessageAsync(object message, TopicId topic, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default)
     {
-        return this.ExecuteTracedAsync(() =>
+        return this.ExecuteTracedAsync(async () =>
         {
             MessageDelivery delivery =
                 new MessageEnvelope(message, messageId, cancellationToken)
@@ -112,11 +112,8 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             this._messageDeliveryQueue.Enqueue(delivery);
             Interlocked.Increment(ref this.messageQueueCount);
 
-#if !NETCOREAPP
-            return Task.CompletedTask.AsValueTask();
-#else
-            return ValueTask.CompletedTask;
-#endif
+            // Wait for the message to be processed to ensure exceptions are propagated
+            await delivery.ResultSink.Future.ConfigureAwait(false);
         });
     }
 
