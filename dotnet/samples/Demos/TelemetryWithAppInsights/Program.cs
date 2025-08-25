@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
@@ -100,6 +102,13 @@ public sealed class Program
         using (var _ = s_activitySource.StartActivity("ToolCalls"))
         {
             await RunAzureOpenAIToolCallsAsync(kernel);
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("Run ChatCompletion Agent.");
+        using (var _ = s_activitySource.StartActivity("Agent"))
+        {
+            await RunChatCompletionAgentAsync(kernel);
             Console.WriteLine();
         }
     }
@@ -305,6 +314,40 @@ public sealed class Program
 
         Console.WriteLine(result);
     }
+    #endregion
+
+    #region Agent
+
+    private static async Task RunChatCompletionAgentAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= ChatCompletion Agent =============");
+
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
+
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+
+        // Define the agent
+        ChatCompletionAgent agent =
+            new()
+            {
+                Name = "TestAgent",
+                Instructions = "You are a helpful assistant.",
+                Kernel = kernel
+            };
+
+        ChatMessageContent message = new(AuthorRole.User, "Write a poem about John Doe.");
+        Console.WriteLine($"User: {message.Content}");
+
+        await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
+        {
+            Console.WriteLine($"Agent: {response.Message.Content}");
+        }
+    }
+
     #endregion
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)

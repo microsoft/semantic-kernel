@@ -107,7 +107,6 @@ public sealed class BedrockAgent : Agent
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(messages, nameof(messages));
         if (messages.Count == 0)
         {
             throw new InvalidOperationException("The Bedrock agent requires a message to be invoked.");
@@ -145,15 +144,21 @@ public sealed class BedrockAgent : Agent
             };
         });
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+
         // Invoke the agent
         var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
+        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, bedrockThread);
+            chatMessageContents?.Add(result);
         }
+
+        activity?.SetAgentResponse(chatMessageContents);
     }
 
     /// <summary>
@@ -206,6 +211,9 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+
         // Invoke the agent
         var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
@@ -214,7 +222,10 @@ public sealed class BedrockAgent : Agent
         {
             await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, bedrockThread);
+            chatMessageContents?.Add(result);
         }
+
+        activity?.SetAgentResponse(chatMessageContents);
     }
 
     #endregion
@@ -286,6 +297,9 @@ public sealed class BedrockAgent : Agent
             };
         });
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+
         // Invoke the agent
         var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
@@ -293,7 +307,10 @@ public sealed class BedrockAgent : Agent
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             yield return new(result, bedrockThread);
+            streamedContents?.Add(result);
         }
+
+        activity?.EndAgentStreamingResponse(streamedContents);
     }
 
     /// <summary>
@@ -348,6 +365,9 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+
         var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
         // The Bedrock agent service has the same API for both streaming and non-streaming responses.
@@ -364,7 +384,10 @@ public sealed class BedrockAgent : Agent
                     Metadata = chatMessageContent.Metadata,
                 },
                 thread: bedrockThread);
+            streamedContents?.Add(chatMessageContent);
         }
+
+        activity?.EndAgentStreamingResponse(streamedContents);
     }
 
     #endregion
@@ -409,10 +432,7 @@ public sealed class BedrockAgent : Agent
     {
         return invokeAgentRequest.StreamingConfigurations != null && (invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false)
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
-            : ActivityExtensions.RunWithActivityAsync(
-                () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-                InvokeInternal,
-                cancellationToken);
+            : InvokeInternal();
 
         // Collect all responses from the agent and return them as a single chat message content since this
         // is a non-streaming API.
@@ -471,10 +491,7 @@ public sealed class BedrockAgent : Agent
             throw new ArgumentException("The streaming configuration must have StreamFinalResponse set to true.");
         }
 
-        return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            InvokeInternal,
-            cancellationToken);
+        return InvokeInternal();
 
         async IAsyncEnumerable<StreamingChatMessageContent> InvokeInternal()
         {

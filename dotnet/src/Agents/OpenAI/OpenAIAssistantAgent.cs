@@ -158,10 +158,17 @@ public sealed partial class OpenAIAssistantAgent : Agent
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => InternalInvokeAsync(),
-            cancellationToken);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+
+        // Notify the thread of new messages and return them to the caller.
+        await foreach (var result in InternalInvokeAsync().ConfigureAwait(false))
+        {
+            yield return new(result, openAIAssistantAgentThread);
+            chatMessageContents?.Add(result);
+        }
+
+        activity?.SetAgentResponse(chatMessageContents);
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
@@ -188,12 +195,6 @@ public sealed partial class OpenAIAssistantAgent : Agent
                     yield return message;
                 }
             }
-        }
-
-        // Notify the thread of new messages and return them to the caller.
-        await foreach (var result in invokeResults.ConfigureAwait(false))
-        {
-            yield return new(result, openAIAssistantAgentThread);
         }
     }
 
@@ -266,11 +267,11 @@ public sealed partial class OpenAIAssistantAgent : Agent
         });
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+
         ChatHistory newMessagesReceiver = [];
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => InternalInvokeStreamingAsync(),
-            cancellationToken);
+        var invokeResults = InternalInvokeStreamingAsync();
 #pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
@@ -296,10 +297,13 @@ public sealed partial class OpenAIAssistantAgent : Agent
             await NotifyMessagesAsync().ConfigureAwait(false);
 
             yield return new(result, openAIAssistantAgentThread);
+            streamedContents?.Add(result);
         }
 
         // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
         await NotifyMessagesAsync().ConfigureAwait(false);
+
+        activity?.EndAgentStreamingResponse(streamedContents);
 
         async Task NotifyMessagesAsync()
         {
