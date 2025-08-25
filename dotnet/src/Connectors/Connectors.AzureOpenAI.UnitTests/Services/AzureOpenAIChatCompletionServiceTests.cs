@@ -421,6 +421,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     [InlineData("string", "low")]
     [InlineData("string", "medium")]
     [InlineData("string", "high")]
+    [InlineData("string", "minimal")]
     [InlineData("ChatReasonEffortLevel.Low", "low")]
     [InlineData("ChatReasonEffortLevel.Medium", "medium")]
     [InlineData("ChatReasonEffortLevel.High", "high")]
