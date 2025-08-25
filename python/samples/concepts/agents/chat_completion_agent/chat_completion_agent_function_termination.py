@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
@@ -49,7 +51,7 @@ class MenuPlugin:
 def _create_kernel_with_chat_completionand_filter() -> Kernel:
     """A helper function to create a kernel with a chat completion service and a filter."""
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion())
+    kernel.add_service(AzureChatCompletion(credential=AzureCliCredential()))
     kernel.add_filter("auto_function_invocation", auto_function_invocation_filter)
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
     return kernel

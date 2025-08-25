@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
@@ -143,7 +145,9 @@ async def main(collection: str, use_azure_openai: bool):
     print("-" * 30)
     kernel = Kernel()
     embedder = (
-        AzureTextEmbedding(service_id="embedding") if use_azure_openai else OpenAITextEmbedding(service_id="embedding")
+        AzureTextEmbedding(service_id="embedding", credential=AzureCliCredential())
+        if use_azure_openai
+        else OpenAITextEmbedding(service_id="embedding")
     )
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:

@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 
+from azure.identity import AzureCliCredential
+
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -38,9 +40,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-chat_service = AzureChatCompletion(
-    service_id="chat-gpt",
-)
+chat_service = AzureChatCompletion(service_id="chat-gpt", credential=AzureCliCredential())
 kernel.add_service(
     chat_service,
 )

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 from azure.ai.projects.aio import AIProjectClient
-from azure.identity.aio import DefaultAzureCredential
+from azure.core.credentials_async import AsyncTokenCredential
 
 from semantic_kernel.agents.agent import AgentResponseItem
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
@@ -340,7 +340,7 @@ async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definit
 
 
 def test_create_client_with_explicit_endpoint():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AIProjectClient") as mock_client_cls:
         mock_client = MagicMock(spec=AIProjectClient)
@@ -362,7 +362,7 @@ def test_create_client_with_explicit_endpoint():
 
 
 def test_create_client_uses_settings_when_endpoint_none():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with (
         patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls,
@@ -385,7 +385,7 @@ def test_create_client_uses_settings_when_endpoint_none():
 
 
 def test_create_client_raises_if_no_endpoint():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls:
         mock_settings = MagicMock()
