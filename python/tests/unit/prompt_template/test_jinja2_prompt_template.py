@@ -15,11 +15,12 @@ from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def create_jinja2_prompt_template(template: str) -> Jinja2PromptTemplate:
+def create_jinja2_prompt_template(template: str, allow_dangerously_set_content: bool = False) -> Jinja2PromptTemplate:
     return Jinja2PromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="jinja2"
-        )
+        ),
+        allow_dangerously_set_content=allow_dangerously_set_content,
     )
 
 
@@ -67,7 +68,7 @@ async def test_it_renders_variables(kernel: Kernel):
 
 async def test_it_renders_nested_variables(kernel: Kernel):
     template = "{{ foo.bar }}"
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, KernelArguments(foo={"bar": "Foo Bar"}))
     assert rendered == "Foo Bar"
@@ -98,7 +99,7 @@ async def test_it_renders_fail_empty_template(kernel: Kernel):
 
 async def test_it_renders_list(kernel: Kernel):
     template = "List: {% for item in items %}{{ item }}{% endfor %}"
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, KernelArguments(items=["item1", "item2", "item3"]))
     assert rendered == "List: item1item2item3"
@@ -134,7 +135,7 @@ async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, de
 )
 async def test_helpers(function, input, expected, kernel: Kernel):
     template = f"{{{{ {function}({input}) }}}}"
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, None)
     assert rendered == expected
@@ -205,7 +206,7 @@ async def test_helpers_empty_get(kernel: Kernel):
 
 async def test_helpers_get(kernel: Kernel):
     template = """{{get(context=args, name='arg', default='fail')}}"""
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, KernelArguments(args={"arg": "test"}))
     assert rendered == "test"
@@ -245,7 +246,7 @@ async def test_helpers_double_open_close_style_two(kernel: Kernel):
 
 async def test_helpers_json_style_two(kernel: Kernel):
     template = "{{input_json | tojson}}"
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, KernelArguments(input_json={"key": "value"}))
     assert rendered == '{"key": "value"}'
@@ -253,7 +254,7 @@ async def test_helpers_json_style_two(kernel: Kernel):
 
 async def test_helpers_message(kernel: Kernel):
     template = """{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_assistant_message("Assistant message")
@@ -268,7 +269,7 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     {% for chat in chat_history %}
     {{ message_to_prompt(chat) }}
     {% endfor %}"""
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
@@ -296,7 +297,7 @@ async def test_helpers_message_to_prompt_other(kernel: Kernel):
     {{- message_to_prompt(item) }}{% if not loop.last %} {% endif -%}
     {%- endfor %}
     """
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
@@ -308,7 +309,7 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
     {{- messageToPrompt(item) }}{% if not loop.last %} {% endif -%}
     {%- endfor %}
     """
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
@@ -316,7 +317,7 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
 
 async def test_helpers_chat_history_messages(kernel: Kernel):
     template = """{{ messages(chat_history) }}"""
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_assistant_message("Assistant message")
@@ -329,7 +330,7 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
 
 async def test_helpers_chat_history_messages_non(kernel: Kernel):
     template = """{{ messages(chat_history) }}"""
-    target = create_jinja2_prompt_template(template)
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
     chat_history = "text instead of a chat_history object"
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
     assert rendered.strip() == ""

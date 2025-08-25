@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
@@ -60,8 +61,10 @@ public sealed class KernelSystemHelpersTests
                 { "person", json }
             };
 
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
+
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("""{"name":"Alice","age":25}""", HttpUtility.HtmlDecode(result));
@@ -90,8 +93,10 @@ public sealed class KernelSystemHelpersTests
                 { "person", new { name = "Alice", age = 25 } }
             };
 
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
+
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert  
         Assert.Equal("{ name = Alice, age = 25 }", result);
@@ -107,8 +112,10 @@ public sealed class KernelSystemHelpersTests
                 { "person", new { name = "Alice", age = 25 } }
             };
 
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
+
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("Alice", result);
@@ -124,8 +131,10 @@ public sealed class KernelSystemHelpersTests
             { "person", new { Name = "Alice", Age = 25, Address = new { City = "New York", Country = "USA" } } }
         };
 
-        // Act  
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert  
         Assert.Equal("{ City = New York, Country = USA }", result);
@@ -155,8 +164,14 @@ public sealed class KernelSystemHelpersTests
             { "Address", new { City = "New York", Country = "USA"  } }
         };
 
+        var inputVariables = new List<InputVariable>
+        {
+            new() { Name = "person" },
+            new() { Name = "Address", AllowDangerouslySetContent = true },
+        };
+
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("hi, ,Alice,!,Welcome to, ,New York", result);
@@ -283,9 +298,12 @@ public sealed class KernelSystemHelpersTests
     private readonly Kernel _kernel;
     private readonly KernelArguments _arguments;
 
-    private async Task<string> RenderPromptTemplateAsync(string template, KernelArguments? args = null)
+    private async Task<string> RenderPromptTemplateAsync(
+        string template,
+        KernelArguments? args = null,
+        List<InputVariable>? inputVariables = null)
     {
-        var resultConfig = InitializeHbPromptConfig(template);
+        var resultConfig = InitializeHbPromptConfig(template, inputVariables);
         var target = (HandlebarsPromptTemplate)this._factory.Create(resultConfig);
 
         // Act

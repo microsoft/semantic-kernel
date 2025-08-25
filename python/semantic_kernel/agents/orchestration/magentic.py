@@ -5,6 +5,7 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
+from html import escape
 from typing import Annotated
 
 from pydantic import Field
@@ -290,14 +291,21 @@ class StandardMagenticManager(MagenticManagerBase):
 
         # 2. Create the plan
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=await prompt_template.render(
                     Kernel(),
-                    KernelArguments(team=magentic_context.participant_descriptions),
+                    KernelArguments(team=escaped_participant_descriptions),
                 ),
             )
         )
@@ -345,14 +353,21 @@ class StandardMagenticManager(MagenticManagerBase):
 
         # 2. Update the plan
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_update_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_update_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=await prompt_template.render(
                     Kernel(),
-                    KernelArguments(team=magentic_context.participant_descriptions),
+                    KernelArguments(team=escaped_participant_descriptions),
                 ),
             )
         )
@@ -379,14 +394,20 @@ class StandardMagenticManager(MagenticManagerBase):
             raise RuntimeError("The task ledger is not initialized. Planning needs to happen first.")
 
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_full_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_full_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
 
         rendered_task_ledger = await prompt_template.render(
             Kernel(),
             KernelArguments(
                 task=magentic_context.task.content,
-                team=magentic_context.participant_descriptions,
+                team=escaped_participant_descriptions,
                 facts=self.task_ledger.facts.content,
                 plan=self.task_ledger.plan.content,
             ),
@@ -405,13 +426,20 @@ class StandardMagenticManager(MagenticManagerBase):
             ProgressLedger: The progress ledger.
         """
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.progress_ledger_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.progress_ledger_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         progress_ledger_prompt = await prompt_template.render(
             Kernel(),
             KernelArguments(
                 task=magentic_context.task.content,
-                team=magentic_context.participant_descriptions,
+                team=escaped_participant_descriptions,
                 names=", ".join(magentic_context.participant_descriptions.keys()),
             ),
         )
@@ -445,8 +473,12 @@ class StandardMagenticManager(MagenticManagerBase):
             ChatMessageContent: The final answer.
         """
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.final_answer_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.final_answer_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        magentic_context.task.content = escape(magentic_context.task.content)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
