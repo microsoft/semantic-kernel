@@ -258,20 +258,20 @@ async def test_get_mssql_connection(connection_string):
     sys.modules["pyodbc"] = mock_pyodbc
 
     with patch("pyodbc.connect") as patched_connection:
-        from azure.identity.aio import DefaultAzureCredential
+        from azure.core.credentials_async import AsyncTokenCredential
 
         from semantic_kernel.connectors.sql_server import SqlSettings, _get_mssql_connection
 
         token = MagicMock()
         token.token.return_value = "test_token"
         token.token.encode.return_value = b"test_token"
-        credential = AsyncMock(spec=DefaultAzureCredential)
+        credential = AsyncMock(spec=AsyncTokenCredential)
         credential.__aenter__.return_value = credential
         credential.get_token.return_value = token
 
         settings = SqlSettings(connection_string=connection_string)
-        with patch("semantic_kernel.connectors.sql_server.DefaultAzureCredential", return_value=credential):
-            connection = await _get_mssql_connection(settings)
+        with patch("semantic_kernel.connectors.sql_server.AsyncTokenCredential", return_value=credential):
+            connection = await _get_mssql_connection(settings, credential=credential)
             assert connection is not None
             assert isinstance(connection, MagicMock)
             if "uid" in connection_string:

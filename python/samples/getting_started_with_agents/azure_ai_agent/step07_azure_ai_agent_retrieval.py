@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentThread
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
@@ -33,7 +33,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Retrieve the agent definition based on the `agent_id`

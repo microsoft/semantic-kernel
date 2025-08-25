@@ -4,7 +4,7 @@ import asyncio
 from functools import reduce
 
 from azure.ai.agents.models import CodeInterpreterTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent
@@ -27,7 +27,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create an agent with a code interpreter on the Azure AI agent service
