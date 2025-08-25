@@ -1,0 +1,39 @@
+[package]
+name = "getting_started_with_processes"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step00_processes"
+path = "step00_processes.rs"
+
+[[bin]]
+name = "step01_processes"
+path = "step01_processes.rs"
+
+[[bin]]
+name = "account_opening"
+path = "account_opening.rs"
+
+[[bin]]
+name = "food_preparation"
+path = "food_preparation.rs"
+
+[[bin]]
+name = "map_reduce"
+path = "map_reduce.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-process = { path = "../../sk-process" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dotenv = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+rand = "0.8"
