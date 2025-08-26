@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.audio.audio_recorder import AudioRecorder
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAudioToText,
@@ -37,9 +39,9 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-
-chat_service = AzureChatCompletion()
-audio_to_text_service = AzureAudioToText()
+credential = AzureCliCredential()
+chat_service = AzureChatCompletion(credential=credential)
+audio_to_text_service = AzureAudioToText(credential=credential)
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")

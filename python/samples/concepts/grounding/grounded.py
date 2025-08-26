@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.resources.utils import Colors
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
@@ -60,9 +62,7 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
     if use_azure:
         service_id = "chat_completion"
         kernel.add_service(
-            AzureChatCompletion(
-                service_id=service_id,
-            ),
+            AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()),
         )
     else:
         service_id = "chat-gpt"

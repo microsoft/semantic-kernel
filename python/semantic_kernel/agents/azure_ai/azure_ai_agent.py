@@ -64,7 +64,7 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL
 
 if TYPE_CHECKING:
     from azure.ai.agents.models import ToolResources
-    from azure.identity.aio import DefaultAzureCredential
+    from azure.core.credentials_async import AsyncTokenCredential
 
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -429,7 +429,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
 
     @staticmethod
     def create_client(
-        credential: "DefaultAzureCredential",
+        credential: "AsyncTokenCredential",
         endpoint: str | None = None,
         api_version: str | None = None,
         **kwargs: Any,

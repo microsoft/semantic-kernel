@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtimeExecutionSettings,
@@ -57,7 +59,7 @@ async def main() -> None:
         # for more details.
         voice="shimmer",
     )
-    realtime_client = AzureRealtimeWebsocket(settings=settings)
+    realtime_client = AzureRealtimeWebsocket(settings=settings, credential=AzureCliCredential())
     audio_player = AudioPlayerWebsocket()
     audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
     # Create the settings for the session

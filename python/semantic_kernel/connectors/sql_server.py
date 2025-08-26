@@ -13,7 +13,7 @@ from io import StringIO
 from itertools import chain
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, TypeVar
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
@@ -246,22 +246,21 @@ class SqlCommand:
         return str(self.query), tuple(self.parameters)
 
 
-async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
-    """Get a connection to the SQL Server database, optionally with Entra Auth."""
+async def _get_mssql_connection(settings: SqlSettings, credential: AsyncTokenCredential | None) -> "Connection":
+    """Get a connection to the SQL Server database."""
     from pyodbc import connect
 
     mssql_connection_string = settings.connection_string.get_secret_value()
     if any(s in mssql_connection_string.lower() for s in ["uid"]):
         attrs_before: dict | None = None
     else:
-        async with DefaultAzureCredential(exclude_interactive_browser_credential=False) as credential:
-            # Get the access token
-            token_bytes = (await credential.get_token("https://database.windows.net/.default")).token.encode(
-                "UTF-16-LE"
-            )
-            token_struct = struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_bytes)
-            SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
-            attrs_before = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
+        if credential is None:
+            raise VectorStoreOperationException("The 'credential' parameter is required for authentication.")
+        # Get the access token
+        token_bytes = (await credential.get_token("https://database.windows.net/.default")).token.encode("UTF-16-LE")
+        token_struct = struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_bytes)
+        SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
+        attrs_before = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
 
     return connect(mssql_connection_string, attrs_before=attrs_before)
 
@@ -282,6 +281,7 @@ class SqlServerCollection(
     supported_key_types: ClassVar[set[str] | None] = {"str", "int"}
     supported_vector_types: ClassVar[set[str] | None] = {"float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
+    credential: AsyncTokenCredential | None = None
 
     def __init__(
         self,
@@ -293,6 +293,7 @@ class SqlServerCollection(
         connection: "Connection | None" = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs: Any,
     ):
         """Initialize the collection.
@@ -306,6 +307,7 @@ class SqlServerCollection(
             connection: The connection, make sure to set the `LongAsMax=yes` option on the construction string used.
             env_file_path: Use the environment settings file as a fallback to environment variables.
             env_file_encoding: The encoding of the environment settings file.
+            credential: The credential to use for authentication.
             **kwargs: Additional arguments.
         """
         managed_client = not connection
@@ -330,6 +332,7 @@ class SqlServerCollection(
             settings=settings,
             managed_client=managed_client,
             embedding_generator=embedding_generator,
+            credential=credential,
         )
 
     @override
@@ -339,7 +342,7 @@ class SqlServerCollection(
             if not self.settings:  # pragma: no cover
                 # this should never happen, but just in case
                 raise VectorStoreInitializationException("No connection or settings provided.")
-            self.connection = await _get_mssql_connection(self.settings)
+            self.connection = await _get_mssql_connection(self.settings, self.credential)
         self.connection.__enter__()
         return self
 
@@ -676,6 +679,7 @@ class SqlServerStore(VectorStore):
 
     connection: Any | None = None
     settings: SqlSettings | None = None
+    credential: AsyncTokenCredential | None = None
 
     def __init__(
         self,
@@ -684,6 +688,7 @@ class SqlServerStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs: Any,
     ):
         """Initialize the SQL Store.
@@ -694,6 +699,7 @@ class SqlServerStore(VectorStore):
             embedding_generator: The embedding generator to use.
             env_file_path: Use the environment settings file as a fallback to environment variables.
             env_file_encoding: The encoding of the environment settings file.
+            credential: The credential to use for authentication.
             **kwargs: Additional arguments.
 
         """
@@ -714,6 +720,7 @@ class SqlServerStore(VectorStore):
             connection=connection,
             settings=settings,
             embedding_generator=embedding_generator,
+            credential=credential,
             **kwargs,
         )
 
@@ -724,7 +731,7 @@ class SqlServerStore(VectorStore):
             if not self.settings:  # pragma: no cover
                 # this should never happen, but just in case
                 raise VectorStoreInitializationException("Settings must be provided to establish a connection.")
-            self.connection = await _get_mssql_connection(self.settings)
+            self.connection = await _get_mssql_connection(self.settings, self.credential)
         self.connection.__enter__()
         return self
 

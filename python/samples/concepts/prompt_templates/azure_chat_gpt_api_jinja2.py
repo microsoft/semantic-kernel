@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -23,9 +25,7 @@ flowery prose.
 kernel = Kernel()
 
 service_id = "chat-gpt"
-chat_service = AzureChatCompletion(
-    service_id=service_id,
-)
+chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
 kernel.add_service(chat_service)
 
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
