@@ -134,7 +134,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="propertyValue">The value of the property/argument.</param>
     private object GetEncodedValueOrDefault(PromptTemplateConfig promptTemplateConfig, string propertyName, object propertyValue)
     {
-        if (this._allowDangerouslySetContent)
+        if (this._allowDangerouslySetContent || promptTemplateConfig.AllowDangerouslySetContent)
         {
             return propertyValue;
         }
