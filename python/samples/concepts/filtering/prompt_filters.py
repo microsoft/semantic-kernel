@@ -8,6 +8,7 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -31,8 +32,9 @@ settings.top_p = 0.8
 chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
-    prompt="{{$chat_history}}{{$user_input}}",
-    template_format="semantic-kernel",
+    prompt_template_config=PromptTemplateConfig(
+        template="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
+    ),
     prompt_execution_settings=settings,
 )
 

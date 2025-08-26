@@ -9,6 +9,7 @@ from semantic_kernel.contents import ChatHistory, ChatMessageContent, FunctionCa
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes
 from semantic_kernel.functions import FunctionResult, KernelArguments
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -34,7 +35,9 @@ kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
 
 chat_function = kernel.add_function(
-    prompt="{{$chat_history}}{{$user_input}}",
+    prompt_template_config=PromptTemplateConfig(
+        template="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
+    ),
     plugin_name="ChatBot",
     function_name="Chat",
 )

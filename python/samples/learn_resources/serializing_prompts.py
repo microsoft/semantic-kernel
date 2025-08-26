@@ -37,9 +37,14 @@ async def main():
         template=template,
         description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
-        InputVariables=[
+        input_variables=[
             InputVariable(name="input", description="The user input", is_required=True),
-            InputVariable(name="history", description="The history of the conversation", is_required=True),
+            InputVariable(
+                name="history",
+                description="The history of the conversation",
+                is_required=True,
+                allow_dangerously_set_content=True,
+            ),
         ],
     )
 

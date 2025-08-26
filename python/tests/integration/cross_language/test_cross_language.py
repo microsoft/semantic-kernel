@@ -19,6 +19,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,7 @@ async def run_prompt(
     template_format: str = None,
     prompt: str = None,
     arguments: KernelArguments = None,
+    prompt_template_config: PromptTemplateConfig | None = None,
 ):
     if is_inline:
         if is_streaming:
@@ -130,6 +132,7 @@ async def run_prompt(
                     prompt=prompt,
                     arguments=arguments,
                     template_format=template_format,
+                    prompt_template_config=prompt_template_config,
                 ):
                     pass
             except NotImplementedError:
@@ -141,6 +144,7 @@ async def run_prompt(
                 prompt=prompt,
                 arguments=arguments,
                 template_format=template_format,
+                prompt_template_config=prompt_template_config,
             )
     else:
         function = KernelFunctionFromPrompt(
@@ -362,8 +366,9 @@ async def test_prompt_with_complex_objects(
         kernel=kernel,
         is_inline=is_inline,
         is_streaming=is_streaming,
-        template_format=template_format,
-        prompt=prompt,
+        prompt_template_config=PromptTemplateConfig(
+            template=prompt, template_format=template_format, allow_dangerously_set_content=True
+        ),
         arguments=KernelArguments(city=City("Seattle")),
     )
 

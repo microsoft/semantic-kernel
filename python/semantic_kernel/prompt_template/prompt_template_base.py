@@ -72,7 +72,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         Raises:
             NotImplementedError: If the value is a complex type and allow_dangerously_set_content is False.
         """
-        if self.allow_dangerously_set_content:
+        if self.allow_dangerously_set_content or self.prompt_template_config.allow_dangerously_set_content:
             return value
 
         # Check if this variable allows dangerous content

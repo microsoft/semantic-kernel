@@ -9,6 +9,7 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
@@ -41,7 +42,9 @@ kernel.add_plugin(TimePlugin(), plugin_name="time")
 
 # Define a chat function (a template for how to handle user input).
 chat_function = kernel.add_function(
-    prompt="{{$chat_history}}{{$user_input}}",
+    prompt_template_config=PromptTemplateConfig(
+        prompt="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
+    ),
     plugin_name="ChatBot",
     function_name="Chat",
 )

@@ -105,8 +105,8 @@ async def run_entity_excision(kernel: Kernel, plugin_name: str, summary_text, gr
     return await kernel.invoke(
         plugin_name=plugin_name,
         function_name="ExciseEntities",
-        input=summary_text,
-        ungrounded_entities=grounding_result,
+        input=str(summary_text),
+        ungrounded_entities=str(grounding_result),
     )
 
 
