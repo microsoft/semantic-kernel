@@ -3,7 +3,7 @@
 import asyncio
 from urllib.request import urlopen
 
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 try:
     from PIL import Image

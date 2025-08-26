@@ -9,7 +9,7 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #

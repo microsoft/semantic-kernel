@@ -8,8 +8,8 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 async def main():

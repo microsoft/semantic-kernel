@@ -9,7 +9,7 @@ from semantic_kernel.contents import ChatHistory, ChatMessageContent, FunctionCa
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes
 from semantic_kernel.functions import FunctionResult, KernelArguments
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 system_message = """
 You are a chat bot. Your name is Mosscap and

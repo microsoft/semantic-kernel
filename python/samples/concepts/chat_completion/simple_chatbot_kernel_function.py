@@ -6,7 +6,7 @@ from samples.concepts.setup.chat_completion_services import Services, get_chat_c
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 # This sample shows how to create a chatbot using a kernel function.
 # This sample uses the following two main components:
