@@ -6,6 +6,7 @@ import json
 import logging
 import os
 from collections.abc import AsyncGenerator
+from typing import Literal
 
 import httpx
 import pytest
@@ -118,10 +119,14 @@ async def run_prompt(
     kernel: Kernel,
     is_inline: bool = False,
     is_streaming: bool = False,
-    template_format: str = None,
+    template_format: Literal[
+        "semantic-kernel",
+        "handlebars",
+        "jinja2",
+    ] = None,
     prompt: str = None,
     arguments: KernelArguments = None,
-    prompt_template_config: PromptTemplateConfig | None = None,
+    prompt_template_config: PromptTemplateConfig = None,
 ):
     if is_inline:
         if is_streaming:
@@ -148,7 +153,11 @@ async def run_prompt(
             )
     else:
         function = KernelFunctionFromPrompt(
-            function_name="test_func", plugin_name="test_plugin", prompt=prompt, template_format=template_format
+            function_name="test_func",
+            plugin_name="test_plugin",
+            prompt=prompt,
+            template_format=template_format,
+            prompt_template_config=prompt_template_config,
         )
         await run_function(kernel, is_streaming, function=function, arguments=arguments)
 
@@ -367,8 +376,9 @@ async def test_prompt_with_complex_objects(
         is_inline=is_inline,
         is_streaming=is_streaming,
         prompt=prompt,
+        template_format=template_format,
         prompt_template_config=PromptTemplateConfig(
-            template_format=template_format, allow_dangerously_set_content=True
+            template=prompt, template_format=template_format, allow_dangerously_set_content=True
         ),
         arguments=KernelArguments(city=City("Seattle")),
     )
@@ -452,8 +462,9 @@ async def test_prompt_with_helper_functions(
         is_inline=is_inline,
         is_streaming=is_streaming,
         prompt=prompt,
+        template_format=template_format,
         prompt_template_config=PromptTemplateConfig(
-            template_format=template_format, allow_dangerously_set_content=True
+            template=prompt, template_format=template_format, allow_dangerously_set_content=True
         ),
         arguments=KernelArguments(city="Seattle"),
     )
