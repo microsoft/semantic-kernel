@@ -245,6 +245,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
+        if prompt_template_config and not prompt_template_config.template:
+            prompt_template_config.template = prompt
+
         function = KernelFunctionFromPrompt(
             function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
@@ -290,6 +293,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+
+        if prompt_template_config and not prompt_template_config.template:
+            prompt_template_config.template = prompt
 
         function = KernelFunctionFromPrompt(
             function_name=function_name or generate_random_ascii_name(),

@@ -33,7 +33,8 @@ async def main():
         img.show()
 
     result = await kernel.invoke_prompt(
-        prompt_template_config=PromptTemplateConfig(template="{{$chat_history}}", allow_dangerously_set_content=True),
+        prompt="{{$chat_history}}",
+        prompt_template_config=PromptTemplateConfig(allow_dangerously_set_content=True),
         arguments=KernelArguments(
             chat_history=ChatHistory(
                 messages=[

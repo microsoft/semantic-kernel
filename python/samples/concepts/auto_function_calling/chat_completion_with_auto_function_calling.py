@@ -43,7 +43,7 @@ kernel.add_plugin(TimePlugin(), plugin_name="time")
 # Define a chat function (a template for how to handle user input).
 chat_function = kernel.add_function(
     prompt_template_config=PromptTemplateConfig(
-        prompt="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
+        template="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
     ),
     plugin_name="ChatBot",
     function_name="Chat",

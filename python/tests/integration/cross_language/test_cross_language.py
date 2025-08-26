@@ -366,8 +366,9 @@ async def test_prompt_with_complex_objects(
         kernel=kernel,
         is_inline=is_inline,
         is_streaming=is_streaming,
+        prompt=prompt,
         prompt_template_config=PromptTemplateConfig(
-            template=prompt, template_format=template_format, allow_dangerously_set_content=True
+            template_format=template_format, allow_dangerously_set_content=True
         ),
         arguments=KernelArguments(city=City("Seattle")),
     )
@@ -450,8 +451,10 @@ async def test_prompt_with_helper_functions(
         kernel=kernel,
         is_inline=is_inline,
         is_streaming=is_streaming,
-        template_format=template_format,
         prompt=prompt,
+        prompt_template_config=PromptTemplateConfig(
+            template_format=template_format, allow_dangerously_set_content=True
+        ),
         arguments=KernelArguments(city="Seattle"),
     )
 
