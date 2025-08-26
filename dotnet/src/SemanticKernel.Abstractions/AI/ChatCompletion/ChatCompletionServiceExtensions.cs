@@ -119,7 +119,6 @@ public static class ChatCompletionServiceExtensions
     /// The <see cref="IChatClient"/>. If the <paramref name="service"/> is an <see cref="IChatClient"/>, the <paramref name="service"/>
     /// will be returned. Otherwise, a new <see cref="IChatClient"/> will be created that wraps <paramref name="service"/>.
     /// </returns>
-    [Experimental("SKEXP0001")]
     public static IChatClient AsChatClient(this IChatCompletionService service)
     {
         Verify.NotNull(service);

@@ -62,7 +62,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// Name of the author of the message
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Experimental("SKEXP0001")]
     public string? AuthorName
     {
         get => this._authorName;

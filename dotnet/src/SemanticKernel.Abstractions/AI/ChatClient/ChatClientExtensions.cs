@@ -88,7 +88,6 @@ public static class ChatClientExtensions
     /// The <see cref="IChatCompletionService"/>. If <paramref name="client"/> is an <see cref="IChatCompletionService"/>, <paramref name="client"/> will
     /// be returned. Otherwise, a new <see cref="IChatCompletionService"/> will be created that wraps <paramref name="client"/>.
     /// </returns>
-    [Experimental("SKEXP0001")]
     public static IChatCompletionService AsChatCompletionService(this IChatClient client, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(client);
@@ -101,7 +100,6 @@ public static class ChatClientExtensions
     /// <summary>
     /// Get the model identifier for the specified <see cref="IChatClient"/>.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public static string? GetModelId(this IChatClient client)
     {
         Verify.NotNull(client);

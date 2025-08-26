@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extensions for configuring <see cref="KernelFunctionInvokingChatClient"/> instances.</summary>
-[Experimental("SKEXP0001")]
 public static class KernelFunctionInvokingChatClientBuilderExtensions
 {
     /// <summary>
