@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -36,10 +37,13 @@ req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 
 chat_function = kernel.add_function(
-    prompt="""{{system_message}}{% for item in chat_history %}{{ message(item) }}{% endfor %}""",
+    prompt_template_config=PromptTemplateConfig(
+        template="""{{system_message}}{% for item in chat_history %}{{ message(item) }}{% endfor %}""",
+        template_format="jinja2",
+        allow_dangerously_set_content=True,
+    ),
     function_name="chat",
     plugin_name="chat",
-    template_format="jinja2",
     prompt_execution_settings=req_settings,
 )
 
