@@ -3,6 +3,8 @@
 import asyncio
 from urllib.request import urlopen
 
+from semantic_kernel.prompt_template import PromptTemplateConfig
+
 try:
     from PIL import Image
 
@@ -32,6 +34,7 @@ async def main():
 
     result = await kernel.invoke_prompt(
         prompt="{{$chat_history}}",
+        prompt_template_config=PromptTemplateConfig(allow_dangerously_set_content=True),
         arguments=KernelArguments(
             chat_history=ChatHistory(
                 messages=[

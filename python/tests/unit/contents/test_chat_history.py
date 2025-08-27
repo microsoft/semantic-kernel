@@ -399,7 +399,8 @@ async def test_template_safe(chat_history: ChatHistory):
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -425,7 +426,8 @@ async def test_template_two_histories():  # ignore: E501
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -452,7 +454,8 @@ async def test_template_two_histories_one_empty():
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -472,7 +475,8 @@ async def test_template_history_only(chat_history: ChatHistory):
 
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
@@ -574,7 +578,8 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
 async def test_template_empty_history(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
