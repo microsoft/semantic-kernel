@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 
 """
@@ -38,7 +40,7 @@ template:
 
 async def main():
     # Setup the Azure OpenAI client
-    client = AzureResponsesAgent.create_client()
+    client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
 
     # Create the Responses Agent from the YAML spec
     # Note: the extras can be provided in the short-format (shown below) or

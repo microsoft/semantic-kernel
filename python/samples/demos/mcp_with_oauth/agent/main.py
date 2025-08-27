@@ -8,6 +8,7 @@ from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
+from azure.identity import AzureCliCredential
 from mcp.client.auth import OAuthClientProvider, TokenStorage
 from mcp.shared.auth import OAuthClientInformationFull, OAuthClientMetadata, OAuthToken
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
@@ -202,7 +203,7 @@ async def main():
         timeout=timedelta(seconds=60),
     ) as oath_plugin:
         agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=AzureCliCredential()),
             name="ProtectedAgent",
             instructions="Answer the users questions.",
             plugins=[oath_plugin],

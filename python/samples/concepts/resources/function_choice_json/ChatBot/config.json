@@ -6,7 +6,8 @@
     {
       "name": "chat_history",
       "description": "The on-going chat history",
-      "is_required": true
+      "is_required": true,
+      "allow_dangerously_set_content": true
     },
     {
       "name": "user_input",

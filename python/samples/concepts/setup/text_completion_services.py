@@ -91,9 +91,11 @@ def get_azure_openai_text_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
+    from azure.identity import AzureCliCredential
+
     from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, OpenAITextPromptExecutionSettings
 
-    text_service = AzureTextCompletion()
+    text_service = AzureTextCompletion(credential=AzureCliCredential())
     request_settings = OpenAITextPromptExecutionSettings()
 
     return text_service, request_settings

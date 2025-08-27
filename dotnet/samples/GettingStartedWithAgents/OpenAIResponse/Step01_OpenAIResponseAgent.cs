@@ -111,4 +111,33 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
             agentThread = await WriteAgentStreamMessageAsync(responseItems);
         }
     }
+
+    [Fact]
+    public async Task UseOpenAIResponseAgentWithImageContentAsync()
+    {
+        // Define the agent
+        OpenAIResponseAgent agent = new(this.Client)
+        {
+            Name = "ResponseAgent",
+            Instructions = "Provide a detailed description including the weather conditions.",
+        };
+
+        ICollection<ChatMessageContent> messages =
+        [
+            new ChatMessageContent(
+                AuthorRole.User,
+                items: [
+                    new TextContent("What is in this image?"),
+                    new ImageContent(new Uri("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"))
+                ]
+            ),
+        ];
+
+        // Invoke the agent and output the response
+        var responseItems = agent.InvokeAsync(messages);
+        await foreach (ChatMessageContent responseItem in responseItems)
+        {
+            WriteAgentChatMessage(responseItem);
+        }
+    }
 }
