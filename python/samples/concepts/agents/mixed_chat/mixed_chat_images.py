@@ -2,6 +2,9 @@
 
 import asyncio
 
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
 from semantic_kernel.contents import AnnotationContent
@@ -25,15 +28,17 @@ https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchest
 """
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, credential: TokenCredential) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
     return kernel
 
 
 async def main():
+    credential = AzureCliCredential()
+
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=credential)
 
     # Get the code interpreter tool and resources
     code_interpreter_tool, code_interpreter_resources = AzureAssistantAgent.configure_code_interpreter_tool()
@@ -48,10 +53,7 @@ async def main():
     )
 
     # Create the AzureAssistantAgent instance using the client and the assistant definition
-    analyst_agent = AzureAssistantAgent(
-        client=client,
-        definition=definition,
-    )
+    analyst_agent = AzureAssistantAgent(client=client, definition=definition)
 
     service_id = "summary"
     summary_agent = ChatCompletionAgent(

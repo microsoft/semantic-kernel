@@ -3,6 +3,7 @@
 from typing import Annotated
 
 import pytest
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -38,7 +39,9 @@ class TestChatCompletionAgentIntegration:
 
         plugins = []
 
-        service = AzureChatCompletion() if agent_service == "azure" else OpenAIChatCompletion()
+        service = (
+            AzureChatCompletion(credential=AzureCliCredential()) if agent_service == "azure" else OpenAIChatCompletion()
+        )
 
         if params.get("enable_kernel_function"):
             plugins.append(WeatherPlugin())

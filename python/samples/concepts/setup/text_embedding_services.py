@@ -95,9 +95,11 @@ def get_azure_openai_text_embedding_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
     """
+    from azure.identity import AzureCliCredential
+
     from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, OpenAIEmbeddingPromptExecutionSettings
 
-    embedding_service = AzureTextEmbedding(deployment_name="text-embedding-3-large")
+    embedding_service = AzureTextEmbedding(deployment_name="text-embedding-3-large", credential=AzureCliCredential())
     # Note: not all models support specifying the dimensions or there may be constraints on the dimensions
     request_settings = OpenAIEmbeddingPromptExecutionSettings(dimensions=3072)
 

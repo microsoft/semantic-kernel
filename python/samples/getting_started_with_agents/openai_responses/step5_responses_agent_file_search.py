@@ -2,6 +2,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AzureResponsesAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
@@ -28,7 +30,7 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client = AzureResponsesAgent.create_client()
+    client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
 
     pdf_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"

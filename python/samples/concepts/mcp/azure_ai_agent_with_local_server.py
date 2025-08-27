@@ -4,7 +4,7 @@ import asyncio
 import os
 from pathlib import Path
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
@@ -46,7 +46,7 @@ async def main():
     # Load the MCP Servers as Plugins
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
         MCPStdioPlugin(
             name="Github",

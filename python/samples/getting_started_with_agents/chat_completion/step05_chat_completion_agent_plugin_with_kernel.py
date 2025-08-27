@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -53,7 +55,7 @@ async def main():
     service_id = "agent"
     kernel = Kernel()
     kernel.add_plugin(MenuPlugin(), plugin_name="menu")
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()))
 
     # 2. Configure the function choice behavior to auto invoke kernel functions
     # so that the agent can automatically execute the menu plugin functions when needed

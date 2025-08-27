@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import KernelArguments
@@ -52,7 +54,7 @@ async def invoke_agent_with_template(template_str: str, template_format: str, de
     prompt_config = PromptTemplateConfig(template=template_str, template_format=template_format)
 
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="MyPoetAgent",
         prompt_template_config=prompt_config,
         arguments=KernelArguments(style=default_style),

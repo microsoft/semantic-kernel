@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
 
 """
@@ -38,7 +40,7 @@ template:
 
 async def main():
     # Setup the OpenAI Assistant client
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     try:
         # Create the Assistant Agent from the YAML spec

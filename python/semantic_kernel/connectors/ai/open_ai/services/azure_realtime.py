@@ -5,6 +5,7 @@ import sys
 from collections.abc import Callable, Coroutine, Mapping
 from typing import TYPE_CHECKING, Any
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
@@ -56,6 +57,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an AzureRealtimeWebsocket service.
@@ -90,7 +92,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             env_file_path: Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding: The encoding of the environment settings file. (Optional)
-            kwargs: Additional arguments.
+            credential: The credential to use for authentication. (Optional)
             kwargs: Additional arguments.
                 This can include:
                 kernel (Kernel): the kernel to use for function calls
@@ -129,6 +131,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             default_headers=default_headers,
             client=async_client,
             websocket_base_url=websocket_base_url,
+            credential=credential,
             **kwargs,
         )
 
@@ -159,6 +162,7 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an AzureRealtimeWebsocket service.
@@ -196,7 +200,7 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
             env_file_path: Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding: The encoding of the environment settings file. (Optional)
-            kwargs: Additional arguments.
+            credential: The credential to use for authentication. (Optional)
             kwargs: Additional arguments.
                 This can include:
                 kernel (Kernel): the kernel to use for function calls
@@ -237,6 +241,7 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
+            credential=credential,
             **kwargs,
         )
 

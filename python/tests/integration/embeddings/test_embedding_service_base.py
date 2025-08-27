@@ -4,7 +4,7 @@ from importlib import util
 
 import pytest
 from azure.ai.inference.aio import EmbeddingsClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import AzureCliCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
@@ -57,10 +57,11 @@ class EmbeddingServiceTestBase:
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[EmbeddingGeneratorBase | None, type[PromptExecutionSettings]]]:
         azure_openai_setup = True
+        credential = AzureCliCredential()
         azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.embedding_deployment_name
-        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
         if not ad_token:
             azure_openai_setup = False
         api_version = azure_openai_settings.api_version
@@ -75,19 +76,23 @@ class EmbeddingServiceTestBase:
                     api_version=api_version,
                     default_headers={"Test-User-X-ID": "test"},
                 ),
+                credential=credential,
             )
             azure_ai_inference_client = AzureAIInferenceTextEmbedding(
                 ai_model_id=deployment_name,
                 client=EmbeddingsClient(
                     endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                    credential=DefaultAzureCredential(),
+                    credential=credential,
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 ),
             )
 
         return {
             "openai": (OpenAITextEmbedding(), OpenAIEmbeddingPromptExecutionSettings),
-            "azure": (AzureTextEmbedding() if azure_openai_setup else None, OpenAIEmbeddingPromptExecutionSettings),
+            "azure": (
+                AzureTextEmbedding(credential=credential) if azure_openai_setup else None,
+                OpenAIEmbeddingPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, OpenAIEmbeddingPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceEmbeddingPromptExecutionSettings),
             "mistral_ai": (
