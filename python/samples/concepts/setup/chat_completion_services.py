@@ -122,9 +122,13 @@ def get_azure_openai_chat_completion_service_and_request_settings(
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
+    from azure.identity import AzureCliCredential
+
     from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
 
-    chat_service = AzureChatCompletion(service_id=service_id, instruction_role=instruction_role)
+    chat_service = AzureChatCompletion(
+        service_id=service_id, instruction_role=instruction_role, credential=AzureCliCredential()
+    )
     request_settings = AzureChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings

@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -46,7 +46,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         AGENT_NAME = "Host"

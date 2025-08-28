@@ -7,6 +7,7 @@ from random import randint
 import numpy as np
 import pytest
 import pytest_asyncio
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
@@ -100,9 +101,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
                 )
             ]
         )
-        chat_service = AzureChatCompletion(
-            service_id="chat-gpt-extensions",
-        )
+        chat_service = AzureChatCompletion(service_id="chat-gpt-extensions", credential=AzureCliCredential())
         kernel.add_service(chat_service)
 
         prompt = "{{$chat_history}}{{$input}}"

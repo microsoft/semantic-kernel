@@ -9,7 +9,7 @@ import logging
 from typing import Annotated, Any, Literal
 
 import anyio
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.functions import kernel_function
@@ -91,7 +91,7 @@ class MenuPlugin:
 async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -> None:
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         agent = AzureAIAgent(

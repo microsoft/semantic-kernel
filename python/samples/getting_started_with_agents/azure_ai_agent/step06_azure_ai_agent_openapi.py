@@ -5,7 +5,7 @@ import json
 import os
 
 from azure.ai.agents.models import OpenApiAnonymousAuthDetails, OpenApiTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
@@ -35,7 +35,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Read in the OpenAPI spec files

@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, OpenAITextCompletion
 from semantic_kernel.functions import KernelArguments
@@ -18,7 +20,7 @@ async def main():
     # Configure AI service used by the kernel
     if useAzureOpenAI:
         kernel.add_service(
-            AzureTextCompletion(service_id=service_id),
+            AzureTextCompletion(service_id=service_id, credential=AzureCliCredential()),
         )
     else:
         kernel.add_service(

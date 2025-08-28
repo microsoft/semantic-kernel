@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
@@ -56,7 +58,7 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
 
 async def main() -> None:
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Assistant",
         instructions="Answer questions about the menu.",
         plugins=[MenuPlugin()],

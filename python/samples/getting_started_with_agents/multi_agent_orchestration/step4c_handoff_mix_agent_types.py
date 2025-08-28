@@ -3,7 +3,9 @@
 import asyncio
 
 from azure.ai.projects.aio import AIProjectClient
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity import AzureCliCredential
+from azure.identity.aio import AzureCliCredential as AsyncAzureCliCredential
+from opentelemetry.trace import NoOpTracerProvider
 
 from samples.getting_started_with_agents.multi_agent_orchestration.observability import enable_observability
 from semantic_kernel.agents import (
@@ -34,13 +36,13 @@ The Handoff orchestration doesn't support the following agent types:
 - CopilotStudioAgent
 """
 
-azure_credential: DefaultAzureCredential | None = None
+azure_credential: AsyncAzureCliCredential | None = None
 azure_ai_agent_client: AIProjectClient | None = None
 
 
 async def init_azure_ai_agent_clients():
     global azure_credential, azure_ai_agent_client
-    azure_credential = DefaultAzureCredential()
+    azure_credential = AsyncAzureCliCredential()
     azure_ai_agent_client = AzureAIAgent.create_client(credential=azure_credential)
 
 
@@ -83,16 +85,18 @@ async def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 
     Feel free to add or remove agents and handoff connections.
     """
+    credential = AzureCliCredential()
+
     # A Chat Completion agent that is backed by an Azure OpenAI service
     support_agent = ChatCompletionAgent(
         name="TriageAgent",
         description="A customer support agent that triages issues.",
         instructions="Handle customer requests.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # An Azure Assistant agent that is backed by the Azure OpenAI Assistant API
-    azure_assistant_agent_client = AzureAssistantAgent.create_client()
+    azure_assistant_agent_client = AzureAssistantAgent.create_client(credential=credential)
     azure_assistant_agent_definition = await azure_assistant_agent_client.beta.assistants.create(
         model=AzureOpenAISettings().chat_deployment_name,
         description="A customer support agent that handles refunds.",
@@ -106,7 +110,7 @@ async def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
     )
 
     # An Azure Responses agent that is backed by the Azure OpenAI Responses API
-    azure_responses_agent_client = AzureResponsesAgent.create_client()
+    azure_responses_agent_client = AzureResponsesAgent.create_client(credential=credential)
     order_status_agent = AzureResponsesAgent(
         ai_model_id=AzureOpenAISettings().responses_deployment_name,
         client=azure_responses_agent_client,
@@ -197,7 +201,7 @@ async def main():
     )
 
     # 2. Create a runtime and start it
-    runtime = InProcessRuntime()
+    runtime = InProcessRuntime(tracer_provider=NoOpTracerProvider())
     runtime.start()
 
     try:
