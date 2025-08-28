@@ -7,7 +7,7 @@ from azure.ai.agents.models import (
     ResponseFormatJsonSchema,
     ResponseFormatJsonSchemaType,
 )
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import (
@@ -37,7 +37,7 @@ class Planet(BaseModel):
 async def main():
     ai_agent_settings = AzureAIAgentSettings()
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         # Create the agent definition

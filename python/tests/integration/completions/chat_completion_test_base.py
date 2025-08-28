@@ -12,7 +12,7 @@ else:
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import AzureCliCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion, AnthropicChatPromptExecutionSettings
@@ -93,10 +93,11 @@ class ChatCompletionTestBase(CompletionTestBase):
     )  # This needs to be scoped to function to avoid resources getting cleaned up after each test
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
+        credential = AzureCliCredential()
         azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.chat_deployment_name
-        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
         if not ad_token:
             azure_openai_setup = False
         api_version = azure_openai_settings.api_version
@@ -117,14 +118,17 @@ class ChatCompletionTestBase(CompletionTestBase):
                 ai_model_id=deployment_name,
                 client=ChatCompletionsClient(
                     endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                    credential=DefaultAzureCredential(),  # type: ignore
+                    credential=credential,  # type: ignore
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 ),
             )
 
         return {
             "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
-            "azure": (AzureChatCompletion() if azure_openai_setup else None, AzureChatPromptExecutionSettings),
+            "azure": (
+                AzureChatCompletion(credential=credential) if azure_openai_setup else None,
+                AzureChatPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
             "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Connectors.MongoDB;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Testcontainers.MongoDb;
 using VectorData.ConformanceTests.Support;
@@ -56,6 +57,18 @@ internal sealed class MongoTestStore : TestStore
             // ReadConcern = ReadConcern.Linearizable,
             // WriteConcern = WriteConcern.WMajority
         };
+    }
+
+    private static readonly string? s_baseObjectId = ObjectId.GenerateNewId().ToString().Substring(0, 14);
+
+    public override TKey GenerateKey<TKey>(int value)
+    {
+        if (typeof(TKey) == typeof(ObjectId))
+        {
+            return (TKey)(object)ObjectId.Parse(s_baseObjectId + value.ToString("0000000000"));
+        }
+
+        return base.GenerateKey<TKey>(value);
     }
 
     protected override async Task StopAsync()

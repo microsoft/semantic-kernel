@@ -26,6 +26,7 @@ prompt_template_config = PromptTemplateConfig(
     template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
     description="Given a section of a conversation transcript, summarize the part of the conversation.",
     execution_settings=execution_settings,
+    allow_dangerously_set_content=True,
 )
 
 # Import the ConversationSummaryPlugin

@@ -8,14 +8,12 @@ from typing import Any
 
 from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.core.credentials import AzureKeyCredential
+from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
-    AsyncDefaultAzureCredentialWrapper,
-)
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -53,6 +51,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | EmbeddingsClient | None = None,
         instruction_role: str | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
@@ -70,6 +69,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
             instruction_role (str | None): The role to use for 'instruction' messages. (Optional)
+            credential: The credential to use for authentication. (Optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -95,10 +95,12 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
                 )
             else:
-                # Try to create the client with a DefaultAzureCredential
+                if credential is None:
+                    raise ServiceInitializationError("The 'credential' parameter is required for authentication.")
+
                 client = AzureAIInferenceClientType.get_client_class(client_type)(
                     endpoint=endpoint,
-                    credential=AsyncDefaultAzureCredentialWrapper(),
+                    credential=credential,
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
                 )
 

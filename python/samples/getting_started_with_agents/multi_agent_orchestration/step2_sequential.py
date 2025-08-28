@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -23,6 +25,8 @@ def get_agents() -> list[Agent]:
 
     Feel free to add or remove agents.
     """
+    credential = AzureCliCredential()
+
     concept_extractor_agent = ChatCompletionAgent(
         name="ConceptExtractorAgent",
         instructions=(
@@ -31,7 +35,7 @@ def get_agents() -> list[Agent]:
             "- Target audience\n"
             "- Unique selling points\n\n"
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     writer_agent = ChatCompletionAgent(
         name="WriterAgent",
@@ -40,7 +44,7 @@ def get_agents() -> list[Agent]:
             "compose a compelling marketing copy (like a newsletter section) that highlights these points. "
             "Output should be short (around 150 words), output just the copy as a single text block."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     format_proof_agent = ChatCompletionAgent(
         name="FormatProofAgent",
@@ -48,7 +52,7 @@ def get_agents() -> list[Agent]:
             "You are an editor. Given the draft copy, correct grammar, improve clarity, ensure consistent tone, "
             "give format and make it polished. Output the final improved copy as a single text block."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # The order of the agents in the list will be the order in which they are executed

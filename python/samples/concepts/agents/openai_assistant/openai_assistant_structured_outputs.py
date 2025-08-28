@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
@@ -53,7 +54,7 @@ class ResponseModel(BaseModel):
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(

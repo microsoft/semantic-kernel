@@ -5,7 +5,7 @@ import logging
 
 from azure.ai.agents.models import AzureAISearchTool
 from azure.ai.projects.models import ConnectionType
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 
@@ -39,7 +39,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         ai_search_conn_id = ""

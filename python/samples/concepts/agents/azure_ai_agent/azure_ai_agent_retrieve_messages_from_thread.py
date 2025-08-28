@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions import kernel_function
@@ -45,7 +45,7 @@ USER_INPUTS = [
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create an agent on the Azure AI agent service
