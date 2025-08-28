@@ -218,12 +218,15 @@ class ResponsesAgentThreadActions:
             except asyncio.TimeoutError:
                 raise AgentInvokeException("Polling timed out before completion.")
 
+            # Type narrowing for subsequent usage
+            assert isinstance(response, Response)  # nosec
+
             # Extract reasoning content and yield as intermediate message (not visible to user)
             reasoning_items = cls._get_reasoning_items_from_output(response.output)  # type: ignore
             if reasoning_items:
                 reasoning_message = ChatMessageContent(
                     role=AuthorRole.ASSISTANT,
-                    items=reasoning_items,
+                    items=cast(list[CMC_ITEM_TYPES], reasoning_items),
                     ai_model_id=agent.ai_model_id,
                     metadata=cls._get_metadata_from_response(response),
                     name=agent.name,
@@ -466,7 +469,7 @@ class ResponsesAgentThreadActions:
                                 await on_intermediate_message(reasoning_msg)
                         case ResponseReasoningTextDoneEvent():
                             if on_intermediate_message:
-                                reasoning_content = ReasoningContent(
+                                final_reasoning_content = ReasoningContent(
                                     text=event.text,
                                     metadata={
                                         "item_id": event.item_id,
@@ -479,7 +482,7 @@ class ResponsesAgentThreadActions:
                                     agent=agent,
                                     metadata=metadata,
                                     event=event,
-                                    items=[reasoning_content],
+                                    items=[final_reasoning_content],
                                     choice_index=request_index,
                                 )
                                 await on_intermediate_message(reasoning_msg)
@@ -506,7 +509,7 @@ class ResponsesAgentThreadActions:
                                 await on_intermediate_message(reasoning_msg)
                         case ResponseReasoningSummaryTextDoneEvent():
                             if on_intermediate_message:
-                                reasoning_content = ReasoningContent(
+                                final_reasoning_summary_content = ReasoningContent(
                                     text=event.text,
                                     metadata={
                                         "item_id": event.item_id,
@@ -520,7 +523,7 @@ class ResponsesAgentThreadActions:
                                     agent=agent,
                                     metadata=metadata,
                                     event=event,
-                                    items=[reasoning_content],
+                                    items=[final_reasoning_summary_content],
                                     choice_index=request_index,
                                 )
                                 await on_intermediate_message(reasoning_msg)
