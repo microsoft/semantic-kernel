@@ -33,7 +33,7 @@ class ReasoningContent(KernelContent):
         to_dict: Serialize to a dict suitable for message payloads.
     """
 
-    content_type: Literal[ContentTypes.REASONING_CONTENT] = Field(REASONING_CONTENT_TAG, init=False)
+    content_type: Literal[ContentTypes.REASONING_CONTENT] = Field(ContentTypes.REASONING_CONTENT, init=False)
     tag: ClassVar[str] = REASONING_CONTENT_TAG
     text: str | None = None
 
