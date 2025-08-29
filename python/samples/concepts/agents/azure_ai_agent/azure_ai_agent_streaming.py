@@ -6,7 +6,6 @@ from typing import Annotated
 from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -35,12 +34,6 @@ class MenuPlugin:
         self, menu_item: Annotated[str, "The name of the menu item."]
     ) -> Annotated[str, "Returns the price of the menu item."]:
         return "$9.99"
-
-
-async def on_intermediate_msg(msg: ChatMessageContent) -> None:
-    """Callback for intermediate messages."""
-    if msg.metadata.get("thread_message_id"):
-        print(f"Intermediate msg for {msg.content} with thread message id: {msg.metadata['thread_message_id']}")
 
 
 async def main() -> None:
@@ -85,18 +78,19 @@ async def main() -> None:
                 print(f"# User: '{user_input}'")
                 first_chunk = True
                 async for response in agent.invoke_stream(
-                    messages=user_input, thread=thread, on_intermediate_message=on_intermediate_msg
+                    messages=user_input,
+                    thread=thread,
                 ):
                     if first_chunk:
                         print(f"# {response.role}: ", end="", flush=True)
+                        # Show the thread message id before the first text chunk
+                        if "thread_message_id" in response.content.metadata:
+                            current_id = response.content.metadata["thread_message_id"]
+                            if current_id != last_thread_msg_id:
+                                print(f"(thread message id: {current_id}) ", end="", flush=True)
+                                last_thread_msg_id = current_id
                         first_chunk = False
                     print(response.content, end="", flush=True)
-                    # Print thread message id only once per message (on change)
-                    if "thread_message_id" in response.content.metadata:
-                        current_id = response.content.metadata["thread_message_id"]
-                        if current_id != last_thread_msg_id:
-                            print(f" (thread message id: {current_id})", end="", flush=True)
-                            last_thread_msg_id = current_id
                     thread = response.thread
                 print()
         finally:
@@ -108,16 +102,16 @@ async def main() -> None:
         Sample Output:
 
         # User: 'Hello'
-        # AuthorRole.ASSISTANT: Hello (thread message id: msg_n0WKbpn6Uycn4of7gB8epoB7)! How can I assist you with 
+        # AuthorRole.ASSISTANT: (thread message id: msg_HZ2h4Wzbj7GEcnVCjnyEuYWT) Hello! How can I assist you with 
             the menu today?
         # User: 'What is the special soup?'
-        # AuthorRole.ASSISTANT: The (thread message id: msg_lUBXSeTnSvOSJPjTh5B1jPok) special soup today is 
-            Clam Chowder. Would you like to know more about it or anything else on the menu?
+        # AuthorRole.ASSISTANT: (thread message id: msg_TSjkJK6hHJojIkPvF6uUofHD) The special soup today is 
+            Clam Chowder. Would you like to know more about it or anything else from the menu?
         # User: 'How much does that cost?'
-        # AuthorRole.ASSISTANT: The (thread message id: msg_3onftkPwMceCDYEDRHdwZTUd) Clam Chowder costs $9.99. 
-            Would you like to order it or need information about something else?
+        # AuthorRole.ASSISTANT: (thread message id: msg_liwTpBFrB9JpCM1oM9EXKiwq) The Clam Chowder costs $9.99. 
+            Is there anything else you'd like to know?
         # User: 'Thank you'
-        # AuthorRole.ASSISTANT: You're (thread message id: msg_DxE4nDzNi8D3z7QciuBewJbe) welcome! 
+        # AuthorRole.ASSISTANT: (thread message id: msg_K6lpR3gYIHethXq17T6gJcxi) You're welcome! 
             If you have any more questions or need assistance, feel free to ask. Enjoy your meal!
         """
 
