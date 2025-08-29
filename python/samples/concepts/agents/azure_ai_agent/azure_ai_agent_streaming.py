@@ -6,7 +6,7 @@ from typing import Annotated
 from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
