@@ -53,6 +53,8 @@ if TYPE_CHECKING:
         RunStepDeltaToolCallObject,
     )
 
+THREAD_MESSAGE_ID = "thread_message_id"
+
 """
 The methods in this file are used with Azure AI Agent
 related code. They are used to invoke, create chat messages,
@@ -200,7 +202,7 @@ def generate_streaming_message_content(
 
     metadata: dict[str, Any] | None = None
     if thread_msg_id:
-        metadata = {"thread_message_id": thread_msg_id}
+        metadata = {THREAD_MESSAGE_ID: thread_msg_id}
 
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
