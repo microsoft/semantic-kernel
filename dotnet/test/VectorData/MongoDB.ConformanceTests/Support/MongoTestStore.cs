@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Configurations;
+using DotNet.Testcontainers.Containers;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -44,6 +47,7 @@ internal sealed class MongoTestStore : TestStore
     {
         this._container = new MongoDbBuilder()
             .WithImage("mongodb/mongodb-atlas-local:7.0.6")
+            .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new MongoDbWaitUntil()))
             .Build();
 
         using CancellationTokenSource cts = new();
@@ -77,6 +81,18 @@ internal sealed class MongoTestStore : TestStore
         {
             await this._container.StopAsync();
             this._container = null;
+        }
+    }
+
+    private sealed class MongoDbWaitUntil : IWaitUntil
+    {
+        /// <inheritdoc />
+        public async Task<bool> UntilAsync(IContainer container)
+        {
+            var (stdout, _) = await container.GetLogsAsync(timestampsEnabled: false)
+                .ConfigureAwait(false);
+
+            return stdout.Contains("\"msg\":\"Waiting for connections\"");
         }
     }
 }
