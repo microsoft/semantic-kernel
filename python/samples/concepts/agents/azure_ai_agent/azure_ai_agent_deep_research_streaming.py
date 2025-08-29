@@ -50,13 +50,13 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         azure_ai_agent_settings = AzureAIAgentSettings()
-        # 1. Define the MCP tool with the server URL
+        # 1. Define the Deep Research tool
         deep_research_tool = DeepResearchTool(
             bing_grounding_connection_id=azure_ai_agent_settings.bing_connection_id,
             deep_research_model=azure_ai_agent_settings.deep_research_model,
         )
 
-        # 2. Create an agent with the MCP tool on the Azure AI agent service
+        # 2. Create an agent with the tool on the Azure AI agent service
         agent_definition = await client.agents.create_agent(
             model="gpt-4o",  # Deep Research requires the use of gpt-4o for scope clarification.
             tools=deep_research_tool.definitions,
