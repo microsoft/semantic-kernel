@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import re
 from typing import TYPE_CHECKING, Any, cast
 
 from azure.ai.agents.models import (
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )
+
+_URL_PATTERN = re.compile(r"https?://[^\s\]\)]+", re.IGNORECASE)
 
 """
 The methods in this file are used with Azure AI Agent
@@ -420,12 +423,9 @@ def generate_deep_research_content(
 
 def _extract_unique_urls(text: str) -> list[str]:
     """Extract unique HTTP/HTTPS URLs from text in order of appearance."""
-    import re
-
-    url_pattern = re.compile(r"https?://[^\s\]\)]+", re.IGNORECASE)
     seen: set[str] = set()
     ordered: list[str] = []
-    for match in url_pattern.finditer(text or ""):
+    for match in _URL_PATTERN.finditer(text or ""):
         url = match.group(0)
         if url not in seen:
             seen.add(url)
