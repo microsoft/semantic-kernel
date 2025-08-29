@@ -13,7 +13,8 @@ from semantic_kernel.functions import kernel_function
 The following sample demonstrates how to create an Azure AI Agent
 and use it with streaming responses. The agent is configured to use
 a plugin that provides a list of specials from the menu and the price
-of the requested menu item.
+of the requested menu item. The thread message ID is also printed as each
+message is processed.
 """
 
 
@@ -38,7 +39,7 @@ class MenuPlugin:
 
 async def on_intermediate_msg(msg: ChatMessageContent) -> None:
     """Callback for intermediate messages."""
-    if msg.metadata.get("message_id"):
+    if msg.metadata.get("thread_message_id"):
         print(f"Intermediate msg for {msg.content} with thread message id: {msg.metadata['thread_message_id']}")
 
 
@@ -79,6 +80,7 @@ async def main() -> None:
         ]
 
         try:
+            last_thread_msg_id = None
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'")
                 first_chunk = True
@@ -89,12 +91,35 @@ async def main() -> None:
                         print(f"# {response.role}: ", end="", flush=True)
                         first_chunk = False
                     print(response.content, end="", flush=True)
+                    # Print thread message id only once per message (on change)
+                    if "thread_message_id" in response.content.metadata:
+                        current_id = response.content.metadata["thread_message_id"]
+                        if current_id != last_thread_msg_id:
+                            print(f" (thread message id: {current_id})", end="", flush=True)
+                            last_thread_msg_id = current_id
                     thread = response.thread
                 print()
         finally:
             # Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
+
+        """
+        Sample Output:
+
+        # User: 'Hello'
+        # AuthorRole.ASSISTANT: Hello (thread message id: msg_n0WKbpn6Uycn4of7gB8epoB7)! How can I assist you with 
+            the menu today?
+        # User: 'What is the special soup?'
+        # AuthorRole.ASSISTANT: The (thread message id: msg_lUBXSeTnSvOSJPjTh5B1jPok) special soup today is 
+            Clam Chowder. Would you like to know more about it or anything else on the menu?
+        # User: 'How much does that cost?'
+        # AuthorRole.ASSISTANT: The (thread message id: msg_3onftkPwMceCDYEDRHdwZTUd) Clam Chowder costs $9.99. 
+            Would you like to order it or need information about something else?
+        # User: 'Thank you'
+        # AuthorRole.ASSISTANT: You're (thread message id: msg_DxE4nDzNi8D3z7QciuBewJbe) welcome! 
+            If you have any more questions or need assistance, feel free to ask. Enjoy your meal!
+        """
 
 
 if __name__ == "__main__":

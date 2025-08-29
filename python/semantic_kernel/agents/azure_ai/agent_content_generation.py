@@ -117,6 +117,7 @@ def generate_message_content(
         {
             "created_at": completed_step.created_at,
             "message_id": message.id,  # message needs to be defined in context
+            "thread_message_id": message.id,  # Add `thread_message_id` to avoid breaking the existing `message_id` key
             "step_id": completed_step.id,
             "run_id": completed_step.run_id,
             "thread_id": completed_step.thread_id,
