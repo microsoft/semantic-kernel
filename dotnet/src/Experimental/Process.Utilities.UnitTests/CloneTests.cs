@@ -137,10 +137,44 @@ public class CloneTests
         VerifyProcess(source, copy);
     }
 
+    /// <summary>
+    /// Verify that cloning a <see cref="KernelProcessStepInfo"/> with a new run ID and edges works correctly.
+    /// </summary>
+    [Fact]
+    public void VerifyCloneWithIdAndEdgesTest()
+    {
+        // Arrange
+        string runningId = Guid.NewGuid().ToString();
+        string stepName = nameof(VerifyCloneWithIdAndEdgesTest);
+        Dictionary<string, List<KernelProcessEdge>> originalStepEdges = new()
+        {
+            { $"{stepName}.SomeOutputEvent1", CreateTestProcessEdges(1) },
+            { $"{stepName}.{stepName}", CreateTestProcessEdges(3) },
+        };
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(stepName, "v1"), originalStepEdges);
+
+        // Act
+        KernelProcessStepInfo copy = step.CloneWithIdAndEdges(runningId, NullLogger.Instance);
+
+        // Assert
+        Assert.NotNull(copy);
+        Assert.Equal(stepName, copy.State.StepId);
+        Assert.Equal(runningId, copy.State.RunId);
+        foreach (var (expectedEdges, actualEdges) in step.Edges.Zip(copy.Edges))
+        {
+            Assert.Contains(runningId, actualEdges.Key);
+
+            var runningIdCountInEvent = actualEdges.Key.Split(runningId).Length - 1;
+            Assert.Equal(1, runningIdCountInEvent);
+
+            Assert.Equivalent(expectedEdges.Value, actualEdges.Value);
+        }
+    }
+
     private static void VerifyProcess(KernelProcess expected, KernelProcess actual)
     {
-        Assert.Equal(expected.State.Id, actual.State.Id);
-        Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.State.RunId, actual.State.RunId);
+        Assert.Equal(expected.State.StepId, actual.State.StepId);
         Assert.Equal(expected.State.Version, actual.State.Version);
         Assert.Equal(expected.InnerStepType, actual.InnerStepType);
         Assert.Equivalent(expected.Edges, actual.Edges);
@@ -163,11 +197,19 @@ public class CloneTests
         {
             {
                 "sourceId",
-                [
-                    new KernelProcessEdge("sourceId", new KernelProcessFunctionTarget("sourceId", "targetFunction", "targetParameter", "targetEventId")),
-                ]
+                CreateTestProcessEdges(1)
             }
         };
+
+    private static List<KernelProcessEdge> CreateTestProcessEdges(int count = 1)
+    {
+        var edges = new List<KernelProcessEdge>();
+        for (int i = 0; i < count; i++)
+        {
+            edges.Add(new KernelProcessEdge($"sourceId{i}", new KernelProcessFunctionTarget($"sourceId{i}", "targetFunction", "targetParameter", $"targetEventId{i}")));
+        }
+        return edges;
+    }
 
     private sealed record TestState
     {

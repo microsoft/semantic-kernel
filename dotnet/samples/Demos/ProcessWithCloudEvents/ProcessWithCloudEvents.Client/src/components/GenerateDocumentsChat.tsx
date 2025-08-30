@@ -22,6 +22,7 @@ import Markdown from "react-markdown";
 import { ChatMessageContent, ChatUser } from "../common/ChatConstants";
 import SimpleChat from "./SimpleChat";
 import { CheckIcon, RejectIcon } from "./Icons";
+import ChatHeader from "./ChatHeader";
 
 export interface NewDocument {
     title?: string;
@@ -51,12 +52,6 @@ const useStyles = makeStyles({
         rowGap: "8px",
         width: "90%",
     },
-    processIdContainer: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: "8px",
-        alignItems: "flex-end",
-    },
     buttonsFamily: {
         display: "flex",
         columnGap: "40px",
@@ -68,10 +63,6 @@ const useStyles = makeStyles({
     },
     newDocHeaderHeader: {
         marginTop: "0",
-    },
-    headerContainer: {
-        display: "flex",
-        justifyContent: "space-between",
     },
 });
 
@@ -264,13 +255,7 @@ const GenerateDocsChat: React.FC<GenerateDocsChatProps> = ({
 
     return (
         <div className={styles.root}>
-            <div className={styles.headerContainer}>
-                <Title2>Document Generation with {cloudTechnologyName}</Title2>
-                <div className={styles.processIdContainer}>
-                    <Label>ProcessId : </Label>
-                    <Label>{processId ?? "-"}</Label>
-                </div>
-            </div>
+            <ChatHeader header={`Document Generation with ${cloudTechnologyName}`} processId={processId} />
             <SimpleChat messages={messages} />
             <div className={styles.buttonsFamily}>
                 <Popover withArrow>

@@ -26,9 +26,9 @@ public class ProcessProxyBuilderTests
         ProcessProxyBuilder proxy = new([this._topicName1, this._topicName2, this._topicName3], this._proxyName, null);
 
         // Assert
-        Assert.NotNull(proxy.Id);
-        Assert.NotNull(proxy.Name);
-        Assert.Equal(this._proxyName, proxy.Name);
+        Assert.NotNull(proxy.StepId);
+        Assert.NotNull(proxy.StepId);
+        Assert.Equal(this._proxyName, proxy.StepId);
         Assert.True(proxy._externalTopicUsage.Count > 0);
     }
 
@@ -78,8 +78,8 @@ public class ProcessProxyBuilderTests
         // Assert
         Assert.NotNull(proxyInfo);
         Assert.IsType<KernelProcessProxy>(proxyInfo);
-        Assert.Equal(proxy.Name, proxyInfo.State.Name);
-        Assert.Equal(proxy.Id, proxyInfo.State.Id);
+        Assert.Equal(proxy.StepId, proxyInfo.State.StepId);
+        Assert.Equal(proxy.StepId, proxyInfo.State.RunId);
         var processProxy = (KernelProcessProxy)proxyInfo;
         Assert.NotNull(processProxy?.ProxyMetadata);
         Assert.Equal(proxy._eventMetadata, processProxy.ProxyMetadata.EventMetadata);
