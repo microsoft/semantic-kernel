@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     )
 
 _URL_PATTERN = re.compile(r"https?://[^\s\]\)]+", re.IGNORECASE)
+THREAD_MESSAGE_ID = "thread_message_id"
 
 """
 The methods in this file are used with Azure AI Agent
@@ -119,6 +120,7 @@ def generate_message_content(
         {
             "created_at": completed_step.created_at,
             "message_id": message.id,  # message needs to be defined in context
+            "thread_message_id": message.id,  # Add `thread_message_id` to avoid breaking the existing `message_id` key
             "step_id": completed_step.id,
             "run_id": completed_step.run_id,
             "thread_id": completed_step.thread_id,
@@ -154,7 +156,9 @@ def generate_message_content(
 
 @experimental
 def generate_streaming_message_content(
-    assistant_name: str, message_delta_event: "MessageDeltaChunk"
+    assistant_name: str,
+    message_delta_event: "MessageDeltaChunk",
+    thread_msg_id: str | None = None,
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
@@ -200,7 +204,11 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
+    metadata: dict[str, Any] | None = None
+    if thread_msg_id:
+        metadata = {THREAD_MESSAGE_ID: thread_msg_id}
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
 @experimental

@@ -39,6 +39,7 @@ from azure.ai.agents.models import (
 from azure.ai.agents.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    THREAD_MESSAGE_ID,
     generate_azure_ai_search_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
@@ -565,6 +566,7 @@ class AgentThreadActions:
         output_messages: "list[ChatMessageContent] | None" = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
+        thread_msg_id = None
         while True:
             # Use 'async with' only if the stream supports async context management (main agent stream).
             # Tool output handlers only support async iteration, not context management.
@@ -582,8 +584,14 @@ class AgentThreadActions:
                     run_step = cast(RunStep, event_data)
                     logger.info(f"Assistant run in progress with ID: {run_step.id}")
 
+                elif event_type == AgentStreamEvent.THREAD_MESSAGE_CREATED:
+                    # Keep the current message id stable unless a new one arrives
+                    if thread_msg_id != event_data.id:
+                        thread_msg_id = event_data.id
+                    logger.info(f"Assistant message created with ID: {thread_msg_id}")
+
                 elif event_type == AgentStreamEvent.THREAD_MESSAGE_DELTA:
-                    yield generate_streaming_message_content(agent.name, event_data)
+                    yield generate_streaming_message_content(agent.name, event_data, thread_msg_id)
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_STEP_COMPLETED:
                     step_completed = cast(RunStep, event_data)
@@ -641,6 +649,8 @@ class AgentThreadActions:
                                         agent_name=agent.name, step_details=details
                                     )
                             if content:
+                                if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                    content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                 if output_messages is not None:
                                     output_messages.append(content)
                                 if content_is_visible:
@@ -673,6 +683,8 @@ class AgentThreadActions:
                             action_result.function_result_streaming_content,
                         ):
                             if content and output_messages is not None:
+                                if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                    content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                 output_messages.append(content)
 
                         handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
@@ -711,6 +723,8 @@ class AgentThreadActions:
                                     agent_name=agent.name, mcp_tool_calls=mcp_tool_calls
                                 )
                                 if content:
+                                    if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                        content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                     output_messages.append(content)
 
                             # Create tool approvals for MCP calls
