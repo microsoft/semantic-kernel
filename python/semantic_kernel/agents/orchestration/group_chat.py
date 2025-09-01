@@ -161,6 +161,28 @@ class GroupChatManager(KernelBaseModel, ABC):
         """
         ...
 
+    async def get_human_response(self, chat_history: ChatHistory) -> Awaitable[ChatMessageContent] | ChatMessageContent:
+        """Get human response. This method can be overridden to provide custom human response logic.
+
+        By default, this method calls the human_response_function if it's set, otherwise raises NotImplementedError.
+        Override this method to provide custom implementation that has access to instance state.
+
+        Args:
+            chat_history (ChatHistory): The chat history of the group chat.
+
+        Returns:
+            Awaitable[ChatMessageContent] | ChatMessageContent: The human response.
+
+        Raises:
+            NotImplementedError: If no human response function is set and method is not overridden.
+        """
+        if self.human_response_function:
+            return self.human_response_function(chat_history)
+        raise NotImplementedError(
+            "No human response function provided. Either set human_response_function parameter "
+            "or override get_human_response method."
+        )
+
     async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
         """Check if the group chat should terminate.
 

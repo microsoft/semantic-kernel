@@ -397,4 +397,90 @@ async def test_round_robin_group_chat_manager_select_next_agent():
     assert manager.current_round == 3
 
 
+async def test_get_human_response_with_function():
+    """Test the get_human_response method with human_response_function set."""
+
+    async def human_response_function(chat_history: ChatHistory) -> ChatMessageContent:
+        return ChatMessageContent(role=AuthorRole.USER, content="test_response")
+
+    manager = RoundRobinGroupChatManager(human_response_function=human_response_function)
+    chat_history = ChatHistory()
+
+    response = await manager.get_human_response(chat_history)
+
+    assert isinstance(response, ChatMessageContent)
+    assert response.role == AuthorRole.USER
+    assert response.content == "test_response"
+
+
+async def test_get_human_response_without_function():
+    """Test the get_human_response method without human_response_function set."""
+    manager = RoundRobinGroupChatManager()
+    chat_history = ChatHistory()
+
+    with pytest.raises(NotImplementedError) as exc_info:
+        await manager.get_human_response(chat_history)
+
+    assert "No human response function provided" in str(exc_info.value)
+
+
+async def test_get_human_response_override():
+    """Test overriding the get_human_response method in a custom manager."""
+
+    class CustomGroupChatManager(RoundRobinGroupChatManager):
+        def __init__(self, custom_response: str, **kwargs):
+            super().__init__(**kwargs)
+            self.custom_response = custom_response
+
+        async def get_human_response(self, chat_history: ChatHistory) -> ChatMessageContent:
+            return ChatMessageContent(role=AuthorRole.USER, content=self.custom_response)
+
+    manager = CustomGroupChatManager(custom_response="custom_test_response")
+    chat_history = ChatHistory()
+
+    response = await manager.get_human_response(chat_history)
+
+    assert isinstance(response, ChatMessageContent)
+    assert response.role == AuthorRole.USER
+    assert response.content == "custom_test_response"
+
+
+async def test_get_human_response_with_instance_state():
+    """Test that get_human_response can access instance state when overridden."""
+
+    class ServerSideGroupChatManager(RoundRobinGroupChatManager):
+        def __init__(self, plan_id: str, **kwargs):
+            super().__init__(**kwargs)
+            self.plan_id = plan_id
+
+        async def get_human_response(self, chat_history: ChatHistory) -> ChatMessageContent:
+            return ChatMessageContent(role=AuthorRole.USER, content=f"response_for_plan_{self.plan_id}")
+
+    plan_id = "test-plan-123"
+    manager = ServerSideGroupChatManager(plan_id=plan_id)
+    chat_history = ChatHistory()
+
+    response = await manager.get_human_response(chat_history)
+
+    assert isinstance(response, ChatMessageContent)
+    assert response.role == AuthorRole.USER
+    assert response.content == f"response_for_plan_{plan_id}"
+
+
+async def test_get_human_response_backward_compatibility():
+    """Test that get_human_response maintains backward compatibility with human_response_function."""
+
+    def sync_human_response_function(chat_history: ChatHistory) -> ChatMessageContent:
+        return ChatMessageContent(role=AuthorRole.USER, content="sync_response")
+
+    manager = RoundRobinGroupChatManager(human_response_function=sync_human_response_function)
+    chat_history = ChatHistory()
+
+    response = await manager.get_human_response(chat_history)
+
+    assert isinstance(response, ChatMessageContent)
+    assert response.role == AuthorRole.USER
+    assert response.content == "sync_response"
+
+
 # endregion RoundRobinGroupChatManager
