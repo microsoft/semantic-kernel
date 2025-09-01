@@ -19,6 +19,7 @@ from azure.ai.agents.models import (
     RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
+    RunStepDeepResearchToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
     RunStepFileSearchToolCall,
@@ -42,6 +43,7 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_azure_ai_search_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
+    generate_deep_research_content,
     generate_file_search_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
@@ -53,6 +55,7 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
+    generate_streaming_deep_research_content,
     generate_streaming_file_search_content,
     generate_streaming_mcp_call_content,
     generate_streaming_mcp_content,
@@ -397,6 +400,18 @@ class AgentThreadActions:
                                         agent_name=agent.name,
                                         mcp_tool_call=mcp_tool_call,
                                     )
+                                case AgentsNamedToolChoiceType.DEEP_RESEARCH:
+                                    logger.debug(
+                                        f"Entering tool_calls (deep_research) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    deep_research_call: RunStepDeepResearchToolCall = cast(
+                                        RunStepDeepResearchToolCall, tool_call
+                                    )
+                                    content = generate_deep_research_content(
+                                        agent_name=agent.name,
+                                        deep_research_tool_call=deep_research_call,
+                                    )
 
                             if content:
                                 message_count += 1
@@ -627,6 +642,10 @@ class AgentThreadActions:
                                     )
                                 case AgentsNamedToolChoiceType.MCP:
                                     content = generate_streaming_mcp_content(
+                                        agent_name=agent.name, step_details=details
+                                    )
+                                case AgentsNamedToolChoiceType.DEEP_RESEARCH:
+                                    content = generate_streaming_deep_research_content(
                                         agent_name=agent.name, step_details=details
                                     )
                             if content:
@@ -886,8 +905,8 @@ class AgentThreadActions:
         return {
             "model": model if model is not None else agent.definition.model,
             "response_format": response_format if response_format is not None else agent.definition.response_format,
-            "temperature": temperature if temperature is not None else agent.definition.temperature,
-            "top_p": top_p if top_p is not None else agent.definition.top_p,
+            "temperature": temperature if temperature is not None else None,
+            "top_p": top_p if top_p is not None else None,
             "metadata": metadata if metadata is not None else agent.definition.metadata,
             **kwargs,
         }
