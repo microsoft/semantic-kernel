@@ -4,7 +4,7 @@ import asyncio
 import os
 
 from azure.ai.agents.models import CodeInterpreterTool, FilePurpose
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -21,7 +21,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         csv_file_path = os.path.join(

@@ -57,7 +57,9 @@ internal static class ResponseThreadActions
             }
             else
             {
-                inputItems.AddRange(response.OutputItems);
+                var filteredItems = response.OutputItems
+                    .Where(item => item is not ReasoningResponseItem); // Keep items that are not ReasoningResponseItem  
+                inputItems.AddRange(filteredItems);
             }
 
             var message = response.ToChatMessageContent();

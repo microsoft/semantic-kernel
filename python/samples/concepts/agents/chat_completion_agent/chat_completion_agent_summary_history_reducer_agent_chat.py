@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistorySummarizationReducer
@@ -34,9 +36,13 @@ async def main():
     reducer_msg_count = 10
     reducer_threshold = 10
 
+    credential = AzureCliCredential()
+
     # Create a summarization reducer and clear its history
     history_summarization_reducer = ChatHistorySummarizationReducer(
-        service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
+        service=AzureChatCompletion(credential=credential),
+        target_count=reducer_msg_count,
+        threshold_count=reducer_threshold,
     )
     history_summarization_reducer.clear()
 
@@ -44,7 +50,7 @@ async def main():
     agent = ChatCompletionAgent(
         name="NumeroTranslator",
         instructions="Add one to the latest user number and spell it in Spanish without explanation.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # Create a group chat using the reducer

@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -36,7 +38,7 @@ class MenuPlugin:
 
 async def main() -> None:
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Assistant",
         instructions="Answer questions about the menu.",
         plugins=[MenuPlugin()],
