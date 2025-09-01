@@ -333,7 +333,7 @@ class GroupChatManagerActor(ActorBase):
         should_request_user_input = await self._manager.should_request_user_input(
             self._chat_history.model_copy(deep=True)
         )
-        if should_request_user_input.result and self._manager.human_response_function:
+        if should_request_user_input.result:
             logger.debug(f"Group chat manager requested user input. Reason: {should_request_user_input.reason}")
             user_input_message = await self._call_human_response_function()
             self._chat_history.add_message(user_input_message)
@@ -373,10 +373,10 @@ class GroupChatManagerActor(ActorBase):
 
     async def _call_human_response_function(self) -> ChatMessageContent:
         """Call the human response function if it is set."""
-        assert self._manager.human_response_function  # nosec B101
-        if inspect.iscoroutinefunction(self._manager.human_response_function):
-            return await self._manager.human_response_function(self._chat_history.model_copy(deep=True))
-        return self._manager.human_response_function(self._chat_history.model_copy(deep=True))  # type: ignore[return-value]
+        response = self._manager.get_human_response(self._chat_history.model_copy(deep=True))
+        if inspect.iscoroutinefunction(self._manager.get_human_response):
+            return await response
+        return response  # type: ignore[return-value]
 
 
 # endregion GroupChatManagerActor
