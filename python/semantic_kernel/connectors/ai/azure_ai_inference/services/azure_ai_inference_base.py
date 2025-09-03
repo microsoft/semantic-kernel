@@ -47,6 +47,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         client_type: AzureAIInferenceClientType,
         api_key: str | None = None,
         endpoint: str | None = None,
+        api_version: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | EmbeddingsClient | None = None,
@@ -60,11 +61,13 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         The following environment variables are used:
         - AZURE_AI_INFERENCE_API_KEY
         - AZURE_AI_INFERENCE_ENDPOINT
+        - AZURE_AI_INFERENCE_API_VERSION
 
         Args:
             client_type (AzureAIInferenceClientType): The client type to use.
             api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
             endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
+            api_version (str | None): The API version to use. (Optional)
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
@@ -81,6 +84,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                 azure_ai_inference_settings = AzureAIInferenceSettings(
                     api_key=api_key,
                     endpoint=endpoint,
+                    api_version=api_version,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,
                 )
@@ -93,6 +97,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                     endpoint=endpoint,
                     credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    api_version=azure_ai_inference_settings.api_version,
                 )
             else:
                 if credential is None:
@@ -102,6 +107,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                     endpoint=endpoint,
                     credential=credential,
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    api_version=azure_ai_inference_settings.api_version,
                 )
 
         args: dict[str, Any] = {
