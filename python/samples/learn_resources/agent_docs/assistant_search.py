@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import StreamingAnnotationContent
@@ -35,7 +37,7 @@ filenames = [
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Upload the files to the client
     file_ids: list[str] = []

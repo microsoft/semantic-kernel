@@ -3,7 +3,7 @@
 import asyncio
 
 from azure.ai.agents.models import TruncationObject
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import (
     AzureAIAgent,
@@ -27,7 +27,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings.create()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         # Create the agent definition

@@ -11,6 +11,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import pytest
+from azure.identity import AzureCliCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel import Kernel
@@ -190,10 +191,11 @@ class TestTextCompletion(CompletionTestBase):
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
+        credential = AzureCliCredential()
         azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
         if not ad_token:
             azure_openai_setup = False
         api_version = azure_openai_settings.api_version
@@ -211,7 +213,10 @@ class TestTextCompletion(CompletionTestBase):
 
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
-            "azure": (AzureTextCompletion() if azure_openai_setup else None, OpenAITextPromptExecutionSettings),
+            "azure": (
+                AzureTextCompletion(credential=credential) if azure_openai_setup else None,
+                OpenAITextPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),

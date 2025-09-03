@@ -5,6 +5,8 @@ import logging
 from datetime import datetime
 from random import randint
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -80,9 +82,7 @@ async def main() -> None:
     # You can also pass in kernel, plugins, chat_history or settings here.
     # For WebRTC the audio_track is required
     realtime_agent = AzureRealtimeWebRTC(
-        audio_track=AudioRecorderWebRTC(),
-        region="swedencentral",
-        plugins=[Helpers()],
+        audio_track=AudioRecorderWebRTC(), region="swedencentral", plugins=[Helpers()], credential=AzureCliCredential()
     )
 
     # Create the settings for the session

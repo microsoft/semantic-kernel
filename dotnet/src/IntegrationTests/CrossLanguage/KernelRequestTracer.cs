@@ -61,7 +61,14 @@ internal sealed class KernelRequestTracer : IDisposable
         return System.Text.Encoding.UTF8.GetString(this._httpMessageHandlerStub?.RequestContent ?? Array.Empty<byte>());
     }
 
-    public static async Task RunPromptAsync(Kernel kernel, bool isInline, bool isStreaming, string templateFormat, string prompt, KernelArguments? args = null)
+    public static async Task RunPromptAsync(
+        Kernel kernel,
+        bool isInline,
+        bool isStreaming,
+        string templateFormat,
+        string prompt,
+        KernelArguments? args = null,
+        PromptTemplateConfig? promptTemplateConfig = null)
     {
         if (isInline)
         {
@@ -69,7 +76,10 @@ internal sealed class KernelRequestTracer : IDisposable
             {
                 try
                 {
-                    await foreach (var update in kernel.InvokePromptStreamingAsync<ChatMessageContent>(prompt, arguments: args))
+                    await foreach (var update in kernel.InvokePromptStreamingAsync<ChatMessageContent>(
+                        prompt,
+                        arguments: args,
+                        promptTemplateConfig: promptTemplateConfig))
                     {
                         // Do nothing with received response
                     }
@@ -81,7 +91,7 @@ internal sealed class KernelRequestTracer : IDisposable
             }
             else
             {
-                await kernel.InvokePromptAsync<ChatMessageContent>(prompt, args);
+                await kernel.InvokePromptAsync<ChatMessageContent>(prompt, args, promptTemplateConfig: promptTemplateConfig);
             }
         }
         else
@@ -91,11 +101,12 @@ internal sealed class KernelRequestTracer : IDisposable
                                                 new HandlebarsPromptTemplateFactory());
 
             var function = kernel.CreateFunctionFromPrompt(
-                                promptConfig: new PromptTemplateConfig()
+                                promptConfig: promptTemplateConfig ?? new PromptTemplateConfig()
                                 {
                                     Template = prompt,
                                     TemplateFormat = templateFormat,
                                     Name = "MyFunction",
+                                    AllowDangerouslySetContent = true
                                 },
                                 promptTemplateFactory: promptTemplateFactory
                             );
