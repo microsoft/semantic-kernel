@@ -68,7 +68,6 @@ def mock_thread():
     return thread
 
 
-@pytest.mark.asyncio
 async def test_invoke_no_function_calls(mock_agent, mock_response, mock_chat_history, mock_thread):
     async def mock_get_response(*args, **kwargs):
         return mock_response
@@ -90,7 +89,6 @@ async def test_invoke_no_function_calls(mock_agent, mock_response, mock_chat_his
     assert final_msg.role == AuthorRole.ASSISTANT
 
 
-@pytest.mark.asyncio
 async def test_invoke_raises_on_failed_response(mock_agent, mock_chat_history, mock_thread):
     mock_failed_response = MagicMock(spec=Response)
     mock_failed_response.status = "failed"
@@ -116,7 +114,6 @@ async def test_invoke_raises_on_failed_response(mock_agent, mock_chat_history, m
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_reaches_maximum_attempts(mock_agent, mock_chat_history, mock_thread):
     call_counter = 0
 
@@ -174,7 +171,6 @@ async def test_invoke_reaches_maximum_attempts(mock_agent, mock_chat_history, mo
         assert messages is not None
 
 
-@pytest.mark.asyncio
 async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_thread):
     initial_response = MagicMock(spec=Response)
     initial_response.status = "completed"
@@ -228,7 +224,6 @@ async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_th
         assert len(messages) == 3, f"Expected exactly 3 messages, got {len(messages)}"
 
 
-@pytest.mark.asyncio
 async def test_invoke_passes_kernel_arguments_to_kernel(mock_agent, mock_chat_history, mock_thread):
     # Prepare a response that triggers a function call
     initial_response = MagicMock(spec=Response)
@@ -288,7 +283,6 @@ async def test_invoke_passes_kernel_arguments_to_kernel(mock_agent, mock_chat_hi
         assert len(collected) >= 2
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_passes_kernel_arguments_to_kernel(mock_agent, mock_chat_history, mock_thread):
     class MockStream(AsyncStream[ResponseStreamEvent]):
         def __init__(self, events):
@@ -429,7 +423,6 @@ async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mo
         assert collected_stream_messages[0].role == AuthorRole.ASSISTANT
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock_thread):
     class MockStream(AsyncStream[ResponseStreamEvent]):
         def __init__(self, events):
