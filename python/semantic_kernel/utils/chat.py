@@ -8,9 +8,7 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 
-def store_results(
-        chat_history: ChatHistory, 
-        results: list["ChatMessageContent"]) -> ChatHistory:
+def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]) -> ChatHistory:
     """Stores specific results in the context and chat prompt.
 
     Args:
