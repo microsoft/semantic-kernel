@@ -3,6 +3,7 @@
 import asyncio
 from enum import Enum
 
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
@@ -74,24 +75,26 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 
     Feel free to add or remove agents and handoff connections.
     """
+    credential = AzureCliCredential()
+
     triage_agent = ChatCompletionAgent(
         name="TriageAgent",
         description="An agent that triages GitHub issues",
         instructions="Given a GitHub issue, triage it.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     python_agent = ChatCompletionAgent(
         name="PythonAgent",
         description="An agent that handles Python related issues",
         instructions="You are an agent that handles Python related GitHub issues.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
         plugins=[GithubPlugin()],
     )
     dotnet_agent = ChatCompletionAgent(
         name="DotNetAgent",
         description="An agent that handles .NET related issues",
         instructions="You are an agent that handles .NET related GitHub issues.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
         plugins=[GithubPlugin()],
     )
 

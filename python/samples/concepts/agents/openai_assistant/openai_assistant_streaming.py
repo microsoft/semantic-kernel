@@ -2,6 +2,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import AuthorRole
@@ -39,7 +41,7 @@ class MenuPlugin:
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Define the assistant definition
     definition = await client.beta.assistants.create(

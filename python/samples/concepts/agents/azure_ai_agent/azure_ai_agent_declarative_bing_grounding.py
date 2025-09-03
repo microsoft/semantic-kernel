@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 
@@ -43,7 +43,7 @@ settings = AzureAIAgentSettings()  # ChatModelId & BingConnectionId come from .e
 
 async def main():
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         try:

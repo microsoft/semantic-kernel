@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
@@ -25,32 +26,32 @@ public class OrganizationHierarchyConnector : IOrganizationHierarchyConnector
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetManagerEmailAsync(CancellationToken cancellationToken = default) =>
-        ((User)await this._graphServiceClient.Me
-            .Manager
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false)).UserPrincipalName;
+    public async Task<string?> GetManagerEmailAsync(CancellationToken cancellationToken = default) =>
+        ((User?)await this._graphServiceClient.Me
+            .Manager.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false))?.UserPrincipalName;
 
     /// <inheritdoc/>
-    public async Task<string> GetManagerNameAsync(CancellationToken cancellationToken = default) =>
-        ((User)await this._graphServiceClient.Me
-            .Manager
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false)).DisplayName;
+    public async Task<string?> GetManagerNameAsync(CancellationToken cancellationToken = default) =>
+        ((User?)await this._graphServiceClient.Me
+            .Manager.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false))?.DisplayName;
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> GetDirectReportsEmailAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>?> GetDirectReportsEmailAsync(CancellationToken cancellationToken = default)
     {
-        IUserDirectReportsCollectionWithReferencesPage directsPage = await this._graphServiceClient.Me
-            .DirectReports
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
+        DirectoryObjectCollectionResponse? directsPage = await this._graphServiceClient.Me
+            .DirectReports.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        List<User> directs = directsPage.Cast<User>().ToList();
+        List<User>? directs = directsPage?.Value?.Cast<User>().ToList();
 
-        while (directs.Count != 0 && directsPage.NextPageRequest is not null)
+        while (directs is { Count: > 0 } && directsPage!.OdataNextLink is not null)
         {
-            directsPage = await directsPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
-            directs.AddRange(directsPage.Cast<User>());
+            directsPage = await this._graphServiceClient.Me.DirectReports.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (directsPage?.Value is not null)
+            {
+                directs.AddRange(directsPage!.Value.Cast<User>());
+            }
         }
 
-        return directs.Select(d => d.UserPrincipalName);
+        return directs?.Where(d => d.UserPrincipalName is not null)?.Select(d => d.UserPrincipalName!);
     }
 }

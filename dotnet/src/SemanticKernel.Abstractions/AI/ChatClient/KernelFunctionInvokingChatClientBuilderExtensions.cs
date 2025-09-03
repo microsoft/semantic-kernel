@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extensions for configuring <see cref="KernelFunctionInvokingChatClient"/> instances.</summary>
-[Experimental("SKEXP0001")]
 public static class KernelFunctionInvokingChatClientBuilderExtensions
 {
     /// <summary>

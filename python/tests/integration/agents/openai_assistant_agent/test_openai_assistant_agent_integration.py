@@ -4,6 +4,7 @@ import os
 from typing import Annotated
 
 import pytest
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import AzureAssistantAgent, OpenAIAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings, OpenAISettings
@@ -38,7 +39,7 @@ class TestOpenAIAssistantAgentIntegration:
         tools, tool_resources, plugins = [], {}, []
 
         if agent_type == "azure":
-            client = AzureAssistantAgent.create_client()
+            client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
             model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureAssistantAgent
         else:  # agent_type == "openai"

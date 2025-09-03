@@ -4,6 +4,7 @@ import asyncio
 from enum import Enum
 from typing import ClassVar
 
+from azure.identity import AzureCliCredential
 from pydantic import Field
 
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
@@ -58,7 +59,9 @@ class AStep(KernelProcessStep):
 # As an example, this factory creates a kernel and adds an `AzureChatCompletion` service to it.
 async def bstep_factory():
     """Creates a BStep instance with ephemeral references like ChatCompletionAgent."""
-    agent = ChatCompletionAgent(service=AzureChatCompletion(), name="echo", instructions="repeat the input back")
+    agent = ChatCompletionAgent(
+        service=AzureChatCompletion(credential=AzureCliCredential()), name="echo", instructions="repeat the input back"
+    )
     step_instance = BStep()
     step_instance.agent = agent
     step_instance.thread = ChatHistoryAgentThread()

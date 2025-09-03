@@ -10,6 +10,7 @@ from random import random
 from typing import Annotated, Any, Literal
 
 import anyio
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -101,7 +102,7 @@ class BookingPlugin:
 
 async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -> None:
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Booker",
         instructions="Create a booking for the user, this is for the following restaurants: "
         "The Farm, The Harbor, The Joint. ",

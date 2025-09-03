@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
@@ -141,11 +142,13 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
     url: str,
 ) -> None:
     """Test the creation of a cosmos client."""
+    credential = AsyncMock(spec=AsyncTokenCredential)
     vector_collection = CosmosNoSqlCollection(
         record_type=record_type,
         collection_name=collection_name,
         database_name=database_name,
         url=url,
+        credential=credential,
     )
 
     assert vector_collection.cosmos_client is not None

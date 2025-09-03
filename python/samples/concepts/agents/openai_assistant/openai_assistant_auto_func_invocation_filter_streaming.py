@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
@@ -94,7 +96,7 @@ USER_INPUTS = ["What's the special food on the menu?", "What should I do then?"]
 
 async def main() -> None:
     # 1. Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # 2. Define the assistant definition
     definition = await client.beta.assistants.create(

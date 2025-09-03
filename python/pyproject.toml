@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     # azure agents
     "azure-ai-projects >= 1.0.0b12",
-    "azure-ai-agents >= 1.1.0b4",
+    "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
@@ -148,7 +148,7 @@ usearch = [
     "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<5.0",
+    "weaviate-client>=4.10,<5.0,!=4.16.7",
 ]
 
 [tool.uv]

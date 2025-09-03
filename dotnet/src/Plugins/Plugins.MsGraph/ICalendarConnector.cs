@@ -18,7 +18,7 @@ public interface ICalendarConnector
     /// <param name="calendarEvent">Event to add.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Event that was added.</returns>
-    Task<CalendarEvent> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get the user's calendar events.
@@ -29,6 +29,6 @@ public interface ICalendarConnector
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user's calendar events.</returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    Task<IEnumerable<CalendarEvent>> GetEventsAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
+    Task<IEnumerable<CalendarEvent>?> GetEventsAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
 #pragma warning restore CA1716 // Identifiers should not match keywords
 }

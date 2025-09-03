@@ -11,12 +11,12 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Factory;
 
 /// <summary>
-/// Tests for <see cref="AggregatorKernelAgentFactory"/>.
+/// Tests for <see cref="AggregatorAgentFactory"/>.
 /// </summary>
-public class AggregatorKernelAgentFactoryTests
+public class AggregatorAgentFactoryTests
 {
     /// <summary>
-    /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> can create different types of agents.
+    /// Verifies that the <see cref="AggregatorAgentFactory"/> can create different types of agents.
     /// </summary>
     [Fact]
     public async Task ItCreatesKernelAgentsAsync()
@@ -25,7 +25,7 @@ public class AggregatorKernelAgentFactoryTests
         var agentDefinition1 = new AgentDefinition() { Type = "my-type-1", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };
         var agentDefinition2 = new AgentDefinition() { Type = "my-type-2", Name = "my-name-2", Description = "my-description-2", Instructions = "my-instructions-2" };
         var kernel = new Kernel();
-        var target = new AggregatorKernelAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
+        var target = new AggregatorAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
 
         // Act
         var result1 = await target.CreateAsync(kernel, agentDefinition1);
@@ -39,7 +39,7 @@ public class AggregatorKernelAgentFactoryTests
     }
 
     /// <summary>
-    /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> throws <see cref="KernelException"/> for an unknown agent type.
+    /// Verifies that the <see cref="AggregatorAgentFactory"/> throws <see cref="KernelException"/> for an unknown agent type.
     /// </summary>
     [Fact]
     public async Task ItReturnsNullForUnknownAgentTypeAsync()
@@ -47,7 +47,7 @@ public class AggregatorKernelAgentFactoryTests
         // Arrange
         var agentDefinition = new AgentDefinition() { Type = "my-type-unknown", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };
         var kernel = new Kernel();
-        var target = new AggregatorKernelAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
+        var target = new AggregatorAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () => await target.CreateAsync(kernel, agentDefinition));

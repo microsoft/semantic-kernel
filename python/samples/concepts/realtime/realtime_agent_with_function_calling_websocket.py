@@ -5,6 +5,8 @@ import logging
 from datetime import datetime
 from random import randint
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -66,7 +68,7 @@ async def main() -> None:
     # create the realtime agent, in this using Azure OpenAI through Websockets,
     # there are also OpenAI Websocket and WebRTC clients
     # See realtime_agent_with_function_calling_webrtc.py for an example of the WebRTC client
-    realtime_agent = AzureRealtimeWebsocket()
+    realtime_agent = AzureRealtimeWebsocket(credential=AzureCliCredential())
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebsocket()

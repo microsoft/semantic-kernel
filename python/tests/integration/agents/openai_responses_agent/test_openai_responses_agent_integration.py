@@ -4,6 +4,7 @@ import os
 from typing import Annotated
 
 import pytest
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureResponsesAgent, OpenAIResponsesAgent
@@ -49,7 +50,7 @@ class TestOpenAIResponsesAgentIntegration:
         tools, plugins, text = [], [], None
 
         if agent_type == "azure":
-            client = AzureResponsesAgent.create_client()
+            client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
             model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureResponsesAgent
         else:  # agent_type == "openai"

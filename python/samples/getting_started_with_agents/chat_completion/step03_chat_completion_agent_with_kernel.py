@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -31,7 +33,7 @@ USER_INPUTS = [
 async def main():
     # 1. Create the instance of the Kernel to register an AI service
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion())
+    kernel.add_service(AzureChatCompletion(credential=AzureCliCredential()))
 
     # 2. Create the agent
     agent = ChatCompletionAgent(

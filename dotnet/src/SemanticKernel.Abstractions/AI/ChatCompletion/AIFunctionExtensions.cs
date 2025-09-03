@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -18,7 +17,6 @@ public static class AIFunctionExtensions
     /// </summary>
     /// <param name="aiFunction">The AI function to convert.</param>
     /// <returns>The converted <see cref="KernelFunction"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static KernelFunction AsKernelFunction(this AIFunction aiFunction)
     {
         Verify.NotNull(aiFunction);
@@ -35,7 +33,6 @@ public static class AIFunctionExtensions
     /// <param name="functionArguments">Contains the arguments required for the AI function execution.</param>
     /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
     /// <returns>The result of the function execution.</returns>
-    [Experimental("SKEXP0001")]
     public static ValueTask<object?> InvokeAsync(this AIFunction aiFunction, Kernel kernel, AIFunctionArguments? functionArguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(aiFunction);

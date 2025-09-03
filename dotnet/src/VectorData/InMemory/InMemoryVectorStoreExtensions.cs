@@ -72,7 +72,7 @@ public static class InMemoryVectorStoreExtensions
         using (StreamReader streamReader = new(stream))
         {
             string result = streamReader.ReadToEnd();
-            var recordCollection = JsonSerializer.Deserialize<InMemoryRecordCollection<TKey, TRecord>>(result);
+            var recordCollection = JsonSerializer.Deserialize<InMemoryRecordCollection<TKey, InMemoryRecordWrapper<TRecord>>>(result);
             if (recordCollection is null)
             {
                 throw new InvalidOperationException("Stream does not contain valid record collection JSON.");
@@ -81,13 +81,10 @@ public static class InMemoryVectorStoreExtensions
             // Get and create collection if it doesn't exist.
             collection = vectorStore.GetCollection<TKey, TRecord>(recordCollection.Name);
             await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+            var inMemoryCollection = collection as InMemoryCollection<TKey, TRecord>;
 
             // Upsert records.
-            var tasks = recordCollection.Records.Values.Select(record => Task.Run(async () =>
-            {
-                await collection.UpsertAsync(record).ConfigureAwait(false);
-            }));
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            inMemoryCollection!.UpdateCollectionDictionary(recordCollection.Records.ToDictionary(x => x.Key as object, x => x.Value as object));
         }
 
         return collection;

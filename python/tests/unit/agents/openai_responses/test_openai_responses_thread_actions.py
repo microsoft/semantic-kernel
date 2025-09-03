@@ -405,7 +405,7 @@ def test_prepare_chat_history_multiple_images_no_duplication():
     chat_history.add_message(message)
 
     # Call the method that was causing duplication
-    result = ResponsesAgentThreadActions._prepare_chat_history_for_request(chat_history)
+    result = ResponsesAgentThreadActions._prepare_chat_history_for_request(chat_history, True)
 
     # Verify we have exactly one message in the result
     assert len(result) == 1, f"Expected 1 message, got {len(result)}"

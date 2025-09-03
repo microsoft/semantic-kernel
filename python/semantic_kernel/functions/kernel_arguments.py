@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 
@@ -103,3 +106,17 @@ class KernelArguments(dict):
                 self.execution_settings = value.execution_settings.copy()
 
         return self
+
+    def dumps(self, include_execution_settings: bool = False) -> str:
+        """Serializes the KernelArguments to a JSON string."""
+        data = dict(self)
+        if include_execution_settings and self.execution_settings:
+            data["execution_settings"] = self.execution_settings
+
+        def default(obj):
+            if isinstance(obj, BaseModel):
+                return obj.model_dump()
+
+            return str(obj)
+
+        return json.dumps(data, default=default)
