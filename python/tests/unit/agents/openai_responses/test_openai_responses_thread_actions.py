@@ -19,6 +19,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions import KernelArguments
 
 
 @pytest.fixture
@@ -225,6 +226,140 @@ async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_th
             messages.append(msg)
 
         assert len(messages) == 3, f"Expected exactly 3 messages, got {len(messages)}"
+
+
+@pytest.mark.asyncio
+async def test_invoke_passes_kernel_arguments_to_kernel(mock_agent, mock_chat_history, mock_thread):
+    # Prepare a response that triggers a function call
+    initial_response = MagicMock(spec=Response)
+    initial_response.status = "completed"
+    initial_response.id = "fake-response-id"
+    initial_response.output = [
+        ResponseFunctionToolCall(
+            id="tool_call_id",
+            call_id="call_id",
+            name="test_function",
+            arguments='{"some_arg": 123}',
+            type="function_call",
+        )
+    ]
+    initial_response.error = None
+    initial_response.incomplete_details = None
+    initial_response.created_at = 123456
+    initial_response.usage = None
+    initial_response.role = "assistant"
+
+    final_response = MagicMock(spec=Response)
+    final_response.status = "completed"
+    final_response.id = "fake-final-response-id"
+    final_response.output = []
+    final_response.error = None
+    final_response.incomplete_details = None
+    final_response.created_at = 123456
+    final_response.usage = None
+    final_response.role = "assistant"
+
+    responses = [initial_response, final_response]
+
+    async def mock_invoke_fc(*args, **kwargs):
+        # Assert that KernelArguments were forwarded
+        assert isinstance(kwargs.get("arguments"), KernelArguments)
+        assert kwargs["arguments"].get("foo") == "bar"
+        return MagicMock(terminate=False)
+
+    mock_agent.kernel.invoke_function_call = MagicMock(side_effect=mock_invoke_fc)
+
+    async def mock_get_response(*args, **kwargs):
+        return responses.pop(0)
+
+    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+        args = KernelArguments(foo="bar")
+        # Run invoke and ensure no assertion fails inside mock_invoke_fc
+        collected = []
+        async for _, msg in ResponsesAgentThreadActions.invoke(
+            agent=mock_agent,
+            chat_history=mock_chat_history,
+            thread=mock_thread,
+            store_enabled=True,
+            function_choice_behavior=MagicMock(maximum_auto_invoke_attempts=1),
+            arguments=args,
+        ):
+            collected.append(msg)
+        assert len(collected) >= 2
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_passes_kernel_arguments_to_kernel(mock_agent, mock_chat_history, mock_thread):
+    class MockStream(AsyncStream[ResponseStreamEvent]):
+        def __init__(self, events):
+            self._events = events
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            if not self._events:
+                raise StopAsyncIteration
+            return self._events.pop(0)
+
+    # Event that includes a function call
+    mock_tool_call_event = ResponseOutputItemAddedEvent(
+        item=ResponseFunctionToolCall(
+            id="fake-tool-call-id",
+            call_id="fake-call-id",
+            name="test_function",
+            arguments='{"arg": 123}',
+            type="function_call",
+        ),
+        output_index=0,
+        type="response.output_item.added",
+        sequence_number=0,
+    )
+
+    mock_stream_event_end = ResponseOutputItemDoneEvent(
+        item=ResponseOutputMessage(
+            role="assistant",
+            status="completed",
+            id="fake-item-id",
+            content=[ResponseOutputText(text="Final message after tool call", type="output_text", annotations=[])],
+            type="message",
+        ),
+        output_index=0,
+        sequence_number=0,
+        type="response.output_item.done",
+    )
+
+    async def mock_get_response(*args, **kwargs):
+        return MockStream([mock_tool_call_event, mock_stream_event_end])
+
+    async def mock_invoke_function_call(*args, **kwargs):
+        assert isinstance(kwargs.get("arguments"), KernelArguments)
+        assert kwargs["arguments"].get("foo") == "bar"
+        return MagicMock(terminate=False)
+
+    mock_agent.kernel.invoke_function_call = MagicMock(side_effect=mock_invoke_function_call)
+
+    with patch.object(ResponsesAgentThreadActions, "_get_response", new=mock_get_response):
+        args = KernelArguments(foo="bar")
+        collected_stream_messages = []
+        async for _ in ResponsesAgentThreadActions.invoke_stream(
+            agent=mock_agent,
+            chat_history=mock_chat_history,
+            thread=mock_thread,
+            store_enabled=True,
+            function_choice_behavior=MagicMock(maximum_auto_invoke_attempts=1),
+            output_messages=collected_stream_messages,
+            arguments=args,
+        ):
+            pass
+        # If assertions passed in mock, arguments were forwarded
+        assert len(collected_stream_messages) >= 1
 
 
 async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mock_thread):
