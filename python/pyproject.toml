@@ -94,7 +94,7 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 6.0",
-    "torch == 2.7.1"
+    "torch == 2.8.0"
 ]
 mcp = [
     "mcp>=1.8",
