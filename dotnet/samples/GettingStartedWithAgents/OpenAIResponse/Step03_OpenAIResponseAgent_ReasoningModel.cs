@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI.Responses;
+using Plugins;
 
 namespace GettingStarted.OpenAIResponseAgents;
 
@@ -75,6 +76,28 @@ public class Step03_OpenAIResponseAgent_ReasoningModel(ITestOutputHelper output)
               );
             }
             """, options: invokeOptions);
+        await foreach (ChatMessageContent responseItem in responseItems)
+        {
+            WriteAgentChatMessage(responseItem);
+        }
+    }
+
+    [Fact]
+    public async Task UseOpenAIResponseAgentWithAReasoningModelAndToolsAsync()
+    {
+        // Define the agent
+        OpenAIResponseAgent agent = new(this.Client)
+        {
+            Name = "ResponseAgent",
+            Instructions = "Answer all queries with a detailed response.",
+        };
+
+        // Create a plugin that defines the tools to be used by the agent.
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
+        // Invoke the agent and output the response
+        var responseItems = agent.InvokeAsync("What is the best value healthy meal?");
         await foreach (ChatMessageContent responseItem in responseItems)
         {
             WriteAgentChatMessage(responseItem);

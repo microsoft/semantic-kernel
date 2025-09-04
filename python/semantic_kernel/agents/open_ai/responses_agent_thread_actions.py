@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import uuid
-from collections.abc import AsyncIterable, Sequence
+from collections.abc import AsyncIterable, Awaitable, Callable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
@@ -22,8 +22,14 @@ from openai.types.responses.response_output_item_added_event import ResponseOutp
 from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
 from openai.types.responses.response_output_message import ResponseOutputMessage
 from openai.types.responses.response_output_text import ResponseOutputText
+from openai.types.responses.response_reasoning_item import ResponseReasoningItem
+from openai.types.responses.response_reasoning_summary_text_delta_event import ResponseReasoningSummaryTextDeltaEvent
+from openai.types.responses.response_reasoning_summary_text_done_event import ResponseReasoningSummaryTextDoneEvent
+from openai.types.responses.response_reasoning_text_delta_event import ResponseReasoningTextDeltaEvent
+from openai.types.responses.response_reasoning_text_done_event import ResponseReasoningTextDoneEvent
 from openai.types.responses.response_stream_event import ResponseStreamEvent
 from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
+from openai.types.shared_params.reasoning import Reasoning
 
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_response_function_call_format,
@@ -38,8 +44,10 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.reasoning_content import ReasoningContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_reasoning_content import StreamingReasoningContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -98,7 +106,7 @@ class ResponsesAgentThreadActions:
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         polling_options: "RunPollingOptions | None" = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
@@ -124,7 +132,7 @@ class ResponsesAgentThreadActions:
             parallel_tool_calls: The parallel tool calls.
             polling_options: The polling options defined at the run-level. These will override the agent-level
                 polling options.
-            reasoning: The reasoning effort.
+            reasoning: The reasoning configuration.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
@@ -210,6 +218,21 @@ class ResponsesAgentThreadActions:
             except asyncio.TimeoutError:
                 raise AgentInvokeException("Polling timed out before completion.")
 
+            # Type narrowing for subsequent usage
+            assert isinstance(response, Response)  # nosec
+
+            # Extract reasoning content and yield as intermediate message (not visible to user)
+            reasoning_items = cls._get_reasoning_items_from_output(response.output)  # type: ignore
+            if reasoning_items:
+                reasoning_message = ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    items=cast(list[CMC_ITEM_TYPES], reasoning_items),
+                    ai_model_id=agent.ai_model_id,
+                    metadata=cls._get_metadata_from_response(response),
+                    name=agent.name,
+                )
+                yield False, reasoning_message
+
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
             if (fc_count := len(function_calls)) == 0:
@@ -285,12 +308,13 @@ class ResponsesAgentThreadActions:
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
         top_p: float | None = None,
         truncation: str | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the assistant.
@@ -310,12 +334,13 @@ class ResponsesAgentThreadActions:
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: The parallel tool calls.
-            reasoning: The reasoning effort.
+            reasoning: The reasoning configuration.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
             top_p: The top p.
             truncation: The truncation strategy.
+            on_intermediate_message: Callback for intermediate messages
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -376,9 +401,9 @@ class ResponsesAgentThreadActions:
             async with response as response_stream:
                 async for event in response_stream:
                     event = cast(ResponseStreamEvent, event)
+
                     match event:
                         case ResponseCreatedEvent():
-                            logger.debug(f"Agent response created with ID: {event.response.id}")
                             if store_enabled:
                                 thread.response_id = event.response.id
                                 # Ensure subsequent requests link to this response context
@@ -422,6 +447,86 @@ class ResponsesAgentThreadActions:
                                 choice_index=request_index,
                             )
                             yield msg
+                        case ResponseReasoningTextDeltaEvent():
+                            if on_intermediate_message:
+                                reasoning_content = StreamingReasoningContent(
+                                    text=event.delta,
+                                    choice_index=request_index,
+                                    metadata={
+                                        "item_id": event.item_id,
+                                        "output_index": event.output_index,
+                                        "sequence_number": event.sequence_number,
+                                        "content_index": event.content_index,
+                                    },
+                                )
+                                reasoning_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[reasoning_content],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(reasoning_msg)
+                        case ResponseReasoningTextDoneEvent():
+                            if on_intermediate_message:
+                                final_reasoning_content = ReasoningContent(
+                                    text=event.text,
+                                    metadata={
+                                        "item_id": event.item_id,
+                                        "output_index": event.output_index,
+                                        "sequence_number": event.sequence_number,
+                                        "content_index": event.content_index,
+                                    },
+                                )
+                                reasoning_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[final_reasoning_content],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(reasoning_msg)
+                        case ResponseReasoningSummaryTextDeltaEvent():
+                            if on_intermediate_message:
+                                reasoning_content = StreamingReasoningContent(
+                                    text=event.delta,
+                                    choice_index=request_index,
+                                    metadata={
+                                        "item_id": event.item_id,
+                                        "output_index": event.output_index,
+                                        "sequence_number": event.sequence_number,
+                                        "summary_index": event.summary_index,
+                                        "is_summary": True,
+                                    },
+                                )
+                                reasoning_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[reasoning_content],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(reasoning_msg)
+                        case ResponseReasoningSummaryTextDoneEvent():
+                            if on_intermediate_message:
+                                final_reasoning_summary_content = ReasoningContent(
+                                    text=event.text,
+                                    metadata={
+                                        "item_id": event.item_id,
+                                        "output_index": event.output_index,
+                                        "sequence_number": event.sequence_number,
+                                        "summary_index": event.summary_index,
+                                        "is_summary": True,
+                                    },
+                                )
+                                reasoning_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[final_reasoning_summary_content],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(reasoning_msg)
                         case ResponseOutputItemDoneEvent():
                             msg = cls._create_output_item_done(agent, event.item)  # type: ignore
                             if output_messages is not None:
@@ -665,10 +770,9 @@ class ResponsesAgentThreadActions:
     ) -> Any:
         """Prepare the chat history for a request.
 
-        We must skip any items of type
-        AnnotationContent, StreamingAnnotationContent, FileReferenceContent,
-        or StreamingFileReferenceContent, and always map the role to either user,
-        assistant, or developer.
+        Uses a pass-through approach: raw output items from responses are passed
+        directly to the next request, while only converting user messages to input format.
+        This ensures all response items (including function calls and reasoning) are preserved intact.
         """
         response_inputs: list[Any] = []  # type: ignore
         for message in chat_history.messages:
@@ -778,7 +882,7 @@ class ResponsesAgentThreadActions:
                             "file_data": file_data_uri,
                         })
 
-            # Add the collected contents to response_inputs only once per message
+            # Add the collected contents to response_inputs
             if contents:
                 response_inputs.append({"role": original_role, "content": contents})
 
@@ -804,6 +908,67 @@ class ResponsesAgentThreadActions:
                     )
                 )
         return function_calls
+
+    @classmethod
+    def _get_reasoning_items_from_output(
+        cls: type[_T], output: list[ResponseOutputItem | ResponseOutputMessage]
+    ) -> list[ReasoningContent]:
+        """Get reasoning items from a response output."""
+        reasoning_items: list[ReasoningContent] = []
+
+        # Filter to only process ResponseReasoningItem objects
+        for item in output:
+            if isinstance(item, ResponseReasoningItem):
+                reasoning_items.append(cls._create_reasoning_content_from_openai_item(item))
+        return reasoning_items
+
+    @classmethod
+    def _create_reasoning_content_from_openai_item(
+        cls: type[_T], reasoning_item: ResponseReasoningItem
+    ) -> ReasoningContent:
+        """Create a ReasoningContent from an OpenAI ResponseReasoningItem.
+
+        Extracts human-readable text from the reasoning content and summary fields,
+        storing additional OpenAI-specific fields in metadata to avoid data loss.
+        """
+        text_parts = []
+        has_summary = False
+
+        # Extract text from content field (actual reasoning text)
+        if hasattr(reasoning_item, "content") and reasoning_item.content:
+            try:
+                for content_item in reasoning_item.content:
+                    if hasattr(content_item, "text") and content_item.text:
+                        text_parts.append(content_item.text)
+            except (AttributeError, TypeError):  # pragma: no cover - be resilient to provider shape changes
+                # Content structure may vary between API versions
+                pass
+
+        # Extract text from summary field (reasoning summary)
+        if hasattr(reasoning_item, "summary") and reasoning_item.summary:
+            has_summary = True
+            try:
+                for summary_item in reasoning_item.summary:
+                    if hasattr(summary_item, "text") and summary_item.text:
+                        text_parts.append(summary_item.text)
+            except (AttributeError, TypeError):  # pragma: no cover - be resilient to provider shape changes
+                # Summary structure may vary between API versions
+                pass
+
+        # Combine all text parts
+        reasoning_text = "\n".join(text_parts) if text_parts else ""
+
+        metadata: dict[str, Any] = {}
+        if hasattr(reasoning_item, "id"):
+            metadata["id"] = getattr(reasoning_item, "id")
+        if hasattr(reasoning_item, "encrypted_content"):
+            metadata["encrypted_content"] = getattr(reasoning_item, "encrypted_content")
+        if hasattr(reasoning_item, "status"):
+            metadata["status"] = getattr(reasoning_item, "status")
+        if has_summary:
+            metadata["is_summary"] = True
+
+        return ReasoningContent(text=reasoning_text, metadata=metadata if metadata else {})
 
     @classmethod
     def _get_metadata_from_response(cls: type[_T], response: Response | ResponseItem) -> dict[str, Any]:
@@ -994,6 +1159,7 @@ class ResponsesAgentThreadActions:
             "temperature": temperature if temperature is not None else agent.temperature,
             "top_p": top_p if top_p is not None else agent.top_p,
             "metadata": metadata if metadata is not None else agent.metadata,
+            "reasoning": getattr(agent, "reasoning", None),
             **kwargs,
         }
 
@@ -1001,19 +1167,30 @@ class ResponsesAgentThreadActions:
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
         """Generate a dictionary of options that can be passed directly to create_run."""
         merged = cls._merge_options(**kwargs)
+
+        # Extract individual options
         truncation = merged.get("truncation", None)
         max_output_tokens = merged.get("max_output_tokens", None)
         parallel_tool_calls = merged.get("parallel_tool_calls", None)
-        return {
+        reasoning = merged.get("reasoning", None)
+
+        # Build the options dictionary
+        options = {
             "model": merged.get("model"),
             "top_p": merged.get("top_p"),
-            "text": merged.get("text"),
             "temperature": merged.get("temperature"),
             "truncation": truncation,  # auto or disabled
             "metadata": merged.get("metadata"),
             "max_output_tokens": max_output_tokens,
             "parallel_tool_calls": parallel_tool_calls,
         }
+
+        # Add reasoning to the options if it is provided.
+        # Note that non-reasoning capable models will throw an error if this is set.
+        if reasoning is not None:
+            options["reasoning"] = reasoning
+
+        return options
 
     @classmethod
     def _get_tools(
