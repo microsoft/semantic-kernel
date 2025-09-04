@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.98.0",
+    "openai >= 1.106.1",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
