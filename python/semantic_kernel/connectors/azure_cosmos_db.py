@@ -2,7 +2,6 @@
 
 import ast
 import asyncio
-import json
 import sys
 from collections.abc import Sequence
 from importlib import metadata
