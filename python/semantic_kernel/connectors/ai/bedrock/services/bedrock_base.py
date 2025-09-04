@@ -4,6 +4,7 @@ from abc import ABC
 from typing import Any, ClassVar
 
 import boto3
+from botocore.config import Config
 
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import BedrockModelProvider
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -41,8 +42,10 @@ class BedrockBase(KernelBaseModel, ABC):
                 of the model ID, this setting must be provided.
             **kwargs: Additional keyword arguments.
         """
+        config = Config(user_agent_extra="x-client-framework:semantic-kernel")
+
         super().__init__(
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
+            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime", config=config),
             bedrock_client=client or boto3.client("bedrock"),
             bedrock_model_provider=bedrock_model_provider,
             **kwargs,

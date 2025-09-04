@@ -483,7 +483,7 @@ class AssistantThreadActions:
                                     tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
                                     content_is_visible = True
                                 if tool_content:
-                                    if output_messages is not None:
+                                    if output_messages is not None and not content_is_visible:
                                         output_messages.append(tool_content)
                                     if content_is_visible:
                                         yield tool_content

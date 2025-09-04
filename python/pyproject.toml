@@ -94,20 +94,20 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 6.0",
-    "torch == 2.7.1"
+    "torch == 2.8.0"
 ]
 mcp = [
     "mcp>=1.8",
 ]
 milvus = [
-    "pymilvus >= 2.3,< 2.6",
+    "pymilvus >= 2.3,< 2.7",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.14",
+    "pymongo >= 4.8.0, < 4.15",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [

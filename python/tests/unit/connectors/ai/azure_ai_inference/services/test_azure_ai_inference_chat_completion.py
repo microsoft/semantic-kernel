@@ -66,6 +66,15 @@ def test_azure_ai_inference_chat_completion_init_with_service_id(
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
 
 
+def test_azure_ai_inference_chat_completion_init_with_api_version(azure_ai_inference_unit_test_env, model_id) -> None:
+    """Test initialization of AzureAIInferenceChatCompletion with api_version"""
+    azure_ai_inference = AzureAIInferenceChatCompletion(model_id, api_version="2024-02-15-test")
+
+    assert azure_ai_inference.ai_model_id == model_id
+    assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
+    assert azure_ai_inference.client._config.api_version == "2024-02-15-test"
+
+
 @pytest.mark.parametrize(
     "azure_ai_inference_client",
     [AzureAIInferenceChatCompletion.__name__],
@@ -210,7 +219,6 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
         messages=[UserMessage(content=user_message_content)],
         model=model_id,
         model_extras=settings.extra_parameters,
-        **settings.prepare_settings_dict(),
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
@@ -506,7 +514,6 @@ async def test_azure_ai_inference_streaming_chat_completion_with_extra_parameter
         messages=[UserMessage(content=user_message_content)],
         model=model_id,
         model_extras=settings.extra_parameters,
-        **settings.prepare_settings_dict(),
     )
 
 
