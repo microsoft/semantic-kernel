@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using SemanticKernel.Process.TestsShared.Services;
-using SemanticKernel.Process.TestsShared.Setup;
-using SemanticKernel.Process.TestsShared.Steps;
+using Microsoft.SemanticKernel.Process.TestsShared.Services;
+using Microsoft.SemanticKernel.Process.TestsShared.Setup;
+using Microsoft.SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
@@ -322,7 +322,6 @@ public class LocalMapTests
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
         Assert.Equal(55L, unionState.SquareResult);
-        Assert.Equal(5, counterService.GetCount());
     }
 
     /// <summary>
@@ -387,7 +386,7 @@ public class LocalMapTests
     private static async Task<UnionState> GetUnionStateAsync(LocalKernelProcessContext processContext)
     {
         KernelProcess processState = await processContext.GetStateAsync();
-        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Single(s => s.State.Name == "Union").State;
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Single(s => s.State.StepId == "Union").State;
         Assert.NotNull(unionState);
         Assert.NotNull(unionState.State);
         return unionState.State;

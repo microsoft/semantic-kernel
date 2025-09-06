@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
