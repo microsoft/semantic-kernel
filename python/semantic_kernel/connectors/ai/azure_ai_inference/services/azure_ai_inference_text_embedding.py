@@ -35,6 +35,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
         ai_model_id: str,
         api_key: str | None = None,
         endpoint: str | None = None,
+        api_version: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
@@ -46,11 +47,13 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
         The following environment variables are used:
         - AZURE_AI_INFERENCE_API_KEY
         - AZURE_AI_INFERENCE_ENDPOINT
+        - AZURE_AI_INFERENCE_API_VERSION
 
         Args:
             ai_model_id: (str): A string that is used to identify the model such as the model name. (Required)
             api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
             endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
+            api_version (str | None): The API version to use. (Optional)
             service_id (str | None): Service ID for the chat completion service. (Optional)
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
@@ -65,6 +68,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             client_type=AzureAIInferenceClientType.Embeddings,
             api_key=api_key,
             endpoint=endpoint,
+            api_version=api_version,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
             client=client,
