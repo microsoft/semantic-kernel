@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -184,6 +185,43 @@ public class ServiceCollectionExtensionsTests
             .BuildServiceProvider()
             .GetRequiredService<OpenAIFileService>();
     }
+
+    #region Image Generation
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void ItCanAddImageGeneratorService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddOpenAIImageGenerator("dall-e-3", "api-key"),
+            InitializationType.ClientInline => builder.Services.AddOpenAIImageGenerator("dall-e-3", client),
+            InitializationType.ClientInServiceProvider => builder.Services.AddOpenAIImageGenerator("dall-e-3"),
+            _ => builder.Services
+        };
+
+        // Assert
+        var serviceProvider = builder.Build();
+
+        // Test that the service was registered and can be built without throwing
+        Assert.NotNull(serviceProvider);
+
+        // Verify that an IImageGenerator service is available in the service provider
+        var hasImageGeneratorService = collection.Any(descriptor =>
+            descriptor.ServiceType.Name.Contains("IImageGenerator"));
+        Assert.True(hasImageGeneratorService, "IImageGenerator service should be registered");
+    }
+
+    #endregion
 
     public enum InitializationType
     {
