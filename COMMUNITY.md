@@ -16,7 +16,7 @@ We regularly have Community Office Hours that are open to the **public** to join
 
 Add Semantic Kernel events to your calendar. We are running two community calls to accommodate different time zones for Q&A Office Hours:
 
-- **Americas timezone:** Every Wednesday at 8:00 AM Pacific Time. Adjusted for daylight savings. Join here: [SK-Americas-Europe-OfficeHours](https://aka.ms/sk-officehours).
+- **Americas & EMEA timezone:** Every Wednesday at 8:00 AM Pacific Time/17:00 CET. Adjusted for daylight savings. Join here: [SK-Americas-Europe-OfficeHours](https://aka.ms/sk-officehours).
 - **Asia Pacific timezone:** The second Wednesday of every month at 4:00 PM Pacific Time Wednesday. In much of Asia this occurs on Thursday local time. Adjusted for daylight savings. Join here: [SK-APAC-OfficeHours](https://aka.ms/sk-apac-officehours).
 
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
