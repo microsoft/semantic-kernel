@@ -813,8 +813,9 @@ class CosmosNoSqlCollection(
             text_field = options.additional_property_name
             if not text_field:
                 raise VectorStoreModelException("Hybrid search requires 'keyword_field_name' in options.")
-            distance_clause = f"RRF(VectorDistance(c.{vector_field_name}, @vector), "
-            f"FullTextScore(c.{text_field}, @keywords))"
+            distance_clause = (
+                f"RRF(VectorDistance(c.{vector_field_name}, @vector), FullTextScore(c.{text_field}, @keywords))"
+            )
         else:
             raise VectorStoreModelException(f"Search type '{search_type}' is not supported.")
         query = (
@@ -824,7 +825,7 @@ class CosmosNoSqlCollection(
             f"{where_clauses}"  # nosec: B608
             f"ORDER BY {distance_clause}"  # nosec: B608
         )
-        
+
         container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         try:
             results = container_proxy.query_items(query, parameters=params)
