@@ -202,7 +202,7 @@ internal static class OpenAIResponseExtensions
         {
             if (part is ReasoningSummaryTextPart text)
             {
-                collection.Add(new TextContent(text.Text, innerContent: text));
+                collection.Add(new ReasoningContent(text.Text) { InnerContent = text });
             }
         }
         return collection;
