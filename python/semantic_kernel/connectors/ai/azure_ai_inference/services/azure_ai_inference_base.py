@@ -8,14 +8,12 @@ from typing import Any
 
 from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.core.credentials import AzureKeyCredential
+from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
-    AsyncDefaultAzureCredentialWrapper,
-)
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -49,10 +47,12 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         client_type: AzureAIInferenceClientType,
         api_key: str | None = None,
         endpoint: str | None = None,
+        api_version: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | EmbeddingsClient | None = None,
         instruction_role: str | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
@@ -61,15 +61,18 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         The following environment variables are used:
         - AZURE_AI_INFERENCE_API_KEY
         - AZURE_AI_INFERENCE_ENDPOINT
+        - AZURE_AI_INFERENCE_API_VERSION
 
         Args:
             client_type (AzureAIInferenceClientType): The client type to use.
             api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
             endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
+            api_version (str | None): The API version to use. (Optional)
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
             instruction_role (str | None): The role to use for 'instruction' messages. (Optional)
+            credential: The credential to use for authentication. (Optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -81,6 +84,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                 azure_ai_inference_settings = AzureAIInferenceSettings(
                     api_key=api_key,
                     endpoint=endpoint,
+                    api_version=api_version,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,
                 )
@@ -93,13 +97,17 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                     endpoint=endpoint,
                     credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    api_version=azure_ai_inference_settings.api_version,
                 )
             else:
-                # Try to create the client with a DefaultAzureCredential
+                if credential is None:
+                    raise ServiceInitializationError("The 'credential' parameter is required for authentication.")
+
                 client = AzureAIInferenceClientType.get_client_class(client_type)(
                     endpoint=endpoint,
-                    credential=AsyncDefaultAzureCredentialWrapper(),
+                    credential=credential,
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    api_version=azure_ai_inference_settings.api_version,
                 )
 
         args: dict[str, Any] = {

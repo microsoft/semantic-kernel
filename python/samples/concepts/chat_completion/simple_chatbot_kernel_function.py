@@ -6,6 +6,7 @@ from samples.concepts.setup.chat_completion_services import Services, get_chat_c
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 # This sample shows how to create a chatbot using a kernel function.
 # This sample uses the following two main components:
@@ -60,8 +61,9 @@ kernel = Kernel()
 chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
-    prompt="{{$chat_history}}{{$user_input}}",
-    template_format="semantic-kernel",
+    prompt_template_config=PromptTemplateConfig(
+        template="{{$chat_history}}{{$user_input}}", allow_dangerously_set_content=True
+    ),
     # You can attach the request settings to the function or
     # pass the settings to the kernel.invoke method via the kernel arguments.
     # If you specify the settings in both places, the settings in the kernel arguments will

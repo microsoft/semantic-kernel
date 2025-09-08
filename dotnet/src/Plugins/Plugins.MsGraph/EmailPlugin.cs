@@ -21,6 +21,7 @@ public sealed class EmailPlugin
 {
     private readonly IEmailConnector _connector;
     private readonly ILogger _logger;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
@@ -33,10 +34,12 @@ public sealed class EmailPlugin
     /// </summary>
     /// <param name="connector">Email connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public EmailPlugin(IEmailConnector connector, ILoggerFactory? loggerFactory = null)
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization. If null, default options will be used.</param>
+    public EmailPlugin(IEmailConnector connector, ILoggerFactory? loggerFactory = null, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
+        this._jsonSerializerOptions = jsonSerializerOptions ?? s_options;
         this._connector = connector;
         this._logger = loggerFactory?.CreateLogger(typeof(EmailPlugin)) ?? NullLogger.Instance;
     }
@@ -45,7 +48,7 @@ public sealed class EmailPlugin
     /// Get my email address.
     /// </summary>
     [KernelFunction, Description("Gets the email address for me.")]
-    public async Task<string> GetMyEmailAddressAsync()
+    public async Task<string?> GetMyEmailAddressAsync()
         => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
@@ -78,7 +81,7 @@ public sealed class EmailPlugin
     /// Get email messages with specified optional clauses used to query for messages.
     /// </summary>
     [KernelFunction, Description("Get email messages.")]
-    public async Task<string> GetEmailMessagesAsync(
+    public async Task<string?> GetEmailMessagesAsync(
         [Description("Optional limit of the number of message to retrieve.")] int? maxResults = 10,
         [Description("Optional number of message to skip before retrieving results.")] int? skip = 0,
         CancellationToken cancellationToken = default)
@@ -87,13 +90,18 @@ public sealed class EmailPlugin
 
         const string SelectString = "subject,receivedDateTime,bodyPreview";
 
-        IEnumerable<EmailMessage> messages = await this._connector.GetMessagesAsync(
+        IEnumerable<EmailMessage>? messages = await this._connector.GetMessagesAsync(
                 top: maxResults,
                 skip: skip,
                 select: SelectString,
                 cancellationToken)
             .ConfigureAwait(false);
 
-        return JsonSerializer.Serialize(value: messages, options: s_options);
+        if (messages is null)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Serialize(value: messages, options: this._jsonSerializerOptions);
     }
 }

@@ -19,6 +19,7 @@ from azure.ai.agents.models import (
     RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
+    RunStepDeepResearchToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
     RunStepFileSearchToolCall,
@@ -38,9 +39,11 @@ from azure.ai.agents.models import (
 from azure.ai.agents.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    THREAD_MESSAGE_ID,
     generate_azure_ai_search_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
+    generate_deep_research_content,
     generate_file_search_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
@@ -52,6 +55,7 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
+    generate_streaming_deep_research_content,
     generate_streaming_file_search_content,
     generate_streaming_mcp_call_content,
     generate_streaming_mcp_content,
@@ -396,6 +400,18 @@ class AgentThreadActions:
                                         agent_name=agent.name,
                                         mcp_tool_call=mcp_tool_call,
                                     )
+                                case AgentsNamedToolChoiceType.DEEP_RESEARCH:
+                                    logger.debug(
+                                        f"Entering tool_calls (deep_research) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    deep_research_call: RunStepDeepResearchToolCall = cast(
+                                        RunStepDeepResearchToolCall, tool_call
+                                    )
+                                    content = generate_deep_research_content(
+                                        agent_name=agent.name,
+                                        deep_research_tool_call=deep_research_call,
+                                    )
 
                             if content:
                                 message_count += 1
@@ -550,6 +566,7 @@ class AgentThreadActions:
         output_messages: "list[ChatMessageContent] | None" = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
+        thread_msg_id = None
         while True:
             # Use 'async with' only if the stream supports async context management (main agent stream).
             # Tool output handlers only support async iteration, not context management.
@@ -567,8 +584,14 @@ class AgentThreadActions:
                     run_step = cast(RunStep, event_data)
                     logger.info(f"Assistant run in progress with ID: {run_step.id}")
 
+                elif event_type == AgentStreamEvent.THREAD_MESSAGE_CREATED:
+                    # Keep the current message id stable unless a new one arrives
+                    if thread_msg_id != event_data.id:
+                        thread_msg_id = event_data.id
+                    logger.info(f"Assistant message created with ID: {thread_msg_id}")
+
                 elif event_type == AgentStreamEvent.THREAD_MESSAGE_DELTA:
-                    yield generate_streaming_message_content(agent.name, event_data)
+                    yield generate_streaming_message_content(agent.name, event_data, thread_msg_id)
 
                 elif event_type == AgentStreamEvent.THREAD_RUN_STEP_COMPLETED:
                     step_completed = cast(RunStep, event_data)
@@ -621,7 +644,13 @@ class AgentThreadActions:
                                     content = generate_streaming_mcp_content(
                                         agent_name=agent.name, step_details=details
                                     )
+                                case AgentsNamedToolChoiceType.DEEP_RESEARCH:
+                                    content = generate_streaming_deep_research_content(
+                                        agent_name=agent.name, step_details=details
+                                    )
                             if content:
+                                if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                    content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                 if output_messages is not None:
                                     output_messages.append(content)
                                 if content_is_visible:
@@ -654,6 +683,8 @@ class AgentThreadActions:
                             action_result.function_result_streaming_content,
                         ):
                             if content and output_messages is not None:
+                                if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                    content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                 output_messages.append(content)
 
                         handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
@@ -692,6 +723,8 @@ class AgentThreadActions:
                                     agent_name=agent.name, mcp_tool_calls=mcp_tool_calls
                                 )
                                 if content:
+                                    if thread_msg_id and THREAD_MESSAGE_ID not in content.metadata:
+                                        content.metadata[THREAD_MESSAGE_ID] = thread_msg_id
                                     output_messages.append(content)
 
                             # Create tool approvals for MCP calls
@@ -872,8 +905,8 @@ class AgentThreadActions:
         return {
             "model": model if model is not None else agent.definition.model,
             "response_format": response_format if response_format is not None else agent.definition.response_format,
-            "temperature": temperature if temperature is not None else agent.definition.temperature,
-            "top_p": top_p if top_p is not None else agent.definition.top_p,
+            "temperature": temperature if temperature is not None else None,
+            "top_p": top_p if top_p is not None else None,
             "metadata": metadata if metadata is not None else agent.definition.metadata,
             **kwargs,
         }

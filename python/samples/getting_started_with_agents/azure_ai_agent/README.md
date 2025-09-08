@@ -30,18 +30,20 @@ To begin, create the project client as follows:
 
 ```python
 async with (
-    DefaultAzureCredential() as creds,
+    AzureCliCredential() as creds,
     AzureAIAgent.create_client(credential=creds) as client,
 ):
     # Your operational code here
 ```
+
+Before running the example, make sure to run `az login` command in shell using Azure CLI to authenticate and get access to Azure services.
 
 ### Required Imports
 
 The required imports for the `Azure AI Agent` include async libraries:
 
 ```python
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 ```
 
 ### Initializing the Agent
@@ -53,7 +55,7 @@ You can pass in an endpoint, along with an optional api-version, to create the c
 ai_agent_settings = AzureAIAgentSettings()
 
 async with (
-    DefaultAzureCredential() as creds,
+    AzureCliCredential() as creds,
     AzureAIAgent.create_client(
         credential=creds,
         endpoint=ai_agent_settings.endpoint,
