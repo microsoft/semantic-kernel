@@ -51,7 +51,10 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
 
 MODELS_WITH_PROMPT_CACHING: list = ["us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-                                    "eu.anthropic.claude-3-7-sonnet-20250219-v1:0"]
+                                    "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+                                    "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                                    "eu.anthropic.claude-sonnet-4-20250514-v1:0"
+                                    ]
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
