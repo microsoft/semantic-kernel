@@ -3,12 +3,7 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator
-from typing import Any, TYPE_CHECKING
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, Literal, TYPE_CHECKING
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -36,9 +31,6 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_chat_completion,
 )
 
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
@@ -46,12 +38,24 @@ from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import Nvidia
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+    
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
 class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
-    """NVIDIA Chat completion class."""
+    """NVIDIA Chat completion class.
+    
+    This class does not support function calling. The SUPPORTS_FUNCTION_CALLING attribute
+    is set to False (inherited from the base class).
+    """
 
     def __init__(
         self,
@@ -62,13 +66,14 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        instruction_role: str | None = None,
+        instruction_role: Literal["system", "user", "assistant"] | None = None,
     ) -> None:
         """Initialize an NvidiaChatCompletion service.
 
         Args:
             ai_model_id (str): NVIDIA model name, see
                 https://docs.api.nvidia.com/nim/reference/
+                If not provided, defaults to "meta/llama-3.1-8b-instruct".
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
@@ -77,7 +82,8 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
-            instruction_role (str | None): The role to use for 'instruction' messages. (Optional)
+            instruction_role (Literal["system", "user", "assistant"] | None): The role to use for 
+                'instruction' messages. Defaults to "system". (Optional)
         """
         try:
             nvidia_settings = NvidiaSettings(
@@ -93,6 +99,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         if not client and not nvidia_settings.api_key:
             raise ServiceInitializationError("The NVIDIA API key is required.")
         if not nvidia_settings.chat_model_id:
+            # Default fallback model: meta/llama-3.1-8b-instruct
             nvidia_settings.chat_model_id = "meta/llama-3.1-8b-instruct"
             logger.warning(f"Default chat model set as: {nvidia_settings.chat_model_id}")
 
