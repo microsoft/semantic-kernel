@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -81,8 +82,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         OpenAIFile file = await this.FileClient.UploadFileAsync(stream, filename: "employees.pdf", purpose: FileUploadPurpose.UserData);
 
         // Create a vector store for the file
-        CreateVectorStoreOperation createStoreOp = await this.VectorStoreClient.CreateVectorStoreAsync(
-            waitUntilCompleted: true,
+        ClientResult<VectorStore> createStoreOp = await this.VectorStoreClient.CreateVectorStoreAsync(
             new VectorStoreCreationOptions()
             {
                 FileIds = { file.Id },
@@ -96,7 +96,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
 
         // ResponseCreationOptions allows you to specify tools for the agent.
         ResponseCreationOptions creationOptions = new();
-        creationOptions.Tools.Add(ResponseTool.CreateFileSearchTool([createStoreOp.VectorStoreId], null));
+        creationOptions.Tools.Add(ResponseTool.CreateFileSearchTool([createStoreOp.Value.Id], null));
         OpenAIResponseAgentInvokeOptions invokeOptions = new()
         {
             ResponseCreationOptions = creationOptions,
@@ -124,7 +124,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         // Clean up resources
         RequestOptions noThrowOptions = new() { ErrorOptions = ClientErrorBehaviors.NoThrow };
         this.FileClient.DeleteFile(file.Id, noThrowOptions);
-        this.VectorStoreClient.DeleteVectorStore(createStoreOp.VectorStoreId, noThrowOptions);
+        this.VectorStoreClient.DeleteVectorStore(createStoreOp.Value.Id, noThrowOptions);
     }
 
     [Fact]
