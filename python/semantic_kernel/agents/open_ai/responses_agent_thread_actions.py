@@ -17,6 +17,8 @@ from openai.types.responses.response_error_event import ResponseErrorEvent
 from openai.types.responses.response_function_call_arguments_delta_event import ResponseFunctionCallArgumentsDeltaEvent
 from openai.types.responses.response_input_text import ResponseInputText
 from openai.types.responses.response_item import ResponseItem
+from openai.types.responses.response_mcp_call_arguments_delta_event import ResponseMcpCallArgumentsDeltaEvent
+from openai.types.responses.response_mcp_call_arguments_done_event import ResponseMcpCallArgumentsDoneEvent
 from openai.types.responses.response_output_item import ResponseOutputItem
 from openai.types.responses.response_output_item_added_event import ResponseOutputItemAddedEvent
 from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
@@ -434,6 +436,37 @@ class ResponsesAgentThreadActions:
                                 choice_index=request_index,
                             )
                             all_messages.append(msg)
+                        # MCP-specific streaming of arguments
+                        case ResponseMcpCallArgumentsDeltaEvent():
+                            if on_intermediate_message:
+                                mcp_arg_delta = FunctionCallContent(
+                                    id=event.item_id,
+                                    index=getattr(event, "index", None),  # TODO: 要検証
+                                    arguments=event.delta,
+                                )
+                                mcp_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[mcp_arg_delta],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(mcp_msg)
+                        case ResponseMcpCallArgumentsDoneEvent():
+                            if on_intermediate_message:
+                                mcp_args_done = FunctionCallContent(
+                                    id=event.item_id,
+                                    index=getattr(event, "index", None),  # TODO: 要検証
+                                    arguments=event.arguments,
+                                )
+                                mcp_msg = cls._build_streaming_msg(
+                                    agent=agent,
+                                    metadata=metadata,
+                                    event=event,
+                                    items=[mcp_args_done],
+                                    choice_index=request_index,
+                                )
+                                await on_intermediate_message(mcp_msg)
                         case ResponseTextDeltaEvent():
                             text_content = StreamingTextContent(
                                 text=event.delta,
