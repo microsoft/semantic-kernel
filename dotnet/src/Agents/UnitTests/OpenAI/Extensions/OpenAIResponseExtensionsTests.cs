@@ -233,206 +233,30 @@ public class OpenAIResponseExtensionsTests
     }
 
     #region private
-    private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems)
-    {
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        return this.CreateMockOpenAIResponse(
-            "id",
-            DateTimeOffset.Now,
-            null,
-            "instructions",
-            model,
-            "previousResponseId",
-            0,
-            [],
-            0,
-            null,
-            null,
-            outputItems,
-            false,
-            ResponseToolChoice.CreateAutoChoice());
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-    }
-    private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
-    {
-        Type type = typeof(OpenAIResponse);
-        var assembly = type.Assembly;
-        var internalServiceTierType = assembly.GetType("OpenAI.Internal.InternalServiceTier");
-        var nullableInternalServiceTierType = typeof(Nullable<>).MakeGenericType(internalServiceTierType!);
+    private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems) =>
+        OpenAIResponsesModelFactory.OpenAIResponse(
+            model: model,
+            outputItems: outputItems);
 
-        ConstructorInfo? constructor = type.GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            null,
-            [
-                typeof(IDictionary<string, string>),
-                typeof(float?),
-                typeof(float?),
-                nullableInternalServiceTierType,
-                typeof(string),
-                typeof(bool?),
-                typeof(string),
-                typeof(IList<ResponseTool>),
-                typeof(string),
-                typeof(ResponseStatus?),
-                typeof(DateTimeOffset),
-                typeof(ResponseError),
-                typeof(ResponseTokenUsage),
-                typeof(string),
-                typeof(ResponseReasoningOptions),
-                typeof(int?),
-                typeof(ResponseTextOptions),
-                typeof(ResponseTruncationMode?),
-                typeof(ResponseIncompleteStatusDetails),
-                typeof(IList<ResponseItem>),
-                typeof(bool),
-                typeof(ResponseToolChoice),
-                typeof(string),
-                typeof(string),
-                typeof(IDictionary<string, BinaryData>)
-            ],
-            null);
+    private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice) =>
+        OpenAIResponsesModelFactory.OpenAIResponse(
+            id: id,
+            createdAt: createdAt,
+            error: error,
+            instructions: instructions,
+            model: model,
+            previousResponseId: previousResponseId,
+            temperature: temperature,
+            tools: tools,
+            topP: topP,
+            metadata: metadata,
+            incompleteStatusDetails: incompleteStatusDetails,
+            outputItems: outputItems,
+            parallelToolCallsEnabled: parallelToolCallsEnabled,
+            toolChoice: toolChoice);
 
-        if (constructor != null)
-        {
-            return (OpenAIResponse)constructor.Invoke(
-                [
-                    metadata,
-                (float?)temperature,
-                (float?)topP,
-                null, // serviceTier
-                previousResponseId,
-                null, // background
-                instructions,
-                tools.ToList(),
-                id,
-                null, // status
-                createdAt,
-                error,
-                null, // usage
-                null, // endUserId
-                null, // reasoningOptions
-                null, // maxOutputTokenCount
-                null, // textOptions
-                null, // truncationMode
-                incompleteStatusDetails,
-                outputItems.ToList(),
-                parallelToolCallsEnabled,
-                toolChoice,
-                model,
-                "response",
-                null // additionalBinaryDataProperties
-                ]
-            );
-        }
-        throw new InvalidOperationException("Constructor not found.");
-    }
-
-    private ReasoningResponseItem CreateReasoningResponseItem(string? reasoningText = null, IReadOnlyList<ReasoningSummaryPart>? summaryParts = null)
-    {
-        Type reasoningResponseItemType = typeof(ReasoningResponseItem);
-        Type reasoningSummaryTextPartType = typeof(ReasoningSummaryTextPart);
-
-        // If reasoningText is provided and summaryParts is not, create summaryParts with the text
-        if (reasoningText != null && summaryParts == null)
-        {
-            // Try to find any public static factory method or constructor that can create ReasoningSummaryTextPart
-            var createTextPartMethod = typeof(ReasoningSummaryPart).GetMethod(
-                "CreateTextPart",
-                BindingFlags.Static | BindingFlags.Public,
-                null,
-                [typeof(string)],
-                null);
-
-            if (createTextPartMethod != null)
-            {
-                var textPart = createTextPartMethod.Invoke(null, [reasoningText]) as ReasoningSummaryTextPart;
-                summaryParts = textPart != null ? new List<ReasoningSummaryPart> { textPart } : new List<ReasoningSummaryPart>();
-            }
-            else
-            {
-                // Try to find constructor - search for all constructors
-                var textPartConstructors = reasoningSummaryTextPartType.GetConstructors(
-                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                ConstructorInfo? textPartConstructor = null;
-                foreach (var ctor in textPartConstructors)
-                {
-                    var parameters = ctor.GetParameters();
-                    if (parameters.Length >= 1 && parameters[0].ParameterType == typeof(string))
-                    {
-                        textPartConstructor = ctor;
-                        break;
-                    }
-                }
-
-                if (textPartConstructor != null)
-                {
-                    var ctorParams = textPartConstructor.GetParameters();
-                    var args = new object?[ctorParams.Length];
-                    args[0] = reasoningText;
-                    // Fill in any additional parameters with null or default values
-                    for (int i = 1; i < ctorParams.Length; i++)
-                    {
-                        args[i] = null;
-                    }
-
-                    var textPart = textPartConstructor.Invoke(args) as ReasoningSummaryTextPart;
-                    summaryParts = textPart != null ? new List<ReasoningSummaryPart> { textPart } : new List<ReasoningSummaryPart>();
-                }
-                else
-                {
-                    throw new InvalidOperationException("Could not find a way to create ReasoningSummaryTextPart.");
-                }
-            }
-        }
-
-        // Convert null summaryParts to empty list for method calls
-        var partsToPass = summaryParts ?? new List<ReasoningSummaryPart>();
-
-        // Try to find a static factory method first
-        var createReasoningItemMethod = typeof(ResponseItem).GetMethod(
-            "CreateReasoningItem",
-            BindingFlags.Static | BindingFlags.Public,
-            null,
-            [typeof(IEnumerable<ReasoningSummaryPart>)],
-            null);
-
-        if (createReasoningItemMethod != null)
-        {
-            return (ReasoningResponseItem)createReasoningItemMethod.Invoke(null, [partsToPass])!;
-        }
-
-        // If no factory method, look for constructors
-        var constructors = reasoningResponseItemType.GetConstructors(
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-        foreach (var ctor in constructors)
-        {
-            var parameters = ctor.GetParameters();
-
-            // Look for constructor that takes IReadOnlyList<ReasoningSummaryPart> or similar
-            if (parameters.Length >= 1)
-            {
-                var firstParamType = parameters[0].ParameterType;
-                if (firstParamType.IsAssignableFrom(typeof(List<ReasoningSummaryPart>)) ||
-                    firstParamType.IsAssignableFrom(typeof(IReadOnlyList<ReasoningSummaryPart>)) ||
-                    firstParamType.IsAssignableFrom(typeof(IEnumerable<ReasoningSummaryPart>)))
-                {
-                    var args = new object?[parameters.Length];
-                    args[0] = partsToPass;
-                    // Fill in any additional parameters with null
-                    for (int i = 1; i < parameters.Length; i++)
-                    {
-                        args[i] = null;
-                    }
-
-                    return (ReasoningResponseItem)ctor.Invoke(args);
-                }
-            }
-        }
-
-        throw new InvalidOperationException("Constructor not found for ReasoningResponseItem.");
-    }
+    private ReasoningResponseItem CreateReasoningResponseItem(string? reasoningText = null) =>
+        OpenAIResponsesModelFactory.ReasoningResponseItem(summaryText: reasoningText);
 
     #endregion
 }
