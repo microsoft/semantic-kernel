@@ -24,6 +24,8 @@ class NvidiaSettings(KernelBaseSettings):
                 (Env var NVIDIA_BASE_URL)
     - embedding_model_id: str | None - The NVIDIA embedding model ID to use, for example, nvidia/nv-embed-v1.
         (Env var NVIDIA_EMBEDDING_MODEL_ID)
+    - chat_model_id: str | None - The NVIDIA chat model ID to use.
+        (Env var NVIDIA_CHAT_MODEL_ID)
     - env_file_path: if provided, the .env settings are read from this file path location
     """
 

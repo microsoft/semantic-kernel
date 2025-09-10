@@ -13,6 +13,7 @@ from semantic_kernel.connectors.ai.nvidia import NvidiaChatCompletion
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
     NvidiaChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_chat_completion import DEFAULT_NVIDIA_CHAT_MODEL
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
 
@@ -85,7 +86,7 @@ class TestNvidiaChatCompletion:
     def test_init_with_empty_model_id(self, nvidia_unit_test_env):
         """Test initialization with empty model ID uses default."""
         service = NvidiaChatCompletion()
-        assert service.ai_model_id == "meta/llama-3.1-8b-instruct"
+        assert service.ai_model_id == DEFAULT_NVIDIA_CHAT_MODEL
 
     def test_init_with_custom_model_id(self, nvidia_unit_test_env):
         """Test initialization with custom model ID."""

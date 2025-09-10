@@ -47,6 +47,9 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+# Default NVIDIA chat model when none is specified
+DEFAULT_NVIDIA_CHAT_MODEL = "meta/llama-3.1-8b-instruct"
+
 
 @experimental
 class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
@@ -72,7 +75,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         Args:
             ai_model_id (str): NVIDIA model name, see
                 https://docs.api.nvidia.com/nim/reference/
-                If not provided, defaults to "meta/llama-3.1-8b-instruct".
+                If not provided, defaults to DEFAULT_NVIDIA_CHAT_MODEL.
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
@@ -98,8 +101,8 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         if not client and not nvidia_settings.api_key:
             raise ServiceInitializationError("The NVIDIA API key is required.")
         if not nvidia_settings.chat_model_id:
-            # Default fallback model: meta/llama-3.1-8b-instruct
-            nvidia_settings.chat_model_id = "meta/llama-3.1-8b-instruct"
+            # Default fallback model
+            nvidia_settings.chat_model_id = DEFAULT_NVIDIA_CHAT_MODEL
             logger.warning(f"Default chat model set as: {nvidia_settings.chat_model_id}")
 
         # Create client if not provided
