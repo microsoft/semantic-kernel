@@ -24,7 +24,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
 
     [ConditionalFact]
     public virtual Task NegativeDotProductSimilarity()
-        => this.SimpleSearch(DistanceFunction.NegativeDotProductSimilarity, -1, 1, 0, [1, 2, 0]);
+        => this.SimpleSearch(DistanceFunction.NegativeDotProductSimilarity, -1, 1, 0, [0, 2, 1]);
 
     [ConditionalFact]
     public virtual Task EuclideanDistance()

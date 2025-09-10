@@ -657,8 +657,8 @@ internal static class SqlServerCommandBuilder
         DistanceFunction.CosineDistance => ("COSINE", "ASC"),
         // A value of 0 indicates that the vectors are identical, while larger values indicate greater dissimilarity.
         DistanceFunction.EuclideanDistance => ("EUCLIDEAN", "ASC"),
-        // A value closer to 0 indicates higher similarity, while more negative values indicate greater dissimilarity.
-        DistanceFunction.NegativeDotProductSimilarity => ("DOT", "DESC"),
+        // Smaller numbers indicate more similar vectors
+        DistanceFunction.NegativeDotProductSimilarity => ("DOT", "ASC"),
         _ => throw new NotSupportedException($"Distance function {name} is not supported.")
     };
 }
