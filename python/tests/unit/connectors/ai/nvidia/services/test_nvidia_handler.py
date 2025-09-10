@@ -1,22 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
-from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
     NvidiaChatPromptExecutionSettings,
     NvidiaEmbeddingPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
 
 
 @pytest.fixture
 def mock_openai_client():
     """Create a mock OpenAI client."""
-    client = AsyncMock(spec=AsyncOpenAI)
-    return client
+    return AsyncMock(spec=AsyncOpenAI)
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ class TestNvidiaHandler:
             ai_model_id="test-model",
             api_key="test-key",
         )
-        
+
         assert handler.client == mock_openai_client
         assert handler.ai_model_type == NvidiaModelTypes.CHAT
         assert handler.ai_model_id == "test-model"
@@ -145,4 +145,4 @@ class TestNvidiaHandler:
         )
 
         with pytest.raises(NotImplementedError, match="Model type UNSUPPORTED is not supported"):
-            await nvidia_handler._send_request(settings) 
+            await nvidia_handler._send_request(settings)

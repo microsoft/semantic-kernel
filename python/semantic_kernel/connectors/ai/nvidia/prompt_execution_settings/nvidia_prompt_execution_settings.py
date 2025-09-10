@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, BaseModel
+from pydantic import BaseModel, Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
@@ -57,7 +57,6 @@ class NvidiaChatPromptExecutionSettings(NvidiaPromptExecutionSettings):
     response_format: (
         dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
     ) = None
-    thinking_mode: bool | None = None
     seed: int | None = None
     extra_headers: dict | None = None
     extra_body: dict | None = None
@@ -68,7 +67,7 @@ class NvidiaChatPromptExecutionSettings(NvidiaPromptExecutionSettings):
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
         """Override only for embeddings to exclude input_type and truncate."""
         return self.model_dump(
-            exclude={"service_id", "extension_data", "structured_json_response", "thinking_mode", "response_format"},
+            exclude={"service_id", "extension_data", "structured_json_response", "response_format"},
             exclude_none=True,
             by_alias=True,
         )

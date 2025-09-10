@@ -29,7 +29,7 @@ class NvidiaSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "NVIDIA_"
 
-    api_key: SecretStr | None = None  
+    api_key: SecretStr | None = None
     base_url: str = "https://integrate.api.nvidia.com/v1"
     embedding_model_id: str | None = None
-    chat_model_id: str | None = None 
+    chat_model_id: str | None = None

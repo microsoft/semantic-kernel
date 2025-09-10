@@ -3,14 +3,23 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator
-from typing import Any, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 from openai import AsyncOpenAI
+from openai.types.chat.chat_completion import ChatCompletion, Choice
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from pydantic import ValidationError
 
-from openai.types.chat.chat_completion import ChatCompletion, Choice
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice as ChunkChoice
-
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
+from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import NvidiaSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import (
     AuthorRole,
     ChatMessageContent,
@@ -21,22 +30,12 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
-    NvidiaChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
-
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
-from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
-from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import NvidiaSettings
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -44,15 +43,15 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-    
+    pass
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
 class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
     """NVIDIA Chat completion class.
-    
+
     This class does not support function calling. The SUPPORTS_FUNCTION_CALLING attribute
     is set to False (inherited from the base class).
     """
@@ -66,7 +65,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        instruction_role: Literal["system", "user", "assistant"] | None = None,
+        instruction_role: Literal["system", "user", "assistant", "developer"] | None = None,
     ) -> None:
         """Initialize an NvidiaChatCompletion service.
 
@@ -82,7 +81,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
-            instruction_role (Literal["system", "user", "assistant"] | None): The role to use for 
+            instruction_role (Literal["system", "user", "assistant", "developer"] | None): The role to use for
                 'instruction' messages. Defaults to "system". (Optional)
         """
         try:
@@ -121,7 +120,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         )
 
     @classmethod
-    def from_dict(cls : type["NvidiaChatCompletion"], settings: dict[str, Any]) -> "NvidiaChatCompletion":
+    def from_dict(cls: type["NvidiaChatCompletion"], settings: dict[str, Any]) -> "NvidiaChatCompletion":
         """Initialize an NVIDIA service from a dictionary of settings.
 
         Args:
@@ -283,9 +282,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
             ]
         return []
 
-    def _handle_structured_output(
-        self, request_settings: NvidiaChatPromptExecutionSettings
-    ) -> None:
+    def _handle_structured_output(self, request_settings: NvidiaChatPromptExecutionSettings) -> None:
         """Handle structured output for NVIDIA models using nvext parameter."""
         response_format = getattr(request_settings, "response_format", None)
         if response_format:
@@ -313,4 +310,4 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         for message in chat_history.messages:
             message_dict = {role_key: message.role.value, content_key: message.content}
             messages.append(message_dict)
-        return messages 
+        return messages

@@ -24,11 +24,11 @@ class Services(str, Enum):
     BEDROCK = "bedrock"
     GOOGLE_AI = "google_ai"
     MISTRAL_AI = "mistral_ai"
-    NVIDIA = "nvidia"
     OLLAMA = "ollama"
     ONNX = "onnx"
     VERTEX_AI = "vertex_ai"
     DEEPSEEK = "deepseek"
+    NVIDIA = "nvidia"
 
 
 service_id = "default"
@@ -61,11 +61,11 @@ def get_chat_completion_service_and_request_settings(
         Services.BEDROCK: lambda: get_bedrock_chat_completion_service_and_request_settings(),
         Services.GOOGLE_AI: lambda: get_google_ai_chat_completion_service_and_request_settings(),
         Services.MISTRAL_AI: lambda: get_mistral_ai_chat_completion_service_and_request_settings(),
-        Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
         Services.OLLAMA: lambda: get_ollama_chat_completion_service_and_request_settings(),
         Services.ONNX: lambda: get_onnx_chat_completion_service_and_request_settings(),
         Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
         Services.DEEPSEEK: lambda: get_deepseek_chat_completion_service_and_request_settings(),
+        Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
     }
 
     # Call the appropriate lambda or function based on the service name
@@ -284,30 +284,6 @@ def get_mistral_ai_chat_completion_service_and_request_settings() -> tuple[
     return chat_service, request_settings
 
 
-def get_nvidia_chat_completion_service_and_request_settings() -> tuple[
-    "ChatCompletionClientBase", "PromptExecutionSettings"
-]:
-    """Return NVIDIA chat completion service and request settings.
-
-    The service credentials can be read by 3 ways:
-    1. Via the constructor
-    2. Via the environment variables
-    3. Via an environment file
-
-    The request settings control the behavior of the service. The default settings are sufficient to get started.
-    However, you can adjust the settings to suit your needs.
-    Note: Some of the settings are NOT meant to be set by the user.
-    Please refer to the Semantic Kernel Python documentation for more information:
-    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
-    """
-    from semantic_kernel.connectors.ai.nvidia import NvidiaChatCompletion, NvidiaChatPromptExecutionSettings
-
-    chat_service = NvidiaChatCompletion(service_id=service_id)
-    request_settings = NvidiaChatPromptExecutionSettings(service_id=service_id)
-
-    return chat_service, request_settings
-
-
 def get_ollama_chat_completion_service_and_request_settings() -> tuple[
     "ChatCompletionClientBase", "PromptExecutionSettings"
 ]:
@@ -438,5 +414,29 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
         ),
     )
     request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_nvidia_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return NVIDIA chat completion service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from semantic_kernel.connectors.ai.nvidia import NvidiaChatCompletion, NvidiaChatPromptExecutionSettings
+
+    chat_service = NvidiaChatCompletion(service_id=service_id)
+    request_settings = NvidiaChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings

@@ -6,9 +6,9 @@ from typing import Any, ClassVar, Union
 
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.completion import Completion
 from openai.types.create_embedding_response import CreateEmbeddingResponse
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai.nvidia import (
     NvidiaPromptExecutionSettings,
@@ -39,7 +39,7 @@ class NvidiaHandler(KernelBaseModel, ABC):
         if self.ai_model_type == NvidiaModelTypes.EMBEDDING:
             assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
-        elif self.ai_model_type == NvidiaModelTypes.CHAT:
+        if self.ai_model_type == NvidiaModelTypes.CHAT:
             assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
             return await self._send_chat_completion_request(settings)
 
@@ -59,17 +59,19 @@ class NvidiaHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    async def _send_chat_completion_request(self, settings: NvidiaPromptExecutionSettings) -> ChatCompletion | AsyncStream[Any]:
+    async def _send_chat_completion_request(
+        self, settings: NvidiaPromptExecutionSettings
+    ) -> ChatCompletion | AsyncStream[Any]:
         """Send a request to the NVIDIA chat completion endpoint."""
         try:
             settings_dict = settings.prepare_settings_dict()
-            
+
             # Handle structured output if nvext is present in extra_body
             if settings.extra_body and "nvext" in settings.extra_body:
                 if "extra_body" not in settings_dict:
                     settings_dict["extra_body"] = {}
                 settings_dict["extra_body"]["nvext"] = settings.extra_body["nvext"]
-            
+
             response = await self.client.chat.completions.create(**settings_dict)
             self.store_usage(response)
             return response

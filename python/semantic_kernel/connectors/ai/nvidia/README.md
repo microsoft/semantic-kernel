@@ -47,13 +47,7 @@ kernel.add_service(chat_service)
 
 ### Basic chat completion
 ```python
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.utils.author_role import AuthorRole
-
-chat_history = ChatHistory()
-chat_history.add_message(AuthorRole.USER, "Hello, how are you?")
-response = await kernel.get_service("nvidia-chat").get_chat_message_content(chat_history)
-print(response.content)
+response = await kernel.invoke_prompt("Hello, how are you?")
 ```
 
 ### Using with Chat Completion Agent
