@@ -38,13 +38,10 @@ class TestNvidiaHandler:
         handler = NvidiaHandler(
             client=mock_openai_client,
             ai_model_type=NvidiaModelTypes.CHAT,
-            ai_model_id="test-model",
-            api_key="test-key",
         )
 
         assert handler.client == mock_openai_client
         assert handler.ai_model_type == NvidiaModelTypes.CHAT
-        assert handler.ai_model_id == "test-model"
         assert handler.MODEL_PROVIDER_NAME == "nvidia"
 
     @pytest.mark.asyncio
@@ -59,7 +56,7 @@ class TestNvidiaHandler:
             )
         ]
         mock_response.usage = MagicMock(prompt_tokens=10, completion_tokens=20, total_tokens=30)
-        mock_openai_client.chat.completions.create.return_value = mock_response
+        mock_openai_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         # Create settings
         settings = NvidiaChatPromptExecutionSettings(
@@ -88,7 +85,7 @@ class TestNvidiaHandler:
             )
         ]
         mock_response.usage = MagicMock(prompt_tokens=10, completion_tokens=20, total_tokens=30)
-        mock_openai_client.chat.completions.create.return_value = mock_response
+        mock_openai_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         # Create settings with nvext
         settings = NvidiaChatPromptExecutionSettings(
@@ -123,7 +120,7 @@ class TestNvidiaHandler:
             MagicMock(embedding=[0.4, 0.5, 0.6]),
         ]
         mock_response.usage = MagicMock(prompt_tokens=10, total_tokens=10)
-        mock_openai_client.embeddings.create.return_value = mock_response
+        mock_openai_client.embeddings.create = AsyncMock(return_value=mock_response)
 
         # Create settings
         settings = NvidiaEmbeddingPromptExecutionSettings(
@@ -136,13 +133,20 @@ class TestNvidiaHandler:
         assert result == [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
 
     @pytest.mark.asyncio
-    async def test_send_request_unsupported_model_type(self, nvidia_handler):
+    async def test_send_request_unsupported_model_type(self, mock_openai_client):
         """Test send_request with unsupported model type."""
-        nvidia_handler.ai_model_type = "UNSUPPORTED"
+        # Create a handler with invalid model type by bypassing validation
+        handler = NvidiaHandler(
+            client=mock_openai_client,
+            ai_model_type=NvidiaModelTypes.CHAT,
+        )
+        # Manually set the attribute to bypass Pydantic validation
+        object.__setattr__(handler, 'ai_model_type', "UNSUPPORTED")
+        
         settings = NvidiaChatPromptExecutionSettings(
             messages=[{"role": "user", "content": "Hello"}],
             model="test-model",
         )
 
         with pytest.raises(NotImplementedError, match="Model type UNSUPPORTED is not supported"):
-            await nvidia_handler._send_request(settings)
+            await handler._send_request(settings)
