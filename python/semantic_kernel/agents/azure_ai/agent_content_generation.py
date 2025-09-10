@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import re
 from typing import TYPE_CHECKING, Any, cast
 
 from azure.ai.agents.models import (
@@ -20,6 +21,7 @@ from azure.ai.agents.models import (
     RunStepAzureAISearchToolCall,
     RunStepBingCustomSearchToolCall,
     RunStepBingGroundingToolCall,
+    RunStepDeepResearchToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
     RunStepDeltaCodeInterpreterToolCall,
@@ -52,6 +54,9 @@ if TYPE_CHECKING:
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )
+
+_URL_PATTERN = re.compile(r"https?://[^\s\]\)]+", re.IGNORECASE)
+THREAD_MESSAGE_ID = "thread_message_id"
 
 """
 The methods in this file are used with Azure AI Agent
@@ -115,6 +120,7 @@ def generate_message_content(
         {
             "created_at": completed_step.created_at,
             "message_id": message.id,  # message needs to be defined in context
+            "thread_message_id": message.id,  # Add `thread_message_id` to avoid breaking the existing `message_id` key
             "step_id": completed_step.id,
             "run_id": completed_step.run_id,
             "thread_id": completed_step.thread_id,
@@ -150,7 +156,9 @@ def generate_message_content(
 
 @experimental
 def generate_streaming_message_content(
-    assistant_name: str, message_delta_event: "MessageDeltaChunk"
+    assistant_name: str,
+    message_delta_event: "MessageDeltaChunk",
+    thread_msg_id: str | None = None,
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
@@ -196,7 +204,11 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
+    metadata: dict[str, Any] | None = None
+    if thread_msg_id:
+        metadata = {THREAD_MESSAGE_ID: thread_msg_id}
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
 @experimental
@@ -364,6 +376,69 @@ def generate_file_search_content(
         )
     )
     return message_content
+
+
+@experimental
+def generate_deep_research_content(
+    agent_name: str, deep_research_tool_call: "RunStepDeepResearchToolCall"
+) -> ChatMessageContent:
+    """Generate content for a Deep Research tool call.
+
+    Emits both the tool call (input) and the tool result (output). If URLs are present
+    in the output text, a simple "Citations" section with unique URLs is appended as text.
+
+    Args:
+        agent_name: The agent name.
+        deep_research_tool_call: The deep research tool call details.
+
+    Returns:
+        ChatMessageContent summarizing the deep research call and result.
+    """
+    items: list[FunctionCallContent | FunctionResultContent | TextContent] = []
+
+    details = deep_research_tool_call.deep_research
+    # Function call (input)
+    items.append(
+        FunctionCallContent(
+            id=deep_research_tool_call.id,
+            name=deep_research_tool_call.type,
+            function_name=deep_research_tool_call.type,
+            arguments={"input": getattr(details, "input", None)},
+            inner_content=deep_research_tool_call,
+        )
+    )
+
+    # Function result (output)
+    output_text = getattr(details, "output", None)
+    if output_text:
+        items.append(
+            FunctionResultContent(
+                function_name=deep_research_tool_call.type,
+                id=deep_research_tool_call.id,
+                result=output_text,
+                inner_content=deep_research_tool_call,
+            )
+        )
+
+        # Optional: Append a simple citations section from any URLs in the output
+        urls = _extract_unique_urls(str(output_text))
+        if urls:
+            citations_lines = ["## Citations"] + [f"{i + 1}. [{u}]({u})" for i, u in enumerate(urls)]
+            items.append(TextContent(text="\n\n" + "\n".join(citations_lines)))
+
+    return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=items)  # type: ignore
+
+
+def _extract_unique_urls(text: str) -> list[str]:
+    """Extract unique HTTP/HTTPS URLs from text in order of appearance."""
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for match in _URL_PATTERN.finditer(text or ""):
+        url = match.group(0)
+        if url not in seen:
+            seen.add(url)
+            ordered.append(url)
+    return ordered
 
 
 @experimental
@@ -566,6 +641,56 @@ def generate_streaming_azure_ai_search_content(
         if items
         else None
     )  # type: ignore
+
+
+@experimental
+def generate_streaming_deep_research_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate streaming content related to a Deep Research Tool.
+
+    Emits FunctionCallContent for the input and FunctionResultContent for the output
+    as they appear in streamed tool call deltas.
+    """
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "deep_research":
+            deep_research_dict: dict = tool.get("deep_research", {})
+            arguments = {"input": deep_research_dict.get("input")}
+            if any(v is not None for v in arguments.values()):
+                items.append(
+                    FunctionCallContent(
+                        id=tool.get("id"),
+                        index=index,
+                        name=tool.type,
+                        function_name=tool.type,
+                        arguments=arguments,
+                    )
+                )
+            result = deep_research_dict.get("output")
+            if result is not None:
+                items.append(
+                    FunctionResultContent(
+                        function_name=tool.type,
+                        id=tool.get("id"),
+                        result=result,
+                    )
+                )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            choice_index=0,
+            items=items,  # type: ignore
+        )
+        if items
+        else None
+    )
 
 
 @experimental
