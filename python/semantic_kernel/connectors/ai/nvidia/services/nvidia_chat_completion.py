@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from openai import AsyncOpenAI
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -41,9 +41,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if TYPE_CHECKING:
-    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 
