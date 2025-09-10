@@ -195,7 +195,7 @@ internal static class OpenAIResponseExtensions
         return collection;
     }
 
-    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<ReasoningSummaryPart> parts)
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ReasoningSummaryPart> parts)
     {
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in parts)
