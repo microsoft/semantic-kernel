@@ -256,7 +256,7 @@ class ResponsesAgentThreadActions:
                     kernel.invoke_function_call(
                         function_call=function_call,
                         chat_history=override_history,
-                        arguments=kwargs.get("arguments"),
+                        arguments=arguments,
                         execution_settings=None,
                         function_call_count=fc_count,
                         request_index=request_index,
@@ -561,7 +561,7 @@ class ResponsesAgentThreadActions:
                     kernel.invoke_function_call(
                         function_call=function_call,
                         chat_history=override_history,
-                        arguments=kwargs.get("arguments"),
+                        arguments=arguments,
                         is_streaming=True,
                         execution_settings=None,
                         function_call_count=fc_count,
