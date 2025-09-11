@@ -26,7 +26,7 @@ internal static class ResponseCreationOptionsFactory
                 EndUserId = responseAgentInvokeOptions.ResponseCreationOptions.EndUserId ?? agent.GetDisplayName(),
                 Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? instructions,
                 StoredOutputEnabled = responseAgentInvokeOptions.ResponseCreationOptions.StoredOutputEnabled ?? agent.StoreEnabled,
-                Background = responseAgentInvokeOptions.ResponseCreationOptions.Background,
+                BackgroundModeEnabled = responseAgentInvokeOptions.ResponseCreationOptions.BackgroundModeEnabled,
                 ReasoningOptions = responseAgentInvokeOptions.ResponseCreationOptions.ReasoningOptions,
                 MaxOutputTokenCount = responseAgentInvokeOptions.ResponseCreationOptions.MaxOutputTokenCount,
                 TextOptions = responseAgentInvokeOptions.ResponseCreationOptions.TextOptions,
