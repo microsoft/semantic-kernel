@@ -543,9 +543,23 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         New lists of plugins and filters are created. It will not affect the original lists when the new instance
         is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
         instance is mutated.
+
+        Important: Plugins are cloned without deep-copying their underlying callable methods. This avoids attempting
+        to pickle/clone unpickleable objects (e.g., async generators), which can be present when plugins wrap async
+        context managers such as MCP client sessions. Function metadata is deep-copied while callables are shared.
         """
+        # Safely clone plugins by copying function metadata while retaining callable references.
+        # This avoids deepcopying bound methods that may reference unpickleable async components.
+        new_plugins: dict[str, KernelPlugin] = {}
+        for plugin_name, plugin in self.plugins.items():
+            cloned_plugin = KernelPlugin(name=plugin.name, description=plugin.description)
+            # Using KernelPlugin.add will copy functions via KernelFunction.function_copy(),
+            # which deep-copies metadata but keeps callables shallow.
+            cloned_plugin.add(plugin.functions)
+            new_plugins[plugin_name] = cloned_plugin
+
         return Kernel(
-            plugins=deepcopy(self.plugins),
+            plugins=new_plugins,
             # Shallow copy of the services, as they are not serializable
             services={k: v for k, v in self.services.items()},
             ai_service_selector=deepcopy(self.ai_service_selector),
