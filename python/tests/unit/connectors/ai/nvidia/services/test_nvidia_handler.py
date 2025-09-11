@@ -141,8 +141,8 @@ class TestNvidiaHandler:
             ai_model_type=NvidiaModelTypes.CHAT,
         )
         # Manually set the attribute to bypass Pydantic validation
-        object.__setattr__(handler, 'ai_model_type', "UNSUPPORTED")
-        
+        object.__setattr__(handler, "ai_model_type", "UNSUPPORTED")
+
         settings = NvidiaChatPromptExecutionSettings(
             messages=[{"role": "user", "content": "Hello"}],
             model="test-model",

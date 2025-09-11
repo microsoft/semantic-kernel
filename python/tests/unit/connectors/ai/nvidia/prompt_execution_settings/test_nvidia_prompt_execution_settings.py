@@ -16,36 +16,23 @@ class TestNvidiaPromptExecutionSettings:
     def test_init_with_defaults(self):
         """Test initialization with default values."""
         settings = NvidiaPromptExecutionSettings()
-        assert settings.ai_model_id is None
-        assert settings.temperature is None
-        assert settings.stream is False
+        assert settings.format is None
+        assert settings.options is None
 
     def test_init_with_values(self):
         """Test initialization with specific values."""
         settings = NvidiaPromptExecutionSettings(
-            ai_model_id="test-model",
-            temperature=0.7,
-            max_tokens=100,
+            format="json",
+            options={"key": "value"},
         )
-        assert settings.ai_model_id == "test-model"
-        assert settings.temperature == 0.7
-        assert settings.max_tokens == 100
+        assert settings.format == "json"
+        assert settings.options == {"key": "value"}
 
-    def test_validation_temperature_range(self):
-        """Test temperature validation range."""
+    def test_validation_format_values(self):
+        """Test format validation values."""
         # Valid values
-        settings = NvidiaPromptExecutionSettings(temperature=0.0)
-        assert settings.temperature == 0.0
-
-        settings = NvidiaPromptExecutionSettings(temperature=2.0)
-        assert settings.temperature == 2.0
-
-        # Invalid values
-        with pytest.raises(ValidationError):
-            NvidiaPromptExecutionSettings(temperature=-0.1)
-
-        with pytest.raises(ValidationError):
-            NvidiaPromptExecutionSettings(temperature=2.1)
+        settings = NvidiaPromptExecutionSettings(format="json")
+        assert settings.format == "json"
 
 
 class TestNvidiaChatPromptExecutionSettings:
@@ -56,7 +43,6 @@ class TestNvidiaChatPromptExecutionSettings:
         settings = NvidiaChatPromptExecutionSettings()
         assert settings.messages is None
         assert settings.response_format is None
-        assert settings.structured_json_response is False
 
     def test_response_format_with_pydantic_model(self):
         """Test response_format with Pydantic model."""
@@ -68,14 +54,12 @@ class TestNvidiaChatPromptExecutionSettings:
         settings = NvidiaChatPromptExecutionSettings(response_format=TestModel)
 
         assert settings.response_format == TestModel
-        assert settings.structured_json_response is True
 
     def test_response_format_with_dict(self):
         """Test response_format with dictionary."""
         settings = NvidiaChatPromptExecutionSettings(response_format={"type": "json_object"})
 
         assert settings.response_format == {"type": "json_object"}
-        assert settings.structured_json_response is False
 
 
 class TestNvidiaEmbeddingPromptExecutionSettings:
