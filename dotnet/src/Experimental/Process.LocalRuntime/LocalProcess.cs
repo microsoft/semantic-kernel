@@ -266,6 +266,14 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
+            else if (step is KernelProcessDelegateStepInfo delegateStep)
+            {
+                localStep = new LocalDelegateStep(delegateStep, this._kernel)
+                {
+                    ParentProcessId = this.Id,
+                    EventProxy = this.EventProxy,
+                };
+            }
             else if (step is KernelProcessMap mapStep)
             {
                 localStep =
@@ -399,16 +407,19 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         List<KernelProcessEdge> defaultConditionedEdges = [];
         foreach (var edge in edges)
         {
-            if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+            if (edge.Condition is not null)
             {
-                defaultConditionedEdges.Add(edge);
-                continue;
-            }
+                if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    defaultConditionedEdges.Add(edge);
+                    continue;
+                }
 
-            bool isConditionMet = await edge.Condition.Callback(processEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
-            if (!isConditionMet)
-            {
-                continue;
+                bool isConditionMet = await edge.Condition.Callback(processEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+                if (!isConditionMet)
+                {
+                    continue;
+                }
             }
 
             // Handle different target types
