@@ -161,6 +161,28 @@ class GroupChatManager(KernelBaseModel, ABC):
         """
         ...
 
+    async def get_human_response(self, chat_history: ChatHistory) -> Awaitable[ChatMessageContent] | ChatMessageContent:
+        """Get human response. This method can be overridden to provide custom human response logic.
+
+        By default, this method calls the human_response_function if it's set, otherwise raises NotImplementedError.
+        Override this method to provide custom implementation that has access to instance state.
+
+        Args:
+            chat_history (ChatHistory): The chat history of the group chat.
+
+        Returns:
+            Awaitable[ChatMessageContent] | ChatMessageContent: The human response.
+
+        Raises:
+            NotImplementedError: If no human response function is set and method is not overridden.
+        """
+        if self.human_response_function:
+            return self.human_response_function(chat_history)
+        raise NotImplementedError(
+            "No human response function provided. Either set human_response_function parameter "
+            "or override get_human_response method."
+        )
+
     async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
         """Check if the group chat should terminate.
 
@@ -311,7 +333,7 @@ class GroupChatManagerActor(ActorBase):
         should_request_user_input = await self._manager.should_request_user_input(
             self._chat_history.model_copy(deep=True)
         )
-        if should_request_user_input.result and self._manager.human_response_function:
+        if should_request_user_input.result:
             logger.debug(f"Group chat manager requested user input. Reason: {should_request_user_input.reason}")
             user_input_message = await self._call_human_response_function()
             self._chat_history.add_message(user_input_message)
@@ -351,10 +373,10 @@ class GroupChatManagerActor(ActorBase):
 
     async def _call_human_response_function(self) -> ChatMessageContent:
         """Call the human response function if it is set."""
-        assert self._manager.human_response_function  # nosec B101
-        if inspect.iscoroutinefunction(self._manager.human_response_function):
-            return await self._manager.human_response_function(self._chat_history.model_copy(deep=True))
-        return self._manager.human_response_function(self._chat_history.model_copy(deep=True))  # type: ignore[return-value]
+        response = self._manager.get_human_response(self._chat_history.model_copy(deep=True))
+        if inspect.iscoroutinefunction(self._manager.get_human_response):
+            return await response
+        return response  # type: ignore[return-value]
 
 
 # endregion GroupChatManagerActor

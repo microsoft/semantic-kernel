@@ -30,4 +30,5 @@ Refer to [here](../../concepts/setup/README.md) on how to set up the environment
 | **Sequential**     | Useful for tasks that require a well-defined step-by-step approach.                                                                                                                                 |
 | **Handoff**        | Useful for tasks that are dynamic in nature and don't have a well-defined step-by-step approach.                                                                                                    |
 | **GroupChat**      | Useful for tasks that will benefit from inputs from multiple agents and a highly configurable conversation flow.                                                                                    |
+| **GroupChat with Human Feedback** | Demonstrates how to implement human feedback in GroupChat, including server-side implementations with instance state access. |
 | **Magentic**   | GroupChat like with a planner based manager. Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/). |
