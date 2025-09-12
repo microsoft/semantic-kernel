@@ -1,0 +1,7 @@
+Hello {{name}}! 
+
+I'm a helpful AI assistant. How can I help you today?
+
+{{#if occasion}}
+I hope you're having a wonderful {{occasion}}!
+{{/if}}
