@@ -4,27 +4,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for <see cref="IVectorStore"/> integration tests.
+/// Base class for <see cref="VectorStore"/> integration tests.
 /// </summary>
-public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorStore)
+public abstract class BaseVectorStoreTests<TKey, TRecord>(VectorStore vectorStore)
     where TKey : notnull
+    where TRecord : class
 {
-    [Fact]
+    protected virtual IEnumerable<string> CollectionNames => ["listcollectionnames1", "listcollectionnames2", "listcollectionnames3"];
+
+    [VectorStoreFact]
     public virtual async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange
-        var expectedCollectionNames = new List<string> { "listcollectionnames1", "listcollectionnames2", "listcollectionnames3" };
+        var expectedCollectionNames = this.CollectionNames;
 
         foreach (var collectionName in expectedCollectionNames)
         {
             var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
 
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
         }
 
         // Act
@@ -41,7 +45,7 @@ public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorSto
         {
             var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
 
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 }

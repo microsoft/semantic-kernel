@@ -7,32 +7,21 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process edge.
 /// </summary>
-public sealed class ProcessEdgeBuilder
+public sealed class ProcessEdgeBuilder : ProcessStepEdgeBuilder
 {
-    internal ProcessFunctionTargetBuilder? Target { get; set; }
-
-    /// <summary>
-    /// The event Id that the edge fires on.
-    /// </summary>
-    internal string EventId { get; }
-
     /// <summary>
     /// The source step of the edge.
     /// </summary>
-    internal ProcessBuilder Source { get; }
+    internal new ProcessBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessEdgeBuilder"/> class.
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
-    internal ProcessEdgeBuilder(ProcessBuilder source, string eventId)
+    internal ProcessEdgeBuilder(ProcessBuilder source, string eventId) : base(source, eventId, eventId)
     {
-        Verify.NotNull(source, nameof(source));
-        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
-
         this.Source = source;
-        this.EventId = eventId;
     }
 
     /// <summary>
@@ -40,15 +29,23 @@ public sealed class ProcessEdgeBuilder
     /// </summary>
     public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
+        return this.SendEventTo(target as ProcessTargetBuilder);
+    }
+
+    /// <summary>
+    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// </summary>
+    public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target)
+    {
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
         this.Target = target;
-        ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId) { Target = this.Target };
-        this.Source.LinkTo(this.EventId, edgeBuilder);
+        ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventData.EventId, this.EventData.EventId) { Target = this.Target };
+        this.Source.LinkTo(this.EventData.EventId, edgeBuilder);
 
-        return new ProcessEdgeBuilder(this.Source, this.EventId);
+        return new ProcessEdgeBuilder(this.Source, this.EventData.EventId);
     }
 }

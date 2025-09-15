@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -51,7 +52,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-        return System.Net.WebUtility.HtmlDecode(template(arguments).Trim());
+        var text = template(arguments).Trim();
+        return this._options.EnableHtmlDecoder ? System.Net.WebUtility.HtmlDecode(text) : text;
     }
 
     #region private
@@ -116,14 +118,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    var value = kvp.Value;
-
-                    if (this.ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
-                    {
-                        value = HttpUtility.HtmlEncode(value.ToString());
-                    }
-
-                    result[kvp.Key] = value;
+                    result[kvp.Key] = this.GetEncodedValueOrDefault(this._promptModel, kvp.Key, kvp.Value);
                 }
             }
         }
@@ -131,22 +126,79 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         return result;
     }
 
-    private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    /// <summary>
+    /// Encodes argument value if necessary, or throws an exception if encoding is not supported.
+    /// </summary>
+    /// <param name="promptTemplateConfig">The prompt template configuration.</param>
+    /// <param name="propertyName">The name of the property/argument.</param>
+    /// <param name="propertyValue">The value of the property/argument.</param>
+    private object GetEncodedValueOrDefault(PromptTemplateConfig promptTemplateConfig, string propertyName, object propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
+        if (this._allowDangerouslySetContent || promptTemplateConfig.AllowDangerouslySetContent)
         {
-            return false;
+            return propertyValue;
         }
 
         foreach (var inputVariable in promptTemplateConfig.InputVariables)
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowDangerouslySetContent;
+                if (inputVariable.AllowDangerouslySetContent)
+                {
+                    return propertyValue;
+                }
+
+                break;
             }
         }
 
-        return true;
+        var valueType = propertyValue.GetType();
+
+        var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+
+        if (underlyingType == typeof(string))
+        {
+            var stringValue = (string)propertyValue;
+            return HttpUtility.HtmlEncode(stringValue);
+        }
+
+        if (this.IsSafeType(underlyingType))
+        {
+            return propertyValue;
+        }
+
+        // For complex types, throw an exception if dangerous content is not allowed
+        throw new NotSupportedException(
+            $"Argument '{propertyName}' has a value that doesn't support automatic encoding. " +
+            $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this argument and implement custom encoding, " +
+            "or provide the value as a string.");
+    }
+
+    /// <summary>
+    /// Determines if a type is considered safe and doesn't require encoding.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is safe, false otherwise.</returns>
+    private bool IsSafeType(Type type)
+    {
+        return type == typeof(byte) ||
+               type == typeof(sbyte) ||
+               type == typeof(bool) ||
+               type == typeof(ushort) ||
+               type == typeof(short) ||
+               type == typeof(char) ||
+               type == typeof(uint) ||
+               type == typeof(int) ||
+               type == typeof(ulong) ||
+               type == typeof(long) ||
+               type == typeof(float) ||
+               type == typeof(double) ||
+               type == typeof(decimal) ||
+               type == typeof(TimeSpan) ||
+               type == typeof(DateTime) ||
+               type == typeof(DateTimeOffset) ||
+               type == typeof(Guid) ||
+               type.IsEnum;
     }
 
     #endregion

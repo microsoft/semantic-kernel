@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -14,23 +13,25 @@ namespace Agents;
 /// </summary>
 public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithAgentInvocationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithAgentInvocation(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Kernel = CreateKernelWithFilter(useChatClient),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create the thread to capture the agent interaction.
+        ChatHistoryAgentThread agentThread = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
@@ -39,38 +40,33 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("Thank you");
 
         // Display the entire chat history.
-        WriteChatHistory(chat);
+        WriteChatHistory(await agentThread.GetMessagesAsync().ToArrayAsync());
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.Add(message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, agentThread))
             {
-                // Do not add a message implicitly added to the history.
-                if (!response.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
-                {
-                    chat.Add(response);
-                }
-
                 this.WriteAgentChatMessage(response);
             }
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithAgentChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithAgentChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Kernel = CreateKernelWithFilter(useChatClient),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -102,23 +98,25 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocation(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Kernel = CreateKernelWithFilter(useChatClient),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create the thread to capture the agent interaction.
+        ChatHistoryAgentThread agentThread = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
@@ -127,19 +125,18 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("Thank you");
 
         // Display the entire chat history.
-        WriteChatHistory(chat);
+        WriteChatHistory(await agentThread.GetMessagesAsync().ToArrayAsync());
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.Add(message);
             this.WriteAgentChatMessage(message);
 
-            int historyCount = chat.Count;
+            int historyCount = agentThread.ChatHistory.Count;
 
             bool isFirst = false;
-            await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
+            await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread))
             {
                 if (string.IsNullOrEmpty(response.Content))
                 {
@@ -155,26 +152,28 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
                 Console.WriteLine($"\t > streamed: '{response.Content}'");
             }
 
-            if (historyCount <= chat.Count)
+            if (historyCount <= agentThread.ChatHistory.Count)
             {
-                for (int index = historyCount; index < chat.Count; index++)
+                for (int index = historyCount; index < agentThread.ChatHistory.Count; index++)
                 {
-                    this.WriteAgentChatMessage(chat[index]);
+                    this.WriteAgentChatMessage(agentThread.ChatHistory[index]);
                 }
             }
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Kernel = CreateKernelWithFilter(useChatClient),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -229,11 +228,18 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    private Kernel CreateKernelWithFilter()
+    private Kernel CreateKernelWithFilter(bool useChatClient)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        base.AddChatCompletionToKernel(builder);
+        if (useChatClient)
+        {
+            base.AddChatClientToKernel(builder);
+        }
+        else
+        {
+            base.AddChatCompletionToKernel(builder);
+        }
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
 

@@ -18,8 +18,6 @@ using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
@@ -77,7 +75,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         // Arrange
         var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
-        // Act 
+        // Act
         var result = await sut.GenerateImageAsync("description", width, height);
 
         // Assert
@@ -361,10 +359,30 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 
     public static TheoryData<string?, string?> Versions => new()
     {
+        { "V2025_04_01_preview", "2025-04-01-preview" },
+        { "V2025_04_01_PREVIEW", "2025-04-01-preview" },
+        { "2025_04_01_Preview", "2025-04-01-preview" },
+        { "2025-04-01-preview", "2025-04-01-preview" },
+        { "V2025_03_01_preview", "2025-03-01-preview" },
+        { "V2025_03_01_PREVIEW", "2025-03-01-preview" },
+        { "2025_03_01_Preview", "2025-03-01-preview" },
+        { "2025-03-01-preview", "2025-03-01-preview" },
+        { "V2025_01_01_preview", "2025-01-01-preview" },
+        { "V2025_01_01_PREVIEW", "2025-01-01-preview" },
+        { "2025_01_01_Preview", "2025-01-01-preview" },
+        { "2025-01-01-preview", "2025-01-01-preview" },
+        { "V2024_12_01_preview", "2024-12-01-preview" },
+        { "V2024_12_01_PREVIEW", "2024-12-01-preview" },
+        { "2024_12_01_Preview", "2024-12-01-preview" },
+        { "2024-12-01-preview", "2024-12-01-preview" },
         { "V2024_10_01_preview", "2024-10-01-preview" },
         { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
         { "2024_10_01_Preview", "2024-10-01-preview" },
         { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_09_01_preview", "2024-09-01-preview" },
+        { "V2024_09_01_PREVIEW", "2024-09-01-preview" },
+        { "2024_09_01_Preview", "2024-09-01-preview" },
+        { "2024-09-01-preview", "2024-09-01-preview" },
         { "V2024_08_01_preview", "2024-08-01-preview" },
         { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
         { "2024_08_01_Preview", "2024-08-01-preview" },
@@ -372,9 +390,19 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         { "V2024_06_01", "2024-06-01" },
         { "2024_06_01", "2024-06-01" },
         { "2024-06-01", "2024-06-01" },
+        { "V2024_10_21", "2024-10-21" },
+        { "2024_10_21", "2024-10-21" },
+        { "2024-10-21", "2024-10-21" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_04_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_03_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_21.ToString(), null },
+        { null, null } // No version specified
     };
 
     public void Dispose()

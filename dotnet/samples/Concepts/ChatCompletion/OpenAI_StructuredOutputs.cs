@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 
@@ -143,13 +144,13 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
     }
 
     /// <summary>
-    /// This method shows how to use Structured Outputs feature in combination with Function Calling.
+    /// This method shows how to use Structured Outputs feature in combination with Function Calling and OpenAI models.
     /// <see cref="EmailPlugin.GetEmails"/> function returns a <see cref="List{T}"/> of email bodies.
     /// As for final result, the desired response format should be <see cref="Email"/>, which contains additional <see cref="Email.Category"/> property.
     /// This shows how the data can be transformed with AI using strong types without additional instructions in the prompt.
     /// </summary>
     [Fact]
-    public async Task StructuredOutputsWithFunctionCallingAsync()
+    public async Task StructuredOutputsWithFunctionCallingOpenAIAsync()
     {
         // Initialize kernel.
         Kernel kernel = Kernel.CreateBuilder()
@@ -164,7 +165,57 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         var executionSettings = new OpenAIPromptExecutionSettings
         {
             ResponseFormat = typeof(EmailResult),
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        // Send a request and pass prompt execution settings with desired response format.
+        var result = await kernel.InvokePromptAsync("Process the emails.", new(executionSettings));
+
+        // Deserialize string response to a strong type to access type properties.
+        // At this point, the deserialization logic won't fail, because EmailResult type was specified as desired response format.
+        // This ensures that response string is a serialized version of EmailResult type.
+        var emailResult = JsonSerializer.Deserialize<EmailResult>(result.ToString())!;
+
+        // Output the result.
+        this.OutputResult(emailResult);
+
+        // Output:
+
+        // Email #1
+        // Body: Let's catch up over coffee this Saturday. It's been too long!
+        // Category: Social
+
+        // Email #2
+        // Body: Please review the attached document and provide your feedback by EOD.
+        // Category: Work
+
+        // ...and more...
+    }
+
+    /// <summary>
+    /// This method shows how to use Structured Outputs feature in combination with Function Calling and Azure OpenAI models.
+    /// <see cref="EmailPlugin.GetEmails"/> function returns a <see cref="List{T}"/> of email bodies.
+    /// As for final result, the desired response format should be <see cref="Email"/>, which contains additional <see cref="Email.Category"/> property.
+    /// This shows how the data can be transformed with AI using strong types without additional instructions in the prompt.
+    /// </summary>
+    [Fact]
+    public async Task StructuredOutputsWithFunctionCallingAzureOpenAIAsync()
+    {
+        // Initialize kernel.
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new AzureCliCredential())
+            .Build();
+
+        kernel.ImportPluginFromType<EmailPlugin>();
+
+        // Specify response format by setting Type object in prompt execution settings and enable automatic function calling.
+        var executionSettings = new AzureOpenAIPromptExecutionSettings
+        {
+            ResponseFormat = typeof(EmailResult),
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Send a request and pass prompt execution settings with desired response format.
@@ -204,12 +255,11 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
             .AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                credentials: new AzureCliCredential(),
-                apiVersion: "2024-08-01-preview")
+                credentials: new AzureCliCredential())
             .Build();
 
         // Specify response format by setting Type object in prompt execution settings.
-        var executionSettings = new OpenAIPromptExecutionSettings
+        var executionSettings = new AzureOpenAIPromptExecutionSettings
         {
             ResponseFormat = typeof(MovieResult)
         };

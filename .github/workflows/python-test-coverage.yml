@@ -27,20 +27,21 @@ jobs:
         run: |
           echo ${{ github.event.number }} > ./pr_number
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Test with pytest
-        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
+        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered --cov-report=xml:python-coverage.xml ./tests/unit
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           path: |
-            python/python-coverage.txt
+            python/python-coverage.xml
             python/pytest.xml
             python/pr_number
           overwrite: true

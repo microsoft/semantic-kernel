@@ -21,22 +21,23 @@ public class ProcessStepEdgeBuilderTests
         var eventType = "Event1";
 
         // Act
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
+        var builder = new ProcessStepEdgeBuilder(source, eventType, eventType);
 
         // Assert
         Assert.Equal(source, builder.Source);
-        Assert.Equal(eventType, builder.EventId);
+        Assert.Equal(eventType, builder.EventData.EventId);
+        Assert.Equal(eventType, builder.EventData.EventName);
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo(ProcessFunctionTargetBuilder)"/> method sets the output target.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method sets the output target.
     /// </summary>
     [Fact]
     public void SendEventToShouldSetOutputTarget()
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
         var outputTarget = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("OutputStep"));
 
         // Act
@@ -47,14 +48,14 @@ public class ProcessStepEdgeBuilderTests
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo(ProcessFunctionTargetBuilder)"/> method sets chained output targets.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method sets chained output targets.
     /// </summary>
     [Fact]
     public void SendEventToShouldSetMultipleOutputTargets()
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
         var outputTargetA = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("StepA"));
         var outputTargetB = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("StepB"));
 
@@ -68,14 +69,14 @@ public class ProcessStepEdgeBuilderTests
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo(ProcessFunctionTargetBuilder)"/> method throws if the output target is already set.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method throws if the output target is already set.
     /// </summary>
     [Fact]
     public void SendEventToShouldThrowIfOutputTargetAlreadySet()
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
         var outputTarget1 = new ProcessFunctionTargetBuilder(source);
         var outputTarget2 = new ProcessFunctionTargetBuilder(source);
 
@@ -94,13 +95,13 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
 
         // Act
         builder.StopProcess();
 
         // Assert
-        Assert.Equal(EndStep.Instance, builder.Target?.Step);
+        Assert.Equal(EndStep.Instance, (builder.Target as ProcessFunctionTargetBuilder)?.Step);
     }
 
     /// <summary>
@@ -111,7 +112,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
         var outputTarget = new ProcessFunctionTargetBuilder(source);
 
         // Act
@@ -129,7 +130,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var builder = new ProcessStepEdgeBuilder(source, "Event1", "Event1");
         var outputTarget = new ProcessFunctionTargetBuilder(source);
         builder.SendEventTo(outputTarget);
 

@@ -6,7 +6,7 @@ import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 

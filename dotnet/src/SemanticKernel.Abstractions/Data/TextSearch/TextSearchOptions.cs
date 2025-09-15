@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Options which can be applied when using <see cref="ITextSearch"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class TextSearchOptions
 {
     /// <summary>

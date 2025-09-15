@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 import time
 from abc import abstractmethod
@@ -30,6 +31,9 @@ from semantic_kernel.prompt_template.const import (
 from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
 from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.utils.telemetry.model_diagnostics import function_tracer
+from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import TOOL_CALL_ARGUMENTS, TOOL_CALL_RESULT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -37,7 +41,6 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 # Logger, tracer and meter for observability
@@ -46,7 +49,7 @@ tracer: trace.Tracer = trace.get_tracer(__name__)
 meter: metrics.Meter = metrics.get_meter_provider().get_meter(__name__)
 MEASUREMENT_FUNCTION_TAG_NAME: str = "semantic_kernel.function.name"
 
-TEMPLATE_FORMAT_MAP = {
+TEMPLATE_FORMAT_MAP: dict[TEMPLATE_FORMAT_TYPES, type[PromptTemplateBase]] = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
     HANDLEBARS_TEMPLATE_FORMAT_NAME: HandlebarsPromptTemplate,
     JINJA2_TEMPLATE_FORMAT_NAME: Jinja2PromptTemplate,
@@ -92,10 +95,31 @@ class KernelFunction(KernelBaseModel):
 
     metadata: KernelFunctionMetadata
 
-    invocation_duration_histogram: metrics.Histogram = Field(default_factory=_create_function_duration_histogram)
-    streaming_duration_histogram: metrics.Histogram = Field(
-        default_factory=_create_function_streaming_duration_histogram
+    invocation_duration_histogram: metrics.Histogram = Field(
+        default_factory=_create_function_duration_histogram, exclude=True
     )
+    streaming_duration_histogram: metrics.Histogram = Field(
+        default_factory=_create_function_streaming_duration_histogram, exclude=True
+    )
+
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> "KernelFunction":
+        """Create a deep copy of the kernel function, recreating uncopyable fields."""
+        if memo is None:
+            memo = {}
+        if id(self) in memo:
+            return memo[id(self)]
+
+        # Use model_copy to create a shallow copy of the pydantic model
+        # this is the recommended way to copy pydantic models
+        new_obj = self.model_copy(deep=False)
+        memo[id(self)] = new_obj
+
+        # now deepcopy the fields that are not the histograms
+        for key, value in self.__dict__.items():
+            if key not in ("invocation_duration_histogram", "streaming_duration_histogram"):
+                setattr(new_obj, key, deepcopy(value, memo))
+
+        return new_obj
 
     @classmethod
     def from_prompt(
@@ -180,7 +204,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: "KernelArguments | None" = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Invoke the function with the given arguments.
@@ -214,7 +238,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: "KernelArguments | None" = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> "FunctionResult | None":
         """Invoke the function with the given arguments.
@@ -234,9 +258,12 @@ class KernelFunction(KernelBaseModel):
         _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-        with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
+        with function_tracer.start_as_current_span(tracer, self, metadata) as current_span:
             KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
+
+            if function_tracer.are_sensitive_events_enabled():
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
 
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
@@ -249,6 +276,13 @@ class KernelFunction(KernelBaseModel):
 
                 KernelFunctionLogMessages.log_function_invoked_success(logger, self.fully_qualified_name)
                 KernelFunctionLogMessages.log_function_result_value(logger, function_context.result)
+
+                if function_tracer.are_sensitive_events_enabled():
+                    try:
+                        result = str(function_context.result.value) if function_context.result else None
+                    except Exception as e:
+                        result = str(e)
+                    current_span.set_attribute(TOOL_CALL_RESULT, result)
 
                 return function_context.result
             except Exception as e:
@@ -272,7 +306,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: "KernelArguments | None" = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> "AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]":
         """Invoke a stream async function with the given arguments.
@@ -292,11 +326,16 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         _rebuild_function_invocation_context()
-        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
+        function_context = FunctionInvocationContext(
+            function=self, kernel=kernel, arguments=arguments, is_streaming=True
+        )
 
-        with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
+        with function_tracer.start_as_current_span(tracer, self, metadata) as current_span:
             KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
+
+            if function_tracer.are_sensitive_events_enabled():
+                current_span.set_attribute(TOOL_CALL_ARGUMENTS, arguments.dumps())
 
             attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
@@ -307,15 +346,27 @@ class KernelFunction(KernelBaseModel):
                 )
                 await stack(function_context)
 
+                function_results: list[Any] = []
                 if function_context.result is not None:
                     if isasyncgen(function_context.result.value):
                         async for partial in function_context.result.value:
+                            function_results.append(partial)
                             yield partial
                     elif isgenerator(function_context.result.value):
                         for partial in function_context.result.value:
+                            function_results.append(partial)
                             yield partial
                     else:
+                        function_results.append(function_context.result.value)
                         yield function_context.result
+
+                if function_tracer.are_sensitive_events_enabled():
+                    results: list[str] = []
+                    try:
+                        results.append(str(function_results))
+                    except Exception as e:
+                        results.append(str(e))
+                    current_span.set_attribute(TOOL_CALL_RESULT, json.dumps(results))
             except Exception as e:
                 self._handle_exception(current_span, e, attributes)
                 raise e

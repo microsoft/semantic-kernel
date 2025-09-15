@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory;
 
@@ -34,13 +34,13 @@ public class Onnx_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine("\n======= Onnx - Embedding Example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddBertOnnxTextEmbeddingGeneration(TestConfiguration.Onnx.EmbeddingModelPath, TestConfiguration.Onnx.EmbeddingVocabPath)
+            .AddBertOnnxEmbeddingGenerator(TestConfiguration.Onnx.EmbeddingModelPath, TestConfiguration.Onnx.EmbeddingVocabPath)
             .Build();
 
-        var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Generate embeddings for each chunk.
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
+        var embeddings = await embeddingGenerator.GenerateAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
         Console.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }
@@ -70,12 +70,12 @@ public class Onnx_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine("\n======= Onnx - Embedding Example ========\n");
 
         var services = new ServiceCollection()
-            .AddBertOnnxTextEmbeddingGeneration(TestConfiguration.Onnx.EmbeddingModelPath, TestConfiguration.Onnx.EmbeddingVocabPath);
+            .AddBertOnnxEmbeddingGenerator(TestConfiguration.Onnx.EmbeddingModelPath, TestConfiguration.Onnx.EmbeddingVocabPath);
         var provider = services.BuildServiceProvider();
-        var embeddingGenerator = provider.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = provider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Generate embeddings for each chunk.
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
+        var embeddings = await embeddingGenerator.GenerateAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
         Console.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }

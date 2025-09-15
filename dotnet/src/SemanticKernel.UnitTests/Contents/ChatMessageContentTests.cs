@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -202,7 +202,10 @@ public class ChatMessageContentTests
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
-            new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
+            new FileReferenceContent(fileId: "file-id-2") { Tools = ["a", "b", "c"] },
+            new AnnotationContent(AnnotationKind.TextCitation, "quote-8", "file-id-3") { ModelId = "model-8", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
+            new ReasoningContent("thinking"),
+            new ActionContent("Yes"),
         ];
 
         // Act
@@ -301,24 +304,40 @@ public class ChatMessageContentTests
         Assert.Equal("function-id", functionResultContent.CallId);
         Assert.Equal("plugin-name", functionResultContent.PluginName);
 
-        var fileReferenceContent = deserializedMessage.Items[8] as FileReferenceContent;
-        Assert.NotNull(fileReferenceContent);
-        Assert.Equal("file-id-1", fileReferenceContent.FileId);
-        Assert.Equal("model-7", fileReferenceContent.ModelId);
-        Assert.NotNull(fileReferenceContent.Metadata);
-        Assert.Single(fileReferenceContent.Metadata);
-        Assert.Equal("metadata-value-7", fileReferenceContent.Metadata["metadata-key-7"]?.ToString());
+        var fileReferenceContent1 = deserializedMessage.Items[8] as FileReferenceContent;
+        Assert.NotNull(fileReferenceContent1);
+        Assert.Equal("file-id-1", fileReferenceContent1.FileId);
+        Assert.Equal("model-7", fileReferenceContent1.ModelId);
+        Assert.NotNull(fileReferenceContent1.Metadata);
+        Assert.Single(fileReferenceContent1.Metadata);
+        Assert.Equal("metadata-value-7", fileReferenceContent1.Metadata["metadata-key-7"]?.ToString());
 
-        var annotationContent = deserializedMessage.Items[9] as AnnotationContent;
+        var fileReferenceContent2 = deserializedMessage.Items[9] as FileReferenceContent;
+        Assert.NotNull(fileReferenceContent2);
+        Assert.Equal("file-id-2", fileReferenceContent2.FileId);
+        Assert.NotNull(fileReferenceContent2.Tools);
+        Assert.Equal(3, fileReferenceContent2.Tools.Count);
+
+        var annotationContent = deserializedMessage.Items[10] as AnnotationContent;
         Assert.NotNull(annotationContent);
-        Assert.Equal("file-id-2", annotationContent.FileId);
-        Assert.Equal("quote-8", annotationContent.Quote);
+        Assert.Equal("file-id-3", annotationContent.ReferenceId);
+        Assert.Equal("quote-8", annotationContent.Label);
+        Assert.Equal(AnnotationKind.TextCitation, annotationContent.Kind);
+        Assert.Equal("quote-8", annotationContent.Label);
         Assert.Equal("model-8", annotationContent.ModelId);
         Assert.Equal(2, annotationContent.StartIndex);
         Assert.Equal(24, annotationContent.EndIndex);
         Assert.NotNull(annotationContent.Metadata);
         Assert.Single(annotationContent.Metadata);
         Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.ToString());
+
+        var reasoningContent = deserializedMessage.Items[11] as ReasoningContent;
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("thinking", reasoningContent.Text);
+
+        var actionContent = deserializedMessage.Items[12] as ActionContent;
+        Assert.NotNull(actionContent);
+        Assert.Equal("Yes", actionContent.Text);
     }
 
     [Fact]

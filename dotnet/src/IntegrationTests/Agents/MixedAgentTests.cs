@@ -12,6 +12,8 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
+using OpenAI.Assistants;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
@@ -44,7 +46,7 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
-            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+            OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(openAISettings.ApiKey)),
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
@@ -64,14 +66,14 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
-            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAISettings.Endpoint)),
+            OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(azureOpenAISettings.Endpoint)),
             azureOpenAISettings.ChatDeploymentName!,
             useNewFunctionCallingModel);
     }
 
     private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
-        OpenAIClientProvider config,
+        OpenAIClient client,
         string modelName,
         bool useNewFunctionCallingModel)
     {
@@ -94,16 +96,9 @@ public sealed class MixedAgentTests
         chatAgent.Kernel.Plugins.Add(plugin);
 
         // Configure assistant agent with the plugin.
-        OpenAIAssistantAgent assistantAgent =
-            await OpenAIAssistantAgent.CreateAsync(
-                config,
-                new(modelName)
-                {
-                    Name = "Assistant",
-                    Instructions = "Answer questions about the menu."
-                },
-                new Kernel());
-        assistantAgent.Kernel.Plugins.Add(plugin);
+        AssistantClient assistantClient = client.GetAssistantClient();
+        Assistant definition = await assistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
+        OpenAIAssistantAgent assistantAgent = new(definition, assistantClient, [plugin]);
 
         // Act & Assert
         try
@@ -114,7 +109,7 @@ public sealed class MixedAgentTests
         }
         finally
         {
-            await assistantAgent.DeleteAsync();
+            await assistantClient.DeleteAssistantAsync(assistantAgent.Id);
         }
     }
 

@@ -4,6 +4,7 @@ import pytest
 from defusedxml.ElementTree import XML
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -306,7 +307,7 @@ def test_cmc_to_dict_keys():
             },
             {
                 "role": "user",
-                "content": [{"type": "text", "text": "test None (Start Index=None->End Index=None)"}],
+                "content": [{"type": "text", "text": "type=None, test None (Start Index=None->End Index=None)"}],
             },
         ),
         (
@@ -380,3 +381,37 @@ def test_cmc_to_dict_keys():
 def test_cmc_to_dict_items(input_args, expected_dict):
     message = ChatMessageContent(**input_args)
     assert message.to_dict() == expected_dict
+
+
+def test_cmc_with_unhashable_types_can_hash():
+    user_messages = [
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="Describe this image."),
+                ImageContent(
+                    uri="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/New_york_times_square-terabass.jpg/1200px-New_york_times_square-terabass.jpg"
+                ),
+            ],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="What is the main color in this image?"),
+                ImageContent(uri="https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg"),
+            ],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="Is there an animal in this image?"),
+                FileReferenceContent(file_id="test_file_id"),
+            ],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+        ),
+    ]
+
+    for message in user_messages:
+        assert hash(message) is not None

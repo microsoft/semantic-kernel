@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
+
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental_class
+@deprecated("This class will be removed in a future version.")
 class NullMemory(SemanticTextMemoryBase):
     """Class for null memory."""
 

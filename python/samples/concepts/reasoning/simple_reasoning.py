@@ -2,11 +2,8 @@
 
 import asyncio
 
-from samples.concepts.setup.chat_completion_services import (
-    Services,
-    get_chat_completion_service_and_request_settings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.contents import ChatHistory
@@ -59,17 +56,25 @@ AZURE_OPENAI_API_VERSION="2024-12-01-preview"
 Note: Unsupported features may be added in future updates.
 """
 
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
+chat_service = OpenAIChatCompletion(service_id="reasoning", instruction_role="developer")
+# Set the reasoning effort to "medium" and the maximum completion tokens to 5000.
+request_settings = OpenAIChatPromptExecutionSettings(
+    service_id="reasoning", max_completion_tokens=2000, reasoning_effort="medium"
+)
+
+
+# Create a ChatHistory object
+chat_history = ChatHistory()
 
 # This is the system message that gives the chatbot its personality.
 developer_message = """
 As an assistant supporting the user,
- you recognize all user input
- as questions or consultations and answer them.
+you recognize all user input
+as questions or consultations and answer them.
 """
-
-# Create a ChatHistory object
-chat_history = ChatHistory()
+# The developer message was newly introduced for reasoning models such as OpenAI’s o1 and o1-mini.
+# `system message` cannot be used with reasoning models.
+chat_history.add_developer_message(developer_message)
 
 
 async def chat() -> bool:
@@ -86,25 +91,15 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    # The developer message was newly introduced for reasoning models such as OpenAI’s o1 and o1-mini.
-    # `system message` cannot be used with reasoning models.
-    chat_history.add_developer_message(developer_message)
     chat_history.add_user_message(user_input)
 
-    if not isinstance(request_settings, OpenAIChatPromptExecutionSettings):
-        raise ValueError("The OpenAI prompt execution settings are not supported for this sample.")
-
-    # Set the reasoning effort to "medium" and the maximum completion tokens to 5000.
-    request_settings.max_completion_tokens = 5000
-    request_settings.reasoning_effort = "medium"
-
     # Get the chat message content from the chat completion service.
-    response = await chat_completion_service.get_chat_message_content(
+    response = await chat_service.get_chat_message_content(
         chat_history=chat_history,
         settings=request_settings,
     )
     if response:
-        print(f"Mosscap:> {response}")
+        print(f"Reasoning model:> {response}")
 
         # Add the chat message to the chat history to keep track of the conversation.
         chat_history.add_message(response)

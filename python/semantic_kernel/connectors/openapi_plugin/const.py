@@ -3,10 +3,10 @@
 
 from enum import Enum
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class OperationExtensions(Enum):
     """The operation extensions."""
 

@@ -43,6 +43,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
+        Verify.ValidHostnameSegment(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
         string versionSubLink = GetApiVersionSubLink(apiVersion);

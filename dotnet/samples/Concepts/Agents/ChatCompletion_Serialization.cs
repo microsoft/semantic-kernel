@@ -3,7 +3,6 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 /// <summary>
@@ -14,8 +13,10 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
 
-    [Fact]
-    public async Task SerializeAndRestoreAgentGroupChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
@@ -23,8 +24,8 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
             {
                 Instructions = HostInstructions,
                 Name = HostName,
-                Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -51,6 +52,8 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
         {
             this.WriteAgentChatMessage(content);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(AgentGroupChat chat, string input)

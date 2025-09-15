@@ -242,8 +242,7 @@ More details can be found here: [Serialize polymorphic types](https://learn.micr
 To support custom function choice behaviors, the custom types should be registered for polymorphic deserialization. 
 Clearly, the approach using the JsonDerivedType attribute is not viable, as users cannot annotate `FunctionChoiceBehavior` SK class. 
 However, they could register their custom type resolver that would register their custom type(s) if they had access to JsonSerializerOptions used by JsonSerializer during deserialization. 
-Unfortunately, SK does not expose those options publicly today. Even if it had, there are YAML prompts that are deserialized by the YamlDotNet library that would require same custom types s
-upplied via YAML specific deserializer extensibility mechanisms - YamlTypeConverter. 
+Unfortunately, SK does not expose those options publicly today. Even if it had, there are YAML prompts that are deserialized by the YamlDotNet library that would require same custom types supplied via YAML specific deserializer extensibility mechanisms - YamlTypeConverter. 
 This would mean that if a user wants the same custom function calling choice to be used in both YAML and JSON prompts, they would have to register the same custom type twice - for JSON 
 via a custom type resolver and for YAML via a custom YamlTypeConverter. That would also require a mechanism of supplying custom resolvers/converters to all SK `CreateFunctionFrom*Prompt` extension methods.
 

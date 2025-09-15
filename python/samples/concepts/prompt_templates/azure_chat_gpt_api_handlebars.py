@@ -3,11 +3,14 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -23,9 +26,7 @@ flowery prose.
 kernel = Kernel()
 
 service_id = "chat-gpt"
-chat_service = AzureChatCompletion(
-    service_id=service_id,
-)
+chat_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
 kernel.add_service(chat_service)
 
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
@@ -36,10 +37,14 @@ req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 
 chat_function = kernel.add_function(
-    prompt="""{{system_message}}{{#each chat_history}}{{#message role=role}}{{~content~}}{{/message}} {{/each}}""",
+    prompt_template_config=PromptTemplateConfig(
+        template="""{{system_message}}{{#each chat_history}}
+        {{#message role=role}}{{~content~}}{{/message}} {{/each}}""",
+        template_format="handlebars",
+        allow_dangerously_set_content=True,
+    ),
     function_name="chat",
     plugin_name="chat",
-    template_format="handlebars",
     prompt_execution_settings=req_settings,
 )
 

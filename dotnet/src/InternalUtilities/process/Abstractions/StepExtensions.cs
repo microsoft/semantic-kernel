@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel.Process.Internal;
 
@@ -101,9 +102,16 @@ internal static class StepExtensions
     /// <param name="channel">The source channel to evaluate</param>
     /// <param name="functions">A dictionary of KernelFunction instances.</param>
     /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
+    /// <param name="agentDefinition">An instance of <see cref="AgentDefinition"/></param>
     /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static Dictionary<string, Dictionary<string, object?>?> FindInputChannels(this IKernelProcessMessageChannel channel, Dictionary<string, KernelFunction> functions, ILogger? logger)
+    public static Dictionary<string, Dictionary<string, object?>?> FindInputChannels(
+        this IKernelProcessMessageChannel channel,
+        Dictionary<string, KernelFunction> functions,
+        ILogger? logger,
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null,
+        AgentDefinition? agentDefinition = null)
     {
         if (functions is null)
         {
@@ -127,6 +135,14 @@ internal static class StepExtensions
                 if (param.ParameterType == typeof(KernelProcessStepContext))
                 {
                     inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(channel);
+                }
+                else if (param.ParameterType == typeof(KernelProcessStepExternalContext))
+                {
+                    inputs[kvp.Key]![param.Name] = new KernelProcessStepExternalContext(externalMessageChannel);
+                }
+                else if (param.ParameterType == typeof(AgentDefinition))
+                {
+                    inputs[kvp.Key]![param.Name] = agentDefinition;
                 }
                 else
                 {

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -7,13 +6,32 @@ using Plugins;
 
 namespace Agents;
 
+/// <summary>
+/// Sample showing how declarative agents can be defined through JSON manifest files.
+/// Demonstrates how to load and configure an agent from a declarative manifest that specifies:
+/// - The agent's identity (name, description, instructions)
+/// - The agent's available actions/plugins
+/// - Authentication parameters for accessing external services
+/// </summary>
+/// <remarks>
+/// The test uses a SchedulingAssistant example that can:
+/// - Read emails for meeting requests
+/// - Check calendar availability
+/// - Process scheduling-related tasks
+/// The agent is configured via "SchedulingAssistant.json" manifest which defines the required
+/// plugins and capabilities.
+/// </remarks>
 public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    [InlineData("SchedulingAssistant.json", "Read the body of my last five emails, if any contain a meeting request for today, check that it's already on my calendar, if not, call out which email it is.")]
     [Theory]
-    public async Task LoadsAgentFromDeclarativeAgentManifestAsync(string agentFileName, string input)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LoadsAgentFromDeclarativeAgentManifest(bool useChatClient)
     {
-        var kernel = CreateKernel();
+        var agentFileName = "SchedulingAssistant.json";
+        var input = "Read the body of my last five emails, if any contain a meeting request for today, check that it's already on my calendar, if not, call out which email it is.";
+
+        var kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient);
         kernel.AutoFunctionInvocationFilters.Add(new ExpectedSchemaFunctionFilter());
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "DeclarativeAgents");
         var manifestFilePath = Path.Combine(manifestLookupDirectory, agentFileName);
@@ -30,9 +48,8 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
         Assert.NotNull(agent.Instructions);
         Assert.NotEmpty(agent.Instructions);
 
-        ChatMessageContent message = new(AuthorRole.User, input);
-        ChatHistory chatHistory = [message];
-        StringBuilder sb = new();
+        ChatHistoryAgentThread agentThread = new();
+
         var kernelArguments = new KernelArguments(new PromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
@@ -42,23 +59,16 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
                     }
                 )
         });
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chatHistory, kernelArguments))
-        {
-            chatHistory.Add(response);
-            sb.Append(response.Content);
-        }
-        Assert.NotEmpty(chatHistory.Skip(1));
-    }
-    private Kernel CreateKernel()
-    {
-        IKernelBuilder builder = Kernel.CreateBuilder();
 
-        base.AddChatCompletionToKernel(builder);
+        var responses = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input), agentThread, options: new() { KernelArguments = kernelArguments }).ToArrayAsync();
+        Assert.NotEmpty(responses);
 
-        return builder.Build();
+        chatClient?.Dispose();
     }
+
     private sealed class ExpectedSchemaFunctionFilter : IAutoFunctionInvocationFilter
-    {//TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
+    {
+        //TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             await next(context);

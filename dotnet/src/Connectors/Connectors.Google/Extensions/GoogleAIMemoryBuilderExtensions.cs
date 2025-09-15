@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Http;
@@ -20,13 +21,16 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated memory builder.</returns>
+    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
     public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
         string apiKey,
         GoogleAIVersion apiVersion = GoogleAIVersion.V1_Beta,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -38,6 +42,7 @@ public static class GoogleAIMemoryBuilderExtensions
                 apiKey: apiKey,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
-                loggerFactory: loggerFactory));
+                loggerFactory: loggerFactory,
+                dimensions: dimensions));
     }
 }

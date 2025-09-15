@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Files;
+using OpenAI.Assistants;
 
 namespace Agents;
 
@@ -11,33 +11,23 @@ namespace Agents;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistantTest(output)
 {
-    private const string AgentName = "ChartMaker";
-    private const string AgentInstructions = "Create charts as requested without explanation.";
-
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
-        OpenAIClientProvider provider = this.GetClientProvider();
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                "ChartMaker",
+                instructions: "Create charts as requested without explanation.",
+                enableCodeInterpreter: true,
+                metadata: SampleMetadata);
 
-        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
-
-        // Define the agent
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                provider,
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Instructions = AgentInstructions,
-                    Name = AgentName,
-                    EnableCodeInterpreter = true,
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new());
-
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        // Create the agent
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
+        AgentThread? agentThread = null;
 
         // Respond to user input
         try
@@ -58,20 +48,26 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         }
         finally
         {
-            await agent.DeleteAsync();
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseImageAsync(fileClient, response);
+                await this.DownloadResponseImageAsync(response);
+
+                agentThread = response.Thread;
             }
         }
     }

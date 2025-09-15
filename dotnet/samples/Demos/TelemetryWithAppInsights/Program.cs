@@ -6,11 +6,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
@@ -80,6 +84,8 @@ public sealed class Program
         Console.WriteLine("Write a poem about John Doe and translate it to Italian.");
         using (var _ = s_activitySource.StartActivity("Chat"))
         {
+            await RunAzureAIInferenceChatAsync(kernel);
+            Console.WriteLine();
             await RunAzureOpenAIChatAsync(kernel);
             Console.WriteLine();
             await RunGoogleAIChatAsync(kernel);
@@ -96,6 +102,13 @@ public sealed class Program
         using (var _ = s_activitySource.StartActivity("ToolCalls"))
         {
             await RunAzureOpenAIToolCallsAsync(kernel);
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("Run ChatCompletion Agent.");
+        using (var _ = s_activitySource.StartActivity("Agent"))
+        {
+            await RunChatCompletionAgentAsync(kernel);
             Console.WriteLine();
         }
     }
@@ -119,11 +132,42 @@ public sealed class Program
     private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
     private const string HuggingFaceServiceKey = "HuggingFace";
     private const string MistralAIServiceKey = "MistralAI";
+    private const string AzureAIInferenceServiceKey = "AzureAIInference";
 
     #region chat completion
+
+    private static async Task RunAzureAIInferenceChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= Azure AI Inference Chat Completion =============");
+
+        if (TestConfiguration.AzureAIInference is null)
+        {
+            Console.WriteLine("Azure AI Inference is not configured. Skipping.");
+            return;
+        }
+
+        using var activity = s_activitySource.StartActivity(AzureAIInferenceServiceKey);
+        SetTargetService(kernel, AzureAIInferenceServiceKey);
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
     private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= Azure OpenAI Chat Completion =============");
+
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
         SetTargetService(kernel, AzureOpenAIServiceKey);
@@ -141,6 +185,12 @@ public sealed class Program
     private static async Task RunGoogleAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= Google Gemini Chat Completion =============");
+
+        if (TestConfiguration.GoogleAI is null)
+        {
+            Console.WriteLine("Google AI is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(GoogleAIGeminiServiceKey);
         SetTargetService(kernel, GoogleAIGeminiServiceKey);
@@ -160,6 +210,12 @@ public sealed class Program
     {
         Console.WriteLine("============= HuggingFace Chat Completion =============");
 
+        if (TestConfiguration.HuggingFace is null)
+        {
+            Console.WriteLine("Hugging Face is not configured. Skipping.");
+            return;
+        }
+
         using var activity = s_activitySource.StartActivity(HuggingFaceServiceKey);
         SetTargetService(kernel, HuggingFaceServiceKey);
 
@@ -177,6 +233,12 @@ public sealed class Program
     private static async Task RunMistralAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= MistralAI Chat Completion =============");
+
+        if (TestConfiguration.MistralAI is null)
+        {
+            Console.WriteLine("Mistral AI is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(MistralAIServiceKey);
         SetTargetService(kernel, MistralAIServiceKey);
@@ -227,6 +289,12 @@ public sealed class Program
     {
         Console.WriteLine("============= Azure OpenAI ToolCalls =============");
 
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
+
         using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
         SetTargetService(kernel, AzureOpenAIServiceKey);
         try
@@ -248,6 +316,40 @@ public sealed class Program
     }
     #endregion
 
+    #region Agent
+
+    private static async Task RunChatCompletionAgentAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= ChatCompletion Agent =============");
+
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
+
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+
+        // Define the agent
+        ChatCompletionAgent agent =
+            new()
+            {
+                Name = "TestAgent",
+                Instructions = "You are a helpful assistant.",
+                Kernel = kernel
+            };
+
+        ChatMessageContent message = new(AuthorRole.User, "Write a poem about John Doe.");
+        Console.WriteLine($"User: {message.Content}");
+
+        await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
+        {
+            Console.WriteLine($"Agent: {response.Message.Content}");
+        }
+    }
+
+    #endregion
+
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
@@ -255,27 +357,77 @@ public sealed class Program
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(loggerFactory);
-        builder
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: AzureOpenAIServiceKey)
-            .AddGoogleAIGeminiChatCompletion(
+
+        if (TestConfiguration.AzureOpenAI is not null)
+        {
+            if (TestConfiguration.AzureOpenAI.ApiKey is not null)
+            {
+                builder.AddAzureOpenAIChatCompletion(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                    apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                    serviceId: AzureOpenAIServiceKey);
+            }
+            else
+            {
+                builder.AddAzureOpenAIChatCompletion(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                    credentials: new AzureCliCredential(),
+                    serviceId: AzureOpenAIServiceKey);
+            }
+        }
+
+        if (TestConfiguration.GoogleAI is not null)
+        {
+            builder.AddGoogleAIGeminiChatCompletion(
                 modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
                 apiKey: TestConfiguration.GoogleAI.ApiKey,
-                serviceId: GoogleAIGeminiServiceKey)
-            .AddHuggingFaceChatCompletion(
+                serviceId: GoogleAIGeminiServiceKey);
+        }
+
+        if (TestConfiguration.HuggingFace is not null)
+        {
+            builder.AddHuggingFaceChatCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 endpoint: new Uri("https://api-inference.huggingface.co"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
-                serviceId: HuggingFaceServiceKey)
-            .AddMistralChatCompletion(
+                serviceId: HuggingFaceServiceKey);
+        }
+
+        if (TestConfiguration.MistralAI is not null)
+        {
+            builder.AddMistralChatCompletion(
                 modelId: TestConfiguration.MistralAI.ChatModelId,
                 apiKey: TestConfiguration.MistralAI.ApiKey,
-                serviceId: MistralAIServiceKey
-            );
+                serviceId: MistralAIServiceKey);
+        }
+
+        if (TestConfiguration.AzureAIInference is not null)
+        {
+            if (string.IsNullOrEmpty(TestConfiguration.AzureAIInference.ApiKey))
+            {
+                builder.AddAzureAIInferenceChatCompletion(
+                    modelId: TestConfiguration.AzureAIInference.ModelId,
+                    credential: new DefaultAzureCredential(),
+                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
+                    serviceId: AzureAIInferenceServiceKey,
+                    openTelemetrySourceName: "Telemetry.Example",
+                    openTelemetryConfig: c => c.EnableSensitiveData = true);
+            }
+            else
+            {
+                builder.AddAzureAIInferenceChatCompletion(
+                    modelId: TestConfiguration.AzureAIInference.ModelId,
+                    apiKey: TestConfiguration.AzureAIInference.ApiKey,
+                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
+                    serviceId: AzureAIInferenceServiceKey,
+                    openTelemetrySourceName: "Telemetry.Example",
+                    openTelemetryConfig: c => c.EnableSensitiveData = true);
+            }
+        }
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromType<WeatherPlugin>();
@@ -302,6 +454,7 @@ public sealed class Program
             .AddEnvironmentVariables()
             .AddUserSecrets<Program>()
             .Build();
+
         TestConfiguration.Initialize(configRoot);
     }
 
@@ -340,6 +493,16 @@ public sealed class Program
                         {
                             Temperature = 0,
                             ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions
+                        },
+                        AzureAIInferenceServiceKey => new AzureAIInferencePromptExecutionSettings()
+                        {
+                            Temperature = 0,
+
+                            // Function/Tool calling enabled models in Azure AI Inference are listed in the below page as "Tool calling: Yes/No"
+                            // https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models, 
+                            // Ensure your model support tool calling before enabling the setting below.
+
+                            // FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                         },
                         _ => null,
                     };

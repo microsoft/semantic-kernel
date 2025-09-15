@@ -47,6 +47,23 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.Equal("deployment-name", service.Attributes["DeploymentName"]);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorTokenCredentialAddRequiredMetadata(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var service = includeLoggerFactory ?
+            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", Azure.Core.DelegatedTokenCredential.Create((context, ct)
+                => new Azure.Core.AccessToken("abc", DateTimeOffset.Now.AddMinutes(30))), "model-id", loggerFactory: this._mockLoggerFactory.Object) :
+            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", Azure.Core.DelegatedTokenCredential.Create((context, ct)
+                => new Azure.Core.AccessToken("abc", DateTimeOffset.Now.AddMinutes(30))), "model-id");
+
+        // Assert
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+        Assert.Equal("deployment-name", service.Attributes["DeploymentName"]);
+    }
+
     [Fact]
     public void ItThrowsIfModelIdIsNotProvided()
     {
@@ -234,10 +251,30 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 
     public static TheoryData<string?, string?> Versions => new()
     {
+        { "V2025_04_01_preview", "2025-04-01-preview" },
+        { "V2025_04_01_PREVIEW", "2025-04-01-preview" },
+        { "2025_04_01_Preview", "2025-04-01-preview" },
+        { "2025-04-01-preview", "2025-04-01-preview" },
+        { "V2025_03_01_preview", "2025-03-01-preview" },
+        { "V2025_03_01_PREVIEW", "2025-03-01-preview" },
+        { "2025_03_01_Preview", "2025-03-01-preview" },
+        { "2025-03-01-preview", "2025-03-01-preview" },
+        { "V2025_01_01_preview", "2025-01-01-preview" },
+        { "V2025_01_01_PREVIEW", "2025-01-01-preview" },
+        { "2025_01_01_Preview", "2025-01-01-preview" },
+        { "2025-01-01-preview", "2025-01-01-preview" },
+        { "V2024_12_01_preview", "2024-12-01-preview" },
+        { "V2024_12_01_PREVIEW", "2024-12-01-preview" },
+        { "2024_12_01_Preview", "2024-12-01-preview" },
+        { "2024-12-01-preview", "2024-12-01-preview" },
         { "V2024_10_01_preview", "2024-10-01-preview" },
         { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
         { "2024_10_01_Preview", "2024-10-01-preview" },
         { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_09_01_preview", "2024-09-01-preview" },
+        { "V2024_09_01_PREVIEW", "2024-09-01-preview" },
+        { "2024_09_01_Preview", "2024-09-01-preview" },
+        { "2024-09-01-preview", "2024-09-01-preview" },
         { "V2024_08_01_preview", "2024-08-01-preview" },
         { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
         { "2024_08_01_Preview", "2024-08-01-preview" },
@@ -245,9 +282,19 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         { "V2024_06_01", "2024-06-01" },
         { "2024_06_01", "2024-06-01" },
         { "2024-06-01", "2024-06-01" },
+        { "V2024_10_21", "2024-10-21" },
+        { "2024_10_21", "2024-10-21" },
+        { "2024-10-21", "2024-10-21" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_04_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_03_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_21.ToString(), null },
+        { null, null } // No version specified
     };
 
     public void Dispose()

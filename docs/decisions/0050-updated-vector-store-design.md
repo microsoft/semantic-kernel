@@ -113,7 +113,7 @@ classDiagram
         class IVectorRecordStore~TModel~{
             <<interface>>
             +Upsert(TModel record) string
-            +UpserBatch(TModel record) string
+            +UpsertBatch(TModel record) string
             +Get(string key) TModel
             +GetBatch(string[] keys) TModel[]
             +Delete(string key)
@@ -619,7 +619,7 @@ Option 1 is problematic on its own, since we have to allow consumers to create c
 a single interface like this, it will require them to implement many methods that they do not want to change. Options 4 & 5, gives us more flexibility while
 still preserving the ease of use of an aggregated interface as described in Option 1.
 
-Option 2 doesn't give us the flexbility we need for break glass scenarios, since it only allows certain types of collections to be created. It also means
+Option 2 doesn't give us the flexibility we need for break glass scenarios, since it only allows certain types of collections to be created. It also means
 that each time a new collection type is required it introduces a breaking change, so it is not a viable option.
 
 Since collection create and configuration and the possible options vary considerable across different database types, we will need to support an easy
@@ -964,14 +964,14 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 ### Collection Creation
 
 7. Release Collection Creation public interface.
-8. Create cross db collection creation config that supports common functionality, and per daatabase implementation that supports this configuration.
+8. Create cross db collection creation config that supports common functionality, and per database implementation that supports this configuration.
 9. Add support for registering collection creation with SK container to allow automatic dependency injection.
 
 ### First Party Memory Features and well known model support
 
 10. Add model and mappers for legacy SK MemoryStore interface, so that consumers using this has an upgrade path to the new memory storage stack.
 11. Add model and mappers for popular loader systems, like Kernel Memory or LlamaIndex.
-11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
+11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specifics TBD.
 
 ### Cross Cutting Requirements
 
@@ -983,7 +983,7 @@ Need the following for all features:
 - Common Exception Handling
 - Samples, including:
   - Usage scenario for collection and record management using custom model and configured collection creation.
-  - A simple consumption example like semantic caching, specfics TBD.
+  - A simple consumption example like semantic caching, specifics TBD.
   - Adding your own collection creation implementation.
   - Adding your own custom model mapper.
 - Documentation, including:

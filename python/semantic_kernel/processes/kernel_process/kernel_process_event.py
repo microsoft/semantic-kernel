@@ -6,10 +6,10 @@ from typing import Any
 from pydantic import ConfigDict
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class KernelProcessEventVisibility(Enum):
     """Visibility of a kernel process event."""
 
@@ -21,7 +21,7 @@ class KernelProcessEventVisibility(Enum):
     Internal = "Internal"
 
 
-@experimental_class
+@experimental
 class KernelProcessEvent(KernelBaseModel):
     """A kernel process event."""
 
@@ -29,4 +29,4 @@ class KernelProcessEvent(KernelBaseModel):
     data: Any | None = None
     visibility: KernelProcessEventVisibility = KernelProcessEventVisibility.Internal
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=False)

@@ -3,6 +3,8 @@
 import asyncio
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -45,9 +47,7 @@ async def main():
     service_id = "function_calling"
     if use_azure_openai:
         # Please make sure your AzureOpenAI Deployment allows for function calling
-        ai_service = AzureChatCompletion(
-            service_id=service_id,
-        )
+        ai_service = AzureChatCompletion(service_id=service_id, credential=AzureCliCredential())
     else:
         ai_service = OpenAIChatCompletion(
             service_id=service_id,
@@ -120,14 +120,13 @@ async def main():
 
         chat_history.add_message(result)
         for item in result.items:
-            await chat._process_function_call(
+            await kernel.invoke_function_call(
                 function_call=item,
-                kernel=kernel,
                 chat_history=chat_history,
                 arguments=KernelArguments(),
                 function_call_count=1,
                 request_index=0,
-                function_call_behavior=settings.function_choice_behavior,
+                function_behavior=settings.function_choice_behavior,
             )
 
 

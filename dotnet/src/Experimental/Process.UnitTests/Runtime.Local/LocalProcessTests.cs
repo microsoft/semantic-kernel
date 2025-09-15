@@ -26,8 +26,7 @@ public class LocalProcessTests
         ], []);
 
         var mockKernel = new Kernel();
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
-
+        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
         // Act
         await localProcess.StartAsync();
 
@@ -41,7 +40,7 @@ public class LocalProcessTests
     /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
     /// </summary>
     [Fact]
-    public void ProcessWithMissingIdIsAssignedAnId()
+    public async Task ProcessWithMissingIdIsAssignedAnIdAsync()
     {
         // Arrange
         var mockKernel = new Kernel();
@@ -53,7 +52,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
+        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
@@ -63,7 +62,7 @@ public class LocalProcessTests
     /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
     /// </summary>
     [Fact]
-    public void ProcessWithAssignedIdIsNotOverwrittenId()
+    public async Task ProcessWithAssignedIdIsNotOverwrittenIdAsync()
     {
         // Arrange
         var mockKernel = new Kernel();
@@ -75,7 +74,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
+        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
@@ -101,7 +100,7 @@ public class LocalProcessTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+        await using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
 
         // Assert
         Assert.True(kernel.Data.ContainsKey("error-function"));
@@ -127,7 +126,7 @@ public class LocalProcessTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+        await using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
 
         // Assert
         Assert.True(kernel.Data.ContainsKey("error-global"));
@@ -154,7 +153,7 @@ public class LocalProcessTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+        await using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
 
         // Assert
         Assert.False(kernel.Data.ContainsKey("error-global"));

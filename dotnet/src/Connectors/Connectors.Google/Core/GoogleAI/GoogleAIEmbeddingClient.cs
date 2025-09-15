@@ -17,6 +17,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
     private readonly Uri _embeddingEndpoint;
+    private readonly int? _dimensions;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Google AI.
@@ -26,15 +27,18 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     /// <param name="apiKey">Api key for GoogleAI endpoint</param>
     /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     public GoogleAIEmbeddingClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
         GoogleAIVersion apiVersion,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        int? dimensions = null)
         : base(
             httpClient: httpClient,
-            logger: logger)
+            logger: logger,
+            apiKey: apiKey)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -42,7 +46,8 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents?key={apiKey}");
+        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents");
+        this._dimensions = dimensions;
     }
 
     /// <summary>
@@ -67,7 +72,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     }
 
     private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
-        => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId);
+        => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId, this._dimensions);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<GoogleAIEmbeddingResponse>(body));

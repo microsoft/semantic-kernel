@@ -36,7 +36,7 @@ public sealed class KernelTests : IDisposable
         this._multiMessageHandlerStub.ResponsesToReturn.Add(
             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) }
         );
-        using MeterListener listener = EnableTelemetryMeters();
+        using MeterListener listener = new();
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(this._mockLoggerFactory.Object);
@@ -60,15 +60,26 @@ public sealed class KernelTests : IDisposable
     public async Task FunctionUsageMetricsAreCapturedByTelemetryAsExpected()
     {
         // Set up a MeterListener to capture the measurements
-        using MeterListener listener = EnableTelemetryMeters();
+        using MeterListener listener = new();
+        var isPublished = false;
 
-        var measurements = new Dictionary<string, List<int>>
+        var measurements = new Dictionary<string, List<long>>
         {
             ["semantic_kernel.function.invocation.token_usage.prompt"] = [],
             ["semantic_kernel.function.invocation.token_usage.completion"] = [],
         };
 
-        listener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
+        listener.InstrumentPublished = (instrument, listener) =>
+        {
+            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
+                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
+            {
+                isPublished = true;
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
+
+        listener.SetMeasurementEventCallback<long>((instrument, measurement, tags, state) =>
         {
             if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
                 instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
@@ -76,6 +87,16 @@ public sealed class KernelTests : IDisposable
                 measurements[instrument.Name].Add(measurement);
             }
         });
+
+        var completed = false;
+
+        listener.MeasurementsCompleted = (instrument, state) =>
+        {
+            completed = true;
+            // Stop the listener to stop collecting data
+            Assert.Contains(12, measurements["semantic_kernel.function.invocation.token_usage.prompt"]);
+            Assert.Contains(5, measurements["semantic_kernel.function.invocation.token_usage.completion"]);
+        };
 
         listener.Start();  // Start the listener to begin collecting data
 
@@ -90,34 +111,24 @@ public sealed class KernelTests : IDisposable
 
         var kernelFunction = KernelFunctionFactory.CreateFromPrompt("prompt", loggerFactory: this._mockLoggerFactory.Object);
 
-        // Act
+        // Act & Assert
         var result = await kernel.InvokeAsync(kernelFunction);
 
-        // Assert
-        Assert.Contains(12, measurements["semantic_kernel.function.invocation.token_usage.prompt"]);
-        Assert.Contains(5, measurements["semantic_kernel.function.invocation.token_usage.completion"]);
+        listener.Dispose();
+
+        Assert.True(isPublished);
+
+        while (!completed)
+        {
+            // Wait for the measurements to be completed
+            await Task.Delay(100);
+        }
     }
 
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._multiMessageHandlerStub.Dispose();
-    }
-
-    private static MeterListener EnableTelemetryMeters()
-    {
-        var listener = new MeterListener();
-        // Enable the listener to collect data for our specific histogram
-        listener.InstrumentPublished = (instrument, listener) =>
-        {
-            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
-                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
-            {
-                listener.EnableMeasurementEvents(instrument);
-            }
-        };
-        listener.Start();
-        return listener;
     }
 
     private const string ChatCompletionResponse = """

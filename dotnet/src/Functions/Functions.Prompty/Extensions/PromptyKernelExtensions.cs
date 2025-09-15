@@ -34,7 +34,7 @@ public static class PromptyKernelExtensions
         Verify.NotNullOrWhiteSpace(promptyFilePath);
 
         var promptyTemplate = File.ReadAllText(promptyFilePath);
-        return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory);
+        return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory, promptyFilePath);
     }
 
     /// <summary>
@@ -46,6 +46,7 @@ public static class PromptyKernelExtensions
     /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the prompt template configuration into a <see cref="IPromptTemplate"/>.
     /// If null, a <see cref="AggregatorPromptTemplateFactory"/> will be used with support for Liquid and Handlebars prompt templates.
     /// </param>
+    /// <param name="promptyFilePath">Optional: File path to the prompty file.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="promptyTemplate"/> is null.</exception>
@@ -53,12 +54,13 @@ public static class PromptyKernelExtensions
     public static KernelFunction CreateFunctionFromPrompty(
         this Kernel kernel,
         string promptyTemplate,
-        IPromptTemplateFactory? promptTemplateFactory = null)
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        string? promptyFilePath = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptyTemplate);
 
-        var promptTemplateConfig = KernelFunctionPrompty.ToPromptTemplateConfig(promptyTemplate);
+        var promptTemplateConfig = KernelFunctionPrompty.ToPromptTemplateConfig(promptyTemplate, promptyFilePath);
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplateConfig,
@@ -118,6 +120,6 @@ public static class PromptyKernelExtensions
 
         using StreamReader reader = new(fileInfo.CreateReadStream());
         var promptyTemplate = reader.ReadToEnd();
-        return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory);
+        return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory, fileInfo.PhysicalPath);
     }
 }

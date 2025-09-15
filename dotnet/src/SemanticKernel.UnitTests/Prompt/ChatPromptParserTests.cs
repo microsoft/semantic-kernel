@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -12,7 +13,7 @@ public sealed class ChatPromptParserTests
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
-    [InlineData("<message role='user'><text>This is invalid</text><text>chat prompt</text></message>")]
+    [InlineData("<message role='user'><text>This is an invalid chat prompt</message></text>")]
     public void ItReturnsNullChatHistoryWhenPromptIsPlainTextOrInvalid(string prompt)
     {
         // Act
@@ -149,6 +150,86 @@ public sealed class ChatPromptParserTests
     }
 
     [Fact]
+    public void ItReturnsChatHistoryWithMultipleTextParts()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMultipleTextParts();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Hello", c.Content);
+                Assert.Collection(c.Items,
+                    o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("Hello", ((TextContent)o).Text);
+                    }, o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("I am user", ((TextContent)o).Text);
+                    });
+            });
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithMixedXmlContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMixedXmlContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Hi how are you?", c.Content);
+                Assert.Single(c.Items);
+            });
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithEmptyContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithEmptyContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Null(c.Content);
+                Assert.Empty(c.Items);
+            },
+            c =>
+            {
+                Assert.Null(c.Content);
+                Assert.Empty(c.Items);
+            });
+    }
+
+    [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsIncludeCode()
     {
         // Arrange
@@ -186,7 +267,7 @@ public sealed class ChatPromptParserTests
                                   </message>
                               </code>
                               """, c.Content),
-            // In this case, when we trim node.InnerXml only the opening <code> tag is indented. 
+            // In this case, when we trim node.InnerXml only the opening <code> tag is indented.
             c => Assert.Equal("""
                               <code>
                                   <text>explain image</text>
@@ -195,6 +276,104 @@ public sealed class ChatPromptParserTests
                                   </image>
                                 </code>
                               """, c.Content));
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithMixedBinaryAndTextContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMixedBinaryAndTextContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Make sense of this random assortment of stuff.", c.Content);
+                Assert.Collection(c.Items,
+                    o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("Make sense of this random assortment of stuff.", ((TextContent)o).Text);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<ImageContent>(o);
+                        var x = (ImageContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-image/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<AudioContent>(o);
+                        var x = (AudioContent)o;
+                        Assert.Equal($"data:audio/wav;base64,{s_FakeContent}", x.DataUri);
+                        Assert.Equal("audio/wav", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.Equal($"data:application/pdf;base64,{s_FakeContent}", x.DataUri);
+                        Assert.Equal("application/pdf", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-pdf/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.Equal($"data:application/msword;base64,{s_FakeContent}", x.DataUri);
+                        Assert.Equal("application/msword", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-doc/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.Equal($"data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}", x.DataUri);
+                        Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-docx/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.Equal($"data:application/octet-stream;base64,{s_FakeContent}", x.DataUri);
+                        Assert.Equal("application/octet-stream", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-binary/", x.Uri.AbsoluteUri);
+                    }
+                );
+            });
     }
 
     private static string GetSimpleValidPrompt()
@@ -254,6 +433,50 @@ public sealed class ChatPromptParserTests
             <message role='user'>
                 <text>Explain this image</text>
                 <image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII=</image>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithMultipleTextParts()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                <text>Hello</text>
+                <text>I am user</text>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithMixedXmlContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                This part will be discarded upon parsing
+                <text>Hi how are you?</text>
+                This part will also be discarded upon parsing
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithEmptyContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+            <message role='user'/>
+            <message role='user'>
             </message>
 
             """;
@@ -321,5 +544,31 @@ public sealed class ChatPromptParserTests
             </message>
 
             """;
+    }
+    private static readonly string s_FakeContent = Convert.ToBase64String(Encoding.UTF8.GetBytes("Fake content"));
+
+    private static string GetValidPromptWithMixedBinaryAndTextContent()
+    {
+        return
+            $"""
+
+              <message role="assistant">What can I help with?</message>
+
+              <message role='user'>
+                  This part will be discarded upon parsing
+                  <text>Make sense of this random assortment of stuff.</text>
+                  <image mimetype="image/png">https://fake-link-to-image/</image>
+                  <audio>data:audio/wav;base64,{s_FakeContent}</audio>
+                  <binary>data:application/pdf;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/pdf">https://fake-link-to-pdf/</binary>
+                  <binary>data:application/msword;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/msword">https://fake-link-to-doc/</binary>
+                  <binary>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document">https://fake-link-to-docx/</binary>
+                  <binary>data:application/octet-stream;base64,{s_FakeContent}</binary>
+                  <binary mimetype="application/octet-stream">https://fake-link-to-binary/</binary>
+                  This part will also be discarded upon parsing
+              </message>
+              """;
     }
 }

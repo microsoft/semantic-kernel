@@ -4,19 +4,20 @@ import logging
 import mimetypes
 from typing import Any, ClassVar, Literal, TypeVar
 
+from numpy import ndarray
 from pydantic import Field
 from typing_extensions import deprecated
 
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ContentTypes
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="ImageContent")
 
 
-@experimental_class
+@experimental
 class ImageContent(BinaryContent):
     """Image Content class.
 
@@ -51,6 +52,40 @@ class ImageContent(BinaryContent):
 
     content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = IMAGE_CONTENT_TAG
+
+    def __init__(
+        self,
+        uri: str | None = None,
+        data_uri: str | None = None,
+        data: str | bytes | ndarray | None = None,
+        data_format: str | None = None,
+        mime_type: str | None = None,
+        **kwargs: Any,
+    ):
+        """Create an Image Content object, either from a data_uri or data.
+
+        Args:
+            uri: The reference uri of the content.
+            data_uri: The data uri of the content.
+            data: The data of the content.
+            data_format: The format of the data (e.g. base64).
+            mime_type: The mime type of the image, only used with data.
+            kwargs: Any additional arguments:
+            inner_content: The inner content of the response,
+                this should hold all the information from the response so even
+                when not creating a subclass a developer
+                can leverage the full thing.
+            ai_model_id: The id of the AI model that generated this response.
+            metadata: Any metadata that should be attached to the response.
+        """
+        super().__init__(
+            uri=uri,
+            data_uri=data_uri,
+            data=data,
+            data_format=data_format,
+            mime_type=mime_type,
+            **kwargs,
+        )
 
     @classmethod
     @deprecated("The `from_image_path` method is deprecated; use `from_image_file` instead.", category=None)

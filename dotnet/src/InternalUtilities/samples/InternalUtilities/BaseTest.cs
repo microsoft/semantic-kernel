@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ClientModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -45,37 +49,81 @@ public abstract class BaseTest : TextWriter
     /// </summary>
     protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
 
-    protected Kernel CreateKernelWithChatCompletion()
+    protected Kernel CreateKernelWithChatCompletion(string? modelName = null)
+        => this.CreateKernelWithChatCompletion(useChatClient: false, out _, modelName);
+
+    protected Kernel CreateKernelWithChatCompletion(bool useChatClient, out IChatClient? chatClient, string? modelName = null)
     {
         var builder = Kernel.CreateBuilder();
 
-        AddChatCompletionToKernel(builder);
+        if (useChatClient)
+        {
+            chatClient = AddChatClientToKernel(builder);
+        }
+        else
+        {
+            chatClient = null;
+            AddChatCompletionToKernel(builder, modelName);
+        }
 
         return builder.Build();
     }
 
-    protected void AddChatCompletionToKernel(IKernelBuilder builder)
+    protected void AddChatCompletionToKernel(IKernelBuilder builder, string? modelName = null)
     {
         if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
+                modelName ?? TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
         else if (!string.IsNullOrEmpty(this.ApiKey))
         {
             builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                modelName ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
         }
         else
         {
             builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                modelName ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
         }
+    }
+
+    protected IChatClient AddChatClientToKernel(IKernelBuilder builder)
+    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        IChatClient chatClient;
+        if (this.UseOpenAIConfig)
+        {
+            chatClient = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+                .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                .AsIChatClient();
+        }
+        else if (!string.IsNullOrEmpty(this.ApiKey))
+        {
+            chatClient = new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
+        }
+        else
+        {
+            chatClient = new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new AzureCliCredential())
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
+        }
+
+        IChatClient functionCallingChatClient = chatClient.AsBuilder().UseKernelFunctionInvocation().Build();
+        builder.Services.AddSingleton(functionCallingChatClient);
+        return functionCallingChatClient;
+#pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
@@ -139,6 +187,45 @@ public abstract class BaseTest : TextWriter
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
+    }
+
+    /// <summary>
+    /// Outputs the last message in the chat messages history.
+    /// </summary>
+    /// <param name="chatHistory">Chat messages history</param>
+    protected void OutputLastMessage(IReadOnlyCollection<ChatMessage> chatHistory)
+    {
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Text}");
+        Console.WriteLine("------------------------");
+    }
+
+    /// <summary>
+    /// Outputs out the stream of generated message tokens.
+    /// </summary>
+    protected async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
+    {
+        bool roleWritten = false;
+        string fullMessage = string.Empty;
+
+        await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
+        {
+            if (!roleWritten && chatUpdate.Role.HasValue)
+            {
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+                roleWritten = true;
+            }
+
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                fullMessage += chatUpdate.Content;
+                Console.Write(chatUpdate.Content);
+            }
+        }
+
+        Console.WriteLine("\n------------------------");
+        chatHistory.AddMessage(authorRole, fullMessage);
     }
 
     /// <summary>

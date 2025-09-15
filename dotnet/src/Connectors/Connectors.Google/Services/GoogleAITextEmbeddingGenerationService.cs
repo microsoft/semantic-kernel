@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a service for generating text embeddings using the Google AI Gemini API.
 /// </summary>
+[Obsolete("Use GoogleAIEmbeddingGenerator instead.")]
 public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];
@@ -29,12 +30,14 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     public GoogleAITextEmbeddingGenerationService(
         string modelId,
         string apiKey,
         GoogleAIVersion apiVersion = GoogleAIVersion.V1_Beta, // todo: change beta to stable when stable version will be available
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -46,8 +49,14 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
             modelId: modelId,
             apiKey: apiKey,
             apiVersion: apiVersion,
-            logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)),
+            dimensions: dimensions);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
+
+        if (dimensions.HasValue)
+        {
+            this._attributesInternal.Add(EmbeddingGenerationExtensions.DimensionsKey, dimensions);
+        }
     }
 
     /// <inheritdoc />

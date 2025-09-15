@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -9,54 +10,97 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
-public abstract class TestsBase(ITestOutputHelper output)
+public abstract class TestsBase
 {
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-        .AddUserSecrets<TestsBase>()
-        .AddEnvironmentVariables()
-        .Build();
+    private readonly IConfigurationRoot _configuration;
+    protected ITestOutputHelper Output { get; }
+    private readonly GoogleAIConfig _googleAI;
+    private readonly VertexAIConfig _vertexAI;
 
-    protected ITestOutputHelper Output { get; } = output;
+    protected GoogleAIConfig GoogleAI => this._googleAI;
+    protected VertexAIConfig VertexAI => this._vertexAI;
 
-    protected IChatCompletionService GetChatService(ServiceType serviceType) => serviceType switch
+    protected TestsBase(ITestOutputHelper output)
+    {
+        this.Output = output;
+        this._configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+            .AddUserSecrets<TestsBase>()
+            .AddEnvironmentVariables()
+            .Build();
+
+        this._googleAI = new GoogleAIConfig();
+        this._vertexAI = new VertexAIConfig();
+
+        this._configuration.GetSection("GoogleAI").Bind(this._googleAI);
+        this._configuration.GetSection("VertexAI").Bind(this._vertexAI);
+    }
+
+    protected IChatCompletionService GetChatService(ServiceType serviceType, bool isBeta = false, string? overrideModelId = null) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAIGeminiChatCompletionService(
-            this.GoogleAIGetGeminiModel(),
-            this.GoogleAIGetApiKey()),
+            overrideModelId ?? this.GoogleAI.Gemini.ModelId,
+            this.GoogleAI.ApiKey,
+            isBeta ? GoogleAIVersion.V1_Beta : GoogleAIVersion.V1),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
-            modelId: this.VertexAIGetGeminiModel(),
-            bearerKey: this.VertexAIGetBearerKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId()),
+            modelId: overrideModelId ?? this.VertexAI.Gemini.ModelId,
+            bearerKey: this.VertexAI.BearerKey,
+            location: this.VertexAI.Location,
+            projectId: this.VertexAI.ProjectId,
+            isBeta ? VertexAIVersion.V1_Beta : VertexAIVersion.V1),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
     protected IChatCompletionService GetChatServiceWithVision(ServiceType serviceType) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAIGeminiChatCompletionService(
-            this.GoogleAIGetGeminiVisionModel(),
-            this.GoogleAIGetApiKey()),
+            this.GoogleAI.Gemini.VisionModelId,
+            this.GoogleAI.ApiKey),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
-            modelId: this.VertexAIGetGeminiVisionModel(),
-            bearerKey: this.VertexAIGetBearerKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId()),
+            modelId: this.VertexAI.Gemini.VisionModelId,
+            bearerKey: this.VertexAI.BearerKey,
+            location: this.VertexAI.Location,
+            projectId: this.VertexAI.ProjectId),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     protected ITextEmbeddingGenerationService GetEmbeddingService(ServiceType serviceType) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAITextEmbeddingGenerationService(
-            this.GoogleAIGetEmbeddingModel(),
-            this.GoogleAIGetApiKey()),
+            this.GoogleAI.EmbeddingModelId,
+            this.GoogleAI.ApiKey),
         ServiceType.VertexAI => new VertexAITextEmbeddingGenerationService(
-            modelId: this.VertexAIGetEmbeddingModel(),
-            bearerKey: this.VertexAIGetBearerKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId()),
+            modelId: this.VertexAI.EmbeddingModelId,
+            bearerKey: this.VertexAI.BearerKey,
+            location: this.VertexAI.Location,
+            projectId: this.VertexAI.ProjectId),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
+    };
+
+    protected IEmbeddingGenerator<string, Embedding<float>> GetEmbeddingGenerator(ServiceType serviceType) => serviceType switch
+    {
+        ServiceType.GoogleAI => new GoogleAIEmbeddingGenerator(
+            this.GoogleAI.EmbeddingModelId,
+            this.GoogleAI.ApiKey),
+        ServiceType.VertexAI => new VertexAIEmbeddingGenerator(
+            modelId: this.VertexAI.EmbeddingModelId,
+            bearerKey: this.VertexAI.BearerKey,
+            location: this.VertexAI.Location,
+            projectId: this.VertexAI.ProjectId),
+        _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
+    };
+
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
+    protected ITextEmbeddingGenerationService GetEmbeddingServiceWithDimensions(ServiceType serviceType, int dimensions) => serviceType switch
+    {
+        ServiceType.GoogleAI => new GoogleAITextEmbeddingGenerationService(
+            this.GoogleAI.EmbeddingModelId,
+            this.GoogleAI.ApiKey,
+            dimensions: dimensions),
+        ServiceType.VertexAI => throw new NotImplementedException("Semantic Kernel does not support configuring dimensions for Vertex AI embeddings"),
+        _ => throw new ArgumentException($"Invalid service type: {serviceType}", nameof(serviceType))
     };
 
     public enum ServiceType
@@ -65,14 +109,26 @@ public abstract class TestsBase(ITestOutputHelper output)
         VertexAI
     }
 
-    private string GoogleAIGetGeminiModel() => this._configuration.GetSection("GoogleAI:Gemini:ModelId").Get<string>()!;
-    private string GoogleAIGetGeminiVisionModel() => this._configuration.GetSection("GoogleAI:Gemini:VisionModelId").Get<string>()!;
-    private string GoogleAIGetEmbeddingModel() => this._configuration.GetSection("GoogleAI:EmbeddingModelId").Get<string>()!;
-    private string GoogleAIGetApiKey() => this._configuration.GetSection("GoogleAI:ApiKey").Get<string>()!;
-    private string VertexAIGetGeminiModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
-    private string VertexAIGetGeminiVisionModel() => this._configuration.GetSection("VertexAI:Gemini:VisionModelId").Get<string>()!;
-    private string VertexAIGetEmbeddingModel() => this._configuration.GetSection("VertexAI:EmbeddingModelId").Get<string>()!;
-    private string VertexAIGetBearerKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
-    private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
-    private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
+    protected sealed class VertexAIConfig
+    {
+        public string ModelId { get; set; } = null!;
+        public string BearerKey { get; set; } = null!;
+        public string Location { get; set; } = null!;
+        public string ProjectId { get; set; } = null!;
+        public string EmbeddingModelId { get; set; } = null!;
+        public GeminiConfig Gemini { get; set; } = new();
+    }
+
+    protected sealed class GoogleAIConfig
+    {
+        public string ApiKey { get; set; } = null!;
+        public string EmbeddingModelId { get; set; } = null!;
+        public GeminiConfig Gemini { get; set; } = new();
+    }
+
+    protected class GeminiConfig
+    {
+        public string ModelId { get; set; } = null!;
+        public string VisionModelId { get; set; } = null!;
+    }
 }

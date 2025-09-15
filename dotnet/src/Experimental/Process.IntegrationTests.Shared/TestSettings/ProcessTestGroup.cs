@@ -10,6 +10,4 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// A collection definition for shared process tests.
 /// </summary>
 [CollectionDefinition(nameof(ProcessTestGroup))]
-public class ProcessTestGroup : ICollectionFixture<ProcessTestFixture>
-{
-}
+public class ProcessTestGroup : ICollectionFixture<ProcessTestFixture>;

@@ -5,11 +5,6 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from azure.ai.inference.aio import ChatCompletionsClient
 from azure.ai.inference.models import (
     AsyncStreamingChatCompletions,
@@ -17,9 +12,12 @@ from azure.ai.inference.models import (
     ChatCompletions,
     ChatCompletionsToolCall,
     ChatRequestMessage,
+    JsonSchemaFormat,
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
+    StreamingChatResponseToolCallUpdate,
 )
+from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
@@ -30,28 +28,34 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
     """Azure AI Inference Chat Completion Service."""
 
@@ -66,6 +70,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
@@ -82,20 +87,29 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
+                prompts could use `developer` or `system`. (Optional)
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
         """
-        super().__init__(
-            ai_model_id=ai_model_id,
-            service_id=service_id or ai_model_id,
-            client_type=AzureAIInferenceClientType.ChatCompletions,
-            api_key=api_key,
-            endpoint=endpoint,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-            client=client,
-        )
+        args: dict[str, Any] = {
+            "ai_model_id": ai_model_id,
+            "api_key": api_key,
+            "client_type": AzureAIInferenceClientType.ChatCompletions,
+            "client": client,
+            "endpoint": endpoint,
+            "env_file_path": env_file_path,
+            "env_file_encoding": env_file_encoding,
+        }
+
+        if service_id:
+            args["service_id"] = service_id
+
+        if instruction_role:
+            args["instruction_role"] = instruction_role
+
+        super().__init__(**args)
 
     # region Overriding base class methods
 
@@ -124,10 +138,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
         assert isinstance(self.client, ChatCompletionsClient)  # nosec
         with AzureAIInferenceTracing():
+            settings_dict = settings.prepare_settings_dict()
+            self._handle_structured_output(settings, settings_dict)
             response: ChatCompletions = await self.client.complete(
                 messages=self._prepare_chat_history_for_request(chat_history),
+                # The model id will be ignored by the service if the endpoint serves only one model (i.e. MaaS)
+                model=self.ai_model_id,
                 model_extras=settings.extra_parameters,
-                **settings.prepare_settings_dict(),
+                **settings_dict,
             )
         response_metadata = self._get_metadata_from_response(response)
 
@@ -146,11 +164,15 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
         assert isinstance(self.client, ChatCompletionsClient)  # nosec
         with AzureAIInferenceTracing():
+            settings_dict = settings.prepare_settings_dict()
+            self._handle_structured_output(settings, settings_dict)
             response: AsyncStreamingChatCompletions = await self.client.complete(
                 stream=True,
+                # The model id will be ignored by the service if the endpoint serves only one model (i.e. MaaS)
+                model=self.ai_model_id,
                 messages=self._prepare_chat_history_for_request(chat_history),
                 model_extras=settings.extra_parameters,
-                **settings.prepare_settings_dict(),
+                **settings_dict,
             )
 
         async for chunk in response:
@@ -179,7 +201,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
     @override
@@ -199,9 +221,46 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         chat_request_messages: list[ChatRequestMessage] = []
 
         for message in chat_history.messages:
-            chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
+            # If instruction_role is 'developer' and the message role is 'system', change it to 'developer'
+            role = (
+                AuthorRole.DEVELOPER
+                if self.instruction_role == "developer" and message.role == AuthorRole.SYSTEM
+                else message.role
+            )
+            chat_request_messages.append(MESSAGE_CONVERTERS[role](message))
 
         return chat_request_messages
+
+    def _handle_structured_output(
+        self, request_settings: AzureAIInferenceChatPromptExecutionSettings, settings: dict[str, Any]
+    ) -> None:
+        response_format = getattr(request_settings, "response_format", None)
+        if getattr(request_settings, "structured_json_response", False) and response_format:
+            # Case 1: response_format is a Pydantic BaseModel type
+            if isinstance(response_format, type) and issubclass(response_format, BaseModel):
+                schema = response_format.model_json_schema()
+                settings["response_format"] = JsonSchemaFormat(
+                    name=response_format.__name__,
+                    schema=schema,
+                    description=f"Schema for {response_format.__name__}",
+                    strict=True,
+                )
+            # Case 2: response_format is a type but not a subclass of BaseModel
+            elif isinstance(response_format, type):
+                generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
+                assert generated_schema is not None  # nosec
+                settings["response_format"] = JsonSchemaFormat(
+                    name=response_format.__name__,
+                    schema=generated_schema,
+                    description=f"Schema for {response_format.__name__}",
+                    strict=True,
+                )
+            # Case 3: response_format is already a JsonSchemaFormat instance, pass it
+            elif isinstance(response_format, JsonSchemaFormat):
+                settings["response_format"] = response_format
+            # Case 4: response_format is a dictionary (legacy), create JsonSchemaFormat from dict
+            elif isinstance(response_format, dict):
+                settings["response_format"] = JsonSchemaFormat(**response_format)
 
     # endregion
 
@@ -220,12 +279,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         Returns:
             A chat message content object.
         """
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         if choice.message.content:
             items.append(
                 TextContent(
                     text=choice.message.content,
-                    inner_content=response,
                     metadata=metadata,
                 )
             )
@@ -282,7 +340,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
         if choice.delta.tool_calls:
             for tool_call in choice.delta.tool_calls:
-                if isinstance(tool_call, ChatCompletionsToolCall):
+                if isinstance(tool_call, StreamingChatResponseToolCallUpdate):
                     items.append(
                         FunctionCallContent(
                             id=tool_call.id,
@@ -293,13 +351,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                     )
 
         return StreamingChatMessageContent(
-            role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
+            role=(AuthorRole(choice.delta.role) if choice.delta and choice.delta.role else AuthorRole.ASSISTANT),
             items=items,
             choice_index=choice.index,
             inner_content=chunk,
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             metadata=metadata,
             function_invoke_attempt=function_invoke_attempt,
+            ai_model_id=self.ai_model_id,
         )
 
     # endregion

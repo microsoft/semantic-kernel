@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Sponsor extensions class for <see cref="IServiceCollection"/>.
 /// </summary>
-public static class OpenAIServiceCollectionExtensions
+public static partial class OpenAIServiceCollectionExtensions
 {
     #region Text Embedding
     /// <summary>
@@ -35,6 +35,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddOpenAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
@@ -67,6 +68,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddOpenAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
@@ -315,7 +317,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,

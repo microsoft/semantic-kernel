@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import tempfile
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -9,6 +13,7 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
@@ -24,6 +29,7 @@ from semantic_kernel.exceptions.kernel_exceptions import (
     OperationCancelledException,
 )
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -282,13 +288,77 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
+
+
+class LightsPlugin:
+    lights = [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    @kernel_function(
+        name="get_lights_states",
+        description="Gets a list of lights and their current state",
+    )
+    def get_lights_states(self) -> list[dict]:
+        """Return a list of lights and their states (read-only)."""
+        return self.lights  # returns by reference, but deep-copy fix will snapshot it
+
+
+@pytest.mark.asyncio
+async def test_kernel_invoke_deep_copy_preserves_previous_state():
+    kernel = Kernel()
+    plugin = LightsPlugin()
+    kernel.add_plugin(plugin, plugin_name="lights")
+
+    func_call = FunctionCallContent(
+        plugin_name="lights", function_name="get_lights_states", name="get_lights_states", arguments={}
+    )
+
+    chat_history = ChatHistory()
+
+    # 1st invocation: capture snapshot of the list
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=0,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot1 = chat_history.messages[-1].items[0].result
+
+    # Mutate the plugin's internal state after the first call
+    plugin.lights.append({"id": 4, "name": "Desk lamp", "is_on": True})
+
+    # The snapshot from the first invocation did not change
+    assert snapshot1 == [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    # 2nd invocation: should pick up the new item
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=1,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot2 = chat_history.messages[-1].items[0].result
+
+    # The new invoke reflects the mutated state
+    assert snapshot2[-1] == {"id": 4, "name": "Desk lamp", "is_on": True}
 
 
 async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):
@@ -313,12 +383,12 @@ async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_too
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -339,12 +409,12 @@ async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_
 
     with patch("semantic_kernel.kernel.logger", autospec=True):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
         )
 
 
@@ -368,12 +438,12 @@ async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call
         patch("semantic_kernel.kernel.logger", autospec=True),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -399,12 +469,12 @@ async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_t
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -432,14 +502,17 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
     func_mock.invoke = AsyncMock(return_value=func_result)
     arguments = KernelArguments()
 
-    with patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock:
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
     logger_mock.info.assert_any_call(
@@ -454,6 +527,58 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
         and call[1]["message"].items[0].name == "test-function"
         for call in add_message_calls
     ), "Expected call to add_message not found with the expected message content and metadata."
+
+
+async def test_invoke_function_call_with_missing_or_unexpected_args(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.to_kernel_arguments.return_value = {"unexpected_arg": "value"}
+    tool_call_mock.name = "test-function"
+    tool_call_mock.function_name = "function"
+    tool_call_mock.plugin_name = "test"
+    tool_call_mock.arguments = {"unexpected_arg": "value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.id = "test_id"
+
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    # One required parameter called "required_arg"
+    required_param = KernelParameterMetadata(name="required_arg", is_required=True)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False, parameters=[required_param])
+    func_mock = MagicMock(spec=KernelFunction)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_mock.parameters = [required_param]
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        result = await kernel.invoke_function_call(
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=KernelArguments(),
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
+        )
+
+    assert result is None
+
+    logger_msg = (
+        "Missing required argument(s): ['required_arg']. "
+        "Received unexpected argument(s): ['unexpected_arg']. "
+        "Please revise the arguments to match the function signature."
+    )
+    logger_mock.info.assert_called_with(logger_msg)
+
+    add_message_calls = chat_history_mock.add_message.call_args_list
+    assert any(
+        call[1]["message"].items[0].result.startswith("Missing required argument")
+        and call[1]["message"].items[0].id == "test_id"
+        for call in add_message_calls
+    ), "Expected fallback message not found in chat history."
 
 
 # endregion
@@ -473,14 +598,82 @@ def test_add_plugin_from_directory(kernel: Kernel):
     assert func_handlebars is not None
 
 
+def test_add_plugin_from_directory_with_encoding(kernel: Kernel):
+    """Test kernel.add_plugin with custom encoding parameter."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create a plugin directory with UTF-8 content
+        plugin_dir = os.path.join(temp_dir, "test_encoding_plugin")
+        os.makedirs(plugin_dir)
+
+        function_dir = os.path.join(plugin_dir, "test_function")
+        os.makedirs(function_dir)
+
+        prompt_path = os.path.join(function_dir, "skprompt.txt")
+        config_path = os.path.join(function_dir, "config.json")
+
+        # UTF-8 content with international characters
+        # Hello World Test
+        prompt_content = """Multi-language assistant:
+        Chinese: 你好世界!
+        Japanese: こんにちは世界!
+        Question: {{$input}}
+        """
+
+        config_content = """{
+    "schema": 1,
+    "description": "Test encoding function",
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "User's question",
+            "required": true
+        }
+    ]
+}"""
+
+        # Write files with UTF-8 encoding
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Test with explicit encoding
+        plugin = kernel.add_plugin(parent_directory=temp_dir, plugin_name="test_encoding_plugin", encoding="utf-8")
+
+        assert plugin is not None
+        assert plugin.name == "test_encoding_plugin"
+        assert "test_function" in plugin.functions
+
+        function = plugin.functions["test_function"]
+        template = function.prompt_template.prompt_template_config.template
+        # Assert "Hello World"
+        assert "你好世界" in template
+        assert "こんにちは世界" in template
+        assert function.description == "Test encoding function"
+
+
 def test_plugin_no_plugin(kernel: Kernel):
     with pytest.raises(ValueError):
         kernel.add_plugin(plugin_name="test")
 
 
-def test_plugin_name_error(kernel: Kernel):
-    with pytest.raises(ValueError):
-        kernel.add_plugin(" ", None)
+def test_plugin_name_from_class_name(kernel: Kernel):
+    kernel.add_plugin(" ", None)
+    assert "str" in kernel.plugins
+
+
+def test_plugin_name_from_name_attribute(kernel: Kernel):
+    @dataclass
+    class TestPlugin:
+        name: str = "test_plugin"
+
+    kernel.add_plugin(TestPlugin(), None)
+    assert "test_plugin" in kernel.plugins
+
+
+def test_plugin_name_not_string_error(kernel: Kernel):
+    with pytest.raises(TypeError):
+        kernel.add_plugin(" ", plugin_name=Path(__file__).parent)
 
 
 def test_plugins_add_plugins(kernel: Kernel):
@@ -755,7 +948,101 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
     assert hasattr(experimental_plugin_class, "is_experimental")
     assert experimental_plugin_class.is_experimental
-    assert "This class is experimental and may change in the future." in experimental_plugin_class.__doc__
+    assert "This class is marked as 'experimental' and may change in the future" in experimental_plugin_class.__doc__
+
+
+# endregion
+
+# region copy and clone
+
+
+def test_kernel_model_dump(
+    kernel: Kernel,
+    custom_plugin_class: type,
+    auto_function_invocation_filter: Callable,
+):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, auto_function_invocation_filter)
+
+    kernel_dict = kernel.model_dump()
+
+    assert kernel_dict is not None
+    assert kernel_dict["plugins"] is not None and len(kernel_dict["plugins"]) > 0
+    assert (
+        kernel_dict["auto_function_invocation_filters"] is not None
+        and len(kernel_dict["auto_function_invocation_filters"]) > 0
+    )
+
+
+def test_kernel_deep_copy(
+    kernel: Kernel,
+    custom_plugin_class: type,
+    auto_function_invocation_filter: Callable,
+):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, auto_function_invocation_filter)
+
+    kernel_copy = kernel.model_copy(deep=True)
+
+    assert kernel_copy is not None
+    assert kernel_copy.plugins is not None and len(kernel_copy.plugins) > 0
+    assert (
+        kernel_copy.auto_function_invocation_filters is not None
+        and len(kernel_copy.auto_function_invocation_filters) > 0
+    )
+
+
+def test_kernel_model_dump_fail_with_services(kernel: Kernel):
+    open_ai_chat_completion = OpenAIChatCompletion(ai_model_id="abc", api_key="abc")
+    kernel.add_service(open_ai_chat_completion)
+
+    with pytest.raises(TypeError):
+        # This will fail because OpenAIChatCompletion is not serializable, more specifically,
+        # the client is not serializable
+        kernel.model_dump(deep=True)
+
+
+def test_kernel_deep_copy_fail_with_services(kernel: Kernel):
+    open_ai_chat_completion = OpenAIChatCompletion(ai_model_id="abc", api_key="abc")
+    kernel.add_service(open_ai_chat_completion)
+
+    with pytest.raises(TypeError):
+        # This will fail because OpenAIChatCompletion is not serializable, more specifically,
+        # the client is not serializable
+        kernel.model_copy(deep=True)
+
+
+def test_kernel_clone(
+    kernel: Kernel,
+    custom_plugin_class: type,
+    auto_function_invocation_filter: Callable,
+):
+    kernel.add_service(OpenAIChatCompletion(ai_model_id="abc", api_key="abc"))
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, auto_function_invocation_filter)
+
+    kernel_clone = kernel.clone()
+
+    # Assert the clone has all the same properties as the original kernel
+    assert kernel_clone is not None
+    assert kernel_clone.plugins is not None and len(kernel_clone.plugins) > 0
+    assert (
+        kernel_clone.auto_function_invocation_filters is not None
+        and len(kernel_clone.auto_function_invocation_filters) > 0
+    )
+    assert kernel_clone.services is not None and len(kernel_clone.services) > 0
+
+    # Assert the clone is a deep copy
+    kernel_clone.plugins["TestPlugin"].functions["getLightStatus"].metadata.name = "getLightStatus2"
+    assert kernel.plugins["TestPlugin"].functions["getLightStatus"].metadata.name == "getLightStatus"
+
+    kernel_clone.plugins.clear()
+    kernel_clone.remove_filter(filter_type=FilterTypes.AUTO_FUNCTION_INVOCATION, position=0)
+    kernel_clone.remove_all_services()
+
+    assert kernel.plugins is not None and len(kernel.plugins) > 0
+    assert kernel.auto_function_invocation_filters is not None and len(kernel.auto_function_invocation_filters) > 0
+    assert kernel.services is not None and len(kernel.services) > 0
 
 
 # endregion

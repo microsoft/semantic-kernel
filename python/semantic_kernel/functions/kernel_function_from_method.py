@@ -6,7 +6,7 @@ from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -21,8 +21,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class KernelFunctionFromMethod(KernelFunction):
     """Semantic Kernel Function from a method."""
 
-    method: Callable[..., Any]
-    stream_method: Callable[..., Any] | None = None
+    method: Callable[..., Any] = Field(exclude=True)
+    stream_method: Callable[..., Any] | None = Field(default=None, exclude=True)
 
     def __init__(
         self,
@@ -123,6 +123,10 @@ class KernelFunctionFromMethod(KernelFunction):
 
     def _parse_parameter(self, value: Any, param_type: Any) -> Any:
         """Parses the value into the specified param_type, including handling lists of types."""
+        # Handle Any or object type explicitly
+        if param_type in {Any, object, inspect._empty}:
+            return value
+
         if isinstance(param_type, type) and hasattr(param_type, "model_validate"):
             try:
                 return param_type.model_validate(value)
@@ -170,6 +174,7 @@ class KernelFunctionFromMethod(KernelFunction):
                     and "," not in param.type_
                     and param.type_object
                     and param.type_object is not inspect._empty
+                    and param.type_object is not Any
                 ):
                     try:
                         value = self._parse_parameter(value, param.type_object)

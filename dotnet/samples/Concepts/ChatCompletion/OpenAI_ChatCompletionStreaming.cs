@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace ChatCompletion;
 
 /// <summary>
-/// These examples demonstrate the ways different content types are streamed by OpenAI LLM via the chat completion service.
+/// These examples demonstrate different ways of using streaming chat completion with OpenAI API.
 /// </summary>
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
@@ -212,37 +212,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 Console.WriteLine($"Function call update: callId={update.CallId}, name={update.Name}, arguments={update.Arguments?.Replace("\n", "\\n")}, functionCallIndex={update.FunctionCallIndex}");
             }
         }
-    }
-
-    private async Task StreamMessageOutputAsync(OpenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
-    {
-        bool roleWritten = false;
-        string fullMessage = string.Empty;
-
-        await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
-        {
-            if (!roleWritten && chatUpdate.Role.HasValue)
-            {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
-                roleWritten = true;
-            }
-
-            if (chatUpdate.Content is { Length: > 0 })
-            {
-                fullMessage += chatUpdate.Content;
-                Console.Write(chatUpdate.Content);
-            }
-
-            // The last message in the chunk has the usage metadata.
-            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
-            if (chatUpdate.Metadata?["Usage"] is not null)
-            {
-                Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
-            }
-        }
-
-        Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
     }
 
     private async Task<string> StreamMessageOutputFromKernelAsync(Kernel kernel, string prompt)

@@ -23,11 +23,12 @@ internal static partial class ChatCompletionAgentLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
-        Message = "[{MethodName}] Agent #{AgentId} Invoking service {ServiceType}.")]
+        Message = "[{MethodName}] Agent {AgentId}/{AgentName} Invoking service {ServiceType}.")]
     public static partial void LogAgentChatServiceInvokingAgent(
         this ILogger logger,
         string methodName,
         string agentId,
+        string agentName,
         Type serviceType);
 
     /// <summary>
@@ -36,11 +37,12 @@ internal static partial class ChatCompletionAgentLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Agent #{AgentId} Invoked service {ServiceType} with message count: {MessageCount}.")]
+        Message = "[{MethodName}] Agent {AgentId}/{AgentName} Invoked service {ServiceType} with message count: {MessageCount}.")]
     public static partial void LogAgentChatServiceInvokedAgent(
         this ILogger logger,
         string methodName,
         string agentId,
+        string agentName,
         Type serviceType,
         int messageCount);
 
@@ -50,10 +52,11 @@ internal static partial class ChatCompletionAgentLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Agent #{AgentId} Invoked service {ServiceType}.")]
+        Message = "[{MethodName}] Agent {AgentId}/{AgentName} Invoked service {ServiceType}.")]
     public static partial void LogAgentChatServiceInvokedStreamingAgent(
         this ILogger logger,
         string methodName,
         string agentId,
+        string agentName,
         Type serviceType);
 }

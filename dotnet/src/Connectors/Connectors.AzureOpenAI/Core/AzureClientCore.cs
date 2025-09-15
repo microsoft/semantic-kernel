@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
-using SemanticKernel.Connectors.AzureOpenAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -53,7 +52,6 @@ internal partial class AzureClientCore : ClientCore
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
@@ -86,7 +84,6 @@ internal partial class AzureClientCore : ClientCore
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
 
@@ -135,9 +132,14 @@ internal partial class AzureClientCore : ClientCore
             sdkVersion = serviceVersion.ToUpperInvariant() switch // Azure SDK versioning
             {
                 "2024-06-01" or "V2024_06_01" or "2024_06_01" => AzureOpenAIClientOptions.ServiceVersion.V2024_06_01,
+                "2024-10-21" or "V2024_10_21" or "2024_10_21" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_21,
                 "2024-08-01-PREVIEW" or "V2024_08_01_PREVIEW" or "2024_08_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview,
                 "2024-09-01-PREVIEW" or "V2024_09_01_PREVIEW" or "2024_09_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview,
                 "2024-10-01-PREVIEW" or "V2024_10_01_PREVIEW" or "2024_10_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview,
+                "2024-12-01-PREVIEW" or "V2024_12_01_PREVIEW" or "2024_12_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview,
+                "2025-01-01-PREVIEW" or "V2025_01_01_PREVIEW" or "2025_01_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview,
+                "2025-03-01-PREVIEW" or "V2025_03_01_PREVIEW" or "2025_03_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2025_03_01_Preview,
+                "2025-04-01-PREVIEW" or "V2025_04_01_PREVIEW" or "2025_04_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2025_04_01_Preview,
 
                 _ => throw new NotSupportedException($"The service version '{serviceVersion}' is not supported.")
             };
@@ -149,7 +151,6 @@ internal partial class AzureClientCore : ClientCore
 
         options.UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
-        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
         if (httpClient is not null)
         {

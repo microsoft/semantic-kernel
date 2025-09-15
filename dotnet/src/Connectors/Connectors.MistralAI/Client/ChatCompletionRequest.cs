@@ -30,7 +30,8 @@ internal sealed class ChatCompletionRequest
     public bool Stream { get; set; } = false;
 
     [JsonPropertyName("safe_prompt")]
-    public bool SafePrompt { get; set; } = false;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SafePrompt { get; set; } = false;
 
     [JsonPropertyName("tools")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -59,6 +60,14 @@ internal sealed class ChatCompletionRequest
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? Stop { get; set; }
+
+    [JsonPropertyName("document_image_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentImageLimit { get; set; }
+
+    [JsonPropertyName("document_page_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentPageLimit { get; set; }
 
     /// <summary>
     /// Construct an instance of <see cref="ChatCompletionRequest"/>.

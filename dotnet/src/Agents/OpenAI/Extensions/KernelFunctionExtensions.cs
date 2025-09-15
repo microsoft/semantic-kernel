@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using OpenAI.Assistants;
+using OpenAI.Responses;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-internal static class KernelFunctionExtensions
+/// <summary>
+/// Extensions for <see cref="KernelFunction"/> to support OpenAI specific operations.
+/// </summary>
+public static class KernelFunctionExtensions
 {
     /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.
@@ -14,87 +16,56 @@ internal static class KernelFunctionExtensions
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string? pluginName = null)
     {
-        var metadata = function.Metadata;
-        if (metadata.Parameters.Count > 0)
+        if (function.Metadata.Parameters.Count > 0)
         {
-            var required = new List<string>(metadata.Parameters.Count);
-            var parameters =
-                metadata.Parameters.ToDictionary(
-                    p => p.Name,
-                    p =>
-                    {
-                        if (p.IsRequired)
-                        {
-                            required.Add(p.Name);
-                        }
+            BinaryData parameterData = function.Metadata.CreateParameterSpec();
 
-                        return
-                            new
-                            {
-                                type = ConvertType(p.ParameterType),
-                                description = p.Description,
-                            };
-                    });
-
-            var spec =
-                new
-                {
-                    type = "object",
-                    properties = parameters,
-                    required,
-                };
-
-            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName))
             {
                 Description = function.Description,
-                Parameters = BinaryData.FromObjectAsJson(spec)
+                Parameters = parameterData,
             };
         }
 
-        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName))
         {
             Description = function.Description
         };
     }
 
-    private static string ConvertType(Type? type)
+    /// <summary>
+    /// Converts a <see cref="KernelFunction"/> into a <see cref="ResponseTool"/> representation.
+    /// </summary>
+    /// <remarks>If the <paramref name="function"/> has parameters, they are included in the resulting <see
+    /// cref="ResponseTool"/>  as a serialized parameter specification. Otherwise, the parameters are set to <see
+    /// langword="null"/>.</remarks>
+    /// <param name="function">The <see cref="KernelFunction"/> to convert.</param>
+    /// <param name="pluginName">An optional plugin name to associate with the function. If not provided, the function's default plugin name is
+    /// used.</param>
+    /// <param name="functionSchemaIsStrict">A value indicating whether the function's schema should be treated as strict.  If <see langword="true"/>, the
+    /// schema will enforce stricter validation rules.</param>
+    /// <returns>A <see cref="ResponseTool"/> that represents the specified <see cref="KernelFunction"/>.</returns>
+    public static ResponseTool ToResponseTool(this KernelFunction function, string? pluginName = null, bool functionSchemaIsStrict = false)
     {
-        if (type is null || type == typeof(string))
+        if (function.Metadata.Parameters.Count > 0)
         {
-            return "string";
+            BinaryData parameterData = function.Metadata.CreateParameterSpec();
+            return ResponseTool.CreateFunctionTool(
+                functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+                functionDescription: function.Description,
+                functionParameters: parameterData,
+                functionSchemaIsStrict: functionSchemaIsStrict);
         }
 
-        if (type == typeof(bool))
-        {
-            return "boolean";
-        }
-
-        if (type.IsEnum)
-        {
-            return "enum";
-        }
-
-        if (type.IsArray)
-        {
-            return "array";
-        }
-
-        if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
-        {
-            return "date-time";
-        }
-
-        return Type.GetTypeCode(type) switch
-        {
-            TypeCode.SByte or TypeCode.Byte or
-            TypeCode.Int16 or TypeCode.UInt16 or
-            TypeCode.Int32 or TypeCode.UInt32 or
-            TypeCode.Int64 or TypeCode.UInt64 or
-            TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "number",
-
-            _ => "object",
-        };
+        return ResponseTool.CreateFunctionTool(
+            functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+            functionDescription: function.Description,
+            functionParameters: s_emptyFunctionParameters);
     }
+
+    #region private
+    private static readonly BinaryData s_emptyFunctionParameters = BinaryData.FromString("{}");
+    #endregion
 }

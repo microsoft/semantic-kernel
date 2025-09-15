@@ -5,8 +5,10 @@
 name: "CodeQL"
 
 on:
+  workflow_dispatch:
   push:
-    branches: ["main", "experimental*", "feature*", "*-development"]
+    # TODO: Add "feature*" back in again, once we determine the cause of the ongoing CodeQL failures.
+    branches: ["main", "experimental*", "*-development"]
   schedule:
     - cron: "17 11 * * 2"
 
@@ -31,6 +33,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL

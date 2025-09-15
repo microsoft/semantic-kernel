@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using ChatResponseFormat = OpenAI.Chat.ChatResponseFormat;
 
 namespace Step04.Steps;
 
@@ -20,29 +19,26 @@ public class ManagerAgentStep : KernelProcessStep
     public const string AgentServiceKey = $"{nameof(ManagerAgentStep)}:{nameof(AgentServiceKey)}";
     public const string ReducerServiceKey = $"{nameof(ManagerAgentStep)}:{nameof(ReducerServiceKey)}";
 
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string InvokeAgent = nameof(InvokeAgent);
         public const string InvokeGroup = nameof(InvokeGroup);
         public const string ReceiveResponse = nameof(ReceiveResponse);
     }
 
-    [KernelFunction(Functions.InvokeAgent)]
+    [KernelFunction(ProcessStepFunctions.InvokeAgent)]
     public async Task InvokeAgentAsync(KernelProcessStepContext context, Kernel kernel, string userInput, ILogger logger)
     {
         // Get the chat history
         IChatHistoryProvider historyProvider = kernel.GetHistory();
         ChatHistory history = await historyProvider.GetHistoryAsync();
-
-        // Add the user input to the chat history
-        history.Add(new ChatMessageContent(AuthorRole.User, userInput));
+        ChatHistoryAgentThread agentThread = new(history);
 
         // Obtain the agent response
         ChatCompletionAgent agent = kernel.GetAgent<ChatCompletionAgent>(AgentServiceKey);
-        await foreach (ChatMessageContent message in agent.InvokeAsync(history))
+        await foreach (ChatMessageContent message in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, userInput), agentThread))
         {
-            // Capture each response
-            history.Add(message);
+            // Both the input message and response message will automatically be added to the thread, which will update the internal chat history.
 
             // Emit event for each agent response
             await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message });
@@ -64,7 +60,7 @@ public class ManagerAgentStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = intentEventId });
     }
 
-    [KernelFunction(Functions.InvokeGroup)]
+    [KernelFunction(ProcessStepFunctions.InvokeGroup)]
     public async Task InvokeGroupAsync(KernelProcessStepContext context, Kernel kernel)
     {
         // Get the chat history
@@ -77,7 +73,7 @@ public class ManagerAgentStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.GroupInput, Data = summary });
     }
 
-    [KernelFunction(Functions.ReceiveResponse)]
+    [KernelFunction(ProcessStepFunctions.ReceiveResponse)]
     public async Task ReceiveResponseAsync(KernelProcessStepContext context, Kernel kernel, string response)
     {
         // Get the chat history
@@ -104,18 +100,13 @@ public class ManagerAgentStep : KernelProcessStep
 
         IChatCompletionService service = kernel.GetRequiredService<IChatCompletionService>();
 
-        ChatMessageContent response = await service.GetChatMessageContentAsync(localHistory, new OpenAIPromptExecutionSettings { ResponseFormat = s_intentResponseFormat });
+        ChatMessageContent response = await service.GetChatMessageContentAsync(localHistory, new OpenAIPromptExecutionSettings { ResponseFormat = typeof(IntentResult) });
         IntentResult intent = JsonSerializer.Deserialize<IntentResult>(response.ToString())!;
 
         logger.LogTrace("{StepName} Response Intent - {IsRequestingUserInput}: {Rationale}", nameof(ManagerAgentStep), intent.IsRequestingUserInput, intent.Rationale);
 
         return intent;
     }
-
-    private static readonly ChatResponseFormat s_intentResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
-        jsonSchemaFormatName: "intent_result",
-        jsonSchema: BinaryData.FromString(JsonSchemaGenerator.FromType<IntentResult>()),
-        jsonSchemaIsStrict: true);
 
     [DisplayName("IntentResult")]
     [Description("this is the result description")]

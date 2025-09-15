@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+import sys
 from typing import Annotated, Any, Final
 
 from pydantic import Field
@@ -8,6 +9,11 @@ from pydantic import Field
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -18,20 +24,23 @@ RELEVANCE_PARAM: Final[str] = "relevance"
 DEFAULT_LIMIT: Final[int] = 1
 
 
+@deprecated(
+    "This class is deprecated and will be removed in a future version. Use the new `collection.as_text_search` instead."
+)
 class TextMemoryPlugin(KernelBaseModel):
     """A plugin to interact with a Semantic Text Memory."""
 
     memory: SemanticTextMemoryBase
     embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] | None = None) -> None:
         """Initialize a new instance of the TextMemoryPlugin.
 
         Args:
             memory (SemanticTextMemoryBase): the underlying Semantic Text Memory to use
             embeddings_kwargs (Optional[Dict[str, Any]]): the keyword arguments to pass to the embedding generator
         """
-        super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
+        super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs if embeddings_kwargs is not None else {})
 
     @kernel_function(
         description="Recall a fact from the long term memory",

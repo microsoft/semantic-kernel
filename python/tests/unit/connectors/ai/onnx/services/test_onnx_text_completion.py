@@ -4,10 +4,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.onnx import (  # noqa: E402
-    OnnxGenAIPromptExecutionSettings,
-    OnnxGenAITextCompletion,
-)
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion  # noqa: E402
 from semantic_kernel.contents import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
 from tests.unit.connectors.ai.onnx.conftest import gen_ai_config

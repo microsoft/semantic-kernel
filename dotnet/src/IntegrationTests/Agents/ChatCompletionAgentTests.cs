@@ -249,6 +249,50 @@ public sealed class ChatCompletionAgentTests()
         Assert.Contains("Clam Chowder", history.First().Content, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureChatCompletionDeclarativeAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            configuration.ChatDeploymentName!,
+            configuration.Endpoint,
+            new AzureCliCredential());
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        var text =
+            """
+            type: chat_completion_agent
+            name: MenuAgent
+            description: Answers questions about the menu.
+            instructions: Answer questions about the menu.
+            tools:
+              - id: MenuPlugin.GetSpecials
+                type: function
+              - id: MenuPlugin.GetItemPrice
+                type: function
+            """;
+        var kernelAgentFactory = new ChatCompletionAgentFactory();
+
+        // Act
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+        Assert.NotNull(agent);
+        var response = await agent.InvokeAsync("What is the special soup?").FirstAsync();
+
+        // Assert
+        Assert.Contains("Clam Chowder", response.Message.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
     public sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]

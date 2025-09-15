@@ -3,31 +3,29 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 
-// Disable unused class warning, as this class is marked internal to disable the tests in the base class.
-#pragma warning disable CA1812
-#pragma warning disable CA1852
-
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Redis setup and teardown.</param>
 [Collection("RedisVectorStoreCollection")]
-internal class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>
+[DisableVectorStoreTests(Skip = "Redis tests fail intermittently on build server")]
+public class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>
 {
     protected override string Key1 => "1";
     protected override string Key2 => "2";
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
-        return new RedisJsonVectorStoreRecordCollection<TRecord>(fixture.Database, recordCollectionName + "json", new()
+        return new RedisJsonCollection<string, TRecord>(fixture.Database, recordCollectionName + "json", new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

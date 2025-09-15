@@ -17,7 +17,7 @@ public class DaprKernelProcessContext : KernelProcessContext
     private readonly IProcess _daprProcess;
     private readonly KernelProcess _process;
 
-    internal DaprKernelProcessContext(KernelProcess process)
+    internal DaprKernelProcessContext(KernelProcess process, IActorProxyFactory? actorProxyFactory = null)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
@@ -29,7 +29,18 @@ public class DaprKernelProcessContext : KernelProcessContext
 
         this._process = process;
         var processId = new ActorId(process.State.Id);
-        this._daprProcess = ActorProxy.Create<IProcess>(processId, nameof(ProcessActor));
+
+        // For a non-dependency-injected application, the static methods on ActorProxy are used.
+        // Since the ActorProxy methods are error prone, try to avoid using them when using
+        // dependency-injected applications
+        if (actorProxyFactory != null)
+        {
+            this._daprProcess = actorProxyFactory.CreateActorProxy<IProcess>(processId, nameof(ProcessActor));
+        }
+        else
+        {
+            this._daprProcess = ActorProxy.Create<IProcess>(processId, nameof(ProcessActor));
+        }
     }
 
     /// <summary>
@@ -66,5 +77,18 @@ public class DaprKernelProcessContext : KernelProcessContext
     {
         var daprProcessInfo = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
         return daprProcessInfo.ToKernelProcess();
+    }
+
+    /// <inheritdoc/>
+    public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public override async Task<string> GetProcessIdAsync()
+    {
+        var processInfo = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
+        return processInfo.State.Id!;
     }
 }

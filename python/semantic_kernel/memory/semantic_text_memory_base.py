@@ -1,18 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
-@experimental_class
+@deprecated("This class will be removed in a future version.")
 class SemanticTextMemoryBase(KernelBaseModel):
     """Base class for semantic text memory."""
 

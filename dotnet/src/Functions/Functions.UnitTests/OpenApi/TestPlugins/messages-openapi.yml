@@ -1,4 +1,4 @@
-﻿openapi: 3.0.1
+openapi: 3.0.1
 info:
   title: OData Service for namespace microsoft.graph - Subset
   description: This OData service is located at https://graph.microsoft.com/v1.0
@@ -10,8 +10,8 @@ paths:
     get:
       tags:
         - me.message
-      summary: List messages
-      description: 'Get the messages in the signed-in user''s mailbox (including the Deleted Items and Clutter folders). Depending on the page size and mailbox data, getting messages from a mailbox can incur multiple requests. The default page size is 10 messages. Use $top to customize the page size, within the range of 1 and 1000. To improve the operation response time, use $select to specify the exact properties you need; see example 1 below. Fine-tune the values for $select and $top, especially when you must use a larger page size, as returning a page with hundreds of messages each with a full response payload may trigger the gateway timeout (HTTP 504). To get the next page of messages, simply apply the entire URL returned in @odata.nextLink to the next get-messages request. This URL includes any query parameters you may have specified in the initial request. Do not try to extract the $skip value from the @odata.nextLink URL to manipulate responses. This API uses the $skip value to keep count of all the items it has gone through in the user''s mailbox to return a page of message-type items. It''s therefore possible that even in the initial response, the $skip value is larger than the page size. For more information, see Paging Microsoft Graph data in your app. Currently, this operation returns message bodies in only HTML format. There are two scenarios where an app can get messages in another user''s mail folder:'
+      summary: Get the messages in the signed-in user\u0026apos;s mailbox
+      description: Get the messages in the signed-in user\u0026apos;s mailbox (including the Deleted Items and Clutter folders). Depending on the page size and mailbox data, getting messages from a mailbox can incur multiple requests. The default page size is 10 messages. Use $top to customize the page size, within the range of 1 and 1000. To improve the operation response time, use $select to specify the exact properties you need; see example 1 below. Fine-tune the values for $select and $top, especially when you must use a larger page size, as returning a page with hundreds of messages each with a full response payload may trigger the gateway timeout (HTTP 504). To get the next page of messages, simply apply the entire URL returned in @odata.nextLink to the next get-messages request. This URL includes any query parameters you may have specified in the initial request. Do not try to extract the $skip value from the @odata.nextLink URL to manipulate responses. This API uses the $skip value to keep count of all the items it has gone through in the user\u0026apos;s mailbox to return a page of message-type items. It\u0026apos;s therefore possible that even in the initial response, the $skip value is larger than the page size. For more information, see Paging Microsoft Graph data in your app. Currently, this operation returns message bodies in only HTML format. There are two scenarios where an app can get messages in another user\u0026apos;s mail folder
       operationId: me_ListMessages
       parameters:
         - name: includeHiddenMessages
@@ -63,26 +63,18 @@ paths:
         nextLinkName: '@odata.nextLink'
         operationName: listMore
         itemName: value
+  /me/sendMail:
     post:
       tags:
-        - me.message
-      summary: Create message
-      description: "Create a draft of a new message in either JSON or MIME format. When using JSON format, you can:\n- Include an attachment to the message.\n- Update the draft later to add content to the body or change other message properties. When using MIME format:\n- Provide the applicable Internet message headers and the MIME content, all encoded in base64 format in the request body.\n- /* Add any attachments and S/MIME properties to the MIME content. By default, this operation saves the draft in the Drafts folder. Send the draft message in a subsequent operation. Alternatively, send a new message in a single operation, or create a draft to forward, reply and reply-all to an existing message."
-      operationId: me_CreateMessages
+        - me.user.Actions
+      summary: Invoke action sendMail
+      description: 'Send the message specified in the request body using either JSON or MIME format. When using JSON format, you can include a file attachment in the same sendMail action call. When using MIME format: This method saves the message in the Sent Items folder. Alternatively, create a draft message to send later. To learn more about the steps involved in the backend before a mail is delivered to recipients, see here.'
+      operationId: me_sendMail
       requestBody:
-        description: New navigation property
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/microsoft.graph.message'
-        required: true
+        $ref: '#/components/requestBodies/sendMailRequestBody'
       responses:
-        2XX:
-          description: Created navigation property.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/microsoft.graph.message'
+        '204':
+          description: Success
 components:
   schemas:
     microsoft.graph.message:
@@ -504,3 +496,18 @@ components:
       explode: false
       schema:
         type: boolean
+  requestBodies:
+    sendMailRequestBody:
+      description: Action parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              Message:
+                $ref: '#/components/schemas/microsoft.graph.message'
+              SaveToSentItems:
+                type: boolean
+                default: false
+                nullable: true
+      required: true

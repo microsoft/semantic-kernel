@@ -12,9 +12,13 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
+from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
@@ -109,6 +113,8 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
+            elif not prompt_template_config.template:
+                prompt_template_config.template = prompt
             prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
             )  # type: ignore
@@ -135,29 +141,30 @@ through prompt_template_config or in the prompt_template."
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: dict[str, Any],
+        data: Any,
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
         If it is not supplied, but prompt_template is, the prompt_template's execution settings are used.
         """
-        prompt_execution_settings = data.get("prompt_execution_settings")
-        prompt_template = data.get("prompt_template")
-        if not prompt_execution_settings:
-            if prompt_template:
-                prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
-                data["prompt_execution_settings"] = prompt_execution_settings
+        if isinstance(data, dict):
+            prompt_execution_settings = data.get("prompt_execution_settings")
+            prompt_template = data.get("prompt_template")
             if not prompt_execution_settings:
-                return data
-        if isinstance(prompt_execution_settings, PromptExecutionSettings):
-            data["prompt_execution_settings"] = {
-                prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
-            }
-        if isinstance(prompt_execution_settings, Sequence):
-            data["prompt_execution_settings"] = {
-                s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
-            }
+                if prompt_template:
+                    prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
+                    data["prompt_execution_settings"] = prompt_execution_settings
+                if not prompt_execution_settings:
+                    return data
+            if isinstance(prompt_execution_settings, PromptExecutionSettings):
+                data["prompt_execution_settings"] = {
+                    prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
+                }
+            if isinstance(prompt_execution_settings, Sequence):
+                data["prompt_execution_settings"] = {
+                    s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
+                }
         return data
 
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
@@ -182,7 +189,10 @@ through prompt_template_config or in the prompt_template."
                 raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
 
             context.result = self._create_function_result(
-                completions=chat_message_contents, chat_history=chat_history, arguments=context.arguments
+                completions=chat_message_contents,
+                chat_history=chat_history,
+                arguments=context.arguments,
+                prompt=prompt_render_result.rendered_prompt,
             )
             return
 
@@ -200,11 +210,42 @@ through prompt_template_config or in the prompt_template."
             )
             return
 
+        if isinstance(prompt_render_result.ai_service, TextToImageClientBase):
+            try:
+                images = await prompt_render_result.ai_service.get_image_content(
+                    description=unescape(prompt_render_result.rendered_prompt),
+                    settings=prompt_render_result.execution_settings,
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            context.result = self._create_function_result(
+                completions=[images], arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
+            )
+            return
+
+        if isinstance(prompt_render_result.ai_service, TextToAudioClientBase):
+            try:
+                audio = await prompt_render_result.ai_service.get_audio_content(
+                    text=unescape(prompt_render_result.rendered_prompt),
+                    settings=prompt_render_result.execution_settings,
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            context.result = self._create_function_result(
+                completions=[audio], arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
+            )
+            return
+
         raise ValueError(f"Service `{type(prompt_render_result.ai_service).__name__}` is not a valid AI service")
 
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Invokes the function stream with the given arguments."""
-        prompt_render_result = await self._render_prompt(context)
+        prompt_render_result = await self._render_prompt(context, is_streaming=True)
+        if prompt_render_result.function_result is not None:
+            context.result = prompt_render_result.function_result
+            return
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
@@ -222,14 +263,20 @@ through prompt_template_config or in the prompt_template."
                 f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service"
             )
 
-        context.result = FunctionResult(function=self.metadata, value=value)
+        context.result = FunctionResult(
+            function=self.metadata, value=value, rendered_prompt=prompt_render_result.rendered_prompt
+        )
 
-    async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
+    async def _render_prompt(
+        self, context: FunctionInvocationContext, is_streaming: bool = False
+    ) -> PromptRenderingResult:
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
 
         _rebuild_prompt_render_context()
-        prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
+        prompt_render_context = PromptRenderContext(
+            function=self, kernel=context.kernel, arguments=context.arguments, is_streaming=is_streaming
+        )
 
         stack = context.kernel.construct_call_stack(
             filter_type=FilterTypes.PROMPT_RENDERING,
@@ -240,12 +287,15 @@ through prompt_template_config or in the prompt_template."
         if prompt_render_context.rendered_prompt is None:
             raise PromptRenderingException("Prompt rendering failed, no rendered prompt was returned.")
         selected_service: tuple["AIServiceClientBase", PromptExecutionSettings] = context.kernel.select_ai_service(
-            function=self, arguments=context.arguments
+            function=self,
+            arguments=context.arguments,
+            type=(TextCompletionClientBase, ChatCompletionClientBase) if prompt_render_context.is_streaming else None,
         )
         return PromptRenderingResult(
             rendered_prompt=prompt_render_context.rendered_prompt,
             ai_service=selected_service[0],
             execution_settings=selected_service[1],
+            function_result=prompt_render_context.function_result,
         )
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
@@ -254,7 +304,7 @@ through prompt_template_config or in the prompt_template."
 
     def _create_function_result(
         self,
-        completions: list[ChatMessageContent] | list[TextContent],
+        completions: list[ChatMessageContent] | list[TextContent] | list[ImageContent] | list[AudioContent],
         arguments: KernelArguments,
         chat_history: ChatHistory | None = None,
         prompt: str | None = None,
@@ -272,6 +322,7 @@ through prompt_template_config or in the prompt_template."
             function=self.metadata,
             value=completions,
             metadata=metadata,
+            rendered_prompt=prompt,
         )
 
     def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:
@@ -306,12 +357,19 @@ through prompt_template_config or in the prompt_template."
         )
 
     @classmethod
-    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+    def from_directory(
+        cls, path: str, plugin_name: str | None = None, encoding: str = "utf-8"
+    ) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
 
         The directory needs to contain:
         - A prompt file named `skprompt.txt`
         - A config file named `config.json`
+
+        Args:
+            path: The path to the directory containing the prompt and config files.
+            plugin_name: The name of the plugin.
+            encoding: The encoding to use when reading the files. Defaults to "utf-8".
 
         Returns:
             KernelFunctionFromPrompt: The kernel function from prompt
@@ -338,11 +396,11 @@ through prompt_template_config or in the prompt_template."
 
         function_name = os.path.basename(path)
 
-        with open(config_path) as config_file:
+        with open(config_path, encoding=encoding) as config_file:
             prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
         prompt_template_config.name = function_name
 
-        with open(prompt_path) as prompt_file:
+        with open(prompt_path, encoding=encoding) as prompt_file:
             prompt_template_config.template = prompt_file.read()
 
         prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore

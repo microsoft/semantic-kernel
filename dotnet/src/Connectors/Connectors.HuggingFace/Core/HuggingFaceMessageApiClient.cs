@@ -282,7 +282,7 @@ internal sealed class HuggingFaceMessageApiClient
         if (this._clientCore.Logger.IsEnabled(LogLevel.Trace))
         {
             this._clientCore.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(huggingFaceExecutionSettings));
         }
 

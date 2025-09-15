@@ -70,7 +70,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         generator = pipeline(
-            task=task,
+            task=task,  # type: ignore[arg-type]
             model=ai_model_id,
             device=device,
             model_kwargs=model_kwargs,

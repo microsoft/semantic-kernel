@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+    from semantic_kernel.connectors.azure_ai_search import AzureAISearchSettings
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class ApiKeyAuthentication(AzureChatRequestBase):
     """API key authentication."""
 
     type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
-    key: str | None = None
+    key: str
 
 
 class SystemAssignedManagedIdentityAuthentication(AzureChatRequestBase):
@@ -168,4 +168,4 @@ class ExtraBody(KernelBaseModel):
 class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
-    extra_body: dict[str, Any] | ExtraBody | None = None
+    extra_body: dict[str, Any] | ExtraBody | None = None  # type: ignore[assignment]

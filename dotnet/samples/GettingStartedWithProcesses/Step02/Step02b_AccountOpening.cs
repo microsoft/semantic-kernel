@@ -34,18 +34,18 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
 
         process
             .OnInputEvent(AccountOpeningEvents.StartProcess)
-            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountWelcome));
+            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountWelcome));
 
         // When the welcome message is generated, send message to displayAssistantMessageStep
         newCustomerFormStep
             .OnEvent(AccountOpeningEvents.NewCustomerFormWelcomeMessageComplete)
-            .SendEventTo(new ProcessFunctionTargetBuilder(displayAssistantMessageStep, DisplayAssistantMessageStep.Functions.DisplayAssistantMessage));
+            .SendEventTo(new ProcessFunctionTargetBuilder(displayAssistantMessageStep, DisplayAssistantMessageStep.ProcessStepFunctions.DisplayAssistantMessage));
 
         // When the userInput step emits a user input event, send it to the newCustomerForm step
         // Function names are necessary when the step has multiple public functions like CompleteNewCustomerFormStep: NewAccountWelcome and NewAccountProcessUserInfo
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountProcessUserInfo, "userMessage"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.ProcessStepFunctions.NewAccountProcessUserInfo, "userMessage"));
 
         userInputStep
             .OnEvent(CommonEvents.Exit)
@@ -54,12 +54,12 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         // When the newCustomerForm step emits needs more details, send message to displayAssistantMessage step
         newCustomerFormStep
             .OnEvent(AccountOpeningEvents.NewCustomerFormNeedsMoreDetails)
-            .SendEventTo(new ProcessFunctionTargetBuilder(displayAssistantMessageStep, DisplayAssistantMessageStep.Functions.DisplayAssistantMessage));
+            .SendEventTo(new ProcessFunctionTargetBuilder(displayAssistantMessageStep, DisplayAssistantMessageStep.ProcessStepFunctions.DisplayAssistantMessage));
 
         // After any assistant message is displayed, user input is expected to the next step is the userInputStep
         displayAssistantMessageStep
             .OnEvent(CommonEvents.AssistantResponseGenerated)
-            .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep, ScriptedUserInputStep.Functions.GetUserInput));
+            .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep, ScriptedUserInputStep.ProcessStepFunctions.GetUserInput));
 
         // When the newCustomerForm is completed...
         newCustomerFormStep
@@ -112,7 +112,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     /// <summary>
@@ -134,6 +134,6 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 }

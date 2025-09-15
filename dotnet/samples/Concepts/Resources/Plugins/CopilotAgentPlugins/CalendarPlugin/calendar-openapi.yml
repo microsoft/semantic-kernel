@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.4
 info:
   title: OData Service for namespace microsoft.graph - Subset
   description: This OData service is located at https://graph.microsoft.com/v1.0
@@ -56,23 +56,27 @@ paths:
         nextLinkName: '@odata.nextLink'
         operationName: listMore
         itemName: value
+    post:
+      tags:
+        - me.calendar
+      summary: Create new navigation property to events for me
+      operationId: me_calendar_CreateEvents
+      requestBody:
+        description: New navigation property
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/microsoft.graph.event'
+        required: true
+      responses:
+        2XX:
+          description: Created navigation property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/microsoft.graph.event'
 components:
   schemas:
-    microsoft.graph.eventCollectionResponse:
-      title: Base collection pagination and count responses
-      type: object
-      properties:
-        '@odata.count':
-          type: integer
-          format: int64
-          nullable: true
-        '@odata.nextLink':
-          type: string
-          nullable: true
-        value:
-          type: array
-          items:
-            $ref: '#/components/schemas/microsoft.graph.event'
     microsoft.graph.event:
       title: event
       required:
@@ -547,6 +551,21 @@ components:
           type: string
           description: A property value.
           nullable: true
+    microsoft.graph.eventCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        '@odata.count':
+          type: integer
+          format: int64
+          nullable: true
+        '@odata.nextLink':
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.event'
     microsoft.graph.emailAddress:
       title: emailAddress
       required:

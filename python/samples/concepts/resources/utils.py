@@ -3,6 +3,11 @@
 from enum import Enum
 
 
+def print_with_color(text: str, color: str, end: str | None = None) -> None:
+    """Prints a string with the specified color."""
+    print(color + f"{text}" + Colors.CEND, end=end)
+
+
 class Colors(str, Enum):
     CEND = "\33[0m"
     CBOLD = "\33[1m"

@@ -27,7 +27,7 @@ Also managing repository policies that are preferred by all languages is a chall
 complex build process to account for building multiple languages. If a user makes accidental changes to the repository outside their own language,
 or make changes to the common files, require sign off from other languages, leading to delays as we
 require review from users in other languages. Similarly common files such as GitHub Actions workflows, `.gitignore`, VS Code settings, `README.md`, `.editorconfig` etc, become
-more complex as they have to simutaniously support multiple languages.
+more complex as they have to simultaneously support multiple languages.
 
 In a community point of view, having a separate repo will foster community engagement, allowing developers to contribute, share ideas, and collaborate on the Java projects only.
 Additionally, it enables transparent tracking of contributions, making it easy to identify top contributors and acknowledge their efforts. 

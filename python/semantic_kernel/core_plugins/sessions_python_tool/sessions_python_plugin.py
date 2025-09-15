@@ -8,6 +8,7 @@ from collections.abc import Awaitable, Callable
 from io import BytesIO
 from typing import Annotated, Any
 
+from azure.core.credentials import TokenCredential
 from httpx import AsyncClient, HTTPStatusError
 from pydantic import ValidationError
 
@@ -46,11 +47,12 @@ class SessionsPythonTool(KernelBaseModel):
         http_client: AsyncClient | None = None,
         env_file_path: str | None = None,
         token_endpoint: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
         try:
-            aca_settings = ACASessionsSettings.create(
+            aca_settings = ACASessionsSettings(
                 env_file_path=env_file_path,
                 pool_management_endpoint=pool_management_endpoint,
                 token_endpoint=token_endpoint,
@@ -66,7 +68,7 @@ class SessionsPythonTool(KernelBaseModel):
             http_client = AsyncClient(timeout=5)
 
         if auth_callback is None:
-            auth_callback = self._default_auth_callback(aca_settings)
+            auth_callback = self._default_auth_callback(aca_settings, credential)
 
         super().__init__(
             pool_management_endpoint=aca_settings.pool_management_endpoint,
@@ -77,9 +79,11 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
     # region Helper Methods
-    def _default_auth_callback(self, aca_settings: ACASessionsSettings) -> Callable[..., Any | Awaitable[Any]]:
+    def _default_auth_callback(
+        self, aca_settings: ACASessionsSettings, credential: TokenCredential | None
+    ) -> Callable[..., Any | Awaitable[Any]]:
         """Generates a default authentication callback using the ACA settings."""
-        token = aca_settings.get_sessions_auth_token()
+        token = aca_settings.get_sessions_auth_token(credential=credential)
 
         if token is None:
             raise FunctionInitializationError("Failed to retrieve the client auth token.")
@@ -255,8 +259,10 @@ class SessionsPythonTool(KernelBaseModel):
                 files = {"file": (remote_file_path, data, "application/octet-stream")}
                 response = await self.http_client.post(url=url, files=files)
                 response.raise_for_status()
-                response_json = response.json()
-                return SessionsRemoteFileMetadata.from_dict(response_json["value"][0]["properties"])
+                uploaded_files = await self.list_files()
+                return next(
+                    file_metadata for file_metadata in uploaded_files if file_metadata.full_path == remote_file_path
+                )
         except HTTPStatusError as e:
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(

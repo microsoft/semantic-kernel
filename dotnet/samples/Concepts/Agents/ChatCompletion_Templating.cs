@@ -20,14 +20,16 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             (Input: "What do you think about having fun?", Style: "old school rap")
         ];
 
-    [Fact]
-    public async Task InvokeAgentWithInstructionsTemplateAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InvokeAgentWithInstructionsTemplate(bool useChatClient)
     {
         // Instruction based template always processed by KernelPromptTemplateFactory
         ChatCompletionAgent agent =
             new()
             {
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 Instructions =
                     """
                     Write a one verse poem on the requested topic in the style of {{$style}}.
@@ -40,21 +42,30 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             };
 
         await InvokeChatCompletionAgentWithTemplateAsync(agent);
+
+        chatClient?.Dispose();
     }
 
-    [Fact]
-    public async Task InvokeAgentWithKernelTemplateAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InvokeAgentWithKernelTemplate(bool useChatClient)
     {
         // Default factory is KernelPromptTemplateFactory
         await InvokeChatCompletionAgentWithTemplateAsync(
             """
             Write a one verse poem on the requested topic in the style of {{$style}}.
             Always state the requested style of the poem.
-            """);
+            """,
+            PromptTemplateConfig.SemanticKernelTemplateFormat,
+            new KernelPromptTemplateFactory(),
+            useChatClient);
     }
 
-    [Fact]
-    public async Task InvokeAgentWithHandlebarsTemplateAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InvokeAgentWithHandlebarsTemplate(bool useChatClient)
     {
         await InvokeChatCompletionAgentWithTemplateAsync(
             """
@@ -62,11 +73,14 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             Always state the requested style of the poem.
             """,
             HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            new HandlebarsPromptTemplateFactory());
+            new HandlebarsPromptTemplateFactory(),
+            useChatClient);
     }
 
-    [Fact]
-    public async Task InvokeAgentWithLiquidTemplateAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InvokeAgentWithLiquidTemplate(bool useChatClient)
     {
         await InvokeChatCompletionAgentWithTemplateAsync(
             """
@@ -74,13 +88,15 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             Always state the requested style of the poem.
             """,
             LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            new LiquidPromptTemplateFactory());
+            new LiquidPromptTemplateFactory(),
+            useChatClient);
     }
 
     private async Task InvokeChatCompletionAgentWithTemplateAsync(
         string instructionTemplate,
-        string? templateFormat = null,
-        IPromptTemplateFactory? templateFactory = null)
+        string templateFormat,
+        IPromptTemplateFactory templateFactory,
+        bool useChatClient)
     {
         // Define the agent
         PromptTemplateConfig templateConfig =
@@ -92,7 +108,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
         ChatCompletionAgent agent =
             new(templateConfig, templateFactory)
             {
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 Arguments = new KernelArguments()
                 {
                     {"style", "haiku"}
@@ -100,6 +116,8 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             };
 
         await InvokeChatCompletionAgentWithTemplateAsync(agent);
+
+        chatClient?.Dispose();
     }
 
     private async Task InvokeChatCompletionAgentWithTemplateAsync(ChatCompletionAgent agent)
@@ -110,7 +128,6 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
         {
             // Add input to chat
             ChatMessageContent request = new(AuthorRole.User, input);
-            chat.Add(request);
             this.WriteAgentChatMessage(request);
 
             KernelArguments? arguments = null;
@@ -122,7 +139,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             }
 
             // Process agent response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat, arguments))
+            await foreach (ChatMessageContent message in agent.InvokeAsync(request, options: new() { KernelArguments = arguments }))
             {
                 chat.Add(message);
                 this.WriteAgentChatMessage(message);

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>
@@ -51,6 +49,19 @@ public sealed class RestApiOperation
     }
 
     /// <summary>
+    /// The operation summary.
+    /// </summary>
+    public string? Summary
+    {
+        get => this._summary;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._summary = value;
+        }
+    }
+
+    /// <summary>
     /// The operation path.
     /// </summary>
     public string Path { get; }
@@ -64,6 +75,16 @@ public sealed class RestApiOperation
     /// The server.
     /// </summary>
     public IList<RestApiServer> Servers { get; private set; }
+
+    /// <summary>
+    ///  Path level servers.
+    /// </summary>
+    public IList<RestApiServer> PathServers { get; init; }
+
+    /// <summary>
+    /// Operation level servers.
+    /// </summary>
+    public IList<RestApiServer> OperationServers { get; init; }
 
     /// <summary>
     /// The security requirements.
@@ -93,6 +114,7 @@ public sealed class RestApiOperation
         get => this._extensions;
         init => this._extensions = value;
     }
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
@@ -105,6 +127,8 @@ public sealed class RestApiOperation
     /// <param name="responses">The operation responses.</param>
     /// <param name="securityRequirements">The operation security requirements.</param>
     /// <param name="payload">The operation payload.</param>
+    /// <param name="pathServers">The path servers.</param>
+    /// <param name="operationServers">The operation servers.</param>
     internal RestApiOperation(
         string? id,
         IList<RestApiServer> servers,
@@ -114,7 +138,9 @@ public sealed class RestApiOperation
         IList<RestApiParameter> parameters,
         IDictionary<string, RestApiExpectedResponse> responses,
         IList<RestApiSecurityRequirement> securityRequirements,
-        RestApiPayload? payload = null)
+        RestApiPayload? payload = null,
+        IList<RestApiServer>? pathServers = null,
+        IList<RestApiServer>? operationServers = null)
     {
         this.Id = id;
         this.Servers = servers;
@@ -125,6 +151,8 @@ public sealed class RestApiOperation
         this.Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
         this.SecurityRequirements = securityRequirements;
         this.Payload = payload;
+        this.PathServers = pathServers ?? new List<RestApiServer>();
+        this.OperationServers = operationServers ?? new List<RestApiServer>();
     }
 
     /// <summary>
@@ -170,7 +198,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             //Serializing the parameter and adding it to the headers.
             headers.Add(parameter.Name, serializer.Invoke(parameter, node));
@@ -206,7 +234,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             // Serializing the parameter and adding it to the query string if there's an argument for it.
             segments.Add(serializer.Invoke(parameter, node));
@@ -274,7 +302,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The path parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             // Serializing the parameter and adding it to the path.
             pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
@@ -384,6 +412,7 @@ public sealed class RestApiOperation
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
     private readonly Freezable _freezable = new();
     private string? _description;
+    private string? _summary;
 
     #endregion
 }

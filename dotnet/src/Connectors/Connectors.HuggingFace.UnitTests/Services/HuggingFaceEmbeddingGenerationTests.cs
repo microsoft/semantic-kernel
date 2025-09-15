@@ -15,6 +15,7 @@ namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
 /// </summary>
+[Obsolete("This test class uses obsolete APIs. Use HuggingFaceEmbeddingGeneratorTests instead.")]
 public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
@@ -105,7 +106,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     {
         //Arrange
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-        var data = new List<string>() { "test_string_1" };
+        List<string> data = ["test_string_1", "test_string_2"];
 
         //Act
         await sut.GenerateEmbeddingsAsync(data);

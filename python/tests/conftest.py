@@ -3,31 +3,22 @@
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-)
+from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
+from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
 
 if TYPE_CHECKING:
-    from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-    from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.kernel import Kernel
+    from semantic_kernel import Kernel
+    from semantic_kernel.contents import ChatHistory
+    from semantic_kernel.filters import FunctionInvocationContext
+    from semantic_kernel.functions import KernelFunction
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
@@ -40,9 +31,12 @@ def pytest_configure(config):
     logging.getLogger("semantic_kernel").setLevel(logging.INFO)
 
 
+# region: Kernel fixtures
+
+
 @fixture(scope="function")
 def kernel() -> "Kernel":
-    from semantic_kernel.kernel import Kernel
+    from semantic_kernel import Kernel
 
     return Kernel()
 
@@ -107,15 +101,27 @@ def custom_plugin_class():
 @fixture(scope="session")
 def experimental_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
-    from semantic_kernel.utils.experimental_decorator import experimental_class
+    from semantic_kernel.utils.feature_stage_decorator import experimental
 
-    @experimental_class
+    @experimental
     class ExperimentalPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:
             return "test"
 
     return ExperimentalPlugin
+
+
+@fixture(scope="session")
+def auto_function_invocation_filter() -> Callable:
+    """A filter that will be called for each function call in the response."""
+    from semantic_kernel.filters import AutoFunctionInvocationContext
+
+    async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+        await next(context)
+        context.terminate = True
+
+    return auto_function_invocation_filter
 
 
 @fixture(scope="session")
@@ -192,6 +198,7 @@ def prompt() -> str:
     return "test prompt"
 
 
+# region: Connector Settings fixtures
 @fixture
 def exclude_list(request):
     """Fixture that returns a list of environment variables to exclude."""
@@ -204,6 +211,7 @@ def override_env_param_dict(request):
     return request.param if hasattr(request, "param") else {}
 
 
+# These two fixtures are used for multiple things, also non-connector tests
 @fixture()
 def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     """Fixture to set environment variables for AzureOpenAISettings."""
@@ -220,6 +228,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
         "AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME": "test_audio_to_text_deployment",
         "AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME": "test_text_to_audio_deployment",
+        "AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME": "test_realtime_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -250,12 +259,14 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     env_vars = {
         "OPENAI_API_KEY": "test_api_key",
         "OPENAI_ORG_ID": "test_org_id",
+        "OPENAI_RESPONSES_MODEL_ID": "test_responses_model_id",
         "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
         "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
         "OPENAI_AUDIO_TO_TEXT_MODEL_ID": "test_audio_to_text_model_id",
         "OPENAI_TEXT_TO_AUDIO_MODEL_ID": "test_text_to_audio_model_id",
+        "OPENAI_REALTIME_MODEL_ID": "test_realtime_model_id",
     }
 
     env_vars.update(override_env_param_dict)
@@ -269,220 +280,8 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     return env_vars
 
 
-@fixture()
-def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for MistralAISettings."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {
-        "MISTRALAI_CHAT_MODEL_ID": "test_chat_model_id",
-        "MISTRALAI_API_KEY": "test_api_key",
-        "MISTRALAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
-    }
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture()
-def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for AnthropicSettings."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture()
-def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for ACA Python Unit Tests."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {
-        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/",
-    }
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture()
-def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for ACA Python Unit Tests."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {
-        "AZURE_AI_SEARCH_API_KEY": "test-api-key",
-        "AZURE_AI_SEARCH_ENDPOINT": "https://test-endpoint.com",
-        "AZURE_AI_SEARCH_INDEX_NAME": "test-index-name",
-    }
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture()
-def bing_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for BingConnector."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {
-        "BING_API_KEY": "test_api_key",
-        "BING_CUSTOM_CONFIG": "test_org_id",
-    }
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture()
-def google_search_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for the Google Search Connector."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {
-        "GOOGLE_SEARCH_API_KEY": "test_api_key",
-        "GOOGLE_SEARCH_ENGINE_ID": "test_id",
-    }
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture
-def postgres_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for Postgres connector."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {"POSTGRES_CONNECTION_STRING": "host=localhost port=5432 dbname=postgres user=testuser password=example"}
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture
-def qdrant_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for QdrantConnector."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {"QDRANT_LOCATION": "http://localhost:6333"}
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
-@fixture
-def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for Redis."""
-    if exclude_list is None:
-        exclude_list = []
-
-    if override_env_param_dict is None:
-        override_env_param_dict = {}
-
-    env_vars = {"REDIS_CONNECTION_STRING": "redis://localhost:6379"}
-
-    env_vars.update(override_env_param_dict)
-
-    for key, value in env_vars.items():
-        if key not in exclude_list:
-            monkeypatch.setenv(key, value)
-        else:
-            monkeypatch.delenv(key, raising=False)
-
-    return env_vars
-
-
+# region: Data Model Fixtures
+# some of these fixtures are used in both unit and integration tests
 @fixture
 def index_kind(request) -> str:
     if hasattr(request, "param"):
@@ -519,89 +318,56 @@ def dataclass_vector_data_model(
     @dataclass
     class MyDataModel:
         vector: Annotated[
-            list[float] | None,
-            VectorStoreRecordVectorField(
-                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+            list[float] | str | None,
+            VectorStoreField(
+                "vector",
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
         ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
-        ] = "content1"
+        id: Annotated[str, VectorStoreField("key", type="str")] = field(default_factory=lambda: str(uuid4()))
+        content: Annotated[str, VectorStoreField("data", type="str")] = "content1"
 
     return MyDataModel
 
 
 @fixture
-def dataclass_vector_data_model_array(
+def definition(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
-    @vectorstoremodel
-    @dataclass
-    class MyDataModel:
-        vector: Annotated[
-            list[float] | None,
-            VectorStoreRecordVectorField(
-                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-                index_kind=index_kind,
-                dimensions=dimensions,
-                distance_function=distance_function,
-                property_type=vector_property_type,
-                serialize_function=np.ndarray.tolist,
-                deserialize_function=np.array,
-            ),
-        ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
-        ] = "content1"
-
-    return MyDataModel
-
-
-@fixture
-def data_model_definition(
-    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(
-                has_embedding=True,
-                embedding_property_name="vector",
-            ),
-            "vector": VectorStoreRecordVectorField(
+) -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="content", type="str", is_full_text_indexed=True),
+            VectorStoreField(
+                "vector",
+                name="vector",
                 dimensions=dimensions,
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
-        }
+        ]
     )
 
 
 @fixture
-def data_model_definition_pandas(
-    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
-    return VectorStoreRecordDefinition(
-        fields={
-            "vector": VectorStoreRecordVectorField(
+def definition_pandas(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField(
+                "vector",
                 name="vector",
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
-            "id": VectorStoreRecordKeyField(name="id"),
-            "content": VectorStoreRecordDataField(
-                name="content", has_embedding=True, embedding_property_name="vector", property_type="str"
-            ),
-        },
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content", type="str"),
+        ],
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
         from_dict=lambda x, **_: pd.DataFrame(x),
@@ -609,42 +375,84 @@ def data_model_definition_pandas(
 
 
 @fixture
-def data_model_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+def record_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        content: Annotated[str, VectorStoreField("data")]
         vector: Annotated[
-            list[float],
-            VectorStoreRecordVectorField(
+            list[float] | str | None,
+            VectorStoreField(
+                "vector",
+                type=vector_property_type,
+                dimensions=dimensions,
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
-                dimensions=dimensions,
             ),
-        ]
-        id: Annotated[str, VectorStoreRecordKeyField()]
+        ] = None
+        id: Annotated[str, VectorStoreField("key")]
+
+        def model_post_init(self, context: Any) -> None:
+            if self.vector is None:
+                self.vector = self.content
 
     return DataModelClass
 
 
 @fixture
-def data_model_type_with_key_as_key_field(
+def record_type_with_key_as_key_field(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
 ) -> object:
     """Data model type with key as key field."""
 
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        content: Annotated[str, VectorStoreField("data")]
         vector: Annotated[
-            list[float],
-            VectorStoreRecordVectorField(
+            str | list[float] | None,
+            VectorStoreField(
+                "vector",
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
                 dimensions=dimensions,
             ),
         ]
-        key: Annotated[str, VectorStoreRecordKeyField()]
+        key: Annotated[str, VectorStoreField("key")]
 
     return DataModelClass
+
+
+# region Declarative Spec
+
+
+@register_agent_type("test_agent")
+class TestAgent(DeclarativeSpecMixin, Agent):
+    @classmethod
+    def resolve_placeholders(cls, yaml_str, settings=None, extras=None):
+        return yaml_str
+
+    @classmethod
+    async def _from_dict(cls, data, **kwargs):
+        return cls(
+            name=data.get("name"),
+            description=data.get("description"),
+            instructions=data.get("instructions"),
+            kernel=data.get("kernel"),
+        )
+
+    async def get_response(self, messages, instructions_override=None):
+        return "test response"
+
+    async def invoke(self, messages, **kwargs):
+        return "invoke result"
+
+    async def invoke_stream(self, messages, **kwargs):
+        yield "stream result"
+
+
+@fixture(scope="session")
+def test_agent_cls():
+    return TestAgent
+
+
+# endregion

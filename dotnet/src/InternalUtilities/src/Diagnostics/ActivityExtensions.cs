@@ -4,12 +4,29 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
 [ExcludeFromCodeCoverage]
 internal static class ActivityExtensions
 {
+    /// <summary>
+    /// Starts an activity with the appropriate tags for a kernel function execution.
+    /// </summary>
+    public static Activity? StartFunctionActivity(this ActivitySource source, string functionName, string functionDescription)
+    {
+        const string OperationName = "execute_tool";
+
+        return source.StartActivityWithTags($"{OperationName} {functionName}", [
+            new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
+            new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
+            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription)
+        ], ActivityKind.Internal);
+    }
+
     /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
@@ -24,7 +41,8 @@ internal static class ActivityExtensions
         foreach (var tag in tags)
         {
             activity.SetTag(tag.Key, tag.Value);
-        };
+        }
+        ;
 
         return activity;
     }
@@ -36,7 +54,7 @@ internal static class ActivityExtensions
     {
         activity.AddEvent(new ActivityEvent(
             name,
-            tags: new ActivityTagsCollection(tags)
+            tags: [.. tags]
         ));
 
         return activity;
@@ -50,5 +68,52 @@ internal static class ActivityExtensions
         activity.SetTag("error.type", exception.GetType().FullName);
         activity.SetStatus(ActivityStatusCode.Error, exception.Message);
         return activity;
+    }
+
+    public static async IAsyncEnumerable<TResult> RunWithActivityAsync<TResult>(
+        Func<Activity?> getActivity,
+        Func<IAsyncEnumerable<TResult>> operation,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        using var activity = getActivity();
+
+        ConfiguredCancelableAsyncEnumerable<TResult> result;
+
+        try
+        {
+            result = operation().WithCancellation(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
+
+        var resultEnumerator = result.ConfigureAwait(false).GetAsyncEnumerator();
+
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await resultEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                yield return resultEnumerator.Current;
+            }
+        }
+        finally
+        {
+            await resultEnumerator.DisposeAsync();
+        }
     }
 }

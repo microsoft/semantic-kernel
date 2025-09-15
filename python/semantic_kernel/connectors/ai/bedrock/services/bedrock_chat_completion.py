@@ -5,8 +5,9 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
+
 import os
-import boto3
+
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -19,40 +20,36 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    BedrockModelProvider,
     get_chat_completion_additional_model_request_fields,
 )
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     MESSAGE_CONVERTERS,
     finish_reason_from_bedrock_to_semantic_kernel,
-    format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
-    run_in_executor,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceInvalidRequestError,
-    ServiceInvalidResponseError,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
 
@@ -70,6 +67,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     def __init__(
         self,
         model_id: str | None = None,
+        model_provider: BedrockModelProvider | None = None,
         service_id: str | None = None,
         runtime_client: Any | None = None,
         client: Any | None = None,
@@ -80,6 +78,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
         Args:
             model_id: The Amazon Bedrock chat model ID to use.
+            model_provider: The Bedrock model provider to use.
             service_id: The Service ID for the completion service.
             runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
@@ -87,8 +86,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(
+            bedrock_settings = BedrockSettings(
                 chat_model_id=model_id,
+                model_provider=model_provider,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -101,8 +101,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         super().__init__(
             ai_model_id=bedrock_settings.chat_model_id,
             service_id=service_id or bedrock_settings.chat_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
+            bedrock_model_provider=bedrock_settings.model_provider,
         )
 
     # region Overriding base class methods
@@ -136,14 +137,6 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        # Not all models support streaming: check if the model supports streaming before proceeding
-        # Disabling this check because it throws an error for Claude Sonnet 3.5 model_id
-        # even though the model supports streaming
-
-        #model_info = await self.get_foundation_model_info(self.ai_model_id)
-        #if not model_info.get("responseStreamingSupported"):
-        #    raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
-
         if not isinstance(settings, BedrockChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
@@ -170,7 +163,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_choice_configuration
 
     @override
@@ -235,10 +228,31 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     def _prepare_system_messages_for_request(self, chat_history: "ChatHistory") -> Any:
         messages: list[dict[str, Any]] = []
 
+        tool_message_buffer = None
         for message in chat_history.messages:
             if message.role != AuthorRole.SYSTEM:
                 continue
-            messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+            # If there are multiple tool responses, Bedrock expects one message
+            # with multiple content blocks, one for each response.
+            if message.role == AuthorRole.TOOL:
+                if tool_message_buffer is None:
+                    # Start buffering tool messages
+                    tool_message_buffer = MESSAGE_CONVERTERS[message.role](message)
+                    tool_message_buffer["items"] = tool_message_buffer.get("items", [])
+                else:
+                    # Merge consecutive tool messages
+                    tool_message_buffer["items"].extend(MESSAGE_CONVERTERS[message.role](message).get("items", []))
+            else:
+                # If a non-tool message is encountered, flush the buffer
+                if tool_message_buffer:
+                    messages.append(tool_message_buffer)
+                    tool_message_buffer = None
+                messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+        # Flush any remaining tool message buffer
+        if tool_message_buffer:
+            messages.append(tool_message_buffer)
 
         # Add Prompt caching for SYSTEM messages
         if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
@@ -270,7 +284,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "stopSequences": settings.stop,
             }),
             "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
-                self.ai_model_id, settings
+                self.ai_model_id, settings, model_provider=self.bedrock_model_provider
             ),
         }
 
@@ -300,7 +314,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             prompt_tokens=response["usage"]["inputTokens"],
             completion_tokens=response["usage"]["outputTokens"],
         )
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         for content in response["output"]["message"]["content"]:
             if "text" in content:
                 items.append(TextContent(text=content["text"], inner_content=content))
@@ -316,9 +330,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 items.append(
                     FunctionCallContent(
                         id=content["toolUse"]["toolUseId"],
-                        name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
-                            content["toolUse"]["name"]
-                        ),
+                        name=content["toolUse"]["name"],
                         arguments=content["toolUse"]["input"],
                     )
                 )
@@ -385,9 +397,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             items.append(
                 FunctionCallContent(
                     id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
-                    name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
-                        event["contentBlockStart"]["start"]["toolUse"]["name"]
-                    ),
+                    name=event["contentBlockStart"]["start"]["toolUse"]["name"],
                     index=event["contentBlockStart"]["contentBlockIndex"],
                 )
             )

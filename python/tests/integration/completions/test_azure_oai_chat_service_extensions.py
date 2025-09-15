@@ -7,6 +7,7 @@ from random import randint
 import numpy as np
 import pytest
 import pytest_asyncio
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
@@ -26,7 +27,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 try:
-    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
+    from semantic_kernel.connectors.memory_stores.azure_cognitive_search.azure_cognitive_search_memory_store import (
         AzureCognitiveSearchMemoryStore,
     )
 
@@ -100,9 +101,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
                 )
             ]
         )
-        chat_service = AzureChatCompletion(
-            service_id="chat-gpt-extensions",
-        )
+        chat_service = AzureChatCompletion(service_id="chat-gpt-extensions", credential=AzureCliCredential())
         kernel.add_service(chat_service)
 
         prompt = "{{$chat_history}}{{$input}}"

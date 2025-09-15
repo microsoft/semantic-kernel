@@ -4,6 +4,7 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
@@ -34,6 +35,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+        credential: TokenCredential | None = None,
     ) -> None:
         """Initialize an AzureTextCompletion service.
 
@@ -57,9 +59,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
+            credential (TokenCredential): The credential to use for authentication. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 env_file_path=env_file_path,
                 text_deployment_name=deployment_name,
                 endpoint=endpoint,
@@ -86,6 +89,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT,
             client=async_client,
+            credential=credential,
         )
 
     @classmethod

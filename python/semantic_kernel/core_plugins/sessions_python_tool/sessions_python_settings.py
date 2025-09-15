@@ -6,6 +6,7 @@ from enum import Enum
 from typing import ClassVar
 from urllib.parse import urlsplit, urlunsplit
 
+from azure.core.credentials import TokenCredential
 from pydantic import Field, field_validator
 
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
@@ -59,12 +60,14 @@ class ACASessionsSettings(KernelBaseSettings):
         else:
             endpoint_parsed = urlsplit(endpoint)._asdict()
         if endpoint_parsed["path"]:
-            endpoint_parsed["path"] = re.sub("/{2,}", "/", endpoint_parsed["path"])
+            endpoint_parsed["path"] = re.sub(r"/{2,}", "/", endpoint_parsed["path"])
         else:
             endpoint_parsed["path"] = "/"
         return str(urlunsplit(endpoint_parsed.values()))
 
-    def get_sessions_auth_token(self, token_endpoint: str | None = None) -> str | None:
+    def get_sessions_auth_token(
+        self, credential: TokenCredential | None = None, token_endpoint: str | None = None
+    ) -> str | None:
         """Retrieve a Microsoft Entra Auth Token for a given token endpoint for the use with an Azure Container App.
 
         The required role for the token is `Azure ContainerApps Session Executor and Contributor`.
@@ -73,6 +76,7 @@ class ACASessionsSettings(KernelBaseSettings):
         The `token_endpoint` argument takes precedence over the `token_endpoint` attribute.
 
         Args:
+            credential: The credential to use for authentication.
             token_endpoint: The token endpoint to use. Defaults to `https://acasessions.io/.default`.
 
         Returns:
@@ -84,4 +88,6 @@ class ACASessionsSettings(KernelBaseSettings):
         endpoint_to_use = token_endpoint or self.token_endpoint
         if endpoint_to_use is None:
             raise PluginInitializationError("Please provide a token endpoint to retrieve the authentication token.")
-        return get_entra_auth_token(endpoint_to_use)
+        if credential is None:
+            raise PluginInitializationError("Please provide a credential to retrieve the authentication token.")
+        return get_entra_auth_token(credential, endpoint_to_use)

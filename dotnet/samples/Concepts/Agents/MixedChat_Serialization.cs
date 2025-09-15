@@ -4,13 +4,14 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
 /// Demonstrate the serialization of <see cref="AgentGroupChat"/> with a <see cref="ChatCompletionAgent"/>
 /// and an <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
@@ -27,8 +28,10 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
         Only respond with a single number that is the result of your calculation without explanation.
         """;
 
-    [Fact]
-    public async Task SerializeAndRestoreAgentGroupChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentTranslator =
@@ -36,18 +39,19 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
             {
                 Instructions = TranslatorInstructions,
                 Name = TranslatorName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
-        OpenAIAssistantAgent agentCounter =
-            await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
-                clientProvider: this.GetClientProvider(),
-                definition: new(this.Model)
-                {
-                    Instructions = CounterInstructions,
-                    Name = CounterName,
-                });
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name: CounterName,
+                instructions: CounterInstructions,
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agentCounter = new(assistant, this.AssistantClient);
 
         AgentGroupChat chat = CreateGroupChat();
 
@@ -71,6 +75,8 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
         {
             this.WriteAgentChatMessage(content);
         }
+
+        chatClient?.Dispose();
 
         async Task InvokeAgents(AgentGroupChat chat)
         {

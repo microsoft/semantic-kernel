@@ -1,13 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from datetime import datetime
 
 from numpy import ndarray
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental_class
+@deprecated("This class will be removed in a future version.")
 class MemoryRecord:
     """The in-built memory record."""
 

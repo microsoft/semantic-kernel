@@ -4,17 +4,108 @@
 
 ### Agents - Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel
 
-- [Assistant Agent Chart Maker](./agents/assistant_agent_chart_maker.py)
-- [Assistant Agent File Manipulation](./agents/assistant_agent_file_manipulation.py)
-- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent_file_manipulation_streaming.py)
-- [Assistant Agent Retrieval](./agents/assistant_agent_retrieval.py)
-- [Assistant Agent Streaming](./agents/assistant_agent_streaming.py)
-- [Chat Completion Function Termination](./agents/chat_completion_function_termination.py)
-- [Mixed Chat Agents](./agents/mixed_chat_agents.py)
-- [Mixed Chat Agents Plugins](./agents/mixed_chat_agents_plugins.py)
-- [Mixed Chat Files](./agents/mixed_chat_files.py)
-- [Mixed Chat Reset](./agents/mixed_chat_reset.py)
-- [Mixed Chat Streaming](./agents/mixed_chat_streaming.py)
+#### [Azure AI Agent](../../semantic_kernel/agents/azure_ai/azure_ai_agent.py)
+
+- [Azure AI Agent as Kernel Function](./agents/azure_ai_agent/azure_ai_agent_as_kernel_function.py)
+- [Azure AI Agent with Auto Function Invocation Filter Streaming](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter_streaming.py)
+- [Azure AI Agent with Auto Function Invocation Filter](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter.py)
+- [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
+- [Azure AI Agent with Bing Grounding Streaming with Message Callback](./agents/azure_ai_agent/azure_ai_agent_bing_grounding_streaming_with_message_callback.py)
+- [Azure AI Agent with Bing Grounding](./agents/azure_ai_agent/azure_ai_agent_bing_grounding.py)
+- [Azure AI Agent with Code Interpreter Streaming with Message Callback](./agents/azure_ai_agent/azure_ai_agent_code_interpreter_streaming_with_message_callback.py)
+- [Azure AI Agent Declarative with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_declarative_azure_ai_search.py)
+- [Azure AI Agent Declarative with Bing Grounding](./agents/azure_ai_agent/azure_ai_agent_declarative_bing_grounding.py)
+- [Azure AI Agent Declarative with Code Interpreter](./agents/azure_ai_agent/azure_ai_agent_declarative_code_interpreter.py)
+- [Azure AI Agent Declarative with File Search](./agents/azure_ai_agent/azure_ai_agent_declarative_file_search.py)
+- [Azure AI Agent Declarative with Function Calling From File](./agents/azure_ai_agent/azure_ai_agent_declarative_function_calling_from_file.py)
+- [Azure AI Agent Declarative with OpenAPI Interpreter](./agents/azure_ai_agent/azure_ai_agent_declarative_openapi.py)
+- [Azure AI Agent Declarative with Existing Agent ID](./agents/azure_ai_agent/azure_ai_agent_declarative_with_existing_agent_id.py)
+- [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent MCP Streaming](./agents/azure_ai_agent/azure_ai_agent_mcp_streaming.py)
+- [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
+- [Azure AI Agent Message Callback Streaming](./agents/azure_ai_agent/azure_ai_agent_message_callback_streaming.py)
+- [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
+- [Azure AI Agent Retrieve Messages from Thread](./agents/azure_ai_agent/azure_ai_agent_retrieve_messages_from_thread.py)
+- [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
+- [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
+- [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
+
+#### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
+
+- [Bedrock Agent Simple Chat Streaming](./agents/bedrock_agent/bedrock_agent_simple_chat_streaming.py)
+- [Bedrock Agent Simple Chat](./agents/bedrock_agent/bedrock_agent_simple_chat.py)
+- [Bedrock Agent With Code Interpreter Streaming](./agents/bedrock_agent/bedrock_agent_with_code_interpreter_streaming.py)
+- [Bedrock Agent With Code Interpreter](./agents/bedrock_agent/bedrock_agent_with_code_interpreter.py)
+- [Bedrock Agent With Kernel Function Simple](./agents/bedrock_agent/bedrock_agent_with_kernel_function_simple.py)
+- [Bedrock Agent With Kernel Function Streaming](./agents/bedrock_agent/bedrock_agent_with_kernel_function_streaming.py)
+- [Bedrock Agent With Kernel Function](./agents/bedrock_agent/bedrock_agent_with_kernel_function.py)
+- [Bedrock Agent Mixed Chat Agents Streaming](./agents/bedrock_agent/bedrock_mixed_chat_agents_streaming.py)
+- [Bedrock Agent Mixed Chat Agents](./agents/bedrock_agent/bedrock_mixed_chat_agents.py)
+
+#### [Chat Completion Agent](../../semantic_kernel/agents/chat_completion/chat_completion_agent.py)
+
+- [Chat Completion Agent as Kernel Function](./agents/chat_completion_agent/chat_completion_agent_as_kernel_function.py)
+- [Chat Completion Agent Function Termination](./agents/chat_completion_agent/chat_completion_agent_function_termination.py)
+- [Chat Completion Agent Message Callback Streaming](./agents/chat_completion_agent/chat_completion_agent_message_callback_streaming.py)
+- [Chat Completion Agent Message Callback](./agents/chat_completion_agent/chat_completion_agent_message_callback.py)
+- [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
+- [Chat Completion Agent Streaming Token Usage](./agents/chat_completion_agent/chat_completion_agent_streaming_token_usage.py)
+- [Chat Completion Agent Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_agent_chat.py)
+- [Chat Completion Agent Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_single_agent.py)
+- [Chat Completion Agent Token Usage](./agents/chat_completion_agent/chat_completion_agent_token_usage.py)
+- [Chat Completion Agent Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_agent_chat.py)
+- [Chat Completion Agent Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_single_agent.py)
+
+#### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
+
+- [Mixed Chat Agents Plugins](./agents/mixed_chat/mixed_chat_agents_plugins.py)
+- [Mixed Chat Agents](./agents/mixed_chat/mixed_chat_agents.py)
+- [Mixed Chat Files](./agents/mixed_chat/mixed_chat_files.py)
+- [Mixed Chat Images](./agents/mixed_chat/mixed_chat_images.py)
+- [Mixed Chat Reset](./agents/mixed_chat/mixed_chat_reset.py)
+- [Mixed Chat Streaming](./agents/mixed_chat/mixed_chat_streaming.py)
+
+#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/openai_assistant_agent.py)
+
+- [Azure OpenAI Assistant Declarative Code Interpreter](./agents/openai_assistant/azure_openai_assistant_declarative_code_interpreter.py)
+- [Azure OpenAI Assistant Declarative File Search](./agents/openai_assistant/azure_openai_assistant_declarative_file_search.py)
+- [Azure OpenAI Assistant Declarative Function Calling From File](./agents/openai_assistant/azure_openai_assistant_declarative_function_calling_from_file.py)
+- [Azure OpenAI Assistant Declarative Templating](./agents/openai_assistant/azure_openai_assistant_declarative_templating.py)
+- [Azure OpenAI Assistant Declarative With Existing Agent ID](./agents/openai_assistant/azure_openai_assistant_declarative_with_existing_agent_id.py)
+- [OpenAI Assistant Auto Function Invocation Filter Streaming](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter_streaming.py)
+- [OpenAI Assistant Auto Function Invocation Filter](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter.py)
+- [OpenAI Assistant Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
+- [OpenAI Assistant Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
+- [OpenAI Assistant Declarative Code Interpreter](./agents/openai_assistant/openai_assistant_declarative_code_interpreter.py)
+- [OpenAI Assistant Declarative File Search](./agents/openai_assistant/openai_assistant_declarative_file_search.py)
+- [OpenAI Assistant Declarative Function Calling From File](./agents/openai_assistant/openai_assistant_declarative_function_calling_from_file.py)
+- [OpenAI Assistant Declarative Templating](./agents/openai_assistant/openai_assistant_declarative_templating.py)
+- [OpenAI Assistant Declarative With Existing Agent ID](./agents/openai_assistant/openai_assistant_declarative_with_existing_agent_id.py)
+- [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
+- [OpenAI Assistant File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
+- [OpenAI Assistant Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
+- [OpenAI Assistant Message Callback Streaming](./agents/openai_assistant/openai_assistant_message_callback_streaming.py)
+- [OpenAI Assistant Message Callback](./agents/openai_assistant/openai_assistant_message_callback.py)
+- [OpenAI Assistant Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
+- [OpenAI Assistant Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
+- [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
+- [OpenAI Assistant Vision Streaming](./agents/openai_assistant/openai_assistant_vision_streaming.py)
+
+#### [OpenAI Responses Agent](../../semantic_kernel/agents/open_ai/openai_responses_agent.py)
+
+- [Azure OpenAI Responses Agent Declarative File Search](./agents/openai_responses/azure_openai_responses_agent_declarative_file_search.py)
+- [Azure OpenAI Responses Agent Declarative Function Calling From File](./agents/openai_responses/azure_openai_responses_agent_declarative_function_calling_from_file.py)
+- [Azure OpenAI Responses Agent Declarative Templating](./agents/openai_responses/azure_openai_responses_agent_declarative_templating.py)
+- [OpenAI Responses Agent Declarative File Search](./agents/openai_responses/openai_responses_agent_declarative_file_search.py)
+- [OpenAI Responses Agent Declarative Function Calling From File](./agents/openai_responses/openai_responses_agent_declarative_function_calling_from_file.py)
+- [OpenAI Responses Agent Declarative Web Search](./agents/openai_responses/openai_responses_agent_declarative_web_search.py)
+- [OpenAI Responses Binary Content Upload](./agents/openai_responses/responses_agent_binary_content_upload.py)
+- [OpenAI Responses Message Callback Streaming](./agents/openai_responses/responses_agent_message_callback_streaming.py)
+- [OpenAI Responses Message Callback](./agents/openai_responses/responses_agent_message_callback.py)
+- [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)
+- [OpenAI Responses Plugins Streaming](./agents/openai_responses/responses_agent_plugins_streaming.py)
+- [OpenAI Responses Reuse Existing Thread ID](./agents/openai_responses/responses_agent_reuse_existing_thread_id.py)
+- [OpenAI Responses Web Search Streaming](./agents/openai_responses/responses_agent_web_search_streaming.py)
 
 ### Audio - Using services that support audio-to-text and text-to-audio conversion
 
@@ -45,10 +136,16 @@
 - [Simple Chatbot Store Metadata](./chat_completion/simple_chatbot_store_metadata.py)
 - [Simple Chatbot Streaming](./chat_completion/simple_chatbot_streaming.py)
 - [Simple Chatbot with Image](./chat_completion/simple_chatbot_with_image.py)
+- [Simple Chatbot with Summary History Reducer Keeping Function Content](./chat_completion/simple_chatbot_with_summary_history_reducer_keep_func_content.py)
+- [Simple Chatbot with Summary History Reducer](./chat_completion/simple_chatbot_with_summary_history_reducer.py)
+- [Simple Chatbot with Truncation History Reducer](./chat_completion/simple_chatbot_with_truncation_history_reducer.py)
+- [Simple Chatbot with Summary History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_summary_history_reducer_autoreduce.py)
+- [Simple Chatbot with Truncation History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_truncation_history_reducer_autoreduce.py)
 
 ### ChatHistory - Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py)
 
 - [Serialize Chat History](./chat_history/serialize_chat_history.py)
+- [Store Chat History in CosmosDB](./chat_history/store_chat_history_in_cosmosdb.py)
 
 ### Filtering - Creating and using Filters
 
@@ -79,12 +176,13 @@
 
 - [Setup Logging](./logging/setup_logging.py)
 
-### Memory - Using [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) AI concepts
+### Memory - Using [`Memory`](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-python) AI concepts
 
-- [Azure Cognitive Search Memory](./memory/azure_cognitive_search_memory.py)
+- [Simple Memory](./memory/simple_memory.py)
 - [Memory Data Models](./memory/data_models.py)
-- [New Memory](./memory/new_memory.py)
-- [Pandas Memory](./memory/pandas_memory.py)
+- [Memory with Pandas Dataframes](./memory/memory_with_pandas.py)
+- [Complex memory](./memory/complex_memory.py)
+- [Full sample with Azure AI Search including function calling](./memory/azure_ai_search_hotel_samples/README.md)
 
 ### Model-as-a-Service - Using models deployed as [`serverless APIs on Azure AI Studio`](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio) to benchmark model performance against open-source datasets
 
@@ -95,12 +193,6 @@
 - [Azure Chat GPT with Data API](./on_your_data/azure_chat_gpt_with_data_api.py)
 - [Azure Chat GPT with Data API Function Calling](./on_your_data/azure_chat_gpt_with_data_api_function_calling.py)
 - [Azure Chat GPT with Data API Vector Search](./on_your_data/azure_chat_gpt_with_data_api_vector_search.py)
-
-### Planners - Showing the uses of [`Planners`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/planners)
-
-- [Sequential Planner](./planners/sequential_planner.py)
-- [OpenAI Function Calling Stepwise Planner](./planners/openai_function_calling_stepwise_planner.py)
-- [Azure OpenAI Function Calling Stepwise Planner](./planners/azure_openai_function_calling_stepwise_planner.py)
 
 ### Plugins - Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_plugin.py)
 
@@ -113,6 +205,7 @@
 
 - [Cycles with Fan-In](./processes/cycles_with_fan_in.py)
 - [Nested Process](./processes/nested_process.py)
+- [Plan and Execute](./processes/plan_and_execute.py)
 
 ### PromptTemplates - Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering
 
@@ -124,8 +217,8 @@
 
 ### RAG - Different ways of `RAG` (Retrieval-Augmented Generation)
 
-- [RAG with Text Memory Plugin](./rag/rag_with_text_memory_plugin.py)
-- [Self-Critique RAG](./rag/self-critique_rag.py)
+- [RAG with Vector Collection](./rag/rag_with_vector_collection.py)
+- [Self-Critique RAG](./rag/self_critique_rag.py)
 
 ### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
 
@@ -134,10 +227,8 @@
 
 ### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
 
-- [Bing Search Plugin](./search/bing_search_plugin.py)
-- [Bing Text Search](./search/bing_text_search.py)
 - [Bing Text Search as Plugin](./search/bing_text_search_as_plugin.py)
-- [Google Search Plugin](./search/google_search_plugin.py)
+- [Brave Text Search as Plugin](./search/brave_text_search_as_plugin.py)
 - [Google Text Search as Plugin](./search/google_text_search_as_plugin.py)
 
 ### Service Selector - Shows how to create and use a custom service selector class
@@ -166,7 +257,7 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 
 1. **Reading Environment Variables:**
    - **Primary Source:** Pydantic first attempts to read the required settings from environment variables.
-   
+
 2. **Using a .env File:**
    - **Fallback Source:** If the required environment variables are not set, Pydantic will look for a `.env` file in the current working directory.
    - **Custom Path (Optional):** You can specify an alternative path for the `.env` file via `env_file_path`. This can be either a relative or an absolute path.
@@ -174,9 +265,15 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 3. **Direct Constructor Input:**
    - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
 
-## Microsoft Entra Token Authentication
+## Azure Authentication
 
-To authenticate to your Azure resources using a Microsoft Entra Authentication Token, the `AzureChatCompletion` AI Service connector now supports this as a built-in feature. If you do not provide an API key -- either through an environment variable, a `.env` file, or the constructor -- and you also do not provide a custom `AsyncAzureOpenAI` client, an `ad_token`, or an `ad_token_provider`, the `AzureChatCompletion` connector will attempt to retrieve a token using the [`DefaultAzureCredential`](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
+To authenticate to your Azure resources, you must provide one of the following authentication methods to successfully authenticate:
+
+1. **AsyncTokenCredential** - provide one of the `AsyncTokenCredential` types (e.g. `AzureCliCredential`, `ManagedIdentityCredential`). More information here: [Credentials for asynchronous Azure SDK clients]("https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.aio?view=azure-python").
+2. **Custom AsyncAzureOpenAI client** - Pass a pre-configured client instance.
+3. **Access Token (`ad_token`)** - Provide a valid Microsoft Entra access token directly.
+4. **Token Provider (`ad_token_provider`)** - Provide a callable that returns a valid access token.
+5. **API Key** - Provide through an environment variable, a `.env` file, or the constructor.
 
 To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 

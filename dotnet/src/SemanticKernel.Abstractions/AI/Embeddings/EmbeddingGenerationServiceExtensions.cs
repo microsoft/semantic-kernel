@@ -16,8 +16,14 @@ namespace Microsoft.SemanticKernel.Embeddings;
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
 [Experimental("SKEXP0001")]
+[Obsolete("Use Microsoft.Extensions.AI.IEmbeddingGenerator<string, Embedding<float>> instead.")]
 public static class EmbeddingGenerationExtensions
 {
+    /// <summary>
+    /// Gets the key used to store the dimensions value in the <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/> dictionary.
+    /// </summary>
+    public static string DimensionsKey => "Dimensions";
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="value"/>.
     /// </summary>
@@ -90,6 +96,17 @@ public static class EmbeddingGenerationExtensions
             new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
     }
 
+    /// <summary>
+    /// Gets the dimensions from <paramref name="service"/>'s <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.
+    /// </summary>
+    /// <param name="service">The service from which to get the dimensions.</param>
+    /// <returns>The dimensions if it was specified in the service's attributes; otherwise, null.</returns>
+    public static int? GetDimensions<TValue, TEmbedding>(this IEmbeddingGenerationService<TValue, TEmbedding> service) where TEmbedding : unmanaged
+    {
+        Verify.NotNull(service);
+        return service.Attributes.TryGetValue(DimensionsKey, out object? value) ? value as int? : null;
+    }
+
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     private sealed class EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding> : IEmbeddingGenerator<TValue, Embedding<TEmbedding>>
         where TEmbedding : unmanaged
@@ -104,7 +121,8 @@ public static class EmbeddingGenerationExtensions
             this.Metadata = new EmbeddingGeneratorMetadata(
                 service.GetType().Name,
                 service.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
-                service.GetModelId());
+                service.GetModelId(),
+                service.GetDimensions());
         }
 
         /// <inheritdoc />
@@ -132,6 +150,7 @@ public static class EmbeddingGenerationExtensions
                 serviceKey is not null ? null :
                 serviceType.IsInstanceOfType(this) ? this :
                 serviceType.IsInstanceOfType(this._service) ? this._service :
+                serviceType.IsInstanceOfType(this.Metadata) ? this.Metadata :
                 null;
         }
     }
@@ -154,14 +173,14 @@ public static class EmbeddingGenerationExtensions
             var attrs = new Dictionary<string, object?>();
             this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
-            var metadata = generator.Metadata;
-            if (metadata.ProviderUri is not null)
+            var metadata = (EmbeddingGeneratorMetadata?)generator.GetService(typeof(EmbeddingGeneratorMetadata));
+            if (metadata?.ProviderUri is not null)
             {
                 attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
             }
-            if (metadata.ModelId is not null)
+            if (metadata?.DefaultModelId is not null)
             {
-                attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
+                attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
             }
         }
 

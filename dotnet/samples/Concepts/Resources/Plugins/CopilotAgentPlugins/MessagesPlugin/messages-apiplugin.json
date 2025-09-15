@@ -12,14 +12,14 @@
         "text": "List messages"
       },
       {
-        "text": "Create message"
+        "text": "Send an email from the current user's mailbox"
       }
     ]
   },
   "functions": [
     {
-      "name": "me_CreateMessages",
-      "description": "Create a draft of a new message in either JSON or MIME format. When using JSON format, you can:\n- Include an attachment to the message.\n- Update the draft later to add content to the body or change other message properties. When using MIME format:\n- Provide the applicable Internet message headers and the MIME content, all encoded in base64 format in the request body.\n- /* Add any attachments and S/MIME properties to the MIME content. By default, this operation saves the draft in the Drafts folder. Send the draft message in a subsequent operation. Alternatively, send a new message in a single operation, or create a draft to forward, reply and reply-all to an existing message."
+      "name": "me_sendMail",
+      "description": "Send the message specified in the request body using either JSON or MIME format. When using JSON format, you can include a file attachment in the same sendMail action call. When using MIME format: This method saves the message in the Sent Items folder. Alternatively, create a draft message to send later. To learn more about the steps involved in the backend before a mail is delivered to recipients, see here."
     },
     {
       "name": "me_ListMessages",
@@ -35,10 +35,7 @@
       "spec": {
         "url": "messages-openapi.yml"
       },
-      "run_for_functions": [
-        "me_ListMessages",
-        "me_CreateMessages"
-      ]
+      "run_for_functions": ["me_ListMessages", "me_sendMail"]
     }
   ]
 }

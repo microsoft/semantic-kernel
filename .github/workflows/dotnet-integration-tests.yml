@@ -26,6 +26,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -50,6 +51,7 @@ jobs:
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
         run: |

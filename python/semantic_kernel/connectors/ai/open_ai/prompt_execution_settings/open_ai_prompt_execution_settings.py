@@ -1,17 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from typing import Annotated, Any, Literal
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
@@ -73,8 +66,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     messages: Annotated[
         list[dict[str, Any]] | None, Field(description="Do not set this manually. It is set by the service.")
     ] = None
-    function_call_behavior: Annotated[FunctionCallBehavior | None, Field(exclude=True)] = None
-    parallel_tool_calls: bool | None = True
+    parallel_tool_calls: bool | None = None
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
@@ -109,6 +101,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             description="Adjusts reasoning effort (low/medium/high). Lower values reduce response time and token usage."
         ),
     ] = None
+    extra_body: dict[str, Any] | None = None
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -121,8 +114,10 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return v
 
     @model_validator(mode="before")
-    def validate_response_format_and_set_flag(cls, values) -> Any:
+    def validate_response_format_and_set_flag(cls, values: Any) -> Any:
         """Validate the response_format and set structured_json_response accordingly."""
+        if not isinstance(values, dict):
+            return values
         response_format = values.get("response_format", None)
 
         if response_format is None:
@@ -150,32 +145,6 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             )
 
         return values
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_function_calling_behaviors(cls, data) -> Any:
-        """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
-        # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
-        # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
-        # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
-        # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
-        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
-        if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
-            data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
-                data.get("extension_data", {}).get("function_call_behavior")
-            )
-        return data
-
-    @field_validator("function_call_behavior", mode="after")
-    @classmethod
-    def check_for_function_call_behavior(cls, v) -> Self:
-        """Check if function_choice_behavior is set, if not, set it to default."""
-        if v is not None:
-            logger.warning(
-                "The `function_call_behavior` parameter is deprecated. Please use the `function_choice_behavior` parameter instead."  # noqa: E501
-            )
-        return v
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):

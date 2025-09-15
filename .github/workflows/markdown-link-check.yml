@@ -14,6 +14,8 @@ jobs:
     # check out the latest version of the code
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Checks the status of hyperlinks in all files
       - name: Run linkspector

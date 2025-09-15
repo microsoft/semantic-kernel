@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
@@ -24,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG)
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = AzureAISearchSettings()
 azure_ai_search_settings = azure_ai_search_settings.model_dump()
 
 # This example index has fields "title", "chunk", and "vector".
@@ -50,8 +52,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_bod
 
 # When using data, use the 2024-02-15-preview API version.
 chat_service = AzureChatCompletion(
-    service_id="chat-gpt",
-    api_version="2024-02-15-preview",
+    service_id="chat-gpt", api_version="2024-02-15-preview", credential=AzureCliCredential()
 )
 kernel.add_service(chat_service)
 

@@ -12,7 +12,7 @@ informed:
 
 ## Context and Problem Statement
 
-The Semantic Kernel abstractions package includes a number of classes ([CompleteRequestSettings](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextCompletion/CompleteRequestSettings.cs), [ChatRequestSettings](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/ChatRequestSettings.cs) [PromptTemplateConfig.CompletionConfig](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/SemanticFunctions/PromptTemplateConfig.cs#L18C1-L82C6)) which are used to support:
+The Semantic Kernel abstractions package includes a number of classes (`CompleteRequestSettings`, `ChatRequestSettings`, `PromptTemplateConfig.CompletionConfig`) which are used to support:
 
 1. Passing LLM request settings when invoking an AI service
 2. Deserialization of LLM requesting settings when loading the `config.json` associated with a Semantic Function

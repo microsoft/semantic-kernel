@@ -4,10 +4,10 @@ from typing import Any
 
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class LocalMessageFactory:
     """Factory class to create LocalMessage instances."""
 

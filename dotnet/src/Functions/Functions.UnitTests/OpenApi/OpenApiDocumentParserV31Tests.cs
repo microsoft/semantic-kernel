@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
@@ -27,6 +29,11 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     /// OpenAPI document stream.
     /// </summary>
     private readonly Stream _openApiDocument;
+
+    /// <summary>
+    /// Logger instance.
+    /// </summary>
+    private readonly ILogger _logger = new LoggerFactory().CreateLogger<OpenApiDocumentParserV30Tests>();
 
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
@@ -115,6 +122,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
+        Assert.Equal("Create or update secret value", putOperation.Summary);
         Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Servers[0].Url);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
@@ -167,6 +175,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var operation = restApi.Operations.Single(o => o.Id == "Excuses");
         Assert.NotNull(operation);
         Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
+        Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Summary);
     }
 
     [Fact]
@@ -646,6 +655,59 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Null(formatParameter.DefaultValue);
         Assert.NotNull(formatParameter.Schema);
         Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItCanVerifyAllServerLevelsAreStoredCorrectly()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+        {
+            new() { Url = "https://global-server.com", Description = "Global server" }
+        }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+        {
+            new() { Url = "https://path-server.com", Description = "Path server" }
+        },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://operation-server.com", Description = "Operation server" }
+                },
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, this._logger);
+        var operation = operations[0];
+
+        // Assert
+        // Verify servers
+        Assert.Single(operation.Servers);
+        Assert.Equal("https://global-server.com", operation.Servers[0].Url);
+        Assert.Equal("Global server", operation.Servers[0].Description);
+
+        // Verify path servers
+        Assert.Single(operation.PathServers);
+        Assert.Equal("https://path-server.com", operation.PathServers[0].Url);
+        Assert.Equal("Path server", operation.PathServers[0].Description);
+
+        // Verify operation servers
+        Assert.Single(operation.OperationServers);
+        Assert.Equal("https://operation-server.com", operation.OperationServers[0].Url);
+        Assert.Equal("Operation server", operation.OperationServers[0].Description);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)

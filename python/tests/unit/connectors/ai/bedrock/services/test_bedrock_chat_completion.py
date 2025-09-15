@@ -9,6 +9,7 @@ import pytest
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_chat_completion import BedrockChatCompletion
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import BedrockModelProvider
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -16,11 +17,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceInvalidRequestError,
-    ServiceInvalidResponseError,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
 
 # region init
@@ -34,6 +31,9 @@ def test_bedrock_chat_completion_init(mock_client, bedrock_unit_test_env) -> Non
     assert bedrock_chat_completion.ai_model_id == bedrock_unit_test_env["BEDROCK_CHAT_MODEL_ID"]
     assert bedrock_chat_completion.service_id == bedrock_unit_test_env["BEDROCK_CHAT_MODEL_ID"]
 
+    assert bedrock_chat_completion.bedrock_model_provider == BedrockModelProvider(
+        bedrock_unit_test_env["BEDROCK_MODEL_PROVIDER"]
+    )
     assert bedrock_chat_completion.bedrock_client is not None
     assert bedrock_chat_completion.bedrock_runtime_client is not None
 
@@ -94,6 +94,16 @@ def test_bedrock_chat_completion_init_custom_runtime_client(mock_client, bedrock
     assert isinstance(bedrock_chat_completion.bedrock_runtime_client, MockBedrockRuntimeClient)
 
 
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init_custom_bedrock_model_provider(mock_client, bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Chat Completion service"""
+    bedrock_chat_completion = BedrockChatCompletion(
+        model_provider=BedrockModelProvider.AMAZON,
+    )
+
+    assert bedrock_chat_completion.bedrock_model_provider == BedrockModelProvider.AMAZON
+
+
 @pytest.mark.parametrize("exclude_list", [["BEDROCK_CHAT_MODEL_ID"]], indirect=True)
 def test_bedrock_chat_completion_client_init_with_empty_model_id(bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service with empty model id"""
@@ -107,6 +117,14 @@ def test_bedrock_chat_completion_client_init_invalid_settings(bedrock_unit_test_
         ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Chat Completion Service."
     ):
         BedrockChatCompletion(model_id=123)  # Model ID must be a string
+
+
+def test_bedrock_chat_completion_client_init_invalid_model_provider(bedrock_unit_test_env) -> None:
+    """Test initialization of Amazon Bedrock Chat Completion service with invalid settings"""
+    with pytest.raises(
+        ServiceInitializationError, match="Failed to initialize the Amazon Bedrock Chat Completion Service."
+    ):
+        BedrockChatCompletion(model_provider="invalid_provider")
 
 
 @patch.object(boto3, "client", return_value=Mock())
@@ -158,6 +176,36 @@ def test_prepare_settings_for_request(mock_client, model_id, chat_history) -> No
     """Test preparing settings for request"""
     bedrock_chat_completion = BedrockChatCompletion(model_id=model_id)
     settings = BedrockChatPromptExecutionSettings()
+    parsed_settings = bedrock_chat_completion._prepare_settings_for_request(chat_history, settings)
+
+    assert isinstance(parsed_settings, dict)
+    assert parsed_settings["modelId"] == bedrock_chat_completion.ai_model_id
+    assert parsed_settings["messages"] == bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
+    assert parsed_settings["system"] == bedrock_chat_completion._prepare_system_messages_for_request(chat_history)
+    assert isinstance(parsed_settings["inferenceConfig"], dict)
+    assert all([parsed_settings["inferenceConfig"].values()])
+
+
+@pytest.mark.parametrize(
+    "model_id",
+    [
+        "arn:aws:bedrock:us-east-1:972143716085:application-inference-profile/123456",
+    ],
+)
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_settings_for_request_with_application_inference_profile(mock_client, model_id, chat_history) -> None:
+    """Test preparing settings for request"""
+    # Without a valid model provider, it should raise an error
+    bedrock_chat_completion = BedrockChatCompletion(model_id=model_id)
+    settings = BedrockChatPromptExecutionSettings()
+    with pytest.raises(
+        ValueError,
+        match=f"Model ID {model_id} does not contain a valid model provider name.",
+    ):
+        bedrock_chat_completion._prepare_settings_for_request(chat_history, settings)
+
+    # With a valid model provider, it should not raise an error
+    bedrock_chat_completion = BedrockChatCompletion(model_id=model_id, model_provider=BedrockModelProvider.AMAZON)
     parsed_settings = bedrock_chat_completion._prepare_settings_for_request(chat_history, settings)
 
     assert isinstance(parsed_settings, dict)
@@ -279,30 +327,6 @@ async def test_bedrock_streaming_chat_completion(
         assert isinstance(response.inner_content, list)
         assert len(response.inner_content) == 7
         assert response.finish_reason == FinishReason.STOP
-
-
-async def test_bedrock_streaming_chat_completion_with_unsupported_model(
-    model_id,
-    chat_history: ChatHistory,
-) -> None:
-    """Test Amazon Bedrock Streaming Chat Completion complete method"""
-    with patch.object(
-        MockBedrockClient, "get_foundation_model", return_value={"modelDetails": {"responseStreamingSupported": False}}
-    ):
-        # Setup
-        bedrock_chat_completion = BedrockChatCompletion(
-            model_id=model_id,
-            runtime_client=MockBedrockRuntimeClient(),
-            client=MockBedrockClient(),
-        )
-
-        # Act
-        settings = BedrockChatPromptExecutionSettings()
-        with pytest.raises(ServiceInvalidRequestError):
-            async for chunk in bedrock_chat_completion.get_streaming_chat_message_contents(
-                chat_history=chat_history, settings=settings
-            ):
-                pass
 
 
 @pytest.mark.parametrize(

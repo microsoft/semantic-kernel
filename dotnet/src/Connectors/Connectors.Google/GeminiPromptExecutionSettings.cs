@@ -27,13 +27,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private bool? _audioTimestamp;
     private string? _responseMimeType;
     private object? _responseSchema;
+    private string? _cachedContent;
+    private IDictionary<string, string>? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
-
-    /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
+    private GeminiThinkingConfig? _thinkingConfig;
 
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -41,6 +39,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Range is 0.0 to 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Temperature
     {
         get => this._temperature;
@@ -56,6 +55,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
     [JsonPropertyName("top_p")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? TopP
     {
         get => this._topP;
@@ -71,6 +71,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The TopK property represents the maximum value of a collection or dataset.
     /// </summary>
     [JsonPropertyName("top_k")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopK
     {
         get => this._topK;
@@ -85,6 +86,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
         get => this._maxTokens;
@@ -99,6 +101,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The count of candidates. Possible values range from 1 to 8.
     /// </summary>
     [JsonPropertyName("candidate_count")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? CandidateCount
     {
         get => this._candidateCount;
@@ -114,6 +117,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Maximum number of stop sequences is 5.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? StopSequences
     {
         get => this._stopSequences;
@@ -128,6 +132,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Represents a list of safety settings.
     /// </summary>
     [JsonPropertyName("safety_settings")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<GeminiSafetySetting>? SafetySettings
     {
         get => this._safetySettings;
@@ -135,6 +140,25 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._safetySettings = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the labels.
+    /// </summary>
+    /// <value>
+    /// The labels with user-defined metadata for the request. It is used for billing and reporting only.
+    /// label keys and values can be no longer than 63 characters (Unicode codepoints) and can only contain lowercase letters, numeric characters, underscores, and dashes. International characters are allowed. label values are optional. label keys must start with a letter.
+    /// </value>
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Labels
+    {
+        get => this._labels;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._labels = value;
         }
     }
 
@@ -180,6 +204,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// if enabled, audio timestamp will be included in the request to the model.
     /// </summary>
     [JsonPropertyName("audio_timestamp")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? AudioTimestamp
     {
         get => this._audioTimestamp;
@@ -198,6 +224,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// 3. text/x.enum: For classification tasks, output an enum value as defined in the response schema.
     /// </summary>
     [JsonPropertyName("response_mimetype")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseMimeType
     {
         get => this._responseMimeType;
@@ -231,6 +258,41 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._responseSchema = value;
+        }
+    }
+
+    /// <summary>
+    /// Optional. The name of the cached content used as context to serve the prediction.
+    /// Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings.
+    /// Format: projects/{project}/locations/{location}/cachedContents/{cachedContent}
+    /// </summary>
+    [JsonPropertyName("cached_content")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CachedContent
+    {
+        get => this._cachedContent;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._cachedContent = value;
+        }
+    }
+
+    /// <summary>
+    /// Configuration for the thinking budget in Gemini 2.5.
+    /// </summary>
+    /// <remarks>
+    /// This property is specific to Gemini 2.5 and similar experimental models.
+    /// </remarks>
+    [JsonPropertyName("thinking_config")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiThinkingConfig? ThinkingConfig
+    {
+        get => this._thinkingConfig;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._thinkingConfig = value;
         }
     }
 
@@ -273,6 +335,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             AudioTimestamp = this.AudioTimestamp,
             ResponseMimeType = this.ResponseMimeType,
             ResponseSchema = this.ResponseSchema,
+            ThinkingConfig = this.ThinkingConfig?.Clone()
         };
     }
 
@@ -293,7 +356,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new GeminiPromptExecutionSettings();
             case GeminiPromptExecutionSettings settings:
                 return settings;
         }

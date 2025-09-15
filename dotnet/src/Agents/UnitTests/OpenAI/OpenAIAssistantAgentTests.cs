@@ -2,16 +2,17 @@
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -20,417 +21,12 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 /// <summary>
 /// Unit testing of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 public sealed class OpenAIAssistantAgentTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Kernel _emptyKernel;
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with only required properties defined.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationEmptyAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition = new("testmodel");
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with name, instructions, and description.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationPropertiesAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                Name = "testname",
-                Description = "testdescription",
-                Instructions = "testinstructions",
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with name, instructions, and description from a template.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationDefaultTemplateAsync()
-    {
-        // Arrange
-        PromptTemplateConfig templateConfig =
-            new("test instructions")
-            {
-                Name = "testname",
-                Description = "testdescription",
-            };
-
-        OpenAIAssistantCapabilities capabilities = new("testmodel");
-
-        // Act and Assert
-        await this.VerifyAgentTemplateAsync(capabilities, templateConfig);
-
-        // Act and Assert
-        await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new KernelPromptTemplateFactory());
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with code-interpreter enabled.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                EnableCodeInterpreter = true,
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with code-interpreter files.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterFilesAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                EnableCodeInterpreter = true,
-                CodeInterpreterFileIds = ["file1", "file2"],
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with a file-search and no vector-store
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithFileSearchAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                EnableFileSearch = true,
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with a vector-store-id (for file-search).
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithVectorStoreAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                EnableFileSearch = true,
-                VectorStoreId = "#vs1",
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with metadata.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithMetadataAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                Metadata = new Dictionary<string, string>()
-                {
-                    { "a", "1" },
-                    { "b", "2" },
-                },
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with json-response mode enabled.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithJsonResponseAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                EnableJsonResponse = true,
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with temperature defined.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithTemperatureAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                Temperature = 2.0F,
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with topP defined.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithTopPAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                TopP = 2.0F,
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with empty execution settings.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                ExecutionOptions = new OpenAIAssistantExecutionOptions(),
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with populated execution settings.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithExecutionOptionsAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                ExecutionOptions =
-                    new()
-                    {
-                        MaxCompletionTokens = 100,
-                        ParallelToolCallsEnabled = false,
-                    }
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with execution settings and meta-data.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAndMetadataAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition =
-            new("testmodel")
-            {
-                ExecutionOptions = new(),
-                Metadata = new Dictionary<string, string>()
-                {
-                    { "a", "1" },
-                    { "b", "2" },
-                },
-            };
-
-        // Act and Assert
-        await this.VerifyAgentCreationAsync(definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentRetrievalAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition = new("testmodel");
-
-        this.SetupResponse(HttpStatusCode.OK, definition);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestConfiguration(),
-                "#id",
-                this._emptyKernel);
-
-        // Act and Assert
-        ValidateAgentDefinition(agent, definition);
-    }
-
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentRetrievalWithFactoryAsync()
-    {
-        // Arrange
-        OpenAIAssistantDefinition definition = new("testmodel");
-
-        this.SetupResponse(HttpStatusCode.OK, definition);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestConfiguration(),
-                "#id",
-                this._emptyKernel,
-                new KernelArguments(),
-                new KernelPromptTemplateFactory());
-
-        // Act and Assert
-        ValidateAgentDefinition(agent, definition);
-    }
-
-    /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentDeleteAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-        // Assert
-        Assert.False(agent.IsDeleted);
-
-        // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
-
-        // Act
-        await agent.DeleteAsync();
-        // Assert
-        Assert.True(agent.IsDeleted);
-
-        // Act
-        await agent.DeleteAsync(); // Doesn't throw
-        // Assert
-        Assert.True(agent.IsDeleted);
-        await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
-        await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", new OpenAIAssistantInvocationOptions()).ToArrayAsync().AsTask());
-    }
-
-    /// <summary>
-    /// Verify the creating a thread via <see cref="OpenAIAssistantAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreateThreadAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-
-        // Act
-        string threadId = await agent.CreateThreadAsync();
-        // Assert
-        Assert.NotNull(threadId);
-
-        // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-        // Act
-        threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions());
-        // Assert
-        Assert.NotNull(threadId);
-    }
-
-    /// <summary>
-    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentDeleteThreadAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
-
-        // Act
-        bool isDeleted = await agent.DeleteThreadAsync("threadid");
-        // Assert
-        Assert.True(isDeleted);
-    }
-
-    /// <summary>
-    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentUploadFileAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
-
-        // Act
-        using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
-        string fileId = await agent.UploadFileAsync(stream, "text.txt");
-
-        // Assert
-        Assert.NotNull(fileId);
-    }
 
     /// <summary>
     /// Verify invocation via <see cref="AgentGroupChat"/>.
@@ -457,7 +53,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Assert
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
-        Assert.IsType<TextContent>(messages[0].Items[0]);
+        Assert.IsType<Microsoft.SemanticKernel.TextContent>(messages[0].Items[0]);
 
         // Arrange
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
@@ -470,10 +66,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvokeAsync()
+    public async Task VerifyOpenAIAssistantAgentInvokeWithThreadAsync()
     {
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
@@ -481,18 +77,99 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this.SetupResponses(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
-            OpenAIAssistantResponseContent.GetTextMessage());
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
 
         // Act
-        ChatMessageContent[] messages = await agent.InvokeAsync("threadid").ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
 
         // Assert
         Assert.Single(messages);
-        Assert.Single(messages[0].Items);
-        Assert.IsType<TextContent>(messages[0].Items[0]);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<Microsoft.SemanticKernel.TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("Hello, how can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeMultipleMessagesWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hello"),
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("How can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(
+        [
+            new ChatMessageContent(AuthorRole.Assistant, "Hello"),
+            new ChatMessageContent(AuthorRole.User, "Hi")
+        ]).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<Microsoft.SemanticKernel.TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("How can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direct streaming invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeStreamingWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        Task OnIntermediateMessage(ChatMessageContent message)
+        {
+            // Assert intermediate messages
+            Assert.NotNull(message);
+            Assert.Equal("Hello, how can I help you?", message.Content);
+            return Task.CompletedTask;
+        }
+        AgentResponseItem<StreamingChatMessageContent>[] messages = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), options: new() { OnIntermediateMessage = OnIntermediateMessage }).ToArrayAsync();
+
+        // Assert
+        Assert.Equal(3, messages.Length);
+        var combinedMessage = string.Concat(messages.Select(x => x.Message.Content));
+        Assert.Equal("Hello, how can I help you?", combinedMessage);
     }
 
     /// <summary>
@@ -520,7 +197,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Assert
         Assert.Single(messages);
         Assert.Equal(2, messages[0].Items.Count);
-        Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is TextContent));
+        Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is Microsoft.SemanticKernel.TextContent));
         Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is AnnotationContent));
     }
 
@@ -591,47 +268,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify message retrieval via <see cref="OpenAIAssistantAgent.GetThreadMessagesAsync(string, System.Threading.CancellationToken)"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentAddThreadMessagesAsync()
-    {
-        // Arrange: Create agent
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-        // Arrange: Setup messages
-        this.SetupResponses(
-            HttpStatusCode.OK,
-            OpenAIAssistantResponseContent.GetTextMessage());
-
-        // Act (no exception)
-        await agent.AddChatMessageAsync(agent.Id, new ChatMessageContent(AuthorRole.User, "hi"));
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
-    }
-
-    /// <summary>
-    /// Verify message retrieval via <see cref="OpenAIAssistantAgent.GetThreadMessagesAsync(string, System.Threading.CancellationToken)"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentGetThreadMessagesAsync()
-    {
-        // Arrange: Create agent
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        // Arrange: Setup messages
-        this.SetupResponses(
-            HttpStatusCode.OK,
-            OpenAIAssistantResponseContent.ListMessagesPageMore,
-            OpenAIAssistantResponseContent.ListMessagesPageMore,
-            OpenAIAssistantResponseContent.ListMessagesPageFinal);
-
-        // Act: Get messages
-        ChatMessageContent[] messages = await agent.GetThreadMessagesAsync("threadid").ToArrayAsync();
-
-        // Assert
-        Assert.Equal(5, messages.Length);
-    }
-
-    /// <summary>
     /// Verify complex chat interaction across multiple states.
     /// </summary>
     [Fact]
@@ -668,42 +304,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     /// Verify ability to list agent definitions.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentListDefinitionAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponses(
-            HttpStatusCode.OK,
-            OpenAIAssistantResponseContent.ListAgentsPageMore,
-            OpenAIAssistantResponseContent.ListAgentsPageMore,
-            OpenAIAssistantResponseContent.ListAgentsPageFinal);
-
-        // Act
-        var messages =
-            await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestConfiguration()).ToArrayAsync();
-        // Assert
-        Assert.Equal(7, messages.Length);
-
-        // Arrange
-        this.SetupResponses(
-            HttpStatusCode.OK,
-            OpenAIAssistantResponseContent.ListAgentsPageMore,
-            OpenAIAssistantResponseContent.ListAgentsPageFinal);
-
-        // Act
-        messages =
-            await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestConfiguration()).ToArrayAsync();
-        // Assert
-        Assert.Equal(4, messages.Length);
-    }
-
-    /// <summary>
-    /// Verify ability to list agent definitions.
-    /// </summary>
-    [Fact]
     public async Task VerifyOpenAIAssistantAgentWithFunctionCallAsync()
     {
         // Arrange
@@ -731,7 +331,387 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Assert
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
-        Assert.IsType<TextContent>(messages[0].Items[0]);
+        Assert.IsType<Microsoft.SemanticKernel.TextContent>(messages[0].Items[0]);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = false; // Explicitly set to false
+
+        // Initialize agent channel
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        // UseImmutableKernel not set, should default to false
+
+        // Initialize agent channel
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that kernel remains immutable when UseImmutableKernel is true.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentKernelImmutabilityWhenUseImmutableKernelTrueAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = true;
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify original kernel was not modified
+        Assert.Equal(originalPluginCount, originalKernel.Plugins.Count);
+
+        // The kernel should remain unchanged since UseImmutableKernel=true creates a clone
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = false;
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [] // Empty AIFunctions list
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        // Verify the same kernel instance is still being used (mutable behavior)
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentStreamingThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = false; // Explicitly set to false
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                        OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentStreamingThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        // UseImmutableKernel not set, should default to false
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                        OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                        OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                        OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync());
+
+        Assert.NotNull(exception);
+    }
+
+    /// <summary>
+    /// Verify that kernel remains immutable when UseImmutableKernel is true (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentStreamingKernelImmutabilityWhenUseImmutableKernelTrueAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = true;
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.True(result.Length > 0);
+
+        // Verify original kernel was not modified
+        Assert.Equal(originalPluginCount, originalKernel.Plugins.Count);
+
+        // The kernel should remain unchanged since UseImmutableKernel=true creates a clone
+        Assert.Same(originalKernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist (streaming).
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentStreamingMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        agent.UseImmutableKernel = false;
+
+        var originalKernel = agent.Kernel;
+        var originalPluginCount = originalKernel.Plugins.Count;
+
+        var mockAIContextProvider = new Mock<AIContextProvider>();
+        var aiContext = new AIContext
+        {
+            AIFunctions = [] // Empty AIFunctions list
+        };
+        mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(aiContext);
+
+        var thread = new OpenAIAssistantAgentThread(agent.Client);
+        thread.AIContextProviders.Add(mockAIContextProvider.Object);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi"), thread: thread).ToArrayAsync();
+
+        // Assert
+        Assert.True(result.Length > 0);
+
+        // Verify the same kernel instance is still being used (mutable behavior)
+        Assert.Same(originalKernel, agent.Kernel);
     }
 
     /// <inheritdoc/>
@@ -749,38 +729,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
         this._emptyKernel = new Kernel();
-    }
-
-    private async Task VerifyAgentCreationAsync(OpenAIAssistantDefinition definition)
-    {
-        this.SetupResponse(HttpStatusCode.OK, definition);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestConfiguration(),
-                definition,
-                this._emptyKernel);
-
-        ValidateAgentDefinition(agent, definition);
-    }
-
-    private async Task VerifyAgentTemplateAsync(
-        OpenAIAssistantCapabilities capabilities,
-        PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null)
-    {
-        this.SetupResponse(HttpStatusCode.OK, capabilities, templateConfig);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateFromTemplateAsync(
-                this.CreateTestConfiguration(),
-                capabilities,
-                this._emptyKernel,
-                new KernelArguments(),
-                templateConfig,
-                templateFactory);
-
-        ValidateAgentDefinition(agent, capabilities, templateConfig);
     }
 
     private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantDefinition expectedConfig)
@@ -803,9 +751,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Verify fundamental state
         Assert.NotNull(agent);
         Assert.NotNull(agent.Id);
-        Assert.False(agent.IsDeleted);
         Assert.NotNull(agent.Definition);
-        Assert.Equal(expectedConfig.ModelId, agent.Definition.ModelId);
+        Assert.Equal(expectedConfig.ModelId, agent.Definition.Model);
 
         // Verify core properties
         Assert.Equal(expectedInstructions ?? string.Empty, agent.Instructions);
@@ -814,11 +761,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Verify options
         Assert.Equal(expectedConfig.Temperature, agent.Definition.Temperature);
-        Assert.Equal(expectedConfig.TopP, agent.Definition.TopP);
-        Assert.Equal(expectedConfig.ExecutionOptions?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens);
-        Assert.Equal(expectedConfig.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
-        Assert.Equal(expectedConfig.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
-        Assert.Equal(expectedConfig.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
+        Assert.Equal(expectedConfig.TopP, agent.Definition.NucleusSamplingFactor);
 
         // Verify tool definitions
         int expectedToolCount = 0;
@@ -830,7 +773,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ++expectedToolCount;
         }
 
-        Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.Equal(hasCodeInterpreter, agent.Definition.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
         if (expectedConfig.EnableFileSearch)
@@ -839,9 +782,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ++expectedToolCount;
         }
 
-        Assert.Equal(hasFileSearch, agent.Tools.OfType<FileSearchToolDefinition>().Any());
+        Assert.Equal(hasFileSearch, agent.Definition.Tools.OfType<FileSearchToolDefinition>().Any());
 
-        Assert.Equal(expectedToolCount, agent.Tools.Count);
+        Assert.Equal(expectedToolCount, agent.Definition.Tools.Count);
 
         // Verify metadata
         Assert.NotNull(agent.Definition.Metadata);
@@ -865,24 +808,28 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         }
 
         // Verify detail definition
-        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.VectorStoreId);
-        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
+        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.ToolResources.FileSearch?.VectorStoreIds.SingleOrDefault());
+        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.ToolResources.CodeInterpreter?.FileIds);
     }
 
-    private Task<OpenAIAssistantAgent> CreateAgentAsync()
+    private async Task<OpenAIAssistantAgent> CreateAgentAsync()
     {
         OpenAIAssistantDefinition definition = new("testmodel");
 
         this.SetupResponse(HttpStatusCode.OK, definition);
 
-        return
-            OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestConfiguration(),
-                definition,
-                this._emptyKernel);
+        var clientProvider = this.CreateTestClient();
+        var assistantClient = clientProvider.Client.GetAssistantClient();
+        var assistantCreationOptions = new AssistantCreationOptions();
+        var model = await assistantClient.CreateAssistantAsync("testmodel", assistantCreationOptions);
+
+        return new OpenAIAssistantAgent(model, assistantClient)
+        {
+            Kernel = this._emptyKernel
+        };
     }
 
-    private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
+    private OpenAIClientProvider CreateTestClient(bool targetAzure = false)
         => targetAzure ?
             OpenAIClientProvider.ForAzureOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: new Uri("https://localhost"), this._httpClient) :
             OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
@@ -905,4 +852,27 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         public void MyFunction(int index)
         { }
     }
+
+    /// <summary>
+    /// Helper class for testing AIFunction behavior.
+    /// </summary>
+    private sealed class TestAIFunction : AIFunction
+    {
+        public TestAIFunction(string name, string description = "")
+        {
+            this.Name = name;
+            this.Description = description;
+        }
+
+        public override string Name { get; }
+
+        public override string Description { get; }
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult<object?>("Test result");
+        }
+    }
 }
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+

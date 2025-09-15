@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/process/TestsShared/**/*.cs" Link="TestsShared/%(RecursiveDir)/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

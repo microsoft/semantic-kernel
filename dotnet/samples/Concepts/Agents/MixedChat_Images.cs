@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Files;
+using OpenAI.Assistants;
 
 namespace Agents;
 
@@ -11,7 +11,7 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces image output.
 /// </summary>
-public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string AnalystName = "Analyst";
     private const string AnalystInstructions = "Create charts as requested without explanation.";
@@ -19,32 +19,29 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
     private const string SummarizerName = "Summarizer";
     private const string SummarizerInstructions = "Summarize the entire conversation for the user in natural language.";
 
-    [Fact]
-    public async Task AnalyzeDataAndGenerateChartAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AnalyzeDataAndGenerateChartAsync(bool useChatClient)
     {
-        OpenAIClientProvider provider = this.GetClientProvider();
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name: AnalystName,
+                instructions: AnalystInstructions,
+                enableCodeInterpreter: true,
+                metadata: SampleMetadata);
 
-        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
-
-        // Define the agents
-        OpenAIAssistantAgent analystAgent =
-            await OpenAIAssistantAgent.CreateAsync(
-                provider,
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Instructions = AnalystInstructions,
-                    Name = AnalystName,
-                    EnableCodeInterpreter = true,
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Create the agent
+        OpenAIAssistantAgent analystAgent = new(assistant, this.AssistantClient);
 
         ChatCompletionAgent summaryAgent =
             new()
             {
                 Instructions = SummarizerInstructions,
                 Name = SummarizerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -75,8 +72,10 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
         }
         finally
         {
-            await analystAgent.DeleteAsync();
+            await this.AssistantClient.DeleteAssistantAsync(analystAgent.Id);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(Agent agent, string? input = null)
@@ -91,7 +90,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseImageAsync(fileClient, response);
+                await this.DownloadResponseImageAsync(response);
             }
         }
     }

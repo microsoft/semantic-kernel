@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import Literal
+
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
@@ -13,8 +15,8 @@ class ServiceSettings(KernelBaseSettings):
     are missing.
 
     Args:
-        global_llm_service (str | None): The LLM service to use for the samples, either "OpenAI" or "AzureOpenAI"
+        global_llm_service: The LLM service to use for the samples, either "OpenAI" or "AzureOpenAI"
             If not provided, defaults to "AzureOpenAI".
     """
 
-    global_llm_service: str | None = None
+    global_llm_service: Literal["OpenAI", "AzureOpenAI"] = "AzureOpenAI"

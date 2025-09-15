@@ -1247,11 +1247,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(options.KernelArguments, kernelFunctionContext.Arguments);
     }
 
-    [Fact]
-    public async Task ItShouldIncludeRequestDataWhenOperationCanceledExceptionIsThrownAsync()
+    [Theory]
+    [MemberData(nameof(RestApiOperationRunnerExceptions))]
+    public async Task ItShouldIncludeRequestDataWhenOperationExecutionFailsAsync(Type expectedExceptionType, string expectedExceptionMessage, Exception expectedException)
     {
         // Arrange
-        this._httpMessageHandlerStub.ExceptionToThrow = new OperationCanceledException();
+        this._httpMessageHandlerStub.ExceptionToThrow = expectedException;
 
         var operation = new RestApiOperation(
             id: "fake-id",
@@ -1273,12 +1274,23 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act & Assert
-        var canceledException = await Assert.ThrowsAsync<OperationCanceledException>(() => sut.RunAsync(operation, arguments));
-        Assert.Equal("The operation was canceled.", canceledException.Message);
-        Assert.Equal("POST", canceledException.Data["http.request.method"]);
-        Assert.Equal("https://fake-random-test-host/fake-path", canceledException.Data["url.full"]);
-        Assert.Equal("{\"value\":\"fake-value\"}", canceledException.Data["http.request.body"]);
+        var actualException = await Assert.ThrowsAsync(expectedExceptionType, () => sut.RunAsync(operation, arguments));
+        Assert.Equal(expectedExceptionMessage, actualException.Message);
+        Assert.Equal("POST", actualException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", actualException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", actualException.Data["http.request.body"]);
+        Assert.NotNull(actualException.Data["http.request.options"]);
     }
+
+    /// <summary>
+    /// Exceptions to thrown by <see cref="RestApiOperationRunner"/>.
+    /// </summary>
+    public static TheoryData<Type, string, Exception> RestApiOperationRunnerExceptions => new()
+    {
+        { typeof(HttpOperationException) , "An error occurred during the HTTP operation.", new HttpOperationException("An error occurred during the HTTP operation.") },
+        { typeof(OperationCanceledException) , "The operation was canceled.", new OperationCanceledException("The operation was canceled.") },
+        { typeof(KernelException) , "A critical kernel error occurred.", new KernelException("A critical kernel error occurred.") }
+    };
 
     [Fact]
     public async Task ItShouldUseCustomHttpResponseContentReaderAsync()

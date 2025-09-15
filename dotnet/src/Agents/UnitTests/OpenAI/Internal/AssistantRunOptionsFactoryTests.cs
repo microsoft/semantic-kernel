@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -21,19 +21,16 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsNullTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition =
-            new("gpt-anything")
+        RunCreationOptions defaultOptions =
+            new()
             {
+                ModelOverride = "gpt-anything",
                 Temperature = 0.5F,
-                ExecutionOptions =
-                    new()
-                    {
-                        AdditionalInstructions = "test",
-                    },
+                AdditionalInstructions = "test",
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -52,20 +49,21 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsEquivalentTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition =
-            new("gpt-anything")
+        RunCreationOptions defaultOptions =
+            new()
             {
+                ModelOverride = "gpt-anything",
                 Temperature = 0.5F,
             };
 
-        OpenAIAssistantInvocationOptions invocationOptions =
+        RunCreationOptions invocationOptions =
             new()
             {
                 Temperature = 0.5F,
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, "test", invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -81,29 +79,26 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsOverrideTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition =
-            new("gpt-anything")
-            {
-                Temperature = 0.5F,
-                ExecutionOptions =
-                    new()
-                    {
-                        AdditionalInstructions = "test1",
-                        TruncationMessageCount = 5,
-                    },
-            };
-
-        OpenAIAssistantInvocationOptions invocationOptions =
+        RunCreationOptions defaultOptions =
             new()
             {
+                ModelOverride = "gpt-anything",
+                Temperature = 0.5F,
+                TruncationStrategy = RunTruncationStrategy.CreateLastMessagesStrategy(5),
+            };
+
+        RunCreationOptions invocationOptions =
+            new()
+            {
+                ModelOverride = "gpt-anything",
                 AdditionalInstructions = "test2",
                 Temperature = 0.9F,
-                TruncationMessageCount = 8,
-                EnableJsonResponse = true,
+                TruncationStrategy = RunTruncationStrategy.CreateLastMessagesStrategy(8),
+                ResponseFormat = AssistantResponseFormat.JsonObject,
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -121,21 +116,18 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsMetadataTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition =
-            new("gpt-anything")
-            {
-                Temperature = 0.5F,
-                ExecutionOptions =
-                    new()
-                    {
-                        TruncationMessageCount = 5,
-                    },
-            };
-
-        OpenAIAssistantInvocationOptions invocationOptions =
+        RunCreationOptions defaultOptions =
             new()
             {
-                Metadata = new Dictionary<string, string>
+                ModelOverride = "gpt-anything",
+                Temperature = 0.5F,
+                TruncationStrategy = RunTruncationStrategy.CreateLastMessagesStrategy(5),
+            };
+
+        RunCreationOptions invocationOptions =
+            new()
+            {
+                Metadata =
                 {
                     { "key1", "value" },
                     { "key2", null! },
@@ -143,7 +135,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);
@@ -158,18 +150,21 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsMessagesTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition = new("gpt-anything");
-
-        OpenAIAssistantInvocationOptions invocationOptions =
+        RunCreationOptions defaultOptions =
             new()
             {
-                AdditionalMessages = [
-                    new ChatMessageContent(AuthorRole.User, "test message")
-                ]
+                ModelOverride = "gpt-anything",
+            };
+
+        ChatMessageContent message = new(AuthorRole.User, "test message");
+        RunCreationOptions invocationOptions =
+            new()
+            {
+                AdditionalMessages = { message.ToThreadInitializationMessage() },
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Single(options.AdditionalMessages);
@@ -182,23 +177,52 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsMaxTokensTest()
     {
         // Arrange
-        OpenAIAssistantDefinition definition =
-            new("gpt-anything")
+        RunCreationOptions defaultOptions =
+            new()
             {
+                ModelOverride = "gpt-anything",
                 Temperature = 0.5F,
-                ExecutionOptions =
-                    new()
-                    {
-                        MaxCompletionTokens = 4096,
-                        MaxPromptTokens = 1024,
-                    },
+                MaxOutputTokenCount = 4096,
+                MaxInputTokenCount = 1024,
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(1024, options.MaxInputTokenCount);
         Assert.Equal(4096, options.MaxOutputTokenCount);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> metadata.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryAdditionalInstructionsTest()
+    {
+        // Arrange
+        RunCreationOptions defaultOptions =
+            new()
+            {
+                ModelOverride = "gpt-anything",
+                Temperature = 0.5F,
+                MaxOutputTokenCount = 4096,
+                MaxInputTokenCount = 1024,
+                AdditionalInstructions = "DefaultInstructions"
+            };
+
+        RunCreationOptions invocationOptions =
+            new()
+            {
+                AdditionalInstructions = "OverrideInstructions",
+            };
+
+        // Act
+        RunCreationOptions optionsWithOverride = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: "Context");
+        RunCreationOptions optionsWithoutOverride = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: "Context");
+
+        // Assert
+        Assert.Equal($"OverrideInstructions{Environment.NewLine}{Environment.NewLine}Context", optionsWithOverride.AdditionalInstructions);
+        Assert.Equal($"DefaultInstructions{Environment.NewLine}{Environment.NewLine}Context", optionsWithoutOverride.AdditionalInstructions);
     }
 }

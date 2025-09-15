@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Adapt channel contract to underlying <see cref="AgentChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
     private readonly AgentChat _chat = chat;
@@ -54,7 +55,11 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        int initialCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
+        int initialCount = 0;
+        await foreach (var _ in this._chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            initialCount++;
+        }
 
         await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -64,12 +69,17 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             }
         }
 
-        ChatMessageContent[] history = await this._chat.GetChatMessagesAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
-        if (history.Length > initialCount)
+        List<ChatMessageContent> history = [];
+        await foreach (var item in this._chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            history.Add(item);
+        }
+
+        if (history.Count > initialCount)
         {
             if (agent.Mode == AggregatorMode.Flat)
             {
-                for (int index = history.Length - 1; index >= initialCount; --index)
+                for (int index = history.Count - 1; index >= initialCount; --index)
                 {
                     messages.Add(history[index]);
                 }

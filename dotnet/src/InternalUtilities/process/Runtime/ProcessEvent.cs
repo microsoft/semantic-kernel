@@ -38,6 +38,8 @@ public record ProcessEvent
     /// </summary>
     internal string QualifiedId => $"{this.Namespace}{ProcessConstants.EventIdSeparator}{this.SourceId}";
 
+    internal string? WrittenToThread { get; init; }
+
     /// <summary>
     /// Creates a new <see cref="ProcessEvent"/> from a <see cref="KernelProcessEvent"/>.
     /// </summary>
@@ -49,8 +51,39 @@ public record ProcessEvent
         {
             Namespace = eventNamespace,
             SourceId = kernelProcessEvent.Id,
-            Data = kernelProcessEvent.Data,
+            Data = KernelProcessEventData.FromObject(kernelProcessEvent.Data),
             Visibility = kernelProcessEvent.Visibility,
             IsError = isError,
         };
+
+    /// <summary>
+    /// Creates a new <see cref="ProcessEvent"/>.
+    /// </summary>
+    /// <param name="data">data passed in the event</param>
+    /// <param name="eventNamespace">The namespace of the event.</param>
+    /// <param name="sourceId">event source id</param>
+    /// <param name="eventVisibility">visibility of the event</param>
+    /// <param name="isError">Indicates if event is from a runtime error.</param>
+    /// <param name="writtenToThread">Thread Id of the event</param>
+    /// <returns></returns>
+    internal static ProcessEvent Create(object? data, string eventNamespace, string sourceId, KernelProcessEventVisibility eventVisibility, bool isError = false, string? writtenToThread = null) =>
+        new()
+        {
+            Namespace = eventNamespace,
+            SourceId = sourceId,
+            Data = KernelProcessEventData.FromObject(data),
+            IsError = isError,
+            Visibility = eventVisibility,
+            WrittenToThread = writtenToThread,
+        };
+
+    internal KernelProcessEvent ToKernelProcessEvent()
+    {
+        return new KernelProcessEvent
+        {
+            Id = this.SourceId,
+            Data = this.Data,
+            Visibility = this.Visibility,
+        };
+    }
 }

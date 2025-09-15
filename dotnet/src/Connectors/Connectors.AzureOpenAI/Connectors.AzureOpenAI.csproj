@@ -5,8 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureOpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010,OPENAI001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
@@ -35,4 +34,5 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
   </ItemGroup>
+
 </Project>

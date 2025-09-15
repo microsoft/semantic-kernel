@@ -50,7 +50,8 @@ public class OllamaPromptExecutionSettingsTests
                                     "stop": ["stop me"],
                                     "temperature": 0.5,
                                     "top_p": 0.9,
-                                    "top_k": 100
+                                    "top_k": 100,
+                                    "num_predict": 50
                                 }
                                 """;
 
@@ -61,6 +62,7 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(0.5f, ollamaExecutionSettings.Temperature);
         Assert.Equal(0.9f, ollamaExecutionSettings.TopP!.Value, 0.1f);
         Assert.Equal(100, ollamaExecutionSettings.TopK);
+        Assert.Equal(50, ollamaExecutionSettings.NumPredict);
     }
 
     [Fact]
@@ -69,8 +71,10 @@ public class OllamaPromptExecutionSettingsTests
         // Arrange
         var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
 
-        var originalExecutionSettings = new PromptExecutionSettings();
-        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+        var originalExecutionSettings = new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior = functionChoiceBehavior
+        };
 
         // Act
         var result = OllamaPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);

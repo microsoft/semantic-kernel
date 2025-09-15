@@ -50,11 +50,7 @@ def _format_developer_message(message: ChatMessageContent) -> ChatRequestMessage
     Returns:
         The formatted developer message.
     """
-    # TODO(@ymuichiro): Add support when Azure AI Inference SDK implements developer role
-    raise NotImplementedError(
-        "Developer role is currently not supported by the Azure AI Inference SDK. "
-        "This feature will be implemented in a future update when SDK support is available."
-    )
+    return ChatRequestMessage({"role": "developer", "content": message.content})
 
 
 def _format_user_message(message: ChatMessageContent) -> UserMessage:
@@ -148,7 +144,9 @@ def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
         raise ValueError("No FunctionResultContent found in the message items")
 
     # The API expects the result to be a string, so we need to convert it to a string
-    return ToolMessage(content=str(message.items[0].result), tool_call_id=message.items[0].id)
+    return ToolMessage(
+        content=str(message.items[0].result), tool_call_id=message.items[0].id if message.items[0].id else "None"
+    )
 
 
 MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestMessage]] = {

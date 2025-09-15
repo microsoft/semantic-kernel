@@ -3,13 +3,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
 /// Demonstrate the use of <see cref="AgentChat.ResetAsync"/>.
 /// </summary>
-public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string AgentInstructions =
         """
@@ -17,28 +18,27 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         If the query does not correspond with information provided, inform the user that their query cannot be answered.
         """;
 
-    [Fact]
-    public async Task ResetChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResetChat(bool useChatClient)
     {
-        OpenAIClientProvider provider = this.GetClientProvider();
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                instructions: AgentInstructions,
+                metadata: SampleMetadata);
 
-        // Define the agents
-        OpenAIAssistantAgent assistantAgent =
-            await OpenAIAssistantAgent.CreateAsync(
-                provider,
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Name = nameof(OpenAIAssistantAgent),
-                    Instructions = AgentInstructions,
-                },
-                kernel: new Kernel());
+        // Create the agent
+        OpenAIAssistantAgent assistantAgent = new(assistant, this.AssistantClient);
 
         ChatCompletionAgent chatAgent =
             new()
             {
                 Name = nameof(ChatCompletionAgent),
                 Instructions = AgentInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -64,8 +64,10 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         finally
         {
             await chat.ResetAsync();
-            await assistantAgent.DeleteAsync();
+            await this.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(Agent agent, string? input = null)

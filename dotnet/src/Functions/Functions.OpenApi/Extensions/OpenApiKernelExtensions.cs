@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -90,7 +89,6 @@ public static class OpenApiKernelExtensions
     /// <param name="specification">The specification model.</param>
     /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
-    [Experimental("SKEXP0040")]
     public static KernelPlugin ImportPluginFromOpenApi(
         this Kernel kernel,
         string pluginName,
@@ -119,7 +117,7 @@ public static class OpenApiKernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -158,7 +156,7 @@ public static class OpenApiKernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -201,7 +199,7 @@ public static class OpenApiKernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -227,7 +225,6 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
-    [Experimental("SKEXP0040")]
     public static KernelPlugin CreatePluginFromOpenApi(
         this Kernel kernel,
         string pluginName,
@@ -236,7 +233,7 @@ public static class OpenApiKernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());

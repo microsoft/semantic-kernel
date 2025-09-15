@@ -1,18 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from typing import Any
 
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental_class
+@deprecated("This class will be removed in a future version.")
 class SemanticTextMemory(SemanticTextMemoryBase):
     """Class for semantic text memory."""
 
@@ -38,7 +43,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         id: str,
         description: str | None = None,
         additional_metadata: str | None = None,
-        embeddings_kwargs: dict[str, Any] | None = {},
+        embeddings_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
 
@@ -53,7 +58,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings([text], **embeddings_kwargs))[0]
+        embedding = (await self._embeddings_generator.generate_embeddings([text], **(embeddings_kwargs or {})))[0]
         data = MemoryRecord.local_record(
             id=id,
             text=text,
@@ -72,7 +77,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         external_source_name: str,
         description: str | None = None,
         additional_metadata: str | None = None,
-        embeddings_kwargs: dict[str, Any] | None = {},
+        embeddings_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Save a reference to the memory (calls the memory store's upsert method).
 
@@ -88,7 +93,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings([text], **embeddings_kwargs))[0]
+        embedding = (await self._embeddings_generator.generate_embeddings([text], **(embeddings_kwargs or {})))[0]
         data = MemoryRecord.reference_record(
             external_id=external_id,
             source_name=external_source_name,
@@ -123,7 +128,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         limit: int = 1,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-        embeddings_kwargs: dict[str, Any] | None = {},
+        embeddings_kwargs: dict[str, Any] | None = None,
     ) -> list[MemoryQueryResult]:
         """Search the memory (calls the memory store's get_nearest_matches method).
 
@@ -138,7 +143,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         Returns:
             List[MemoryQueryResult]: The list of MemoryQueryResult found.
         """
-        query_embedding = (await self._embeddings_generator.generate_embeddings([query], **embeddings_kwargs))[0]
+        query_embedding = (await self._embeddings_generator.generate_embeddings([query], **(embeddings_kwargs or {})))[
+            0
+        ]
         results = await self._storage.get_nearest_matches(
             collection_name=collection,
             embedding=query_embedding,

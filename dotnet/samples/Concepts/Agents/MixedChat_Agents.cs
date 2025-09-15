@@ -4,13 +4,14 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -32,8 +33,10 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
         Consider suggestions when refining an idea.
         """;
 
-    [Fact]
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -41,19 +44,19 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
-        OpenAIAssistantAgent agentWriter =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider: this.GetClientProvider(),
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Instructions = CopyWriterInstructions,
-                    Name = CopyWriterName,
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name: CopyWriterName,
+                instructions: CopyWriterInstructions,
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -86,6 +89,8 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient?.Dispose();
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

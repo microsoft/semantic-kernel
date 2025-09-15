@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class MessageBufferInterface(ActorInterface, ABC):
     """Abstract base class for a message event buffer that follows the ActorInterface."""
 

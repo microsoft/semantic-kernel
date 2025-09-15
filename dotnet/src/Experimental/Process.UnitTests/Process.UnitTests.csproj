@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001,CA1024</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +24,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/TestsSharedComponents.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

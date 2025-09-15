@@ -1,8 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.ClientModel;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using Microsoft.SemanticKernel.Diagnostics;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -10,6 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId)
     : AgentChannel<OpenAIAssistantAgent>
 {
@@ -19,9 +25,22 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
+        const string ErrorMessage = "The message could not be added to the thread due to an error response from the service.";
+
         foreach (ChatMessageContent message in history)
         {
-            await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ClientResultException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+            catch (AggregateException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
         }
     }
 
@@ -30,23 +49,25 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         OpenAIAssistantAgent agent,
         CancellationToken cancellationToken)
     {
-        agent.ThrowIfDeleted();
-
-        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, []),
+            () => AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            cancellationToken);
     }
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
-        agent.ThrowIfDeleted();
-
-        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, messages),
+            () => AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            cancellationToken);
     }
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, null, cancellationToken);
     }
 
     /// <inheritdoc/>

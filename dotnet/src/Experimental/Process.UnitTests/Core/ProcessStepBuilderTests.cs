@@ -45,7 +45,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith("TestEvent", edgeBuilder.EventId);
+        Assert.EndsWith("TestEvent", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class ProcessStepBuilderTests
     {
         // Arrange
         var stepBuilder = new TestProcessStepBuilder("TestStep");
-        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent");
+        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent", "TestEvent");
 
         // Act
         stepBuilder.LinkTo("TestEvent", edgeBuilder);
@@ -165,7 +165,7 @@ public class ProcessStepBuilderTests
     /// Verify that the <see cref="ProcessStepBuilder.ResolveFunctionTarget(string, string)"/> method throws when it cannot resolve.
     /// In this case, the function name is provided and the parameter name is not. The target function has more than one parameters.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Working on removing function parameter targets.")]
     public void ResolveFunctionTargetWithoutParameterShouldThrowWhenCannotResolveParameter()
     {
         // Arrange
@@ -233,9 +233,9 @@ public class ProcessStepBuilderTests
     /// </summary>
     private sealed class TestProcessStepBuilder : ProcessStepBuilder
     {
-        public TestProcessStepBuilder(string name) : base(name) { }
+        public TestProcessStepBuilder(string name) : base(name, null) { }
 
-        internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+        internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
         {
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, version: "v1", id: this.Id), []);
         }

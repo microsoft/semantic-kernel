@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.SemanticKernel.Functions;
 
 namespace Microsoft.SemanticKernel;
 
@@ -15,7 +16,9 @@ namespace Microsoft.SemanticKernel;
     WriteIndented = true)]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
 [JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(KernelFunctionSchemaModel))]
 [JsonSerializable(typeof(PromptExecutionSettings))]
+[JsonSerializable(typeof(KernelArguments))]
 // types commonly used as values in settings dictionaries
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(int))]
@@ -65,7 +68,9 @@ internal sealed partial class AbstractionsJsonContext : JsonSerializerContext
         // and we want to be flexible in terms of what can be put into the various collections in the object model.
         // Otherwise, use the source-generated options to enable trimming and Native AOT.
 
-        if (JsonSerializer.IsReflectionEnabledByDefault)
+        if (JsonSerializer.IsReflectionEnabledByDefault
+            // This is a workaround for the fact that the default options are not available when running in Native AOT.                 
+            || Default is null)
         {
             // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext above.
             JsonSerializerOptions options = new(JsonSerializerDefaults.Web)

@@ -5,21 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110,OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0080,SKEXP0110,SKEXP0130,OPENAI001,MEVD9000</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Planners\SequentialPlanner\**" />
-    <Compile Remove="Planners\StepwisePlanner\**" />
-    <EmbeddedResource Remove="Planners\SequentialPlanner\**" />
-    <EmbeddedResource Remove="Planners\StepwisePlanner\**" />
-    <None Remove="Planners\SequentialPlanner\**" />
-    <None Remove="Planners\StepwisePlanner\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Planners\PlanTests.cs" />
-    <Compile Remove="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="CrossLanguage\Data\LightBulbApi.json" />
     <None Remove="CrossLanguage\Data\LightBulbApiTest.json" />
@@ -41,18 +29,19 @@
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="AWSSDK.SecurityToken" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+    <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Npgsql" />
-    <PackageReference Include="Pinecone.NET" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -64,39 +53,41 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
+    <PackageReference Include="Testcontainers.MongoDB" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
+    <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Agents\Yaml\Agents.Yaml.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\Agents\Bedrock\Agents.Bedrock.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.SqlServer\Connectors.Memory.SqlServer.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
+    <ProjectReference Include="..\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
+    <ProjectReference Include="..\VectorData\AzureAISearch\AzureAISearch.csproj" />
+    <ProjectReference Include="..\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
+    <ProjectReference Include="..\VectorData\CosmosNoSql\CosmosNoSql.csproj" />
+    <ProjectReference Include="..\VectorData\Chroma\Chroma.csproj" />
+    <ProjectReference Include="..\VectorData\InMemory\InMemory.csproj" />
+    <ProjectReference Include="..\VectorData\Milvus\Milvus.csproj" />
+    <ProjectReference Include="..\VectorData\MongoDB\MongoDB.csproj" />
+    <ProjectReference Include="..\VectorData\PgVector\PgVector.csproj" />
+    <ProjectReference Include="..\VectorData\Qdrant\Qdrant.csproj" />
+    <ProjectReference Include="..\VectorData\Redis\Redis.csproj" />
+    <ProjectReference Include="..\VectorData\SqliteVec\SqliteVec.csproj" />
+    <ProjectReference Include="..\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\Experimental\Process.Core\Process.Core.csproj" />
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
-    <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
-    <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
@@ -106,6 +97,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestData\SessionsPythonPlugin\file_to_upload_2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\SessionsPythonPlugin\file_to_upload_1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -154,6 +151,12 @@
     <Content Include="CrossLanguage\Data\SimplePromptTest.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Plugins\OpenApiManifest\example-apimanifest-local.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Plugins\OpenApiManifest\example-apimanifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Plugins\OpenApi\instacart-service.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -163,6 +166,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Plugins\OpenApiManifest\example-apimanifest-repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="prompts/GenerateStory.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -187,12 +193,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/gemini_cached_content.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

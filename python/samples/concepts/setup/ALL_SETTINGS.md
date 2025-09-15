@@ -1,4 +1,6 @@
-## AI Service Settings used across SK:
+# Semantic Kernel Settings
+
+## AI Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -28,6 +30,7 @@
 |  | [VertexAITextEmbedding](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_embedding.py) | project_id, <br> region, <br> embedding_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_EMBEDDING_MODEL_ID | Yes, <br> No, <br> Yes |  |
 | HuggingFace | [HuggingFaceTextCompletion](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_completion.py) | ai_model_id | N/A | Yes | |
 |  | [HuggingFaceTextEmbedding](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_embedding.py) | ai_model_id | N/A | Yes | |
+| NVIDIA NIM | [NvidiaTextEmbedding](../../../semantic_kernel/connectors/ai/nvidia/services/nvidia_text_embedding.py) | ai_model_id, <br> api_key, <br> base_url | NVIDIA_API_KEY, <br> NVIDIA_TEXT_EMBEDDING_MODEL_ID, <br> NVIDIA_BASE_URL | Yes | [NvidiaAISettings](../../../semantic_kernel/connectors/ai/nvidia/settings/nvidia_settings.py) |
 | Mistral AI | [MistralAIChatCompletion](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_chat_completion.py) | ai_model_id, <br> api_key | MISTRALAI_CHAT_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes | [MistralAISettings](../../../semantic_kernel/connectors/ai/mistral_ai/settings/mistral_ai_settings.py) |
 |  | [MistralAITextEmbedding](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_text_embedding.py) | ai_model_id, <br> api_key | MISTRALAI_EMBEDDING_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes |  |
 | Ollama | [OllamaChatCompletion](../../../semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py) | ai_model_id, <br> host | OLLAMA_CHAT_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No | [OllamaSettings](../../../semantic_kernel/connectors/ai/ollama/ollama_settings.py) |
@@ -36,7 +39,21 @@
 | Onnx | [OnnxGenAIChatCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) | template, <br> ai_model_path | N/A, <br> ONNX_GEN_AI_CHAT_MODEL_FOLDER | Yes, <br> Yes | [OnnxGenAISettings](../../../semantic_kernel/connectors/ai/onnx/onnx_gen_ai_settings.py) |
 |  | [OnnxGenAITextCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_text_completion.py) | ai_model_path | ONNX_GEN_AI_TEXT_MODEL_FOLDER | Yes |  |
 
-## Memory Service Settings used across SK:
+## Agent Framework Settings used across SK
+
+| Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
+| --- | --- | --- | --- | --- | --- |
+| OpenAI | [OpenAIAssistantAgent](../../../semantic_kernel/agents/open_ai/openai_assistant_agent.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_CHAT_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py) |
+|  | [OpenAIResponsesAgent](../../../semantic_kernel/agents/open_ai/openai_responses_agent.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_RESPONSES_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py) |
+| Azure OpenAI | [AzureAssistantAgent](../../../semantic_kernel/agents/open_ai/azure_assistant_agent.py) | deployment_name, <br> api_key, <br> endpoint, <br> api_version, <br> base_url | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT, <br> AZURE_OPENAI_API_VERSION, <br> AZURE_OPENAI_BASE_URL | Yes, <br> No, <br> Yes, <br> Yes, <br> No | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py) |
+|  | [AzureResponsesAgent](../../../semantic_kernel/agents/open_ai/azure_responses_agent.py) | deployment_name, <br> api_key, <br> endpoint, <br> api_version, <br> base_url | AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT, <br> AZURE_OPENAI_API_VERSION, <br> AZURE_OPENAI_BASE_URL | Yes, <br> No, <br> Yes, <br> Yes, <br> No | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py) |
+| Azure AI | [AzureAIAgent](../../../semantic_kernel/agents/azure_ai/azure_ai_agent.py) | model_deployment_name, <br> endpoint, <br> agent_id, <br> bing_connection_id, <br> azure_ai_search_connection_id, <br> azure_ai_search_index_name, <br> api_version | AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME, <br> AZURE_AI_AGENT_ENDPOINT, <br> AZURE_AI_AGENT_AGENT_ID, <br> AZURE_AI_AGENT_BING_CONNECTION_ID, <br> AZURE_AI_AGENT_AZURE_AI_SEARCH_CONNECTION_ID, <br> AZURE_AI_AGENT_AZURE_AI_SEARCH_INDEX_NAME, <br> AZURE_AI_AGENT_API_VERSION | Yes, <br> Yes, <br> No, <br> No, <br> No, <br> No, <br> No | [AzureAIAgentSettings](../../../semantic_kernel/agents/azure_ai/azure_ai_agent_settings.py) |
+| Bedrock | [BedrockAgent](../../../semantic_kernel/agents/bedrock/bedrock_agent.py) | agent_resource_role_arn, <br> foundation_model | BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN, <br> BEDROCK_AGENT_FOUNDATION_MODEL | Yes, <br> Yes | [BedrockAgentSettings](../../../semantic_kernel/agents/bedrock/bedrock_agent_settings.py) |
+| Copilot Studio | [CopilotStudioAgent](../../../semantic_kernel/agents/copilot_studio/copilot_studio_agent.py) | app_client_id, <br> tenant_id, <br> environment_id, <br> agent_identifier, <br> cloud, <br> copilot_agent_type, <br> custom_power_platform_cloud, <br> client_secret, <br> client_certificate, <br> user_assertion, <br> auth_mode | COPILOT_STUDIO_AGENT_APP_CLIENT_ID, <br> COPILOT_STUDIO_AGENT_TENANT_ID, <br> COPILOT_STUDIO_AGENT_ENVIRONMENT_ID, <br> COPILOT_STUDIO_AGENT_AGENT_IDENTIFIER, <br> COPILOT_STUDIO_AGENT_CLOUD, <br> COPILOT_STUDIO_AGENT_COPILOT_AGENT_TYPE, <br> COPILOT_STUDIO_AGENT_CUSTOM_POWER_PLATFORM_CLOUD, <br> COPILOT_STUDIO_AGENT_CLIENT_SECRET, <br> COPILOT_STUDIO_AGENT_CLIENT_CERTIFICATE, <br> COPILOT_STUDIO_AGENT_USER_ASSERTION, <br> COPILOT_STUDIO_AGENT_AUTH_MODE | No (varies by mode) | [CopilotStudioAgentSettings](../../../semantic_kernel/agents/copilot_studio/copilot_studio_agent_settings.py) |
+
+
+
+## Memory Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -49,7 +66,7 @@
 | Redis | [RedisMemoryService](../../../semantic_kernel/connectors/memory/redis/redis_memory_store.py) | connection_string | REDIS_CONNECTION_STRING | Yes | [RedisSettings](../../../semantic_kernel/connectors/memory/redis/redis_settings.py) |
 | Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py) | url, <br> api_key, <br> use_embed | WEAVIATE_URL, <br> WEAVIATE_API_KEY, <br> WEAVIATE_USE_EMBED | No, <br> No, <br> No | [WeaviateSettings](../../../semantic_kernel/connectors/memory/weaviate/weaviate_settings.py) |
 
-## Other settings used:
+## Other settings used
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |

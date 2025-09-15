@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Agents;
@@ -19,155 +20,98 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when directly
     /// invoking a <see cref="ChatCompletionAgent"/>.
     /// </summary>
-    [Fact]
-    public async Task TruncatedAgentReductionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TruncatedAgentReduction(bool useChatClient)
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
+        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10, useChatClient, out var chatClient);
 
         await InvokeAgentAsync(agent, 50);
+
+        chatClient?.Dispose();
     }
 
     /// <summary>
     /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when directly
     /// invoking a <see cref="ChatCompletionAgent"/>.
     /// </summary>
-    [Fact]
-    public async Task SummarizedAgentReductionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SummarizedAgentReduction(bool useChatClient)
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
+        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10, useChatClient, out var chatClient);
 
         await InvokeAgentAsync(agent, 50);
-    }
 
-    /// <summary>
-    /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when using
-    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task TruncatedChatReductionAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
-
-        await InvokeChatAsync(agent, 50);
-    }
-
-    /// <summary>
-    /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when using
-    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task SummarizedChatReductionAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
-
-        await InvokeChatAsync(agent, 50);
+        chatClient?.Dispose();
     }
 
     // Proceed with dialog by directly invoking the agent and explicitly managing the history.
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, int messageCount)
     {
-        ChatHistory chat = [];
+        ChatHistoryAgentThread agentThread = new();
 
         int index = 1;
         while (index <= messageCount)
         {
             // Provide user input
-            chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
             // Reduce prior to invoking the agent
-            bool isReduced = await agent.ReduceAsync(chat);
+            bool isReduced = await agent.ReduceAsync(agentThread.ChatHistory);
 
             // Invoke and display assistant response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent message in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, $"{index}"), agentThread))
             {
-                chat.Add(message);
                 Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
             }
 
             index += 2;
 
             // Display the message count of the chat-history for visibility into reduction
-            Console.WriteLine($"@ Message Count: {chat.Count}\n");
+            Console.WriteLine($"@ Message Count: {agentThread.ChatHistory.Count}\n");
 
             // Display summary messages (if present) if reduction has occurred
             if (isReduced)
             {
                 int summaryIndex = 0;
-                while (chat[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
+                while (agentThread.ChatHistory[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
                 {
-                    Console.WriteLine($"\tSummary: {chat[summaryIndex].Content}");
+                    Console.WriteLine($"\tSummary: {agentThread.ChatHistory[summaryIndex].Content}");
                     ++summaryIndex;
                 }
             }
         }
     }
 
-    // Proceed with dialog with AgentGroupChat.
-    private async Task InvokeChatAsync(ChatCompletionAgent agent, int messageCount)
+    private ChatCompletionAgent CreateSummarizingAgent(int reducerMessageCount, int reducerThresholdCount, bool useChatClient, out IChatClient? chatClient)
     {
-        AgentGroupChat chat = new();
+        Kernel kernel = this.CreateKernelWithChatCompletion(useChatClient, out chatClient);
 
-        int lastHistoryCount = 0;
+        var service = useChatClient
+            ? kernel.GetRequiredService<IChatClient>().AsChatCompletionService()
+            : kernel.GetRequiredService<IChatCompletionService>();
 
-        int index = 1;
-        while (index <= messageCount)
-        {
-            // Provide user input
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, $"{index}"));
-            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
-
-            // Invoke and display assistant response
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
-            {
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-            }
-
-            index += 2;
-
-            // Display the message count of the chat-history for visibility into reduction
-            // Note: Messages provided in descending order (newest first)
-            ChatMessageContent[] history = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
-            Console.WriteLine($"@ Message Count: {history.Length}\n");
-
-            // Display summary messages (if present) if reduction has occurred
-            if (history.Length < lastHistoryCount)
-            {
-                int summaryIndex = history.Length - 1;
-                while (history[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
-                {
-                    Console.WriteLine($"\tSummary: {history[summaryIndex].Content}");
-                    --summaryIndex;
-                }
-            }
-
-            lastHistoryCount = history.Length;
-        }
-    }
-
-    private ChatCompletionAgent CreateSummarizingAgent(int reducerMessageCount, int reducerThresholdCount)
-    {
-        Kernel kernel = this.CreateKernelWithChatCompletion();
         return
             new()
             {
                 Name = TranslatorName,
                 Instructions = TranslatorInstructions,
                 Kernel = kernel,
-                HistoryReducer = new ChatHistorySummarizationReducer(kernel.GetRequiredService<IChatCompletionService>(), reducerMessageCount, reducerThresholdCount),
+                HistoryReducer = new ChatHistorySummarizationReducer(service, reducerMessageCount, reducerThresholdCount),
             };
     }
 
-    private ChatCompletionAgent CreateTruncatingAgent(int reducerMessageCount, int reducerThresholdCount) =>
+    private ChatCompletionAgent CreateTruncatingAgent(int reducerMessageCount, int reducerThresholdCount, bool useChatClient, out IChatClient? chatClient) =>
         new()
         {
             Name = TranslatorName,
             Instructions = TranslatorInstructions,
-            Kernel = this.CreateKernelWithChatCompletion(),
+            Kernel = this.CreateKernelWithChatCompletion(useChatClient, out chatClient),
             HistoryReducer = new ChatHistoryTruncationReducer(reducerMessageCount, reducerThresholdCount),
         };
 }

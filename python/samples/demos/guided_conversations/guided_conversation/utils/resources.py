@@ -205,7 +205,7 @@ class GCResource:
             resource_instructions = ""
 
         if self.resource_constraint.mode == ResourceConstraintMode.EXACT:
-            exact_mode_instructions = f"""There {'are' if is_plural_remaining else 'is'} {formatted_remaining_resource} remaining (including this one) - the conversation will automatically terminate when 0 turns are left. \
+            exact_mode_instructions = f"""There {"are" if is_plural_remaining else "is"} {formatted_remaining_resource} remaining (including this one) - the conversation will automatically terminate when 0 turns are left. \
 You should continue the conversation until it is automatically terminated. This means you should NOT preemptively end the conversation, \
 either explicitly (by selecting the "End conversation" action) or implicitly (e.g. by telling the user that you have all required information and they should wait for the next step). \
 Your goal is not to maximize efficiency (i.e. complete the artifact as quickly as possible then end the conversation), but rather to make the best use of ALL remaining turns available to you"""

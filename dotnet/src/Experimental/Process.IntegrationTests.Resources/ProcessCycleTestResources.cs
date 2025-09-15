@@ -16,12 +16,12 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// </summary>
 public sealed class KickoffStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessFunctions
     {
         public const string KickOff = nameof(KickOff);
     }
 
-    [KernelFunction(Functions.KickOff)]
+    [KernelFunction(ProcessFunctions.KickOff)]
     public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
     {
         await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
@@ -109,19 +109,6 @@ public static class CommonEvents
     public const string StartBRequested = nameof(StartBRequested);
     public const string ExitRequested = nameof(ExitRequested);
     public const string StartProcess = nameof(StartProcess);
-}
-
-/// <summary>
-/// A step that echos its input.
-/// </summary>
-public sealed class EchoStep : KernelProcessStep
-{
-    [KernelFunction]
-    public string Echo(string message)
-    {
-        Console.WriteLine($"[ECHO] {message}");
-        return message;
-    }
 }
 
 /// <summary>

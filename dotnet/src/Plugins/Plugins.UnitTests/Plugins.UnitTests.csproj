@@ -26,7 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,14 +34,23 @@
     <ProjectReference Include="..\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins.Document\Plugins.Document.csproj" />
     <ProjectReference Include="..\Plugins.MsGraph\Plugins.MsGraph.csproj" />
+    <ProjectReference Include="..\Plugins.StructuredData.EntityFramework\Plugins.StructuredData.EntityFramework.csproj" />
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/HttpHeaderConstant.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Web\Tavily\" />
   </ItemGroup>
 
 </Project>

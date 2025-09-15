@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -20,12 +18,15 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// </summary>
 public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
 {
-    private readonly string _modelId;
+    private readonly Config? _config;
+    private readonly Model? _model;
     private readonly string _modelPath;
-    private readonly JsonSerializerOptions? _jsonSerializerOptions;
-    private Model? _model;
-    private Tokenizer? _tokenizer;
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private OnnxRuntimeGenAIChatClient? _chatClient;
+    private IChatCompletionService? _chatClientWrapper;
+    private readonly Dictionary<string, object?> _attributesInternal = [];
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
 
     /// <summary>
     /// Initializes a new instance of the OnnxRuntimeGenAIChatCompletionService class.
@@ -43,173 +44,82 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(modelPath);
 
-        this._modelId = modelId;
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
         this._modelPath = modelPath;
-        this._jsonSerializerOptions = jsonSerializerOptions;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, this._modelId);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Initializes a new instance of the OnnxRuntimeGenAIChatCompletionService class.
+    /// </summary>
+    /// <param name="modelId">The name of the model.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="providers">The providers to use for the chat completion service.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization and deserialization required by the service.</param>
+    public OnnxRuntimeGenAIChatCompletionService(
+        string modelId,
+        string modelPath,
+        IEnumerable<Provider> providers,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+        : this(modelId, modelPath, loggerFactory, jsonSerializerOptions)
     {
-        var result = new StringBuilder();
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(modelPath);
+        Verify.NotNull(providers);
 
-        await foreach (var content in this.RunInferenceAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))
+        this._config = new Config(modelPath);
+        this._config.ClearProviders();
+        foreach (Provider provider in providers)
         {
-            result.Append(content);
-        }
-
-        return new List<ChatMessageContent>
-        {
-            new(
-                role: AuthorRole.Assistant,
-                modelId: this._modelId,
-                content: result.ToString())
-        };
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var content in this.RunInferenceAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return new StreamingChatMessageContent(AuthorRole.Assistant, content, modelId: this._modelId);
-        }
-    }
-
-    private async IAsyncEnumerable<string> RunInferenceAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        OnnxRuntimeGenAIPromptExecutionSettings onnxPromptExecutionSettings = this.GetOnnxPromptExecutionSettingsSettings(executionSettings);
-
-        var prompt = this.GetPrompt(chatHistory, onnxPromptExecutionSettings);
-        var tokens = this.GetTokenizer().Encode(prompt);
-
-        using var generatorParams = new GeneratorParams(this.GetModel());
-        this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxPromptExecutionSettings);
-        generatorParams.SetInputSequences(tokens);
-
-        using var generator = new Generator(this.GetModel(), generatorParams);
-
-        bool removeNextTokenStartingWithSpace = true;
-        while (!generator.IsDone())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            yield return await Task.Run(() =>
+            this._config.AppendProvider(provider.Id);
+            foreach (KeyValuePair<string, string> option in provider.Options)
             {
-                generator.ComputeLogits();
-                generator.GenerateNextToken();
+                this._config.SetProviderOption(provider.Id, option.Key, option.Value);
+            }
+        }
 
-                var outputTokens = generator.GetSequence(0);
-                var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
-                string output = this.GetTokenizer().Decode(newToken);
+        this._model = new Model(this._config);
+    }
 
-                if (removeNextTokenStartingWithSpace && output[0] == ' ')
+    private IChatCompletionService GetChatCompletionService()
+    {
+        var options = new OnnxRuntimeGenAIChatClientOptions()
+        {
+            PromptFormatter = (messages, options) =>
+            {
+                StringBuilder promptBuilder = new();
+                foreach (var message in messages)
                 {
-                    removeNextTokenStartingWithSpace = false;
-                    output = output.TrimStart();
+                    promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
                 }
 
-                return output;
-            }, cancellationToken).ConfigureAwait(false);
-        }
-    }
+                promptBuilder.Append("<|end|>\n<|assistant|>");
 
-    private Model GetModel() => this._model ??= new Model(this._modelPath);
+                return promptBuilder.ToString();
+            }
+        };
 
-    private Tokenizer GetTokenizer() => this._tokenizer ??= new Tokenizer(this.GetModel());
+        this._chatClient ??= this._model is null
+            ? new(this._modelPath, options)
+            : new(this._model, false, options);
 
-    private string GetPrompt(ChatHistory chatHistory, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
-    {
-        var promptBuilder = new StringBuilder();
-        foreach (var message in chatHistory)
-        {
-            promptBuilder.Append($"<|{message.Role}|>\n{message.Content}");
-        }
-        promptBuilder.Append("<|end|>\n<|assistant|>");
-
-        return promptBuilder.ToString();
-    }
-
-    private void UpdateGeneratorParamsFromPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
-    {
-        if (onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
-        {
-            generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.TopK.HasValue)
-        {
-            generatorParams.SetSearchOption("top_k", onnxRuntimeGenAIPromptExecutionSettings.TopK.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.Temperature.HasValue)
-        {
-            generatorParams.SetSearchOption("temperature", onnxRuntimeGenAIPromptExecutionSettings.Temperature.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.RepetitionPenalty.HasValue)
-        {
-            generatorParams.SetSearchOption("repetition_penalty", onnxRuntimeGenAIPromptExecutionSettings.RepetitionPenalty.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.PastPresentShareBuffer.HasValue)
-        {
-            generatorParams.SetSearchOption("past_present_share_buffer", onnxRuntimeGenAIPromptExecutionSettings.PastPresentShareBuffer.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.NumReturnSequences.HasValue)
-        {
-            generatorParams.SetSearchOption("num_return_sequences", onnxRuntimeGenAIPromptExecutionSettings.NumReturnSequences.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize.HasValue)
-        {
-            generatorParams.SetSearchOption("no_repeat_ngram_size", onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.MinTokens.HasValue)
-        {
-            generatorParams.SetSearchOption("min_length", onnxRuntimeGenAIPromptExecutionSettings.MinTokens.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.MaxTokens.HasValue)
-        {
-            generatorParams.SetSearchOption("max_length", onnxRuntimeGenAIPromptExecutionSettings.MaxTokens.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty.HasValue)
-        {
-            generatorParams.SetSearchOption("length_penalty", onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.EarlyStopping.HasValue)
-        {
-            generatorParams.SetSearchOption("early_stopping", onnxRuntimeGenAIPromptExecutionSettings.EarlyStopping.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.DoSample.HasValue)
-        {
-            generatorParams.SetSearchOption("do_sample", onnxRuntimeGenAIPromptExecutionSettings.DoSample.Value);
-        }
-        if (onnxRuntimeGenAIPromptExecutionSettings.DiversityPenalty.HasValue)
-        {
-            generatorParams.SetSearchOption("diversity_penalty", onnxRuntimeGenAIPromptExecutionSettings.DiversityPenalty.Value);
-        }
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "JSOs are required only in cases where the supplied settings are not Onnx-specific. For these cases, JSOs can be provided via the class constructor.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "JSOs are required only in cases where the supplied settings are not Onnx-specific. For these cases, JSOs can be provided via class constructor.")]
-    private OnnxRuntimeGenAIPromptExecutionSettings GetOnnxPromptExecutionSettingsSettings(PromptExecutionSettings? executionSettings)
-    {
-        if (this._jsonSerializerOptions is not null)
-        {
-            return OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings, this._jsonSerializerOptions);
-        }
-
-        return OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        return this._chatClientWrapper ??= this._chatClient.AsChatCompletionService();
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._tokenizer?.Dispose();
         this._model?.Dispose();
+        this._config?.Dispose();
+        this._chatClient?.Dispose();
     }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+        this.GetChatCompletionService().GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+        this.GetChatCompletionService().GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 }

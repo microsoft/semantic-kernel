@@ -148,6 +148,28 @@ public sealed class MistralAIChatCompletionTests : IDisposable
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task ValidateGetChatMessageContentsWithImageDataUriAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ImageModelId"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What's in this image?"),
+            new ChatMessageContent(AuthorRole.User, [new ImageContent("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA2ADYAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAQABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5rooor8DP9oD/2Q==")])
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("square", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithImageAndJsonFormatAsync()
     {
         // Arrange
@@ -485,7 +507,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
         chatHistory.AddRange(result1);
-        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
+        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather temperature in Marseille?"));
         var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert

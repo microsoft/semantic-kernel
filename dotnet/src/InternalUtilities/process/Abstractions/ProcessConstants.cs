@@ -28,6 +28,21 @@ internal static class ProcessConstants
     /// </summary>
     public const string MapEventId = "StartMap";
 
+    public static class Declarative
+    {
+        public const string VariablePrefix = "_variables_";
+
+        public const string DefaultCondition = "_default_";
+
+        public const string OnEnterEvent = "_on_enter_";
+
+        public const string OnCompleteEvent = "_on_complete_";
+
+        public const string OnExitEvent = "_on_exit_";
+
+        public const string OnErrorEvent = "_on_error_";
+    }
+
     /// <summary>
     /// Enum containing the name of internal components.
     /// Used for serialization purposes.
@@ -37,5 +52,7 @@ internal static class ProcessConstants
         Step,
         Process,
         Map,
+        Proxy,
+        AgentStep,
     }
 }

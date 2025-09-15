@@ -23,7 +23,7 @@ public sealed class CopilotAgentPluginKernelExtensionsTests
         // Assert
         Assert.NotNull(plugin);
         Assert.Equal(2, plugin.FunctionCount);
-        Assert.Equal(683, plugin["me_CreateMessages"].Description.Length);
+        Assert.Equal(411, plugin["me_sendMail"].Description.Length);
         Assert.Equal(1000, plugin["me_ListMessages"].Description.Length);
     }
 }

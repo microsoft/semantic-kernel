@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -45,20 +46,23 @@ public static class GoogleAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the specified service collection.
+    /// Add Google AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">Optional service ID.</param>
+    /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("Use AddGoogleAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddGoogleAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,
         GoogleAIVersion apiVersion = GoogleAIVersion.V1_Beta, // todo: change beta to stable when stable version will be available
-        string? serviceId = null)
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(modelId);
@@ -70,6 +74,7 @@ public static class GoogleAIServiceCollectionExtensions
                 apiKey: apiKey,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
     }
 }

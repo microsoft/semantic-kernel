@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 import logging
 import uuid
+from collections.abc import Callable
 from queue import Queue
 from typing import TYPE_CHECKING, Any
 
@@ -23,7 +24,7 @@ from semantic_kernel.processes.local_runtime.local_event import (
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_message_factory import LocalMessageFactory
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class LocalProcess(LocalStep):
     """A local process that contains a collection of steps."""
 
@@ -42,8 +43,19 @@ class LocalProcess(LocalStep):
     initialize_task: bool | None = False
     external_event_queue: Queue = Field(default_factory=Queue)
     process_task: asyncio.Task | None = None
+    factories: dict[str, Callable] = Field(default_factory=dict)
+    max_supersteps: int = Field(
+        default=100, ge=1, description="Maximum number of supersteps to execute before stopping the process."
+    )
 
-    def __init__(self, process: "KernelProcess", kernel: Kernel, parent_process_id: str | None = None):
+    def __init__(
+        self,
+        process: "KernelProcess",
+        kernel: Kernel,
+        factories: dict[str, Callable] | None = None,
+        parent_process_id: str | None = None,
+        max_supersteps: int | None = None,
+    ):
         """Initializes the local process."""
         args: dict[str, Any] = {
             "step_info": process,
@@ -54,6 +66,12 @@ class LocalProcess(LocalStep):
             "initialize_task": False,
         }
 
+        if max_supersteps is not None:
+            args["max_supersteps"] = max_supersteps
+
+        if factories:
+            args["factories"] = factories
+
         super().__init__(**args)
 
     def ensure_initialized(self):
@@ -62,13 +80,23 @@ class LocalProcess(LocalStep):
             self.initialize_process()
             self.initialize_task = True
 
-    async def start(self, keep_alive: bool = True):
-        """Starts the process with an initial event."""
+    async def start(self, keep_alive: bool = True) -> None:
+        """Starts the process with an initial event.
+
+        Args:
+            keep_alive: Indicates if the process should wait for external events after it's finished processing.
+        """
         self.ensure_initialized()
-        self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
+        self.process_task = asyncio.create_task(
+            self.internal_execute(max_supersteps=self.max_supersteps, keep_alive=keep_alive)
+        )
 
     async def run_once(self, process_event: KernelProcessEvent):
-        """Starts the process with an initial event and waits for it to finish."""
+        """Starts the process with an initial event and waits for it to finish.
+
+        Args:
+            process_event: The KernelProcessEvent to start the process with.
+        """
         if process_event is None:
             raise ProcessEventUndefinedException("The process event must be specified.")
         self.external_event_queue.put(process_event)
@@ -124,6 +152,7 @@ class LocalProcess(LocalStep):
                 process = LocalProcess(
                     process=step,
                     kernel=self.kernel,
+                    factories=self.factories,
                     parent_process_id=self.id,
                 )
 
@@ -133,9 +162,10 @@ class LocalProcess(LocalStep):
                 assert step.state and step.state.id is not None  # nosec
 
                 # Create a LocalStep for the step
-                local_step = LocalStep(
+                local_step = LocalStep(  # type: ignore
                     step_info=step,
                     kernel=self.kernel,
+                    factories=self.factories,
                     parent_process_id=self.id,
                 )
 
@@ -161,6 +191,8 @@ class LocalProcess(LocalStep):
     async def internal_execute(self, max_supersteps: int = 100, keep_alive: bool = True):
         """Internal execution logic for the process."""
         message_channel: Queue[LocalMessage] = Queue()
+
+        logger.debug(f"Running process for {max_supersteps} supersteps.")
 
         try:
             for _ in range(max_supersteps):
@@ -193,7 +225,7 @@ class LocalProcess(LocalStep):
         """Builds a KernelProcess from the current LocalProcess."""
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-        process_state = KernelProcessState(self.name, self.id)
+        process_state = KernelProcessState(name=self.name, version=self.step_state.version, id=self.id)
         step_tasks = [step.to_kernel_process_step_info() for step in self.steps]
         steps = await asyncio.gather(*step_tasks)
         return KernelProcess(state=process_state, steps=steps, edges=self.output_edges)
@@ -216,15 +248,16 @@ class LocalProcess(LocalStep):
         """Processes events emitted by the given step and enqueues them."""
         all_step_events = step.get_all_events()
         for step_event in all_step_events:
+            # must come first because emitting the step event modifies its namespace
+            for edge in step.get_edge_for_event(step_event.id):
+                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
+                message_channel.put(message)
+
             if step_event.visibility == KernelProcessEventVisibility.Public:
                 if isinstance(step_event, KernelProcessEvent):
                     await self.emit_event(step_event)  # type: ignore
                 elif isinstance(step_event, LocalEvent):
                     await self.emit_local_event(step_event)  # type: ignore
-
-            for edge in step.get_edge_for_event(step_event.id):
-                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
-                message_channel.put(message)
 
     def dispose(self):
         """Clean up resources."""

@@ -1,19 +1,7 @@
 [run]
 source = semantic_kernel
 omit = 
-    semantic_kernel/connectors/memory/astradb/*
-    semantic_kernel/connectors/memory/azure_cognitive_search/*
-    semantic_kernel/connectors/memory/azure_cosmosdb/*
-    semantic_kernel/connectors/memory/azure_cosmosdb_no_sql/*
-    semantic_kernel/connectors/memory/chroma/*
-    semantic_kernel/connectors/memory/milvus/*
-    semantic_kernel/connectors/memory/mongodb_atlas/*
-    semantic_kernel/connectors/memory/pinecone/*
-    semantic_kernel/connectors/memory/postgres/*
-    semantic_kernel/connectors/memory/qdrant/qdrant_memory_store.py
-    semantic_kernel/connectors/memory/redis/redis_memory_store.py
-    semantic_kernel/connectors/memory/usearch/*
-    semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py
+    semantic_kernel/connectors/memory_stores/*
     semantic_kernel/reliability/*
     semantic_kernel/memory/*
 

@@ -32,7 +32,7 @@ from samples.demos.telemetry.scenarios import run_ai_service, run_auto_function_
 from samples.demos.telemetry.telemetry_sample_settings import TelemetrySampleSettings
 
 # Load settings
-settings = TelemetrySampleSettings.create()
+settings = TelemetrySampleSettings()
 
 # Create a resource to represent the service/sample
 resource = Resource.create({ResourceAttributes.SERVICE_NAME: "TelemetryExample"})

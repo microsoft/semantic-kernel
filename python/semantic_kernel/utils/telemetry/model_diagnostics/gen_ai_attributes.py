@@ -25,6 +25,11 @@ FINISH_REASON = "gen_ai.response.finish_reason"
 RESPONSE_ID = "gen_ai.response.id"
 INPUT_TOKENS = "gen_ai.usage.input_tokens"
 OUTPUT_TOKENS = "gen_ai.usage.output_tokens"
+TOOL_CALL_ID = "gen_ai.tool.call.id"
+TOOL_CALL_ARGUMENTS = "gen_ai.tool.call.arguments"
+TOOL_CALL_RESULT = "gen_ai.tool.call.result"
+TOOL_DESCRIPTION = "gen_ai.tool.description"
+TOOL_NAME = "gen_ai.tool.name"
 ADDRESS = "server.address"
 
 # Activity events

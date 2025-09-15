@@ -2,8 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
@@ -34,7 +33,7 @@ class WeatherPlugin:
         self._invocation_count = 0
 
     @kernel_function(name="GetWeather", description="Get the weather of the day at the current location.")
-    def get_wather(self) -> str:
+    def get_weather(self) -> str:
         """Get the weather of the day at the current location.
 
         Simulates a call to an external service to get the weather.
@@ -50,7 +49,7 @@ class WeatherPlugin:
 
 async def retry_filter(
     context: FunctionInvocationContext,
-    next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
+    next: Callable[[FunctionInvocationContext], Awaitable[None]],
 ) -> None:
     """A filter that retries the function invocation if it fails.
 

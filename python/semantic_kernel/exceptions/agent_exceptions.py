@@ -38,3 +38,21 @@ class AgentChatException(AgentException):
     """An error occurred while invoking the agent chat."""
 
     pass
+
+
+class AgentChatHistoryReducerException(AgentException):
+    """An error occurred while reducing the chat history."""
+
+    pass
+
+
+class AgentThreadInitializationException(AgentException):
+    """An error occurred while initializing the agent thread."""
+
+    pass
+
+
+class AgentThreadOperationException(AgentException):
+    """An error occurred while performing an operation on the agent thread."""
+
+    pass

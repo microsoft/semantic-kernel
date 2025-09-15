@@ -3,11 +3,9 @@
 import json
 import logging
 from collections.abc import Callable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -16,6 +14,11 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
@@ -118,8 +121,8 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], dict[str, An
 
 
 def update_settings_from_function_call_configuration(
-    function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: PromptExecutionSettings,
+    function_choice_configuration: "FunctionCallChoiceConfiguration",
+    settings: "PromptExecutionSettings",
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""

@@ -1,6 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from collections.abc import Callable
 from inspect import isawaitable
 from typing import TYPE_CHECKING, ClassVar
@@ -9,11 +16,12 @@ from pydantic import Field
 
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
@@ -21,7 +29,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class KernelFunctionSelectionStrategy(SelectionStrategy):
     """Determines agent selection based on the evaluation of a Kernel Function."""
 
@@ -34,9 +42,11 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
     function: KernelFunction
     kernel: Kernel
     result_parser: Callable[..., str] = Field(default_factory=lambda: (lambda: ""))
+    history_reducer: ChatHistoryReducer | None = None
 
-    async def next(self, agents: list["Agent"], history: list[ChatMessageContent]) -> "Agent":
-        """Check if the agent should terminate.
+    @override
+    async def select_agent(self, agents: list["Agent"], history: list[ChatMessageContent]) -> "Agent":
+        """Select the next agent to interact with.
 
         Args:
             agents: The list of agents to select from.
@@ -48,6 +58,12 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
         Raises:
             AgentExecutionException: If the strategy fails to execute the function or select the next agent
         """
+        if self.history_reducer is not None:
+            self.history_reducer.messages = history
+            reduced_history = await self.history_reducer.reduce()
+            if reduced_history is not None:
+                history = reduced_history.messages
+
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 

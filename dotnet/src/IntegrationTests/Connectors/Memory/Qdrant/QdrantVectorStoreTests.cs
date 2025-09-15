@@ -8,19 +8,25 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 
 [Collection("QdrantVectorStoreCollection")]
 public class QdrantVectorStoreTests(QdrantVectorStoreFixture fixture)
-    : BaseVectorStoreTests<ulong, QdrantVectorStoreFixture.HotelInfo>(new QdrantVectorStore(fixture.QdrantClient))
+#pragma warning disable CA2000 // Dispose objects before losing scope
+    : BaseVectorStoreTests<ulong, QdrantVectorStoreFixture.HotelInfo>(new QdrantVectorStore(fixture.QdrantClient, OwnsClient))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
+    // The client is shared with base class tests.
+    private const bool OwnsClient = false;
+
     [Fact]
     public async Task ItPassesSettingsFromVectorStoreToCollectionAsync()
     {
         // Arrange
-        var sut = new QdrantVectorStore(fixture.QdrantClient, new() { HasNamedVectors = true });
+        using QdrantVectorStore sut = new(fixture.QdrantClient, OwnsClient, new() { HasNamedVectors = true });
 
         // Act
         var collectionFromVS = sut.GetCollection<ulong, QdrantVectorStoreFixture.HotelInfo>("SettingsPassedCollection");
-        await collectionFromVS.CreateCollectionIfNotExistsAsync();
+        await collectionFromVS.EnsureCollectionExistsAsync();
 
-        var directCollection = new QdrantVectorStoreRecordCollection<QdrantVectorStoreFixture.HotelInfo>(fixture.QdrantClient, "SettingsPassedCollection", new() { HasNamedVectors = true });
+        using QdrantCollection<ulong, QdrantVectorStoreFixture.HotelInfo> directCollection = new(
+            fixture.QdrantClient, "SettingsPassedCollection", OwnsClient, new() { HasNamedVectors = true });
         await directCollection.UpsertAsync(new QdrantVectorStoreFixture.HotelInfo
         {
             HotelId = 1ul,

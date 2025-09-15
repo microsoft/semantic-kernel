@@ -2,7 +2,7 @@
 name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
-readme = "pip/README.md"
+readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -23,57 +23,81 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+    # azure agents
+    "azure-ai-projects >= 1.0.0b12",
+    "azure-ai-agents >= 1.1.0b4",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,<2.11,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
-    "azure-identity ~= 1.13",
+    "azure-identity >= 1.13",
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai ~= 1.0",
+    "openai >= 1.98.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
+    "websockets >= 13, < 16",
+    "aiortc>=1.9.0",
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance ~= 23.6.21.0",
+    "prance >= 23.6.21,< 25.4.9",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
+    "scipy>=1.15.1",
+    "websockets >= 13, < 16",
+    "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
 [project.optional-dependencies]
+anthropic = [
+    "anthropic ~= 0.32"
+]
+autogen = [
+    "autogen-agentchat >= 0.2, <0.4"
+]
+aws = [
+    "boto3>=1.36.4,<1.41.0",
+]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
-    "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,< 0.7"
+    "chromadb >= 0.5,< 1.1"
+]
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0",
+]
+faiss = [
+    "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform ~= 1.60",
-    "google-generativeai ~= 0.7"
+    "google-cloud-aiplatform == 1.97.0",
+    "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.5.1"
+    "sentence-transformers >= 2.2,< 6.0",
+    "torch == 2.7.1"
 ]
-mongo = [
-    "pymongo >= 4.8.0, < 4.11",
-    "motor >= 3.3.2,< 3.7.0"
-]
-notebooks = [
-    "ipykernel ~= 6.29"
+mcp = [
+    "mcp>=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -82,17 +106,24 @@ milvus = [
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
+mongo = [
+    "pymongo >= 4.8.0, < 4.14",
+    "motor >= 3.3.2,< 3.8.0"
+]
+notebooks = [
+    "ipykernel ~= 6.29"
+]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5"
+    "onnxruntime-genai ~= 0.7"
 ]
-anthropic = [
-    "anthropic ~= 0.32"
+pandas = [
+    "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone-client ~= 5.0"
+    "pinecone[asyncio, grpc] ~= 7.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -101,27 +132,23 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] ~= 5.0",
+    "redis[hiredis] ~= 6.0",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl >= 0.3.6",
+    "redisvl ~= 0.4"
+]
+realtime = [
+    "websockets >= 13, < 16",
+    "aiortc>=1.9.0",
+]
+sql = [
+    "pyodbc >= 5.2"
 ]
 usearch = [
-    "usearch ~= 2.9",
-    "pyarrow >= 12.0,< 19.0"
+    "usearch ~= 2.16",
+    "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
-    "weaviate-client>=4.7,<5.0",
-]
-pandas = [
-    "pandas ~= 2.2"
-]
-aws = [
-    "boto3>=1.28.57",
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0"
+    "weaviate-client>=4.10,<5.0,!=4.16.7",
 ]
 
 [tool.uv]
@@ -138,7 +165,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.7",
+    "ruff ~= 0.9"
 ]
 environments = [
     "sys_platform == 'darwin'",
@@ -181,13 +208,14 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "D418", #allow docstring on overloaded function
     "TD003", #allow missing link to todo issue
     "FIX002" #allow todo
 ]
@@ -212,7 +240,7 @@ min-file-size = 1
 
 [tool.bandit]
 targets = ["semantic_kernel"]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 
 [tool.flit.module]
 name = "semantic_kernel"
@@ -220,5 +248,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-

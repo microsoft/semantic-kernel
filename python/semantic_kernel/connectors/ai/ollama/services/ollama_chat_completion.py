@@ -17,7 +17,6 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
@@ -28,9 +27,9 @@ from semantic_kernel.connectors.ai.ollama.services.utils import (
 )
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -45,6 +44,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 CMC_TYPE = TypeVar("CMC_TYPE", bound=ChatMessageContent)
@@ -81,7 +81,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
         try:
-            ollama_settings = OllamaSettings.create(
+            ollama_settings = OllamaSettings(
                 chat_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,
@@ -137,7 +137,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_choice_configuration
 
     @override
@@ -255,7 +255,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     def _create_chat_message_content_from_chat_response(self, response: ChatResponse) -> ChatMessageContent:
         """Create a chat message content from the response."""
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         if response.message.content:
             items.append(
                 TextContent(
@@ -274,7 +274,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     def _create_chat_message_content(self, response: Mapping[str, Any]) -> ChatMessageContent:
         """Create a chat message content from the response."""
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         if not (message := response.get("message", None)):
             raise ServiceInvalidResponseError("No message content found in response.")
 

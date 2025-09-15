@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -238,12 +237,16 @@ class KernelPlugin(KernelBaseModel):
             candidates = plugin_instance.items()
         else:
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.isfunction))  # type: ignore
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.iscoroutinefunction))  # type: ignore
         # Read every method from the plugin instance
         functions = [
             KernelFunctionFromMethod(method=candidate, plugin_name=plugin_name)
             for _, candidate in candidates
             if hasattr(candidate, "__kernel_function__")
         ]
+        if not description:
+            description = getattr(plugin_instance, "description", None)
         return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod
@@ -253,6 +256,7 @@ class KernelPlugin(KernelBaseModel):
         parent_directory: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
+        encoding: str = "utf-8",
     ) -> _T:
         """Create a plugin from a specified directory.
 
@@ -291,6 +295,7 @@ class KernelPlugin(KernelBaseModel):
             parent_directory (str): The parent directory path where the plugin directory resides
             description (str | None): The description of the plugin
             class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
+            encoding (str): The encoding to use when reading text files. Defaults to "utf-8".
 
         Returns:
             KernelPlugin: The created plugin of type KernelPlugin.
@@ -310,11 +315,11 @@ class KernelPlugin(KernelBaseModel):
                 if os.path.basename(object).startswith("__"):
                     continue
                 try:
-                    functions.append(KernelFunctionFromPrompt.from_directory(path=object))
+                    functions.append(KernelFunctionFromPrompt.from_directory(path=object, encoding=encoding))
                 except FunctionInitializationError:
                     logger.warning(f"Failed to create function from directory: {object}")
             elif object.endswith(".yaml") or object.endswith(".yml"):
-                with open(object) as file:
+                with open(object, encoding=encoding) as file:
                     try:
                         functions.append(KernelFunctionFromPrompt.from_yaml(file.read()))
                     except FunctionInitializationError:
@@ -398,80 +403,18 @@ class KernelPlugin(KernelBaseModel):
         for name, cls_instance in inspect.getmembers(module, inspect.isclass):
             if cls_instance.__module__ != module_name:
                 continue
-            instance = getattr(module, name)(**class_init_arguments.get(name, {}) if class_init_arguments else {})
+            # Check whether this class has at least one @kernel_function decorated method
+            has_kernel_function = False
+            for _, method in inspect.getmembers(cls_instance, inspect.isfunction):
+                if getattr(method, "__kernel_function__", False):
+                    has_kernel_function = True
+                    break
+            if not has_kernel_function:
+                continue
+            init_args = class_init_arguments.get(name, {}) if class_init_arguments else {}
+            instance = getattr(module, name)(**init_args)
             return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
-
-    @classmethod
-    def from_text_search_with_search(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "search" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(name=plugin_name, description=plugin_description, functions=[text_search.create_search(**kwargs)])
-
-    @classmethod
-    def from_text_search_with_get_text_search_results(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "get_text_search_results" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(
-            name=plugin_name,
-            description=plugin_description,
-            functions=[text_search.create_get_text_search_results(**kwargs)],
-        )
-
-    @classmethod
-    def from_text_search_with_get_search_results(
-        cls: type[_T],
-        text_search: TextSearch,
-        plugin_name: str,
-        plugin_description: str | None = None,
-        **kwargs: Any,
-    ) -> _T:
-        """Creates a plugin that wraps the text search "get_search_results" function.
-
-        Args:
-            text_search: The text search to use.
-            plugin_name: The name of the plugin.
-            plugin_description: The description of the search plugin.
-            **kwargs: The keyword arguments to use to create the search function.
-
-        Returns:
-            a KernelPlugin.
-        """
-        return cls(
-            name=plugin_name,
-            description=plugin_description,
-            functions=[text_search.create_get_search_results(**kwargs)],
-        )
 
     # endregion
     # region Internal Static Methods

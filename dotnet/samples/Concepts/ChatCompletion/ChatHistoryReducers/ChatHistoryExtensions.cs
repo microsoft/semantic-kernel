@@ -19,7 +19,7 @@ internal static class ChatHistoryExtensions
     /// <remarks>
     /// For simplicity only a single system message is supported in these examples.
     /// </remarks>
-    internal static ChatMessageContent? GetSystemMessage(this ChatHistory chatHistory)
+    internal static ChatMessageContent? GetSystemMessage(this IReadOnlyList<ChatMessageContent> chatHistory)
     {
         return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
     }
@@ -34,7 +34,9 @@ internal static class ChatHistoryExtensions
     /// <param name="summaryMessage">An optional summary messageContent to include</param>
     /// <param name="messageFilter">An optional message filter</param>
     public static IEnumerable<ChatMessageContent> Extract(
-        this ChatHistory chatHistory, int startIndex, int? endIndex = null,
+        this IReadOnlyList<ChatMessageContent> chatHistory,
+        int startIndex,
+        int? endIndex = null,
         ChatMessageContent? systemMessage = null,
         ChatMessageContent? summaryMessage = null,
         Func<ChatMessageContent, bool>? messageFilter = null)
@@ -71,11 +73,11 @@ internal static class ChatHistoryExtensions
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="chatHistory">ChatHistory instance to be truncated</param>
-    /// <param name="truncatedSize"></param>
-    /// <param name="truncationThreshold"></param>
+    /// <param name="chatHistory">The source history.</param>
+    /// <param name="truncatedSize">Truncated size.</param>
+    /// <param name="truncationThreshold">Truncation threshold.</param>
     /// <param name="hasSystemMessage">Flag indicating whether or not the chat history contains a system messageContent</param>
-    public static int ComputeTruncationIndex(this ChatHistory chatHistory, int truncatedSize, int truncationThreshold, bool hasSystemMessage)
+    public static int ComputeTruncationIndex(this IReadOnlyList<ChatMessageContent> chatHistory, int truncatedSize, int truncationThreshold, bool hasSystemMessage)
     {
         if (chatHistory.Count <= truncationThreshold)
         {

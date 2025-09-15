@@ -29,7 +29,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     protected KernelPlugin(string name, string? description = null)
     {
-        Verify.ValidPluginName(name);
+        KernelVerify.ValidPluginName(name);
 
         this.Name = name;
         this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";
@@ -93,17 +93,18 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <inheritdoc/>
     public abstract IEnumerator<KernelFunction> GetEnumerator();
 
-    /// <summary>Produces an <see cref="AIFunction"/> for every <see cref="KernelFunction"/> in this plugin.</summary>
-    /// <param name="kernel">
-    /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/>s when invoked as part of the <see cref="AIFunction"/>'s invocation.
-    /// </param>
-    /// <returns>An enumerable of <see cref="AIFunction"/> instances, one for each <see cref="KernelFunction"/> in this plugin.</returns>
-    [Experimental("SKEXP0001")]
+    /// <summary>Produces a clone of every <see cref="KernelFunction"/> in the <see cref="KernelPlugin"/> to be used as a lower-level <see cref="AIFunction"/> abstraction.</summary>
+    /// <remarks>
+    /// Once this function was cloned as a <see cref="AIFunction"/>, the Name will be prefixed by the <see cref="KernelFunction.PluginName"/> i.e: PluginName_FunctionName.
+    /// </remarks>
+    /// <param name="kernel">The default <see cref="Kernel"/> to be used when the <see cref="AIFunction"/> is invoked.</param>
+    /// <returns>An enumerable clone of <see cref="AIFunction"/> instances, for each <see cref="KernelFunction"/> in this plugin.</returns>
     public IEnumerable<AIFunction> AsAIFunctions(Kernel? kernel = null)
     {
         foreach (KernelFunction function in this)
         {
-            yield return function.AsAIFunction(kernel);
+            var functionClone = function.WithKernel(kernel);
+            yield return functionClone;
         }
     }
 

@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Base class for common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
 public abstract class BaseVectorStoreRecordCollectionTests<TKey>
@@ -23,19 +24,19 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition);
+    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition) where TRecord : class;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 
     protected virtual int DelayAfterUploadInMilliseconds { get; } = 0;
 
-    [Theory]
+    [VectorStoreTheory]
     [InlineData(DistanceFunction.CosineDistance, 0, 2, 1, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.CosineSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.DotProductSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.EuclideanDistance, 0, 2, 1.73, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, new int[] { 0, 2, 1 })]
-    [InlineData(DistanceFunction.Hamming, 0, 1, 3, new int[] { 0, 1, 2 })]
+    [InlineData(DistanceFunction.HammingDistance, 0, 1, 3, new int[] { 0, 1, 2 })]
     [InlineData(DistanceFunction.ManhattanDistance, 0, 2, 3, new int[] { 0, 1, 2 })]
     public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthogonalScore, int[] resultOrder)
     {
@@ -65,7 +66,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             $"scorebydf{distanceFunction}",
             definition);
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
         await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
 
         // Create two vectors that are opposite to each other and records that use these
@@ -92,14 +93,13 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = orthogonalVector,
         };
 
-        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
+        await sut.UpsertAsync([baseRecord, oppositeRecord, orthogonalRecord]);
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
-        var searchResult = await sut.VectorizedSearchAsync(baseVector);
+        var results = await sut.SearchAsync(baseVector, top: 3).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.Equal(keyDictionary[resultOrder[0]], results[0].Record.Key);
@@ -112,17 +112,17 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         Assert.Equal(Math.Round(scoreDictionary[resultOrder[2]], 2), Math.Round(results[2].Score!.Value, 2));
 
         // Cleanup
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
     }
 
-    private static VectorStoreRecordDefinition CreateKeyWithVectorRecordDefinition(int vectorDimensions, string distanceFunction)
+    private static VectorStoreCollectionDefinition CreateKeyWithVectorRecordDefinition(int vectorDimensions, string distanceFunction)
     {
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = vectorDimensions, DistanceFunction = distanceFunction },
+                new VectorStoreKeyProperty("Key", typeof(TKey)),
+                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
             ],
         };
 

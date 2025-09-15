@@ -1,15 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
+from openai.types.beta.threads.file_citation_annotation import FileCitationAnnotation
 from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
+from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
 from openai.types.beta.threads.file_path_delta_annotation import FilePathDeltaAnnotation
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
 from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
 from openai.types.beta.threads.runs import CodeInterpreterLogs
-from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreter
+from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreterOutputImage
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
@@ -26,12 +29,11 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from openai.resources.beta.threads.messages import Message
-    from openai.resources.beta.threads.runs.runs import Run
-    from openai.types.beta.threads.annotation import Annotation
+    from openai.types.beta.threads.message import Message
+    from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.runs import RunStep
     from openai.types.beta.threads.runs.tool_call import ToolCall
     from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
@@ -44,12 +46,12 @@ if TYPE_CHECKING:
 ###################################################################
 
 
-@experimental_function
+@experimental
 async def create_chat_message(
     client: AsyncOpenAI,
     thread_id: str,
     message: "ChatMessageContent",
-    allowed_message_roles: list[str] = [AuthorRole.USER, AuthorRole.ASSISTANT],
+    allowed_message_roles: Sequence[str] | None = None,
 ) -> "Message":
     """Class method to add a chat message, callable from class or instance.
 
@@ -58,10 +60,15 @@ async def create_chat_message(
         thread_id: The thread id.
         message: The chat message.
         allowed_message_roles: The allowed message roles.
+            Defaults to [AuthorRole.USER, AuthorRole.ASSISTANT] if None.
+            Providing an empty list will disallow all message roles.
 
     Returns:
         Message: The message.
     """
+    # Set the default allowed message roles if not provided
+    if allowed_message_roles is None:
+        allowed_message_roles = [AuthorRole.USER, AuthorRole.ASSISTANT]
     if message.role.value not in allowed_message_roles and message.role != AuthorRole.TOOL:
         raise AgentExecutionException(
             f"Invalid message role `{message.role.value}`. Allowed roles are {allowed_message_roles}."
@@ -76,7 +83,7 @@ async def create_chat_message(
     )
 
 
-@experimental_function
+@experimental
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
 
@@ -120,7 +127,7 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     return contents
 
 
-@experimental_function
+@experimental
 def generate_message_content(
     assistant_name: str, message: "Message", completed_step: "RunStep | None" = None
 ) -> ChatMessageContent:
@@ -163,12 +170,28 @@ def generate_message_content(
     return content
 
 
-@experimental_function
+@experimental
 def generate_streaming_message_content(
-    assistant_name: str, message_delta_event: "MessageDeltaEvent"
+    assistant_name: str,
+    message_delta_event: "MessageDeltaEvent",
+    completed_step: "RunStep | None" = None,
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
+
+    metadata = (
+        {
+            "created_at": completed_step.created_at,
+            "message_id": message_delta_event.id,  # message needs to be defined in context
+            "step_id": completed_step.id,
+            "run_id": completed_step.run_id,
+            "thread_id": completed_step.thread_id,
+            "assistant_id": completed_step.assistant_id,
+            "usage": completed_step.usage,
+        }
+        if completed_step is not None
+        else None
+    )
 
     # Determine the role
     role = AuthorRole(delta.role) if delta.role is not None else AuthorRole("assistant")
@@ -202,10 +225,119 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
-@experimental_function
+@experimental
+def generate_final_streaming_message_content(
+    assistant_name: str,
+    message: "Message",
+    completed_step: "RunStep | None" = None,
+) -> StreamingChatMessageContent:
+    """Generate streaming message content from a MessageDeltaEvent."""
+    metadata = (
+        {
+            "created_at": completed_step.created_at,
+            "message_id": message.id,  # message needs to be defined in context
+            "step_id": completed_step.id,
+            "run_id": completed_step.run_id,
+            "thread_id": completed_step.thread_id,
+            "assistant_id": completed_step.assistant_id,
+            "usage": completed_step.usage,
+        }
+        if completed_step is not None
+        else None
+    )
+
+    # Determine the role
+    role = AuthorRole(message.role) if message.role is not None else AuthorRole("assistant")
+
+    items: list[StreamingTextContent | StreamingAnnotationContent | StreamingFileReferenceContent] = []
+
+    # Process each content block in the delta
+    for item_content in message.content:
+        if item_content.type == "text":
+            assert isinstance(item_content, TextContentBlock)  # nosec
+            items.append(StreamingTextContent(text=item_content.text.value, choice_index=0))
+            for annotation in item_content.text.annotations:
+                items.append(generate_streaming_annotation_content(annotation))
+        elif item_content.type == "image_file":
+            assert isinstance(item_content, ImageFileContentBlock)  # nosec
+            items.append(
+                StreamingFileReferenceContent(
+                    file_id=item_content.image_file.file_id,
+                )
+            )
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
+
+
+@experimental
+def merge_function_results(messages: list["ChatMessageContent"], name: str) -> "ChatMessageContent":
+    """Combine multiple function result content types to one chat message content type.
+
+    This method combines the FunctionResultContent items from separate ChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+
+    Args:
+        messages: The list of chat messages.
+        name: The name of the agent.
+
+    Returns:
+        list[ChatMessageContent]: The combined chat message content.
+    """
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+    return ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=items,
+        name=name,
+    )
+
+
+@experimental
+def merge_streaming_function_results(
+    messages: list["ChatMessageContent | StreamingChatMessageContent"],
+    name: str,
+    ai_model_id: str | None = None,
+    function_invoke_attempt: int | None = None,
+) -> "StreamingChatMessageContent":
+    """Combine multiple streaming function result content types to one streaming chat message content type.
+
+    This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+
+    Args:
+        messages: The list of streaming chat message content types.
+        name: The name of the agent.
+        ai_model_id: The AI model ID.
+        function_invoke_attempt: The function invoke attempt.
+
+    Returns:
+        The combined streaming chat message content type.
+    """
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+
+    return StreamingChatMessageContent(
+        name=name,
+        role=AuthorRole.TOOL,
+        items=items,
+        choice_index=0,
+        ai_model_id=ai_model_id,
+        function_invoke_attempt=function_invoke_attempt,
+    )
+
+
+@experimental
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -219,7 +351,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
-@experimental_function
+@experimental
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
 ) -> ChatMessageContent:
@@ -236,7 +368,7 @@ def generate_function_result_content(
     return function_call_content
 
 
-@experimental_function
+@experimental
 def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCallContent]) -> list[FunctionCallContent]:
     """Extract function call contents from the run.
 
@@ -263,7 +395,7 @@ def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCal
     return function_call_contents
 
 
-@experimental_function
+@experimental
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -282,7 +414,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_function_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent":
@@ -320,7 +452,7 @@ def generate_streaming_function_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent | None":
@@ -348,7 +480,7 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if tool.code_interpreter.outputs:
                 for output in tool.code_interpreter.outputs:
-                    if isinstance(output, CodeInterpreter) and output.image.file_id:
+                    if isinstance(output, CodeInterpreterOutputImage) and output.image.file_id:
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
@@ -375,14 +507,15 @@ def generate_streaming_code_interpreter_content(
     )
 
 
-@experimental_function
-def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
+@experimental
+def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnnotation) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    if hasattr(annotation, "file_path"):
-        file_id = annotation.file_path.file_id
-    elif hasattr(annotation, "file_citation"):
-        file_id = annotation.file_citation.file_id
+    match annotation:
+        case FilePathAnnotation():
+            file_id = annotation.file_path.file_id
+        case FileCitationAnnotation():
+            file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
@@ -392,14 +525,21 @@ def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
     )
 
 
-@experimental_function
-def generate_streaming_annotation_content(annotation: "Annotation") -> StreamingAnnotationContent:
+@experimental
+def generate_streaming_annotation_content(
+    annotation: FileCitationAnnotation | FilePathAnnotation | FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
+) -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
-    if hasattr(annotation, "file_path") and annotation.file_path:
-        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
-    elif hasattr(annotation, "file_citation") and annotation.file_citation:
-        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
+    match annotation:
+        case FilePathAnnotation():
+            file_id = annotation.file_path.file_id
+        case FileCitationAnnotation():
+            file_id = annotation.file_citation.file_id
+        case FilePathDeltaAnnotation():
+            file_id = annotation.file_path.file_id if annotation.file_path is not None else None
+        case FileCitationDeltaAnnotation():
+            file_id = annotation.file_citation.file_id if annotation.file_citation is not None else None
 
     return StreamingAnnotationContent(
         file_id=file_id,
@@ -407,3 +547,20 @@ def generate_streaming_annotation_content(annotation: "Annotation") -> Streaming
         start_index=annotation.start_index,
         end_index=annotation.end_index,
     )
+
+
+@experimental
+def generate_function_call_streaming_content(
+    agent_name: str,
+    fccs: list[FunctionCallContent],
+) -> StreamingChatMessageContent:
+    """Generate function call content.
+
+    Args:
+        agent_name: The agent name.
+        fccs: The function call contents.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content containing the function call content as the items.
+    """
+    return StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, name=agent_name, items=fccs)  # type: ignore

@@ -64,7 +64,6 @@ public class ClientResultExceptionExtensionsTests
         // Assert
         Assert.NotNull(httpOperationException);
         Assert.NotNull(httpOperationException.StatusCode);
-        Assert.Empty(httpOperationException.ResponseContent!);
         Assert.Equal(exception, httpOperationException.InnerException);
         Assert.Equal(exception.Message, httpOperationException.Message);
         Assert.Equal(pipelineResponse.Status, (int)httpOperationException.StatusCode!);

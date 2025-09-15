@@ -288,6 +288,24 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
 
+    [Fact]
+    public void ItShouldExposeUnderlyingMethod()
+    {
+        // Arrange
+        var target = new LocalExamplePlugin();
+
+        var methodInfo = target.GetType().GetMethod(nameof(LocalExamplePlugin.FunctionWithCustomAttribute))!;
+
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(methodInfo, target);
+
+        // Assert
+        Assert.NotNull(kernelFunction.UnderlyingMethod);
+
+        Assert.Equal(methodInfo, kernelFunction.UnderlyingMethod);
+
+        Assert.NotNull(kernelFunction.UnderlyingMethod.GetCustomAttribute<CustomAttribute>());
+    }
+
     private interface IExampleService;
 
     private sealed class ExampleService : IExampleService;
@@ -466,6 +484,11 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return string.Empty;
         }
+
+        [KernelFunction, CustomAttribute]
+        public void FunctionWithCustomAttribute()
+        {
+        }
     }
 
     private sealed class GenericPlugin<T>
@@ -478,5 +501,10 @@ public sealed class KernelFunctionFromMethodTests2
 
         [KernelFunction]
         public Task<T> GetValue3Async(T input) => Task.FromResult(input);
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    private sealed class CustomAttribute : Attribute
+    {
     }
 }

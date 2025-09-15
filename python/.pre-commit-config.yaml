@@ -32,14 +32,14 @@ repos:
     - id: pyupgrade
       args: [--py310-plus]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.4
+    rev: v0.9.6
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.5.21
+    rev: 0.5.30
     hooks:
       # Update the uv lockfile
       - id: uv-lock

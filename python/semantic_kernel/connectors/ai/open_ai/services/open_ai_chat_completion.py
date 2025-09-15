@@ -30,6 +30,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Initialize an OpenAIChatCompletion service.
 
@@ -47,9 +48,10 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages, for example,
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 chat_model_id=ai_model_id,
@@ -72,6 +74,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,
             client=async_client,
+            instruction_role=instruction_role,
         )
 
     @classmethod

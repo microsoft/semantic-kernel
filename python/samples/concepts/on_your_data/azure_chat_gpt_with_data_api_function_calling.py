@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 
+from azure.identity import AzureCliCredential
+
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -27,7 +29,7 @@ logging.basicConfig(level=logging.DEBUG)
 kernel = sk.Kernel()
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = AzureAISearchSettings()
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
@@ -38,9 +40,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-chat_service = AzureChatCompletion(
-    service_id="chat-gpt",
-)
+chat_service = AzureChatCompletion(service_id="chat-gpt", credential=AzureCliCredential())
 kernel.add_service(
     chat_service,
 )

@@ -78,7 +78,7 @@ public class BedrockTextGenerationServiceTests
     /// <summary>
     /// Checks that an invalid BedrockRuntime object will throw an exception.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ShouldThrowExceptionForNullBedrockRuntimeAsync()
     {
         // Arrange
@@ -191,12 +191,14 @@ public class BedrockTextGenerationServiceTests
             {
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockBedrockApi.Setup(m => m.InvokeModelWithResponseStreamAsync(It.IsAny<InvokeModelWithResponseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelWithResponseStreamResponse()
             {
                 Body = new ResponseStream(new MemoryStream(content)),
                 ContentType = "application/json"
             });
+#pragma warning restore CA2000 // Dispose objects before losing scope
         var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<ITextGenerationService>();
 

@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>SKEXP0040,SKEXP0042,SKEXP0043,SKEXP0050,SKEXP0053,SKEXP0060,SKEXP0061,1591,CA1050,CA1308,CA2234</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Condition="Exists('appsettings.Development.json')" Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Plugins\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Build with packages For use outside of the Repo where Central version requirements enforced-->
+  <!-- <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client"/>
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.33.0-preview" /> 
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.MSGraph" Version="1.33.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.OpenApi.Extensions" Version="1.33.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.33.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.33.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.33.0" />
+    <PackageReference Include="Newtonsoft.Json"/>
+  </ItemGroup> -->
+
+  <!-- Build with projects -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Plugins\Plugins.MsGraph\Plugins.MsGraph.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
+    <PackageReference Include="Microsoft.OpenApi"/>
+    <PackageReference Include="Microsoft.OpenAPI.APIManifest" />
+    <PackageReference Include="Spectre.Console.Cli"/>
+    <PackageReference Include="Spectre.Console.Json"/>
+  </ItemGroup>
+
+</Project>

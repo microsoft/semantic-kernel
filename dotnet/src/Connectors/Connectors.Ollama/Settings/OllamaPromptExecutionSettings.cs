@@ -115,12 +115,29 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Maximum number of output tokens. (Default: -1, infinite generation)
+    /// </summary>
+    [JsonPropertyName("num_predict")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? NumPredict
+    {
+        get => this._numPredict;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._numPredict = value;
+        }
+    }
+
     #region private
 
     private List<string>? _stop;
     private float? _temperature;
     private float? _topP;
     private int? _topK;
+    private int? _numPredict;
 
     #endregion
 }

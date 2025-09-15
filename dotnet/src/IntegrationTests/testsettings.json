@@ -11,6 +11,11 @@
     "ApiKey": "",
     "ChatModelId ": "phi3"
   },
+  "AzureAIInferenceEmbeddings": {
+    "ServiceId": "azure-ai-inference-embeddings",
+    "Endpoint": "",
+    "ModelId": "text-embedding-ada-002"
+  },
   "AzureOpenAI": {
     "ServiceId": "azure-gpt",
     "DeploymentName": "gpt-35-turbo-instruct",
@@ -58,7 +63,13 @@
     "Endpoint": ""
   },
   "HuggingFace": {
-    "ApiKey": ""
+    "EmbeddingModelId": "sentence-transformers/all-MiniLM-L6-v2",
+    "TextGenerationModelId": "microsoft/phi-2",
+    "ChatCompletionModelId": "tgi",
+    "ApiKey": "",
+    "TextGenerationEndpoint": "http://localhost:8080/",
+    "EmbeddingEndpoint": "https://api-inference.huggingface.co/",
+    "ChatCompletionEndpoint": "http://localhost:8080/"
   },
   "GoogleAI": {
     "EmbeddingModelId": "embedding-001",
@@ -116,5 +127,13 @@
       "ModelId": "gpt-4",
       "ApiKey": ""
     }
+  },
+  "BedrockAgent": {
+    "AgentResourceRoleArn": "",
+    "FoundationModel": "anthropic.claude-3-haiku-20240307-v1:0"
+  },
+  "Mem0": {
+    "ServiceUri": "https://api.mem0.ai",
+    "ApiKey": ""
   }
 }

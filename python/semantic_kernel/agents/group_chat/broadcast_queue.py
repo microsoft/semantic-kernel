@@ -4,16 +4,17 @@
 import asyncio
 from collections import deque
 from dataclasses import dataclass, field
+from typing import Any
 
 from pydantic import Field, SkipValidation, ValidationError, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class QueueReference(KernelBaseModel):
     """Utility class to associate a queue with its specific lock."""
 
@@ -28,15 +29,16 @@ class QueueReference(KernelBaseModel):
         return len(self.queue) == 0
 
     @model_validator(mode="before")
-    def validate_receive_task(cls, values):
+    def validate_receive_task(cls, values: Any):
         """Validate the receive task."""
-        receive_task = values.get("receive_task")
-        if receive_task is not None and not isinstance(receive_task, asyncio.Task):
-            raise ValidationError("receive_task must be an instance of asyncio.Task or None")
+        if isinstance(values, dict):
+            receive_task = values.get("receive_task")
+            if receive_task is not None and not isinstance(receive_task, asyncio.Task):
+                raise ValidationError("receive_task must be an instance of asyncio.Task or None")
         return values
 
 
-@experimental_class
+@experimental
 @dataclass
 class ChannelReference:
     """Tracks a channel along with its hashed key."""
@@ -45,7 +47,7 @@ class ChannelReference:
     channel: AgentChannel = field(default_factory=AgentChannel)
 
 
-@experimental_class
+@experimental
 class BroadcastQueue(KernelBaseModel):
     """A queue for broadcasting messages to listeners."""
 

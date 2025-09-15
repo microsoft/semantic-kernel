@@ -247,7 +247,7 @@ class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorSearch<TRecord>
 One of the main requirements is to allow future extensibility with additional query types.
 One way to achieve this is to use an abstract base class that can auto implement new methods
 that throw with NotSupported unless overridden by each implementation. This behavior would
-be similar to Option 1. With Option 1 though, the same bahvior is achieved via extension methods.
+be similar to Option 1. With Option 1 though, the same behavior is achieved via extension methods.
 The set of methods end up being the same with Option 1 and Option 3, except that Option 1 also has
 a Search method that takes `VectorSearchQuery` as input.
 

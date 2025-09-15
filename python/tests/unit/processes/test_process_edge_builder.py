@@ -7,7 +7,9 @@ import pytest
 
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_edge_builder import ProcessEdgeBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+from semantic_kernel.processes.process_function_target_builder import (
+    ProcessFunctionTargetBuilder,
+)
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
@@ -88,12 +90,55 @@ def test_send_event_to_with_step_builder():
     assert linked_edge_builder.target == edge_builder.target
 
 
+def test_send_event_to_step_with_multiple_functions():
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )  # noqa: F401
+
+    # Arrange
+    source = MagicMock(spec=ProcessBuilder)
+    source.link_to = MagicMock()
+
+    target_step = ProcessStepBuilder(name="test_step")
+    target_step.functions_dict = {
+        "func_1": MagicMock(spec=KernelFunctionMetadata),
+        "func_2": MagicMock(spec=KernelFunctionMetadata),
+    }
+
+    event_id = "event_004"
+    edge_builder = ProcessEdgeBuilder(source=source, event_id=event_id)
+
+    # Act - Create edges to both functions in the step
+    result1 = edge_builder.send_event_to(target_step, function_name="func_1", parameter_name="input_param1")
+    result2 = edge_builder.send_event_to(target_step, function_name="func_2", parameter_name="input_param2")
+
+    # Assert
+    # Verify both edges were created
+    assert len(source.link_to.call_args_list) == 2
+
+    # Check first edge
+    first_edge = source.link_to.call_args_list[0][0][1]
+    assert isinstance(first_edge, ProcessStepEdgeBuilder)
+    assert first_edge.target.function_name == "func_1"
+    assert first_edge.target.parameter_name == "input_param1"
+    assert first_edge.target.step == target_step
+    assert isinstance(result1, ProcessEdgeBuilder)
+
+    # Check second edge
+    second_edge = source.link_to.call_args_list[1][0][1]
+    assert isinstance(second_edge, ProcessStepEdgeBuilder)
+    assert second_edge.target.function_name == "func_2"
+    assert second_edge.target.parameter_name == "input_param2"
+    assert second_edge.target.step == target_step
+    assert isinstance(result2, ProcessEdgeBuilder)
+
+
 def test_send_event_to_creates_step_edge():
     # Arrange
     source = MagicMock(spec=ProcessBuilder)
     source.link_to = MagicMock()
     target = MagicMock(spec=ProcessFunctionTargetBuilder)
-    event_id = "event_004"
+    event_id = "event_005"
     edge_builder = ProcessEdgeBuilder(source=source, event_id=event_id)
 
     # Act
@@ -110,7 +155,7 @@ def test_send_event_to_creates_step_edge():
 def test_send_event_to_raises_error_on_invalid_target():
     # Arrange
     source = MagicMock(spec=ProcessBuilder)
-    event_id = "event_005"
+    event_id = "event_006"
     edge_builder = ProcessEdgeBuilder(source=source, event_id=event_id)
 
     # Act & Assert

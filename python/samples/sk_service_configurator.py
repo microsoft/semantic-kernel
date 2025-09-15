@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from azure.identity import AzureCliCredential
 from pydantic import ValidationError
 
 from samples.service_settings import ServiceSettings
@@ -29,16 +30,15 @@ def add_service(
         Kernel: The configured kernel
     """
     try:
-        settings = ServiceSettings.create(
+        settings = ServiceSettings(
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
     except ValidationError as ex:
         raise ServiceInitializationError("Unable to configure learn resources settings.", ex) from ex
 
-    if not settings.global_llm_service:
+    if "global_llm_service" not in settings.model_fields_set:
         print("GLOBAL_LLM_SERVICE not set, trying to use Azure OpenAI.")
-        settings.global_llm_service = "AzureOpenAI"
 
     # The service_id is used to identify the service in the kernel.
     # This can be updated to a custom value if needed.
@@ -56,13 +56,14 @@ def add_service(
             kernel.add_service(OpenAITextCompletion(service_id=service_id))
             # </OpenAITextCompletionKernelCreation>
     else:
+        credential = AzureCliCredential()
         if use_chat:
             # <TypicalKernelCreation>
-            kernel.add_service(AzureChatCompletion(service_id=service_id))
+            kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
             # </TypicalKernelCreation>
         else:
             # <TextCompletionKernelCreation>
-            kernel.add_service(AzureTextCompletion(service_id=service_id))
+            kernel.add_service(AzureTextCompletion(service_id=service_id, credential=credential))
             # </TextCompletionKernelCreation>
 
     return kernel

@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 internal sealed class GeminiRequest
 {
     private static JsonSerializerOptions? s_options;
-    private static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
+    private static readonly AIJsonSchemaCreateOptions s_schemaConfiguration = new()
     {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = false,
-        DisallowAdditionalProperties = false,
+        TransformOptions = new()
+        {
+            UseNullableKeyword = true,
+        }
     };
 
     [JsonPropertyName("contents")]
@@ -41,6 +41,14 @@ internal sealed class GeminiRequest
     [JsonPropertyName("systemInstruction")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiContent? SystemInstruction { get; set; }
+
+    [JsonPropertyName("cachedContent")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CachedContent { get; set; }
+
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Labels { get; set; }
 
     public void AddFunction(GeminiFunction function)
     {
@@ -67,6 +75,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(prompt);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -83,6 +92,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -211,6 +221,7 @@ internal sealed class GeminiRequest
     {
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
+        AudioContent audioContent => CreateGeminiPartFromAudio(audioContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
 
@@ -250,6 +261,42 @@ internal sealed class GeminiRequest
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
     }
 
+    private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
+    {
+        // Binary data takes precedence over URI.
+        if (audioContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromAudioContent(audioContent),
+                    InlineData = Convert.ToBase64String(audioContent.Data.Value.ToArray())
+                }
+            };
+        }
+
+        if (audioContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromAudioContent(audioContent),
+                    FileUri = audioContent.Uri ?? throw new InvalidOperationException("Audio content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Audio content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromAudioContent(AudioContent audioContent)
+    {
+        return audioContent.MimeType
+               ?? throw new InvalidOperationException("Audio content MimeType is empty.");
+    }
+
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.Configuration = new ConfigurationElement
@@ -262,11 +309,11 @@ internal sealed class GeminiRequest
             CandidateCount = executionSettings.CandidateCount,
             AudioTimestamp = executionSettings.AudioTimestamp,
             ResponseMimeType = executionSettings.ResponseMimeType,
-            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema)
+            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema),
         };
     }
 
-    private static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
+    internal static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
     {
         if (responseSchemaSettings is null)
         {
@@ -276,14 +323,96 @@ internal sealed class GeminiRequest
         var jsonElement = responseSchemaSettings switch
         {
             JsonElement element => element,
-            Type type => CreateSchema(type, GetDefaultOptions()),
+            Type type => CreateSchema(type, GetDefaultOptions(), configuration: s_schemaConfiguration),
             KernelJsonSchema kernelJsonSchema => kernelJsonSchema.RootElement,
             JsonNode jsonNode => JsonSerializer.SerializeToElement(jsonNode, GetDefaultOptions()),
             JsonDocument jsonDocument => JsonSerializer.SerializeToElement(jsonDocument, GetDefaultOptions()),
-            _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions())
+            _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions(), configuration: s_schemaConfiguration)
         };
 
+        jsonElement = TransformToOpenApi3Schema(jsonElement);
         return jsonElement;
+    }
+
+    /// <summary>
+    /// Adjusts the schema to conform to OpenAPI 3.0 nullable format by converting properties with type arrays
+    /// containing "null" (e.g., ["string", "null"]) to use the "nullable" keyword instead (e.g., { "type": "string", "nullable": true }).
+    /// </summary>
+    /// <param name="jsonElement">The JSON schema to be transformed.</param>
+    /// <returns>A new JsonElement with the adjusted schema format.</returns>
+    /// <remarks>
+    /// This method recursively processes all nested objects in the schema. For each property that has a type array
+    /// containing "null", it:
+    /// - Extracts the main type (non-null value)
+    /// - Replaces the type array with a single type value
+    /// - Adds "nullable": true as a property
+    /// </remarks>
+    internal static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
+    {
+        JsonNode? node = JsonNode.Parse(jsonElement.GetRawText());
+        if (node is JsonObject rootObject)
+        {
+            TransformOpenApi3Object(rootObject);
+        }
+
+        return JsonSerializer.SerializeToElement(node, GetDefaultOptions());
+
+        static void TransformOpenApi3Object(JsonObject obj)
+        {
+            if (obj.TryGetPropertyValue("additionalProperties", out _))
+            {
+                obj.Remove("additionalProperties");
+            }
+
+            if (obj.TryGetPropertyValue("properties", out JsonNode? propsNode) && propsNode is JsonObject properties)
+            {
+                foreach (var property in properties)
+                {
+                    if (property.Value is JsonObject propertyObj)
+                    {
+                        // Handle enum properties - add "type": "string" if missing
+                        if (propertyObj.TryGetPropertyValue("enum", out JsonNode? enumNode) && !propertyObj.ContainsKey("type"))
+                        {
+                            propertyObj["type"] = JsonValue.Create("string");
+                        }
+                        else if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode))
+                        {
+                            if (typeNode is JsonArray typeArray)
+                            {
+                                var types = typeArray.Select(t => t?.GetValue<string>()).Where(t => t != null).ToList();
+                                if (types.Contains("null"))
+                                {
+                                    var mainType = types.First(t => t != "null");
+                                    propertyObj["type"] = JsonValue.Create(mainType);
+                                    propertyObj["nullable"] = JsonValue.Create(true);
+                                }
+                            }
+                            else if (typeNode is JsonValue typeValue && typeValue.GetValue<string>() == "array")
+                            {
+                                if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
+                                {
+                                    // Ensure AnyOf array is considered
+                                    if (itemsObj.TryGetPropertyValue("anyOf", out JsonNode? anyOfNode) && anyOfNode is JsonArray anyOfArray)
+                                    {
+                                        foreach (var anyOfObj in anyOfArray.OfType<JsonObject>())
+                                        {
+                                            TransformOpenApi3Object(anyOfObj);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        TransformOpenApi3Object(itemsObj);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Recursively process nested objects
+                        TransformOpenApi3Object(propertyObj);
+                    }
+                }
+            }
+        }
     }
 
     private static JsonElement CreateSchema(
@@ -292,11 +421,11 @@ internal sealed class GeminiRequest
         string? description = null,
         AIJsonSchemaCreateOptions? configuration = null)
     {
-        configuration ??= s_schemaOptions;
+        configuration ??= s_schemaConfiguration;
         return AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
     }
 
-    private static JsonSerializerOptions GetDefaultOptions()
+    internal static JsonSerializerOptions GetDefaultOptions()
     {
         if (s_options is null)
         {
@@ -316,6 +445,22 @@ internal sealed class GeminiRequest
     {
         request.SafetySettings = executionSettings.SafetySettings?.Select(s
             => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
+    }
+
+    private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
+    {
+        request.CachedContent = executionSettings.CachedContent;
+
+        if (executionSettings.Labels is not null)
+        {
+            request.Labels = executionSettings.Labels;
+        }
+
+        if (executionSettings.ThinkingConfig is not null)
+        {
+            request.Configuration ??= new ConfigurationElement();
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+        }
     }
 
     internal sealed class ConfigurationElement
@@ -355,5 +500,16 @@ internal sealed class GeminiRequest
         [JsonPropertyName("responseSchema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonElement? ResponseSchema { get; set; }
+
+        [JsonPropertyName("thinkingConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public GeminiRequestThinkingConfig? ThinkingConfig { get; set; }
+    }
+
+    internal sealed class GeminiRequestThinkingConfig
+    {
+        [JsonPropertyName("thinkingBudget")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? ThinkingBudget { get; set; }
     }
 }

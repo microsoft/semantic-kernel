@@ -23,17 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+    <ProjectReference Include="..\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +52,9 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/ReadOnlyMemoryConverter.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
   </ItemGroup>
   
 </Project>

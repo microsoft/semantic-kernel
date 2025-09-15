@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -163,6 +164,7 @@ public sealed class Kernel
     /// and any functions invoked within the context can consult this property for use in
     /// operations like formatting and parsing.
     /// </remarks>
+    [JsonIgnore]
     [AllowNull]
     public CultureInfo Culture
     {
@@ -177,6 +179,7 @@ public sealed class Kernel
     /// This returns any <see cref="ILoggerFactory"/> in <see cref="Services"/>. If there is
     /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
     /// </remarks>
+    [JsonIgnore]
     public ILoggerFactory LoggerFactory =>
         this.Services.GetService<ILoggerFactory>() ??
         NullLoggerFactory.Instance;
@@ -184,6 +187,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
     /// </summary>
+    [JsonIgnore]
     public IAIServiceSelector ServiceSelector =>
         this.Services.GetService<IAIServiceSelector>() ??
         OrderedAIServiceSelector.Instance;
@@ -349,13 +353,15 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         bool isStreaming,
+        PromptExecutionSettings? executionSettings,
         Func<PromptRenderContext, Task> renderCallback,
         CancellationToken cancellationToken)
     {
         PromptRenderContext context = new(this, function, arguments)
         {
             CancellationToken = cancellationToken,
-            IsStreaming = isStreaming
+            IsStreaming = isStreaming,
+            ExecutionSettings = executionSettings
         };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);

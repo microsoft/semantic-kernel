@@ -19,6 +19,9 @@ def mock_async_client(collections_side_effects) -> AsyncMock:
     """Fixture to create a mock async client."""
     async_mock = AsyncMock(spec=WeaviateAsyncClient)
     async_mock.collections = AsyncMock(spec=_CollectionsAsync)
+    async_mock.collections.create = AsyncMock()
+    async_mock.collections.delete = AsyncMock()
+    async_mock.collections.exists = AsyncMock()
 
     if collections_side_effects:
         for method_name, exception in collections_side_effects.items():

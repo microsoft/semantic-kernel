@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Text;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
@@ -18,12 +19,7 @@ public class StreamingAnnotationContentTests
     [Fact]
     public void VerifyStreamingAnnotationContentInitialState()
     {
-        StreamingAnnotationContent definition = new();
-
-        Assert.Empty(definition.Quote);
-        Assert.Equal(0, definition.StartIndex);
-        Assert.Equal(0, definition.EndIndex);
-        Assert.Null(definition.FileId);
+        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, string.Empty));
     }
 
     /// <summary>
@@ -33,39 +29,19 @@ public class StreamingAnnotationContentTests
     public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
-            new("test quote")
+            new(AnnotationKind.FileCitation, "#id")
             {
-                StartIndex = 33,
-                EndIndex = 49,
-                FileId = "#id",
-            };
-
-        Assert.Equal("test quote", definition.Quote);
-        Assert.Equal(33, definition.StartIndex);
-        Assert.Equal(49, definition.EndIndex);
-        Assert.Equal("#id", definition.FileId);
-        Assert.Equal("test quote: #id", definition.ToString());
-        Assert.Equal("test quote: #id", Encoding.UTF8.GetString(definition.ToByteArray()));
-    }
-
-    /// <summary>
-    /// Verify usage.
-    /// </summary>
-    [Fact]
-    public void VerifyStreamingAnnotationContentWithoutFileId()
-    {
-        StreamingAnnotationContent definition =
-            new("test quote")
-            {
+                Label = "test label",
                 StartIndex = 33,
                 EndIndex = 49,
             };
 
-        Assert.Equal("test quote", definition.Quote);
+        Assert.Equal(AnnotationKind.FileCitation, definition.Kind);
+        Assert.Equal("test label", definition.Label);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
-        Assert.Null(definition.FileId);
-        Assert.Equal("test quote", definition.ToString());
-        Assert.Equal("test quote", Encoding.UTF8.GetString(definition.ToByteArray()));
+        Assert.Equal("#id", definition.ReferenceId);
+        Assert.Equal("test label: #id", definition.ToString());
+        Assert.Equal("test label: #id", Encoding.UTF8.GetString(definition.ToByteArray()));
     }
 }

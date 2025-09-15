@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
@@ -11,15 +11,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 /// Tests work with an Azure AI Search Instance.
 /// </summary>
 [Collection("AzureAISearchVectorStoreCollection")]
+[DisableVectorStoreTests(Skip = "Requires Azure AI Search Service instance up and running")]
 public class AzureAISearchVectorStoreTests(AzureAISearchVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, AzureAISearchHotel>(new AzureAISearchVectorStore(fixture.SearchIndexClient))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
-    // If null, all tests will be enabled
-    private const string SkipReason = "Requires Azure AI Search Service instance up and running";
-
-    [Fact(Skip = SkipReason)]
-    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
-    {
-        await base.ItCanGetAListOfExistingCollectionNamesAsync();
-    }
 }

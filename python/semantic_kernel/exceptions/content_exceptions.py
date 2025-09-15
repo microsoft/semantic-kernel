@@ -39,7 +39,14 @@ class FunctionCallInvalidArgumentsException(ContentException):
     pass
 
 
+class ChatHistoryReducerException(ContentException):
+    """An error occurred while reducing chat history."""
+
+    pass
+
+
 __all__ = [
+    "ChatHistoryReducerException",
     "ContentAdditionException",
     "ContentException",
     "ContentInitializationError",

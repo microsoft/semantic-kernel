@@ -8,9 +8,9 @@ Here we have a simple Time Plugin created in C# that can be called from the AI M
 ## Semantic Kernel Features Used
 
 - [Plugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Functions/KernelPlugin.cs) - Creating a Plugin from a native C# Booking class to be used by the Kernel to interact with Bookings API.
-- [Chat Completion Service](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/IChatCompletionService.cs) - Using the Chat Completion Service [OpenAI Connector implementation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Connectors/Connectors.OpenAI/ChatCompletion/OpenAIChatCompletionService.cs) to generate responses from the LLM.
+- [Chat Completion Service](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/IChatCompletionService.cs) - Using the Chat Completion Service [OpenAI Connector implementation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Connectors/Connectors.OpenAI/Services/OpenAIChatCompletionService.cs) to generate responses from the LLM.
 - [Chat History](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/ChatHistory.cs) Using the Chat History abstraction to create, update and retrieve chat history from Chat Completion Models.
-- [Auto Function Calling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AutoFunctionCalling/OpenAI_FunctionCalling.cs) Enables the LLM to have knowledge of current importedUsing the Function Calling feature automatically call the Booking Plugin from the LLM.
+- [Auto Function Calling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_FunctionCalling.cs) Enables the LLM to have knowledge of current importedUsing the Function Calling feature automatically call the Booking Plugin from the LLM.
 
 ## Prerequisites
 

@@ -2,18 +2,14 @@
 
 import logging
 from collections.abc import Callable
-from enum import Enum
 from typing import TYPE_CHECKING, Literal, TypeVar
 
-from typing_extensions import deprecated
-
-from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
+from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.kernel import Kernel
@@ -27,16 +23,7 @@ logger = logging.getLogger(__name__)
 _T = TypeVar("_T", bound="FunctionChoiceBehavior")
 
 
-@experimental_class
-class FunctionChoiceType(Enum):
-    """The type of function choice behavior."""
-
-    AUTO = "auto"
-    NONE = "none"
-    REQUIRED = "required"
-
-
-@experimental_class
+@experimental
 class FunctionChoiceBehavior(KernelBaseModel):
     """Class that controls function choice behavior.
 
@@ -75,31 +62,6 @@ class FunctionChoiceBehavior(KernelBaseModel):
     ) = None
     type_: FunctionChoiceType | None = None
 
-    @classmethod
-    @deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.")
-    def from_function_call_behavior(cls: type[_T], behavior: "FunctionCallBehavior") -> _T:
-        """Create a FunctionChoiceBehavior from a FunctionCallBehavior."""
-        from semantic_kernel.connectors.ai.function_call_behavior import (
-            EnabledFunctions,
-            KernelFunctions,
-            RequiredFunction,
-        )
-
-        if isinstance(behavior, (EnabledFunctions, KernelFunctions)):
-            return cls.Auto(
-                auto_invoke=behavior.auto_invoke_kernel_functions,
-                filters=behavior.filters if hasattr(behavior, "filters") else None,
-            )
-        if isinstance(behavior, (RequiredFunction)):
-            return cls.Required(
-                auto_invoke=behavior.auto_invoke_kernel_functions,
-                filters={"included_functions": [behavior.function_fully_qualified_name]},
-            )
-        return cls(
-            enable_kernel_functions=behavior.enable_kernel_functions,
-            maximum_auto_invoke_attempts=behavior.max_auto_invoke_attempts,
-        )
-
     @property
     def auto_invoke_kernel_functions(self):
         """Return True if auto_invoke_kernel_functions is enabled."""
@@ -116,7 +78,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
-        | None = {},
+        | None = None,
     ) -> "FunctionCallChoiceConfiguration":
         """Check for missing functions and get the function call choice configuration."""
         from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -218,6 +180,8 @@ class FunctionChoiceBehavior(KernelBaseModel):
     @classmethod
     def from_dict(cls: type[_T], data: dict) -> _T:
         """Create a FunctionChoiceBehavior from a dictionary."""
+        from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
+
         type_map = {
             "auto": cls.Auto,
             "none": cls.NoneInvoke,

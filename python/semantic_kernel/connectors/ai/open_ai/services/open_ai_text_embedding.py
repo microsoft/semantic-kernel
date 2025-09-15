@@ -12,14 +12,14 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 T_ = TypeVar("T_", bound="OpenAITextEmbedding")
 
 
-@experimental_class
+@experimental
 class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     """OpenAI Text Embedding class."""
 
@@ -52,7 +52,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 embedding_model_id=ai_model_id,
