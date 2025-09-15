@@ -10,8 +10,9 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.completion import Completion
 from openai.types.create_embedding_response import CreateEmbeddingResponse
 
-from semantic_kernel.connectors.ai.nvidia import (
-    NvidiaPromptExecutionSettings,
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaChatPromptExecutionSettings,
+    NvidiaEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -37,15 +38,15 @@ class NvidiaHandler(KernelBaseModel, ABC):
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the Nvidia API."""
         if self.ai_model_type == NvidiaModelTypes.EMBEDDING:
-            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
         if self.ai_model_type == NvidiaModelTypes.CHAT:
-            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            assert isinstance(settings, NvidiaChatPromptExecutionSettings)  # nosec
             return await self._send_chat_completion_request(settings)
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
 
-    async def _send_embedding_request(self, settings: NvidiaPromptExecutionSettings) -> list[Any]:
+    async def _send_embedding_request(self, settings: NvidiaEmbeddingPromptExecutionSettings) -> list[Any]:
         """Send a request to the OpenAI embeddings endpoint."""
         try:
             # unsupported parameters are internally excluded from main dict and added to extra_body
@@ -60,7 +61,7 @@ class NvidiaHandler(KernelBaseModel, ABC):
             ) from ex
 
     async def _send_chat_completion_request(
-        self, settings: NvidiaPromptExecutionSettings
+        self, settings: NvidiaChatPromptExecutionSettings
     ) -> ChatCompletion | AsyncStream[Any]:
         """Send a request to the NVIDIA chat completion endpoint."""
         try:
