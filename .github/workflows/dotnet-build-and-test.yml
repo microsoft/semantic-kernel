@@ -74,7 +74,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4.3.1
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: ${{ github.workspace }}/dotnet/global.json
 
