@@ -79,6 +79,10 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
+copilotstudio = [
+    "microsoft-agents-copilotstudio-client >= 0.3.1",
+    "microsoft-agents-activity >= 0.3.1"
+]
 dapr = [
     "dapr>=1.14.0",
     "dapr-ext-fastapi>=1.14.0",

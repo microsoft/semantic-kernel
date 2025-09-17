@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import ClassVar
 
-from microsoft.agents.copilotstudio.client import (
+from microsoft_agents.copilotstudio.client import (
     AgentType,
     PowerPlatformCloud,
 )
