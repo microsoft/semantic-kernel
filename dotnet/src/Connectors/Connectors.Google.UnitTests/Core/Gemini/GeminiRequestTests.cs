@@ -372,6 +372,33 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void FromChatHistoryPdfAsBinaryContentItReturnsWithChatHistory()
+    {
+        // Arrange
+        ReadOnlyMemory<byte> pdfAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage(contentItems:
+            [new BinaryContent(new Uri("https://example-image.com/file.pdf")) { MimeType = "application/pdf" }]);
+        chatHistory.AddUserMessage(contentItems:
+            [new BinaryContent(pdfAsBytes, "application/pdf")]);
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Items.Cast<BinaryContent>().Single().Uri,
+                c.Parts![0].FileData!.FileUri),
+            c => Assert.True(pdfAsBytes.ToArray()
+                .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
+    }
+
+    [Fact]
     public void FromChatHistoryUnsupportedContentItThrowsNotSupportedException()
     {
         // Arrange
