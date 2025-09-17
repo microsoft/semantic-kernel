@@ -819,6 +819,22 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal("Hello", chatHistory[2].Content);
     }
 
+    [Fact]
+    public void ItCanSerializeResponseFormatAsType()
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = typeof(MyTestClass)
+        };
+
+        // Act & Assert
+        var json = JsonSerializer.Serialize(settings);
+
+        Assert.NotNull(json);
+        Assert.Contains("response_format", json);
+    }
+
     /// <summary>
     /// Test implementation of OpenAIPromptExecutionSettings that exposes the protected PrepareChatHistoryToRequestAsync method.
     /// </summary>
@@ -850,5 +866,10 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(new Dictionary<string, string>() { { "foo", "bar" } }, executionSettings.Metadata);
         Assert.Equal("""{"format":"mp3","voice":"alloy"}""", JsonSerializer.Serialize(executionSettings.Audio));
         Assert.Equal("""["audio","text"]""", JsonSerializer.Serialize(executionSettings.Modalities));
+    }
+
+    private sealed class MyTestClass
+    {
+        public int MyProperty { get; set; }
     }
 }
