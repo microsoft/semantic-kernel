@@ -435,7 +435,7 @@ internal class WorkflowBuilder
                 {
                     From = step.State.Id,
                     Event = edge.Key,
-                    Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
+                    Condition = edge.Value.FirstOrDefault()?.Condition?.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e =>
                 {
@@ -549,7 +549,7 @@ internal class WorkflowBuilder
         int index = eventName.IndexOf(ProcessConstants.EventIdSeparator);
         if (index > 0)
         {
-            eventName = eventName.Substring(index + 1);
+            eventName = eventName[(index + 1)..];
         }
 
         return eventName;
