@@ -84,7 +84,7 @@ public sealed class ListenForBuilder
     private string GetGroupId(List<MessageSourceBuilder> messageSources)
     {
         var sortedKeys = messageSources
-            .Select(source => $"{source.Source.Id}.{source.MessageType}")
+            .Select(source => $"{source.Source.StepId}.{source.MessageType}")
             .OrderBy(id => id, StringComparer.OrdinalIgnoreCase)
             .ToList();
 

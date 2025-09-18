@@ -1,0 +1,13 @@
+{
+  "stepInfo": {
+    "stepName": "AddSpecialSauceStep",
+    "parentId": null,
+    "version": "v1",
+    "instanceId": "myId_c89f75c7-d570-4ccb-9be4-b8346b197633"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": null,
+  "instanceId": "myId_c89f75c7-d570-4ccb-9be4-b8346b197633"
+}
