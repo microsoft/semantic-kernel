@@ -380,7 +380,7 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage("user-message");
         chatHistory.AddAssistantMessage("assist-message");
         chatHistory.AddUserMessage(contentItems:
-            [new BinaryContent(new Uri("https://example-image.com/file.pdf")) { MimeType = "application/pdf" }]);
+            [new BinaryContent(new Uri("https://example-file.com/file.pdf")) { MimeType = "application/pdf" }]);
         chatHistory.AddUserMessage(contentItems:
             [new BinaryContent(pdfAsBytes, "application/pdf")]);
         var executionSettings = new GeminiPromptExecutionSettings();

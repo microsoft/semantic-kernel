@@ -331,7 +331,7 @@ internal sealed class GeminiRequest
     private static string GetMimeTypeFromBinaryContent(BinaryContent binaryContent)
     {
         return binaryContent.MimeType
-               ?? throw new InvalidOperationException("BinaryCon content MimeType is empty.");
+               ?? throw new InvalidOperationException("Binary content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
