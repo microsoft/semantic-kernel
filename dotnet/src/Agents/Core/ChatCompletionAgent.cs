@@ -349,7 +349,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, kernel, chat);
 
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -402,7 +402,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, kernel, chat);
 
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(

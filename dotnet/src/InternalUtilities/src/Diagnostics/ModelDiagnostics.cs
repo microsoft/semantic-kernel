@@ -146,6 +146,7 @@ internal static class ModelDiagnostics
         string agentId,
         string agentName,
         string? agentDescription,
+        Kernel? kernel,
         ICollection<ChatMessageContent> messages)
     {
         if (!IsModelDiagnosticsEnabled())
@@ -167,6 +168,12 @@ internal static class ModelDiagnostics
         if (!string.IsNullOrWhiteSpace(agentDescription))
         {
             activity?.SetTag(ModelDiagnosticsTags.AgentDescription, agentDescription);
+        }
+
+        if (kernel is not null && kernel.Plugins.Count > 0)
+        {
+            var toolDefinitions = kernel.Plugins.GetFunctionsMetadata().Select(m => ToGenAIconventionsFormat(m));
+            activity?.SetTag(ModelDiagnosticsTags.AgentToolDefinitions, JsonSerializer.Serialize(toolDefinitions));
         }
 
         if (IsSensitiveEventsEnabled())
@@ -389,6 +396,49 @@ internal static class ModelDiagnostics
             isFirst = false;
         }
         sb.Append(']');
+    }
+
+    private static string ToGenAIconventionsFormat(KernelFunctionMetadata metadata)
+    {
+        var sb = new StringBuilder();
+
+        sb.Append("{\"type\": \"function\", \"name\": \"");
+        sb.Append(metadata.Name);
+        sb.Append("\", \"description\": \"");
+        sb.Append(metadata.Description);
+        sb.Append("\", \"parameters\": ");
+        ToGenAIconventionsFormat(metadata.Parameters, sb);
+        sb.Append('}');
+
+        return sb.ToString();
+    }
+
+    private static void ToGenAIconventionsFormat(IEnumerable<KernelParameterMetadata> parameters, StringBuilder? sb = null)
+    {
+        var properties = new Dictionary<string, KernelJsonSchema>();
+        var required = new List<string>();
+
+        foreach (var param in parameters)
+        {
+            if (param.Schema is not null)
+            {
+                properties[param.Name] = param.Schema;
+            }
+            if (param.IsRequired)
+            {
+                required.Add(param.Name);
+            }
+        }
+
+        var parametersJson = JsonSerializer.Serialize(new
+        {
+            type = "object",
+            properties,
+            required,
+        });
+
+        sb ??= new StringBuilder();
+        sb.Append(parametersJson);
     }
 
     /// <summary>
@@ -614,8 +664,9 @@ internal static class ModelDiagnostics
         public const string AgentId = "gen_ai.agent.id";
         public const string AgentName = "gen_ai.agent.name";
         public const string AgentDescription = "gen_ai.agent.description";
-        public const string AgentInvocationInput = "gen_ai.agent.invocation_input";
-        public const string AgentInvocationOutput = "gen_ai.agent.invocation_output";
+        public const string AgentInvocationInput = "gen_ai.input.messages";
+        public const string AgentInvocationOutput = "gen_ai.output.messages";
+        public const string AgentToolDefinitions = "gen_ai.tool.definitions";
 
         // Activity events
         public const string EventName = "gen_ai.event.content";

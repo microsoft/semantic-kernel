@@ -189,6 +189,19 @@ def _start_as_current_span(agent: Agent):
     if agent.description:
         attributes[gen_ai_attributes.AGENT_DESCRIPTION] = agent.description
 
+    if agent.kernel.plugins:
+        # This will only capture the tools that are available in the kernel at the time of agent creation.
+        # If the agent is invoked with another kernel instance, the tools in that kernel will not be captured.
+        from semantic_kernel.connectors.ai.function_calling_utils import (
+            kernel_function_metadata_to_function_call_format,
+        )
+
+        tool_definitions = [
+            kernel_function_metadata_to_function_call_format(metadata)
+            for metadata in agent.kernel.get_full_list_of_function_metadata()
+        ]
+        attributes[gen_ai_attributes.AGENT_TOOL_DEFINITIONS] = json.dumps(tool_definitions)
+
     return tracer.start_as_current_span(f"{OPERATION_NAME} {agent.name}", attributes=attributes)
 
 
