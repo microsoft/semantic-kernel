@@ -235,13 +235,26 @@ class ResponsesAgentThreadActions:
                 )
                 yield False, reasoning_message
 
+            # Extract MCP tool call + result contents (provider auto-executed)
+            mcp_call_contents, mcp_result_contents = cls._get_mcp_contents_from_output(
+                response.output, base_metadata=metadata
+            )
+
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
-            if (fc_count := len(function_calls)) == 0:
-                yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
-                break
+            fc_count: int = len(function_calls)
 
             response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
+            # Append MCP call + result contents so user/history can see them, but they are NOT scheduled for invocation
+            if mcp_call_contents or mcp_result_contents:
+                response_message.items.extend(mcp_call_contents)
+                response_message.items.extend(mcp_result_contents)
+
+            if fc_count == 0:
+                yield True, response_message
+                break
+
+            # Yield response with function calls (not final yet)
             yield False, response_message
             # Update both histories so subsequent requests include tool call context
             chat_history.add_message(message=response_message)
@@ -285,7 +298,14 @@ class ResponsesAgentThreadActions:
                 response_options=response_options,
             )
             assert isinstance(response, Response)  # nosec
-            yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
+            mcp_call_contents, mcp_result_contents = cls._get_mcp_contents_from_output(
+                response.output, base_metadata=metadata
+            )
+            final_msg = cls._create_response_message_content(response, agent.ai_model_id, agent.name)
+            if mcp_call_contents or mcp_result_contents:
+                final_msg.items.extend(mcp_call_contents)
+                final_msg.items.extend(mcp_result_contents)
+            yield True, final_msg
 
     @classmethod
     async def invoke_stream(
@@ -413,14 +433,14 @@ class ResponsesAgentThreadActions:
                                 # Ensure subsequent requests link to this response context
                                 previous_response_id = event.response.id
                         case ResponseOutputItemAddedEvent():
-                            # Track MCP tool call information for streaming events
-                            if hasattr(event.item, "type") and event.item.type == "mcp_call":
-                                mcp_tool_calls[event.item.id] = {
-                                    "name": getattr(event.item, "name", ""),
-                                    "server_label": getattr(event.item, "server_label", ""),
-                                    "output_index": event.output_index,
-                                }
-                                # Skip adding MCP calls to all_messages since they are auto-executed by OpenAI
+                            # MCP tool call tracking
+                            if cls._is_mcp_tool_call(getattr(event, "item", None)):
+                                cls._register_mcp_tool_call(
+                                    mcp_tool_calls,
+                                    event.item,
+                                    output_index=getattr(event, "output_index", None),
+                                )
+                                # Skip adding MCP calls (auto-executed by provider)
                                 continue
 
                             function_calls: list[FunctionCallContent] = cls._get_tool_calls_from_output([event.item])  # type: ignore
@@ -431,8 +451,8 @@ class ResponsesAgentThreadActions:
                                     func_call.metadata = cls._create_event_metadata(
                                         metadata,
                                         event,
-                                        sequence_number=event.sequence_number,
-                                        output_index=event.output_index,
+                                        sequence_number=getattr(event, "sequence_number", None),
+                                        output_index=getattr(event, "output_index", None),
                                     )
                             msg: StreamingChatMessageContent = cls._build_streaming_msg(
                                 agent=agent,
@@ -450,8 +470,8 @@ class ResponsesAgentThreadActions:
                                 metadata=cls._create_event_metadata(
                                     metadata,
                                     event,
-                                    sequence_number=event.sequence_number,
-                                    output_index=event.output_index,
+                                    sequence_number=getattr(event, "sequence_number", None),
+                                    output_index=getattr(event, "output_index", None),
                                 ),
                             )
                             msg = cls._build_streaming_msg(
@@ -464,24 +484,12 @@ class ResponsesAgentThreadActions:
                             all_messages.append(msg)
                         case ResponseMcpCallArgumentsDoneEvent():
                             if on_intermediate_message:
-                                # Get tool information from stored state
-                                tool_info: dict[str, Any] = mcp_tool_calls.get(event.item_id, {})
-                                tool_name: str = tool_info.get("name", "")
-                                server_label: str = tool_info.get("server_label", "")
-
-                                mcp_args_done = FunctionCallContent(
-                                    id=event.item_id,
-                                    index=event.output_index,
+                                mcp_args_done = cls._build_mcp_arguments_done_content(
+                                    item_id=event.item_id,
                                     arguments=event.arguments,
-                                    name=tool_name,
-                                    function_name=tool_name,
-                                    plugin_name=server_label,
-                                    metadata=cls._create_event_metadata(
-                                        metadata,
-                                        event,
-                                        sequence_number=event.sequence_number,
-                                        output_index=event.output_index,
-                                    ),
+                                    state=mcp_tool_calls,
+                                    event=event,
+                                    base_metadata=metadata,
                                 )
                                 mcp_msg = cls._build_streaming_msg(
                                     agent=agent,
@@ -498,8 +506,8 @@ class ResponsesAgentThreadActions:
                                 metadata=cls._create_event_metadata(
                                     metadata,
                                     event,
-                                    sequence_number=event.sequence_number,
-                                    output_index=event.output_index,
+                                    sequence_number=getattr(event, "sequence_number", None),
+                                    output_index=getattr(event, "output_index", None),
                                 ),
                             )
                             msg = cls._build_streaming_msg(
@@ -518,10 +526,10 @@ class ResponsesAgentThreadActions:
                                     metadata=cls._create_event_metadata(
                                         metadata,
                                         event,
-                                        item_id=event.item_id,
-                                        output_index=event.output_index,
-                                        sequence_number=event.sequence_number,
-                                        content_index=event.content_index,
+                                        item_id=getattr(event, "item_id", None),
+                                        output_index=getattr(event, "output_index", None),
+                                        sequence_number=getattr(event, "sequence_number", None),
+                                        content_index=getattr(event, "content_index", None),
                                     ),
                                 )
                                 reasoning_msg = cls._build_streaming_msg(
@@ -539,10 +547,10 @@ class ResponsesAgentThreadActions:
                                     metadata=cls._create_event_metadata(
                                         metadata,
                                         event,
-                                        item_id=event.item_id,
-                                        output_index=event.output_index,
-                                        sequence_number=event.sequence_number,
-                                        content_index=event.content_index,
+                                        item_id=getattr(event, "item_id", None),
+                                        output_index=getattr(event, "output_index", None),
+                                        sequence_number=getattr(event, "sequence_number", None),
+                                        content_index=getattr(event, "content_index", None),
                                     ),
                                 )
                                 reasoning_msg = cls._build_streaming_msg(
@@ -561,10 +569,10 @@ class ResponsesAgentThreadActions:
                                     metadata=cls._create_event_metadata(
                                         metadata,
                                         event,
-                                        item_id=event.item_id,
-                                        output_index=event.output_index,
-                                        sequence_number=event.sequence_number,
-                                        summary_index=event.summary_index,
+                                        item_id=getattr(event, "item_id", None),
+                                        output_index=getattr(event, "output_index", None),
+                                        sequence_number=getattr(event, "sequence_number", None),
+                                        summary_index=getattr(event, "summary_index", None),
                                         is_summary=True,
                                     ),
                                 )
@@ -583,10 +591,10 @@ class ResponsesAgentThreadActions:
                                     metadata=cls._create_event_metadata(
                                         metadata,
                                         event,
-                                        item_id=event.item_id,
-                                        output_index=event.output_index,
-                                        sequence_number=event.sequence_number,
-                                        summary_index=event.summary_index,
+                                        item_id=getattr(event, "item_id", None),
+                                        output_index=getattr(event, "output_index", None),
+                                        sequence_number=getattr(event, "sequence_number", None),
+                                        summary_index=getattr(event, "summary_index", None),
                                         is_summary=True,
                                     ),
                                 )
@@ -599,50 +607,26 @@ class ResponsesAgentThreadActions:
                                 )
                                 await on_intermediate_message(reasoning_msg)
                         case ResponseOutputItemDoneEvent():
-                            # Check if this is an MCP tool call completion
                             if (
-                                hasattr(event.item, "type")
-                                and event.item.type == "mcp_call"
-                                and on_intermediate_message
+                                on_intermediate_message
+                                and cls._is_mcp_tool_call(getattr(event, "item", None))
                                 and hasattr(event.item, "output")
                             ):
-                                # Get tool information from stored state
-                                tool_info = mcp_tool_calls.get(event.item.id, {})
-                                tool_name = tool_info.get("name", "")
-                                server_label = tool_info.get("server_label", "")
-
-                                # Parse arguments to get used_arguments
-                                used_arguments = {}
-                                if hasattr(event.item, "arguments") and event.item.arguments:
-                                    try:
-                                        used_arguments = json.loads(event.item.arguments)
-                                    except (json.JSONDecodeError, AttributeError):
-                                        used_arguments = {}
-
-                                # Create function result content for MCP completion
-                                mcp_result = FunctionResultContent(
-                                    id=event.item.id,
-                                    name=tool_name,
-                                    function_name=tool_name,
-                                    plugin_name=server_label,
-                                    result=event.item.output or None,
-                                    metadata=cls._create_event_metadata(
-                                        metadata,
-                                        event,
-                                        used_arguments=used_arguments,
-                                        arguments=used_arguments,
-                                        sequence_number=event.sequence_number,
-                                        output_index=event.output_index,
-                                    ),
-                                )
-                                mcp_result_msg = cls._build_streaming_msg(
-                                    agent=agent,
-                                    metadata=metadata,
+                                mcp_result = cls._build_mcp_result_content(
+                                    item=event.item,
+                                    state=mcp_tool_calls,
                                     event=event,
-                                    items=[mcp_result],
-                                    choice_index=request_index,
+                                    base_metadata=metadata,
                                 )
-                                await on_intermediate_message(mcp_result_msg)
+                                if mcp_result:
+                                    mcp_result_msg = cls._build_streaming_msg(
+                                        agent=agent,
+                                        metadata=metadata,
+                                        event=event,
+                                        items=[mcp_result],
+                                        choice_index=request_index,
+                                    )
+                                    await on_intermediate_message(mcp_result_msg)
 
                             msg = cls._create_output_item_done(agent, event.item)  # type: ignore
                             if output_messages is not None:
@@ -659,7 +643,6 @@ class ResponsesAgentThreadActions:
 
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
             if output_messages is not None:
-                # Append the content with function call content to the msgs used for the callback
                 output_messages.append(full_completion)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
@@ -669,9 +652,6 @@ class ResponsesAgentThreadActions:
             fc_count = len(function_calls)
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
-            # This function either updates the chat history with the function call results
-            # or returns the context, with terminate set to True in which case the loop will
-            # break and the function calls are returned.
             results = await asyncio.gather(
                 *[
                     kernel.invoke_function_call(
@@ -688,9 +668,6 @@ class ResponsesAgentThreadActions:
                 ],
             )
 
-            # Merge and yield the function results, regardless of the termination status
-            # Include the ai_model_id so we can later add two streaming messages together
-            # Some settings may not have an ai_model_id, so we need to check for it
             function_result_messages = cls._merge_streaming_function_results(
                 messages=override_history.messages[-len(results) :],  # type: ignore
                 name=agent.name,
@@ -1345,5 +1322,166 @@ class ResponsesAgentThreadActions:
             tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools
+
+    @classmethod
+    def _is_mcp_tool_call(cls: type[_T], item: Any) -> bool:
+        """Return True if the given item represents an MCP tool call (type == 'mcp_call')."""
+        return bool(getattr(item, "type", None) == "mcp_call")
+
+    @classmethod
+    def _register_mcp_tool_call(
+        cls: type[_T],
+        state: dict[str, dict[str, Any]],
+        item: Any,
+        *,
+        output_index: int | None,
+    ) -> None:
+        """Register basic MCP tool call metadata into the state."""
+        item_id = getattr(item, "id", None)
+        if not item_id:
+            return
+        state[item_id] = {
+            "name": getattr(item, "name", "") or "",
+            "server_label": getattr(item, "server_label", "") or "",
+            "output_index": output_index,
+        }
+
+    @classmethod
+    def _build_mcp_arguments_done_content(
+        cls: type[_T],
+        *,
+        item_id: str,
+        arguments: str | dict | None,
+        state: dict[str, dict[str, Any]],
+        event: ResponseStreamEvent,
+        base_metadata: dict[str, str] | None,
+    ) -> FunctionCallContent:
+        """Convert an MCP 'arguments done' event into a FunctionCallContent."""
+        tool_meta = state.get(item_id, {})
+        tool_name = tool_meta.get("name", "")
+        server_label = tool_meta.get("server_label", "")
+        return FunctionCallContent(
+            id=item_id,
+            index=getattr(event, "output_index", None),
+            arguments=arguments,
+            name=tool_name,
+            function_name=tool_name,
+            plugin_name=server_label,
+            metadata=cls._create_event_metadata(
+                base_metadata,
+                event,
+                sequence_number=getattr(event, "sequence_number", None),
+                output_index=getattr(event, "output_index", None),
+            ),
+        )
+
+    @classmethod
+    def _build_mcp_result_content(
+        cls: type[_T],
+        *,
+        item: Any,
+        state: dict[str, dict[str, Any]],
+        event: ResponseStreamEvent,
+        base_metadata: dict[str, str] | None,
+    ) -> FunctionResultContent | None:
+        """Create a FunctionResultContent from a completed MCP output item."""
+        if not cls._is_mcp_tool_call(item):
+            return None
+
+        tool_meta = state.get(getattr(item, "id", ""), {})
+        tool_name = tool_meta.get("name", "")
+        server_label = tool_meta.get("server_label", "")
+
+        raw_args = getattr(item, "arguments", None)
+        used_arguments: dict[str, Any] = {}
+        if raw_args:
+            if isinstance(raw_args, dict):
+                used_arguments = raw_args
+            else:
+                try:
+                    used_arguments = json.loads(raw_args)
+                except (json.JSONDecodeError, TypeError):
+                    used_arguments = {}
+
+        metadata = cls._create_event_metadata(
+            base_metadata,
+            event,
+            used_arguments=used_arguments,
+            arguments=used_arguments,  # 表示上 arguments も展開
+            sequence_number=getattr(event, "sequence_number", None),
+            output_index=getattr(event, "output_index", None),
+        )
+        return FunctionResultContent(
+            id=getattr(item, "id", None),
+            name=tool_name,
+            function_name=tool_name,
+            plugin_name=server_label,
+            result=getattr(item, "output", None),
+            metadata=metadata,
+        )
+
+    @classmethod
+    def _get_mcp_contents_from_output(
+        cls: type[_T],
+        output: list[Any],
+        *,
+        base_metadata: dict[str, str] | None = None,
+    ) -> tuple[list[FunctionCallContent], list[FunctionResultContent]]:
+        """Extract MCP call and result contents from a non-streaming response output."""
+        call_contents: list[FunctionCallContent] = []
+        result_contents: list[FunctionResultContent] = []
+        for item in output or []:
+            if not cls._is_mcp_tool_call(item):
+                continue
+            item_id = getattr(item, "id", None)
+            tool_name = getattr(item, "name", "") or ""
+            server_label = getattr(item, "server_label", "") or ""
+            raw_args = getattr(item, "arguments", None)
+            parsed_args: dict[str, Any] | str | None = None
+            used_arguments: dict[str, Any] = {}
+            if raw_args:
+                if isinstance(raw_args, dict):
+                    parsed_args = raw_args
+                    used_arguments = raw_args
+                else:
+                    try:
+                        used_arguments = json.loads(raw_args)
+                        parsed_args = used_arguments
+                    except (json.JSONDecodeError, TypeError):
+                        parsed_args = raw_args  # leave as-is if not JSON
+            call_metadata: dict[str, Any] = {
+                **(base_metadata or {}),
+                "event_type": "mcp_call",
+                "arguments": parsed_args,
+            }
+            call_contents.append(
+                FunctionCallContent(
+                    id=item_id,
+                    index=getattr(item, "index", None),
+                    arguments=parsed_args,
+                    name=tool_name,
+                    function_name=tool_name,
+                    plugin_name=server_label,
+                    metadata=call_metadata,
+                )
+            )
+            if hasattr(item, "output"):
+                result_metadata: dict[str, Any] = {
+                    **(base_metadata or {}),
+                    "event_type": "mcp_call_result",
+                    "arguments": used_arguments,
+                    "used_arguments": used_arguments,
+                }
+                result_contents.append(
+                    FunctionResultContent(
+                        id=item_id,
+                        name=tool_name,
+                        function_name=tool_name,
+                        plugin_name=server_label,
+                        result=getattr(item, "output", None),
+                        metadata=result_metadata,
+                    )
+                )
+        return call_contents, result_contents
 
     # endregion
