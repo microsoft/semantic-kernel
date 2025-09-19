@@ -413,28 +413,32 @@ internal static class ModelDiagnostics
         return sb.ToString();
     }
 
-    private static void ToGenAIconventionsFormat(IEnumerable<KernelParameterMetadata> metadata, StringBuilder? sb = null)
+    private static void ToGenAIconventionsFormat(IEnumerable<KernelParameterMetadata> parameters, StringBuilder? sb = null)
     {
-        sb ??= new StringBuilder();
-        sb.Append("{\"type\": \"object\", \"properties\": ");
-        var isFirst = true;
-        foreach (var metadataItem in metadata)
-        {
-            if (metadataItem.Schema is null)
-            {
-                continue;
-            }
+        var properties = new Dictionary<string, KernelJsonSchema>();
+        var required = new List<string>();
 
-            if (!isFirst)
+        foreach (var param in parameters)
+        {
+            if (param.Schema is not null)
             {
-                // Append a comma and a newline to separate the elements after the previous one.
-                // This can avoid adding an unnecessary comma after the last element.
-                sb.Append(", \n");
+                properties[param.Name] = param.Schema;
             }
-            sb.Append(metadataItem.Schema.ToString());
-            isFirst = false;
+            if (param.IsRequired)
+            {
+                required.Add(param.Name);
+            }
         }
-        sb.Append('}');
+
+        var parametersJson = JsonSerializer.Serialize(new
+        {
+            type = "object",
+            properties,
+            required,
+        });
+
+        sb ??= new StringBuilder();
+        sb.Append(parametersJson);
     }
 
     /// <summary>
