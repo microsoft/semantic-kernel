@@ -44,10 +44,14 @@ public class ChatContentMessageExtensionsTests
         Assert.Equal(role.Label.ToUpperInvariant(), messageResponseItem.Role.ToString().ToUpperInvariant());
         Assert.Equal(4, messageResponseItem.Content.Count);
 
-        // Validate TextContent conversion - should create InputText part
-        var textContent = messageResponseItem.Content.FirstOrDefault(p => p.Kind == ResponseContentPartKind.InputText);
+        // Determine expected kind for text content based on role
+        var expectedTextKind = roleLabel.Equals("assistant", StringComparison.OrdinalIgnoreCase)
+            ? ResponseContentPartKind.OutputText
+            : ResponseContentPartKind.InputText;
+
+        // Validate TextContent conversion - should create appropriate Input/OutputText part
+        var textContent = messageResponseItem.Content.FirstOrDefault(p => p.Kind == expectedTextKind);
         Assert.NotNull(textContent);
-        //Assert.IsType<>(textContent);
         Assert.Equal("What is in this image?", textContent.Text);
 
         // Validate ImageContent conversion - should create InputImage part
