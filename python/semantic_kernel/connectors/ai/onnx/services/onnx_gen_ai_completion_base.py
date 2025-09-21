@@ -78,9 +78,9 @@ class OnnxGenAICompletionBase(KernelBaseModel):
                 # With the use of Pybind in ONNX there is currently no way to load images from bytes
                 # We can only open images & audios from a file path currently
                 if images is not None:
-                    images = OnnxRuntimeGenAi.Images.open([str(image.uri) for image in images])
+                    images = OnnxRuntimeGenAi.Images.open(*[str(image.uri) for image in images])
                 if audios is not None:
-                    audios = OnnxRuntimeGenAi.Audios.open([str(audio.uri) for audio in audios])
+                    audios = OnnxRuntimeGenAi.Audios.open(*[str(audio.uri) for audio in audios])
                 input_tokens = self.tokenizer(prompt, images=images, audios=audios)
                 generator.set_inputs(input_tokens)
 

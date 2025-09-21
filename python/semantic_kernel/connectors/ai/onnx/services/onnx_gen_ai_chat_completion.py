@@ -195,7 +195,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                         raise ServiceInvalidExecutionSettingsError(
                             "Image Content URI needs to be set, because onnx can only work with file paths"
                         )
-        return images
+        return images if len(images) else None
 
     def _get_audios_from_history(self, chat_history: "ChatHistory") -> AudioContent | None:
         audios = []
@@ -210,7 +210,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                         raise ServiceInvalidExecutionSettingsError(
                             "Audio Content URI needs to be set, because onnx can only work with file paths"
                         )
-        return audios
+        return audios if len(audios) else None
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:

@@ -334,7 +334,7 @@ def get_onnx_chat_completion_service_and_request_settings() -> tuple[
     """
     from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
 
-    chat_service = OnnxGenAIChatCompletion(service_id=service_id)
+    chat_service = OnnxGenAIChatCompletion(template="phi4mm", service_id=service_id)
     request_settings = OnnxGenAIPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
