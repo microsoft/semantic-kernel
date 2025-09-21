@@ -117,7 +117,7 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.7"
+    "onnxruntime-genai ~= 0.9"
 ]
 pandas = [
     "pandas ~= 2.2"

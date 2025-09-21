@@ -332,13 +332,9 @@ def get_onnx_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.onnx import (
-        OnnxGenAIChatCompletion,
-        OnnxGenAIPromptExecutionSettings,
-        ONNXTemplate,
-    )
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
 
-    chat_service = OnnxGenAIChatCompletion(ONNXTemplate.PHI3, service_id=service_id)
+    chat_service = OnnxGenAIChatCompletion(service_id=service_id)
     request_settings = OnnxGenAIPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
