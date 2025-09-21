@@ -109,7 +109,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         prompt = self._prepare_chat_history_for_request(chat_history)
         images = self._get_images_from_history(chat_history)
         audios = self._get_audios_from_history(chat_history)
-        choices = await self._generate_next_token(prompt, settings, images, audios=audios)
+        choices = await self._generate_next_token(prompt, settings, images=images, audios=audios)
         return [self._create_chat_message_content(choice) for choice in choices]
 
     @override
@@ -136,7 +136,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         prompt = self._prepare_chat_history_for_request(chat_history)
         images = self._get_images_from_history(chat_history)
         audios = self._get_audios_from_history(chat_history)
-        async for chunk in self._generate_next_token_async(prompt, settings, images, audios=audios):
+        async for chunk in self._generate_next_token_async(prompt, settings, images=images, audios=audios):
             yield [
                 self._create_streaming_chat_message_content(choice_index, new_token, function_invoke_attempt)
                 for choice_index, new_token in enumerate(chunk)
@@ -182,7 +182,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             if isinstance(message, ChatMessageContent)
         ]
 
-    def _get_images_from_history(self, chat_history: "ChatHistory") -> ImageContent | None:
+    def _get_images_from_history(self, chat_history: "ChatHistory") -> list[ImageContent] | None:
         images = []
         for message in chat_history.messages:
             for image in message.items:
@@ -197,7 +197,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                         )
         return images if len(images) else None
 
-    def _get_audios_from_history(self, chat_history: "ChatHistory") -> AudioContent | None:
+    def _get_audios_from_history(self, chat_history: "ChatHistory") -> list[AudioContent] | None:
         audios = []
         for message in chat_history.messages:
             for audio in message.items:
