@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.HashCode" />
+    <!--<PackageReference Include="Microsoft.Bcl.HashCode" />-->
     <PackageReference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
@@ -54,7 +54,7 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
 
     <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
 </Project>
