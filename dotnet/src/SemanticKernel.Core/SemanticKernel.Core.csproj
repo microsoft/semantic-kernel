@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="System.Numerics.Tensors" />
+    <!--<PackageReference Include="System.Numerics.Tensors" />-->
   </ItemGroup>
 
   <ItemGroup>
