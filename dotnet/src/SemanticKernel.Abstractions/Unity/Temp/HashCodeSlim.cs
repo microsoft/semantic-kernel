@@ -1,4 +1,6 @@
-﻿#if UNITY
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+#if UNITY
 
 namespace System;
 
