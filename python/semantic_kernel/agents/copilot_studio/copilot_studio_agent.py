@@ -7,8 +7,8 @@ from os import environ, path
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from microsoft.agents.copilotstudio.client import AgentType, CopilotClient, PowerPlatformCloud
-from microsoft.agents.core.models import ActivityTypes
+from microsoft_agents.activity import ActivityTypes
+from microsoft_agents.copilotstudio.client import AgentType, CopilotClient, PowerPlatformCloud
 from msal import ConfidentialClientApplication, PublicClientApplication
 from msal_extensions import FilePersistence, PersistedTokenCache, build_encrypted_persistence
 from pydantic import ValidationError
