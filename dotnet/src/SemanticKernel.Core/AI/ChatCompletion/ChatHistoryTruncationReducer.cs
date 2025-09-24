@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -66,7 +67,14 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
     }
 
     /// <inheritdoc/>
-    public override int GetHashCode() => 0;//HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+    public override int GetHashCode()
+    {
+#if UNITY
+        return HashCodeSlim.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+#else
+        return HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+#endif
+    }
 
     private readonly int _thresholdCount;
     private readonly int _targetCount;

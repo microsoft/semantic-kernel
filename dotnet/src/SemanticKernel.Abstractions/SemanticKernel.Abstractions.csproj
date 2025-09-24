@@ -22,6 +22,18 @@
     <Description>Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Publish|netstandard2.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
