@@ -1,0 +1,33 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/workflows/dotnet-format.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../nuget.config" />
+    <File Path="../README.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docs/EXPERIMENTS.md" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/Solution Items/nuget/">
+    <File Path="nuget/icon.png" />
+    <File Path="nuget/nuget-package.props" />
+    <File Path="nuget/NUGET.md" />
+    <File Path="nuget/VECTORDATA-CONNECTORS-NUGET.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SemanticKernel.Abstractions/SemanticKernel.Abstractions.csproj" />
+    <Project Path="src/SemanticKernel.Core/SemanticKernel.Core.csproj" />
+    <Project Path="src/SemanticKernel.UnitTests/SemanticKernel.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/src/connectors/" />
+  <Folder Name="/src/connectors/AI/">
+    <Project Path="src/Connectors/Connectors.AzureOpenAI.UnitTests/Connectors.AzureOpenAI.UnitTests.csproj" />
+    <Project Path="src/Connectors/Connectors.AzureOpenAI/Connectors.AzureOpenAI.csproj" />
+  </Folder>
+  <Folder Name="/src/VectorData/">
+    <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
+  </Folder>
+</Solution>

@@ -67,7 +67,14 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
     }
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+    public override int GetHashCode()
+    {
+#if UNITY
+        return HashCodeSlim.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+#else
+        return HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+#endif
+    }
 
     private readonly int _thresholdCount;
     private readonly int _targetCount;
