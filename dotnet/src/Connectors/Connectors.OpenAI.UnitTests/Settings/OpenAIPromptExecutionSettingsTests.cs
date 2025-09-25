@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
