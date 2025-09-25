@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -276,13 +279,26 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
+
+        var linqFilter = ConvertTextSearchFilterToLinq(searchOptions.Filter);
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
         };
+
+        // Use modern LINQ filtering if conversion was successful
+        if (linqFilter != null)
+        {
+            vectorSearchOptions.Filter = linqFilter;
+        }
+        else if (searchOptions.Filter?.FilterClauses != null && searchOptions.Filter.FilterClauses.Any())
+        {
+            // For complex filters that couldn't be converted to LINQ, 
+            // fall back to the legacy approach but with minimal overhead
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+            vectorSearchOptions.OldFilter = new VectorSearchFilter(searchOptions.Filter.FilterClauses);
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        }
 
         await foreach (var result in this.ExecuteVectorSearchCoreAsync(query, vectorSearchOptions, searchOptions.Top, cancellationToken).ConfigureAwait(false))
         {
@@ -403,6 +419,73 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 yield return this._stringMapper.MapFromResultToString(result.Record);
                 await Task.Yield();
             }
+        }
+    }
+
+    /// <summary>
+    /// Converts a legacy TextSearchFilter to a modern LINQ expression for direct filtering.
+    /// This eliminates the need for obsolete VectorSearchFilter conversion.
+    /// </summary>
+    /// <param name="filter">The legacy TextSearchFilter to convert.</param>
+    /// <returns>A LINQ expression equivalent to the filter, or null if no filter is provided.</returns>
+    private static Expression<Func<TRecord, bool>>? ConvertTextSearchFilterToLinq(TextSearchFilter? filter)
+    {
+        if (filter?.FilterClauses == null || !filter.FilterClauses.Any())
+        {
+            return null;
+        }
+
+        // For now, handle simple equality filters (most common case)
+        // This covers the basic TextSearchFilter.Equality(fieldName, value) usage
+        var clauses = filter.FilterClauses.ToList();
+
+        if (clauses.Count == 1 && clauses[0] is EqualToFilterClause equalityClause)
+        {
+            return CreateEqualityExpression(equalityClause.FieldName, equalityClause.Value);
+        }
+
+        // For complex filters, return null to maintain backward compatibility
+        // These cases are rare and would require more complex expression building
+        return null;
+    }
+
+    /// <summary>
+    /// Creates a LINQ equality expression for a given field name and value.
+    /// </summary>
+    /// <param name="fieldName">The property name to compare.</param>
+    /// <param name="value">The value to compare against.</param>
+    /// <returns>A LINQ expression representing fieldName == value.</returns>
+    private static Expression<Func<TRecord, bool>>? CreateEqualityExpression(string fieldName, object value)
+    {
+        try
+        {
+            // Create parameter: record => 
+            var parameter = Expression.Parameter(typeof(TRecord), "record");
+
+            // Get property: record.FieldName
+            var property = typeof(TRecord).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+            if (property == null)
+            {
+                // Property not found, return null to maintain compatibility
+                return null;
+            }
+
+            var propertyAccess = Expression.Property(parameter, property);
+
+            // Create constant: value
+            var constant = Expression.Constant(value);
+
+            // Create equality: record.FieldName == value
+            var equality = Expression.Equal(propertyAccess, constant);
+
+            // Create lambda: record => record.FieldName == value
+            return Expression.Lambda<Func<TRecord, bool>>(equality, parameter);
+        }
+        catch (Exception)
+        {
+            // If any reflection or expression building fails, return null
+            // This maintains backward compatibility rather than throwing exceptions
+            return null;
         }
     }
 
