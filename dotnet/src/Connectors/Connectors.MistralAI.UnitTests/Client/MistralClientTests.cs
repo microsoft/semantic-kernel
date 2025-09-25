@@ -771,6 +771,40 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.IsType<MistralChatChoice>(response[0].InnerContent);
     }
 
+    [Fact]
+    public async Task ValidateChatMessageRequestWithFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClient("mistral-tiny", "https://api.mistral.ai/v1/chat/completions", "function_call_response.json");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+
+        var executionSettings = new MistralAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        // Act
+        await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+
+        // Assert
+        var request = this.DelegatingHandler!.RequestContent;
+        Assert.NotNull(request);
+        var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
+        Assert.NotNull(chatRequest);
+        Assert.Null(chatRequest.DocumentPageLimit);
+        Assert.Null(chatRequest.DocumentImageLimit);
+        Assert.Equal("auto", chatRequest.ToolChoice);
+        Assert.NotNull(chatRequest.Tools);
+        Assert.Single(chatRequest.Tools);
+        Assert.NotNull(chatRequest.Tools[0].Function.Parameters);
+        Assert.Equal(["location"], chatRequest.Tools[0].Function.Parameters?.Required);
+        Assert.Equal("string", chatRequest.Tools[0].Function.Parameters?.Properties["location"].RootElement.GetProperty("type").GetString());
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
