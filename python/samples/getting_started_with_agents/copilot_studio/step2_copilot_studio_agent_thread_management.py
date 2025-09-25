@@ -2,7 +2,7 @@
 
 import asyncio
 
-from microsoft.agents.copilotstudio.client import (
+from microsoft_agents.copilotstudio.client import (
     CopilotClient,
 )
 

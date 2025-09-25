@@ -20,6 +20,7 @@ from semantic_kernel.contents.const import (
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
+    REASONING_CONTENT_TAG,
     STREAMING_ANNOTATION_CONTENT_TAG,
     STREAMING_FILE_REFERENCE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
@@ -30,6 +31,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.reasoning_content import ReasoningContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.text_content import TextContent
@@ -46,6 +48,7 @@ TAG_CONTENT_MAP = {
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
     IMAGE_CONTENT_TAG: ImageContent,
+    REASONING_CONTENT_TAG: ReasoningContent,
     STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
 }
@@ -58,6 +61,7 @@ CMC_ITEM_TYPES = Annotated[
     | FunctionResultContent
     | FunctionCallContent
     | FileReferenceContent
+    | ReasoningContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
     | AudioContent,

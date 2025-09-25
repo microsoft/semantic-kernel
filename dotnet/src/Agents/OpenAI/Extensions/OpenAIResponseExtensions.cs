@@ -195,14 +195,14 @@ internal static class OpenAIResponseExtensions
         return collection;
     }
 
-    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<ReasoningSummaryPart> parts)
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ReasoningSummaryPart> parts)
     {
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in parts)
         {
             if (part is ReasoningSummaryTextPart text)
             {
-                collection.Add(new TextContent(text.Text, innerContent: text));
+                collection.Add(new ReasoningContent(text.Text) { InnerContent = text });
             }
         }
         return collection;

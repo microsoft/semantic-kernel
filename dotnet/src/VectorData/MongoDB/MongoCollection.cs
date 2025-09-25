@@ -171,9 +171,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     {
         Verify.NotNull(keys);
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
-
-        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(stringKeys), cancellationToken))
+        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(keys), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -220,10 +218,8 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
-
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(stringKeys), top: null, skip: null, includeVectors, sortDefinition: null, cancellationToken)
+            .FindAsync(this.GetFilterByIds(keys), top: null, skip: null, includeVectors, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -270,13 +266,16 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
-        var key = storageModel[MongoConstants.MongoReservedKeyPropertyName];
+        var key = GetStorageKey(storageModel);
 
         await this.RunOperationAsync(OperationName, async () =>
             await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false)).ConfigureAwait(false);
     }
+
+    private static TKey GetStorageKey(BsonDocument document)
+        => (TKey)BsonTypeMapper.MapToDotNetValue(document[MongoConstants.MongoReservedKeyPropertyName]);
 
     private static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<Embedding>?[]?)> ProcessEmbeddingsAsync(
         CollectionModel model,
@@ -676,11 +675,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         }
     }
 
-    private FilterDefinition<BsonDocument> GetFilterById(object id)
-        => Builders<BsonDocument>.Filter.Eq(document => document[MongoConstants.MongoReservedKeyPropertyName], id);
+    private FilterDefinition<BsonDocument> GetFilterById(TKey id)
+        => Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, id);
 
-    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<object> ids)
-        => Builders<BsonDocument>.Filter.In(document => document[MongoConstants.MongoReservedKeyPropertyName], ids);
+    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
+        => Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, ids);
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {

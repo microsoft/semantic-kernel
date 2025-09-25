@@ -84,7 +84,7 @@ class AzureOpenAISettings(KernelBaseSettings):
                 your resource from the Azure portal, the endpoint should end in openai.azure.com.
                 If both base_url and endpoint are supplied, base_url will be used.
                 (Env var AZURE_OPENAI_ENDPOINT)
-    - api_version: str | None - The API version to use. The default value is "2024-02-01".
+    - api_version: str | None - The API version to use. The default value is "2024-10-21".
                 (Env var AZURE_OPENAI_API_VERSION)
     - token_endpoint: str - The token endpoint to use to retrieve the authentication token.
                 The default value is "https://cognitiveservices.azure.com/.default".

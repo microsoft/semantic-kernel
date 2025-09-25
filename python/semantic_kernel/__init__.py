@@ -2,7 +2,7 @@
 
 from semantic_kernel.kernel import Kernel
 
-__version__ = "1.36.0"
+__version__ = "1.37.0"
 
 DEFAULT_RC_VERSION = f"{__version__}-rc9"
 
