@@ -40,7 +40,9 @@ public class CosmosMongoVectorStoreFixture : IAsyncLifetime
             .Build();
 
         var connectionString = GetConnectionString(configuration);
+#pragma warning disable CA2000
         var client = new MongoClient(connectionString);
+#pragma warning restore CA2000
 
         this.MongoDatabase = client.GetDatabase("test");
 
