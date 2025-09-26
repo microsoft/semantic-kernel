@@ -98,6 +98,15 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
+    /// GroundingMetadata, returned when grounding enabled.
+    /// </summary>
+    public GeminiGroundingMetadata? GroundingMetadata
+    {
+        get => this.GetValueFromDictionary(nameof(this.GroundingMetadata)) as GeminiGroundingMetadata;
+        internal init => this.SetValueInDictionary(value, nameof(this.GroundingMetadata));
+    }
+
+    /// <summary>
     /// Converts a dictionary to a <see cref="GeminiMetadata"/> object.
     /// </summary>
     public static GeminiMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
