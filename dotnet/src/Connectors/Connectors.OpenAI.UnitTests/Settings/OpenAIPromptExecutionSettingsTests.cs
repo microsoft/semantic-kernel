@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -86,6 +87,37 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings.ChatDeveloperPrompt, executionSettings.ChatDeveloperPrompt);
         Assert.Equal(actualSettings.Audio, executionSettings.Audio);
         Assert.Equal(actualSettings.Modalities, executionSettings.Modalities);
+    }
+
+    [Fact]
+    public void ItPropagatesValuesToChatOptions()
+    {
+        // Arrange
+        OpenAIPromptExecutionSettings actualSettings = new()
+        {
+            ChatSystemPrompt = "chat system prompt",
+            FrequencyPenalty = 0.7,
+            MaxTokens = 128,
+            PresencePenalty = 0.7,
+            Seed = 123456,
+            StopSequences = ["foo", "bar"],
+            Temperature = 0.7,
+            TopP = 0.7,
+        };
+
+        // Act
+        ChatOptions? actualOptions = actualSettings.ToChatOptions(null);
+
+        // Assert
+        Assert.NotNull(actualOptions);
+        Assert.Equal((float)actualSettings.Temperature, (float)actualOptions.Temperature!, 3);
+        Assert.Equal((float)actualSettings.TopP, (float)actualOptions.TopP!, 3);
+        Assert.Equal((float)actualSettings.FrequencyPenalty, (float)actualOptions.FrequencyPenalty!, 3);
+        Assert.Equal((float)actualSettings.PresencePenalty, (float)actualOptions.PresencePenalty!);
+        Assert.Equal(actualSettings.StopSequences, actualOptions.StopSequences);
+        Assert.Equal(actualSettings.ChatSystemPrompt, actualOptions.Instructions);
+        Assert.Equal(actualSettings.MaxTokens, actualOptions.MaxOutputTokens);
+        Assert.Equal(actualSettings.Seed, actualOptions.Seed);
     }
 
     [Fact]
