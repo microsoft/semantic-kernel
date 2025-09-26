@@ -481,12 +481,44 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             // Create lambda: record => record.FieldName == value
             return Expression.Lambda<Func<TRecord, bool>>(equality, parameter);
         }
+        catch (ArgumentNullException)
+        {
+            // Required parameter was null
+            return null;
+        }
+        catch (ArgumentException)
+        {
+            // Invalid property name or expression parameter
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            // Property access or expression operation not valid
+            return null;
+        }
+        catch (TargetParameterCountException)
+        {
+            // Lambda expression parameter mismatch
+            return null;
+        }
+        catch (MemberAccessException)
+        {
+            // Property access not permitted or member doesn't exist
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            // Operation not supported (e.g., byref-like parameters)
+            return null;
+        }
+#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
         catch (Exception)
         {
-            // If any reflection or expression building fails, return null
+            // Catch any other unexpected reflection or expression exceptions
             // This maintains backward compatibility rather than throwing exceptions
             return null;
         }
+#pragma warning restore CA1031
     }
 
     #endregion
