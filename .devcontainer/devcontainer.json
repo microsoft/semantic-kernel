@@ -1,4 +1,5 @@
 {
+	"name": "Semantic Kernel DevContainer",
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
@@ -12,9 +13,18 @@
 			"extensions": [
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
-				"esbenp.prettier-vscode"
-			]
+				"esbenp.prettier-vscode",
+				"ms-python.python",
+				"ms-azuretools.vscode-docker"
+			],
+			"settings": {
+				"editor.formatOnSave": true,
+				"python.pythonPath": "/usr/bin/python3"
+			}
 		}
 	},
-	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet",
+	"updateContentCommand": "dotnet workload restore || true",
+	"forwardPorts": [7071, 5000, 8000],
+	"remoteUser": "vscode"
 }
