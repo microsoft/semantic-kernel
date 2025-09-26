@@ -139,17 +139,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
-    /// Add the provided step builder to the process.
-    /// </summary>
-    /// <remarks>
-    /// Utilized by <see cref="ProcessMapBuilder"/> only.
-    /// </remarks>
-    internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
-    {
-        this._steps.Add(stepBuilder);
-    }
-
-    /// <summary>
     /// Check to ensure stepName is not used yet in another step
     /// </summary>
     private bool StepNameAlreadyExists(string stepName)
@@ -225,6 +214,19 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     {
         ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
 
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Add a step
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="stepFunction"></param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <returns></returns>
+    public ProcessStepBuilder AddStepFromFunction(string id, StepFunction stepFunction, IReadOnlyList<string>? aliases = null)
+    {
+        ProcessDelegateBuilder stepBuilder = new(id, stepFunction, this);
         return this.AddStep(stepBuilder, aliases);
     }
 
