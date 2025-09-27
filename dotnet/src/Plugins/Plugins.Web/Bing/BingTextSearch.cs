@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// A Bing Text Search implementation that can be used to perform searches using the Bing Web Search API.
 /// </summary>
 #pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
-public sealed class BingTextSearch : ITextSearch
+public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 #pragma warning restore CS0618
 {
     /// <summary>
@@ -76,6 +77,27 @@ public sealed class BingTextSearch : ITextSearch
         return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
+    /// <inheritdoc/>
+    Task<KernelSearchResults<string>> ITextSearch<BingWebPage>.SearchAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.SearchAsync(query, legacyOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<TextSearchResult>> ITextSearch<BingWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.GetTextSearchResultsAsync(query, legacyOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<object>> ITextSearch<BingWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.GetSearchResultsAsync(query, legacyOptions, cancellationToken);
+    }
+
     #region private
 
     private readonly ILogger _logger;
@@ -93,6 +115,80 @@ public sealed class BingTextSearch : ITextSearch
     private static readonly string[] s_advancedSearchKeywords = ["contains", "ext", "filetype", "inanchor", "inbody", "intitle", "ip", "language", "loc", "location", "prefer", "site", "feed", "hasfeed", "url"];
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
+    /// Attempts to translate simple LINQ expressions to Bing API filters where possible.
+    /// </summary>
+    /// <param name="genericOptions">The generic search options with LINQ filtering.</param>
+    /// <returns>Legacy TextSearchOptions with equivalent filtering, or null if no conversion possible.</returns>
+    private static TextSearchOptions ConvertToLegacyOptions(TextSearchOptions<BingWebPage> genericOptions)
+    {
+        return new TextSearchOptions
+        {
+            Top = genericOptions.Top,
+            Skip = genericOptions.Skip,
+            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToBingFilter(genericOptions.Filter) : null
+        };
+    }
+
+    /// <summary>
+    /// Converts a LINQ expression to a TextSearchFilter compatible with Bing API.
+    /// Only supports simple property equality expressions that map to Bing's filter capabilities.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to convert.</param>
+    /// <returns>A TextSearchFilter with equivalent filtering.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Bing filters.</exception>
+    private static TextSearchFilter ConvertLinqExpressionToBingFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        if (linqExpression.Body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
+        {
+            // Handle simple equality: record.PropertyName == "value"
+            if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+
+                // Map BingWebPage properties to Bing API filter names
+                string? bingFilterName = MapPropertyToBingFilter(propertyName);
+                if (bingFilterName != null && value != null)
+                {
+                    return new TextSearchFilter().Equality(bingFilterName, value);
+                }
+            }
+        }
+
+        throw new NotSupportedException(
+            "LINQ expression '" + linqExpression + "' cannot be converted to Bing API filters. " +
+            "Only simple equality expressions like 'page => page.Language == \"en\"' are supported, " +
+            "and only for properties that map to Bing API parameters: " +
+            string.Join(", ", s_queryParameters.Concat(s_advancedSearchKeywords)));
+    }
+
+    /// <summary>
+    /// Maps BingWebPage property names to Bing API filter field names.
+    /// </summary>
+    /// <param name="propertyName">The BingWebPage property name.</param>
+    /// <returns>The corresponding Bing API filter name, or null if not mappable.</returns>
+    private static string? MapPropertyToBingFilter(string propertyName)
+    {
+        return propertyName.ToUpperInvariant() switch
+        {
+            // Map BingWebPage properties to Bing API equivalents
+            "LANGUAGE" => "language",           // Maps to advanced search
+            "URL" => "url",                    // Maps to advanced search
+            "DISPLAYURL" => "site",            // Maps to site: search
+            "NAME" => "intitle",               // Maps to title search
+            "SNIPPET" => "inbody",             // Maps to body content search
+
+            // Direct API parameters (if we ever extend BingWebPage with metadata)
+            "MKT" => "mkt",                    // Market/locale
+            "FRESHNESS" => "freshness",        // Date freshness
+            "SAFESEARCH" => "safeSearch",      // Safe search setting
+
+            _ => null // Property not mappable to Bing filters
+        };
+    }
 
     /// <summary>
     /// Execute a Bing search query and return the results.
