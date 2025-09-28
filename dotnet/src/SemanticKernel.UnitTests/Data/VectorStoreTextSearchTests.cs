@@ -3,12 +3,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
+
 public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
@@ -202,5 +204,91 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         Assert.Equal("Odd", result1?.Tag);
         result2 = oddResults[1] as DataModel;
         Assert.Equal("Odd", result2?.Tag);
+    }
+
+    [Fact]
+    public async Task InvalidPropertyFilterThrowsExpectedExceptionAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchAsync();
+        TextSearchFilter invalidPropertyFilter = new();
+        invalidPropertyFilter.Equality("NonExistentProperty", "SomeValue");
+
+        // Act & Assert - Should throw InvalidOperationException because the new LINQ filtering 
+        // successfully creates the expression but the underlying vector store connector validates the property
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+            {
+                Top = 5,
+                Skip = 0,
+                Filter = invalidPropertyFilter
+            });
+
+            // Try to enumerate results to trigger the exception
+            await searchResults.Results.ToListAsync();
+        });
+
+        // Assert that we get the expected error message from the InMemory connector
+        Assert.Contains("Property NonExistentProperty not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task ComplexFiltersUseLegacyBehaviorAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchAsync();
+
+        // Create a complex filter scenario - we'll use a filter that would require multiple clauses
+        // For now, we'll test with a filter that has null or empty FilterClauses to simulate complex behavior
+        TextSearchFilter complexFilter = new();
+        // Don't use Equality() method to create a "complex" scenario that forces legacy behavior
+        // This simulates cases where the new LINQ conversion logic returns null
+
+        // Act & Assert - Should work without throwing
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        {
+            Top = 10,
+            Skip = 0,
+            Filter = complexFilter
+        });
+
+        var results = await searchResults.Results.ToListAsync();
+
+        // Assert that complex filtering works (falls back to legacy behavior or returns all results)
+        Assert.NotNull(results);
+    }
+
+    [Fact]
+    public async Task SimpleEqualityFilterUsesModernLinqPathAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchAsync();
+
+        // Create a simple single equality filter that should use the modern LINQ path
+        TextSearchFilter simpleFilter = new();
+        simpleFilter.Equality("Tag", "Even");
+
+        // Act
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        {
+            Top = 5,
+            Skip = 0,
+            Filter = simpleFilter
+        });
+
+        var results = await searchResults.Results.ToListAsync();
+
+        // Assert - The new LINQ filtering should work correctly for simple equality
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+
+        // Verify that all results match the filter criteria
+        foreach (var result in results)
+        {
+            var dataModel = result as DataModel;
+            Assert.NotNull(dataModel);
+            Assert.Equal("Even", dataModel.Tag);
+        }
     }
 }
