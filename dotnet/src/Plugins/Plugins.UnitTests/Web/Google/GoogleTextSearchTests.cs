@@ -55,7 +55,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new TextSearchOptions { Top = 4, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -81,7 +81,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -109,7 +109,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        KernelSearchResults<object> results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        KernelSearchResults<object> results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -140,7 +140,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             options: new() { StringMapper = new TestTextSearchStringMapper() });
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new TextSearchOptions { Top = 4, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -169,7 +169,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             options: new() { ResultMapper = new TestTextSearchResultMapper() });
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions { Top = 4, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -235,6 +235,89 @@ public sealed class GoogleTextSearchTests : IDisposable
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of cr,dateRestrict,exactTerms,excludeTerms,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch<GoogleWebPage> instance using Google search
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with GoogleWebPage
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new TextSearchOptions<GoogleWebPage> { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (var stringResult in resultList)
+        {
+            Assert.NotEmpty(stringResult);
+        }
+    }
+
+    [Fact]
+    public async Task GenericGetTextSearchResultsReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch<GoogleWebPage> instance using Google search
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with GoogleWebPage
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<GoogleWebPage> { Top = 10, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (var textSearchResult in resultList)
+        {
+            Assert.NotNull(textSearchResult.Name);
+            Assert.NotNull(textSearchResult.Value);
+            Assert.NotNull(textSearchResult.Link);
+        }
+    }
+
+    [Fact]
+    public async Task GenericGetSearchResultsReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch<GoogleWebPage> instance using Google search
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with GoogleWebPage
+        KernelSearchResults<object> results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<GoogleWebPage> { Top = 10, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(results);
+        Assert.NotNull(results.Results);
+        var resultList = await results.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (GoogleWebPage result in resultList.Cast<GoogleWebPage>())
+        {
+            Assert.NotNull(result.Title);
+            Assert.NotNull(result.Snippet);
+            Assert.NotNull(result.Link);
+            Assert.NotNull(result.DisplayLink);
+        }
     }
 
     /// <inheritdoc/>
