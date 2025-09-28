@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +20,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// A Google Text Search implementation that can be used to perform searches using the Google Web Search API.
 /// </summary>
 #pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
-public sealed class GoogleTextSearch : ITextSearch, IDisposable
+public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, IDisposable
 #pragma warning restore CS0618
 {
     /// <summary>
@@ -88,6 +90,127 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
+
+    #region ITextSearch<GoogleWebPage> Implementation
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        var legacyOptions = ConvertToLegacyOptions(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<object>(this.GetResultsAsGoogleWebPageAsync(searchResponse, cancellationToken).Cast<object>(), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        var legacyOptions = ConvertToLegacyOptions(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        var legacyOptions = ConvertToLegacyOptions(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
+    /// Attempts to translate simple LINQ expressions to Google API filters where possible.
+    /// </summary>
+    /// <param name="genericOptions">The generic search options with LINQ filtering.</param>
+    /// <returns>Legacy TextSearchOptions with equivalent filtering.</returns>
+    private static TextSearchOptions ConvertToLegacyOptions(TextSearchOptions<GoogleWebPage>? genericOptions)
+    {
+        if (genericOptions == null)
+        {
+            return new TextSearchOptions();
+        }
+
+        return new TextSearchOptions
+        {
+            Top = genericOptions.Top,
+            Skip = genericOptions.Skip,
+            IncludeTotalCount = genericOptions.IncludeTotalCount,
+            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToGoogleFilter(genericOptions.Filter) : null
+        };
+    }
+
+    /// <summary>
+    /// Converts a LINQ expression to a TextSearchFilter compatible with Google Custom Search API.
+    /// Only supports simple property equality expressions that map to Google's filter capabilities.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to convert.</param>
+    /// <returns>A TextSearchFilter with equivalent filtering.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
+    private static TextSearchFilter ConvertLinqExpressionToGoogleFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        if (linqExpression.Body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
+        {
+            // Handle simple equality: record.PropertyName == "value"
+            if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+
+                // Map GoogleWebPage properties to Google API filter names
+                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+                if (googleFilterName != null && value != null)
+                {
+                    return new TextSearchFilter().Equality(googleFilterName, value);
+                }
+            }
+        }
+
+        throw new NotSupportedException(
+            "LINQ expression '" + linqExpression + "' cannot be converted to Google API filters. " +
+            "Only simple equality expressions like 'page => page.Title == \"example\"' are supported, " +
+            "and only for properties that map to Google API parameters: " +
+            string.Join(", ", s_queryParameters));
+    }
+
+    /// <summary>
+    /// Maps GoogleWebPage property names to Google Custom Search API filter field names.
+    /// </summary>
+    /// <param name="propertyName">The GoogleWebPage property name.</param>
+    /// <returns>The corresponding Google API filter name, or null if not mappable.</returns>
+    private static string? MapPropertyToGoogleFilter(string propertyName)
+    {
+        return propertyName.ToUpperInvariant() switch
+        {
+            // Map GoogleWebPage properties to Google API equivalents
+            "LINK" => "siteSearch",           // Maps to site search
+            "DISPLAYLINK" => "siteSearch",    // Maps to site search  
+            "TITLE" => "exactTerms",          // Exact title match
+            "SNIPPET" => "exactTerms",        // Exact content match
+
+            // Direct API parameters mapped from GoogleWebPage metadata properties
+            "FILEFORMAT" => "filter",         // File format filtering
+            "MIME" => "filter",               // MIME type filtering
+
+            // Locale/Language parameters (if we extend GoogleWebPage)
+            "HL" => "hl",                     // Interface language
+            "GL" => "gl",                     // Geolocation
+            "CR" => "cr",                     // Country restrict
+            "LR" => "lr",                     // Language restrict
+
+            _ => null // Property not mappable to Google filters
+        };
+    }
+
+    #endregion
 
     /// <inheritdoc/>
     public void Dispose()
@@ -236,6 +359,25 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     }
 
     /// <summary>
+    /// Return the search results as instances of <see cref="GoogleWebPage"/>.
+    /// </summary>
+    /// <param name="searchResponse">Google search response</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<GoogleWebPage> GetResultsAsGoogleWebPageAsync(global::Google.Apis.CustomSearchAPI.v1.Data.Search searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (searchResponse is null || searchResponse.Items is null)
+        {
+            yield break;
+        }
+
+        foreach (var item in searchResponse.Items)
+        {
+            yield return ConvertToGoogleWebPage(item);
+            await Task.Yield();
+        }
+    }
+
+    /// <summary>
     /// Return the search results as instances of <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/>.
     /// </summary>
     /// <param name="searchResponse">Google search response</param>
@@ -263,6 +405,29 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         return new Dictionary<string, object?>()
         {
             { "ETag", searchResponse.ETag },
+        };
+    }
+
+    /// <summary>
+    /// Converts a Google CustomSearchAPI Result to a GoogleWebPage instance.
+    /// </summary>
+    /// <param name="googleResult">The Google search result to convert.</param>
+    /// <returns>A GoogleWebPage with mapped properties.</returns>
+    private static GoogleWebPage ConvertToGoogleWebPage(global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
+    {
+        return new GoogleWebPage
+        {
+            Title = googleResult.Title,
+            Link = googleResult.Link,
+            Snippet = googleResult.Snippet,
+            DisplayLink = googleResult.DisplayLink,
+            FormattedUrl = googleResult.FormattedUrl,
+            HtmlFormattedUrl = googleResult.HtmlFormattedUrl,
+            HtmlSnippet = googleResult.HtmlSnippet,
+            HtmlTitle = googleResult.HtmlTitle,
+            Mime = googleResult.Mime,
+            FileFormat = googleResult.FileFormat,
+            Labels = googleResult.Labels?.Select(l => l.Name).ToArray()
         };
     }
 
