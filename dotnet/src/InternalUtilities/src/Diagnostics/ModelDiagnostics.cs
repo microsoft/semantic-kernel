@@ -343,7 +343,7 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert a chat message to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a chat message to a JSON object based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static object ToGenAIConventionsFormat(ChatMessageContent chatMessage)
     {
@@ -357,7 +357,7 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Helper method to convert tool calls to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Helper method to convert tool calls to a list of JSON object based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static List<object> ToGenAIConventionsFormat(ChatMessageContentItemCollection chatMessageContentItems)
     {
@@ -373,7 +373,10 @@ internal static class ModelDiagnostics
         }).ToList();
     }
 
-    private static object ToGenAIconventionsFormat(KernelFunctionMetadata metadata)
+    /// <summary>
+    /// Convert a function metadata to a JSON object based on the OTel GenAI Semantic Conventions format
+    /// </summary>
+    private static object ToGenAIConventionsFormat(KernelFunctionMetadata metadata)
     {
         var properties = new Dictionary<string, KernelJsonSchema>();
         var required = new List<string>();
@@ -405,7 +408,7 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert a chat model response to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a chat model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static string ToGenAIConventionsChoiceFormat(ChatMessageContent chatMessage, int index)
     {
@@ -421,7 +424,7 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert a text model response to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a text model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static string ToGenAIConventionsChoiceFormat(TextContent textContent, int index)
     {
