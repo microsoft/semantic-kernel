@@ -174,7 +174,7 @@ internal static class ModelDiagnostics
         {
             activity?.SetTag(
                 ModelDiagnosticsTags.AgentToolDefinitions,
-                JsonSerializer.Serialize(kernel.Plugins.GetFunctionsMetadata().Select(m => ToGenAIconventionsFormat(m))));
+                JsonSerializer.Serialize(kernel.Plugins.GetFunctionsMetadata().Select(m => ToGenAIConventionsFormat(m))));
         }
 
         if (IsSensitiveEventsEnabled())
