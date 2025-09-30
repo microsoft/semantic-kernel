@@ -53,14 +53,12 @@ public static class OpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            ClientCore.GetOpenAIClientOptions(
-                endpoint: null,
-                orgId: orgId,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
-
             var builder = new OpenAIClient(
                     credential: new ApiKeyCredential(apiKey ?? SingleSpace),
-                    options: ClientCore.GetOpenAIClientOptions(HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
+                    options: ClientCore.GetOpenAIClientOptions(
+                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        endpoint: null,
+                        orgId: orgId))
                 .GetChatClient(modelId)
                 .AsIChatClient()
                 .AsBuilder()
@@ -153,10 +151,33 @@ public static class OpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
+            // Get or create HttpClient with proper BaseAddress for the endpoint
+            HttpClient clientHttpClient;
+            if (httpClient is not null)
+            {
+                clientHttpClient = httpClient;
+            }
+            else
+            {
+                var defaultClient = HttpClientProvider.GetHttpClient(serviceProvider);
+                // If using default client and it doesn't have BaseAddress set, create one with the endpoint
+                if (defaultClient.BaseAddress is null)
+                {
+                    clientHttpClient = new HttpClient(new HttpClientHandler())
+                    {
+                        BaseAddress = endpoint
+                    };
+                }
+                else
+                {
+                    clientHttpClient = defaultClient;
+                }
+            }
+
             var builder = new OpenAIClient(
                     credential: new ApiKeyCredential(apiKey ?? SingleSpace),
                     options: ClientCore.GetOpenAIClientOptions(
-                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        httpClient: clientHttpClient,
                         endpoint: endpoint,
                         orgId: orgId))
                 .GetChatClient(modelId)
