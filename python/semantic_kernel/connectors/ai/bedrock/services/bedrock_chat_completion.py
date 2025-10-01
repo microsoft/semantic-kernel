@@ -179,46 +179,21 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     ) -> Any:
         messages: list[dict[str, Any]] = []
 
-        tool_message_buffer = None
+        prev_message_role: AuthorRole | None = None
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 continue
-
-            # If there are multiple tool responses, Bedrock expects one message
-            # with multiple content blocks, one for each response.
-            if message.role == AuthorRole.TOOL:
-                if tool_message_buffer is None:
-                    tool_message_buffer = MESSAGE_CONVERTERS[message.role](message)
-                else:
-                    tool_message_buffer["content"].extend(
-                        (MESSAGE_CONVERTERS[message.role](message)).get("content", [])
-                    )
+            formatted_message = MESSAGE_CONVERTERS[message.role](message)
+            if prev_message_role == AuthorRole.TOOL and message.role == AuthorRole.TOOL:
+                # Consecutive tool messages have to be appended in the same message
+                messages[-1][content_key] += formatted_message[content_key]
             else:
-                # If a non-tool message is encountered, flush the buffer
-                if tool_message_buffer:
-                    messages.append(tool_message_buffer)
-                    tool_message_buffer = None
+                # If previous message is not a tool message, we start a new message
+                messages.append(formatted_message)
+            prev_message_role = message.role
 
-                messages.append(MESSAGE_CONVERTERS[message.role](message))
+        return messages
 
-        # Flush any remaining tool messages buffer
-        if tool_message_buffer:
-            messages.append(tool_message_buffer)
-
-        # Function to move toolUse last to handle AWS Bedrock issues in EU
-        def moved_tooluse_last(messages):
-            out = []
-            for entry in messages:
-                if isinstance(entry, dict) and isinstance(entry.get('content'), list):
-                    content = entry['content']
-                    if any(isinstance(c, dict) and 'toolUse' in c for c in content):
-                        entry = {**entry,
-                                 'content': sorted(content, key=lambda c: isinstance(c, dict) and 'toolUse' in c)}
-                out.append(entry)
-            return out
-
-        # Sort toolUse content to the end of the messages
-        return moved_tooluse_last(messages)
 
     # endregion
 
