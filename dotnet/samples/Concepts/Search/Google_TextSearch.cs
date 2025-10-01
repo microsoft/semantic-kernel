@@ -26,7 +26,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as string items
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 4, Skip = 0 });
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new TextSearchOptions { Top = 4, Skip = 0 });
         Console.WriteLine("——— String Results ———\n");
         await foreach (string result in stringResults.Results)
         {
@@ -35,7 +35,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as TextSearchResult items
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 4, Skip = 4 });
+        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new TextSearchOptions { Top = 4, Skip = 4 });
         Console.WriteLine("\n——— Text Search Results ———\n");
         await foreach (TextSearchResult result in textResults.Results)
         {
@@ -46,7 +46,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as Google.Apis.CustomSearchAPI.v1.Data.Result items
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4, Skip = 8 });
+        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new TextSearchOptions { Top = 4, Skip = 8 });
         Console.WriteLine("\n——— Google Web Page Results ———\n");
         await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in fullResults.Results)
         {
@@ -74,7 +74,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 2, Skip = 0 });
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new TextSearchOptions { Top = 2, Skip = 0 });
         Console.WriteLine("--- Serialized JSON Results ---");
         await foreach (string result in stringResults.Results)
         {

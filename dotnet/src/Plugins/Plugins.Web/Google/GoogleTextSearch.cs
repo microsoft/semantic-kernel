@@ -150,22 +150,21 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
     /// <summary>
     /// Converts a LINQ expression to a TextSearchFilter compatible with Google Custom Search API.
-    /// Only supports simple property equality expressions that map to Google's filter capabilities.
+    /// Supports property equality expressions and string Contains operations that map to Google's filter capabilities.
     /// </summary>
     /// <param name="linqExpression">The LINQ expression to convert.</param>
     /// <returns>A TextSearchFilter with equivalent filtering.</returns>
     /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
     private static TextSearchFilter ConvertLinqExpressionToGoogleFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
     {
+        // Handle simple equality: record.PropertyName == "value"
         if (linqExpression.Body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
         {
-            // Handle simple equality: record.PropertyName == "value"
             if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
             {
                 string propertyName = memberExpr.Member.Name;
                 object? value = constExpr.Value;
 
-                // Map GoogleWebPage properties to Google API filter names
                 string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
                 if (googleFilterName != null && value != null)
                 {
@@ -174,11 +173,45 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             }
         }
 
+        // Handle string Contains: record.PropertyName.Contains("value")
+        if (linqExpression.Body is MethodCallExpression methodCall &&
+            methodCall.Method.Name == "Contains" &&
+            methodCall.Method.DeclaringType == typeof(string))
+        {
+            if (methodCall.Object is MemberExpression memberExpr &&
+                methodCall.Arguments.Count == 1 &&
+                methodCall.Arguments[0] is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+
+                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+                if (googleFilterName != null && value != null)
+                {
+                    // For Contains operations on text fields, use exactTerms or orTerms
+                    if (googleFilterName == "exactTerms")
+                    {
+                        return new TextSearchFilter().Equality("orTerms", value); // More flexible than exactTerms
+                    }
+                    return new TextSearchFilter().Equality(googleFilterName, value);
+                }
+            }
+        }
+
+        // Generate helpful error message with supported patterns
+        var supportedPatterns = new[]
+        {
+            "page.Property == \"value\" (exact match)",
+            "page.Property.Contains(\"text\") (partial match)"
+        };
+
+        var supportedProperties = s_queryParameters.Select(p =>
+            MapGoogleFilterToProperty(p)).Where(p => p != null).Distinct();
+
         throw new NotSupportedException(
-            "LINQ expression '" + linqExpression + "' cannot be converted to Google API filters. " +
-            "Only simple equality expressions like 'page => page.Title == \"example\"' are supported, " +
-            "and only for properties that map to Google API parameters: " +
-            string.Join(", ", s_queryParameters));
+            $"LINQ expression '{linqExpression}' cannot be converted to Google API filters. " +
+            $"Supported patterns: {string.Join(", ", supportedPatterns)}. " +
+            $"Supported properties: {string.Join(", ", supportedProperties)}.");
     }
 
     /// <summary>
@@ -207,6 +240,27 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             "LR" => "lr",                     // Language restrict
 
             _ => null // Property not mappable to Google filters
+        };
+    }
+
+    /// <summary>
+    /// Maps Google Custom Search API filter field names back to example GoogleWebPage property names.
+    /// Used for generating helpful error messages.
+    /// </summary>
+    /// <param name="googleFilterName">The Google API filter name.</param>
+    /// <returns>An example property name, or null if not mappable.</returns>
+    private static string? MapGoogleFilterToProperty(string googleFilterName)
+    {
+        return googleFilterName switch
+        {
+            "siteSearch" => "DisplayLink",
+            "exactTerms" => "Title",
+            "filter" => "FileFormat",
+            "hl" => "HL",
+            "gl" => "GL",
+            "cr" => "CR",
+            "lr" => "LR",
+            _ => null
         };
     }
 

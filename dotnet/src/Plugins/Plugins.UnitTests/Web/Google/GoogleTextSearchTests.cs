@@ -320,6 +320,60 @@ public sealed class GoogleTextSearchTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task GenericSearchWithContainsFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with Contains filtering
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title.Contains("Semantic")
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithEqualityFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with equality filtering
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.DisplayLink == "microsoft.com"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
