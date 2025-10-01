@@ -126,7 +126,7 @@ internal static class ModelDiagnostics
         {
             foreach (var message in chatHistory)
             {
-                var formattedContent = ToGenAIConventionsFormat(message);
+                var formattedContent = JsonSerializer.Serialize(ToGenAIConventionsFormat(message));
                 activity?.AttachSensitiveDataAsEvent(
                     ModelDiagnosticsTags.RoleToEventMap[message.Role],
                     [
@@ -146,6 +146,7 @@ internal static class ModelDiagnostics
         string agentId,
         string agentName,
         string? agentDescription,
+        Kernel? kernel,
         ICollection<ChatMessageContent> messages)
     {
         if (!IsModelDiagnosticsEnabled())
@@ -167,6 +168,13 @@ internal static class ModelDiagnostics
         if (!string.IsNullOrWhiteSpace(agentDescription))
         {
             activity?.SetTag(ModelDiagnosticsTags.AgentDescription, agentDescription);
+        }
+
+        if (kernel is not null && kernel.Plugins.Count > 0)
+        {
+            activity?.SetTag(
+                ModelDiagnosticsTags.AgentToolDefinitions,
+                JsonSerializer.Serialize(kernel.Plugins.GetFunctionsMetadata().Select(m => ToGenAIConventionsFormat(m))));
         }
 
         if (IsSensitiveEventsEnabled())
@@ -335,104 +343,99 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert a chat message to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a chat message to a JSON object based on the OTel GenAI Semantic Conventions format
     /// </summary>
-    private static string ToGenAIConventionsFormat(ChatMessageContent chatMessage, StringBuilder? sb = null)
+    private static object ToGenAIConventionsFormat(ChatMessageContent chatMessage)
     {
-        sb ??= new StringBuilder();
-
-        sb.Append("{\"role\": \"");
-        sb.Append(chatMessage.Role);
-        sb.Append("\", \"content\": ");
-        sb.Append(JsonSerializer.Serialize(chatMessage.Content));
-        if (chatMessage.Items.OfType<FunctionCallContent>().Any())
+        return new
         {
-            sb.Append(", \"tool_calls\": ");
-            ToGenAIConventionsFormat(chatMessage.Items, sb);
-        }
-        if (!string.IsNullOrEmpty(chatMessage.AuthorName))
-        {
-            sb.Append(", \"name\": ");
-            sb.Append(chatMessage.AuthorName);
-        }
-        sb.Append('}');
-
-        return sb.ToString();
+            role = chatMessage.Role.ToString(),
+            name = chatMessage.AuthorName,
+            content = chatMessage.Content,
+            tool_calls = ToGenAIConventionsFormat(chatMessage.Items),
+        };
     }
 
     /// <summary>
-    /// Helper method to convert tool calls to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Helper method to convert tool calls to a list of JSON object based on the OTel GenAI Semantic Conventions format
     /// </summary>
-    private static void ToGenAIConventionsFormat(ChatMessageContentItemCollection chatMessageContentItems, StringBuilder? sb = null)
+    private static List<object> ToGenAIConventionsFormat(ChatMessageContentItemCollection chatMessageContentItems)
     {
-        sb ??= new StringBuilder();
-
-        sb.Append('[');
-        var isFirst = true;
-        foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
+        return chatMessageContentItems.OfType<FunctionCallContent>().Select(functionCall => (object)new
         {
-            if (!isFirst)
+            id = functionCall.Id,
+            function = new
             {
-                // Append a comma and a newline to separate the elements after the previous one.
-                // This can avoid adding an unnecessary comma after the last element.
-                sb.Append(", \n");
-            }
-
-            sb.Append("{\"id\": \"");
-            sb.Append(functionCall.Id);
-            sb.Append("\", \"function\": {\"arguments\": ");
-            sb.Append(JsonSerializer.Serialize(functionCall.Arguments));
-            sb.Append(", \"name\": \"");
-            sb.Append(functionCall.FunctionName);
-            sb.Append("\"}, \"type\": \"function\"}");
-
-            isFirst = false;
-        }
-        sb.Append(']');
+                name = functionCall.FunctionName,
+                arguments = functionCall.Arguments
+            },
+            type = "function"
+        }).ToList();
     }
 
     /// <summary>
-    /// Convert a chat model response to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a function metadata to a JSON object based on the OTel GenAI Semantic Conventions format
+    /// </summary>
+    private static object ToGenAIConventionsFormat(KernelFunctionMetadata metadata)
+    {
+        var properties = new Dictionary<string, KernelJsonSchema>();
+        var required = new List<string>();
+
+        foreach (var param in metadata.Parameters)
+        {
+            if (param.Schema is not null)
+            {
+                properties[param.Name] = param.Schema;
+            }
+            if (param.IsRequired)
+            {
+                required.Add(param.Name);
+            }
+        }
+
+        return new
+        {
+            type = "function",
+            name = metadata.Name,
+            description = metadata.Description,
+            parameters = new
+            {
+                type = "object",
+                properties,
+                required,
+            }
+        };
+    }
+
+    /// <summary>
+    /// Convert a chat model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static string ToGenAIConventionsChoiceFormat(ChatMessageContent chatMessage, int index)
     {
-        var sb = new StringBuilder();
-
-        sb.Append("{\"index\": ");
-        sb.Append(index);
-        sb.Append(", \"message\": ");
-        ToGenAIConventionsFormat(chatMessage, sb);
-        sb.Append(", \"tool_calls\": ");
-        ToGenAIConventionsFormat(chatMessage.Items, sb);
-        if (chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
+        var jsonObject = new
         {
-            sb.Append(", \"finish_reason\": ");
-            sb.Append(JsonSerializer.Serialize(finishReason));
-        }
-        sb.Append('}');
+            index,
+            message = ToGenAIConventionsFormat(chatMessage),
+            tool_calls = ToGenAIConventionsFormat(chatMessage.Items),
+            finish_reason = chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true ? finishReason : null
+        };
 
-        return sb.ToString();
+        return JsonSerializer.Serialize(jsonObject);
     }
 
     /// <summary>
-    /// Convert a text model response to a string aligned with the OTel GenAI Semantic Conventions format
+    /// Convert a text model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static string ToGenAIConventionsChoiceFormat(TextContent textContent, int index)
     {
-        var sb = new StringBuilder();
-
-        sb.Append("{\"index\": ");
-        sb.Append(index);
-        sb.Append(", \"message\": ");
-        sb.Append(JsonSerializer.Serialize(textContent.Text));
-        if (textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
+        var jsonObject = new
         {
-            sb.Append(", \"finish_reason\": ");
-            sb.Append(JsonSerializer.Serialize(finishReason));
-        }
-        sb.Append('}');
+            index,
+            message = textContent.Text,
+            finish_reason = textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true ? finishReason : null
+        };
 
-        return sb.ToString();
+        return JsonSerializer.Serialize(jsonObject);
     }
 
     /// <summary>
@@ -614,8 +617,9 @@ internal static class ModelDiagnostics
         public const string AgentId = "gen_ai.agent.id";
         public const string AgentName = "gen_ai.agent.name";
         public const string AgentDescription = "gen_ai.agent.description";
-        public const string AgentInvocationInput = "gen_ai.agent.invocation_input";
-        public const string AgentInvocationOutput = "gen_ai.agent.invocation_output";
+        public const string AgentInvocationInput = "gen_ai.input.messages";
+        public const string AgentInvocationOutput = "gen_ai.output.messages";
+        public const string AgentToolDefinitions = "gen_ai.tool.definitions";
 
         // Activity events
         public const string EventName = "gen_ai.event.content";
