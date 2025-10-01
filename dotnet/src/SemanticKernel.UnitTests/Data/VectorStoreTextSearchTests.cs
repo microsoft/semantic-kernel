@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -290,5 +289,33 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
             Assert.NotNull(dataModel);
             Assert.Equal("Even", dataModel.Tag);
         }
+    }
+
+    [Fact]
+    public async Task NullFilterReturnsAllResultsAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchAsync();
+
+        // Act - Search with null filter (should return all results)
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        {
+            Top = 10,
+            Skip = 0,
+            Filter = null
+        });
+
+        var results = await searchResults.Results.ToListAsync();
+
+        // Assert - Should return results without any filtering applied
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+
+        // Verify we get both "Even" and "Odd" tagged results (proving no filtering occurred)
+        var evenResults = results.Cast<DataModel>().Where(r => r.Tag == "Even");
+        var oddResults = results.Cast<DataModel>().Where(r => r.Tag == "Odd");
+
+        Assert.NotEmpty(evenResults);
+        Assert.NotEmpty(oddResults);
     }
 }
