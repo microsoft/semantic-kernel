@@ -409,6 +409,8 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         Assert.True(geminiMetadata.CandidatesTokenCount > 0);
         Assert.True(geminiMetadata.PromptTokenCount > 0);
         Assert.True(geminiMetadata.CurrentCandidateTokenCount > 0);
+        Assert.True(geminiMetadata.CachedContentTokenCount > 0);
+        Assert.True(geminiMetadata.ThoughtsTokenCount > 0);
     }
 
     [RetryTheory]
@@ -433,10 +435,14 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         this.Output.WriteLine($"TotalTokenCount: {geminiMetadata.TotalTokenCount}");
         this.Output.WriteLine($"CandidatesTokenCount: {geminiMetadata.CandidatesTokenCount}");
         this.Output.WriteLine($"PromptTokenCount: {geminiMetadata.PromptTokenCount}");
+        this.Output.WriteLine($"CachedContentTokenCount: {geminiMetadata.CachedContentTokenCount}");
+        this.Output.WriteLine($"ThoughtsTokenCount: {geminiMetadata.ThoughtsTokenCount}");
         this.Output.WriteLine($"CurrentCandidateTokenCount: {geminiMetadata.CurrentCandidateTokenCount}");
         Assert.True(geminiMetadata.TotalTokenCount > 0);
         Assert.True(geminiMetadata.CandidatesTokenCount > 0);
         Assert.True(geminiMetadata.PromptTokenCount > 0);
+        Assert.True(geminiMetadata.CachedContentTokenCount > 0);
+        Assert.True(geminiMetadata.ThoughtsTokenCount > 0);
         Assert.True(geminiMetadata.CurrentCandidateTokenCount > 0);
     }
 
