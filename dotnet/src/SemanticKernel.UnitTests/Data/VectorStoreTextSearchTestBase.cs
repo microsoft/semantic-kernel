@@ -231,4 +231,27 @@ public class VectorStoreTextSearchTestBase
         [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
+
+    /// <summary>
+    /// Sample model class for testing collection-based filtering (AnyTagEqualTo).
+    /// </summary>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    public sealed class DataModelWithTags
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreKey]
+        public Guid Key { get; init; }
+
+        [VectorStoreData]
+        public required string Text { get; init; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public required string Tag { get; init; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public required string[] Tags { get; init; }
+
+        [VectorStoreVector(1536)]
+        public string? Embedding { get; init; }
+    }
 }

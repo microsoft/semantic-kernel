@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using SemanticKernel.AotTests.UnitTests.Core.Functions;
 using SemanticKernel.AotTests.UnitTests.Core.Plugins;
 using SemanticKernel.AotTests.UnitTests.Search;
@@ -19,6 +20,7 @@ internal sealed class Program
         return success ? 1 : 0;
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Test application intentionally tests dynamic code paths. VectorStoreTextSearch LINQ filtering requires reflection for dynamic expression building from runtime filter specifications.")]
     private static readonly Func<Task>[] s_unitTests =
     [
         // Tests for functions
