@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Text Search implementation that can be used to perform searches using the Bing Web Search API.
 /// </summary>
-public sealed class BingTextSearch : ITextSearch
+public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 {
     /// <summary>
     /// Create an instance of the <see cref="BingTextSearch"/> with API key authentication.
@@ -74,6 +75,27 @@ public sealed class BingTextSearch : ITextSearch
         return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
+    /// <inheritdoc/>
+    Task<KernelSearchResults<string>> ITextSearch<BingWebPage>.SearchAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.SearchAsync(query, legacyOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<TextSearchResult>> ITextSearch<BingWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.GetTextSearchResultsAsync(query, legacyOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<object>> ITextSearch<BingWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        return this.GetSearchResultsAsync(query, legacyOptions, cancellationToken);
+    }
+
     #region private
 
     private readonly ILogger _logger;
@@ -91,6 +113,228 @@ public sealed class BingTextSearch : ITextSearch
     private static readonly string[] s_advancedSearchKeywords = ["contains", "ext", "filetype", "inanchor", "inbody", "intitle", "ip", "language", "loc", "location", "prefer", "site", "feed", "hasfeed", "url"];
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
+    /// Attempts to translate simple LINQ expressions to Bing API filters where possible.
+    /// </summary>
+    /// <param name="genericOptions">The generic search options with LINQ filtering.</param>
+    /// <returns>Legacy TextSearchOptions with equivalent filtering, or null if no conversion possible.</returns>
+    private static TextSearchOptions ConvertToLegacyOptions(TextSearchOptions<BingWebPage> genericOptions)
+    {
+        return new TextSearchOptions
+        {
+            Top = genericOptions.Top,
+            Skip = genericOptions.Skip,
+            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToBingFilter(genericOptions.Filter) : null
+        };
+    }
+
+    /// <summary>
+    /// Converts a LINQ expression to a TextSearchFilter compatible with Bing API.
+    /// Supports equality, inequality, Contains() method calls, and logical AND operator.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to convert.</param>
+    /// <returns>A TextSearchFilter with equivalent filtering.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Bing filters.</exception>
+    private static TextSearchFilter ConvertLinqExpressionToBingFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        var filter = new TextSearchFilter();
+        ProcessExpression(linqExpression.Body, filter);
+        return filter;
+    }
+
+    /// <summary>
+    /// Recursively processes LINQ expression nodes and builds Bing API filters.
+    /// </summary>
+    private static void ProcessExpression(Expression expression, TextSearchFilter filter)
+    {
+        switch (expression)
+        {
+            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.AndAlso:
+                // Handle AND: page => page.Language == "en" && page.Name.Contains("AI")
+                ProcessExpression(binaryExpr.Left, filter);
+                ProcessExpression(binaryExpr.Right, filter);
+                break;
+
+            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.OrElse:
+                // Handle OR: Currently not directly supported by TextSearchFilter
+                // Bing API supports OR via multiple queries, but TextSearchFilter doesn't expose this
+                throw new NotSupportedException(
+                    "Logical OR (||) is not supported by Bing Text Search filters. " +
+                    "Consider splitting into multiple search queries.");
+
+            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+                // Handle NOT: page => !page.Language.Equals("en")
+                throw new NotSupportedException(
+                    "Logical NOT (!) is not directly supported by Bing Text Search advanced operators. " +
+                    "Consider restructuring your filter to use positive conditions.");
+
+            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.Equal:
+                // Handle equality: page => page.Language == "en"
+                ProcessEqualityExpression(binaryExpr, filter, isNegated: false);
+                break;
+
+            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.NotEqual:
+                // Handle inequality: page => page.Language != "en"
+                // Implemented via Bing's negation syntax (e.g., -language:en)
+                ProcessEqualityExpression(binaryExpr, filter, isNegated: true);
+                break;
+
+            case MethodCallExpression methodExpr when methodExpr.Method.Name == "Contains":
+                // Handle Contains: page => page.Name.Contains("Microsoft")
+                ProcessContainsExpression(methodExpr, filter);
+                break;
+
+            default:
+                throw new NotSupportedException(
+                    $"Expression type '{expression.NodeType}' is not supported for Bing API filters. " +
+                    "Supported patterns: equality (==), inequality (!=), Contains(), and logical AND (&&). " +
+                    "Available Bing operators: " + string.Join(", ", s_advancedSearchKeywords));
+        }
+    }
+
+    /// <summary>
+    /// Processes equality and inequality expressions (property == value or property != value).
+    /// </summary>
+    /// <param name="binaryExpr">The binary expression to process.</param>
+    /// <param name="filter">The filter to update.</param>
+    /// <param name="isNegated">True if this is an inequality (!=) expression.</param>
+    private static void ProcessEqualityExpression(BinaryExpression binaryExpr, TextSearchFilter filter, bool isNegated)
+    {
+        if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
+        {
+            string propertyName = memberExpr.Member.Name;
+            object? value = constExpr.Value;
+
+            string? bingFilterName = MapPropertyToBingFilter(propertyName);
+            if (bingFilterName != null && value != null)
+            {
+                if (isNegated)
+                {
+                    // For inequality, use Bing's negation syntax by prepending '-' to the filter name
+                    // Example: -language:en excludes pages in English
+                    filter.Equality($"-{bingFilterName}", value);
+                }
+                else
+                {
+                    filter.Equality(bingFilterName, value);
+                }
+            }
+            else if (value == null)
+            {
+                throw new NotSupportedException(
+                    $"Null values are not supported in Bing API filters for property '{propertyName}'.");
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    $"Property '{propertyName}' cannot be mapped to Bing API filters. " +
+                    "Supported properties: Language, Url, DisplayUrl, Name, Snippet, IsFamilyFriendly.");
+            }
+        }
+        else
+        {
+            throw new NotSupportedException(
+                "Equality expressions must be in the form 'property == value' or 'property != value'. " +
+                "Complex expressions on the left or right side are not supported.");
+        }
+    }
+
+    /// <summary>
+    /// Processes Contains() method calls on string properties.
+    /// Maps to Bing's advanced search operators like intitle:, inbody:, url:.
+    /// </summary>
+    private static void ProcessContainsExpression(MethodCallExpression methodExpr, TextSearchFilter filter)
+    {
+        // Contains can be called on a property: page.Name.Contains("value")
+        // or on a collection: page.Tags.Contains("value")
+
+        if (methodExpr.Object is MemberExpression memberExpr)
+        {
+            string propertyName = memberExpr.Member.Name;
+
+            // Extract the search value from the Contains() argument
+            if (methodExpr.Arguments.Count == 1 && methodExpr.Arguments[0] is ConstantExpression constExpr)
+            {
+                object? value = constExpr.Value;
+                if (value == null)
+                {
+                    return; // Skip null values
+                }
+
+                // Map property to Bing filter with Contains semantic
+                string? bingFilterOperator = MapPropertyToContainsFilter(propertyName);
+                if (bingFilterOperator != null)
+                {
+                    // Use Bing's advanced search syntax: intitle:"value", inbody:"value", etc.
+                    filter.Equality(bingFilterOperator, value);
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Contains() on property '{propertyName}' is not supported by Bing API filters. " +
+                        "Supported properties for Contains: Name (maps to intitle:), Snippet (maps to inbody:), Url (maps to url:).");
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    "Contains() must have a single constant value argument. " +
+                    "Complex expressions as arguments are not supported.");
+            }
+        }
+        else
+        {
+            throw new NotSupportedException(
+                "Contains() must be called on a property (e.g., page.Name.Contains(\"value\")). " +
+                "Collection Contains patterns are not yet supported.");
+        }
+    }
+
+    /// <summary>
+    /// Maps BingWebPage property names to Bing API filter field names for equality operations.
+    /// </summary>
+    /// <param name="propertyName">The BingWebPage property name.</param>
+    /// <returns>The corresponding Bing API filter name, or null if not mappable.</returns>
+    private static string? MapPropertyToBingFilter(string propertyName)
+    {
+        return propertyName.ToUpperInvariant() switch
+        {
+            // Map BingWebPage properties to Bing API equivalents
+            "LANGUAGE" => "language",           // Maps to advanced search
+            "URL" => "url",                    // Maps to advanced search
+            "DISPLAYURL" => "site",            // Maps to site: search
+            "NAME" => "intitle",               // Maps to title search
+            "SNIPPET" => "inbody",             // Maps to body content search
+            "ISFAMILYFRIENDLY" => "safeSearch", // Maps to safe search parameter
+
+            // Direct API parameters (if we ever extend BingWebPage with metadata)
+            "MKT" => "mkt",                    // Market/locale
+            "FRESHNESS" => "freshness",        // Date freshness
+
+            _ => null // Property not mappable to Bing filters
+        };
+    }
+
+    /// <summary>
+    /// Maps BingWebPage property names to Bing API advanced search operators for Contains operations.
+    /// </summary>
+    /// <param name="propertyName">The BingWebPage property name.</param>
+    /// <returns>The corresponding Bing advanced search operator, or null if not mappable.</returns>
+    private static string? MapPropertyToContainsFilter(string propertyName)
+    {
+        return propertyName.ToUpperInvariant() switch
+        {
+            // Map properties to Bing's contains-style operators
+            "NAME" => "intitle",        // intitle:"search term" - title contains
+            "SNIPPET" => "inbody",      // inbody:"search term" - body contains
+            "URL" => "url",             // url:"search term" - URL contains
+            "DISPLAYURL" => "site",     // site:domain.com - site contains
+
+            _ => null // Property not mappable to Contains-style filters
+        };
+    }
 
     /// <summary>
     /// Execute a Bing search query and return the results.
