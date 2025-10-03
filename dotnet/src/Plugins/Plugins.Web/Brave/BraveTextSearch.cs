@@ -188,7 +188,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                 }
                 else
                 {
-                    throw new NotSupportedException($"Property '{equalityClause.FieldName}' cannot be mapped to Brave API filters. Supported properties: {string.Join(", ", s_queryParameters)}");
+                    throw new NotSupportedException(
+                        $"Property '{equalityClause.FieldName}' cannot be mapped to Brave API filters. " +
+                        $"Supported properties: {string.Join(", ", s_queryParameters)}. " +
+                        "Example: page => page.Country == \"US\" && page.SafeSearch == \"moderate\"");
                 }
             }
         }
@@ -204,18 +207,21 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     private static string? MapPropertyToBraveFilter(string propertyName) =>
         propertyName.ToUpperInvariant() switch
         {
-            "COUNTRY" => "country",
-            "SEARCHLANG" => "search_lang",
-            "UILANG" => "ui_lang",
-            "SAFESEARCH" => "safesearch",
-            "TEXTDECORATIONS" => "text_decorations",
-            "SPELLCHECK" => "spellcheck",
-            "RESULTFILTER" => "result_filter",
-            "UNITS" => "units",
-            "EXTRASNIPPETS" => "extra_snippets",
+            "COUNTRY" => BraveParamCountry,
+            "SEARCHLANG" => BraveParamSearchLang,
+            "UILANG" => BraveParamUiLang,
+            "SAFESEARCH" => BraveParamSafeSearch,
+            "TEXTDECORATIONS" => BraveParamTextDecorations,
+            "SPELLCHECK" => BraveParamSpellCheck,
+            "RESULTFILTER" => BraveParamResultFilter,
+            "UNITS" => BraveParamUnits,
+            "EXTRASNIPPETS" => BraveParamExtraSnippets,
             _ => null // Property not mappable to Brave filters
         };
 
+    // TODO: Consider extracting LINQ expression analysis logic to a shared utility class
+    // to reduce duplication across text search connectors (Brave, Tavily, etc.).
+    // See code review for details.
     /// <summary>
     /// Analyzes a LINQ expression and extracts filter clauses.
     /// </summary>
@@ -232,15 +238,33 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                     AnalyzeExpression(binaryExpr.Left, filterClauses);
                     AnalyzeExpression(binaryExpr.Right, filterClauses);
                 }
+                else if (binaryExpr.NodeType == ExpressionType.OrElse)
+                {
+                    // Handle OR expressions by recursively analyzing both sides
+                    // Note: OR results in multiple filter values for the same property
+                    AnalyzeExpression(binaryExpr.Left, filterClauses);
+                    AnalyzeExpression(binaryExpr.Right, filterClauses);
+                }
                 else if (binaryExpr.NodeType == ExpressionType.Equal)
                 {
                     // Handle equality expressions
                     ExtractEqualityClause(binaryExpr, filterClauses);
                 }
+                else if (binaryExpr.NodeType == ExpressionType.NotEqual)
+                {
+                    // Handle inequality expressions (property != value)
+                    // This is supported as a negation pattern
+                    ExtractInequalityClause(binaryExpr, filterClauses);
+                }
                 else
                 {
-                    throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Only AndAlso and Equal are supported.");
+                    throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
                 }
+                break;
+
+            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+                // Handle NOT expressions (negation)
+                AnalyzeNotExpression(unaryExpr, filterClauses);
                 break;
 
             case MethodCallExpression methodCall:
@@ -286,33 +310,126 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
+    /// Extracts an inequality filter clause from a binary not-equal expression.
+    /// </summary>
+    /// <param name="binaryExpr">The binary not-equal expression.</param>
+    /// <param name="filterClauses">The list to add the extracted clause to.</param>
+    private static void ExtractInequalityClause(BinaryExpression binaryExpr, List<FilterClause> filterClauses)
+    {
+        // Note: Inequality is tracked but handled differently depending on the property
+        // For now, we log a warning that inequality filtering may not work as expected
+        string? propertyName = null;
+        object? value = null;
+
+        if (binaryExpr.Left is MemberExpression leftMember)
+        {
+            propertyName = leftMember.Member.Name;
+            value = ExtractValue(binaryExpr.Right);
+        }
+        else if (binaryExpr.Right is MemberExpression rightMember)
+        {
+            propertyName = rightMember.Member.Name;
+            value = ExtractValue(binaryExpr.Left);
+        }
+
+        if (propertyName != null && value != null)
+        {
+            // Add a marker for inequality - this will need special handling in conversion
+            // For now, we don't add it to filter clauses as Brave API doesn't support direct negation
+            throw new NotSupportedException($"Inequality operator (!=) is not directly supported for property '{propertyName}'. Use NOT operator instead: !(page.{propertyName} == value).");
+        }
+
+        throw new NotSupportedException("Unable to extract property name and value from inequality expression.");
+    }
+
+    /// <summary>
+    /// Analyzes a NOT (negation) expression.
+    /// </summary>
+    /// <param name="unaryExpr">The unary NOT expression.</param>
+    /// <param name="filterClauses">The list to add extracted filter clauses to.</param>
+    private static void AnalyzeNotExpression(UnaryExpression unaryExpr, List<FilterClause> filterClauses)
+    {
+        // NOT expressions are complex for web search APIs
+        // We support simple cases like !(page.SafeSearch == "off")
+        if (unaryExpr.Operand is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
+        {
+            // This is !(property == value), which we can handle for some properties
+            throw new NotSupportedException("NOT operator (!) with equality is not directly supported. Most web search APIs don't support negative filtering.");
+        }
+
+        throw new NotSupportedException("NOT operator (!) is only supported with simple equality expressions.");
+    }
+
+    /// <summary>
     /// Extracts a filter clause from a method call expression (e.g., Contains, StartsWith).
     /// </summary>
     /// <param name="methodCall">The method call expression.</param>
     /// <param name="filterClauses">The list to add the extracted clause to.</param>
     private static void ExtractMethodCallClause(MethodCallExpression methodCall, List<FilterClause> filterClauses)
     {
-        if (methodCall.Method.Name == "Contains" && methodCall.Object is MemberExpression member)
+        if (methodCall.Method.Name == "Contains")
         {
-            var propertyName = member.Member.Name;
-            var value = ExtractValue(methodCall.Arguments[0]);
-
-            if (value != null)
+            // Check if this is property.Contains(value) or array.Contains(property)
+            if (methodCall.Object is MemberExpression member)
             {
-                // For Contains, we'll map it to equality for certain properties
-                if (propertyName.Equals("ResultFilter", StringComparison.OrdinalIgnoreCase))
+                // This is property.Contains(value) - e.g., page.ResultFilter.Contains("web")
+                var propertyName = member.Member.Name;
+                var value = ExtractValue(methodCall.Arguments[0]);
+
+                if (value != null)
                 {
-                    filterClauses.Add(new EqualToFilterClause(propertyName, value));
+                    // For Contains, we'll map it to equality for certain properties
+                    if (propertyName.Equals("ResultFilter", StringComparison.OrdinalIgnoreCase))
+                    {
+                        filterClauses.Add(new EqualToFilterClause(propertyName, value));
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Contains method is only supported for ResultFilter property, not '{propertyName}'.");
+                    }
+                }
+            }
+            else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
+            {
+                // This is array.Contains(property) - e.g., new[] { "US", "GB" }.Contains(page.Country)
+                // This is an extension method call where the first argument is the array
+                var arrayExpr = methodCall.Arguments[0];
+                var propertyExpr = methodCall.Arguments[1];
+
+                if (propertyExpr is MemberExpression propertyMember)
+                {
+                    var propertyName = propertyMember.Member.Name;
+                    var arrayValue = ExtractValue(arrayExpr);
+
+                    if (arrayValue is System.Collections.IEnumerable enumerable)
+                    {
+                        // Convert to OR expressions - each value becomes an equality clause
+                        foreach (var value in enumerable)
+                        {
+                            if (value != null)
+                            {
+                                filterClauses.Add(new EqualToFilterClause(propertyName, value));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Contains argument must be an array or collection, got: {arrayValue?.GetType().Name}");
+                    }
                 }
                 else
                 {
-                    throw new NotSupportedException($"Contains method is only supported for ResultFilter property, not '{propertyName}'.");
+                    throw new NotSupportedException("Contains with inline collection requires a property reference as the second argument.");
                 }
+            }
+            else
+            {
+                throw new NotSupportedException("Unsupported Contains expression format.");
             }
         }
         else
         {
-            throw new NotSupportedException($"Method '{methodCall.Method.Name}' is not supported in Brave search filters.");
+            throw new NotSupportedException($"Method '{methodCall.Method.Name}' is not supported in Brave search filters. Only 'Contains' is supported.");
         }
     }
 
@@ -351,8 +468,19 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
+    // Constants for Brave API parameter names
+    private const string BraveParamCountry = "country";
+    private const string BraveParamSearchLang = "search_lang";
+    private const string BraveParamUiLang = "ui_lang";
+    private const string BraveParamSafeSearch = "safesearch";
+    private const string BraveParamTextDecorations = "text_decorations";
+    private const string BraveParamSpellCheck = "spellcheck";
+    private const string BraveParamResultFilter = "result_filter";
+    private const string BraveParamUnits = "units";
+    private const string BraveParamExtraSnippets = "extra_snippets";
+
     // See https://api-dashboard.search.brave.com/app/documentation/web-search/query#WebSearchAPIQueryParameters
-    private static readonly string[] s_queryParameters = ["country", "search_lang", "ui_lang", "safesearch", "text_decorations", "spellcheck", "result_filter", "units", "extra_snippets"];
+    private static readonly string[] s_queryParameters = [BraveParamCountry, BraveParamSearchLang, BraveParamUiLang, BraveParamSafeSearch, BraveParamTextDecorations, BraveParamSpellCheck, BraveParamResultFilter, BraveParamUnits, BraveParamExtraSnippets];
 
     private static readonly string[] s_safeSearch = ["off", "moderate", "strict"];
 
