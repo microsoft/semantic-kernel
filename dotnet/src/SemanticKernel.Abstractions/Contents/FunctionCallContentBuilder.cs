@@ -18,7 +18,8 @@ public sealed class FunctionCallContentBuilder
     private Dictionary<string, string>? _functionCallIdsByIndex = null;
     private Dictionary<string, string>? _functionNamesByIndex = null;
     private Dictionary<string, StringBuilder>? _functionArgumentBuildersByIndex = null;
-    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions = null;
+    private readonly bool _retainArgumentTypes = false;
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
@@ -33,10 +34,12 @@ public sealed class FunctionCallContentBuilder
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
     /// </summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    /// <param name="retainArgumentTypes">A value indicating whether the types of function arguments provided by the AI model are retained by SK or not. By default <see langword="false"/>.</param>
     [Experimental("SKEXP0120")]
-    public FunctionCallContentBuilder(JsonSerializerOptions jsonSerializerOptions)
+    public FunctionCallContentBuilder(JsonSerializerOptions? jsonSerializerOptions = null, bool retainArgumentTypes = false)
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
+        this._retainArgumentTypes = retainArgumentTypes;
     }
 
     /// <summary>
@@ -146,7 +149,7 @@ public sealed class FunctionCallContentBuilder
                 arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
             }
 
-            if (arguments is { Count: > 0 })
+            if (arguments is { Count: > 0 } && !this._retainArgumentTypes)
             {
                 var names = arguments.Names.ToArray();
                 foreach (var name in names)
