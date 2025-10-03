@@ -155,7 +155,7 @@ public static class OpenAIServiceCollectionExtensions
             HttpClient innerHttpClient;
             if (httpClient is not null)
             {
-                clientHttpClient = httpClient;
+                innerHttpClient = httpClient;
             }
             else
             {
@@ -164,23 +164,21 @@ public static class OpenAIServiceCollectionExtensions
                 if (defaultClient.BaseAddress is null)
                 {
                     Verify.NotNull(endpoint);
-                    
+
                     // A new one needs to be created as we can't cross boundaries and modify an existing client 
-                    innerHttpClient = HttpClientProvider.GetHttpClient()
-                    {
-                        BaseAddress = endpoint
-                    };
+                    innerHttpClient = HttpClientProvider.GetHttpClient();
+                    innerHttpClient.BaseAddress = endpoint;
                 }
                 else
                 {
-                    clientHttpClient = defaultClient;
+                    innerHttpClient = defaultClient;
                 }
             }
 
             var builder = new OpenAIClient(
                     credential: new ApiKeyCredential(apiKey ?? SingleSpace),
                     options: ClientCore.GetOpenAIClientOptions(
-                        httpClient: clientHttpClient,
+                        httpClient: innerHttpClient,
                         endpoint: endpoint,
                         orgId: orgId))
                 .GetChatClient(modelId)
