@@ -234,7 +234,7 @@ public sealed class GoogleTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of cr,dateRestrict,exactTerms,excludeTerms,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
+        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of cr,dateRestrict,exactTerms,excludeTerms,fileType,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
     }
 
     [Fact]
@@ -336,7 +336,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             {
                 Top = 4,
                 Skip = 0,
-                Filter = page => page.Title.Contains("Semantic")
+                Filter = page => page.Title != null && page.Title.Contains("Semantic")
             });
 
         // Assert
@@ -364,6 +364,141 @@ public sealed class GoogleTextSearchTests : IDisposable
                 Top = 4,
                 Skip = 0,
                 Filter = page => page.DisplayLink == "microsoft.com"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithNotEqualFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with NOT EQUAL filtering (excludes terms)
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title != "Deprecated"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithNotContainsFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with NOT Contains filtering (excludes terms)
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title != null && !page.Title.Contains("deprecated")
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithFileFormatFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with FileFormat filtering
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.FileFormat == "pdf"
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithCompoundAndFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with compound AND filtering
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title != null && page.Title.Contains("Semantic") && page.DisplayLink != null && page.DisplayLink.Contains("microsoft")
+            });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+    }
+
+    [Fact]
+    public async Task GenericSearchWithComplexCompoundFilterReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use generic interface with complex compound filtering (equality + contains + exclusion)
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.FileFormat == "pdf" && page.Title != null && page.Title.Contains("AI") && page.Snippet != null && !page.Snippet.Contains("deprecated")
             });
 
         // Assert

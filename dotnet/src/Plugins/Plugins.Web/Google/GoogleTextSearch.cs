@@ -150,13 +150,22 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
     /// <summary>
     /// Converts a LINQ expression to a TextSearchFilter compatible with Google Custom Search API.
-    /// Supports property equality expressions and string Contains operations that map to Google's filter capabilities.
+    /// Supports property equality expressions, string Contains operations, NOT operations (inequality and negation),
+    /// and compound AND expressions that map to Google's filter capabilities.
     /// </summary>
     /// <param name="linqExpression">The LINQ expression to convert.</param>
     /// <returns>A TextSearchFilter with equivalent filtering.</returns>
     /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
     private static TextSearchFilter ConvertLinqExpressionToGoogleFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
     {
+        // Handle compound AND expressions: expr1 && expr2
+        if (linqExpression.Body is BinaryExpression andExpr && andExpr.NodeType == ExpressionType.AndAlso)
+        {
+            var filter = new TextSearchFilter();
+            CollectAndCombineFilters(andExpr, filter);
+            return filter;
+        }
+
         // Handle simple equality: record.PropertyName == "value"
         if (linqExpression.Body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
         {
@@ -169,6 +178,45 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                 if (googleFilterName != null && value != null)
                 {
                     return new TextSearchFilter().Equality(googleFilterName, value);
+                }
+            }
+        }
+
+        // Handle inequality (NOT): record.PropertyName != "value"
+        if (linqExpression.Body is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
+        {
+            if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+
+                // Map to excludeTerms for text fields
+                if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
+                {
+                    return new TextSearchFilter().Equality("excludeTerms", value);
+                }
+            }
+        }
+
+        // Handle NOT expressions: !record.PropertyName.Contains("value")
+        if (linqExpression.Body is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
+        {
+            if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
+                notMethodCall.Method.Name == "Contains" &&
+                notMethodCall.Method.DeclaringType == typeof(string))
+            {
+                if (notMethodCall.Object is MemberExpression memberExpr &&
+                    notMethodCall.Arguments.Count == 1 &&
+                    notMethodCall.Arguments[0] is ConstantExpression constExpr)
+                {
+                    string propertyName = memberExpr.Member.Name;
+                    object? value = constExpr.Value;
+
+                    // Map to excludeTerms for text fields
+                    if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
+                    {
+                        return new TextSearchFilter().Equality("excludeTerms", value);
+                    }
                 }
             }
         }
@@ -202,7 +250,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         var supportedPatterns = new[]
         {
             "page.Property == \"value\" (exact match)",
-            "page.Property.Contains(\"text\") (partial match)"
+            "page.Property != \"value\" (exclude)",
+            "page.Property.Contains(\"text\") (partial match)",
+            "!page.Property.Contains(\"text\") (exclude partial)",
+            "page.Prop1 == \"val1\" && page.Prop2.Contains(\"val2\") (compound AND)"
         };
 
         var supportedProperties = s_queryParameters.Select(p =>
@@ -212,6 +263,93 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             $"LINQ expression '{linqExpression}' cannot be converted to Google API filters. " +
             $"Supported patterns: {string.Join(", ", supportedPatterns)}. " +
             $"Supported properties: {string.Join(", ", supportedProperties)}.");
+    }
+
+    /// <summary>
+    /// Recursively collects and combines filters from compound AND expressions.
+    /// </summary>
+    /// <param name="expression">The expression to process.</param>
+    /// <param name="filter">The filter to accumulate results into.</param>
+    private static void CollectAndCombineFilters(Expression expression, TextSearchFilter filter)
+    {
+        if (expression is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.AndAlso)
+        {
+            // Recursively process both sides of the AND
+            CollectAndCombineFilters(binaryExpr.Left, filter);
+            CollectAndCombineFilters(binaryExpr.Right, filter);
+        }
+        else if (expression is BinaryExpression equalExpr && equalExpr.NodeType == ExpressionType.Equal)
+        {
+            // Handle equality
+            if (equalExpr.Left is MemberExpression memberExpr && equalExpr.Right is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+                if (googleFilterName != null && value != null)
+                {
+                    filter.Equality(googleFilterName, value);
+                }
+            }
+        }
+        else if (expression is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
+        {
+            // Handle inequality (exclusion)
+            if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+                if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
+                {
+                    filter.Equality("excludeTerms", value);
+                }
+            }
+        }
+        else if (expression is MethodCallExpression methodCall &&
+                 methodCall.Method.Name == "Contains" &&
+                 methodCall.Method.DeclaringType == typeof(string))
+        {
+            // Handle Contains
+            if (methodCall.Object is MemberExpression memberExpr &&
+                methodCall.Arguments.Count == 1 &&
+                methodCall.Arguments[0] is ConstantExpression constExpr)
+            {
+                string propertyName = memberExpr.Member.Name;
+                object? value = constExpr.Value;
+                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+                if (googleFilterName != null && value != null)
+                {
+                    if (googleFilterName == "exactTerms")
+                    {
+                        filter.Equality("orTerms", value);
+                    }
+                    else
+                    {
+                        filter.Equality(googleFilterName, value);
+                    }
+                }
+            }
+        }
+        else if (expression is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
+        {
+            // Handle NOT Contains
+            if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
+                notMethodCall.Method.Name == "Contains" &&
+                notMethodCall.Method.DeclaringType == typeof(string))
+            {
+                if (notMethodCall.Object is MemberExpression memberExpr &&
+                    notMethodCall.Arguments.Count == 1 &&
+                    notMethodCall.Arguments[0] is ConstantExpression constExpr)
+                {
+                    string propertyName = memberExpr.Member.Name;
+                    object? value = constExpr.Value;
+                    if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
+                    {
+                        filter.Equality("excludeTerms", value);
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -230,7 +368,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             "SNIPPET" => "exactTerms",        // Exact content match
 
             // Direct API parameters mapped from GoogleWebPage metadata properties
-            "FILEFORMAT" => "filter",         // File format filtering
+            "FILEFORMAT" => "fileType",       // File type/extension filtering
             "MIME" => "filter",               // MIME type filtering
 
             // Locale/Language parameters (if we extend GoogleWebPage)
@@ -255,7 +393,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         {
             "siteSearch" => "DisplayLink",
             "exactTerms" => "Title",
-            "filter" => "FileFormat",
+            "orTerms" => "Title",
+            "excludeTerms" => "Title",
+            "fileType" => "FileFormat",
+            "filter" => "Mime",
             "hl" => "HL",
             "gl" => "GL",
             "cr" => "CR",
@@ -286,7 +427,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     // See https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
-    private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
+    private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "fileType", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
 
     private delegate void SetSearchProperty(CseResource.ListRequest search, string value);
 
@@ -295,6 +436,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         { "DATERESTRICT", (search, value) => search.DateRestrict = value },
         { "EXACTTERMS", (search, value) => search.ExactTerms = value },
         { "EXCLUDETERMS", (search, value) => search.ExcludeTerms = value },
+        { "FILETYPE", (search, value) => search.FileType = value },
         { "FILTER", (search, value) => search.Filter = value },
         { "GL", (search, value) => search.Gl = value },
         { "HL", (search, value) => search.Hl = value },
