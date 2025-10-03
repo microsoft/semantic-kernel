@@ -152,7 +152,7 @@ public static class OpenAIServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             // Get or create HttpClient with proper BaseAddress for the endpoint
-            HttpClient clientHttpClient;
+            HttpClient innerHttpClient;
             if (httpClient is not null)
             {
                 clientHttpClient = httpClient;
