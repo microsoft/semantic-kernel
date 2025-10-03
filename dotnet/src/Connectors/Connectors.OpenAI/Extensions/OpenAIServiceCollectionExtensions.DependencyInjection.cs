@@ -163,7 +163,10 @@ public static class OpenAIServiceCollectionExtensions
                 // If using default client and it doesn't have BaseAddress set, create one with the endpoint
                 if (defaultClient.BaseAddress is null)
                 {
-                    clientHttpClient = new HttpClient(new HttpClientHandler())
+                    Verify.NotNull(endpoint);
+                    
+                    // A new one needs to be created as we can't cross boundaries and modify an existing client 
+                    innerHttpClient = HttpClientProvider.GetHttpClient()
                     {
                         BaseAddress = endpoint
                     };
