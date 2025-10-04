@@ -635,5 +635,5 @@ internal static class ModelDiagnostics
                 { AuthorRole.Tool, ToolMessage }
             };
     }
-    # endregion
+    #endregion
 }
