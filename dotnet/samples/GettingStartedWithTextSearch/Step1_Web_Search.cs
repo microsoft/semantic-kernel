@@ -139,7 +139,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
     /// - VectorStoreTextSearch (Step4_Search_With_VectorStore.cs)
     /// </remarks>
     [Fact]
-    public async Task SearchWithLinqFilteringAsync()
+    public Task SearchWithLinqFilteringAsync()
     {
         // This example demonstrates the NEW generic interface pattern with LINQ filtering
         // that provides compile-time type safety and IntelliSense support
@@ -187,6 +187,8 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine();
         Console.WriteLine("3. GoogleTextSearch (this file - GoogleSearchAsync())");
         Console.WriteLine("   [PLANNED] Pattern for future generic interface (once PR4 is merged):");
+        Console.WriteLine("   // Note: GoogleWebPage is a conceptual type pending PR4 implementation");
+        Console.WriteLine("   // The actual Google API currently uses: Google.Apis.CustomSearchAPI.v1.Data.Result");
         Console.WriteLine("   var googleSearch = new GoogleTextSearch(searchEngineId, apiKey);");
         Console.WriteLine("   var options = new TextSearchOptions<GoogleWebPage>");
         Console.WriteLine("   {");
@@ -228,5 +230,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine("PR4: GoogleTextSearch connector (future) [PLANNED]");
         Console.WriteLine("PR5: TavilyTextSearch & BraveTextSearch connectors (future) [PLANNED]");
         Console.WriteLine("PR6: Samples and documentation (this PR) [OK]");
+
+        return Task.CompletedTask;
     }
 }
