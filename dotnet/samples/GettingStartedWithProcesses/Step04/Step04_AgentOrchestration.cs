@@ -74,7 +74,7 @@ public class Step04_AgentOrchestration : BaseTest
 
         // Cleaning up created agents
         var processState = await localProcess.GetStateAsync();
-        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.Id == "Student").FirstOrDefault()!.State;
+        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.StepId == "Student").FirstOrDefault()!.State;
         var agentId = agentState?.State?.AgentId;
         if (agentId != null)
         {
@@ -168,7 +168,7 @@ public class Step04_AgentOrchestration : BaseTest
         // Pass user input to primary agent
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(agentStep, parameterName: "message"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(agentStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText));
 
         agentStep
@@ -178,7 +178,7 @@ public class Step04_AgentOrchestration : BaseTest
 
         agentStep
             .OnFunctionError()
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError))
             .StopProcess();
 
         return process.Build();
@@ -215,7 +215,7 @@ public class Step04_AgentOrchestration : BaseTest
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
             .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.InvokeAgent))
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText));
 
         // Process completed
         userInputStep
@@ -226,7 +226,7 @@ public class Step04_AgentOrchestration : BaseTest
         // Render response from primary agent
         managerAgentStep
             .OnEvent(AgentOrchestrationEvents.AgentResponse)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage));
 
         // Request is complete
         managerAgentStep
@@ -247,17 +247,17 @@ public class Step04_AgentOrchestration : BaseTest
         // Provide input to inner agents
         managerAgentStep
             .OnEvent(AgentOrchestrationEvents.GroupInput)
-            .SendEventTo(new ProcessFunctionTargetBuilder(agentGroupStep, parameterName: "input"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(agentGroupStep));
 
         // Render response from inner chat (for visibility)
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupMessage)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderInnerMessage, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderInnerMessage));
 
         // Provide inner response to primary agent
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupCompleted)
-            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.ReceiveResponse, parameterName: "response"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.ReceiveResponse));
 
         KernelProcess kernelProcess = process.Build();
 
@@ -269,7 +269,7 @@ public class Step04_AgentOrchestration : BaseTest
             {
                 step
                     .OnFunctionError(functionName)
-                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
+                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError))
                     .StopProcess();
             }
         }
