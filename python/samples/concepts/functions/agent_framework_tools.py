@@ -10,6 +10,23 @@ from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.functions import KernelFunctionFromPrompt
 from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
 
+"""
+This example demonstrates how to create an agent framework tool from a kernel function
+that uses a prompt template with plugin functions. The tool is then used by an Agent
+Framework Agent to answer a question about the current time and date.
+
+
+This sample requires manually installing the `agent-framework-core` package.
+
+```bash
+pip install agent-framework-core --pre
+```
+or with uv:
+```bash
+uv pip install agent-framework-core --prerelease=allow
+```
+"""
+
 
 async def main():
     kernel = Kernel()
