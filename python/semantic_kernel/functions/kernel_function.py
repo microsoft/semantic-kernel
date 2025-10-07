@@ -453,13 +453,13 @@ class KernelFunction(KernelBaseModel):
                         Field(description=param.description, default=param.default_value),
                     )
                 fields[param.name] = (param.type_, Field(description=param.description))
-        input_model = create_model("InputModel", **fields)
+        input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             result = await self.invoke(kernel, *args, **kwargs)
             if result and result.value is not None:
                 if isinstance(result.value, list):
-                    results = []
+                    results: list[Any] = []
                     for value in result.value:
                         if isinstance(value, ChatMessageContent):
                             results.append(str(value))
