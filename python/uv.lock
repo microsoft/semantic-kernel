@@ -2756,6 +2756,46 @@ wheels = [
 ]
 
 [[package]]
+name = "microsoft-agents-activity"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/6a/dfc2fc0316b7dc4f6d24792b4a31a873b026be76792af1e0c3e65f843ef0/microsoft_agents_activity-0.3.1.tar.gz", hash = "sha256:c7567fc30f8e6f2a2d74cd65a1f7f31ade0d7ec9dd94531677d0d7b0648c77ee", size = 44886, upload-time = "2025-09-09T23:19:43.044Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/8b/50ce2243e2900e94358f37009121145bb8224a388d95d704856aa2686667/microsoft_agents_activity-0.3.1-py3-none-any.whl", hash = "sha256:d7fc2e9cf2843ec8d6d42608b808b159a12cbb61e1fc7d7b1aaf29899f20746a", size = 111904, upload-time = "2025-09-09T23:19:50.722Z" },
+]
+
+[[package]]
+name = "microsoft-agents-copilotstudio-client"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "microsoft-agents-hosting-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/a5/2381ffd14d6a584f9f7ab80c7b6c634f658ea651b38702eb403c930d8396/microsoft_agents_copilotstudio_client-0.3.1.tar.gz", hash = "sha256:c529209241c9d11b7a6e8696f96a3d43121c10b49e44f00e5066f9cf5256f4f3", size = 5024, upload-time = "2025-09-09T23:19:44.833Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/97/35/8b4e9c691f2ce89653007f358519bbadff1fe0d495c3723c9dbbfa962a33/microsoft_agents_copilotstudio_client-0.3.1-py3-none-any.whl", hash = "sha256:cac7485405325b990202452c9c14848cbdb25d13e6cdaf7bd3eca3a5c1fb3989", size = 7420, upload-time = "2025-09-09T23:19:52.287Z" },
+]
+
+[[package]]
+name = "microsoft-agents-hosting-core"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "microsoft-agents-activity", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "pyjwt", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "python-dotenv", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6a/14/a1365e0bab1486c2d16aabeb192ca90715794edf4e68be4815c245884420/microsoft_agents_hosting_core-0.3.1.tar.gz", hash = "sha256:0b76bda10e7a54ff3c86e56cbabaad5ac7a4c2a076c9833af3b2f4c86fa85e89", size = 81137, upload-time = "2025-09-09T23:19:46.73Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f0/1b/543ddaa2daf8593911a02a07a6a78366d4a6a0053ec86a557c19fa97b60e/microsoft_agents_hosting_core-0.3.1-py3-none-any.whl", hash = "sha256:a4b41556b15321b74f539c5a0a89f70955459b7ec57e9e4b24e61bba27f1cbbc", size = 94573, upload-time = "2025-09-09T23:19:53.855Z" },
+]
+
+[[package]]
 name = "milvus"
 version = "2.3.5"
 source = { registry = "https://pypi.org/simple" }
@@ -5879,6 +5919,10 @@ azure = [
 chroma = [
     { name = "chromadb", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+copilotstudio = [
+    { name = "microsoft-agents-activity", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "microsoft-agents-copilotstudio-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
 dapr = [
     { name = "dapr", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "dapr-ext-fastapi", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -5994,6 +6038,8 @@ requires-dist = [
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = "~=6.29" },
     { name = "jinja2", specifier = "~=3.1" },
     { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.8" },
+    { name = "microsoft-agents-activity", marker = "extra == 'copilotstudio'", specifier = ">=0.3.1" },
+    { name = "microsoft-agents-copilotstudio-client", marker = "extra == 'copilotstudio'", specifier = ">=0.3.1" },
     { name = "milvus", marker = "sys_platform != 'win32' and extra == 'milvus'", specifier = ">=2.3,<2.3.8" },
     { name = "mistralai", marker = "extra == 'mistralai'", specifier = ">=1.2,<2.0" },
     { name = "motor", marker = "extra == 'mongo'", specifier = ">=3.3.2,<3.8.0" },
@@ -6032,7 +6078,7 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
 ]
-provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "sql", "usearch", "weaviate"]
+provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "copilotstudio", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "sql", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [
