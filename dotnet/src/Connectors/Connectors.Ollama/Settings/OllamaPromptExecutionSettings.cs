@@ -153,6 +153,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         return new OllamaPromptExecutionSettings()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
             Temperature = this.Temperature,
             TopP = this.TopP,

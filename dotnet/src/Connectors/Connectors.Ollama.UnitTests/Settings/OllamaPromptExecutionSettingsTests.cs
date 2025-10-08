@@ -153,7 +153,8 @@ public class OllamaPromptExecutionSettingsTests
         var testSettings = new OllamaPromptExecutionSettings
         {
             Temperature = 0.7f,
-            TopP = 0.9f
+            TopP = 0.9f,
+            ServiceId = "test-service"
         };
 
         // Act
@@ -164,6 +165,27 @@ public class OllamaPromptExecutionSettingsTests
         Assert.NotNull(result);
         Assert.Equal(testSettings.Temperature, result.Temperature);
         Assert.Equal(testSettings.TopP, result.TopP);
+        Assert.Equal(testSettings.ServiceId, result.ServiceId);
+    }
+
+    [Fact]
+    public void ClonePreservesServiceId()
+    {
+        // Arrange
+        var testSettings = new OllamaPromptExecutionSettings
+        {
+            ServiceId = "my-ollama-service",
+            ModelId = "llama2",
+            Temperature = 0.8f
+        };
+
+        // Act
+        var cloned = (OllamaPromptExecutionSettings)testSettings.Clone();
+
+        // Assert
+        Assert.Equal(testSettings.ServiceId, cloned.ServiceId);
+        Assert.Equal(testSettings.ModelId, cloned.ModelId);
+        Assert.Equal(testSettings.Temperature, cloned.Temperature);
     }
 
     [Fact]
