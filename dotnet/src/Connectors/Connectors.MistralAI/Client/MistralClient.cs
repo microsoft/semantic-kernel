@@ -702,9 +702,34 @@ internal sealed class MistralClient
             DocumentPageLimit = executionSettings.DocumentPageLimit
         };
 
-        executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
+        // Handle tool or function behavior configuration
+        if (executionSettings.FunctionChoiceBehavior != null)
+        {
+            ConfigureMistralRequestTool(request, kernel);
+        }
+        else if (executionSettings.ToolCallBehavior != null)
+        {
+            executionSettings.ToolCallBehavior.ConfigureRequest(kernel, request);
+        }
 
         return request;
+    }
+
+    private static void ConfigureMistralRequestTool(ChatCompletionRequest request, Kernel? kernel)
+    {
+        var functionsMetadata = kernel?.Plugins?.GetFunctionsMetadata();
+        if (functionsMetadata is null)
+        {
+            return;
+        }
+
+        request.ToolChoice = "auto";
+
+        foreach (var functionMetadata in functionsMetadata)
+        {
+            var mistralTool = new MistralTool("function", new MistralFunction(functionMetadata));
+            request.AddTool(mistralTool);
+        }
     }
 
     internal List<MistralChatMessage> ToMistralChatMessages(ChatMessageContent chatMessage, MistralAIToolCallBehavior? toolCallBehavior)
