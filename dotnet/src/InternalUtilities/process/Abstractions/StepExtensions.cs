@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents;
 
@@ -38,10 +39,10 @@ internal static class StepExtensions
     // Exposed for testing
     public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType, ILogger logger)
     {
-        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Version, sourceState.Id);
+        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.StepId, sourceState.Version, sourceState.RunId);
         if (newState == null)
         {
-            throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].").Log(logger);
+            throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.RunId}].").Log(logger);
         }
 
         if (userStateType != null)
@@ -152,5 +153,43 @@ internal static class StepExtensions
         }
 
         return inputs;
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> ReplaceEdgeSourceNames(IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> edges, string originalSourceName, string newSourceName)
+    {
+        if (edges.Count == 0)
+        {
+            return edges;
+        }
+
+        var updatedEdges = new Dictionary<string, IReadOnlyCollection<KernelProcessEdge>>();
+
+        foreach (var kvp in edges)
+        {
+            // Ensuring only replacing the first occurrence of the original source name in case it is also used in event name or other parts of the event name.
+            var regex = new Regex($"^{originalSourceName}");
+            var newKey = regex.Replace(kvp.Key, newSourceName, 1);
+
+            updatedEdges[newKey] = kvp.Value;
+        }
+
+        return updatedEdges;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="KernelProcessStepInfo"/> class with a new step ID and updated edges.
+    /// </summary>
+    /// <param name="step">instance of <see cref="KernelProcessStepInfo"/></param>
+    /// <param name="stepId">id to be assigned to the updated step info</param>
+    /// <param name="logger">instance of <see cref="ILogger"/></param>
+    /// <returns></returns>
+    public static KernelProcessStepInfo CloneWithIdAndEdges(this KernelProcessStepInfo step, string stepId, ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(stepId))
+        {
+            throw new KernelException("Internal Error: The step needs a non-empty id").Log(logger);
+        }
+
+        return step with { State = step.State with { RunId = stepId }, Edges = ReplaceEdgeSourceNames(step.Edges, step.State.StepId, stepId) };
     }
 }
