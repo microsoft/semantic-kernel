@@ -13,6 +13,7 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
@@ -149,7 +150,14 @@ these will be ignored."
             )
         for index, token in enumerate(self.tokens[1:], start=1):
             logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
-            rendered_value = token.render(kernel, arguments)  # type: ignore
+            # For NamedArgBlock, render() returns the actual value (not string representation)
+            # For VarBlock used as positional arg, we need to get the actual value too
+            if isinstance(token, VarBlock):
+                # Get the actual value from arguments, not the string representation
+                rendered_value = arguments.get(token.name, "")
+            else:
+                rendered_value = token.render(kernel, arguments)  # type: ignore
+            
             if not isinstance(token, NamedArgBlock) and index == 1:
                 arguments[function_metadata.parameters[0].name] = rendered_value
                 continue
