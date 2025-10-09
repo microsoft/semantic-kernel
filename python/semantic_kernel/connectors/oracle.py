@@ -1,7 +1,5 @@
 # Copyright (c) 2025, Oracle Corporation. All rights reserved.
 
-from __future__ import annotations
-
 # Standard Library
 import array
 import ast
@@ -51,7 +49,7 @@ from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreOperationException
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorConnectionException
+from semantic_kernel.exceptions import MemoryConnectorConnectionException
 
 # Semantic Kernel – Utilities & Config
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -83,14 +81,14 @@ __all__ = [
 ]
 
 # Environment Variable keys for Oracle DB configuration
-ORACLE_USER_ENV_VAR: Final[str] = "ORACLE_USER"
-ORACLE_PASSWORD_ENV_VAR: Final[str] = "ORACLE_PASSWORD"
-ORACLE_CONNECT_STRING_ENV_VAR: Final[str] = "ORACLE_CONNECT_STRING"
-ORACLE_POOL_MIN_ENV_VAR: Final[str] = "ORACLE_POOL_MIN"
-ORACLE_POOL_MAX_ENV_VAR: Final[str] = "ORACLE_POOL_MAX"
-ORACLE_POOL_INCREMENT_ENV_VAR: Final[str] = "ORACLE_POOL_INCREMENT"
-ORACLE_WALLET_LOCATION_ENV_VAR: Final[str] = "ORACLE_WALLET_LOCATION"
-ORACLE_WALLET_PASSWORD_ENV_VAR: Final[str] = "ORACLE_WALLET_PASSWORD"
+USER_ENV_VAR: Final[str] = "ORACLE_USER"
+PASSWORD_ENV_VAR: Final[str] = "ORACLE_PASSWORD"
+CONNECT_STRING_ENV_VAR: Final[str] = "ORACLE_CONNECT_STRING"
+POOL_MIN_ENV_VAR: Final[str] = "ORACLE_POOL_MIN"
+POOL_MAX_ENV_VAR: Final[str] = "ORACLE_POOL_MAX"
+POOL_INCREMENT_ENV_VAR: Final[str] = "ORACLE_POOL_INCREMENT"
+WALLET_LOCATION_ENV_VAR: Final[str] = "ORACLE_WALLET_LOCATION"
+WALLET_PASSWORD_ENV_VAR: Final[str] = "ORACLE_WALLET_PASSWORD"
 
 # Maps Semantic Kernel enums to Oracle SQL keywords
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
@@ -154,8 +152,8 @@ def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
         "long": "NUMBER(19)",
         "float": "BINARY_FLOAT",
         "double": "BINARY_DOUBLE",
-        "decimal": "NUMBER",
-        "uuid": "RAW(16)",
+        "Decimal": "NUMBER",
+        "UUID": "RAW(16)",
         "date": "DATE",
         "datetime": "TIMESTAMP",
         "timedelta": "INTERVAL DAY TO SECOND",
@@ -165,12 +163,11 @@ def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
         "blob": "BLOB"
     }
 
-    field_type_str = field_type_str.strip().lower()
-    list_pattern = re.compile(r"list\[(.*)\]", re.IGNORECASE)
+    list_pattern = re.compile(r"list\[(.*)\]")
     if list_pattern.match(field_type_str):
         return "JSON"
 
-    dict_pattern = re.compile(r"dict\[(.*?),\s*(.*?)\]", re.IGNORECASE)
+    dict_pattern = re.compile(r"dict\[(.*?),\s*(.*?)\]")
     if dict_pattern.match(field_type_str):
         return "JSON"
 
@@ -224,45 +221,62 @@ class BindCounter:
 class OracleSettings(KernelBaseSettings):
     """Oracle connector settings.
 
-    Reads configuration from environment variables or explicit kwargs.
-    Supports username/password or wallet-based connections, and can build
-    async connection pools for Oracle.
+    This class is used to configure the Oracle connection pool
+    and related options for the Oracle vector or memory store connectors.
+
+    It supports both standard username/password authentication and
+    wallet-based secure connections, and is compatible with Oracle's
+    native async driver (python-oracledb) for efficient async operations.
+
+    The settings align with common Oracle client environment variables
+    such as ORACLE_USER, ORACLE_PASSWORD, and ORACLE_CONNECTION_STRING,
+    while following the Semantic Kernel convention for configuration
+    through environment variables or explicit keyword arguments.
+
+    Args:
+        user: Oracle database username.
+            (Env var ORACLE_USER)
+        password: Oracle database password.
+            (Env var ORACLE_PASSWORD)
+        connection_string: Full Oracle connection string, for example:
+            "host:port/service_name".
+            (Env var ORACLE_CONNECTION_STRING)
+        min: Minimum number of connections in the pool.
+            (Env var ORACLE_MIN)
+        max: Maximum number of connections in the pool.
+            (Env var ORACLE_MAX)
+        increment: Number of connections to add when the pool grows.
+            (Env var ORACLE_INCREMENT)
+        wallet_location: Path to the Oracle wallet directory for wallet-based authentication.
+            (Env var ORACLE_WALLET_LOCATION)
+        wallet_password: Password for the Oracle wallet.
+            (Env var ORACLE_WALLET_PASSWORD)
+        connection_pool: Optional preconfigured AsyncConnectionPool instance.
     """
 
-    user: str | None = Field(default=None, validation_alias=ORACLE_USER_ENV_VAR)
-    password: SecretStr | None = Field(default=None, validation_alias=ORACLE_PASSWORD_ENV_VAR)
-    connection_string: str | None = Field(default=None, validation_alias=ORACLE_CONNECT_STRING_ENV_VAR)
-    min: int | None = Field(default=None, validation_alias=ORACLE_POOL_MIN_ENV_VAR)
-    max: int | None = Field(default=None, validation_alias=ORACLE_POOL_MAX_ENV_VAR)
-    increment: int | None = Field(default=None, validation_alias=ORACLE_POOL_INCREMENT_ENV_VAR)
-    wallet_location: str | None = Field(default=None, validation_alias=ORACLE_WALLET_LOCATION_ENV_VAR)
-    wallet_password: SecretStr | None = Field(default=None, validation_alias=ORACLE_WALLET_PASSWORD_ENV_VAR)
+    env_prefix: ClassVar[str] = "ORACLE_"
+    user: str | None = Field(default=None, validation_alias=USER_ENV_VAR)
+    password: SecretStr | None = Field(default=None, validation_alias=PASSWORD_ENV_VAR)
+    connection_string: str | None = Field(default=None, validation_alias=CONNECT_STRING_ENV_VAR)
+    min: int | None = Field(default=None, validation_alias=POOL_MIN_ENV_VAR)
+    max: int | None = Field(default=None, validation_alias=POOL_MAX_ENV_VAR)
+    increment: int | None = Field(default=None, validation_alias=POOL_INCREMENT_ENV_VAR)
+    wallet_location: str | None = Field(default=None, validation_alias=WALLET_LOCATION_ENV_VAR)
+    wallet_password: SecretStr | None = Field(default=None, validation_alias=WALLET_PASSWORD_ENV_VAR)
 
-    connection_pool: oracledb.AsyncConnectionPool | None = None
-
-    model_config = SettingsConfigDict(
-        validate_by_name=True,
-        validate_by_alias=True,
-        extra="ignore",
-        case_sensitive=False,
-    )
-
-    def _unwrap_secret(self, value):
-        if value is None:
-            return None
-        return value.get_secret_value() if hasattr(value, "get_secret_value") else str(value)
+    _connection_pool: oracledb.AsyncConnectionPool | None = PrivateAttr(default=None)
 
     async def create_connection_pool(self, **kwargs: Any) -> oracledb.AsyncConnectionPool:
         """Creates an async Oracle connection pool."""
 
         try:
             # Create pool with extra user-supplied kwargs
-            self.connection_pool = oracledb.create_pool_async(
+            self._connection_pool = oracledb.create_pool_async(
                 user=self.user,
-                password=self._unwrap_secret(self.password),
+                password=self.password.get_secret_value() if self.password else None,
                 dsn=self.connection_string,
                 wallet_location=self.wallet_location,
-                wallet_password=self._unwrap_secret(self.wallet_password),
+                wallet_password=self.wallet_password.get_secret_value() if self.wallet_password else None,
                 min=self.min,
                 max=self.max,
                 increment=self.increment,
@@ -274,7 +288,7 @@ class OracleSettings(KernelBaseSettings):
                 "Error creating Oracle connection pool."
             ) from err
 
-        return self.connection_pool
+        return self._connection_pool
 
 # region: Oracle Collections
 
