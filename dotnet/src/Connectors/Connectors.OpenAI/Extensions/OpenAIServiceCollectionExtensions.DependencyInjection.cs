@@ -160,8 +160,8 @@ public static class OpenAIServiceCollectionExtensions
             else
             {
                 var defaultClient = HttpClientProvider.GetHttpClient(serviceProvider);
-                // If using default client and it doesn't have BaseAddress set, create one with the endpoint
-                if (defaultClient.BaseAddress is null)
+                // If using default client and it doesn't have BaseAddress set or BaseAddress doesn't match the endpoint, create one with the endpoint
+                if (defaultClient.BaseAddress is null || defaultClient.BaseAddress != endpoint)
                 {
                     Verify.NotNull(endpoint);
 
