@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Agents.AI.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
