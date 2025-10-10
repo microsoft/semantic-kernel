@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.Extensions.AI;
 
-[ExcludeFromCodeCoverage]   
+[ExcludeFromCodeCoverage]
 internal static class ChatMessageExtensions
 {
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
