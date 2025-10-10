@@ -42,7 +42,6 @@
   <ItemGroup>
     <!-- Exclude utilities that are not used by the project and causing AOT warnings-->
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseData.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />

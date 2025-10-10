@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,15 +18,97 @@ internal static class ActivityExtensions
     /// <summary>
     /// Starts an activity with the appropriate tags for a kernel function execution.
     /// </summary>
-    public static Activity? StartFunctionActivity(this ActivitySource source, string functionName, string functionDescription)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public static Activity? StartFunctionActivity(
+        this ActivitySource source,
+        string functionName,
+        string functionDescription,
+        KernelArguments arguments,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         const string OperationName = "execute_tool";
 
-        return source.StartActivityWithTags($"{OperationName} {functionName}", [
+        List<KeyValuePair<string, object?>> tags =
+        [
             new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
             new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
-            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription)
-        ], ActivityKind.Internal);
+            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription),
+        ];
+
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (ModelDiagnostics.IsSensitiveEventsEnabled())
+        {
+            tags.Add(new KeyValuePair<string, object?>("gen_ai.tool.call.arguments", SerializeArguments(arguments, jsonSerializerOptions)));
+        }
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        return source.StartActivityWithTags($"{OperationName} {functionName}", tags, ActivityKind.Internal);
+
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        static string SerializeArguments(KernelArguments args, JsonSerializerOptions? jsonSerializerOptions)
+        {
+            try
+            {
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<KernelArguments> typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                    return JsonSerializer.Serialize(args, typeInfo);
+                }
+
+                return JsonSerializer.Serialize(args);
+            }
+            catch (NotSupportedException)
+            {
+                return "Failed to serialize arguments to Json";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sets the function result tag on the activity, serializing the result if necessary.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public static Activity? SetFunctionResultTag(this Activity? activity, FunctionResult result, JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (ModelDiagnostics.IsSensitiveEventsEnabled())
+        {
+            activity?.SetTag("gen_ai.tool.call.result", SerializeResult(result, jsonSerializerOptions));
+        }
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        return activity;
+
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        static string SerializeResult(FunctionResult result, JsonSerializerOptions? jsonSerializerOptions)
+        {
+            // Try to retrieve the result as a string first
+            try
+            {
+                return result.GetValue<string>() ?? string.Empty;
+            }
+            catch { }
+
+            // Fallback to JSON serialization
+            try
+            {
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<object?> typeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                    return JsonSerializer.Serialize(result.GetValue<object?>(), typeInfo);
+                }
+                return JsonSerializer.Serialize(result.GetValue<object?>());
+            }
+            catch (NotSupportedException)
+            {
+                return "Failed to serialize result to Json";
+            }
+        }
     }
 
     /// <summary>
@@ -42,7 +126,6 @@ internal static class ActivityExtensions
         {
             activity.SetTag(tag.Key, tag.Value);
         }
-        ;
 
         return activity;
     }

@@ -239,11 +239,12 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
         kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartFunctionActivity(this.Name, this.Description);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
-
         // Ensure arguments are initialized.
         arguments ??= [];
+
+        using var activity = s_activitySource.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
+
         logger.LogFunctionInvoking(this.PluginName, this.Name);
 
         this.LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
@@ -267,6 +268,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
 
             logger.LogFunctionInvokedSuccess(this.PluginName, this.Name);
 
+            activity?.SetFunctionResultTag(functionResult, this._jsonSerializerOptions);
             this.LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
 
             return functionResult;
@@ -342,10 +344,12 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
         kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartFunctionActivity(this.Name, this.Description);
+        // Ensure arguments are initialized.
+        arguments ??= [];
+
+        using var activity = s_activitySource.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
-        arguments ??= [];
         logger.LogFunctionStreamingInvoking(this.PluginName, this.Name);
 
         this.LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
@@ -353,6 +357,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
+        // Prepare to collect results if activity is enabled.
+        List<TResult>? results = (activity is not null || logger.IsEnabled(LogLevel.Trace)) ? [] : null;
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -407,6 +413,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
                         throw;
                     }
 
+                    results?.Add(enumerator.Current);
                     // Yield the next streaming result.
                     yield return enumerator.Current;
                 }
@@ -418,6 +425,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
             logger.LogFunctionStreamingComplete(this.PluginName, this.Name, duration.TotalSeconds);
+            activity?.SetFunctionResultTag(new FunctionResult(this, results, kernel.Culture), this._jsonSerializerOptions);
+            this.LogFunctionResult(logger, this.PluginName, this.Name, new FunctionResult(this, results, kernel.Culture));
         }
     }
 
