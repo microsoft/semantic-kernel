@@ -2,7 +2,6 @@
 
 using System;
 using System.Text.Json;
-using A2A;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Copilot;

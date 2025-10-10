@@ -3,7 +3,6 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using A2A;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
