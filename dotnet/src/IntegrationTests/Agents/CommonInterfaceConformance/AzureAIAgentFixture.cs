@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
@@ -33,6 +34,8 @@ public class AzureAIAgentFixture : AgentFixture
     public PersistentAgentsClient AgentsClient => this._agentsClient!;
 
     public override Agent Agent => this._agent!;
+
+    public override MAAI.AIAgent AIAgent => this._agent!.AsAIAgent();
 
     public override AgentThread AgentThread => this._thread!;
 

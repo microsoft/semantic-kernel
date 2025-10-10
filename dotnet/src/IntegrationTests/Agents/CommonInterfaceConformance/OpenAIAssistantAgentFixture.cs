@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using SemanticKernel.IntegrationTests.TestSettings;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
@@ -37,6 +38,8 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     public AssistantClient AssistantClient => this._assistantClient!;
 
     public override Agent Agent => this._agent!;
+
+    public override MAAI.AIAgent AIAgent => this._agent!.AsAIAgent();
 
     public override AgentThread AgentThread => this._thread!;
 
