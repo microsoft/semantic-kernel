@@ -559,7 +559,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         foreach (char character in collectionName)
         {
-            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z') || (character is >= '0' and <= '9')))
+            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z') || (character is >= '0' and <= '9') || character is '_'))
             {
                 throw new ArgumentException("Collection name must contain only ASCII letters and digits.", nameof(collectionName));
             }
