@@ -561,7 +561,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         {
             if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z') || (character is >= '0' and <= '9') || character is '_'))
             {
-                throw new ArgumentException("Collection name must contain only ASCII letters and digits.", nameof(collectionName));
+                throw new ArgumentException("Collection name must contain only ASCII letters and digits or underscores. The first character must be an upper case letter.", nameof(collectionName));
             }
         }
     }
