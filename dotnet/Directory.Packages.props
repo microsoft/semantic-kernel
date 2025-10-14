@@ -5,9 +5,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-preview.251009.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251009.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.AzureAI" Version="1.0.0-preview.251009.1" />
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.3.1-preview.1.25305.6" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.5.1" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.5.1" />
@@ -53,6 +50,8 @@
     <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.2" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-preview.251009.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251009.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.AzureAI" Version="1.0.0-preview.251009.1" />
     <PackageVersion Include="Microsoft.Agents.CopilotStudio.Client" Version="1.1.107-beta" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
