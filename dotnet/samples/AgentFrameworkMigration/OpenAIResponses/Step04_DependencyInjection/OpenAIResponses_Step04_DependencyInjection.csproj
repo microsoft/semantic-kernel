@@ -5,19 +5,20 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CA1707;CA2007;VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.9" />
     <PackageReference Include="System.Linq.Async" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="1.*" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.OpenAI" VersionOverride="1.*-*" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" VersionOverride="1.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Microsoft.Agents.AI.Abstractions\Microsoft.Agents.AI.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\src\Microsoft.Agents.AI.OpenAI\Microsoft.Agents.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 
 </Project>

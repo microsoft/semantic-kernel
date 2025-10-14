@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -20,6 +21,7 @@ static string GetWeather([Description("The location to get the weather for.")] s
     => $"The weather in {location} is cloudy with a high of 15°C.";
 
 await SKAgent();
+await SKAgent_As_AFAgentAsync();
 await AFAgent();
 
 async Task SKAgent()
@@ -40,6 +42,33 @@ async Task SKAgent()
 
     var result = await agent.InvokeAsync(userInput).FirstAsync();
     Console.WriteLine(result.Message);
+}
+
+// Example of Semantic Kernel Agent code converted as an Agent Framework Agent
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var builder = Kernel.CreateBuilder().AddAzureOpenAIChatClient(deploymentName, endpoint, new AzureCliCredential());
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    ChatCompletionAgent agent = new()
+    {
+        Instructions = "You are a helpful assistant",
+        Kernel = builder.Build(),
+        Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+    };
+
+    // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+    agent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("KernelPluginName", [KernelFunctionFactory.CreateFromMethod(GetWeather)]));
+
+    var afAgent = agent.AsAIAgent();
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var result = await afAgent.RunAsync(userInput);
+    Console.WriteLine(result);
 }
 
 async Task AFAgent()

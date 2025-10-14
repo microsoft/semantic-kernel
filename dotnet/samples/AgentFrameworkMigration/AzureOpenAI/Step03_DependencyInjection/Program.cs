@@ -16,6 +16,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgent();
+await SKAgent_As_AFAgentAsync();
 await AFAgent();
 
 async Task SKAgent()
@@ -36,6 +37,32 @@ async Task SKAgent()
 
     var result = await agent.InvokeAsync(userInput).FirstAsync();
     Console.WriteLine(result.Message);
+}
+
+// Example of Semantic Kernel Agent code converted as an Agent Framework Agent
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var serviceCollection = new ServiceCollection();
+    serviceCollection.AddKernel().AddAzureOpenAIChatClient(deploymentName, endpoint, new AzureCliCredential());
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    serviceCollection.AddTransient((sp) => new ChatCompletionAgent()
+    {
+        Kernel = sp.GetRequiredService<Kernel>(),
+        Name = "Joker",
+        Instructions = "You are good at telling jokes."
+    }.AsAIAgent());
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+    var agent = serviceProvider.GetRequiredService<AIAgent>();
+
+    var result = await agent.RunAsync(userInput);
+    Console.WriteLine(result);
 }
 
 async Task AFAgent()

@@ -13,6 +13,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgentAsync();
+await SKAgent_As_AFAgentAsync();
 await AFAgentAsync();
 
 async Task SKAgentAsync()
@@ -45,6 +46,45 @@ async Task SKAgentAsync()
 
     // Clean up
     await thread.DeleteAsync();
+    await assistantsClient.DeleteAssistantAsync(agent.Id);
+}
+
+// Example of Semantic Kernel Agent code converted as an Agent Framework Agent
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var assistantsClient = new AssistantClient(apiKey);
+
+    // Define the assistant
+    Assistant assistant = await assistantsClient.CreateAssistantAsync(model, name: "Joker", instructions: "You are good at telling jokes.");
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    // Create the agent
+    OpenAIAssistantAgent agent = new(assistant, assistantsClient);
+
+    var afAgent = agent.AsAIAgent();
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var thread = afAgent.GetNewThread();
+    var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
+
+    var result = await afAgent.RunAsync(userInput, thread, agentOptions);
+    Console.WriteLine(result);
+
+    Console.WriteLine("---");
+    await foreach (var update in afAgent.RunStreamingAsync(userInput, thread, agentOptions))
+    {
+        Console.Write(update);
+    }
+
+    // Clean up
+    if (thread is ChatClientAgentThread chatThread)
+    {
+        await assistantsClient.DeleteThreadAsync(chatThread.ConversationId);
+    }
     await assistantsClient.DeleteAssistantAsync(agent.Id);
 }
 

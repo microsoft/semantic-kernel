@@ -15,6 +15,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgent();
+await SKAgent_As_AFAgentAsync();
 await AFAgent();
 
 async Task SKAgent()
@@ -43,6 +44,37 @@ async Task SKAgent()
     await foreach (var update in agent.InvokeStreamingAsync(userInput, thread, agentOptions))
     {
         Console.Write(update.Message);
+    }
+}
+
+// Example of Semantic Kernel Agent code converted as an Agent Framework Agent
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var builder = Kernel.CreateBuilder().AddAzureOpenAIChatClient(deploymentName, endpoint, new AzureCliCredential());
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var agent = new ChatCompletionAgent()
+    {
+        Kernel = builder.Build(),
+        Name = "Joker",
+        Instructions = "You are good at telling jokes.",
+    }.AsAIAgent();
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var thread = agent.GetNewThread();
+    var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
+
+    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    Console.WriteLine(result);
+
+    Console.WriteLine("---");
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    {
+        Console.Write(update);
     }
 }
 
