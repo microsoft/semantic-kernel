@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.Agents.Persistent" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="1.*" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" VersionOverride="1.*" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.AzureAI" VersionOverride="1.*-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../../../../../.github/upgrades/prompts/*" />
+  </ItemGroup>
+
+</Project>

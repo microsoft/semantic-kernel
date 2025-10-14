@@ -27,6 +27,12 @@
     <Project Path="samples/GettingStartedWithVectorStores/GettingStartedWithVectorStores.csproj" />
     <Project Path="samples/LearnResources/LearnResources.csproj" />
   </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/" />
+  <Folder Name="/samples/AgentFrameworkMigration/OpenAI/">
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step01_Basics/OpenAI_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step02_ToolCall/OpenAI_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step03_DependencyInjection/OpenAI_Step03_DependencyInjection.csproj" />
+  </Folder>
   <Folder Name="/samples/Demos/">
     <File Path="samples/Demos/README.md" />
     <Project Path="samples/Demos/AIModelRouter/AIModelRouter.csproj" />
@@ -40,8 +46,8 @@
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
-    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OnnxSimpleChatWithCuda/OnnxSimpleChatWithCuda.csproj" />
+    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
     <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />

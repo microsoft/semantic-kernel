@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" VersionOverride="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.7" />
