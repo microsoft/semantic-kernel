@@ -12,7 +12,7 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 public sealed class OpenAIResponseAgentExtensionsTests
 {
     [Fact]
-    public void AsAIAgent_WithValidOpenAIResponseAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidOpenAIResponseAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var responseClient = new OpenAIResponseClient("model", "apikey");
@@ -23,7 +23,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -68,8 +68,8 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -88,8 +88,8 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }

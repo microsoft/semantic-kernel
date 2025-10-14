@@ -29,7 +29,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
     """))!;
 
     [Fact]
-    public void AsAIAgent_WithValidOpenAIAssistantAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidOpenAIAssistantAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var clientMock = new Mock<AssistantClient>();
@@ -40,7 +40,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -66,8 +66,8 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -85,8 +85,8 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -105,8 +105,8 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }

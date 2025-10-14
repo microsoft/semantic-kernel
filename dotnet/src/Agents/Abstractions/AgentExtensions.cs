@@ -26,7 +26,7 @@ public static class AgentExtensions
         Func<AgentThread> threadFactory,
         Func<JsonElement, JsonSerializerOptions?, AgentThread> threadDeserializationFactory,
         Func<AgentThread, JsonSerializerOptions?, JsonElement> threadSerializer)
-        => new AIAgentAdapter(
+        => new SemanticKernelAIAgent(
             semanticKernelAgent,
             threadFactory,
             threadDeserializationFactory,

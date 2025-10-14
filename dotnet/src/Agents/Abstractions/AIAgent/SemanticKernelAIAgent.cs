@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Exposes a Semantic Kernel Agent Framework <see cref="Agent"/> as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
-internal sealed class AIAgentAdapter : MAAI.AIAgent
+internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 {
     private readonly Agent _innerAgent;
     private readonly Func<AgentThread> _threadFactory;
@@ -25,13 +25,13 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
     private readonly Func<AgentThread, JsonSerializerOptions?, JsonElement> _threadSerializer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIAgentAdapter"/> class.
+    /// Initializes a new instance of the <see cref="SemanticKernelAIAgent"/> class.
     /// </summary>
     /// <param name="semanticKernelAgent">The Semantic Kernel <see cref="Agent"/> to expose as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/>.</param>
     /// <param name="threadFactory">A factory method to create the required <see cref="AgentThread"/> type to use with the agent.</param>
     /// <param name="threadDeserializationFactory">A factory method to deserialize the required <see cref="AgentThread"/> type.</param>
     /// <param name="threadSerializer">A method to serialize the <see cref="AgentThread"/> type.</param>
-    public AIAgentAdapter(
+    public SemanticKernelAIAgent(
         Agent semanticKernelAgent,
         Func<AgentThread> threadFactory,
         Func<JsonElement, JsonSerializerOptions?, AgentThread> threadDeserializationFactory,
@@ -50,16 +50,16 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
 
     /// <inheritdoc />
     public override MAAI.AgentThread DeserializeThread(JsonElement serializedThread, JsonSerializerOptions? jsonSerializerOptions = null)
-        => new AIAgentThreadAdapter(this._threadDeserializationFactory(serializedThread, jsonSerializerOptions), this._threadSerializer);
+        => new SemanticKernelAIAgentThread(this._threadDeserializationFactory(serializedThread, jsonSerializerOptions), this._threadSerializer);
 
     /// <inheritdoc />
-    public override MAAI.AgentThread GetNewThread() => new AIAgentThreadAdapter(this._threadFactory(), this._threadSerializer);
+    public override MAAI.AgentThread GetNewThread() => new SemanticKernelAIAgentThread(this._threadFactory(), this._threadSerializer);
 
     /// <inheritdoc />
     public override async Task<MAAI.AgentRunResponse> RunAsync(IEnumerable<ChatMessage> messages, MAAI.AgentThread? thread = null, MAAI.AgentRunOptions? options = null, CancellationToken cancellationToken = default)
     {
         thread ??= this.GetNewThread();
-        if (thread is not AIAgentThreadAdapter typedThread)
+        if (thread is not SemanticKernelAIAgentThread typedThread)
         {
             throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
         }
@@ -100,7 +100,7 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         thread ??= this.GetNewThread();
-        if (thread is not AIAgentThreadAdapter typedThread)
+        if (thread is not SemanticKernelAIAgentThread typedThread)
         {
             throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
         }

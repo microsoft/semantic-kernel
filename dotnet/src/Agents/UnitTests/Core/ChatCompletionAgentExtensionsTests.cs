@@ -11,7 +11,7 @@ namespace SemanticKernel.Agents.UnitTests.Core;
 public sealed class ChatCompletionAgentExtensionsTests
 {
     [Fact]
-    public void AsAIAgent_WithValidChatCompletionAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidChatCompletionAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var chatCompletionAgent = new ChatCompletionAgent()
@@ -25,7 +25,7 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -76,8 +76,8 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -102,8 +102,8 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
         var chatHistoryThread = (ChatHistoryAgentThread)threadAdapter.InnerThread;
         Assert.Equal(2, chatHistoryThread.ChatHistory.Count);

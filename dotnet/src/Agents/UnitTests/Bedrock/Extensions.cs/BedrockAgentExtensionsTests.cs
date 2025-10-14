@@ -34,7 +34,7 @@ public class BedrockAgentExtensionsTests
     };
 
     [Fact]
-    public void AsAIAgent_WithValidBedrockAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidBedrockAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
@@ -45,7 +45,7 @@ public class BedrockAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public class BedrockAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -90,8 +90,8 @@ public class BedrockAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -110,8 +110,8 @@ public class BedrockAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
     }
 

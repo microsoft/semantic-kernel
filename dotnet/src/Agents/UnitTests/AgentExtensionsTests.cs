@@ -11,7 +11,7 @@ namespace SemanticKernel.Agents.UnitTests;
 public sealed class AgentExtensionsTests
 {
     [Fact]
-    public void AsAIAgent_WithValidParameters_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidParameters_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -24,7 +24,7 @@ public sealed class AgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -100,8 +100,8 @@ public sealed class AgentExtensionsTests
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        Assert.Same(expectedThread, ((AIAgentThreadAdapter)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public sealed class AgentExtensionsTests
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, deserializationCallCount);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        Assert.Same(expectedThread, ((AIAgentThreadAdapter)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
     }
 }

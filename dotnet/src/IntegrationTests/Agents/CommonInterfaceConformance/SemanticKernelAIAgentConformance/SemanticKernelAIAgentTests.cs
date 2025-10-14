@@ -4,9 +4,9 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AIAgentAdapterConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.SemanticKernelAIAgentConformance;
 
-public abstract class AIAgentAdapterTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime
+public abstract class SemanticKernelAIAgentTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private AgentFixture _agentFixture;

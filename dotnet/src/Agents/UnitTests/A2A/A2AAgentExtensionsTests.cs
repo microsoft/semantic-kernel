@@ -13,7 +13,7 @@ namespace SemanticKernel.Agents.UnitTests.A2A;
 public sealed class A2AAgentExtensionsTests
 {
     [Fact]
-    public void AsAIAgent_WithValidA2AAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidA2AAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -26,7 +26,7 @@ public sealed class A2AAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public sealed class A2AAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -75,8 +75,8 @@ public sealed class A2AAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -97,8 +97,8 @@ public sealed class A2AAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }

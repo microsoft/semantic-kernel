@@ -24,7 +24,7 @@ public sealed class AzureAIAgentExtensionsTests
     """, s_jsonModelConvererOptions)!;
 
     [Fact]
-    public void AsAIAgent_WithValidAzureAIAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidAzureAIAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -35,7 +35,7 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -79,8 +79,8 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -100,8 +100,8 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }

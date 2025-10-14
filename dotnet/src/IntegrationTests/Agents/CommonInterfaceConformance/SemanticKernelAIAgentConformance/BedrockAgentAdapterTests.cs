@@ -3,9 +3,9 @@
 using System.Threading.Tasks;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AIAgentAdapterConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.SemanticKernelAIAgentConformance;
 
-public class BedrockAgentAdapterTests() : AIAgentAdapterTests(() => new BedrockAgentFixture())
+public class BedrockAgentAdapterTests() : SemanticKernelAIAgentTests(() => new BedrockAgentFixture())
 {
     private const string ManualVerificationSkipReason = "This test is for manual verification.";
 

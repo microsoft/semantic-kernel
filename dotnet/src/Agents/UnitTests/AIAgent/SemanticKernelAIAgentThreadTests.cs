@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.AIAgent;
 
-public sealed class AIAgentThreadAdapterTests
+public sealed class SemanticKernelAIAgentThreadTests
 {
     [Fact]
     public void Constructor_InitializesProperties()
@@ -18,7 +18,7 @@ public sealed class AIAgentThreadAdapterTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
 
         // Assert
         Assert.Equal(threadMock.Object, adapter.InnerThread);
@@ -39,7 +39,7 @@ public sealed class AIAgentThreadAdapterTests
             return expectedJsonElement;
         }
 
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
 
         // Act
         var result = adapter.Serialize();
@@ -63,7 +63,7 @@ public sealed class AIAgentThreadAdapterTests
             return default;
         }
 
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
 
         // Act
         adapter.Serialize(expectedOptions);
@@ -77,7 +77,7 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(AgentThread));
@@ -91,7 +91,7 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
         var serviceKey = new object();
 
         // Act
@@ -106,7 +106,7 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(string));
@@ -120,7 +120,7 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
@@ -139,7 +139,7 @@ public sealed class AIAgentThreadAdapterTests
             return default;
         }
 
-        var adapter = new AIAgentThreadAdapter(threadMock.Object, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
 
         // Act
         adapter.Serialize(null);
@@ -153,7 +153,7 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange & Act
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-        Assert.Throws<ArgumentNullException>(() => new AIAgentThreadAdapter(null!, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentThread(null!, ThreadSerializer));
     }
 
     [Fact]
@@ -161,6 +161,6 @@ public sealed class AIAgentThreadAdapterTests
     {
         // Arrange & Act
         var threadMock = new Mock<AgentThread>();
-        Assert.Throws<ArgumentNullException>(() => new AIAgentThreadAdapter(threadMock.Object, null!));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentThread(threadMock.Object, null!));
     }
 }

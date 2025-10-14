@@ -13,7 +13,7 @@ namespace SemanticKernel.Agents.UnitTests.Copilot;
 public sealed class CopilotStudioAgentExtensionsTests
 {
     [Fact]
-    public void AsAIAgent_WithValidCopilotStudioAgent_ReturnsAIAgentAdapter()
+    public void AsAIAgent_WithValidCopilotStudioAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
         var clientMock = new Mock<CopilotClient>(null, null, null, null);
@@ -24,7 +24,7 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<AIAgentAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
     [Fact]
@@ -50,8 +50,8 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -69,8 +69,8 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -89,8 +89,8 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<AIAgentThreadAdapter>(thread);
-        var threadAdapter = (AIAgentThreadAdapter)thread;
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 

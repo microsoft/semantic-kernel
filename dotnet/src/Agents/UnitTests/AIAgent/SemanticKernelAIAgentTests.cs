@@ -15,7 +15,7 @@ using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.Agents.UnitTests.AIAgent;
 
-public sealed class AIAgentAdapterTests
+public sealed class SemanticKernelAIAgentTests
 {
     [Fact]
     public void Constructor_Succeeds()
@@ -27,10 +27,10 @@ public sealed class AIAgentAdapterTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act
-        var adapter = new AIAgentAdapter(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
 
         // Assert
-        Assert.IsType<AIAgentAdapter>(adapter);
+        Assert.IsType<SemanticKernelAIAgent>(adapter);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class AIAgentAdapterTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AIAgentAdapter(null!, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(null!, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer));
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class AIAgentAdapterTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AIAgentAdapter(agentMock.Object, null!, ThreadDeserializationFactory, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, null!, ThreadDeserializationFactory, ThreadSerializer));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class AIAgentAdapterTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AIAgentAdapter(agentMock.Object, ThreadFactory, null!, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, null!, ThreadSerializer));
     }
 
     [Fact]
@@ -78,42 +78,42 @@ public sealed class AIAgentAdapterTests
         AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AIAgentAdapter(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, null!));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, null!));
     }
 
     [Fact]
-    public void DeserializeThread_ReturnsAIAgentThreadAdapter()
+    public void DeserializeThread_ReturnsSemanticKernelAIAgentThread()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
         var expectedThread = Mock.Of<AgentThread>();
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
         AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => expectedThread;
-        var adapter = new AIAgentAdapter(agentMock.Object, () => expectedThread, ThreadDeserializationFactory, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, ThreadDeserializationFactory, ThreadSerializer);
         var json = JsonDocument.Parse("{}").RootElement;
 
         // Act
         var result = adapter.DeserializeThread(json);
 
         // Assert
-        Assert.IsType<AIAgentThreadAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
 
     [Fact]
-    public void GetNewThread_ReturnsAIAgentThreadAdapter()
+    public void GetNewThread_ReturnsSemanticKernelAIAgentThread()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
         var expectedThread = Mock.Of<AgentThread>();
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-        var adapter = new AIAgentAdapter(agentMock.Object, () => expectedThread, (e, o) => expectedThread, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, (e, o) => expectedThread, ThreadSerializer);
 
         // Act
         var result = adapter.GetNewThread();
 
         // Assert
-        Assert.IsType<AIAgentThreadAdapter>(result);
-        Assert.Equal(expectedThread, ((AIAgentThreadAdapter)result).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentThread>(result);
+        Assert.Equal(expectedThread, ((SemanticKernelAIAgentThread)result).InnerThread);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public sealed class AIAgentAdapterTests
             return expectedThread;
         }
 
-        var adapter = new AIAgentAdapter(agentMock.Object, () => expectedThread, DeserializationFactory, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, DeserializationFactory, (t, o) => default);
         var json = JsonDocument.Parse("{}").RootElement;
 
         // Act
@@ -138,7 +138,7 @@ public sealed class AIAgentAdapterTests
 
         // Assert
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<AIAgentThreadAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
 
     [Fact]
@@ -155,14 +155,14 @@ public sealed class AIAgentAdapterTests
             return expectedThread;
         }
 
-        var adapter = new AIAgentAdapter(agentMock.Object, ThreadFactory, (e, o) => expectedThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, (e, o) => expectedThread, (t, o) => default);
 
         // Act
         var result = adapter.GetNewThread();
 
         // Assert
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<AIAgentThreadAdapter>(result);
+        Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
 
     [Fact]
@@ -178,14 +178,14 @@ public sealed class AIAgentAdapterTests
             It.IsAny<AgentInvokeOptions>(),
             It.IsAny<CancellationToken>()))
             .Returns(GetAsyncEnumerable());
-        var adapter = new AIAgentAdapter(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
 
         async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetAsyncEnumerable()
         {
             yield return new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
         }
 
-        var thread = new AIAgentThreadAdapter(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
 
         // Act
         var result = await adapter.RunAsync("Input text", thread);
@@ -213,14 +213,14 @@ public sealed class AIAgentAdapterTests
             It.IsAny<AgentInvokeOptions>(),
             It.IsAny<CancellationToken>()))
             .Returns(GetAsyncEnumerable());
-        var adapter = new AIAgentAdapter(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
 
         async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> GetAsyncEnumerable()
         {
             yield return new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
         }
 
-        var thread = new AIAgentThreadAdapter(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
 
         // Act
         var results = await adapter.RunStreamingAsync("Input text", thread).ToListAsync();

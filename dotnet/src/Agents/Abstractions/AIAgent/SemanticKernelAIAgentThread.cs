@@ -8,11 +8,11 @@ using MAAI = Microsoft.Agents.AI;
 namespace Microsoft.SemanticKernel.Agents;
 
 [Experimental("SKEXP0110")]
-internal sealed class AIAgentThreadAdapter : MAAI.AgentThread
+internal sealed class SemanticKernelAIAgentThread : MAAI.AgentThread
 {
     private readonly Func<AgentThread, JsonSerializerOptions?, JsonElement> _threadSerializer;
 
-    internal AIAgentThreadAdapter(AgentThread thread, Func<AgentThread, JsonSerializerOptions?, JsonElement> threadSerializer)
+    internal SemanticKernelAIAgentThread(AgentThread thread, Func<AgentThread, JsonSerializerOptions?, JsonElement> threadSerializer)
     {
         Throw.IfNull(thread);
         Throw.IfNull(threadSerializer);
