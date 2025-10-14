@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 using Moq;
 using Xunit;
@@ -29,6 +32,109 @@ public class BedrockAgentExtensionsTests
         Description = "test description",
         Instruction = "Instruction must have at least 40 characters",
     };
+
+    [Fact]
+    public void AsAIAgent_WithValidBedrockAgent_ReturnsSemanticKernelAIAgent()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+
+        // Act
+        var result = bedrockAgent.AsAIAgent();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<SemanticKernelAIAgent>(result);
+    }
+
+    [Fact]
+    public void AsAIAgent_WithNullBedrockAgent_ThrowsArgumentNullException()
+    {
+        // Arrange
+        BedrockAgent nullAgent = null!;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
+    }
+
+    [Fact]
+    public void AsAIAgent_CreatesWorkingThreadFactory()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+
+        // Act
+        var result = bedrockAgent.AsAIAgent();
+        var thread = result.GetNewThread();
+
+        // Assert
+        Assert.NotNull(thread);
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
+    }
+
+    [Fact]
+    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var jsonElement = JsonSerializer.SerializeToElement((string?)null);
+
+        // Act
+        var result = bedrockAgent.AsAIAgent();
+        var thread = result.DeserializeThread(jsonElement);
+
+        // Assert
+        Assert.NotNull(thread);
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
+    }
+
+    [Fact]
+    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var agentId = "test-agent-id";
+        var jsonElement = JsonSerializer.SerializeToElement(agentId);
+
+        // Act
+        var result = bedrockAgent.AsAIAgent();
+        var thread = result.DeserializeThread(jsonElement);
+
+        // Assert
+        Assert.NotNull(thread);
+        Assert.IsType<SemanticKernelAIAgentThread>(thread);
+        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<BedrockAgentThread>(threadAdapter.InnerThread);
+    }
+
+    [Fact]
+    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var expectedThreadId = "test-thread-id";
+        var bedrockThread = new BedrockAgentThread(mockRuntimeClient.Object, expectedThreadId);
+        var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
+
+        var result = bedrockAgent.AsAIAgent();
+        var thread = result.DeserializeThread(jsonElement);
+
+        // Act
+        var serializedElement = thread.Serialize();
+
+        // Assert
+        Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);
+        Assert.Equal(expectedThreadId, serializedElement.GetString());
+    }
 
     /// <summary>
     /// Verify the creation of the agent and the preparation of the agent.
@@ -239,6 +345,11 @@ public class BedrockAgentExtensionsTests
                 AgentStatus = AgentStatus.PREPARED,
             }
         });
+
+        mockClient.Setup(x => x.PrepareAgentAsync(
+            It.IsAny<PrepareAgentRequest>(),
+            default)
+        ).ReturnsAsync(new PrepareAgentResponse { AgentId = this._agentModel.AgentId, AgentStatus = AgentStatus.PREPARING });
 
         return (mockClient, mockRuntimeClient);
     }
