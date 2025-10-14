@@ -59,21 +59,6 @@ public class BedrockAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
-
-        // Act
-        var result = bedrockAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(bedrockAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

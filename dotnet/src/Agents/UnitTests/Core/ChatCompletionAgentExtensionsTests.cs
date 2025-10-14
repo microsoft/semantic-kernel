@@ -39,24 +39,6 @@ public sealed class ChatCompletionAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
-        {
-            Name = "TestAgent",
-            Instructions = "Test instructions"
-        };
-
-        // Act
-        var result = chatCompletionAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(chatCompletionAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

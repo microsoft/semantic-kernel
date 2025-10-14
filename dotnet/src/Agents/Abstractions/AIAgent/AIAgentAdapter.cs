@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Agents;
 [Experimental("SKEXP0110")]
 internal sealed class AIAgentAdapter : MAAI.AIAgent
 {
+    private readonly Agent _innerAgent;
     private readonly Func<AgentThread> _threadFactory;
     private readonly Func<JsonElement, JsonSerializerOptions?, AgentThread> _threadDeserializationFactory;
     private readonly Func<AgentThread, JsonSerializerOptions?, JsonElement> _threadSerializer;
@@ -41,16 +42,11 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
         Throw.IfNull(threadDeserializationFactory);
         Throw.IfNull(threadSerializer);
 
-        this.InnerAgent = semanticKernelAgent;
+        this._innerAgent = semanticKernelAgent;
         this._threadFactory = threadFactory;
         this._threadDeserializationFactory = threadDeserializationFactory;
         this._threadSerializer = threadSerializer;
     }
-
-    /// <summary>
-    /// Gets the underlying Semantic Kernel Agent Framework <see cref="Agent"/>.
-    /// </summary>
-    public Agent InnerAgent { get; }
 
     /// <inheritdoc />
     public override MAAI.AgentThread DeserializeThread(JsonElement serializedThread, JsonSerializerOptions? jsonSerializerOptions = null)
@@ -80,7 +76,7 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
 
         AgentResponseItem<ChatMessageContent>? lastResponseItem = null;
         ChatMessage? lastResponseMessage = null;
-        await foreach (var responseItem in this.InnerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
         {
             lastResponseItem = responseItem;
             lastResponseMessage = responseItem.Message.ToChatMessage();
@@ -89,7 +85,7 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
 
         return new MAAI.AgentRunResponse(responseMessages)
         {
-            AgentId = this.InnerAgent.Id,
+            AgentId = this._innerAgent.Id,
             RawRepresentation = lastResponseItem,
             AdditionalProperties = lastResponseMessage?.AdditionalProperties,
             CreatedAt = lastResponseMessage?.CreatedAt,
@@ -109,19 +105,21 @@ internal sealed class AIAgentAdapter : MAAI.AIAgent
             throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
         }
 
-        await foreach (var responseItem in this.InnerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, cancellationToken: cancellationToken).ConfigureAwait(false))
+        await foreach (var responseItem in this._innerAgent.InvokeStreamingAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            var chatMessage = responseItem.Message.ToChatMessage();
+            var update = responseItem.Message.ToChatResponseUpdate();
 
             yield return new MAAI.AgentRunResponseUpdate
             {
-                AgentId = this.InnerAgent.Id,
+                AuthorName = update.AuthorName,
+                AgentId = this._innerAgent.Id,
                 RawRepresentation = responseItem,
-                AdditionalProperties = chatMessage.AdditionalProperties,
-                MessageId = chatMessage.MessageId,
-                Role = chatMessage.Role,
-                CreatedAt = chatMessage.CreatedAt,
-                Contents = chatMessage.Contents
+                AdditionalProperties = update.AdditionalProperties,
+                MessageId = update.MessageId,
+                Role = update.Role,
+                ResponseId = update.ResponseId,
+                CreatedAt = update.CreatedAt,
+                Contents = update.Contents
             };
         }
     }

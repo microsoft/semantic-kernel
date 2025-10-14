@@ -37,21 +37,6 @@ public sealed class OpenAIResponseAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
-        var responseAgent = new OpenAIResponseAgent(responseClient);
-
-        // Act
-        var result = responseAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(responseAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

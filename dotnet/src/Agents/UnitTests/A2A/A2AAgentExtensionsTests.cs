@@ -40,23 +40,6 @@ public sealed class A2AAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        var a2aClient = new A2AClient(new Uri("http://testservice", UriKind.Absolute), httpClient);
-        var agentCard = new AgentCard();
-        var a2aAgent = new A2AAgent(a2aClient, agentCard);
-
-        // Act
-        var result = a2aAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(a2aAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

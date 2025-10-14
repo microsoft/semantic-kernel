@@ -38,21 +38,6 @@ public sealed class CopilotStudioAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
-        var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
-
-        // Act
-        var result = copilotStudioAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(copilotStudioAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

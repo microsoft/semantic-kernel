@@ -49,21 +49,6 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
-        var azureAIAgent = new AzureAIAgent(s_agentMetadata, clientMock.Object);
-
-        // Act
-        var result = azureAIAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(azureAIAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();

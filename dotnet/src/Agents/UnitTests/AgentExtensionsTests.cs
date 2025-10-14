@@ -77,23 +77,6 @@ public sealed class AgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-
-        // Act
-        var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(agentMock.Object, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
     {
         // Arrange

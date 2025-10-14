@@ -54,21 +54,6 @@ public sealed class OpenAIAssistantAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ReturnsAdapterWithCorrectInnerAgent()
-    {
-        // Arrange
-        var clientMock = new Mock<AssistantClient>();
-        var assistantAgent = new OpenAIAssistantAgent(s_assistantDefinition, clientMock.Object);
-
-        // Act
-        var result = assistantAgent.AsAIAgent();
-
-        // Assert
-        var adapter = Assert.IsType<AIAgentAdapter>(result);
-        Assert.Same(assistantAgent, adapter.InnerAgent);
-    }
-
-    [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange

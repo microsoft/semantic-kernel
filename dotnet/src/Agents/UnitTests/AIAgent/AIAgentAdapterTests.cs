@@ -1,17 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.Agents.UnitTests.AIAgent;
 
 public sealed class AIAgentAdapterTests
 {
     [Fact]
-    public void Constructor_InitializesProperties()
+    public void Constructor_Succeeds()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -23,7 +30,7 @@ public sealed class AIAgentAdapterTests
         var adapter = new AIAgentAdapter(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
 
         // Assert
-        Assert.Equal(agentMock.Object, adapter.InnerAgent);
+        Assert.IsType<AIAgentAdapter>(adapter);
     }
 
     [Fact]
@@ -159,16 +166,72 @@ public sealed class AIAgentAdapterTests
     }
 
     [Fact]
-    public void InnerAgent_Property_ReturnsCorrectValue()
+    public async Task Run_CallsInnerAgentAsync()
     {
         // Arrange
+        var threadMock = new Mock<AgentThread>();
+        var innerThread = threadMock.Object;
         var agentMock = new Mock<Agent>();
+        agentMock.Setup(a => a.InvokeAsync(
+            It.IsAny<List<ChatMessageContent>>(),
+            It.IsAny<AgentThread>(),
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(GetAsyncEnumerable());
         var adapter = new AIAgentAdapter(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
 
+        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetAsyncEnumerable()
+        {
+            yield return new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
+        }
+
+        var thread = new AIAgentThreadAdapter(innerThread, (t, o) => default);
+
         // Act
-        var result = adapter.InnerAgent;
+        var result = await adapter.RunAsync("Input text", thread);
 
         // Assert
-        Assert.Same(agentMock.Object, result);
+        Assert.IsType<MAAI.AgentRunResponse>(result);
+        Assert.Equal("Final response", result.Text);
+        agentMock.Verify(a => a.InvokeAsync(
+            It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
+            innerThread,
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunStreaming_CallsInnerAgentAsync()
+    {
+        // Arrange
+        var threadMock = new Mock<AgentThread>();
+        var innerThread = threadMock.Object;
+        var agentMock = new Mock<Agent>();
+        agentMock.Setup(a => a.InvokeStreamingAsync(
+            It.IsAny<List<ChatMessageContent>>(),
+            It.IsAny<AgentThread>(),
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(GetAsyncEnumerable());
+        var adapter = new AIAgentAdapter(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> GetAsyncEnumerable()
+        {
+            yield return new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
+        }
+
+        var thread = new AIAgentThreadAdapter(innerThread, (t, o) => default);
+
+        // Act
+        var results = await adapter.RunStreamingAsync("Input text", thread).ToListAsync();
+
+        // Assert
+        Assert.IsType<MAAI.AgentRunResponseUpdate>(results.First());
+        Assert.Equal("Final response", results.First().Text);
+        agentMock.Verify(a => a.InvokeStreamingAsync(
+            It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
+            innerThread,
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 }
