@@ -45,7 +45,7 @@ public static class ChatContentMessageExtensions
     public static ResponseItem ToResponseItem(this ChatMessageContent message)
     {
         var items = message.Items;
-        IEnumerable<ResponseContentPart> contentParts = items.Select(item => item.ToResponseContentPart(message.Role == AuthorRole.Assistant ? message.Role : null));
+        IEnumerable<ResponseContentPart> contentParts = items.Select(item => item.ToResponseContentPart(message.Role));
         return message.Role.Label.ToUpperInvariant() switch
         {
             "SYSTEM" => ResponseItem.CreateSystemMessageItem(contentParts),
