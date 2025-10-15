@@ -166,6 +166,25 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
+    public void Properties_ReflectInnerAgentProperties()
+    {
+        // Arrange
+        var concreteAgent = new TestAgent
+        {
+            Id = "test-agent-id",
+            Name = "Test Agent Name",
+            Description = "Test Agent Description"
+        };
+
+        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act & Assert
+        Assert.Equal("test-agent-id", adapter.Id);
+        Assert.Equal("Test Agent Name", adapter.Name);
+        Assert.Equal("Test Agent Description", adapter.Description);
+    }
+
+    [Fact]
     public async Task Run_CallsInnerAgentAsync()
     {
         // Arrange
@@ -233,5 +252,161 @@ public sealed class SemanticKernelAIAgentTests
             innerThread,
             It.IsAny<AgentInvokeOptions>(),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void GetService_WithKernelType_ReturnsKernel()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var fakeAgent = new TestAgent() { Kernel = kernel };
+
+        var adapter = new SemanticKernelAIAgent(fakeAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(Kernel));
+
+        // Assert
+        Assert.Same(kernel, result);
+    }
+
+    [Fact]
+    public void GetService_WithKernelTypeAndServiceKey_ReturnsNull()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var fakeAgent = new TestAgent() { Kernel = kernel };
+        var adapter = new SemanticKernelAIAgent(fakeAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var serviceKey = new object();
+
+        // Act
+        var result = adapter.GetService(typeof(Kernel), serviceKey);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetService_WithAgentType_ReturnsInnerAgent()
+    {
+        // Arrange
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(Agent));
+
+        // Assert
+        Assert.Same(agentMock.Object, result);
+    }
+
+    [Fact]
+    public void GetService_WithAgentTypeAndServiceKey_ReturnsNull()
+    {
+        // Arrange
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var serviceKey = new object();
+
+        // Act
+        var result = adapter.GetService(typeof(Agent), serviceKey);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetService_WithNonAgentType_ReturnsNull()
+    {
+        // Arrange
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(string));
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetService_WithNullType_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
+    }
+
+    [Fact]
+    public void GetService_WithBaseClassType_ReturnsInnerAgent()
+    {
+        // Arrange
+        var concreteAgent = new TestAgent();
+        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(Agent));
+
+        // Assert
+        Assert.Same(concreteAgent, result);
+    }
+
+    [Fact]
+    public void GetService_WithDerivedType_ReturnsInnerAgentWhenMatches()
+    {
+        // Arrange
+        var concreteAgent = new TestAgent();
+        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(TestAgent));
+
+        // Assert
+        Assert.Same(concreteAgent, result);
+    }
+
+    [Fact]
+    public void GetService_WithIncompatibleDerivedType_ReturnsNull()
+    {
+        // Arrange
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(TestAgent));
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    private sealed class TestAgent : Agent
+    {
+        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override IEnumerable<string> GetChannelKeys()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
