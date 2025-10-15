@@ -6,6 +6,8 @@ using Microsoft.Agents.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_FOUNDRY_PROJECT_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_DEPLOYMENT_NAME") ?? "gpt-4o";
 var userInput = "Tell me a joke about a pirate.";
@@ -13,6 +15,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgentAsync();
+await SKAgent_As_AFAgentAsync();
 await AFAgentAsync();
 
 async Task SKAgentAsync()
@@ -42,6 +45,45 @@ async Task SKAgentAsync()
 
     // Clean up
     await thread.DeleteAsync();
+    await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
+}
+
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var azureAgentClient = AzureAIAgent.CreateAgentsClient(azureEndpoint, new AzureCliCredential());
+
+    PersistentAgent definition = await azureAgentClient.Administration.CreateAgentAsync(
+        deploymentName,
+        name: "GenerateStory",
+        instructions: "You are good at telling jokes.");
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    AzureAIAgent skAgent = new(definition, azureAgentClient);
+
+    var agent = skAgent.AsAIAgent();
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var thread = agent.GetNewThread();
+    var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
+
+    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    Console.WriteLine(result);
+
+    Console.WriteLine("---");
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    {
+        Console.Write(update);
+    }
+
+    // Clean up
+    if (thread is ChatClientAgentThread chatThread)
+    {
+        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
+    }
     await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
 }
 

@@ -70,7 +70,7 @@ async Task AFAgent()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddTransient((sp) => new AzureOpenAIClient(new(endpoint), new AzureCliCredential())
+    serviceCollection.AddTransient<AIAgent>((sp) => new AzureOpenAIClient(new(endpoint), new AzureCliCredential())
         .GetChatClient(deploymentName)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
 

@@ -9,6 +9,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 using OpenAI.Assistants;
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-4o";
 var userInput = "Tell me a joke about a pirate.";
@@ -16,6 +19,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgent();
+await SKAgent_As_AFAgent();
 await AFAgent();
 
 async Task SKAgent()
@@ -49,6 +53,41 @@ async Task SKAgent()
 
     // Clean up
     await thread.DeleteAsync();
+    await assistantsClient.DeleteAssistantAsync(agent.Id);
+}
+
+async Task SKAgent_As_AFAgent()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+    var _ = Kernel.CreateBuilder().AddAzureOpenAIChatClient(deploymentName, endpoint, new AzureCliCredential());
+
+    var assistantsClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential()).GetAssistantClient();
+
+    // Define the assistant
+    Assistant assistant = await assistantsClient.CreateAssistantAsync(deploymentName, name: "Joker", instructions: "You are good at telling jokes.");
+
+    // Create the agent
+    OpenAIAssistantAgent skAgent = new(assistant, assistantsClient);
+
+    var agent = skAgent.AsAIAgent();
+
+    var thread = agent.GetNewThread();
+    var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
+
+    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    Console.WriteLine(result);
+
+    Console.WriteLine("---");
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    {
+        Console.Write(update);
+    }
+
+    // Clean up
+    if (thread is ChatClientAgentThread chatThread)
+    {
+        await assistantsClient.DeleteThreadAsync(chatThread.ConversationId);
+    }
     await assistantsClient.DeleteAssistantAsync(agent.Id);
 }
 

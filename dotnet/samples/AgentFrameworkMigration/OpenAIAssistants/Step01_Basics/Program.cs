@@ -6,6 +6,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 using OpenAI.Assistants;
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
 var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
 var userInput = "Tell me a joke about a pirate.";
@@ -59,14 +62,10 @@ async Task SKAgent_As_AFAgentAsync()
     // Define the assistant
     Assistant assistant = await assistantsClient.CreateAssistantAsync(model, name: "Joker", instructions: "You are good at telling jokes.");
 
-#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
     // Create the agent
     OpenAIAssistantAgent agent = new(assistant, assistantsClient);
 
     var afAgent = agent.AsAIAgent();
-
-#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     var thread = afAgent.GetNewThread();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });

@@ -9,6 +9,9 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "o4-mini";
 var userInput =
@@ -40,6 +43,7 @@ var userInput =
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgentAsync();
+await SKAgent_As_AFAgentAsync();
 await AFAgentAsync();
 
 async Task SKAgentAsync()
@@ -107,6 +111,72 @@ async Task SKAgentAsync()
                 Console.WriteLine($"Response: [{text}]");
             }
         }
+    }
+}
+
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var responseClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
+        .GetOpenAIResponseClient(deploymentName);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    OpenAIResponseAgent skAgent = new(responseClient)
+    {
+        Name = "Thinker",
+        Instructions = "You are good at thinking hard before answering.",
+        StoreEnabled = true
+    };
+
+    var agent = skAgent.AsAIAgent();
+
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    var thread = agent.GetNewThread();
+    var agentOptions = new ChatClientAgentRunOptions(new()
+    {
+        MaxOutputTokens = 8000,
+        // Microsoft.Extensions.AI currently does not have an abstraction for reasoning-effort,
+        // we need to break glass using the RawRepresentationFactory.
+        RawRepresentationFactory = (_) => new OpenAI.Responses.ResponseCreationOptions()
+        {
+            ReasoningOptions = new()
+            {
+                ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
+                ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
+            }
+        }
+    });
+
+    var result = await agent.RunAsync(userInput, thread, agentOptions);
+
+    // Retrieve the thinking as a full text block requires flattening multiple TextReasoningContents from multiple messages content lists.
+    string assistantThinking = string.Join("\n", result.Messages
+        .SelectMany(m => m.Contents)
+        .OfType<TextReasoningContent>()
+        .Select(trc => trc.Text));
+
+    var assistantText = result.Text;
+    Console.WriteLine($"Thinking: \n{assistantThinking}\n---\n");
+    Console.WriteLine($"Assistant: \n{assistantText}\n---\n");
+
+    Console.WriteLine("---");
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    {
+        var thinkingContents = update.Contents
+            .OfType<TextReasoningContent>()
+            .Select(trc => trc.Text)
+            .ToList();
+
+        if (thinkingContents.Count != 0)
+        {
+            Console.WriteLine($"Thinking: [{string.Join("\n", thinkingContents)}]");
+            continue;
+        }
+
+        Console.WriteLine($"Response: [{update.Text}]");
     }
 }
 

@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_FOUNDRY_PROJECT_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_DEPLOYMENT_NAME") ?? "gpt-4o";
 var userInput = "Tell me a joke about a pirate.";
@@ -15,6 +17,7 @@ var userInput = "Tell me a joke about a pirate.";
 Console.WriteLine($"User Input: {userInput}");
 
 await SKAgentAsync();
+await SKAgent_As_AFAgentAsync();
 await AFAgentAsync();
 
 async Task SKAgentAsync()
@@ -57,6 +60,54 @@ async Task SKAgentAsync()
     // Clean up
     await thread.DeleteAsync();
     await agent.Client.Administration.DeleteAgentAsync(agent.Id);
+}
+
+async Task SKAgent_As_AFAgentAsync()
+{
+    Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
+
+    var serviceCollection = new ServiceCollection();
+    serviceCollection.AddSingleton((sp) => AzureAIAgent.CreateAgentsClient(azureEndpoint, new AzureCliCredential()));
+    serviceCollection.AddTransient<AzureAIAgent>((sp) =>
+    {
+        var azureAgentClient = sp.GetRequiredService<PersistentAgentsClient>();
+
+        Console.Write("Creating agent in the cloud...");
+
+        PersistentAgent definition = azureAgentClient.Administration
+            .CreateAgent(deploymentName,
+                name: "GenerateStory",
+                instructions: "You are good at telling jokes.");
+
+        Console.Write("Done\n");
+
+        return new(definition, azureAgentClient);
+    });
+    serviceCollection.AddKernel();
+
+    await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+    var skAgent = serviceProvider.GetRequiredService<AzureAIAgent>();
+
+    var agent = skAgent.AsAIAgent();
+
+    var thread = agent.GetNewThread();
+
+    var result = await agent.RunAsync(userInput, thread);
+    Console.WriteLine(result);
+
+    Console.WriteLine("---");
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread))
+    {
+        Console.Write(update);
+    }
+
+    // Clean up
+    var azureAgentClient = serviceProvider.GetRequiredService<PersistentAgentsClient>();
+    if (thread is ChatClientAgentThread chatThread)
+    {
+        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
+    }
+    await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
 }
 
 async Task AFAgentAsync()
