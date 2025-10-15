@@ -32,8 +32,11 @@ internal sealed class SemanticKernelAIAgentThread : MAAI.AgentThread
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
-        => Throw.IfNull(serviceType)
-        .IsInstanceOfType(this.InnerThread) && serviceKey is null
+    {
+        Throw.IfNull(serviceType);
+
+        return serviceKey is null && serviceType.IsInstanceOfType(this.InnerThread)
         ? this.InnerThread
         : base.GetService(serviceType, serviceKey);
+    }
 }

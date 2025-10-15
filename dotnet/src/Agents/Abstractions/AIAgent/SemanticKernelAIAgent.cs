@@ -135,9 +135,13 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
-        => serviceKey is null && Throw.IfNull(serviceType) == typeof(Kernel)
+    {
+        Throw.IfNull(serviceType);
+
+        return serviceKey is null && serviceType == typeof(Kernel)
         ? this._innerAgent.Kernel
         : serviceKey is null && serviceType.IsInstanceOfType(this._innerAgent)
         ? this._innerAgent
         : base.GetService(serviceType, serviceKey);
+    }
 }

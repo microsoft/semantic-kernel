@@ -347,7 +347,7 @@ If environment variables are not set, the demos will prompt you to enter values 
 
 ### Samples
 
-The migration samples are organized into three categories, each demonstrating different AI service integrations:
+The migration samples are organized into different categories, each demonstrating different AI service integrations and orchestration patterns:
 
 |Category|Description|
 |---|---|
@@ -358,6 +358,7 @@ The migration samples are organized into three categories, each demonstrating di
 |[OpenAI](./OpenAI/)|Direct OpenAI API integration samples|
 |[OpenAIAssistants](./OpenAIAssistants/)|OpenAI Assistants API integration samples|
 |[OpenAIResponses](./OpenAIResponses/)|OpenAI Responses API integration samples|
+|[AgentOrchestrations](./AgentOrchestrations/)|Agent orchestration patterns including concurrent, sequential, and handoff workflows|
 
 ## Running the samples from the console
 
@@ -372,6 +373,14 @@ dotnet run
 cd "AzureOpenAI\Step01_Basics"
 dotnet run
 
+# Azure OpenAI Assistants Examples
+cd "AzureOpenAIAssistants\Step01_Basics"
+dotnet run
+
+# Azure OpenAI Responses Examples
+cd "AzureOpenAIResponses\Step01_Basics"
+dotnet run
+
 # OpenAI Examples
 cd "OpenAI\Step01_Basics"
 dotnet run
@@ -382,12 +391,15 @@ dotnet run
 
 # OpenAI Responses Examples
 cd "OpenAIResponses\Step01_Basics"
-
-# Azure OpenAI Examples
-cd "AzureOpenAI\Step01_Basics"
 dotnet run
 
-# Azure OpenAI Assistants Examples
-cd "AzureOpenAIAssistants\Step01_Basics"
+# Agent Orchestrations Examples
+cd "AgentOrchestrations\Step01_Concurrent"
+dotnet run
+
+cd "AgentOrchestrations\Step02_Sequential"
+dotnet run
+
+cd "AgentOrchestrations\Step03_Handoff"
 dotnet run
 ```
