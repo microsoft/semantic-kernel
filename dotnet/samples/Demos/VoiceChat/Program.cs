@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
@@ -9,7 +10,7 @@ internal static class Program
     internal static async Task Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
-
+        builder.Configuration.AddUserSecrets<OpenAIOptions>();
         // Adding configuration from appsettings.json and environment variables
         builder.Services.ConfigureOptions<OpenAIOptions>(OpenAIOptions.SectionName);
         builder.Services.ConfigureOptions<ChatOptions>(ChatOptions.SectionName);
