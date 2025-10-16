@@ -50,6 +50,15 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
     }
 
     /// <inheritdoc />
+    public override string Id => this._innerAgent.Id;
+
+    /// <inheritdoc />
+    public override string? Name => this._innerAgent.Name;
+
+    /// <inheritdoc />
+    public override string? Description => this._innerAgent.Description;
+
+    /// <inheritdoc />
     public override MAAI.AgentThread DeserializeThread(JsonElement serializedThread, JsonSerializerOptions? jsonSerializerOptions = null)
         => new SemanticKernelAIAgentThread(this._threadDeserializationFactory(serializedThread, jsonSerializerOptions), this._threadSerializer);
 
@@ -134,5 +143,17 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
                 Contents = update.Contents
             };
         }
+    }
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Throw.IfNull(serviceType);
+
+        return serviceKey is null && serviceType == typeof(Kernel)
+        ? this._innerAgent.Kernel
+        : serviceKey is null && serviceType.IsInstanceOfType(this._innerAgent)
+        ? this._innerAgent
+        : base.GetService(serviceType, serviceKey);
     }
 }
