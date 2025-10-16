@@ -580,7 +580,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="value">The value to compare against.</param>
     /// <param name="parameter">The parameter expression.</param>
     /// <returns>The body expression for equality, or null if not supported.</returns>
-    private static Expression? CreateEqualityBodyExpression(string fieldName, object value, ParameterExpression parameter)
+    private static BinaryExpression? CreateEqualityBodyExpression(string fieldName, object value, ParameterExpression parameter)
     {
         try
         {
@@ -682,7 +682,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="parameter">The parameter expression.</param>
     /// <returns>The body expression for collection contains, or null if not supported.</returns>
     [RequiresDynamicCode("Calls System.Reflection.MethodInfo.MakeGenericMethod(params Type[])")]
-    private static Expression? CreateAnyTagEqualToBodyExpression(string fieldName, string value, ParameterExpression parameter)
+    private static MethodCallExpression? CreateAnyTagEqualToBodyExpression(string fieldName, string value, ParameterExpression parameter)
     {
         try
         {

@@ -249,7 +249,7 @@ public class VectorStoreTextSearchTestBase
         public required string Tag { get; init; }
 
         [VectorStoreData(IsIndexed = true)]
-        public required string[] Tags { get; init; }
+        public required IReadOnlyList<string> Tags { get; init; }
 
         [VectorStoreVector(1536)]
         public string? Embedding { get; init; }
