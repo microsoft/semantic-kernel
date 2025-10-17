@@ -147,7 +147,7 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     /// The result of tool called by the kernel (for backward compatibility).
     /// Returns the first tool result if multiple exist, or null if none.
     /// </summary>
-    public GeminiFunctionToolResult? CalledToolResult => CalledToolResults?.FirstOrDefault();
+    public GeminiFunctionToolResult? CalledToolResult => this.CalledToolResults?.Count > 0 ? this.CalledToolResults[0] : null;
 
     /// <summary>
     /// The metadata associated with the content.
