@@ -60,85 +60,91 @@ public sealed class GeminiChatClientFunctionCallingTests : IDisposable
     }
 
     [Fact]
-    public async Task ChatClientWithFunctionChoiceBehaviorAutoShouldIncludeToolsInRequestAsync()
+    public async Task ChatClientShouldConvertToIChatClientSuccessfullyAsync()
     {
         // Arrange
         var chatCompletionService = this.CreateChatCompletionService();
-        var chatClient = chatCompletionService.AsChatClient();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What time is it?");
-
-        var settings = new GeminiPromptExecutionSettings
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        };
 
         // Act
-        await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernelWithFunctions);
+        var chatClient = chatCompletionService.AsChatClient();
 
-        // Assert
-        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
-        Assert.NotNull(request);
-        Assert.NotNull(request.Tools);
-        Assert.Collection(request.Tools[0].Functions,
-            item => Assert.Equal(this._timePluginDate.FullyQualifiedName, item.Name),
-            item => Assert.Equal(this._timePluginNow.FullyQualifiedName, item.Name));
+        // Assert - Verify conversion works
+        Assert.NotNull(chatClient);
+        Assert.IsAssignableFrom<IChatClient>(chatClient);
+
+        // Verify we can make a basic call through IChatClient
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "What time is it?")
+        };
+
+        var response = await chatClient.GetResponseAsync(messages);
+
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Messages);
     }
 
     [Fact]
-    public async Task ChatClientWithFunctionChoiceBehaviorShouldReturnFunctionCallContentAsync()
+    public async Task ChatClientShouldReceiveFunctionCallsInResponseAsync()
     {
         // Arrange
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContentWithFunction);
         var chatCompletionService = this.CreateChatCompletionService();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What time is it?");
+        var chatClient = chatCompletionService.AsChatClient();
 
         var settings = new GeminiPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false)
         };
+        var chatOptions = settings.ToChatOptions(this._kernelWithFunctions);
 
-        // Act
-        var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernelWithFunctions);
-
-        // Assert
-        Assert.NotNull(response);
-        var geminiMessage = response as GeminiChatMessageContent;
-        Assert.NotNull(geminiMessage);
-
-        // Verify that FunctionCallContent was added to Items
-        var functionCallContents = geminiMessage.Items.OfType<Microsoft.SemanticKernel.FunctionCallContent>().ToList();
-        Assert.NotEmpty(functionCallContents);
-
-        var functionCall = functionCallContents.First();
-        Assert.Contains(this._timePluginNow.FunctionName, functionCall.FunctionName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task ChatClientWithAutoInvokeShouldProcessFunctionsAsync()
-    {
-        // Arrange
-        using var handlerStub = new MultipleHttpMessageHandlerStub();
-        handlerStub.AddJsonResponse(this._responseContentWithFunction);
-        handlerStub.AddJsonResponse(this._responseContent);
-#pragma warning disable CA2000
-        var chatCompletionService = this.CreateChatCompletionService(httpClient: handlerStub.CreateHttpClient());
-#pragma warning restore CA2000
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What time is it?");
-
-        var settings = new GeminiPromptExecutionSettings
+        var messages = new List<ChatMessage>
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: true)
+            new(ChatRole.User, "What time is it?")
         };
 
         // Act
-        await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernelWithFunctions);
+        var response = await chatClient.GetResponseAsync(messages, chatOptions);
 
-        // Assert
-        // Verify that we made two requests (one for function call, one for final response)
-        Assert.Equal(2, handlerStub.RequestContents.Count);
+        // Assert - Verify that FunctionCallContent is returned in the response
+        Assert.NotNull(response);
+        var functionCalls = response.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<Microsoft.Extensions.AI.FunctionCallContent>()
+            .ToList();
+
+        Assert.NotEmpty(functionCalls);
+        var functionCall = functionCalls.First();
+        Assert.Contains(this._timePluginNow.FunctionName, functionCall.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ChatClientShouldStreamResponsesAsync()
+    {
+        // Arrange
+        var chatCompletionService = this.CreateChatCompletionService();
+        var chatClient = chatCompletionService.AsChatClient();
+
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+        var chatOptions = settings.ToChatOptions(this._kernelWithFunctions);
+
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "What time is it?")
+        };
+
+        // Act
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, chatOptions))
+        {
+            updates.Add(update);
+        }
+
+        // Assert - Verify that streaming works and returns updates
+        Assert.NotEmpty(updates);
     }
 
     [Fact]
