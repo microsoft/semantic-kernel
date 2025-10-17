@@ -233,6 +233,237 @@ public sealed class BingTextSearchTests : IDisposable
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat,contains,ext,filetype,inanchor,inbody,intitle,ip,language,loc,location,prefer,site,feed,hasfeed,url (Parameter 'searchOptions')", e.Message);
     }
 
+    #region Generic ITextSearch<BingWebPage> Interface Tests
+
+    [Fact]
+    public async Task GenericSearchAsyncWithLanguageEqualityFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Language == "en"
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ expression converted to Bing's language: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("language%3Aen", requestUris[0]!.AbsoluteUri);
+        Assert.Contains("count=4", requestUris[0]!.AbsoluteUri);
+        Assert.Contains("offset=0", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithLanguageInequalityFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Language != "fr"
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ inequality expression converted to Bing's negation syntax (-language:fr)
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("-language%3Afr", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithContainsFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Name.Contains("Microsoft")
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ Contains() converted to Bing's intitle: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("intitle%3AMicrosoft", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithComplexAndFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Language == "en" && page.Name.Contains("AI")
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ AND expression produces both Bing operators
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("language%3Aen", requestUris[0]!.AbsoluteUri);
+        Assert.Contains("intitle%3AAI", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GenericGetTextSearchResultsAsyncWithUrlFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Url.Contains("microsoft.com")
+        };
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ Url.Contains() converted to Bing's url: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("url%3Amicrosoft.com", requestUris[0]!.AbsoluteUri);
+
+        // Also verify result structure
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+    }
+
+    [Fact]
+    public async Task GenericGetSearchResultsAsyncWithSnippetContainsFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Snippet.Contains("semantic")
+        };
+        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ Snippet.Contains() converted to Bing's inbody: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("inbody%3Asemantic", requestUris[0]!.AbsoluteUri);
+
+        // Verify result structure
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithDisplayUrlEqualityFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.DisplayUrl == "devblogs.microsoft.com"
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ DisplayUrl equality converted to Bing's site: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("site%3Adevblogs.microsoft.com", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithMultipleAndConditionsProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Language == "en" && page.DisplayUrl.Contains("microsoft.com") && page.Name.Contains("Semantic")
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify all LINQ conditions converted correctly
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("language%3Aen", uri);
+        Assert.Contains("site%3Amicrosoft.com", uri);  // DisplayUrl.Contains() → site: operator
+        Assert.Contains("intitle%3ASemantic", uri);
+    }
+
+    [Fact]
+    public async Task GenericSearchAsyncWithNoFilterReturnsResultsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act - No filter specified
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 10,
+            Skip = 0
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify basic query without filter operators
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.DoesNotContain("language%3A", requestUris[0]!.AbsoluteUri);
+        Assert.DoesNotContain("intitle%3A", requestUris[0]!.AbsoluteUri);
+
+        // Verify results
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.Equal(10, resultList.Count);
+    }
+
+    #endregion
+
     /// <inheritdoc/>
     public void Dispose()
     {
