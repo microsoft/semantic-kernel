@@ -174,7 +174,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.ConvertTextSearchFilterToLinq(TextSearchFilter).")]
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -183,7 +182,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.ConvertTextSearchFilterToLinq(TextSearchFilter).")]
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -192,7 +190,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.ConvertTextSearchFilterToLinq(TextSearchFilter).")]
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -201,6 +198,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<string>> ITextSearch<TRecord>.SearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -209,6 +207,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<TextSearchResult>> ITextSearch<TRecord>.GetTextSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -217,6 +216,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<object>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -274,35 +274,21 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <summary>
-    /// Execute a vector search and return the results.
+    /// Execute a vector search and return the results using legacy filtering for backward compatibility.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="searchOptions">Search options with legacy TextSearchFilter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.ConvertTextSearchFilterToLinq(TextSearchFilter)")]
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
-
-        var linqFilter = ConvertTextSearchFilterToLinq(searchOptions.Filter);
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
         };
-
-        // Use modern LINQ filtering if conversion was successful
-        if (linqFilter != null)
-        {
-            vectorSearchOptions.Filter = linqFilter;
-        }
-        else if (searchOptions.Filter?.FilterClauses != null && searchOptions.Filter.FilterClauses.Any())
-        {
-            // For complex filters that couldn't be converted to LINQ, 
-            // fall back to the legacy approach but with minimal overhead
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            vectorSearchOptions.OldFilter = new VectorSearchFilter(searchOptions.Filter.FilterClauses);
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
-        }
 
         await foreach (var result in this.ExecuteVectorSearchCoreAsync(query, vectorSearchOptions, searchOptions.Top, cancellationToken).ConfigureAwait(false))
         {
