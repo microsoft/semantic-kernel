@@ -188,6 +188,9 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
+    /// <remarks>
+    /// This property is deprecated. Use <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> instead.
+    /// </remarks>
     public GeminiToolCallBehavior? ToolCallBehavior
     {
         get => this._toolCallBehavior;
@@ -362,6 +365,41 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        var geminiSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+
+        // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
+        if (executionSettings.FunctionChoiceBehavior is not null && geminiSettings.ToolCallBehavior is null)
+        {
+            geminiSettings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior);
+        }
+
+        return geminiSettings;
+    }
+
+    /// <summary>
+    /// Converts a <see cref="FunctionChoiceBehavior"/> to a <see cref="GeminiToolCallBehavior"/>.
+    /// </summary>
+    /// <param name="functionChoiceBehavior">The <see cref="FunctionChoiceBehavior"/> to convert.</param>
+    /// <returns>The converted <see cref="GeminiToolCallBehavior"/>.</returns>
+    internal static GeminiToolCallBehavior? ConvertFunctionChoiceBehaviorToToolCallBehavior(FunctionChoiceBehavior? functionChoiceBehavior)
+    {
+        if (functionChoiceBehavior is null)
+        {
+            return null;
+        }
+
+        // Get configuration to determine the behavior type
+        var config = functionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(new ChatHistory()));
+
+        // Determine auto-invoke based on the configuration
+        bool autoInvoke = config.AutoInvoke;
+
+        // Return appropriate GeminiToolCallBehavior
+        if (autoInvoke)
+        {
+            return GeminiToolCallBehavior.AutoInvokeKernelFunctions;
+        }
+
+        return GeminiToolCallBehavior.EnableKernelFunctions;
     }
 }
