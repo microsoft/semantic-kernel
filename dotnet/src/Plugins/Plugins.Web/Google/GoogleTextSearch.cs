@@ -166,102 +166,20 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             return filter;
         }
 
-        // Handle simple equality: record.PropertyName == "value"
-        if (linqExpression.Body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
+        // Handle simple expressions using the shared processing logic
+        var textSearchFilter = new TextSearchFilter();
+        if (TryProcessSingleExpression(linqExpression.Body, textSearchFilter))
         {
-            if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
-            {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-
-                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-                if (googleFilterName != null && value != null)
-                {
-                    return new TextSearchFilter().Equality(googleFilterName, value);
-                }
-            }
-        }
-
-        // Handle inequality (NOT): record.PropertyName != "value"
-        if (linqExpression.Body is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
-        {
-            if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
-            {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-
-                // Map to excludeTerms for text fields
-                if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
-                {
-                    return new TextSearchFilter().Equality("excludeTerms", value);
-                }
-            }
-        }
-
-        // Handle NOT expressions: !record.PropertyName.Contains("value")
-        if (linqExpression.Body is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
-        {
-            if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
-                notMethodCall.Method.Name == "Contains" &&
-                notMethodCall.Method.DeclaringType == typeof(string))
-            {
-                if (notMethodCall.Object is MemberExpression memberExpr &&
-                    notMethodCall.Arguments.Count == 1 &&
-                    notMethodCall.Arguments[0] is ConstantExpression constExpr)
-                {
-                    string propertyName = memberExpr.Member.Name;
-                    object? value = constExpr.Value;
-
-                    // Map to excludeTerms for text fields
-                    if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
-                    {
-                        return new TextSearchFilter().Equality("excludeTerms", value);
-                    }
-                }
-            }
-        }
-
-        // Handle string Contains: record.PropertyName.Contains("value")
-        if (linqExpression.Body is MethodCallExpression methodCall &&
-            methodCall.Method.Name == "Contains" &&
-            methodCall.Method.DeclaringType == typeof(string))
-        {
-            if (methodCall.Object is MemberExpression memberExpr &&
-                methodCall.Arguments.Count == 1 &&
-                methodCall.Arguments[0] is ConstantExpression constExpr)
-            {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-
-                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-                if (googleFilterName != null && value != null)
-                {
-                    // For Contains operations on text fields, use exactTerms or orTerms
-                    if (googleFilterName == "exactTerms")
-                    {
-                        return new TextSearchFilter().Equality("orTerms", value); // More flexible than exactTerms
-                    }
-                    return new TextSearchFilter().Equality(googleFilterName, value);
-                }
-            }
+            return textSearchFilter;
         }
 
         // Generate helpful error message with supported patterns
-        var supportedPatterns = new[]
-        {
-            "page.Property == \"value\" (exact match)",
-            "page.Property != \"value\" (exclude)",
-            "page.Property.Contains(\"text\") (partial match)",
-            "!page.Property.Contains(\"text\") (exclude partial)",
-            "page.Prop1 == \"val1\" && page.Prop2.Contains(\"val2\") (compound AND)"
-        };
-
         var supportedProperties = s_queryParameters.Select(p =>
             MapGoogleFilterToProperty(p)).Where(p => p != null).Distinct();
 
         throw new NotSupportedException(
             $"LINQ expression '{linqExpression}' cannot be converted to Google API filters. " +
-            $"Supported patterns: {string.Join(", ", supportedPatterns)}. " +
+            $"Supported patterns: {string.Join(", ", s_supportedPatterns)}. " +
             $"Supported properties: {string.Join(", ", supportedProperties)}.");
     }
 
@@ -278,78 +196,141 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             CollectAndCombineFilters(binaryExpr.Left, filter);
             CollectAndCombineFilters(binaryExpr.Right, filter);
         }
-        else if (expression is BinaryExpression equalExpr && equalExpr.NodeType == ExpressionType.Equal)
+        else
         {
-            // Handle equality
-            if (equalExpr.Left is MemberExpression memberExpr && equalExpr.Right is ConstantExpression constExpr)
+            // Process individual expression using shared logic
+            TryProcessSingleExpression(expression, filter);
+        }
+    }
+
+    /// <summary>
+    /// Shared logic to process a single LINQ expression and add appropriate filters.
+    /// Consolidates duplicate code between ConvertLinqExpressionToGoogleFilter and CollectAndCombineFilters.
+    /// </summary>
+    /// <param name="expression">The expression to process.</param>
+    /// <param name="filter">The filter to add results to.</param>
+    /// <returns>True if the expression was successfully processed, false otherwise.</returns>
+    private static bool TryProcessSingleExpression(Expression expression, TextSearchFilter filter)
+    {
+        // Handle equality: record.PropertyName == "value"
+        if (expression is BinaryExpression equalExpr && equalExpr.NodeType == ExpressionType.Equal)
+        {
+            return TryProcessEqualityExpression(equalExpr, filter);
+        }
+
+        // Handle inequality (NOT): record.PropertyName != "value"
+        if (expression is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
+        {
+            return TryProcessInequalityExpression(notEqualExpr, filter);
+        }
+
+        // Handle string Contains: record.PropertyName.Contains("value")
+        if (expression is MethodCallExpression methodCall &&
+            methodCall.Method.Name == "Contains" &&
+            methodCall.Method.DeclaringType == typeof(string))
+        {
+            return TryProcessContainsExpression(methodCall, filter);
+        }
+
+        // Handle NOT expressions: !record.PropertyName.Contains("value")
+        if (expression is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
+        {
+            return TryProcessNotExpression(unaryExpr, filter);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Processes equality expressions: record.PropertyName == "value"
+    /// </summary>
+    private static bool TryProcessEqualityExpression(BinaryExpression equalExpr, TextSearchFilter filter)
+    {
+        if (equalExpr.Left is MemberExpression memberExpr && equalExpr.Right is ConstantExpression constExpr)
+        {
+            string propertyName = memberExpr.Member.Name;
+            object? value = constExpr.Value;
+            string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+            if (googleFilterName != null && value != null)
             {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-                if (googleFilterName != null && value != null)
+                filter.Equality(googleFilterName, value);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Processes inequality expressions: record.PropertyName != "value"
+    /// </summary>
+    private static bool TryProcessInequalityExpression(BinaryExpression notEqualExpr, TextSearchFilter filter)
+    {
+        if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
+        {
+            string propertyName = memberExpr.Member.Name;
+            object? value = constExpr.Value;
+            // Map to excludeTerms for text fields
+            if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
+            {
+                filter.Equality("excludeTerms", value);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Processes Contains expressions: record.PropertyName.Contains("value")
+    /// </summary>
+    private static bool TryProcessContainsExpression(MethodCallExpression methodCall, TextSearchFilter filter)
+    {
+        if (methodCall.Object is MemberExpression memberExpr &&
+            methodCall.Arguments.Count == 1 &&
+            methodCall.Arguments[0] is ConstantExpression constExpr)
+        {
+            string propertyName = memberExpr.Member.Name;
+            object? value = constExpr.Value;
+            string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
+            if (googleFilterName != null && value != null)
+            {
+                // For Contains operations on text fields, use exactTerms or orTerms
+                if (googleFilterName == "exactTerms")
+                {
+                    filter.Equality("orTerms", value); // More flexible than exactTerms
+                }
+                else
                 {
                     filter.Equality(googleFilterName, value);
                 }
+                return true;
             }
         }
-        else if (expression is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
+        return false;
+    }
+
+    /// <summary>
+    /// Processes NOT expressions: !record.PropertyName.Contains("value")
+    /// </summary>
+    private static bool TryProcessNotExpression(UnaryExpression unaryExpr, TextSearchFilter filter)
+    {
+        if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
+            notMethodCall.Method.Name == "Contains" &&
+            notMethodCall.Method.DeclaringType == typeof(string))
         {
-            // Handle inequality (exclusion)
-            if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
+            if (notMethodCall.Object is MemberExpression memberExpr &&
+                notMethodCall.Arguments.Count == 1 &&
+                notMethodCall.Arguments[0] is ConstantExpression constExpr)
             {
                 string propertyName = memberExpr.Member.Name;
                 object? value = constExpr.Value;
                 if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
                 {
                     filter.Equality("excludeTerms", value);
+                    return true;
                 }
             }
         }
-        else if (expression is MethodCallExpression methodCall &&
-                 methodCall.Method.Name == "Contains" &&
-                 methodCall.Method.DeclaringType == typeof(string))
-        {
-            // Handle Contains
-            if (methodCall.Object is MemberExpression memberExpr &&
-                methodCall.Arguments.Count == 1 &&
-                methodCall.Arguments[0] is ConstantExpression constExpr)
-            {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-                string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-                if (googleFilterName != null && value != null)
-                {
-                    if (googleFilterName == "exactTerms")
-                    {
-                        filter.Equality("orTerms", value);
-                    }
-                    else
-                    {
-                        filter.Equality(googleFilterName, value);
-                    }
-                }
-            }
-        }
-        else if (expression is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
-        {
-            // Handle NOT Contains
-            if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
-                notMethodCall.Method.Name == "Contains" &&
-                notMethodCall.Method.DeclaringType == typeof(string))
-            {
-                if (notMethodCall.Object is MemberExpression memberExpr &&
-                    notMethodCall.Arguments.Count == 1 &&
-                    notMethodCall.Arguments[0] is ConstantExpression constExpr)
-                {
-                    string propertyName = memberExpr.Member.Name;
-                    object? value = constExpr.Value;
-                    if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
-                    {
-                        filter.Equality("excludeTerms", value);
-                    }
-                }
-            }
-        }
+        return false;
     }
 
     /// <summary>
@@ -413,10 +394,6 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         this._search.Dispose();
     }
 
-    #region private
-
-    private const int MaxCount = 10;
-
     private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
     private readonly string? _searchEngineId;
@@ -426,8 +403,19 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
+    private const int MaxCount = 10;
+
     // See https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
     private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "fileType", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
+
+    // Performance optimization: Static error message arrays to avoid allocations in error paths
+    private static readonly string[] s_supportedPatterns = [
+        "page.Property == \"value\" (exact match)",
+        "page.Property != \"value\" (exclude)",
+        "page.Property.Contains(\"text\") (partial match)",
+        "!page.Property.Contains(\"text\") (exclude partial)",
+        "page.Prop1 == \"val1\" && page.Prop2.Contains(\"val2\") (compound AND)"
+    ];
 
     private delegate void SetSearchProperty(CseResource.ListRequest search, string value);
 
@@ -460,7 +448,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         var count = searchOptions.Top;
         var offset = searchOptions.Skip;
 
-        if (count is <= 0 or > MaxCount)
+        if (count <= 0 || count > MaxCount)
         {
             throw new ArgumentOutOfRangeException(nameof(searchOptions), count, $"{nameof(searchOptions)}.Count value must be must be greater than 0 and less than or equals 10.");
         }
@@ -660,5 +648,4 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             return new TextSearchResult(googleResult.Snippet) { Name = googleResult.Title, Link = googleResult.Link };
         }
     }
-    #endregion
 }
