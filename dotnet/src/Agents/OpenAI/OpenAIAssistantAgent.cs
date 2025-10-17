@@ -158,7 +158,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
         List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
 
         // Notify the thread of new messages and return them to the caller.
@@ -267,7 +267,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         });
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
 
         ChatHistory newMessagesReceiver = [];

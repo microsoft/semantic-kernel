@@ -3,6 +3,7 @@
 import os
 import tempfile
 from collections.abc import Callable
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
@@ -359,6 +360,50 @@ async def test_kernel_invoke_deep_copy_preserves_previous_state():
 
     # The new invoke reflects the mutated state
     assert snapshot2[-1] == {"id": 4, "name": "Desk lamp", "is_on": True}
+
+
+# region Clone safety with unpickleable async context
+
+
+class _AsyncGenPlugin:
+    """Plugin holding an async generator to emulate MCP-style async internals.
+
+    Deep-copying objects that reference async generators typically fails with
+    `TypeError: cannot pickle 'async_generator' object`.
+    """
+
+    def __init__(self):
+        async def _agen():
+            yield "tick"
+
+        # Store an async generator object on the instance to make it unpickleable.
+        self._unpickleable_async_gen = _agen()
+
+    @kernel_function(name="do", description="Return OK to validate plugin wiring")
+    async def do(self) -> str:
+        return "ok"
+
+
+@pytest.mark.asyncio
+async def test_kernel_clone_with_unpickleable_plugin_does_not_raise():
+    kernel = Kernel()
+    plugin_instance = _AsyncGenPlugin()
+    kernel.add_plugin(plugin_instance)
+
+    # Sanity: naive deepcopy of plugins should raise due to async generator state
+    with pytest.raises(TypeError):
+        deepcopy(kernel.plugins)
+
+    # Clone should succeed and preserve function usability
+    cloned = kernel.clone()
+
+    func = cloned.get_function(plugin_instance.__class__.__name__, "do")
+    result = await func.invoke(cloned)
+    assert result is not None
+    assert result.value == "ok"
+
+
+# endregion
 
 
 async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):

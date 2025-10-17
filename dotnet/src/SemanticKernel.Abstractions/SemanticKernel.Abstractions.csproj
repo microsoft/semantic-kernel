@@ -15,6 +15,7 @@
   
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/meai/MEAIUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
