@@ -535,13 +535,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         if (state.ExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
             !IsRequestableTool(state.GeminiRequest.Tools![0].Functions, toolCall))
         {
-            return CreateToolResponseMessage(toolCall, functionResponse: null, "Error: Function call request for a function that wasn't defined.");
+            return this.CreateToolResponseMessage(toolCall, functionResponse: null, "Error: Function call request for a function that wasn't defined.");
         }
 
         // Ensure the provided function exists for calling
         if (!state.Kernel!.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? functionArgs))
         {
-            return CreateToolResponseMessage(toolCall, functionResponse: null, "Error: Requested function could not be found.");
+            return this.CreateToolResponseMessage(toolCall, functionResponse: null, "Error: Requested function could not be found.");
         }
 
         // Now, invoke the function, and create the resulting tool call message.
@@ -559,14 +559,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         catch (Exception e)
 #pragma warning restore CA1031
         {
-            return CreateToolResponseMessage(toolCall, functionResponse: null, $"Error: Exception while invoking function. {e.Message}");
+            return this.CreateToolResponseMessage(toolCall, functionResponse: null, $"Error: Exception while invoking function. {e.Message}");
         }
         finally
         {
             s_inflightAutoInvokes.Value--;
         }
 
-        return CreateToolResponseMessage(toolCall, functionResponse: functionResult, errorMessage: null);
+        return this.CreateToolResponseMessage(toolCall, functionResponse: functionResult, errorMessage: null);
     }
 
     private GeminiChatMessageContent CreateToolResponseMessage(
