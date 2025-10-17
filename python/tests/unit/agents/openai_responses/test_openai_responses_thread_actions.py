@@ -15,6 +15,7 @@ from openai.types.responses.response_text_delta_event import Logprob, ResponseTe
 
 from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -499,11 +500,11 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
 
 def test_get_tools(mock_agent, kernel, custom_plugin_class):
     kernel.add_plugin(custom_plugin_class)
-
+    fcb = FunctionChoiceBehavior()
     tools = ResponsesAgentThreadActions._get_tools(
         agent=mock_agent,
         kernel=kernel,
-        function_choice_behavior=MagicMock(),
+        function_choice_behavior=fcb,
     )
 
     assert len(tools) == len(mock_agent.tools) + len(kernel.get_full_list_of_function_metadata())
