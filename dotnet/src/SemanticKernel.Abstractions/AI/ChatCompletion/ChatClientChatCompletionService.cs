@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,7 +88,9 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
         }
 
-        List<AIContent> fcContents = [];
+        List<Microsoft.Extensions.AI.FunctionCallContent> functionCalls = [];
+        Dictionary<string, Microsoft.Extensions.AI.FunctionResultContent> functionResults = [];
+
         ChatRole? role = null;
 
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
@@ -99,21 +100,28 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         {
             role ??= update.Role;
 
-            fcContents.AddRange(update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent));
+            foreach (var content in update.Contents)
+            {
+                if (content is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+                {
+                    functionCalls.Add(functionCallContent);
+                    continue;
+                }
 
+                if (content is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+                {
+                    functionResults[functionResultContent.CallId] = functionResultContent;
+                }
+            }
             yield return update.ToStreamingChatMessageContent();
         }
 
         // Message tools and function calls should be individual messages in the history.
-        foreach (var fcc in fcContents)
+        // Tool result messages must be added immediately after the corresponding tool call to preserve correct conversation order.
+        foreach (var functionCallContent in functionCalls)
         {
-            if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
-            {
-                chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
-                continue;
-            }
-
-            if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+            chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
+            if (functionResults.TryGetValue(functionCallContent.CallId, out var functionResultContent))
             {
                 chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
             }

@@ -647,6 +647,68 @@ public sealed class ChatClientChatCompletionServiceConversionTests
         Assert.Equal("Original message", originalChatHistory[1].Content);
     }
 
+    [Fact]
+    public async Task GetStreamingChatMessageContentsAsyncShouldMaintainFunctionCallOrdering()
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteStreamingAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Simulate calls coming first, then results
+                return new[]
+                {
+                    new ChatResponseUpdate(ChatRole.Assistant, [new Microsoft.Extensions.AI.FunctionCallContent("call-1", "Func1", null)]),
+                    new ChatResponseUpdate(ChatRole.Assistant, [new Microsoft.Extensions.AI.FunctionCallContent("call-2", "Func2", null)]),
+                    new ChatResponseUpdate(ChatRole.Tool, [new Microsoft.Extensions.AI.FunctionResultContent("call-1", "result1")]),
+                    new ChatResponseUpdate(ChatRole.Tool, [new Microsoft.Extensions.AI.FunctionResultContent("call-2", "result2")])
+                }.ToAsyncEnumerable();
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        await service.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.Collection(chatHistory,
+            call1 =>
+            {
+                Assert.Equal(AuthorRole.Assistant, call1.Role);
+                var callContent = Assert.Single(call1.Items);
+                var functionCall = Assert.IsType<Microsoft.SemanticKernel.FunctionCallContent>(callContent);
+                Assert.Equal("call-1", functionCall.Id);
+                Assert.Equal("Func1", functionCall.FunctionName);
+            },
+            result1 =>
+            {
+                Assert.Equal(AuthorRole.Tool, result1.Role);
+                var resultContent = Assert.Single(result1.Items);
+                var functionResult = Assert.IsType<Microsoft.SemanticKernel.FunctionResultContent>(resultContent);
+                Assert.Equal("call-1", functionResult.CallId);
+                Assert.Equal("result1", functionResult.Result);
+            },
+            call2 =>
+            {
+                Assert.Equal(AuthorRole.Assistant, call2.Role);
+                var callContent = Assert.Single(call2.Items);
+                var functionCall = Assert.IsType<Microsoft.SemanticKernel.FunctionCallContent>(callContent);
+                Assert.Equal("call-2", functionCall.Id);
+                Assert.Equal("Func2", functionCall.FunctionName);
+            },
+            result2 =>
+            {
+                Assert.Equal(AuthorRole.Tool, result2.Role);
+                var resultContent = Assert.Single(result2.Items);
+                var functionResult = Assert.IsType<Microsoft.SemanticKernel.FunctionResultContent>(resultContent);
+                Assert.Equal("call-2", functionResult.CallId);
+                Assert.Equal("result2", functionResult.Result);
+            });
+    }
+
     /// <summary>
     /// Test implementation of PromptExecutionSettings that overrides PrepareChatHistoryToRequestAsync.
     /// </summary>
