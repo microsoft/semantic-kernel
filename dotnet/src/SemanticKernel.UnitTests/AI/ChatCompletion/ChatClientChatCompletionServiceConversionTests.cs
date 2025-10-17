@@ -567,7 +567,7 @@ public sealed class ChatClientChatCompletionServiceConversionTests
     }
 
     [Fact]
-    public async Task GetChatMessageContentsAsyncWithToolUseShouldOrderHistoryAccordingToToolExecution()
+    public async Task GetChatMessageContentsAsyncWithMutatingPrepareChatHistoryPreservesChatHistoryMutations()
     {
         // Arrange
         var originalChatHistory = new ChatHistory();
