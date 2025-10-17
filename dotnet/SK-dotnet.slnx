@@ -27,6 +27,55 @@
     <Project Path="samples/GettingStartedWithVectorStores/GettingStartedWithVectorStores.csproj" />
     <Project Path="samples/LearnResources/LearnResources.csproj" />
   </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/" />
+  <Folder Name="/samples/AgentFrameworkMigration/OpenAI/">
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step01_Basics/OpenAI_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step02_ToolCall/OpenAI_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step03_DependencyInjection/OpenAI_Step03_DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAI/">
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step01_Basics/AzureOpenAI_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step02_ToolCall/AzureOpenAI_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step03_DependencyInjection/AzureOpenAI_Step03_DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/OpenAIAssistants/">
+    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step01_Basics/OpenAIAssistants_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step02_ToolCall/OpenAIAssistants_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step03_DependencyInjection/OpenAIAssistants_Step03_DependencyInjection.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step04_CodeInterpreter/OpenAIAssistants_Step04_CodeInterpreter.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAIAssistants/">
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step01_Basics/AzureOpenAIAssistants_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step02_ToolCall/AzureOpenAIAssistants_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step03_DependencyInjection/AzureOpenAIAssistants_Step03_DependencyInjection.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step04_CodeInterpreter/AzureOpenAIAssistants_Step04_CodeInterpreter.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/OpenAIResponses/">
+    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step01_Basics/OpenAIResponses_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step02_ReasoningModel/OpenAIResponses_Step02_ReasoningModel.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step03_ToolCall/OpenAIResponses_Step03_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step04_DependencyInjection/OpenAIResponses_Step04_DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAIResponses/">
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step01_Basics/AzureOpenAIResponses_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step02_ReasoningModel/AzureOpenAIResponses_Step02_ReasoningModel.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step03_ToolCall/AzureOpenAIResponses_Step03_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step04_DependencyInjection/AzureOpenAIResponses_Step04_DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/AzureAIFoundry/">
+    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step01_Basics/AzureAIFoundry_Step01_Basics.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step02_ToolCall/AzureAIFoundry_Step02_ToolCall.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step03_DependencyInjection/AzureAIFoundry_Step03_DependencyInjection.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step04_CodeInterpreter/AzureAIFoundry_Step04_CodeInterpreter.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/AgentOrchestrations/">
+    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step01_Concurrent/AgentOrchestrations_Step01_Concurrent.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step02_Sequential/AgentOrchestrations_Step02_Sequential.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step03_Handoff/AgentOrchestrations_Step03_Handoff.csproj" />
+  </Folder>
+  <Folder Name="/samples/AgentFrameworkMigration/Playground/">
+    <Project Path="samples/AgentFrameworkMigration/Playground/SemanticKernelBasic/SemanticKernelBasic.csproj" />
+  </Folder>
   <Folder Name="/samples/Demos/">
     <File Path="samples/Demos/README.md" />
     <Project Path="samples/Demos/AIModelRouter/AIModelRouter.csproj" />
@@ -40,8 +89,8 @@
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
-    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OnnxSimpleChatWithCuda/OnnxSimpleChatWithCuda.csproj" />
+    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
     <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
