@@ -671,15 +671,10 @@ public sealed class ChatClientChatCompletionServiceConversionTests
         var service = chatClient.AsChatCompletionService();
 
         // Act
-        var results = new List<StreamingChatMessageContent>();
-        await foreach (var update in service.GetStreamingChatMessageContentsAsync(chatHistory))
-        {
-            results.Add(update);
-        }
+        await service.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.Collection(chatHistory,
-            // Function calls
             call1 =>
             {
                 Assert.Equal(AuthorRole.Assistant, call1.Role);
@@ -704,7 +699,6 @@ public sealed class ChatClientChatCompletionServiceConversionTests
                 Assert.Equal("call-2", functionCall.Id);
                 Assert.Equal("Func2", functionCall.FunctionName);
             },
-            // Second function result added to history
             result2 =>
             {
                 Assert.Equal(AuthorRole.Tool, result2.Role);
