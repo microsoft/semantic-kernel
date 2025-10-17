@@ -393,6 +393,12 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             return null;
         }
 
+        // Static empty kernel to avoid creating new instances for each conversion
+        static Kernel GetEmptyKernel()
+        {
+            return new Kernel();
+        }
+
         // Check the type and determine auto-invoke by reflection or known behavior types
         // All FunctionChoiceBehavior types (Auto, Required, None) support auto-invoke
         // We use a simple approach: get the configuration with minimal context to check AutoInvoke
@@ -400,7 +406,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
             {
-                Kernel = new Kernel(), // Provide an empty kernel for the configuration
+                Kernel = GetEmptyKernel(), // Provide an empty kernel for the configuration
                 RequestSequenceIndex = 0
             };
             var config = functionChoiceBehavior.GetConfiguration(context);
@@ -413,9 +419,12 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 
             return GeminiToolCallBehavior.EnableKernelFunctions;
         }
+#pragma warning disable CA1031 // Do not catch general exception types
         catch
+#pragma warning restore CA1031
         {
-            // If we can't get configuration, default to EnableKernelFunctions
+            // If we can't get configuration (e.g., due to missing dependencies or unexpected state),
+            // default to EnableKernelFunctions as the safer option that doesn't auto-invoke
             return GeminiToolCallBehavior.EnableKernelFunctions;
         }
     }
