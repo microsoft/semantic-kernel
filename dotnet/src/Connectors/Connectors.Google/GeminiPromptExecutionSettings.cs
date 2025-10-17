@@ -360,20 +360,25 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             case null:
                 return new GeminiPromptExecutionSettings();
-            case GeminiPromptExecutionSettings settings:
-                return settings;
+            case GeminiPromptExecutionSettings geminiSettings:
+                // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
+                if (geminiSettings.FunctionChoiceBehavior is not null && geminiSettings.ToolCallBehavior is null)
+                {
+                    geminiSettings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(geminiSettings.FunctionChoiceBehavior);
+                }
+                return geminiSettings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        var geminiSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        var settings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
 
         // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
-        if (executionSettings.FunctionChoiceBehavior is not null && geminiSettings.ToolCallBehavior is null)
+        if (executionSettings.FunctionChoiceBehavior is not null && settings.ToolCallBehavior is null)
         {
-            geminiSettings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior);
+            settings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior);
         }
 
-        return geminiSettings;
+        return settings;
     }
 
     /// <summary>
@@ -388,18 +393,30 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             return null;
         }
 
-        // Get configuration to determine the behavior type
-        var config = functionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(new ChatHistory()));
-
-        // Determine auto-invoke based on the configuration
-        bool autoInvoke = config.AutoInvoke;
-
-        // Return appropriate GeminiToolCallBehavior
-        if (autoInvoke)
+        // Check the type and determine auto-invoke by reflection or known behavior types
+        // All FunctionChoiceBehavior types (Auto, Required, None) support auto-invoke
+        // We use a simple approach: get the configuration with minimal context to check AutoInvoke
+        try
         {
-            return GeminiToolCallBehavior.AutoInvokeKernelFunctions;
-        }
+            var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
+            {
+                Kernel = new Kernel(), // Provide an empty kernel for the configuration
+                RequestSequenceIndex = 0
+            };
+            var config = functionChoiceBehavior.GetConfiguration(context);
 
-        return GeminiToolCallBehavior.EnableKernelFunctions;
+            // Return appropriate GeminiToolCallBehavior based on AutoInvoke setting
+            if (config.AutoInvoke)
+            {
+                return GeminiToolCallBehavior.AutoInvokeKernelFunctions;
+            }
+
+            return GeminiToolCallBehavior.EnableKernelFunctions;
+        }
+        catch
+        {
+            // If we can't get configuration, default to EnableKernelFunctions
+            return GeminiToolCallBehavior.EnableKernelFunctions;
+        }
     }
 }
