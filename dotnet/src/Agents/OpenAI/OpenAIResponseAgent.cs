@@ -61,6 +61,11 @@ public sealed class OpenAIResponseAgent : Agent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(result).ConfigureAwait(false);
+            }
+
             await this.NotifyThreadOfNewMessage(agentThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, agentThread);
         }
