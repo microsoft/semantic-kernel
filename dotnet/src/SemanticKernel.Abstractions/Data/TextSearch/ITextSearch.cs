@@ -19,6 +19,7 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<string>> SearchAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
@@ -30,6 +31,7 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
@@ -41,6 +43,7 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
