@@ -214,9 +214,10 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             {
                 if (isNegated)
                 {
-                    // For inequality, use Bing's negation syntax by prepending '-' to the filter name
-                    // Example: -language:en excludes pages in English
-                    filter.Equality($"-{bingFilterName}", value);
+                    // For inequality, wrap the value with a negation marker
+                    // This will be processed in BuildQuery to prepend '-' to the advanced search operator
+                    // Example: language:en becomes -language:en (excludes pages in English)
+                    filter.Equality(bingFilterName, $"-{value}");
                 }
                 else
                 {
@@ -506,14 +507,21 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             {
                 if (filterClause is EqualToFilterClause equalityFilterClause)
                 {
+                    // Check if value starts with '-' indicating negation (for inequality != operator)
+                    string? valueStr = equalityFilterClause.Value?.ToString();
+                    bool isNegated = valueStr?.StartsWith("-", StringComparison.Ordinal) == true;
+                    string actualValue = isNegated && valueStr != null ? valueStr.Substring(1) : valueStr ?? string.Empty;
+
                     if (s_advancedSearchKeywords.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
-                        fullQuery.Append($"+{equalityFilterClause.FieldName}%3A").Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
+                        // For advanced search keywords, prepend '-' if negated to exclude results
+                        string prefix = isNegated ? "-" : "";
+                        fullQuery.Append($"+{prefix}{equalityFilterClause.FieldName}%3A").Append(Uri.EscapeDataString(actualValue));
                     }
                     else if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
                         string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase));
-                        queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
+                        queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(actualValue));
                     }
                     else
                     {
