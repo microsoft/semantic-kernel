@@ -128,7 +128,9 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             await this._database.FT().InfoAsync(this.Name).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name"))
+        // "Unknown index name" is returned in Redis Stack
+        // "no such index" is returned in Redis Alpine
+        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name") || ex.Message.Contains("no such index"))
         {
             return false;
         }
