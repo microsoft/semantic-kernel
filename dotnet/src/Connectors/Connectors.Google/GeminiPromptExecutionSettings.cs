@@ -382,6 +382,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// Shared empty kernel instance used for FunctionChoiceBehavior conversion.
+    /// </summary>
+    private static readonly Kernel s_emptyKernel = new();
+
+    /// <summary>
     /// Converts a <see cref="FunctionChoiceBehavior"/> to a <see cref="GeminiToolCallBehavior"/>.
     /// </summary>
     /// <param name="functionChoiceBehavior">The <see cref="FunctionChoiceBehavior"/> to convert.</param>
@@ -393,12 +398,6 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             return null;
         }
 
-        // Static empty kernel to avoid creating new instances for each conversion
-        static Kernel GetEmptyKernel()
-        {
-            return new Kernel();
-        }
-
         // Check the type and determine auto-invoke by reflection or known behavior types
         // All FunctionChoiceBehavior types (Auto, Required, None) support auto-invoke
         // We use a simple approach: get the configuration with minimal context to check AutoInvoke
@@ -406,7 +405,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
             {
-                Kernel = GetEmptyKernel(), // Provide an empty kernel for the configuration
+                Kernel = s_emptyKernel, // Provide an empty kernel for the configuration
                 RequestSequenceIndex = 0
             };
             var config = functionChoiceBehavior.GetConfiguration(context);
