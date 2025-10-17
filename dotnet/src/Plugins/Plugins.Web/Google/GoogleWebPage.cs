@@ -19,7 +19,7 @@ public sealed class GoogleWebPage
     }
 
     /// <summary>
-    /// The title of the webpage.
+    /// Gets or sets the title of the webpage.
     /// </summary>
     /// <remarks>
     /// Use this title along with Link to create a hyperlink that when clicked takes the user to the webpage.
@@ -28,7 +28,7 @@ public sealed class GoogleWebPage
     public string? Title { get; set; }
 
     /// <summary>
-    /// The URL to the webpage.
+    /// Gets or sets the URL to the webpage.
     /// </summary>
     /// <remarks>
     /// Use this URL along with Title to create a hyperlink that when clicked takes the user to the webpage.
@@ -39,13 +39,13 @@ public sealed class GoogleWebPage
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// A snippet of text from the webpage that describes its contents.
+    /// Gets or sets a snippet of text from the webpage that describes its contents.
     /// </summary>
     [JsonPropertyName("snippet")]
     public string? Snippet { get; set; }
 
     /// <summary>
-    /// The formatted URL display string.
+    /// Gets or sets the formatted URL display string.
     /// </summary>
     /// <remarks>
     /// The URL is meant for display purposes only and may not be well formed.
@@ -56,31 +56,31 @@ public sealed class GoogleWebPage
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// The MIME type of the result.
+    /// Gets or sets the MIME type of the result.
     /// </summary>
     [JsonPropertyName("mime")]
     public string? Mime { get; set; }
 
     /// <summary>
-    /// The file format of the result.
+    /// Gets or sets the file format of the result.
     /// </summary>
     [JsonPropertyName("fileFormat")]
     public string? FileFormat { get; set; }
 
     /// <summary>
-    /// The HTML title of the webpage.
+    /// Gets or sets the HTML title of the webpage.
     /// </summary>
     [JsonPropertyName("htmlTitle")]
     public string? HtmlTitle { get; set; }
 
     /// <summary>
-    /// The HTML snippet of the webpage.
+    /// Gets or sets the HTML snippet of the webpage.
     /// </summary>
     [JsonPropertyName("htmlSnippet")]
     public string? HtmlSnippet { get; set; }
 
     /// <summary>
-    /// The formatted URL of the webpage.
+    /// Gets or sets the formatted URL of the webpage.
     /// </summary>
     [JsonPropertyName("formattedUrl")]
 #pragma warning disable CA1056 // URI-like properties should not be strings
@@ -88,7 +88,7 @@ public sealed class GoogleWebPage
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// The HTML-formatted URL of the webpage.
+    /// Gets or sets the HTML-formatted URL of the webpage.
     /// </summary>
     [JsonPropertyName("htmlFormattedUrl")]
 #pragma warning disable CA1056 // URI-like properties should not be strings
@@ -96,7 +96,7 @@ public sealed class GoogleWebPage
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// Labels associated with the webpage.
+    /// Gets or sets labels associated with the webpage.
     /// </summary>
     [JsonPropertyName("labels")]
     public IReadOnlyList<string>? Labels { get; set; }

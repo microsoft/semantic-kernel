@@ -509,6 +509,201 @@ public sealed class GoogleTextSearchTests : IDisposable
         Assert.Equal(4, resultList.Count);
     }
 
+    #region LINQ Filter Verification Tests
+    // These tests verify that LINQ expressions produce correct Google API URL parameters
+    // Addressing reviewer feedback: "Some tests to verify the filter url that is created from the different linq expressions would be good"
+
+    [Fact]
+    public async Task LinqEqualityFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ equality filter for DisplayLink
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.DisplayLink == "microsoft.com"
+            });
+
+        // Assert - Verify URL contains correct siteSearch parameter
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("siteSearch=microsoft.com", absoluteUri);
+        Assert.Contains("siteSearchFilter=i", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqFileFormatEqualityFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ equality filter for FileFormat
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.FileFormat == "pdf"
+            });
+
+        // Assert - Verify URL contains correct fileType parameter
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("fileType=pdf", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqContainsFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ Contains filter for Title
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title != null && page.Title.Contains("Semantic")
+            });
+
+        // Assert - Verify URL contains correct orTerms parameter (Contains uses orTerms for flexibility)
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("orTerms=Semantic", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqNotEqualFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ NOT Equal filter for Title
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Title != "deprecated"
+            });
+
+        // Assert - Verify URL contains correct excludeTerms parameter
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("excludeTerms=deprecated", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqNotContainsFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ NOT Contains filter for Snippet
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.Snippet != null && !page.Snippet.Contains("outdated")
+            });
+
+        // Assert - Verify URL contains correct excludeTerms parameter
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("excludeTerms=outdated", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqCompoundAndFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ compound AND filter
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.DisplayLink == "microsoft.com" && page.FileFormat == "pdf"
+            });
+
+        // Assert - Verify URL contains both parameters
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("siteSearch=microsoft.com", absoluteUri);
+        Assert.Contains("siteSearchFilter=i", absoluteUri);
+        Assert.Contains("fileType=pdf", absoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqComplexCompoundFilterProducesCorrectApiUrlAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act - Use LINQ complex compound filter (equality + contains + exclusion)
+        await textSearch.SearchAsync("test",
+            new TextSearchOptions<GoogleWebPage>
+            {
+                Top = 4,
+                Skip = 0,
+                Filter = page => page.FileFormat == "pdf" &&
+                               page.Title != null && page.Title.Contains("AI") &&
+                               page.Snippet != null && !page.Snippet.Contains("deprecated")
+            });
+
+        // Assert - Verify URL contains all expected parameters
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("fileType=pdf", absoluteUri);
+        Assert.Contains("orTerms=AI", absoluteUri); // Contains uses orTerms for flexibility
+        Assert.Contains("excludeTerms=deprecated", absoluteUri);
+    }
+
+    #endregion
+
     /// <inheritdoc/>
     public void Dispose()
     {
