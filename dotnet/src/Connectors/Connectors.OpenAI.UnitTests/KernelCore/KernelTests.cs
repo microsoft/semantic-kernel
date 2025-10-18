@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Net.Http;
@@ -64,7 +65,7 @@ public sealed class KernelTests : IDisposable
         using MeterListener listener = new();
         var isPublished = false;
 
-        var measurements = new Dictionary<string, List<long>>
+        var measurements = new Dictionary<string, ConcurrentBag<long>>
         {
             ["semantic_kernel.function.invocation.token_usage.prompt"] = [],
             ["semantic_kernel.function.invocation.token_usage.completion"] = [],
