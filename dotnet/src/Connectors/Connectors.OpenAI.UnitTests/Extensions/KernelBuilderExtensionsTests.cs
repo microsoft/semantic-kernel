@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -97,6 +98,40 @@ public class KernelBuilderExtensionsTests
 
         // Assert
         Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void KernelBuilderAddOpenAIImageGeneratorAddsValidService(InitializationType initializationType)
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var serviceProvider = (IServiceProvider)null!;
+
+        switch (initializationType)
+        {
+            case InitializationType.ApiKey:
+                builder.AddOpenAIImageGenerator("dall-e-3", "api-key");
+                break;
+            case InitializationType.OpenAIClientInline:
+                builder.AddOpenAIImageGenerator("dall-e-3", new OpenAIClient(new ApiKeyCredential("api-key")));
+                break;
+            case InitializationType.OpenAIClientInServiceProvider:
+                builder.Services.AddSingleton<OpenAIClient>(_ => new OpenAIClient(new ApiKeyCredential("api-key")));
+                builder.AddOpenAIImageGenerator("dall-e-3");
+                break;
+        }
+
+        // Act
+        serviceProvider = builder.Build().Services;
+
+        // Assert
+        Assert.NotNull(serviceProvider);
+#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates
+        Assert.True(serviceProvider.GetServices<IImageGenerator>().Any());
+#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates
     }
 
     [Fact]
