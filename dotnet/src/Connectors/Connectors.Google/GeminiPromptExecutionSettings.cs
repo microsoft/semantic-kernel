@@ -32,6 +32,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
     private GeminiThinkingConfig? _thinkingConfig;
+    private GeminiGroundingConfig? _groundingConfig;
 
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -296,6 +297,24 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Configuration for the grounding search with google.
+    /// </summary>
+    /// <remarks>
+    /// This property is specific to Gemini 2.5 and similar experimental models.
+    /// </remarks>
+    [JsonPropertyName("grounding_config")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiGroundingConfig? GroundingConfig
+    {
+        get => this._groundingConfig;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._groundingConfig = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -335,7 +354,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             AudioTimestamp = this.AudioTimestamp,
             ResponseMimeType = this.ResponseMimeType,
             ResponseSchema = this.ResponseSchema,
-            ThinkingConfig = this.ThinkingConfig?.Clone()
+            ThinkingConfig = this.ThinkingConfig?.Clone(),
+            GroundingConfig = this.GroundingConfig?.Clone(),
         };
     }
 
