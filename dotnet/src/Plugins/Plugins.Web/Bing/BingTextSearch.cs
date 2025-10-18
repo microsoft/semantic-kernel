@@ -204,7 +204,21 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// <param name="isNegated">True if this is an inequality (!=) expression.</param>
     private static void ProcessEqualityExpression(BinaryExpression binaryExpr, TextSearchFilter filter, bool isNegated)
     {
-        if (binaryExpr.Left is MemberExpression memberExpr && binaryExpr.Right is ConstantExpression constExpr)
+        // Handle nullable properties with conversions (e.g., bool? == bool becomes Convert(property) == value)
+        MemberExpression? memberExpr = binaryExpr.Left as MemberExpression;
+        if (memberExpr == null && binaryExpr.Left is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Convert)
+        {
+            memberExpr = unaryExpr.Operand as MemberExpression;
+        }
+
+        // Handle conversions on the right side too
+        ConstantExpression? constExpr = binaryExpr.Right as ConstantExpression;
+        if (constExpr == null && binaryExpr.Right is UnaryExpression rightUnaryExpr && rightUnaryExpr.NodeType == ExpressionType.Convert)
+        {
+            constExpr = rightUnaryExpr.Operand as ConstantExpression;
+        }
+
+        if (memberExpr != null && constExpr != null)
         {
             string propertyName = memberExpr.Member.Name;
             object? value = constExpr.Value;
@@ -212,16 +226,19 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             string? bingFilterName = MapPropertyToBingFilter(propertyName);
             if (bingFilterName != null && value != null)
             {
+                // Convert boolean values to lowercase strings for Bing API compatibility
+                string stringValue = value is bool boolValue ? boolValue.ToString().ToLowerInvariant() : value.ToString() ?? string.Empty;
+
                 if (isNegated)
                 {
                     // For inequality, wrap the value with a negation marker
                     // This will be processed in BuildQuery to prepend '-' to the advanced search operator
                     // Example: language:en becomes -language:en (excludes pages in English)
-                    filter.Equality(bingFilterName, $"-{value}");
+                    filter.Equality(bingFilterName, $"-{stringValue}");
                 }
                 else
                 {
-                    filter.Equality(bingFilterName, value);
+                    filter.Equality(bingFilterName, stringValue);
                 }
             }
             else if (value == null)

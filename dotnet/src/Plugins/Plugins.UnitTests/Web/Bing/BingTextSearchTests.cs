@@ -462,6 +462,30 @@ public sealed class BingTextSearchTests : IDisposable
         Assert.Equal(10, resultList.Count);
     }
 
+    [Fact]
+    public async Task GenericSearchAsyncWithIsFamilyFriendlyFilterProducesCorrectBingQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.IsFamilyFriendly == true
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify LINQ IsFamilyFriendly equality converted to Bing's safeSearch query parameter
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        // safeSearch is a query parameter, not an advanced search operator
+        Assert.Contains("safeSearch=true", requestUris[0]!.AbsoluteUri);
+    }
+
     #endregion
 
     /// <inheritdoc/>
