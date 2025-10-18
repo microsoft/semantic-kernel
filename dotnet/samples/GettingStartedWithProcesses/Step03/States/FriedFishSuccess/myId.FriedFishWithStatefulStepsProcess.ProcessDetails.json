@@ -1,0 +1,19 @@
+{
+  "processInfo": {
+    "processName": "FriedFishWithStatefulStepsProcess",
+    "parentId": null,
+    "steps": {
+      "GatherFriedFishIngredientsWithStockStep": "myId_d2c7e47c-792e-4092-8faf-6035150d4076",
+      "CutFoodStep": "myId_204e59a3-05c4-4186-8e1f-aa7db2b01c30",
+      "FryFoodStep": "myId_6e850696-7132-4cc4-8495-2f21d90ec252"
+    },
+    "instanceId": "myId"
+  },
+  "processEvents": {
+    "externalPendingMessages": []
+  },
+  "processState": {
+    "sharedVariables": {}
+  },
+  "instanceId": "myId"
+}
