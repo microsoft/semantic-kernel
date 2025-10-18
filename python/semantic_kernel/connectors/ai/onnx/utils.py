@@ -2,6 +2,7 @@
 from enum import Enum
 
 from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, TextContent
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.exceptions import ServiceException, ServiceInvalidRequestError
 
 
@@ -19,6 +20,8 @@ class ONNXTemplate(str, Enum):
 
     PHI3 = "phi3"
     PHI3V = "phi3v"
+    PHI4 = "phi4"
+    PHI4MM = "phi4mm"
     GEMMA = "gemma"
     LLAMA = "llama"
     NONE = "none"
@@ -39,9 +42,11 @@ def apply_template(history: ChatHistory, template: ONNXTemplate) -> str:
     """
     template_functions = {
         ONNXTemplate.PHI3: phi3_template,
+        ONNXTemplate.PHI4: phi4_template,
         ONNXTemplate.GEMMA: gemma_template,
         ONNXTemplate.LLAMA: llama_template,
         ONNXTemplate.PHI3V: phi3v_template,
+        ONNXTemplate.PHI4MM: phi4mm_template,
         ONNXTemplate.NONE: lambda text: text,
     }
 
@@ -67,6 +72,22 @@ def phi3_template(history: ChatHistory) -> str:
     return phi3_input
 
 
+def phi4_template(history: ChatHistory) -> str:
+    """Generates a formatted string from the chat history for use with the phi4 model.
+
+    Args:
+        history (ChatHistory): An object containing the chat history with a list of messages.
+
+    Returns:
+        str: A formatted string where each message is prefixed with the role and suffixed with an end marker.
+    """
+    phi4_input = ""
+    for message in history.messages:
+        phi4_input += f"<|{message.role.value}|>\n{message.content}<|end|>\n"
+    phi4_input += "<|assistant|>\n"
+    return phi4_input
+
+
 def phi3v_template(history: ChatHistory) -> str:
     """Generates a formatted string from a given chat history for use with the phi3v model.
 
@@ -78,6 +99,7 @@ def phi3v_template(history: ChatHistory) -> str:
              the role of each message (system, user, assistant) and the type of content (text, image).
     """
     phi3v_input = ""
+    image_count = 0
     for message in history.messages:
         if message.role == AuthorRole.SYSTEM:
             phi3v_input += f"<|system|>\n{message.content}<|end|>\n"
@@ -85,13 +107,46 @@ def phi3v_template(history: ChatHistory) -> str:
             for item in message.items:
                 if isinstance(item, TextContent):
                     phi3v_input += f"<|user|>\n{item.text}<|end|>\n"
-                # Currently only one image is supported in Onnx
                 if isinstance(item, ImageContent):
-                    phi3v_input += "<|image_1|>\n"
+                    phi3v_input += f"<|image_{image_count + 1}|>\n"
+                    image_count += 1
         if message.role == AuthorRole.ASSISTANT:
             phi3v_input += f"<|assistant|>\n{message.content}<|end|>\n"
     phi3v_input += "<|assistant|>\n"
     return phi3v_input
+
+
+def phi4mm_template(history: ChatHistory) -> str:
+    """Generates a formatted string from a given chat history for use with the phi4mm model.
+
+    Args:
+        history (ChatHistory): An object containing the chat history with messages.
+
+    Returns:
+        str: A formatted string representing the chat history, with special tokens indicating
+             the role of each message (system, user, assistant) and the type of content (text, image).
+    """
+    phi4mm_input = ""
+    image_count = 0
+    audio_count = 0
+    for message in history.messages:
+        if message.role == AuthorRole.SYSTEM:
+            phi4mm_input += f"<|system|>\n{message.content}<|end|>\n"
+        if message.role == AuthorRole.USER:
+            for item in message.items:
+                if isinstance(item, TextContent):
+                    phi4mm_input += f"<|user|>\n{item.text}<|end|>\n"
+                # Currently only one image is supported in Onnx
+                if isinstance(item, ImageContent):
+                    phi4mm_input += f"<|image_{image_count + 1}|>\n"
+                    image_count += 1
+                if isinstance(item, AudioContent):
+                    phi4mm_input += f"<|audio_{audio_count + 1}|>\n"
+                    audio_count += 1
+        if message.role == AuthorRole.ASSISTANT:
+            phi4mm_input += f"<|assistant|>\n{message.content}<|end|>\n"
+    phi4mm_input += "<|assistant|>\n"
+    return phi4mm_input
 
 
 def gemma_template(history: ChatHistory) -> str:
