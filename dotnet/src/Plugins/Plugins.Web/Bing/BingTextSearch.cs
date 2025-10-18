@@ -227,7 +227,10 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             if (bingFilterName != null && value != null)
             {
                 // Convert boolean values to lowercase strings for Bing API compatibility
+                // CA1308: Using ToLowerInvariant() is intentional here as Bing API expects boolean values in lowercase format (true/false)
+#pragma warning disable CA1308 // Normalize strings to uppercase
                 string stringValue = value is bool boolValue ? boolValue.ToString().ToLowerInvariant() : value.ToString() ?? string.Empty;
+#pragma warning restore CA1308 // Normalize strings to uppercase
 
                 if (isNegated)
                 {
