@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Embeddings;
@@ -68,6 +69,25 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._embeddingClient.GenerateEmbeddingsAsync(data, cancellationToken);
+        return this._embeddingClient.GenerateEmbeddingsAsync(data, null, cancellationToken);
     }
+
+    /// <summary>
+    /// Generates embeddings for the specified input text, allowing additional configuration
+    /// via <see cref="EmbeddingGenerationOptions"/> (e.g., specifying the Google task type).
+    /// </summary>
+    /// <param name="data">The input text collection to generate embeddings for.</param>
+    /// <param name="options">Embedding generation options (e.g., task_type).</param>
+    /// <param name="kernel">Optional Kernel instance.</param>
+    /// <param name="cancellationToken">Token for cancelling the request.</param>
+    /// <returns>A list of generated embeddings.</returns>
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        EmbeddingGenerationOptions? options,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this._embeddingClient.GenerateEmbeddingsAsync(data, options, cancellationToken);
+    }
+
 }

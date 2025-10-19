@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Xunit;
@@ -83,4 +84,25 @@ public sealed class GoogleAIEmbeddingRequestTests
         // Assert
         Assert.Contains($"{DimensionalityJsonPropertyName}:{Dimensions}", json);
     }
+
+    [Fact]
+    public void FromDataShouldIncludeTaskTypeWhenProvided()
+    {
+        // Arrange
+        var input = new[] { "This is a retrieval document." };
+        var modelId = "embedding-001";
+        var dimensions = 1024;
+        var taskType = "RETRIEVAL_DOCUMENT";
+
+        // Act
+        var request = GoogleAIEmbeddingRequest.FromData(input, modelId, dimensions, taskType);
+
+        // Serialize to JSON (this is what would be sent in the HTTP request)
+        var json = System.Text.Json.JsonSerializer.Serialize(request);
+
+        // Assert
+        Assert.Contains("\"taskType\":\"RETRIEVAL_DOCUMENT\"", json);
+        Assert.Contains("\"model\":\"models/embedding-001\"", json);
+    }
+
 }
