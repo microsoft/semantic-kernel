@@ -25,7 +25,7 @@ internal static class KernelContentExtensions
 
     internal static ResponseContentPart ToResponseContentPart(this TextContent content, AuthorRole? role = null)
     {
-        if (role is not null && role == AuthorRole.Assistant)
+        if (role == AuthorRole.Assistant)
         {
             return ResponseContentPart.CreateOutputTextPart(content.Text, []);
         }
