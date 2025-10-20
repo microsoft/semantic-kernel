@@ -112,7 +112,9 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTime):
                         property.SetValue(record, reader.GetDateTime(ordinal)); // DATETIME2
                         break;
-
+                    case var t when t == typeof(DateTimeOffset):
+                        property.SetValue(record, reader.GetDateTimeOffset(ordinal)); // DATETIMEOFFSET
+                        break;
 #if NET
                     case var t when t == typeof(DateOnly):
                         property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal)); // DATE

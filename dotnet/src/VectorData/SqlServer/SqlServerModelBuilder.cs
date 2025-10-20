@@ -49,6 +49,7 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(byte[]) // VARBINARY
             || type == typeof(bool) // BIT
             || type == typeof(DateTime) // DATETIME2
+            || type == typeof(DateTimeOffset) // DATETIMEOFFSET
 #if NET
             || type == typeof(DateOnly) // DATE
                                         // We don't support mapping TimeSpan to TIME on purpose

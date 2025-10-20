@@ -16,7 +16,6 @@ public class SqlServerDataTypeTests(SqlServerDataTypeTests.Fixture fixture)
 
         public override Type[] UnsupportedDefaultTypes { get; } =
         [
-            typeof(DateTimeOffset),
             typeof(string[])
         ];
     }

@@ -641,6 +641,7 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
             Type t when t == typeof(bool) => "BIT",
             Type t when t == typeof(DateTime) => "DATETIME2",
+            Type t when t == typeof(DateTimeOffset) => "DATETIMEOFFSET",
 #if NET
             Type t when t == typeof(DateOnly) => "DATE",
             Type t when t == typeof(TimeOnly) => "TIME",
