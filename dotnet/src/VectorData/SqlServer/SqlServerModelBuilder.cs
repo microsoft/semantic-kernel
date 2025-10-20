@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
@@ -33,7 +34,7 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, short, int, long, double, float, decimal, bool, DateTime, DateTimeOffset, DateOnly, TimeOnly, Guid, byte[]";
+        supportedTypes = "string, short, int, long, double, float, decimal, bool, DateTime, DateTimeOffset, DateOnly, TimeOnly, Guid, byte[], string[], List<string>";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -58,7 +59,11 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 #endif
             || type == typeof(decimal) // DECIMAL
             || type == typeof(double) // FLOAT
-            || type == typeof(float); // REAL
+            || type == typeof(float) // REAL
+
+            // We map string[] to the SQL Server 2025 JSON data type (anyone using vector search is already using 2025)
+            || type == typeof(string[]) // JSON
+            || type == typeof(List<string>); // JSON
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
@@ -123,6 +125,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
                         break;
 #endif
+
+                    // We map string[] and List<string> properties to SQL Server JSON columns, so deserialize from JSON here.
+                    case var t when t == typeof(string[]):
+                        property.SetValue(record, JsonSerializer.Deserialize<string[]>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.StringArray));
+                        break;
+                    case var t when t == typeof(List<string>):
+                        property.SetValue(record, JsonSerializer.Deserialize<List<string>>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.ListString));
+                        break;
 
                     default:
                         throw new NotSupportedException($"Unsupported type '{property.Type.Name}' for property '{property.ModelName}'.");
