@@ -571,10 +571,11 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         {
             foreach (var image in searchResponse.Images!)
             {
-                // For images, create a basic TavilyWebPage representation
+                //For images, create a basic TavilyWebPage representation
+                Uri? imageUri = string.IsNullOrWhiteSpace(image.Url) ? null : new Uri(image.Url);
                 yield return new TavilyWebPage(
                     title: "Image Result",
-                    url: image.Url,
+                    url: imageUri,
                     content: image.Description ?? string.Empty,
                     score: 0.0
                 );
