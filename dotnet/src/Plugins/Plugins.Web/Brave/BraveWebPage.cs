@@ -18,7 +18,7 @@ public sealed class BraveWebPage
     /// <summary>
     /// Gets or sets the URL of the web page.
     /// </summary>
-    public string? Url { get; set; }
+    public Uri? Url { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the web page.
@@ -118,7 +118,7 @@ public sealed class BraveWebPage
     /// <param name="url">The URL of the web page.</param>
     /// <param name="description">The description of the web page.</param>
     /// <param name="type">The type of the search result.</param>
-    public BraveWebPage(string? title, string? url, string? description, string? type = null)
+    public BraveWebPage(string? title, Uri? url, string? description, string? type = null)
     {
         this.Title = title;
         this.Url = url;
@@ -133,7 +133,8 @@ public sealed class BraveWebPage
     /// <returns>A new BraveWebPage instance.</returns>
     internal static BraveWebPage FromWebResult(BraveWebResult result)
     {
-        return new BraveWebPage(result.Title, result.Url, result.Description, result.Type)
+        Uri? url = string.IsNullOrWhiteSpace(result.Url) ? null : new Uri(result.Url);
+        return new BraveWebPage(result.Title, url, result.Description, result.Type)
         {
             Age = result.Age,
             PageAge = result.PageAge,

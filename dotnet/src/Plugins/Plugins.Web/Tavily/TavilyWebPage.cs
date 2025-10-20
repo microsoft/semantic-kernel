@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
 /// <summary>
@@ -16,7 +18,7 @@ public sealed class TavilyWebPage
     /// <summary>
     /// Gets or sets the URL of the web page.
     /// </summary>
-    public string? Url { get; set; }
+    public Uri? Url { get; set; }
 
     /// <summary>
     /// Gets or sets the content/description of the web page.
@@ -78,7 +80,7 @@ public sealed class TavilyWebPage
     /// <param name="content">The content/description of the web page.</param>
     /// <param name="score">The relevance score.</param>
     /// <param name="rawContent">The raw content (optional).</param>
-    public TavilyWebPage(string? title, string? url, string? content, double score, string? rawContent = null)
+    public TavilyWebPage(string? title, Uri? url, string? content, double score, string? rawContent = null)
     {
         this.Title = title;
         this.Url = url;
@@ -94,6 +96,7 @@ public sealed class TavilyWebPage
     /// <returns>A new TavilyWebPage instance.</returns>
     internal static TavilyWebPage FromSearchResult(TavilySearchResult result)
     {
-        return new TavilyWebPage(result.Title, result.Url, result.Content, result.Score, result.RawContent);
+        Uri? url = string.IsNullOrWhiteSpace(result.Url) ? null : new Uri(result.Url);
+        return new TavilyWebPage(result.Title, url, result.Content, result.Score, result.RawContent);
     }
 }
