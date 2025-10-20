@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
-    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+    internal const string SupportedVectorTypes = "SqlVector<float>, ReadOnlyMemory<float>, Embedding<float>, float[]";
 
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
@@ -69,6 +70,9 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
         return type == typeof(ReadOnlyMemory<float>)
             || type == typeof(ReadOnlyMemory<float>?)
             || type == typeof(Embedding<float>)
-            || type == typeof(float[]);
+            || type == typeof(float[])
+            // SqlClient-specific type representing a vector
+            || type == typeof(SqlVector<float>)
+            || type == typeof(SqlVector<float>?);
     }
 }

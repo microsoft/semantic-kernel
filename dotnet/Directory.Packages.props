@@ -181,7 +181,7 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
