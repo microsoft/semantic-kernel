@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using MAAI = Microsoft.Agents.AI;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -78,7 +79,20 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         {
             OnIntermediateMessage = (msg) =>
             {
-                responseMessages.Add(msg.ToChatMessage());
+                // As a backwards compatibility measure, ChatCompletionService inserts the function result
+                // as a text message followed by a function result message. If we detect that pattern,
+                // we must remove the text message to avoid the function result showing up in the user output.
+                var chatMessage = msg.ToChatMessage();
+                if (chatMessage.Role == ChatRole.Tool
+                    && chatMessage.Contents.Count == 2
+                    && chatMessage.Contents[0] is MEAI.TextContent textContent
+                    && chatMessage.Contents[1] is MEAI.FunctionResultContent functionResultContent
+                    && textContent.Text == functionResultContent.Result?.ToString())
+                {
+                    chatMessage.Contents.RemoveAt(0);
+                }
+
+                responseMessages.Add(chatMessage);
                 return Task.CompletedTask;
             }
         };
@@ -88,8 +102,6 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
         {
             lastResponseItem = responseItem;
-            lastResponseMessage = responseItem.Message.ToChatMessage();
-            responseMessages.Add(lastResponseMessage);
         }
 
         return new MAAI.AgentRunResponse(responseMessages)

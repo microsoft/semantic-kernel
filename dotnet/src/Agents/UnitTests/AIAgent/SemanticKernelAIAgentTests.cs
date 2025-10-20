@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
 using MAAI = Microsoft.Agents.AI;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace SemanticKernel.Agents.UnitTests.AIAgent;
 
@@ -196,12 +198,17 @@ public sealed class SemanticKernelAIAgentTests
             It.IsAny<AgentThread>(),
             It.IsAny<AgentInvokeOptions>(),
             It.IsAny<CancellationToken>()))
-            .Returns(GetAsyncEnumerable());
+            .Returns(MockInvokeAsync);
         var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
 
-        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetAsyncEnumerable()
+        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> MockInvokeAsync(ICollection<ChatMessageContent> messages,
+            AgentThread? thread = null,
+            AgentInvokeOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            yield return new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
+            var message = new ChatMessageContent(AuthorRole.Assistant, "Final response");
+            await options!.OnIntermediateMessage!.Invoke(message);
+            yield return new AgentResponseItem<ChatMessageContent>(message, innerThread);
         }
 
         var thread = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
@@ -252,6 +259,85 @@ public sealed class SemanticKernelAIAgentTests
             innerThread,
             It.IsAny<AgentInvokeOptions>(),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunAsync_RemovesDuplicateTextContentInToolMessage()
+    {
+        // Arrange
+        var innerThread = Mock.Of<AgentThread>();
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => innerThread, (e, o) => innerThread, (t, o) => default);
+
+        agentMock.Setup(a => a.InvokeAsync(
+            It.IsAny<List<ChatMessageContent>>(),
+            It.IsAny<AgentThread>(),
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()))
+            .Returns((List<ChatMessageContent> msgs, AgentThread thread, AgentInvokeOptions opts, CancellationToken ct) => GetEnumerableWithDuplicateToolMessage(thread, opts));
+
+        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetEnumerableWithDuplicateToolMessage(AgentThread thread, AgentInvokeOptions opts)
+        {
+            // Tool message with duplicate text + function result
+            var toolMessage = new ChatMessageContent(AuthorRole.Tool, "RESULT");
+            toolMessage.Items.Add(new FunctionResultContent(functionName: "Fn", result: "RESULT"));
+            await opts.OnIntermediateMessage!.Invoke(toolMessage);
+
+            // Final assistant message
+            var final = new ChatMessageContent(AuthorRole.Assistant, "done");
+            yield return new AgentResponseItem<ChatMessageContent>(final, thread);
+        }
+
+        var threadWrapper = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+
+        // Act
+        var response = await adapter.RunAsync("input", threadWrapper);
+
+        // Assert
+        // Use reflection to inspect Messages collection inside AgentRunResponse
+        var messages = response.Messages;
+        var contents = messages.First().Contents;
+        Assert.Single(contents); // Duplicate text content should have been removed
+        Assert.IsType<MEAI.FunctionResultContent>(contents.First());
+    }
+
+    [Fact]
+    public async Task RunAsync_DoesNotRemoveTextContentWhenDifferent()
+    {
+        // Arrange
+        var innerThread = Mock.Of<AgentThread>();
+        var agentMock = new Mock<Agent>();
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => innerThread, (e, o) => innerThread, (t, o) => default);
+
+        agentMock.Setup(a => a.InvokeAsync(
+            It.IsAny<List<ChatMessageContent>>(),
+            It.IsAny<AgentThread>(),
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()))
+            .Returns((List<ChatMessageContent> msgs, AgentThread thread, AgentInvokeOptions opts, CancellationToken ct) => GetEnumerableWithNonDuplicateToolMessage(thread, opts));
+
+        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetEnumerableWithNonDuplicateToolMessage(AgentThread thread, AgentInvokeOptions opts)
+        {
+            // Tool message with text + function result differing
+            var toolMessage = new ChatMessageContent(AuthorRole.Tool, "TEXT");
+            toolMessage.Items.Add(new FunctionResultContent(functionName: "Fn", result: "DIFFERENT"));
+            await opts.OnIntermediateMessage!.Invoke(toolMessage);
+
+            var final = new ChatMessageContent(AuthorRole.Assistant, "done");
+            yield return new AgentResponseItem<ChatMessageContent>(final, thread);
+        }
+
+        var threadWrapper = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+
+        // Act
+        var response = await adapter.RunAsync("input", threadWrapper);
+
+        // Assert
+        var messages = response.Messages;
+        var contents = messages.First().Contents;
+        Assert.Equal(2, contents.Count); // Both contents should remain
+        Assert.IsType<MEAI.TextContent>(contents.First());
+        Assert.IsType<MEAI.FunctionResultContent>(contents.Last());
     }
 
     [Fact]
