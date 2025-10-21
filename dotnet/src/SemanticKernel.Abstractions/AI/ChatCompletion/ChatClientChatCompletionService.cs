@@ -91,6 +91,9 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         ChatRole? role = null;
 
+        List<Microsoft.Extensions.AI.FunctionCallContent> functionCalls = [];
+        Dictionary<string, Microsoft.Extensions.AI.FunctionResultContent> functionResults = [];
+
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
             chatHistory.ToChatMessageList(),
             executionSettings.ToChatOptions(kernel),
@@ -103,17 +106,27 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             {
                 if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
                 {
-                    chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
+                    functionCalls.Add(functionCallContent);
                     continue;
                 }
 
                 if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
                 {
-                    chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
+                    functionResults[functionResultContent.CallId] = functionResultContent;
                 }
             }
 
             yield return update.ToStreamingChatMessageContent();
+        }
+
+        // Tool result messages must be added immediately after the corresponding tool call to preserve correct conversation order.
+        foreach (var functionCallContent in functionCalls)
+        {
+            chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
+            if (functionResults.TryGetValue(functionCallContent.CallId, out var functionResultContent))
+            {
+                chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
+            }
         }
     }
 }
