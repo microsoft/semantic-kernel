@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Xunit;
