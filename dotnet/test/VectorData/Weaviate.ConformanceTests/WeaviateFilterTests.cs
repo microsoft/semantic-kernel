@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Weaviate.ConformanceTests.Support;
 using Xunit;
 
-namespace Weaviate.ConformanceTests.Filter;
+namespace Weaviate.ConformanceTests;
 
-public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<Guid>(fixture), IClassFixture<WeaviateBasicFilterTests.Fixture>
+public class WeaviateFilterTests(WeaviateFilterTests.Fixture fixture)
+    : FilterTests<Guid>(fixture), IClassFixture<WeaviateFilterTests.Fixture>
 {
     #region Filter by null
 
@@ -60,7 +60,7 @@ public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
 
     #endregion
 
-    public new class Fixture : BasicFilterTests<Guid>.Fixture
+    public new class Fixture : FilterTests<Guid>.Fixture
     {
         public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
     }

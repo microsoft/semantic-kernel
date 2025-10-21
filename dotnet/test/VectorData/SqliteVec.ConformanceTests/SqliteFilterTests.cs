@@ -2,17 +2,17 @@
 
 using Microsoft.Extensions.VectorData;
 using SqliteVec.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
-namespace SqliteVec.ConformanceTests.Filter;
+namespace SqliteVec.ConformanceTests;
 
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 
-public class SqliteBasicFilterTests(SqliteBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<long>(fixture), IClassFixture<SqliteBasicFilterTests.Fixture>
+public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
+    : FilterTests<long>(fixture), IClassFixture<SqliteFilterTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -53,7 +53,7 @@ public class SqliteBasicFilterTests(SqliteBasicFilterTests.Fixture fixture)
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
 
-    public new class Fixture : BasicFilterTests<long>.Fixture
+    public new class Fixture : FilterTests<long>.Fixture
     {
         public override TestStore TestStore => SqliteTestStore.Instance;
 

@@ -10,9 +10,9 @@ using Xunit;
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 #pragma warning disable RCS1098 // Constant values should be placed on right side of comparisons
 
-namespace VectorData.ConformanceTests.Filter;
+namespace VectorData.ConformanceTests;
 
-public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixture)
+public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
     where TKey : notnull
 {
     #region Equality
@@ -46,8 +46,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
         if (fixture.TestDynamic)
         {
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => this.GetDynamicRecords(r => r["String = \"not\"; DROP TABLE FilterTests;"] == "",
-            fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3])));
+                async () => await fixture.DynamicCollection.SearchAsync(
+                    new ReadOnlyMemory<float>([1, 2, 3]),
+                    top: 1,
+                    new() { Filter = r => r["String = \"not\"; DROP TABLE FilterTests;"] == "" }).ToListAsync());
         }
     }
 
@@ -472,22 +474,6 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Legacy filter support
 
-    protected virtual async Task<List<FilterRecord>> GetRecords(
-        Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.Collection.SearchAsync(
-                vector,
-                top: top,
-                new() { Filter = filter })
-            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
-
-    protected virtual async Task<List<Dictionary<string, object?>>> GetDynamicRecords(
-        Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.DynamicCollection.SearchAsync(
-                vector,
-                top: top,
-                new() { Filter = dynamicFilter })
-            .Select(r => r.Record).OrderBy(r => r[nameof(FilterRecord.Key)]).ToListAsync();
-
     protected virtual async Task TestFilterAsync(
         Expression<Func<FilterRecord, bool>> filter,
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter,
@@ -516,7 +502,13 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         // Execute the query against the vector store, once using the strongly typed filter
         // and once using the dynamic filter
-        var actual = await this.GetRecords(filter, fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3]));
+        var actual = await fixture.Collection.SearchAsync(
+                new ReadOnlyMemory<float>([1, 2, 3]),
+                top: fixture.TestData.Count,
+                new() { Filter = filter })
+            .Select(r => r.Record)
+            .OrderBy(r => r.Key)
+            .ToListAsync();
 
         if (actual.Count != expected.Count)
         {
@@ -530,7 +522,13 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (fixture.TestDynamic)
         {
-            var dynamicActual = await this.GetDynamicRecords(dynamicFilter, fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3]));
+            var dynamicActual = await fixture.DynamicCollection.SearchAsync(
+                    new ReadOnlyMemory<float>([1, 2, 3]),
+                    top: fixture.TestData.Count,
+                    new() { Filter = dynamicFilter })
+                .Select(r => r.Record)
+                .OrderBy(r => r[nameof(FilterRecord.Key)])
+                .ToListAsync();
 
             if (dynamicActual.Count != expected.Count)
             {
@@ -597,11 +595,6 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         public virtual string SpecialCharactersText => """>with $om[ specia]"chara<ters'and\stuff""";
 
-        protected virtual ReadOnlyMemory<float> GetVector(int count)
-            // All records have the same vector - this fixture is about testing criteria filtering only
-            // Derived types may override this to provide different vectors for different records.
-            => new(Enumerable.Range(1, count).Select(i => (float)i).ToArray());
-
         public virtual VectorStoreCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
 
         public virtual bool TestDynamic => true;
@@ -639,6 +632,9 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         protected override List<FilterRecord> BuildTestData()
         {
+            // All records have the same vector - this fixture is about testing criteria filtering only
+            var vector = new ReadOnlyMemory<float>([1, 2, 3]);
+
             return
             [
                 new()
@@ -650,7 +646,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 80,
                     StringArray = ["x", "y"],
                     StringList = ["x", "y"],
-                    Vector = this.GetVector(3)
+                    Vector = vector
                 },
                 new()
                 {
@@ -661,7 +657,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 90,
                     StringArray = ["a", "b"],
                     StringList = ["a", "b"],
-                    Vector = this.GetVector(3)
+                    Vector = vector
                 },
                 new()
                 {
@@ -672,7 +668,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 9,
                     StringArray = ["x"],
                     StringList = ["x"],
-                    Vector = this.GetVector(3)
+                    Vector = vector
                 },
                 new()
                 {
@@ -683,7 +679,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 100,
                     StringArray = ["x", "y", "z"],
                     StringList = ["x", "y", "z"],
-                    Vector = this.GetVector(3)
+                    Vector = vector
                 },
                 new()
                 {
@@ -694,7 +690,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Int2 = 101,
                     StringArray = ["y", "z"],
                     StringList = ["y", "z"],
-                    Vector = this.GetVector(3)
+                    Vector = vector
                 }
             ];
         }

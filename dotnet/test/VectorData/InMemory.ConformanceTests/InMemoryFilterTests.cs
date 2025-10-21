@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using InMemory.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Xunit;
 
-namespace InMemory.ConformanceTests.Filter;
+namespace InMemory.ConformanceTests;
 
-public class InMemoryBasicFilterTests(InMemoryBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<int>(fixture), IClassFixture<InMemoryBasicFilterTests.Fixture>
+public class InMemoryFilterTests(InMemoryFilterTests.Fixture fixture)
+    : FilterTests<int>(fixture), IClassFixture<InMemoryFilterTests.Fixture>
 {
-    public new class Fixture : BasicFilterTests<int>.Fixture
+    public new class Fixture : FilterTests<int>.Fixture
     {
         public override TestStore TestStore => InMemoryTestStore.Instance;
 

@@ -3,15 +3,15 @@
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Redis.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Redis.ConformanceTests.Filter;
+namespace Redis.ConformanceTests;
 
-public abstract class RedisBasicFilterTests(BasicFilterTests<string>.Fixture fixture)
-    : BasicFilterTests<string>(fixture)
+public abstract class RedisFilterTests(FilterTests<string>.Fixture fixture)
+    : FilterTests<string>(fixture)
 {
     #region Equality with null
 
@@ -69,9 +69,9 @@ public abstract class RedisBasicFilterTests(BasicFilterTests<string>.Fixture fix
 }
 
 public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterTests.Fixture fixture)
-    : RedisBasicFilterTests(fixture), IClassFixture<RedisJsonCollectionBasicFilterTests.Fixture>
+    : RedisFilterTests(fixture), IClassFixture<RedisJsonCollectionBasicFilterTests.Fixture>
 {
-    public new class Fixture : BasicFilterTests<string>.Fixture
+    public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
@@ -101,7 +101,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
 }
 
 public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicFilterTests.Fixture fixture)
-    : RedisBasicFilterTests(fixture), IClassFixture<RedisHashSetCollectionBasicFilterTests.Fixture>
+    : RedisFilterTests(fixture), IClassFixture<RedisHashSetCollectionBasicFilterTests.Fixture>
 {
     // Null values are not supported in Redis HashSet
     public override Task Equal_with_null_reference_type()
@@ -144,7 +144,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_List());
 
-    public new class Fixture : BasicFilterTests<string>.Fixture
+    public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 

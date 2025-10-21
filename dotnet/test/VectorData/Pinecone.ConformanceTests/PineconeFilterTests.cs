@@ -1,24 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using CosmosMongoDB.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using Pinecone.ConformanceTests.Support;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace CosmosMongoDB.ConformanceTests.Filter;
+namespace Pinecone.ConformanceTests;
 
-public class CosmosMongoBasicQueryTests(CosmosMongoBasicQueryTests.Fixture fixture)
-    : BasicQueryTests<string>(fixture), IClassFixture<CosmosMongoBasicQueryTests.Fixture>
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+
+public class PineconeFilterTests(PineconeFilterTests.Fixture fixture)
+    : FilterTests<string>(fixture), IClassFixture<PineconeFilterTests.Fixture>
 {
-    // Specialized MongoDB syntax for NOT over Contains ($nin)
+    // Specialized Pinecone syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(
             r => !new[] { 8, 10 }.Contains(r.Int),
-            r => !new[] { 8, 10 }.Contains((int)r["Int"]!));
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]));
 
-    // MongoDB currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
+    #region Null checking
+
+    // Pinecone currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
     public override Task Equal_with_null_reference_type()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_with_null_reference_type());
 
@@ -34,7 +38,11 @@ public class CosmosMongoBasicQueryTests(CosmosMongoBasicQueryTests.Fixture fixtu
     public override Task Equal_int_property_with_null_nullable_int()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_int_property_with_null_nullable_int());
 
-    // MongoDB currently doesn't support NOT in vector search pre-filters
+    #endregion
+
+    #region Not
+
+    // Pinecone currently doesn't support NOT in vector search pre-filters
     // (https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter)
     public override Task Not_over_And()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_And());
@@ -42,17 +50,28 @@ public class CosmosMongoBasicQueryTests(CosmosMongoBasicQueryTests.Fixture fixtu
     public override Task Not_over_Or()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_Or());
 
+    #endregion
+
     public override Task Contains_over_field_string_array()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_array());
 
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_List());
 
-    public new class Fixture : BasicQueryTests<string>.QueryFixture
-    {
-        public override TestStore TestStore => CosmosMongoTestStore.Instance;
+    // AnyTagEqualTo not (currently) supported on Pinecone
+    [Obsolete("Legacy filter support")]
+    public override Task Legacy_AnyTagEqualTo_array()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_array());
 
-        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;
-        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
+    [Obsolete("Legacy filter support")]
+    public override Task Legacy_AnyTagEqualTo_List()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
+
+    public new class Fixture : FilterTests<string>.Fixture
+    {
+        public override TestStore TestStore => PineconeTestStore.Instance;
+
+        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
+        public override string CollectionName => "filter-tests";
     }
 }

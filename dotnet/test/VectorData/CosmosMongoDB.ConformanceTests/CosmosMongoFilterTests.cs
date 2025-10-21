@@ -1,28 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Pinecone.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using CosmosMongoDB.ConformanceTests.Support;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace Pinecone.ConformanceTests.Filter;
+namespace CosmosMongoDB.ConformanceTests;
 
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-
-public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<string>(fixture), IClassFixture<PineconeBasicFilterTests.Fixture>
+public class CosmosMongoFilterTests(CosmosMongoFilterTests.Fixture fixture)
+    : FilterTests<string>(fixture), IClassFixture<CosmosMongoFilterTests.Fixture>
 {
-    // Specialized Pinecone syntax for NOT over Contains ($nin)
+    // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(
             r => !new[] { 8, 10 }.Contains(r.Int),
-            r => !new[] { 8, 10 }.Contains((int)r["Int"]));
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]!));
 
     #region Null checking
 
-    // Pinecone currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
+    // MongoDB currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
     public override Task Equal_with_null_reference_type()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_with_null_reference_type());
 
@@ -42,7 +40,7 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
 
     #region Not
 
-    // Pinecone currently doesn't support NOT in vector search pre-filters
+    // MongoDB currently doesn't support NOT in vector search pre-filters
     // (https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter)
     public override Task Not_over_And()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_And());
@@ -58,7 +56,7 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_List());
 
-    // AnyTagEqualTo not (currently) supported on Pinecone
+    // AnyTagEqualTo not (currently) supported on SQLite
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_array());
@@ -67,11 +65,11 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
 
-    public new class Fixture : BasicFilterTests<string>.Fixture
+    public new class Fixture : FilterTests<string>.Fixture
     {
-        public override TestStore TestStore => PineconeTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
 
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "filter-tests";
+        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;
+        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
     }
 }

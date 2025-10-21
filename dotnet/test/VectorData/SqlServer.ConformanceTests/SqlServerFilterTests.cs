@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using SqlServer.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
-namespace SqlServer.ConformanceTests.Filter;
+namespace SqlServer.ConformanceTests;
 
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 
-public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<int>(fixture), IClassFixture<SqlServerBasicFilterTests.Fixture>
+public class SqlServerFilterTests(SqlServerFilterTests.Fixture fixture)
+    : FilterTests<int>(fixture), IClassFixture<SqlServerFilterTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -51,7 +51,7 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
     [Obsolete("Legacy filters are not supported")]
     public override Task Legacy_equality() => throw new NotSupportedException();
 
-    public new class Fixture : BasicFilterTests<int>.Fixture
+    public new class Fixture : FilterTests<int>.Fixture
     {
         private static readonly string s_uniqueName = Guid.NewGuid().ToString();
 

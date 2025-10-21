@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using MongoDB.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace MongoDB.ConformanceTests.Filter;
+namespace MongoDB.ConformanceTests;
 
-public class MongoBasicFilterTests(MongoBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<string>(fixture), IClassFixture<MongoBasicFilterTests.Fixture>
+public class MongoFilterTests(MongoFilterTests.Fixture fixture)
+    : FilterTests<string>(fixture), IClassFixture<MongoFilterTests.Fixture>
 {
     // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
@@ -65,7 +65,7 @@ public class MongoBasicFilterTests(MongoBasicFilterTests.Fixture fixture)
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
 
-    public new class Fixture : BasicFilterTests<string>.Fixture
+    public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => MongoTestStore.Instance;
     }

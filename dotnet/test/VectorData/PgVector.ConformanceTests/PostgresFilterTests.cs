@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using PgVector.ConformanceTests.Support;
-using VectorData.ConformanceTests.Filter;
+using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
-namespace PgVector.ConformanceTests.Filter;
+namespace PgVector.ConformanceTests;
 
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 
-public class PostgresBasicFilterTests(PostgresBasicFilterTests.Fixture fixture)
-    : BasicFilterTests<int>(fixture), IClassFixture<PostgresBasicFilterTests.Fixture>
+public class PostgresFilterTests(PostgresFilterTests.Fixture fixture)
+    : FilterTests<int>(fixture), IClassFixture<PostgresFilterTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -39,7 +39,7 @@ public class PostgresBasicFilterTests(PostgresBasicFilterTests.Fixture fixture)
     public override Task Legacy_AnyTagEqualTo_array()
         => Assert.ThrowsAsync<ArgumentException>(() => base.Legacy_AnyTagEqualTo_array());
 
-    public new class Fixture : BasicFilterTests<int>.Fixture
+    public new class Fixture : FilterTests<int>.Fixture
     {
         public override TestStore TestStore => PostgresTestStore.Instance;
     }
