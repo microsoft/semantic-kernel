@@ -694,7 +694,9 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 if (itemType == typeof(string))
                 {
                     // Look for Contains method: collection.Contains(value)
+#pragma warning disable IL2075 // GetMethod on property type - acceptable for reflection-based expression building
                     var containsMethod = propertyType.GetMethod("Contains", new[] { typeof(string) });
+#pragma warning restore IL2075
                     if (containsMethod != null)
                     {
                         var constant = Expression.Constant(value);
@@ -704,9 +706,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                     // Fallback to LINQ Contains for IEnumerable<string>
                     if (typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(propertyType))
                     {
+#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
                         var linqContainsMethod = typeof(Enumerable).GetMethods()
                             .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
                             .FirstOrDefault()?.MakeGenericMethod(typeof(string));
+#pragma warning restore IL2060
 
                         if (linqContainsMethod != null)
                         {
@@ -719,9 +723,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             // Support string arrays
             else if (propertyType == typeof(string[]))
             {
+#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
                 var linqContainsMethod = typeof(Enumerable).GetMethods()
                     .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
                     .FirstOrDefault()?.MakeGenericMethod(typeof(string));
+#pragma warning restore IL2060
 
                 if (linqContainsMethod != null)
                 {
