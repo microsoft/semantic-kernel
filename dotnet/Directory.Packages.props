@@ -81,7 +81,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.10" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.2" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
@@ -138,6 +138,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.10.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.11" />
@@ -230,5 +231,7 @@
     <PackageVersion Include="Spectre.Console" Version="0.49.1" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.49.1" />
     <PackageVersion Include="Spectre.Console.Json" Version="0.49.1" />
+    <PackageVersion Include="NAudio" Version="2.2.1" />
+    <PackageVersion Include="WebRtcVadSharp" Version="1.3.2" />
   </ItemGroup>
 </Project>
