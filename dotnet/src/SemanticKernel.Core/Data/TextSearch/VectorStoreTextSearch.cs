@@ -174,6 +174,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("Legacy TextSearchFilter may require dynamic LINQ expression compilation for filter clauses. Use ITextSearch<TRecord> with TextSearchOptions<TRecord> for AOT-compatible filtering.")]
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -182,6 +183,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("Legacy TextSearchFilter may require dynamic LINQ expression compilation for filter clauses. Use ITextSearch<TRecord> with TextSearchOptions<TRecord> for AOT-compatible filtering.")]
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -190,6 +192,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("Legacy TextSearchFilter may require dynamic LINQ expression compilation for filter clauses. Use ITextSearch<TRecord> with TextSearchOptions<TRecord> for AOT-compatible filtering.")]
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -198,7 +201,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<string>> ITextSearch<TRecord>.SearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -207,7 +209,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<TextSearchResult>> ITextSearch<TRecord>.GetTextSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -216,7 +217,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("LINQ filtering over generic types requires dynamic code generation for expression trees.")]
     Task<KernelSearchResults<object>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
@@ -279,14 +279,20 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Search options with legacy TextSearchFilter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.ConvertTextSearchFilterToLinq(TextSearchFilter)")]
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
+
+        // Convert legacy TextSearchFilter to modern LINQ expression
+        Expression<Func<TRecord, bool>>? linqFilter = null;
+        if (searchOptions.Filter?.FilterClauses is not null)
+        {
+            linqFilter = ConvertTextSearchFilterToLinq(searchOptions.Filter);
+        }
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+            Filter = linqFilter,
             Skip = searchOptions.Skip,
         };
 
@@ -418,7 +424,8 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// </summary>
     /// <param name="filter">The legacy TextSearchFilter to convert.</param>
     /// <returns>A LINQ expression equivalent to the filter, or null if no filter is provided.</returns>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateSingleClauseExpression(FilterClause)")]
+    /// <exception cref="NotSupportedException">Thrown when the filter contains unsupported clause types.</exception>
+    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateClauseExpression(FilterClause, ParameterExpression)")]
     private static Expression<Func<TRecord, bool>>? ConvertTextSearchFilterToLinq(TextSearchFilter? filter)
     {
         if (filter?.FilterClauses == null || !filter.FilterClauses.Any())
@@ -427,237 +434,56 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
 
         var clauses = filter.FilterClauses.ToList();
+        var parameter = Expression.Parameter(typeof(TRecord), "record");
+        Expression? combinedExpression = null;
 
-        // Handle single clause cases first (most common and optimized)
-        if (clauses.Count == 1)
+        foreach (var clause in clauses)
         {
-            return CreateSingleClauseExpression(clauses[0]);
+            var clauseExpression = CreateClauseExpression(clause, parameter);
+            combinedExpression = combinedExpression == null
+                ? clauseExpression
+                : Expression.AndAlso(combinedExpression, clauseExpression);
         }
 
-        // Handle multiple clauses with AND logic
-        return CreateMultipleClauseExpression(clauses);
+        return combinedExpression == null
+            ? null
+            : Expression.Lambda<Func<TRecord, bool>>(combinedExpression, parameter);
     }
 
     /// <summary>
-    /// Creates a LINQ expression for a single filter clause.
+    /// Creates a LINQ expression for a filter clause.
     /// </summary>
     /// <param name="clause">The filter clause to convert.</param>
-    /// <returns>A LINQ expression equivalent to the clause, or null if conversion is not supported.</returns>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateAnyTagEqualToExpression(String, String)")]
-    private static Expression<Func<TRecord, bool>>? CreateSingleClauseExpression(FilterClause clause)
-    {
-        return clause switch
-        {
-            EqualToFilterClause equalityClause => CreateEqualityExpression(equalityClause.FieldName, equalityClause.Value),
-            AnyTagEqualToFilterClause anyTagClause => CreateAnyTagEqualToExpression(anyTagClause.FieldName, anyTagClause.Value),
-            _ => null // Unsupported clause type, fallback to legacy behavior
-        };
-    }
-
-    /// <summary>
-    /// Creates a LINQ expression combining multiple filter clauses with AND logic.
-    /// </summary>
-    /// <param name="clauses">The filter clauses to combine.</param>
-    /// <returns>A LINQ expression representing clause1 AND clause2 AND ... clauseN, or null if any clause cannot be converted.</returns>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateClauseBodyExpression(FilterClause, ParameterExpression)")]
-    private static Expression<Func<TRecord, bool>>? CreateMultipleClauseExpression(IList<FilterClause> clauses)
-    {
-        try
-        {
-            var parameter = Expression.Parameter(typeof(TRecord), "record");
-            Expression? combinedExpression = null;
-
-            foreach (var clause in clauses)
-            {
-                var clauseExpression = CreateClauseBodyExpression(clause, parameter);
-                if (clauseExpression == null)
-                {
-                    // If any clause cannot be converted, return null for fallback
-                    return null;
-                }
-
-                combinedExpression = combinedExpression == null
-                    ? clauseExpression
-                    : Expression.AndAlso(combinedExpression, clauseExpression);
-            }
-
-            return combinedExpression == null
-                ? null
-                : Expression.Lambda<Func<TRecord, bool>>(combinedExpression, parameter);
-        }
-        catch (ArgumentNullException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
-        catch (Exception)
-        {
-            return null;
-        }
-#pragma warning restore CA1031
-    }
-
-    /// <summary>
-    /// Creates the body expression for a filter clause using a shared parameter.
-    /// </summary>
-    /// <param name="clause">The filter clause to convert.</param>
-    /// <param name="parameter">The shared parameter expression.</param>
-    /// <returns>The body expression for the clause, or null if conversion is not supported.</returns>
+    /// <param name="parameter">The parameter expression for the record type.</param>
+    /// <returns>A LINQ expression equivalent to the clause.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the clause type is not supported.</exception>
     [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateAnyTagEqualToBodyExpression(String, String, ParameterExpression)")]
-    private static Expression? CreateClauseBodyExpression(FilterClause clause, ParameterExpression parameter)
-    {
-        return clause switch
+    private static Expression CreateClauseExpression(FilterClause clause, ParameterExpression parameter) =>
+        clause switch
         {
             EqualToFilterClause equalityClause => CreateEqualityBodyExpression(equalityClause.FieldName, equalityClause.Value, parameter),
             AnyTagEqualToFilterClause anyTagClause => CreateAnyTagEqualToBodyExpression(anyTagClause.FieldName, anyTagClause.Value, parameter),
-            _ => null
+            _ => throw new NotSupportedException($"Filter clause type '{clause.GetType().Name}' is not supported. Supported types are EqualToFilterClause and AnyTagEqualToFilterClause.")
         };
-    }
-
-    /// <summary>
-    /// Creates a LINQ equality expression for a given field name and value.
-    /// </summary>
-    /// <param name="fieldName">The property name to compare.</param>
-    /// <param name="value">The value to compare against.</param>
-    /// <returns>A LINQ expression representing fieldName == value.</returns>
-    private static Expression<Func<TRecord, bool>>? CreateEqualityExpression(string fieldName, object value)
-    {
-        try
-        {
-            var parameter = Expression.Parameter(typeof(TRecord), "record");
-            var bodyExpression = CreateEqualityBodyExpression(fieldName, value, parameter);
-
-            return bodyExpression == null
-                ? null
-                : Expression.Lambda<Func<TRecord, bool>>(bodyExpression, parameter);
-        }
-        catch (ArgumentNullException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
-        catch (Exception)
-        {
-            return null;
-        }
-#pragma warning restore CA1031
-    }
-
     /// <summary>
     /// Creates the body expression for equality comparison.
     /// </summary>
     /// <param name="fieldName">The property name to compare.</param>
     /// <param name="value">The value to compare against.</param>
     /// <param name="parameter">The parameter expression.</param>
-    /// <returns>The body expression for equality, or null if not supported.</returns>
-    private static BinaryExpression? CreateEqualityBodyExpression(string fieldName, object value, ParameterExpression parameter)
+    /// <returns>The body expression for equality.</returns>
+    /// <exception cref="ArgumentException">Thrown when the field name is invalid or the property doesn't exist.</exception>
+    private static BinaryExpression CreateEqualityBodyExpression(string fieldName, object value, ParameterExpression parameter)
     {
-        try
-        {
-            // Get property: record.FieldName
-            var property = typeof(TRecord).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
-            if (property == null)
-            {
-                return null;
-            }
+        // Get property: record.FieldName
+        var property = typeof(TRecord).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance)
+            ?? throw new ArgumentException($"Property '{fieldName}' not found on type '{typeof(TRecord).Name}'.", nameof(fieldName));
 
-            var propertyAccess = Expression.Property(parameter, property);
+        var propertyAccess = Expression.Property(parameter, property);
+        var constant = Expression.Constant(value);
 
-            // Create constant: value
-            var constant = Expression.Constant(value);
-
-            // Create equality: record.FieldName == value
-            return Expression.Equal(propertyAccess, constant);
-        }
-        catch (ArgumentNullException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-        catch (TargetParameterCountException)
-        {
-            // Lambda expression parameter mismatch
-            return null;
-        }
-        catch (MemberAccessException)
-        {
-            // Property access not permitted or member doesn't exist
-            return null;
-        }
-        catch (NotSupportedException)
-        {
-            // Operation not supported (e.g., byref-like parameters)
-            return null;
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
-        catch (Exception)
-        {
-            // Catch any other unexpected reflection or expression exceptions
-            // This maintains backward compatibility rather than throwing exceptions
-            return null;
-        }
-#pragma warning restore CA1031
-    }
-
-    /// <summary>
-    /// Creates a LINQ expression for AnyTagEqualTo filtering (collection contains).
-    /// </summary>
-    /// <param name="fieldName">The property name (must be a collection type).</param>
-    /// <param name="value">The value that the collection should contain.</param>
-    /// <returns>A LINQ expression representing collection.Contains(value).</returns>
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.CreateAnyTagEqualToBodyExpression(String, String, ParameterExpression)")]
-    private static Expression<Func<TRecord, bool>>? CreateAnyTagEqualToExpression(string fieldName, string value)
-    {
-        try
-        {
-            var parameter = Expression.Parameter(typeof(TRecord), "record");
-            var bodyExpression = CreateAnyTagEqualToBodyExpression(fieldName, value, parameter);
-
-            return bodyExpression == null
-                ? null
-                : Expression.Lambda<Func<TRecord, bool>>(bodyExpression, parameter);
-        }
-        catch (ArgumentNullException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
-        catch (Exception)
-        {
-            return null;
-        }
-#pragma warning restore CA1031
+        // Create equality: record.FieldName == value
+        return Expression.Equal(propertyAccess, constant);
     }
 
     /// <summary>
@@ -670,106 +496,74 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     [RequiresDynamicCode("Calls System.Reflection.MethodInfo.MakeGenericMethod(params Type[])")]
     [UnconditionalSuppressMessage("Trimming", "IL2075:UnrecognizedReflectionPattern", Justification = "This method uses reflection for LINQ expression building and is marked with RequiresDynamicCode to indicate AOT incompatibility.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:UnrecognizedReflectionPattern", Justification = "This method uses reflection for LINQ expression building and is marked with RequiresDynamicCode to indicate AOT incompatibility.")]
-    private static MethodCallExpression? CreateAnyTagEqualToBodyExpression(string fieldName, string value, ParameterExpression parameter)
+    private static MethodCallExpression CreateAnyTagEqualToBodyExpression(string fieldName, string value, ParameterExpression parameter)
     {
-        try
+        // Get property: record.FieldName
+        var property = typeof(TRecord).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+        if (property == null)
         {
-            // Get property: record.FieldName
-            var property = typeof(TRecord).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
-            if (property == null)
+            throw new ArgumentException($"Property '{fieldName}' not found on type '{typeof(TRecord).Name}'.");
+        }
+
+        var propertyAccess = Expression.Property(parameter, property);
+
+        // Check if property is a collection that supports Contains
+        var propertyType = property.PropertyType;
+
+        // Support ICollection<string>, List<string>, string[], IEnumerable<string>
+        if (propertyType.IsGenericType)
+        {
+            var itemType = propertyType.GetGenericArguments()[0];
+
+            // Only support string collections for AnyTagEqualTo
+            if (itemType == typeof(string))
             {
-                return null;
-            }
-
-            var propertyAccess = Expression.Property(parameter, property);
-
-            // Check if property is a collection that supports Contains
-            var propertyType = property.PropertyType;
-
-            // Support ICollection<string>, List<string>, string[], IEnumerable<string>
-            if (propertyType.IsGenericType)
-            {
-                var genericType = propertyType.GetGenericTypeDefinition();
-                var itemType = propertyType.GetGenericArguments()[0];
-
-                // Only support string collections for AnyTagEqualTo
-                if (itemType == typeof(string))
-                {
-                    // Look for Contains method: collection.Contains(value)
+                // Look for Contains method: collection.Contains(value)
 #pragma warning disable IL2075 // GetMethod on property type - acceptable for reflection-based expression building
-                    var containsMethod = propertyType.GetMethod("Contains", new[] { typeof(string) });
+                var containsMethod = propertyType.GetMethod("Contains", new[] { typeof(string) });
 #pragma warning restore IL2075
-                    if (containsMethod != null)
-                    {
-                        var constant = Expression.Constant(value);
-                        return Expression.Call(propertyAccess, containsMethod, constant);
-                    }
-
-                    // Fallback to LINQ Contains for IEnumerable<string>
-                    if (typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(propertyType))
-                    {
-#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
-                        var linqContainsMethod = typeof(Enumerable).GetMethods()
-                            .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
-                            .FirstOrDefault()?.MakeGenericMethod(typeof(string));
-#pragma warning restore IL2060
-
-                        if (linqContainsMethod != null)
-                        {
-                            var constant = Expression.Constant(value);
-                            return Expression.Call(linqContainsMethod, propertyAccess, constant);
-                        }
-                    }
-                }
-            }
-            // Support string arrays
-            else if (propertyType == typeof(string[]))
-            {
-#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
-                var linqContainsMethod = typeof(Enumerable).GetMethods()
-                    .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
-                    .FirstOrDefault()?.MakeGenericMethod(typeof(string));
-#pragma warning restore IL2060
-
-                if (linqContainsMethod != null)
+                if (containsMethod != null)
                 {
                     var constant = Expression.Constant(value);
-                    return Expression.Call(linqContainsMethod, propertyAccess, constant);
+                    return Expression.Call(propertyAccess, containsMethod, constant);
+                }
+
+                // Fallback to LINQ Contains for IEnumerable<string>
+                if (typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(propertyType))
+                {
+#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
+                    var linqContainsMethod = typeof(Enumerable).GetMethods()
+                        .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
+                        .FirstOrDefault()?.MakeGenericMethod(typeof(string));
+#pragma warning restore IL2060
+
+                    if (linqContainsMethod != null)
+                    {
+                        var constant = Expression.Constant(value);
+                        return Expression.Call(linqContainsMethod, propertyAccess, constant);
+                    }
                 }
             }
 
-            return null;
+            throw new NotSupportedException($"Property '{fieldName}' of type '{propertyType.Name}' does not support AnyTagEqualTo filtering. Only string collections are supported.");
         }
-        catch (ArgumentNullException)
+        // Support string arrays
+        else if (propertyType == typeof(string[]))
         {
-            return null;
+#pragma warning disable IL2060 // MakeGenericMethod with known string type - acceptable for expression building
+            var linqContainsMethod = typeof(Enumerable).GetMethods()
+                .Where(m => m.Name == "Contains" && m.GetParameters().Length == 2)
+                .FirstOrDefault()?.MakeGenericMethod(typeof(string));
+#pragma warning restore IL2060
+
+            if (linqContainsMethod != null)
+            {
+                var constant = Expression.Constant(value);
+                return Expression.Call(linqContainsMethod, propertyAccess, constant);
+            }
         }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-        catch (TargetParameterCountException)
-        {
-            return null;
-        }
-        catch (MemberAccessException)
-        {
-            return null;
-        }
-        catch (NotSupportedException)
-        {
-            return null;
-        }
-#pragma warning disable CA1031 // Intentionally catching all exceptions for graceful fallback
-        catch (Exception)
-        {
-            return null;
-        }
-#pragma warning restore CA1031
+
+        throw new NotSupportedException($"Property '{fieldName}' of type '{propertyType.Name}' does not support AnyTagEqualTo filtering. Only string collections and arrays are supported.");
     }
 
     #endregion

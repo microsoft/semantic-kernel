@@ -216,9 +216,9 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         TextSearchFilter invalidPropertyFilter = new();
         invalidPropertyFilter.Equality("NonExistentProperty", "SomeValue");
 
-        // Act & Assert - Should throw InvalidOperationException because the new LINQ filtering 
-        // successfully creates the expression but the underlying vector store connector validates the property
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        // Act & Assert - Should throw ArgumentException because the LINQ filtering now validates 
+        // property existence during expression building and throws descriptive errors
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
         {
             KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
             {
@@ -231,8 +231,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
             await searchResults.Results.ToListAsync();
         });
 
-        // Assert that we get the expected error message from the InMemory connector
-        Assert.Contains("Property NonExistentProperty not found", exception.Message);
+        // Assert that we get the expected error message with improved formatting
+        Assert.Contains("Property 'NonExistentProperty' not found", exception.Message);
     }
 
     [Fact]
@@ -502,8 +502,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         // the underlying collection properly validates property existence
         var searchResults = await sut.GetSearchResultsAsync("test query", searchOptions);
 
-        // Assert - Should throw InvalidOperationException for non-existent property
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        // Assert - Should throw ArgumentException for non-existent property  
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
         {
             var results = await searchResults.Results.ToListAsync();
         });

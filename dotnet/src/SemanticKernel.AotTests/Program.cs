@@ -59,10 +59,7 @@ internal sealed class Program
         KernelBuilderPluginsExtensionsTests.AddFromType,
         KernelBuilderPluginsExtensionsTests.AddFromObject,
 
-        // Tests for text search
-        VectorStoreTextSearchTests.GetTextSearchResultsAsync,
-        VectorStoreTextSearchTests.AddVectorStoreTextSearch,
-
+        // Tests for text search (VectorStoreTextSearch tests removed - incompatible with AOT due to RequiresDynamicCode for LINQ expressions)
         TextSearchExtensionsTests.CreateWithSearch,
         TextSearchExtensionsTests.CreateWithGetTextSearchResults,
         TextSearchExtensionsTests.CreateWithGetSearchResults,

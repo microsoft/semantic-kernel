@@ -22,7 +22,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] TRecord>(
         this IServiceCollection services,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
@@ -58,7 +58,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] TRecord>(
         this IServiceCollection services,
         string vectorSearchableServiceId,
         ITextSearchStringMapper? stringMapper = null,
@@ -104,7 +104,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     [Obsolete("Use the overload which doesn't accept a textEmbeddingGenerationServiceId, and configure an IEmbeddingGenerator instead with the collection represented by vectorSearchServiceId.")]
-    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] TRecord>(
         this IServiceCollection services,
         string vectorSearchServiceId,
         string textEmbeddingGenerationServiceId,
