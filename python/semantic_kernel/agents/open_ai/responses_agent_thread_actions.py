@@ -1186,8 +1186,9 @@ class ResponsesAgentThreadActions:
         }
 
         # Add text option if it exists
-        if merged.get("text") is not None:
-            options["text"] = merged.get("text")
+        text = merged.get("text")
+        if text is not None:
+            options["text"] = text
 
         # Add reasoning to the options if it is provided.
         # Note that non-reasoning capable models will throw an error if this is set.
