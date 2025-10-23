@@ -5,7 +5,7 @@ from abc import ABC
 from typing import Any, Union
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError, _legacy_response
-from openai._types import NOT_GIVEN, FileTypes, NotGiven
+from openai._types import FileTypes, Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
@@ -135,7 +135,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
         self,
         image: list[FileTypes],
         settings: OpenAITextToImageExecutionSettings,
-        mask: FileTypes | NotGiven = NOT_GIVEN,
+        mask: FileTypes | Omit = omit,
     ) -> ImagesResponse:
         """Send a request to the OpenAI image edit endpoint.
 
