@@ -20,7 +20,7 @@ if (config["OpenAI:ApiKey"] is not { } apiKey)
 }
 
 // Create an MCPClient for the GitHub server
-await using var mcpClient = await McpClientFactory.CreateAsync(new StdioClientTransport(new()
+var mcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
 {
     Name = "MCPServer",
     Command = "npx",

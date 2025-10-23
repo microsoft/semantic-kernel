@@ -99,6 +99,7 @@
     <Project Path="samples/Demos/TelemetryWithAppInsights/TelemetryWithAppInsights.csproj" />
     <Project Path="samples/Demos/TimePlugin/TimePlugin.csproj" />
     <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
+    <Project Path="samples/Demos/VoiceChat/VoiceChat.csproj" />
   </Folder>
   <Folder Name="/samples/Demos/A2AClientServer/">
     <Project Path="samples/Demos/A2AClientServer/A2AClient/A2AClient.csproj" />
