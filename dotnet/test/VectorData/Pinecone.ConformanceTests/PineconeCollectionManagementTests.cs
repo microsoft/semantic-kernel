@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Pinecone.ConformanceTests.Support;
-using VectorData.ConformanceTests.Collections;
+using VectorData.ConformanceTests;
 using Xunit;
 
-namespace Pinecone.ConformanceTests.Collections;
+namespace Pinecone.ConformanceTests;
 
-public class PineconeCollectionConformanceTests(PineconeFixture fixture)
-    : CollectionConformanceTests<string>(fixture), IClassFixture<PineconeFixture>
+public class PineconeCollectionManagementTests(PineconeFixture fixture)
+    : CollectionManagementTests<string>(fixture), IClassFixture<PineconeFixture>
 {
     // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
     public override string CollectionName => "collection-tests";

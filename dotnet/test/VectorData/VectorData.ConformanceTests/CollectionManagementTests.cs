@@ -6,9 +6,9 @@ using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace VectorData.ConformanceTests.Collections;
+namespace VectorData.ConformanceTests;
 
-public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) : IAsyncLifetime
+public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture) : IAsyncLifetime
     where TKey : notnull
 {
     public Task InitializeAsync()
