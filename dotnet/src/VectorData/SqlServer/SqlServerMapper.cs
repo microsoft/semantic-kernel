@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
@@ -112,7 +114,9 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTime):
                         property.SetValue(record, reader.GetDateTime(ordinal)); // DATETIME2
                         break;
-
+                    case var t when t == typeof(DateTimeOffset):
+                        property.SetValue(record, reader.GetDateTimeOffset(ordinal)); // DATETIMEOFFSET
+                        break;
 #if NET
                     case var t when t == typeof(DateOnly):
                         property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal)); // DATE
@@ -121,6 +125,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
                         break;
 #endif
+
+                    // We map string[] and List<string> properties to SQL Server JSON columns, so deserialize from JSON here.
+                    case var t when t == typeof(string[]):
+                        property.SetValue(record, JsonSerializer.Deserialize<string[]>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.StringArray));
+                        break;
+                    case var t when t == typeof(List<string>):
+                        property.SetValue(record, JsonSerializer.Deserialize<List<string>>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.ListString));
+                        break;
 
                     default:
                         throw new NotSupportedException($"Unsupported type '{property.Type.Name}' for property '{property.ModelName}'.");

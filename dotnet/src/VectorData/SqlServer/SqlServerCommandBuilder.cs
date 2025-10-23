@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
@@ -57,7 +58,15 @@ internal static class SqlServerCommandBuilder
         {
             if (dataProperty.IsIndexed)
             {
-                sb.AppendFormat("CREATE INDEX ");
+                var sqlType = Map(dataProperty);
+                if (sqlType == "JSON")
+                {
+                    sb.AppendFormat("CREATE JSON INDEX ");
+                }
+                else
+                {
+                    sb.AppendFormat("CREATE INDEX ");
+                }
                 sb.AppendIndexName(tableName, dataProperty.StorageName);
                 sb.AppendFormat(" ON ").AppendTableName(schema, tableName);
                 sb.AppendFormat("([{0}]);", dataProperty.StorageName);
@@ -621,6 +630,13 @@ internal static class SqlServerCommandBuilder
                 command.Parameters.AddWithValue(name, new SqlVector<float>(vectorArray));
                 break;
 
+            case string[] strings:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(strings, SqlServerJsonSerializerContext.Default.StringArray));
+                break;
+            case List<string> strings:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(strings, SqlServerJsonSerializerContext.Default.ListString));
+                break;
+
             default:
                 command.Parameters.AddWithValue(name, value);
                 break;
@@ -641,6 +657,7 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
             Type t when t == typeof(bool) => "BIT",
             Type t when t == typeof(DateTime) => "DATETIME2",
+            Type t when t == typeof(DateTimeOffset) => "DATETIMEOFFSET",
 #if NET
             Type t when t == typeof(DateOnly) => "DATE",
             Type t when t == typeof(TimeOnly) => "TIME",
@@ -648,6 +665,8 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(decimal) => "DECIMAL(18,2)",
             Type t when t == typeof(double) => "FLOAT",
             Type t when t == typeof(float) => "REAL",
+
+            Type t when t == typeof(string[]) || t == typeof(List<string>) => "JSON",
 
             _ => throw new NotSupportedException($"Type {property.Type} is not supported.")
         };
