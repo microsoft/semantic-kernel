@@ -322,6 +322,8 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(key);
+
         return await this.GetAsync([key], options, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -343,11 +345,17 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
+        var compositeKeys = GetCompositeKeys(keys).ToList();
+        if (compositeKeys.Count == 0)
+        {
+            yield break;
+        }
+
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
             this._model,
             this._model.KeyProperty.StorageName,
             this._partitionKeyProperty.StorageName,
-            GetCompositeKeys(keys).ToList(),
+            compositeKeys,
             includeVectors);
 
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken).ConfigureAwait(false))

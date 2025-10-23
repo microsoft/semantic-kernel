@@ -44,6 +44,16 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
 
+    // List fields not (currently) supported on SQLite (see #10343)
+    public override Task Contains_with_Enumerable_Contains()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_Enumerable_Contains());
+
+#if !NETFRAMEWORK
+    // List fields not (currently) supported on SQLite (see #10343)
+    public override Task Contains_with_MemoryExtensions_Contains()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains());
+#endif
+
     // AnyTagEqualTo not (currently) supported on SQLite
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()

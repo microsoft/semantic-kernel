@@ -12,30 +12,30 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
     [
         new()
         {
-            Id = this.GenerateNextKey<TKey>(),
+            Key = this.GenerateNextKey<TKey>(),
             Number = 1,
-            Text = "UsedByGetTests",
+            Text = "foo",
             Floats = Enumerable.Repeat(0.1f, SimpleRecord<TKey>.DimensionCount).ToArray()
         },
         new()
         {
-            Id = this.GenerateNextKey<TKey>(),
+            Key = this.GenerateNextKey<TKey>(),
             Number = 2,
-            Text = "UsedByUpdateTests",
+            Text = "bar",
             Floats = Enumerable.Repeat(0.2f, SimpleRecord<TKey>.DimensionCount).ToArray()
         },
         new()
         {
-            Id = this.GenerateNextKey<TKey>(),
+            Key = this.GenerateNextKey<TKey>(),
             Number = 3,
-            Text = "UsedByDeleteTests",
+            Text = "baz",
             Floats = Enumerable.Repeat(0.3f, SimpleRecord<TKey>.DimensionCount).ToArray()
         },
         new()
         {
-            Id = this.GenerateNextKey<TKey>(),
+            Key = this.GenerateNextKey<TKey>(),
             Number = 4,
-            Text = "UsedByDeleteBatchTests",
+            Text = "foo",
             Floats = Enumerable.Repeat(0.4f, SimpleRecord<TKey>.DimensionCount).ToArray()
         }
     ];
@@ -45,7 +45,7 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
         {
             Properties =
             [
-                new VectorStoreKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey)),
+                new VectorStoreKeyProperty(nameof(SimpleRecord<TKey>.Key), typeof(TKey)),
                 new VectorStoreVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>), SimpleRecord<TKey>.DimensionCount)
                 {
                     DistanceFunction = this.DistanceFunction,

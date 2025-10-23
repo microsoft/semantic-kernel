@@ -576,9 +576,8 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
         }
     }
 
-    public class FilterRecord
+    public class FilterRecord : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public int Int { get; set; }

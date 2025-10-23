@@ -551,9 +551,8 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 public abstract class DataTypeTests<TKey>()
     where TKey : notnull
 {
-    public class RecordBase
+    public class RecordBase : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public float[] Vector { get; set; } = default!;
     }
 
