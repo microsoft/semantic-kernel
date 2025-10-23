@@ -2,8 +2,9 @@
 
 using System;
 using System.Diagnostics;
-using System.Text.Json;
+using System.Runtime.InteropServices;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -32,15 +33,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
 
                     if (!reader.IsDBNull(ordinal))
                     {
-                        // TODO: For now, SQL Server provides access to vectors as JSON arrays, but the plan is to switch
-                        // to an efficient binary format in the future.
-                        var vectorArray = JsonSerializer.Deserialize<float[]>(reader.GetString(ordinal), SqlServerJsonSerializerContext.Default.SingleArray);
+                        var vector = reader.GetFieldValue<SqlVector<float>>(ordinal);
 
                         property.SetValueAsObject(record, property.Type switch
                         {
-                            var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorArray),
-                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vectorArray),
-                            var t when t == typeof(float[]) => vectorArray,
+                            var t when t == typeof(SqlVector<float>) => vector,
+                            var t when t == typeof(ReadOnlyMemory<float>) => vector.Memory,
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vector.Memory),
+                            var t when t == typeof(float[])
+                                => MemoryMarshal.TryGetArray(vector.Memory, out ArraySegment<float> segment)
+                                    && segment.Count == segment.Array!.Length
+                                    ? segment.Array
+                                    : vector.Memory.ToArray(),
 
                             _ => throw new UnreachableException()
                         });
