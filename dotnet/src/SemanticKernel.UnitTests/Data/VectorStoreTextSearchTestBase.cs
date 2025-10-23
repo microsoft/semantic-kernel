@@ -140,6 +140,7 @@ public class VectorStoreTextSearchTestBase
             {
                 DataModel dataModel => dataModel.Text,
                 DataModelWithRawEmbedding dataModelWithRawEmbedding => dataModelWithRawEmbedding.Text,
+                DataModelWithTags dataModelWithTags => dataModelWithTags.Text,
                 _ => throw new ArgumentException("Invalid result type.")
             };
     }
@@ -155,6 +156,7 @@ public class VectorStoreTextSearchTestBase
             {
                 DataModel dataModel => new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() },
                 DataModelWithRawEmbedding dataModelWithRawEmbedding => new TextSearchResult(value: dataModelWithRawEmbedding.Text) { Name = dataModelWithRawEmbedding.Key.ToString() },
+                DataModelWithTags dataModelWithTags => new TextSearchResult(value: dataModelWithTags.Text) { Name = dataModelWithTags.Key.ToString() },
                 _ => throw new ArgumentException("Invalid result type.")
             };
     }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -11,7 +10,6 @@ namespace SemanticKernel.AotTests.UnitTests.Search;
 
 internal sealed class VectorStoreTextSearchTests
 {
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.GetTextSearchResultsAsync(String, TextSearchOptions, CancellationToken)")]
     public static async Task GetTextSearchResultsAsync()
     {
         // Arrange
@@ -39,7 +37,6 @@ internal sealed class VectorStoreTextSearchTests
         Assert.AreEqual("test-link", results[0].Link);
     }
 
-    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.Data.VectorStoreTextSearch<TRecord>.GetTextSearchResultsAsync(String, TextSearchOptions, CancellationToken)")]
     public static async Task AddVectorStoreTextSearch()
     {
         // Arrange

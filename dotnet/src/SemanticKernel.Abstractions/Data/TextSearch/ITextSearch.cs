@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for text based search queries with type-safe LINQ filtering for use with Semantic Kernel prompts and automatic function calling.
+/// This generic interface supports LINQ-based filtering through <see cref="TextSearchOptions{TRecord}"/> for type-safe queries.
 /// </summary>
 /// <typeparam name="TRecord">The type of record being searched.</typeparam>
 [Experimental("SKEXP0001")]
@@ -19,10 +20,6 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <remarks>
-    /// Dynamic code generation is only required when using AnyTagEqualTo filter operations that generate LINQ Contains expressions.
-    /// Simple equality filtering is AOT-compatible.
-    /// </remarks>
     Task<KernelSearchResults<string>> SearchAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
@@ -34,10 +31,6 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <remarks>
-    /// Dynamic code generation is only required when using AnyTagEqualTo filter operations that generate LINQ Contains expressions.
-    /// Simple equality filtering is AOT-compatible.
-    /// </remarks>
     Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
@@ -49,10 +42,6 @@ public interface ITextSearch<TRecord>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <remarks>
-    /// Dynamic code generation is only required when using AnyTagEqualTo filter operations that generate LINQ Contains expressions.
-    /// Simple equality filtering is AOT-compatible.
-    /// </remarks>
     Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
@@ -61,6 +50,7 @@ public interface ITextSearch<TRecord>
 
 /// <summary>
 /// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.
+/// This non-generic interface uses legacy <see cref="TextSearchFilter"/> for backward compatibility.
 /// </summary>
 public interface ITextSearch
 {
