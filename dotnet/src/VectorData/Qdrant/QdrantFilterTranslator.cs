@@ -17,6 +17,7 @@ using Range = Qdrant.Client.Grpc.Range;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+// https://qdrant.tech/documentation/concepts/filtering
 internal class QdrantFilterTranslator
 {
     private CollectionModel _model = null!;
@@ -58,6 +59,8 @@ internal class QdrantFilterTranslator
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
                 => this.GenerateEqual(property.StorageName, value: true),
+            // Handle true literal (r => true), which is useful for fetching all records
+            ConstantExpression { Value: true } => new Filter(),
 
             MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
 

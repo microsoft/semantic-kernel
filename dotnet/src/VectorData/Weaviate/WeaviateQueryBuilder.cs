@@ -97,7 +97,7 @@ internal static class WeaviateQueryBuilder
             {{collectionName}} (
               limit: {{top}}
               offset: {{queryOptions.Skip}}
-              where: {{translatedFilter}}
+              {{(translatedFilter is null ? "" : "where: " + translatedFilter)}}
               sort: [ {{sortPaths}} ]
             ) {
               {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}

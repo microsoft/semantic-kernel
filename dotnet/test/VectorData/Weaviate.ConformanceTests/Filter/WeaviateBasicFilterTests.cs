@@ -17,19 +17,19 @@ public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
     // We could interact with Weaviate directly (not via the abstraction) to do this.
 
     public override Task Equal_with_null_reference_type()
-        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_with_null_reference_type());
+        => Assert.ThrowsAsync<VectorStoreException>(base.Equal_with_null_reference_type);
 
     public override Task Equal_with_null_captured()
-        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_with_null_captured());
+        => Assert.ThrowsAsync<VectorStoreException>(base.Equal_with_null_captured);
 
     public override Task NotEqual_with_null_captured()
-        => Assert.ThrowsAsync<VectorStoreException>(() => base.NotEqual_with_null_captured());
+        => Assert.ThrowsAsync<VectorStoreException>(base.NotEqual_with_null_captured);
 
     public override Task NotEqual_with_null_reference_type()
-        => Assert.ThrowsAsync<VectorStoreException>(() => base.NotEqual_with_null_reference_type());
+        => Assert.ThrowsAsync<VectorStoreException>(base.NotEqual_with_null_reference_type);
 
     public override Task Equal_int_property_with_null_nullable_int()
-        => Assert.ThrowsAsync<VectorStoreException>(() => base.Equal_int_property_with_null_nullable_int());
+        => Assert.ThrowsAsync<VectorStoreException>(base.Equal_int_property_with_null_nullable_int);
 
     #endregion
 
@@ -37,26 +37,26 @@ public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
 
     // Weaviate currently doesn't support NOT (https://github.com/weaviate/weaviate/issues/3683)
     public override Task Not_over_And()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_And());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Not_over_And);
 
     public override Task Not_over_Or()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_Or());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Not_over_Or);
 
     #endregion
 
     #region Unsupported Contains scenarios
 
     public override Task Contains_over_captured_string_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_captured_string_array());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Contains_over_captured_string_array);
 
     public override Task Contains_over_inline_int_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_inline_int_array());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Contains_over_inline_int_array);
 
     public override Task Contains_over_inline_string_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_inline_int_array());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Contains_over_inline_int_array);
 
     public override Task Contains_over_inline_string_array_with_weird_chars()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_inline_string_array_with_weird_chars());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Contains_over_inline_string_array_with_weird_chars);
 
     #endregion
 
