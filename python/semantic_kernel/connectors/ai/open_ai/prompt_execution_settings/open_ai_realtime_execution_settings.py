@@ -92,7 +92,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
         settings_dict = super().prepare_settings_dict(**kwargs)
 
         # Build the audio configuration object
-        audio_config = {}
+        audio_config: dict[str, Any] = {}
 
         # Handle voice (goes in audio.output.voice)
         if "voice" in settings_dict:
