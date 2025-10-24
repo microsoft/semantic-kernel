@@ -55,6 +55,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI realtime services."""
 
     modalities: Sequence[Literal["audio", "text"]] | None = None
+    output_modalities: Sequence[Literal["audio", "text"]] | None = None
     ai_model_id: Annotated[str | None, Field(None, serialization_alias="model")] = None
     instructions: str | None = None
     voice: str | None = None
@@ -79,6 +80,49 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     temperature: Annotated[float | None, Field(ge=0.6, le=1.2)] = None
     max_response_output_tokens: Annotated[int | Literal["inf"] | None, Field(gt=0)] = None
     input_audio_noise_reduction: dict[Literal["type"], Literal["near_field", "far_field"]] | None = None
+
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+
+        For realtime settings, we need to properly structure the audio configuration
+        to match the OpenAI API expectations where voice and turn_detection are nested
+        under the audio field.
+        """
+        # Get the base settings dict (excludes service_id, extension_data, etc.)
+        settings_dict = super().prepare_settings_dict(**kwargs)
+
+        # Build the audio configuration object
+        audio_config = {}
+
+        # Handle voice (goes in audio.output.voice)
+        if "voice" in settings_dict:
+            audio_config.setdefault("output", {})["voice"] = settings_dict.pop("voice")
+
+        # Handle turn_detection (goes in audio.input.turn_detection)
+        if "turn_detection" in settings_dict:
+            audio_config.setdefault("input", {})["turn_detection"] = settings_dict.pop("turn_detection")
+
+        # Handle input audio format
+        if "input_audio_format" in settings_dict:
+            audio_config.setdefault("input", {})["format"] = settings_dict.pop("input_audio_format")
+
+        # Handle output audio format
+        if "output_audio_format" in settings_dict:
+            audio_config.setdefault("output", {})["format"] = settings_dict.pop("output_audio_format")
+
+        # Handle input audio transcription
+        if "input_audio_transcription" in settings_dict:
+            audio_config.setdefault("input", {})["transcription"] = settings_dict.pop("input_audio_transcription")
+
+        # Handle input audio noise reduction
+        if "input_audio_noise_reduction" in settings_dict:
+            audio_config.setdefault("input", {})["noise_reduction"] = settings_dict.pop("input_audio_noise_reduction")
+
+        # Add the audio config if it has any content
+        if audio_config:
+            settings_dict["audio"] = audio_config
+
+        return settings_dict
 
 
 class AzureRealtimeExecutionSettings(OpenAIRealtimeExecutionSettings):

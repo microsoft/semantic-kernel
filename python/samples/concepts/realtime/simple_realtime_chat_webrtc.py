@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIRealtimeExecutionSettings,
     OpenAIRealtimeWebRTC,
 )
+from semantic_kernel.contents import RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")
@@ -55,6 +56,8 @@ async def main() -> None:
         # see https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-voice
         # for more details.
         voice="alloy",
+        # Enable both text and audio output to get transcripts
+        output_modalities=["text", "audio"],
     )
     realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC(), settings=settings)
     # Create the settings for the session
@@ -62,16 +65,26 @@ async def main() -> None:
     # the context manager calls the create_session method on the client and starts listening to the audio stream
     async with audio_player, realtime_client:
         async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
-            match event.event_type:
-                case "text":
-                    # the model returns both audio and transcript of the audio, which we will print
-                    print(event.text.text, end="")
-                case "service":
-                    # OpenAI Specific events
-                    if event.service_type == ListenEvents.SESSION_UPDATED:
-                        print("Session updated")
-                    if event.service_type == ListenEvents.RESPONSE_CREATED:
-                        print("\nMosscap (transcript): ", end="")
+            match event:
+                case RealtimeTextEvent():
+                    # Only process delta events for streaming, skip done events to avoid duplication
+                    if (
+                        hasattr(event, "service_type")
+                        and "delta" in event.service_type
+                        and hasattr(event.text, "text")
+                        and event.text.text
+                    ):
+                        print(event.text.text, end="", flush=True)
+                    # Add newline when transcript is complete (done event)
+                    elif hasattr(event, "service_type") and "done" in event.service_type:
+                        print()  # Add newline for readability
+                case _:
+                    # Handle other events including service events
+                    if hasattr(event, "event_type") and event.event_type == "service":
+                        if hasattr(event, "service_type") and event.service_type == ListenEvents.SESSION_UPDATED:
+                            print("Session updated")
+                        if hasattr(event, "service_type") and event.service_type == ListenEvents.RESPONSE_CREATED:
+                            print("\nMosscap (transcript): ", end="")
 
 
 if __name__ == "__main__":
