@@ -253,7 +253,7 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
     def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
         """Get the headers and URL for the ephemeral token."""
         url = (
-            f"{self.client.beta.realtime._client.base_url}/realtimeapi/sessions?api-version="
+            f"{self.client.realtime._client.base_url}/realtimeapi/sessions?api-version="
             f"{self.client._api_version}"  # type: ignore[attr-defined]
         )
         if self.client._azure_ad_token is not None:  # type: ignore[attr-defined]
