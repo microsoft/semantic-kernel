@@ -82,3 +82,18 @@ class VarBlock(Block):
             raise VarBlockRenderError(
                 f"Block {self.name} failed to be parsed to a string, type is {type(value)}"
             ) from e
+
+    def get_value(self, arguments: Optional["KernelArguments"] = None) -> Any:
+        """Get the raw value of the variable from arguments without converting to string.
+
+        This is used when passing arguments to functions to preserve their original types.
+
+        Args:
+            arguments: The KernelArguments to get the value from.
+
+        Returns:
+            The raw value from the arguments, or None if not found.
+        """
+        if arguments is None:
+            return None
+        return arguments.get(self.name, None)

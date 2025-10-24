@@ -149,7 +149,22 @@ these will be ignored."
             )
         for index, token in enumerate(self.tokens[1:], start=1):
             logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
-            rendered_value = token.render(kernel, arguments)  # type: ignore
+
+            # For VarBlock, get the raw value to preserve the original type
+            # For other blocks (ValBlock, NamedArgBlock), render to string as usual
+            from semantic_kernel.template_engine.blocks.var_block import VarBlock
+
+            if isinstance(token, VarBlock):
+                rendered_value = token.get_value(arguments)
+            elif isinstance(token, NamedArgBlock):
+                # NamedArgBlock may contain a VarBlock, so check for that
+                if token.variable:
+                    rendered_value = token.variable.get_value(arguments)
+                else:
+                    rendered_value = token.render(kernel, arguments)
+            else:
+                rendered_value = token.render(kernel, arguments)  # type: ignore
+
             if not isinstance(token, NamedArgBlock) and index == 1:
                 arguments[function_metadata.parameters[0].name] = rendered_value
                 continue
