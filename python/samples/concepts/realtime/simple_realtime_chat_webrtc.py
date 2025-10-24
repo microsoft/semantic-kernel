@@ -68,22 +68,17 @@ async def main() -> None:
             match event:
                 case RealtimeTextEvent():
                     # Only process delta events for streaming, skip done events to avoid duplication
-                    if (
-                        hasattr(event, "service_type")
-                        and "delta" in event.service_type
-                        and hasattr(event.text, "text")
-                        and event.text.text
-                    ):
+                    if event.service_type and "delta" in event.service_type and event.text.text:
                         print(event.text.text, end="", flush=True)
                     # Add newline when transcript is complete (done event)
-                    elif hasattr(event, "service_type") and "done" in event.service_type:
+                    elif event.service_type and "done" in event.service_type:
                         print()  # Add newline for readability
                 case _:
-                    # Handle other events including service events
-                    if hasattr(event, "event_type") and event.event_type == "service":
-                        if hasattr(event, "service_type") and event.service_type == ListenEvents.SESSION_UPDATED:
+                    # Handle service events
+                    if event.event_type == "service" and event.service_type:
+                        if event.service_type == ListenEvents.SESSION_UPDATED:
                             print("Session updated")
-                        if hasattr(event, "service_type") and event.service_type == ListenEvents.RESPONSE_CREATED:
+                        elif event.service_type == ListenEvents.RESPONSE_CREATED:
                             print("\nMosscap (transcript): ", end="")
 
 
