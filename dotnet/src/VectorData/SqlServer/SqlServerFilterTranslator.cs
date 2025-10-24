@@ -29,12 +29,15 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
+            case bool boolValue when isSearchCondition:
+                this._sql.Append(boolValue ? "1 = 1" : "1 = 0");
+                return;
             case bool boolValue:
-                this._sql.Append(boolValue ? "1" : "0");
+                this._sql.Append(boolValue ? "CAST(1 AS BIT)" : "CAST(0 AS BIT)");
                 return;
             case DateTime dateTime:
                 this._sql.Append('\'').Append(dateTime.ToString("o")).Append('\'');
@@ -54,7 +57,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 #endif
 
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
@@ -108,7 +111,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');

@@ -45,7 +45,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');
