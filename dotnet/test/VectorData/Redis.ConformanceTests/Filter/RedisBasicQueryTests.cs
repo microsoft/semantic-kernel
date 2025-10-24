@@ -123,6 +123,19 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
 
+    public override Task Contains_with_Enumerable_Contains()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_Enumerable_Contains());
+
+#if !NETFRAMEWORK
+    public override Task Contains_with_MemoryExtensions_Contains()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains());
+#endif
+
+#if NET10_0_OR_GREATER
+    public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains_with_null_comparer());
+#endif
+
     public new class Fixture : BasicQueryTests<string>.QueryFixture
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;

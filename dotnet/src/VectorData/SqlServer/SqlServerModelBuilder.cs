@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -9,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
-    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+    internal const string SupportedVectorTypes = "SqlVector<float>, ReadOnlyMemory<float>, Embedding<float>, float[]";
 
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
@@ -32,7 +34,7 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, short, int, long, double, float, decimal, bool, DateTime, DateTimeOffset, DateOnly, TimeOnly, Guid, byte[]";
+        supportedTypes = "string, short, int, long, double, float, decimal, bool, DateTime, DateTimeOffset, DateOnly, TimeOnly, Guid, byte[], string[], List<string>";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -48,6 +50,7 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(byte[]) // VARBINARY
             || type == typeof(bool) // BIT
             || type == typeof(DateTime) // DATETIME2
+            || type == typeof(DateTimeOffset) // DATETIMEOFFSET
 #if NET
             || type == typeof(DateOnly) // DATE
                                         // We don't support mapping TimeSpan to TIME on purpose
@@ -56,7 +59,11 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 #endif
             || type == typeof(decimal) // DECIMAL
             || type == typeof(double) // FLOAT
-            || type == typeof(float); // REAL
+            || type == typeof(float) // REAL
+
+            // We map string[] to the SQL Server 2025 JSON data type (anyone using vector search is already using 2025)
+            || type == typeof(string[]) // JSON
+            || type == typeof(List<string>); // JSON
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
@@ -69,6 +76,9 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
         return type == typeof(ReadOnlyMemory<float>)
             || type == typeof(ReadOnlyMemory<float>?)
             || type == typeof(Embedding<float>)
-            || type == typeof(float[]);
+            || type == typeof(float[])
+            // SqlClient-specific type representing a vector
+            || type == typeof(SqlVector<float>)
+            || type == typeof(SqlVector<float>?);
     }
 }

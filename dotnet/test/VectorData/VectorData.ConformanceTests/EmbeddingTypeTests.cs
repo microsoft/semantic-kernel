@@ -22,14 +22,14 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
         => this.Test<ReadOnlyMemory<float>>(
             new ReadOnlyMemory<float>([1, 2, 3]),
             new ReadOnlyMemoryEmbeddingGenerator<float>([1, 2, 3]),
-            vectorEqualityAsserter: (e, a) => Assert.Equal(e.Span.ToArray(), a.Span.ToArray()));
+            vectorEqualityAsserter: (e, a) => Assert.Equal(e.ToArray(), a.ToArray()));
 
     [ConditionalFact]
     public virtual Task Embedding_of_float()
         => this.Test<Embedding<float>>(
             new Embedding<float>(new ReadOnlyMemory<float>([1, 2, 3])),
             new ReadOnlyMemoryEmbeddingGenerator<float>([1, 2, 3]),
-            vectorEqualityAsserter: (e, a) => Assert.Equal(e.Vector.Span.ToArray(), a.Vector.Span.ToArray()));
+            vectorEqualityAsserter: (e, a) => Assert.Equal(e.Vector.ToArray(), a.Vector.ToArray()));
 
     [ConditionalFact]
     public virtual Task Array_of_float()
@@ -37,7 +37,12 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
             [1, 2, 3],
             new ReadOnlyMemoryEmbeddingGenerator<float>([1, 2, 3]));
 
-    protected virtual async Task Test<TVector>(TVector value, IEmbeddingGenerator? embeddingGenerator = null, Action<TVector, TVector>? vectorEqualityAsserter = null, string? distanceFunction = null, int dimensions = 3)
+    protected virtual async Task Test<TVector>(
+        TVector value,
+        IEmbeddingGenerator? embeddingGenerator = null,
+        Action<TVector, TVector>? vectorEqualityAsserter = null,
+        string? distanceFunction = null,
+        int dimensions = 3)
         where TVector : notnull
     {
         vectorEqualityAsserter ??= (e, a) => Assert.Equal(e, a);
