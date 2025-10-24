@@ -333,6 +333,37 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => array.Contains(r["String"]));
     }
 
+#pragma warning disable RCS1196 // Call extension method as instance method
+
+    // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+    // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+    // See https://github.com/dotnet/runtime/issues/109757 for more context.
+    // The following tests the various Contains variants directly, without using extension syntax, to ensure everything's
+    // properly supported.
+    [ConditionalFact]
+    public virtual Task Contains_with_Enumerable_Contains()
+        => this.TestFilterAsync(
+            r => Enumerable.Contains(r.StringArray, "x"),
+            r => ((string[])r["StringArray"]!).Contains("x"));
+
+#if !NETFRAMEWORK
+    [ConditionalFact]
+    public virtual Task Contains_with_MemoryExtensions_Contains()
+        => this.TestFilterAsync(
+            r => MemoryExtensions.Contains(r.StringArray, "x"),
+            r => ((string[])r["StringArray"]!).Contains("x"));
+#endif
+
+#if NET10_0_OR_GREATER
+    [ConditionalFact]
+    public virtual Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
+        => this.TestFilterAsync(
+            r => MemoryExtensions.Contains(r.StringArray, "x", comparer: null),
+            r => ((string[])r["StringArray"]!).Contains("x"));
+#endif
+
+#pragma warning restore RCS1196 // Call extension method as instance method
+
     #endregion Contains
 
     #region Variable types

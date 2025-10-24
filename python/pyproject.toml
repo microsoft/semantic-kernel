@@ -121,7 +121,9 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.7"
+  # Pinning due to uv tag-resolution issues on macOS.
+  "onnxruntime==1.22.1",
+  "onnxruntime-genai==0.9.0"
 ]
 pandas = [
     "pandas ~= 2.2"

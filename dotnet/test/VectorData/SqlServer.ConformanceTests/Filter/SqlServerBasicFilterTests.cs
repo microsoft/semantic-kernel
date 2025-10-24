@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using SqlServer.ConformanceTests.Support;
 using VectorData.ConformanceTests.Filter;
 using VectorData.ConformanceTests.Support;
@@ -36,12 +35,6 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
             r => r["String"] != null && r["String"] != "foo");
     }
 
-    public override Task Contains_over_field_string_array()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_array());
-
-    public override Task Contains_over_field_string_List()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
-
     [Fact(Skip = "Not supported")]
     [Obsolete("Legacy filters are not supported")]
     public override Task Legacy_And() => throw new NotSupportedException();
@@ -65,12 +58,5 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
         public override string CollectionName => s_uniqueName;
-
-        // Override to remove the string collection properties, which aren't (currently) supported on SqlServer
-        public override VectorStoreCollectionDefinition CreateRecordDefinition()
-            => new()
-            {
-                Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(string[]) && p.Type != typeof(List<string>)).ToList()
-            };
     }
 }
