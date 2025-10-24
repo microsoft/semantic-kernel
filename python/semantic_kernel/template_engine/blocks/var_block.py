@@ -83,7 +83,7 @@ class VarBlock(Block):
                 f"Block {self.name} failed to be parsed to a string, type is {type(value)}"
             ) from e
 
-    def get_value(self, arguments: Optional["KernelArguments"] = None) -> Any:
+    def get_value(self, arguments: "KernelArguments | None" = None) -> Any:
         """Get the raw value of the variable from arguments without converting to string.
 
         This is used when passing arguments to functions to preserve their original types.
