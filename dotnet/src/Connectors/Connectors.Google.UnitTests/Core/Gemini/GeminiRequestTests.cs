@@ -491,7 +491,7 @@ public sealed class GeminiRequestTests
         // Arrange
         ChatHistory chat = [];
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chat, new GeminiPromptExecutionSettings());
-        var message = new GeminiChatMessageContent(AuthorRole.User, "user-message", "model-id");
+        var message = new GeminiChatMessageContent(AuthorRole.User, "user-message", "model-id", calledToolResults: null);
 
         // Act
         request.AddChatMessage(message);

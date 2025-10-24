@@ -183,15 +183,17 @@ internal sealed class GeminiRequest
         List<GeminiPart> parts = [];
         switch (content)
         {
-            case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                parts.Add(new GeminiPart
-                {
-                    FunctionResponse = new GeminiPart.FunctionResponsePart
+            case GeminiChatMessageContent { CalledToolResults: not null } contentWithCalledTools:
+                // Add all function responses as separate parts in a single message
+                parts.AddRange(contentWithCalledTools.CalledToolResults.Select(toolResult =>
+                    new GeminiPart
                     {
-                        FunctionName = contentWithCalledTool.CalledToolResult.FullyQualifiedName,
-                        Response = new(contentWithCalledTool.CalledToolResult.FunctionResult.GetValue<object>())
-                    }
-                });
+                        FunctionResponse = new GeminiPart.FunctionResponsePart
+                        {
+                            FunctionName = toolResult.FullyQualifiedName,
+                            Response = new(toolResult.FunctionResult.GetValue<object>())
+                        }
+                    }));
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
