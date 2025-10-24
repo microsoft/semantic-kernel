@@ -432,6 +432,14 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Variable types
 
+    #region Miscellaneous
+
+    [ConditionalFact]
+    public virtual Task True()
+        => this.TestFilterAsync(r => true, r => true, expectAllResults: true);
+
+    #endregion Miscellaneous
+
     #region Legacy filter support
 
     [ConditionalFact]
