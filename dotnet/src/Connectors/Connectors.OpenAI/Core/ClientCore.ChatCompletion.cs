@@ -58,7 +58,10 @@ internal partial class ClientCore
     protected const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
-    protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
+    protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool(
+        functionName: "NonInvocableTool",
+        functionDescription: "A placeholder tool used when no real tools are available",
+        functionParameters: BinaryData.FromString("""{"type":"object","required":[],"properties":{}}"""));
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
