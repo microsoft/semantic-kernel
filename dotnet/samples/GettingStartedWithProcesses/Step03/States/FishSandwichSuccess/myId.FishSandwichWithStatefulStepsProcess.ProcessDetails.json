@@ -1,0 +1,20 @@
+{
+  "processInfo": {
+    "processName": "FishSandwichWithStatefulStepsProcess",
+    "parentId": null,
+    "steps": {
+      "FriedFishWithStatefulStepsProcess": "myId_53747e21-83d9-4b99-b20a-6c401b59a0c0",
+      "AddBunsStep": "myId_ec377137-ae9d-49a9-a77f-5c964c89fb93",
+      "AddSpecialSauceStep": "myId_97f458fb-2ea4-4f19-a39f-2ebff68c3442",
+      "ExternalFriedFishStep": "myId_4ee7fb9c-7f48-4178-b072-c7d10188f8d1"
+    },
+    "instanceId": "myId"
+  },
+  "processEvents": {
+    "externalPendingMessages": []
+  },
+  "processState": {
+    "sharedVariables": {}
+  },
+  "instanceId": "myId"
+}

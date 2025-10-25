@@ -139,7 +139,7 @@ public class ProcessStepEdgeBuilderTests
 
         // Assert
         Assert.NotNull(edge);
-        Assert.Equal(source.Id, edge.SourceStepId);
+        Assert.Equal(source.StepId, edge.SourceStepId);
     }
 
     /// <summary>
