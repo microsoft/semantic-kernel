@@ -40,25 +40,37 @@ public sealed class OpenAIResponseAgent : Agent
     public bool StoreEnabled { get; init; } = false;
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
-        AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+        AgentThread agentThread;
+        OpenAIResponseAgentInvokeOptions extensionsContextOptions;
+        IAsyncEnumerable<ChatMessageContent> invokeResults;
 
-        // Get the context contributions from the AIContextProviders.
-        OpenAIResponseAgentInvokeOptions extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+            extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
 
-        // Invoke responses with the updated chat history.
-        ChatHistory chatHistory = [.. messages];
-        var invokeResults = ResponseThreadActions.InvokeAsync(
-            this,
-            chatHistory,
-            agentThread,
-            extensionsContextOptions,
-            cancellationToken);
+            ChatHistory chatHistory = [.. messages];
+            invokeResults = ResponseThreadActions.InvokeAsync(
+                this,
+                chatHistory,
+                agentThread,
+                extensionsContextOptions,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw new KernelException($"OpenAI provider error for agent '{this.Name}': {ex.Message}", ex);
+        }
 
-        // Notify the thread of new messages and return them to the caller.
+        // Yield results with additional error handling
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             if (options?.OnIntermediateMessage is not null)
@@ -72,37 +84,38 @@ public sealed class OpenAIResponseAgent : Agent
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
-        AgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+        AgentThread agentThread;
+        OpenAIResponseAgentInvokeOptions extensionsContextOptions;
+        ChatHistory chatHistory;
+        int messageIndex;
+        IAsyncEnumerable<StreamingChatMessageContent> invokeResults;
 
-        // Get the context contributions from the AIContextProviders.
-        OpenAIResponseAgentInvokeOptions extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
-
-        // Invoke responses with the updated chat history.
-        ChatHistory chatHistory = [.. messages];
-        int messageCount = chatHistory.Count;
-        int messageIndex = chatHistory.Count;
-        var invokeResults = ResponseThreadActions.InvokeStreamingAsync(
-            this,
-            chatHistory,
-            agentThread,
-            extensionsContextOptions,
-            cancellationToken);
-
-        // Return streaming chat message content to the caller.
-        await foreach (var result in invokeResults.ConfigureAwait(false))
+        try
         {
-            // Notify the thread of any messages that were assembled from the streaming response during this iteration.
-            await NotifyMessagesAsync().ConfigureAwait(false);
+            agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+            extensionsContextOptions = await this.FinalizeInvokeOptionsAsync(messages, options, agentThread, cancellationToken).ConfigureAwait(false);
 
-            yield return new(result, agentThread);
+            chatHistory = [.. messages];
+            messageIndex = chatHistory.Count;
+            invokeResults = ResponseThreadActions.InvokeStreamingAsync(
+                this,
+                chatHistory,
+                agentThread,
+                extensionsContextOptions,
+                cancellationToken);
         }
-
-        // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
-        await NotifyMessagesAsync().ConfigureAwait(false);
+        catch (Exception ex)
+        {
+            throw new KernelException($"OpenAI provider error for agent '{this.Name}' during streaming: {ex.Message}", ex);
+        }
 
         async Task NotifyMessagesAsync()
         {
@@ -116,6 +129,12 @@ public sealed class OpenAIResponseAgent : Agent
                     await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
                 }
             }
+        }
+
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await NotifyMessagesAsync().ConfigureAwait(false);
+            yield return new(result, agentThread);
         }
     }
 
