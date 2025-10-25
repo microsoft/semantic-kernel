@@ -261,6 +261,60 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("UnnamedAgent", options.EndUserId); // Null name should fallback to "UnnamedAgent"
     }
 
+    /// <summary>
+    /// Verify response options creation with kernel plugin and default response options.
+    /// </summary>
+    [Fact]
+    public void CreateOptionsWithKernelPluginAndDefaultOptionsTest()
+    {
+        // Arrange
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockThread = CreateMockAgentThread(null);
+        mockAgent.Kernel.Plugins.AddFromObject(new TestPlugin());
+
+        // Act
+        var options = ResponseCreationOptionsFactory.CreateOptions(mockAgent, mockThread.Object, null);
+
+        // Assert
+        Assert.NotNull(options);
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.ToolChoice);
+        Assert.Equal(ResponseToolChoiceKind.Auto, options.ToolChoice.Kind);
+        Assert.True(options.ParallelToolCallsEnabled);
+    }
+
+    /// <summary>
+    /// Verify response options creation with kernel plugin and custom response options.
+    /// </summary>
+    [Fact]
+    public void CreateOptionsWithKernelPluginAndCustomOptionsTest()
+    {
+        // Arrange
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockThread = CreateMockAgentThread(null);
+        mockAgent.Kernel.Plugins.AddFromObject(new TestPlugin());
+
+        // Custom invoke options should be respected
+        var invokeOptions = new OpenAIResponseAgentInvokeOptions
+        {
+            ResponseCreationOptions = new ResponseCreationOptions
+            {
+                ToolChoice = ResponseToolChoice.CreateNoneChoice(),
+                ParallelToolCallsEnabled = false
+            }
+        };
+
+        // Act
+        var options = ResponseCreationOptionsFactory.CreateOptions(mockAgent, mockThread.Object, invokeOptions);
+
+        // Assert
+        Assert.NotNull(options);
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.ToolChoice);
+        Assert.Equal(ResponseToolChoiceKind.None, options.ToolChoice.Kind);
+        Assert.False(options.ParallelToolCallsEnabled);
+    }
+
     private static OpenAIResponseAgent CreateMockAgent(string? name, string? instructions, bool storeEnabled)
     {
         var mockClient = new Mock<OpenAIResponseClient>();
@@ -280,5 +334,12 @@ public class ResponseCreationOptionsFactoryTests
         var mockThread = new Mock<AgentThread>();
         mockThread.Setup(t => t.Id).Returns(threadId);
         return mockThread;
+    }
+
+    private sealed class TestPlugin
+    {
+        [KernelFunction]
+        public void TestFunction()
+        { }
     }
 }
