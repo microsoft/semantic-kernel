@@ -20,7 +20,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Text Search implementation that can be used to perform searches using the Bing Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class BingTextSearch : ITextSearch
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="BingTextSearch"/> with API key authentication.

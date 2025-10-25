@@ -20,7 +20,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Brave;
 /// <summary>
 /// A Brave Text Search implementation that can be used to perform searches using the Brave Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class BraveTextSearch : ITextSearch
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="BraveTextSearch"/> with API key authentication.

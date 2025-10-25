@@ -20,7 +20,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// <summary>
 /// A Tavily Text Search implementation that can be used to perform searches using the Tavily Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class TavilyTextSearch : ITextSearch
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="TavilyTextSearch"/> with API key authentication.

@@ -21,7 +21,9 @@ internal sealed class TextSearchExtensionsTests
         // Arrange
         var testData = new List<string> { "test-value" };
         KernelSearchResults<string> results = new(testData.ToAsyncEnumerable());
+#pragma warning disable CS0618 // Type or member is obsolete
         ITextSearch textSearch = new MockTextSearch(results);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         var plugin = textSearch.CreateWithSearch("SearchPlugin", s_jsonSerializerOptions);
@@ -35,7 +37,9 @@ internal sealed class TextSearchExtensionsTests
         // Arrange
         var testData = new List<TextSearchResult> { new("test-value") };
         KernelSearchResults<TextSearchResult> results = new(testData.ToAsyncEnumerable());
+#pragma warning disable CS0618 // Type or member is obsolete
         ITextSearch textSearch = new MockTextSearch(results);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         var plugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin", s_jsonSerializerOptions);
@@ -49,7 +53,9 @@ internal sealed class TextSearchExtensionsTests
         // Arrange
         var testData = new List<CustomResult> { new("test-value") };
         KernelSearchResults<object> results = new(testData.ToAsyncEnumerable());
+#pragma warning disable CS0618 // Type or member is obsolete
         ITextSearch textSearch = new MockTextSearch(results);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         var plugin = textSearch.CreateWithGetSearchResults("SearchPlugin", s_jsonSerializerOptions);

@@ -16,7 +16,9 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
+#pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
@@ -268,19 +270,22 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <summary>
-    /// Execute a vector search and return the results.
+    /// Execute a vector search and return the results using legacy filtering for backward compatibility.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="searchOptions">Search options with legacy TextSearchFilter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
+
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+            OldFilter = searchOptions.Filter?.FilterClauses is not null
+                ? new VectorSearchFilter(searchOptions.Filter.FilterClauses)
+                : null,
+#pragma warning restore CS0618
             Skip = searchOptions.Skip,
         };
 
