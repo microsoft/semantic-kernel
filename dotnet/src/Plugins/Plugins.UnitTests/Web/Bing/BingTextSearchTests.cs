@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete
+
 using System;
 using System.IO;
 using System.Linq;

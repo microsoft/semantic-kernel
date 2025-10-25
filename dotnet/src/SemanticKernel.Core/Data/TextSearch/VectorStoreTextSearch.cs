@@ -16,7 +16,9 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
+#pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
