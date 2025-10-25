@@ -3,6 +3,7 @@
 using System;
 using System.ClientModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -23,6 +24,7 @@ using Moq;
 using Moq.Protected;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
+
 /// <summary>
 /// Unit tests for the service collection extensions in the <see cref="Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
@@ -34,18 +36,26 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 
         this._httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+            Content = new StringContent(
+                File.ReadAllText("TestData/chat_completion_test_response.json")
+            ),
         };
 
         this._mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
             .ReturnsAsync(this._httpResponseMessage);
 
         this._httpClient = new HttpClient(this._mockHttpMessageHandler.Object);
     }
+
     private readonly HttpResponseMessage _httpResponseMessage;
     private readonly HttpClient _httpClient;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
+
     #region Chat completion
 
     public void Dispose()
@@ -53,6 +63,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         this._httpClient.Dispose();
         this._httpResponseMessage.Dispose();
     }
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -60,11 +71,16 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
     [InlineData(InitializationType.HttpClient)]
-    public async Task ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
+    public async Task ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(
+        InitializationType type
+    )
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(
+            new Uri("https://localhost"),
+            new ApiKeyCredential("key")
+        );
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -72,13 +88,35 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.ClientInline => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
-            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
-            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
-            InitializationType.HttpClient => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://localhost", "api-key", httpClient: this._httpClient),
-            _ => builder.Services
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIChatCompletion(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIChatCompletion(
+                "deployment-name",
+                "https://endpoint",
+                credentials
+            ),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIChatCompletion(
+                "deployment-name",
+                client
+            ),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIChatCompletion(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIChatCompletion(
+                "deployment-name",
+                "https://localhost",
+                "api-key",
+                httpClient: this._httpClient
+            ),
+            _ => builder.Services,
         };
 
         // Assert
@@ -91,7 +129,13 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         if (type == InitializationType.HttpClient) //Verify that the httpclient passed in is used
         {
             await chatCompletionService.GetChatMessageContentAsync("what is the weather");
-            this._mockHttpMessageHandler.Protected().Verify("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+            this._mockHttpMessageHandler.Protected()
+                .Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                );
         }
     }
 
@@ -107,11 +151,16 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.ApiVersion)]
     [InlineData(InitializationType.HttpClient)]
     [Obsolete("Temporary Obsoleted AzureOpenAITextEmbeddingGeneration tests.")]
-    public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
+    public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(
+        InitializationType type
+    )
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(
+            new Uri("https://localhost"),
+            new ApiKeyCredential("key")
+        );
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -119,13 +168,34 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.ClientInline => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
-            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
-            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
-            InitializationType.HttpClient => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
-            _ => builder.Services
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential =>
+                builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                    "deployment-name",
+                    "https://endpoint",
+                    credentials
+                ),
+            InitializationType.ClientInline =>
+                builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                httpClient: this._httpClient
+            ),
+            _ => builder.Services,
         };
 
         // Assert
@@ -142,11 +212,16 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
     [InlineData(InitializationType.HttpClient)]
-    public void ServiceCollectionAddAzureOpenAIEmbeddingGeneratorAddsValidService(InitializationType type)
+    public void ServiceCollectionAddAzureOpenAIEmbeddingGeneratorAddsValidService(
+        InitializationType type
+    )
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(
+            new Uri("https://localhost"),
+            new ApiKeyCredential("key")
+        );
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -154,17 +229,41 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", credentials),
-            InitializationType.ClientInline => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", client),
-            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name"),
-            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
-            InitializationType.HttpClient => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
-            _ => builder.Services
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                "deployment-name",
+                "https://endpoint",
+                credentials
+            ),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                "deployment-name",
+                client
+            ),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                httpClient: this._httpClient
+            ),
+            _ => builder.Services,
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        var service = builder
+            .Build()
+            .GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         Assert.NotNull(service);
     }
@@ -180,7 +279,12 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview")
+        var service = sut.AddAzureOpenAITextToAudio(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            )
             .BuildServiceProvider()
             .GetRequiredService<ITextToAudioService>();
 
@@ -202,7 +306,10 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(
+            new Uri("https://localhost"),
+            new ApiKeyCredential("key")
+        );
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -210,18 +317,106 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials),
-            InitializationType.ClientInline => builder.Services.AddAzureOpenAITextToImage("deployment-name", client),
-            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextToImage("deployment-name"),
-            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
-            _ => builder.Services
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAITextToImage(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextToImage(
+                "deployment-name",
+                "https://endpoint",
+                credentials
+            ),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAITextToImage(
+                "deployment-name",
+                client
+            ),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAITextToImage("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextToImage(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            _ => builder.Services,
         };
 
         // Assert
         var service = builder.Build().GetRequiredService<ITextToImageService>();
 
         Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    #endregion
+
+    #region Image Generation
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
+    [InlineData(InitializationType.HttpClient)]
+    public void ServiceCollectionAddAzureOpenAIImageGeneratorAddsValidService(
+        InitializationType type
+    )
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(
+            new Uri("https://localhost"),
+            new ApiKeyCredential("key")
+        );
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIImageGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIImageGenerator(
+                "deployment-name",
+                "https://endpoint",
+                credentials
+            ),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIImageGenerator(
+                "deployment-name",
+                client
+            ),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAIImageGenerator("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIImageGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIImageGenerator(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                httpClient: this._httpClient
+            ),
+            _ => builder.Services,
+        };
+
+        // Assert
+        // The primary test is that the service registration doesn't throw exceptions
+        var serviceProvider = builder.Build();
+        Assert.NotNull(serviceProvider);
+
+        // Test that the service was registered in the collection
+        var hasImageGeneratorService = collection.Any(descriptor =>
+            descriptor.ServiceType.Name.Contains("IImageGenerator")
+        );
+        Assert.True(hasImageGeneratorService, "IImageGenerator service should be registered");
     }
 
     #endregion
@@ -246,12 +441,29 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
-            InitializationType.ClientInline => builder.Services.AddAzureOpenAIAudioToText("deployment-name", client),
-            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIAudioToText("deployment-name"),
-            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
-            _ => builder.Services
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIAudioToText(
+                "deployment-name",
+                "https://endpoint",
+                "api-key"
+            ),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIAudioToText(
+                "deployment-name",
+                "https://endpoint",
+                credentials
+            ),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIAudioToText(
+                "deployment-name",
+                client
+            ),
+            InitializationType.ClientInServiceProvider =>
+                builder.Services.AddAzureOpenAIAudioToText("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIAudioToText(
+                "deployment-name",
+                "https://endpoint",
+                "api-key",
+                apiVersion: "2024-10-01-preview"
+            ),
+            _ => builder.Services,
         };
 
         // Assert
@@ -270,6 +482,6 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
         ClientInServiceProvider,
         ClientEndpoint,
         ApiVersion,
-        HttpClient
+        HttpClient,
     }
 }
