@@ -376,6 +376,36 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
             c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledToolResult is not null);
     }
 
+    [Fact]
+    public async Task ShouldPassToolsToRequestWithFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
+
+        // Assert
+        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.NotNull(request.Tools);
+        Assert.Collection(request.Tools[0].Functions,
+            item => Assert.Equal(this._timePluginDate.FullyQualifiedName, item.Name),
+            item => Assert.Equal(this._timePluginNow.FullyQualifiedName, item.Name));
+        Assert.Collection(request.Tools[0].Functions,
+            item =>
+                Assert.Equal(JsonSerializer.Serialize(this._timePluginDate.ToFunctionDeclaration().Parameters),
+                    JsonSerializer.Serialize(item.Parameters)),
+            item =>
+                Assert.Equal(JsonSerializer.Serialize(this._timePluginNow.ToFunctionDeclaration().Parameters),
+                    JsonSerializer.Serialize(item.Parameters)));
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();

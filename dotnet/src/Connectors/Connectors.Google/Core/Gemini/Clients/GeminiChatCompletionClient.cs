@@ -626,13 +626,38 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     private static GeminiRequest CreateRequest(
-        ChatHistory chatHistory,
-        GeminiPromptExecutionSettings geminiExecutionSettings,
-        Kernel? kernel)
+    ChatHistory chatHistory,
+    GeminiPromptExecutionSettings geminiExecutionSettings,
+    Kernel? kernel)
     {
         var geminiRequest = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, geminiExecutionSettings);
-        geminiExecutionSettings.ToolCallBehavior?.ConfigureGeminiRequest(kernel, geminiRequest);
+
+        // Handle tool or function behavior configuration
+        if (geminiExecutionSettings.FunctionChoiceBehavior != null)
+        {
+            ConfigureGeminiRequestTool(geminiRequest, kernel);
+        }
+        else if (geminiExecutionSettings.ToolCallBehavior != null)
+        {
+            geminiExecutionSettings.ToolCallBehavior.ConfigureGeminiRequest(kernel, geminiRequest);
+        }
+
         return geminiRequest;
+    }
+
+    private static void ConfigureGeminiRequestTool(GeminiRequest request, Kernel? kernel)
+    {
+        // If no kernel is provided, we don't have any tools to provide.
+        if (kernel is null)
+        {
+            return;
+        }
+
+        // Provide all functions from the kernel.
+        foreach (var functionMetadata in kernel.Plugins.GetFunctionsMetadata())
+        {
+            request.AddFunction(functionMetadata.ToGeminiFunction());
+        }
     }
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
