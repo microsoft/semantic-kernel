@@ -52,6 +52,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                     : string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss\.FFFFFFF}'", value));
                 return;
 #endif
+
             default:
                 base.TranslateConstant(value);
                 break;
@@ -72,7 +73,18 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     }
 
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
-        => throw new NotSupportedException("Unsupported Contains expression");
+    {
+        if (item.Type != typeof(string))
+        {
+            throw new NotSupportedException("Unsupported Contains expression");
+        }
+
+        this._sql.Append("JSON_CONTAINS(");
+        this.Translate(source);
+        this._sql.Append(", ");
+        this.Translate(item);
+        this._sql.Append(") = 1");
+    }
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
