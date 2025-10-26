@@ -194,6 +194,111 @@ public sealed class GeminiToolCallBehaviorTests
         Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
 
+    [Fact]
+    public void FunctionChoiceBehaviorAutoConvertsToAutoInvokeKernelFunctions()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorAutoWithNoAutoInvokeConvertsToEnableKernelFunctions()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false)
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.Equal(0, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorRequiredConvertsToAutoInvokeKernelFunctions()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Required()
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorNoneConvertsToEnableKernelFunctions()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.None()
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        // None behavior doesn't auto-invoke
+        Assert.Equal(0, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
+    public void GeminiPromptExecutionSettingsWithNoFunctionChoiceBehaviorDoesNotSetToolCallBehavior()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert
+        Assert.Null(converted.ToolCallBehavior);
+    }
+
+    [Fact]
+    public void GeminiPromptExecutionSettingsPreservesExistingToolCallBehavior()
+    {
+        // Arrange
+        var settings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.EnableKernelFunctions,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+
+        // Assert - ToolCallBehavior should be preserved when already set
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.Equal(0, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function = KernelFunctionFactory.CreateFromMethod(
