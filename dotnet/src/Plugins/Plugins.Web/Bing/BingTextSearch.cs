@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Non-generic ITextSearch is obsolete - provides backward compatibility during Phase 2 LINQ migration
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
