@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for text based search queries with type-safe LINQ filtering for use with Semantic Kernel prompts and automatic function calling.
-/// This generic interface supports LINQ-based filtering through <see cref="TextSearchOptions{TRecord}"/> for type-safe queries.
 /// </summary>
 /// <typeparam name="TRecord">The type of record being searched.</typeparam>
 [Experimental("SKEXP0001")]
@@ -17,33 +18,33 @@ public interface ITextSearch<TRecord>
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<string>> SearchAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<string>> SearchAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="object"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<object>> GetSearchResultsAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -58,31 +59,31 @@ public interface ITextSearch
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<string>> SearchAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<string>> SearchAsync(
         string query,
         TextSearchOptions? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="object"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
-    /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests. The default is <see cref="System.Threading.CancellationToken.None"/>.</param>
-    System.Threading.Tasks.Task<KernelSearchResults<object>> GetSearchResultsAsync(
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 }
