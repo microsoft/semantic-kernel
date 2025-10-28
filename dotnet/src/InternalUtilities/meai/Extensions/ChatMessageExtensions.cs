@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.Extensions.AI;
 
+[ExcludeFromCodeCoverage]
 internal static class ChatMessageExtensions
 {
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
@@ -22,6 +25,7 @@ internal static class ChatMessageExtensions
 
         foreach (AIContent content in message.Contents)
         {
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             KernelContent? resultContent = content switch
             {
                 Microsoft.Extensions.AI.TextContent tc => new Microsoft.SemanticKernel.TextContent(tc.Text),
@@ -41,6 +45,7 @@ internal static class ChatMessageExtensions
                     result: frc.Result),
                 _ => null
             };
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             if (resultContent is not null)
             {
