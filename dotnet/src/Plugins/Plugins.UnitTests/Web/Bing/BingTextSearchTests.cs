@@ -872,6 +872,67 @@ public sealed class BingTextSearchTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task CollectionContainsFilterThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange - Tests both Enumerable.Contains (C# 13-) and MemoryExtensions.Contains (C# 14+)
+        // The same code array.Contains() resolves differently based on C# language version:
+        // - C# 13 and earlier: Enumerable.Contains (LINQ extension method)
+        // - C# 14 and later: MemoryExtensions.Contains (span-based optimization due to "first-class spans")
+        // Our implementation handles both identically since Bing API doesn't support OR logic for either
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+        string[] languages = ["en", "fr"];
+
+        // Act & Assert - Verify that collection Contains pattern throws clear exception
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 5,
+            Skip = 0,
+            Filter = page => languages.Contains(page.Language!)  // Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
+        };
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () =>
+        {
+            await textSearch.SearchAsync("test", searchOptions);
+        });
+
+        // Assert - Verify error message explains the limitation clearly
+        Assert.Contains("Collection Contains filters", exception.Message);
+        Assert.Contains("not supported by Bing Search API", exception.Message);
+        Assert.Contains("OR logic", exception.Message);
+    }
+
+    [Fact]
+    public async Task StringContainsStillWorksWithLINQFiltersAsync()
+    {
+        // Arrange - Verify that String.Contains (instance method) still works
+        // String.Contains is NOT affected by C# 14 "first-class spans" - only arrays are
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act - String.Contains should continue to work
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 5,
+            Skip = 0,
+            Filter = page => page.Name.Contains("Semantic")  // String.Contains - instance method
+        };
+
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test", searchOptions);
+
+        // Assert - Should succeed without exception
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultsList = await result.Results.ToListAsync();
+        Assert.NotEmpty(resultsList);
+
+        // Verify the filter was translated correctly to intitle: operator
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("intitle%3ASemantic", requestUris[0]!.AbsoluteUri);
+    }
+
     #endregion
 
     /// <inheritdoc/>
