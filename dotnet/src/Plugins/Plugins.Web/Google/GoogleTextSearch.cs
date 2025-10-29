@@ -224,12 +224,31 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             return TryProcessInequalityExpression(notEqualExpr, filter);
         }
 
-        // Handle string Contains: record.PropertyName.Contains("value")
-        if (expression is MethodCallExpression methodCall &&
-            methodCall.Method.Name == "Contains" &&
-            methodCall.Method.DeclaringType == typeof(string))
+        // Handle Contains method calls
+        if (expression is MethodCallExpression methodCall && methodCall.Method.Name == "Contains")
         {
-            return TryProcessContainsExpression(methodCall, filter);
+            // String.Contains (instance method) - supported for substring search
+            if (methodCall.Method.DeclaringType == typeof(string))
+            {
+                return TryProcessContainsExpression(methodCall, filter);
+            }
+
+            // Collection Contains (static methods) - NOT supported due to Google API limitations
+            // This handles both Enumerable.Contains (C# 13-) and MemoryExtensions.Contains (C# 14+)
+            // User's C# language version determines which method is resolved, but both are unsupported
+            if (methodCall.Object == null) // Static method
+            {
+                // Enumerable.Contains or MemoryExtensions.Contains
+                if (methodCall.Method.DeclaringType == typeof(Enumerable) ||
+                    (methodCall.Method.DeclaringType == typeof(MemoryExtensions) && IsMemoryExtensionsContains(methodCall)))
+                {
+                    throw new NotSupportedException(
+                        "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Google Custom Search API. " +
+                        "Google's search operators do not support OR logic across multiple values. " +
+                        "Consider either: (1) performing multiple separate searches for each value, or " +
+                        "(2) retrieving broader results and filtering on the client side.");
+                }
+            }
         }
 
         // Handle NOT expressions: !record.PropertyName.Contains("value")
@@ -239,6 +258,22 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Checks if a method call expression is MemoryExtensions.Contains.
+    /// This handles C# 14's "first-class spans" feature where collection.Contains(item) resolves to
+    /// MemoryExtensions.Contains instead of Enumerable.Contains.
+    /// </summary>
+    private static bool IsMemoryExtensionsContains(MethodCallExpression methodExpr)
+    {
+        // MemoryExtensions.Contains has 2-3 parameters (source, value, optional comparer)
+        // We only support the case without a comparer (or with null comparer)
+        return methodExpr.Method.Name == nameof(MemoryExtensions.Contains) &&
+               methodExpr.Arguments.Count >= 2 &&
+               methodExpr.Arguments.Count <= 3 &&
+               (methodExpr.Arguments.Count == 2 ||
+                (methodExpr.Arguments.Count == 3 && methodExpr.Arguments[2] is ConstantExpression { Value: null }));
     }
 
     /// <summary>
