@@ -38,7 +38,7 @@ public sealed class CosmosNoSqlVectorStoreTests
         using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, CosmosNoSqlHotel>("collection"));
+        Assert.Throws<NotSupportedException>(() => sut.GetCollection<byte[], CosmosNoSqlHotel>("collection"));
     }
 
     [Fact]

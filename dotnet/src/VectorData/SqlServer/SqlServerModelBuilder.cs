@@ -22,14 +22,12 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, string, Guid, DateTime, or byte[]";
+        supportedTypes = "int, long, string, Guid";
 
         return type == typeof(int) // INT
             || type == typeof(long) // BIGINT
             || type == typeof(string) // VARCHAR
-            || type == typeof(Guid) // UNIQUEIDENTIFIER
-            || type == typeof(DateTime) // DATETIME2
-            || type == typeof(byte[]); // VARBINARY
+            || type == typeof(Guid); // UNIQUEIDENTIFIER
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

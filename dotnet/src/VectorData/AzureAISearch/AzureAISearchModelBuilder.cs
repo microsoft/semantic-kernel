@@ -31,9 +31,9 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
 
     internal static bool IsKeyPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string";
+        supportedTypes = "string, Guid";
 
-        return type == typeof(string);
+        return type == typeof(string) || type == typeof(Guid);
     }
 
     internal static bool IsDataPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
