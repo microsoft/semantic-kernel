@@ -49,7 +49,9 @@ public interface ITextSearch<TRecord>
 
 /// <summary>
 /// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.
+/// This non-generic interface uses legacy <see cref="TextSearchFilter"/> for backward compatibility.
 /// </summary>
+[System.Obsolete("Use ITextSearch<TRecord> with LINQ-based filtering instead. This interface will be removed in a future version.")]
 public interface ITextSearch
 {
     /// <summary>

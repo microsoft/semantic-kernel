@@ -17,7 +17,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// <summary>
 /// A Google Text Search implementation that can be used to perform searches using the Google Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class GoogleTextSearch : ITextSearch, IDisposable
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleTextSearch"/> class.
