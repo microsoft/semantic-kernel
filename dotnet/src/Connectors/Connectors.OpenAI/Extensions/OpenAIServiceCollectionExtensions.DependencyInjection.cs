@@ -53,14 +53,12 @@ public static class OpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            ClientCore.GetOpenAIClientOptions(
-                endpoint: null,
-                orgId: orgId,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
-
             var builder = new OpenAIClient(
                     credential: new ApiKeyCredential(apiKey ?? SingleSpace),
-                    options: ClientCore.GetOpenAIClientOptions(HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
+                    options: ClientCore.GetOpenAIClientOptions(
+                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        endpoint: null,
+                        orgId: orgId))
                 .GetChatClient(modelId)
                 .AsIChatClient()
                 .AsBuilder()
@@ -153,10 +151,34 @@ public static class OpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
+            // Get or create HttpClient with proper BaseAddress for the endpoint
+            HttpClient innerHttpClient;
+            if (httpClient is not null)
+            {
+                innerHttpClient = httpClient;
+            }
+            else
+            {
+                var defaultClient = HttpClientProvider.GetHttpClient(serviceProvider);
+                // If using default client and it doesn't have BaseAddress set or BaseAddress doesn't match the endpoint, create one with the endpoint
+                if (defaultClient.BaseAddress is null || defaultClient.BaseAddress != endpoint)
+                {
+                    Verify.NotNull(endpoint);
+
+                    // A new one needs to be created as we can't cross boundaries and modify an existing client 
+                    innerHttpClient = HttpClientProvider.GetHttpClient();
+                    innerHttpClient.BaseAddress = endpoint;
+                }
+                else
+                {
+                    innerHttpClient = defaultClient;
+                }
+            }
+
             var builder = new OpenAIClient(
                     credential: new ApiKeyCredential(apiKey ?? SingleSpace),
                     options: ClientCore.GetOpenAIClientOptions(
-                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        httpClient: innerHttpClient,
                         endpoint: endpoint,
                         orgId: orgId))
                 .GetChatClient(modelId)

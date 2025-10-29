@@ -141,7 +141,9 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
             await this._database.FT().InfoAsync(this.Name).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name"))
+        // "Unknown index name" is returned in Redis Stack
+        // "no such index" is returned in Redis Alpine
+        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name") || ex.Message.Contains("no such index"))
         {
             return false;
         }
@@ -287,6 +289,11 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         };
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
+        if (keysList.Count == 0)
+        {
+            yield break;
+        }
+
         // Create Options
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
@@ -388,6 +395,11 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
             var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key);
             redisRecords.Add((maybePrefixedKey, redisJsonRecord.Key, redisJsonRecord.SerializedRecord));
+        }
+
+        if (redisRecords.Count == 0)
+        {
+            return;
         }
 
         // Upsert.

@@ -29,12 +29,15 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
+            case bool boolValue when isSearchCondition:
+                this._sql.Append(boolValue ? "1 = 1" : "1 = 0");
+                return;
             case bool boolValue:
-                this._sql.Append(boolValue ? "1" : "0");
+                this._sql.Append(boolValue ? "CAST(1 AS BIT)" : "CAST(0 AS BIT)");
                 return;
             case DateTime dateTime:
                 this._sql.Append('\'').Append(dateTime.ToString("o")).Append('\'');
@@ -52,8 +55,9 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                     : string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss\.FFFFFFF}'", value));
                 return;
 #endif
+
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
@@ -72,7 +76,18 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     }
 
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
-        => throw new NotSupportedException("Unsupported Contains expression");
+    {
+        if (item.Type != typeof(string))
+        {
+            throw new NotSupportedException("Unsupported Contains expression");
+        }
+
+        this._sql.Append("JSON_CONTAINS(");
+        this.Translate(source);
+        this._sql.Append(", ");
+        this.Translate(item);
+        this._sql.Append(") = 1");
+    }
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
@@ -96,7 +111,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');
