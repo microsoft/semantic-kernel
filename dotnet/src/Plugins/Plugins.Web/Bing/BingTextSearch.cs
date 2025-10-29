@@ -186,8 +186,34 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                 break;
 
             case MethodCallExpression methodExpr when methodExpr.Method.Name == "Contains":
-                // Handle Contains: page => page.Name.Contains("Microsoft")
-                ProcessContainsExpression(methodExpr, filter);
+                // Distinguish between instance method (String.Contains) and static method (Enumerable/MemoryExtensions.Contains)
+                if (methodExpr.Object is MemberExpression)
+                {
+                    // Instance method: page.Name.Contains("value") - SUPPORTED
+                    ProcessContainsExpression(methodExpr, filter);
+                }
+                else if (methodExpr.Object == null)
+                {
+                    // Static method: could be Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
+                    // Bing API doesn't support OR logic, so collection Contains patterns are not supported
+                    if (methodExpr.Method.DeclaringType == typeof(Enumerable) ||
+                        (methodExpr.Method.DeclaringType == typeof(MemoryExtensions) && IsMemoryExtensionsContains(methodExpr)))
+                    {
+                        throw new NotSupportedException(
+                            "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Bing Search API. " +
+                            "Bing's advanced search operators do not support OR logic across multiple values. " +
+                            "Supported pattern: Property.Contains(\"value\") for string properties like Name, Snippet, or Url. " +
+                            "For multiple value matching, consider alternative approaches or use a different search provider.");
+                    }
+
+                    throw new NotSupportedException(
+                        $"Contains() method from {methodExpr.Method.DeclaringType?.Name} is not supported.");
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        "Contains() must be called on a property (e.g., page.Name.Contains(\"value\")).");
+                }
                 break;
 
             default:
@@ -315,6 +341,24 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                 "Contains() must be called on a property (e.g., page.Name.Contains(\"value\")). " +
                 "Collection Contains patterns are not yet supported.");
         }
+    }
+
+    /// <summary>
+    /// Determines if a MethodCallExpression is a MemoryExtensions.Contains call (C# 14 "first-class spans" feature).
+    /// </summary>
+    /// <param name="methodExpr">The method call expression to check.</param>
+    /// <returns>True if this is a MemoryExtensions.Contains call with supported parameters; otherwise false.</returns>
+    private static bool IsMemoryExtensionsContains(MethodCallExpression methodExpr)
+    {
+        // MemoryExtensions.Contains has 2-3 parameters:
+        // - Contains<T>(ReadOnlySpan<T> span, T value)
+        // - Contains<T>(ReadOnlySpan<T> span, T value, IEqualityComparer<T>? comparer)
+        // We only support when comparer is null or omitted
+        return methodExpr.Method.Name == nameof(MemoryExtensions.Contains) &&
+               methodExpr.Arguments.Count >= 2 &&
+               methodExpr.Arguments.Count <= 3 &&
+               (methodExpr.Arguments.Count == 2 ||
+                (methodExpr.Arguments.Count == 3 && methodExpr.Arguments[2] is ConstantExpression { Value: null }));
     }
 
     /// <summary>
