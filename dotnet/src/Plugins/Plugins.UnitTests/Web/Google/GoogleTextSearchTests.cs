@@ -702,6 +702,35 @@ public sealed class GoogleTextSearchTests : IDisposable
         Assert.Contains("excludeTerms=deprecated", absoluteUri);
     }
 
+    [Fact]
+    public async Task CollectionContainsFilterThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act & Assert - Collection Contains (both Enumerable.Contains and MemoryExtensions.Contains)
+        // This same code resolves differently based on C# language version:
+        // - C# 13 and earlier: Enumerable.Contains (LINQ extension method)
+        // - C# 14 and later: MemoryExtensions.Contains (span-based optimization)
+        // Our implementation handles both identically - both throw NotSupportedException
+        string[] sites = ["microsoft.com", "github.com"];
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () =>
+            await textSearch.SearchAsync("test",
+                new TextSearchOptions<GoogleWebPage>
+                {
+                    Top = 4,
+                    Skip = 0,
+                    Filter = page => sites.Contains(page.DisplayLink!)
+                }));
+
+        // Verify exception message is clear and actionable
+        Assert.Contains("Collection Contains filters", exception.Message);
+        Assert.Contains("not supported by Google Custom Search API", exception.Message);
+        Assert.Contains("OR logic", exception.Message);
+    }
+
     #endregion
 
     /// <inheritdoc/>
