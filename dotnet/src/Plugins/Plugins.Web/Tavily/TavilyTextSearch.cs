@@ -362,6 +362,18 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     {
         if (methodCall.Method.Name == "Contains")
         {
+            // Handle C# 14 MemoryExtensions.Contains compatibility issue
+            // In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains
+            if (methodCall.Object == null && IsMemoryExtensionsContains(methodCall))
+            {
+                throw new NotSupportedException(
+                    "Collection Contains filters (e.g., array.Contains(page.Property)) using MemoryExtensions.Contains (C# 14+) are not supported by Tavily Search API. " +
+                    "Tavily's API does not support OR logic across multiple values. " +
+                    "Consider either: (1) performing multiple separate searches for each value, or " +
+                    "(2) retrieving broader results and filtering on the client side. " +
+                    "Note: This occurs when using C# 14+ language features with span-based Contains methods.");
+            }
+
             // Check if this is property.Contains(value) or array.Contains(property)
             if (methodCall.Object is MemberExpression member)
             {
@@ -789,6 +801,41 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
 
         string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonOptionsCache);
         return new(strPayload, Encoding.UTF8, "application/json");
+    }
+
+    /// <summary>
+    /// Determines if a method call expression is a MemoryExtensions.Contains call (C# 14+ compatibility).
+    /// In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains.
+    /// </summary>
+    /// <param name="methodCall">The method call expression to check.</param>
+    /// <returns>True if this is a MemoryExtensions.Contains call, false otherwise.</returns>
+    private static bool IsMemoryExtensionsContains(MethodCallExpression methodCall)
+    {
+        // Check if this is a static method call (Object is null)
+        if (methodCall.Object != null)
+        {
+            return false;
+        }
+
+        // Check if it's MemoryExtensions.Contains
+        if (methodCall.Method.DeclaringType?.Name != "MemoryExtensions")
+        {
+            return false;
+        }
+
+        // MemoryExtensions.Contains has 2-3 parameters: (ReadOnlySpan<T>, T) or (ReadOnlySpan<T>, T, IEqualityComparer<T>)
+        if (methodCall.Arguments.Count < 2 || methodCall.Arguments.Count > 3)
+        {
+            return false;
+        }        // For our text search scenarios, we don't support span comparers
+        if (methodCall.Arguments.Count == 3)
+        {
+            throw new NotSupportedException(
+                "MemoryExtensions.Contains with custom IEqualityComparer is not supported. " +
+                "Use simple array.Contains(property) expressions without custom comparers.");
+        }
+
+        return true;
     }
     #endregion
 }
