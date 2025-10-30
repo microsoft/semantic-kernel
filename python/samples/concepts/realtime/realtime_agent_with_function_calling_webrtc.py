@@ -103,6 +103,7 @@ async def main() -> None:
     flowery prose.
     """,
         voice="alloy",
+        output_modalities=["text", "audio"],
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
