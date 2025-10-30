@@ -470,7 +470,7 @@ class KernelFunction(KernelBaseModel):
                         if isinstance(value, BaseModel):
                             results.append(value.model_dump())
                             continue
-                        results.append(json.dumps(value))
+                        results.append(value)
                     return json.dumps(results) if len(results) > 1 else json.dumps(results[0])
                 return json.dumps(result.value)
             return "The function did not return a result."
