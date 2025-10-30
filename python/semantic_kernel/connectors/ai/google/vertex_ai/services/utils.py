@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from typing import TYPE_CHECKING
 
@@ -88,7 +89,14 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             if item.text:
                 parts.append(Part.from_text(item.text))
         elif isinstance(item, FunctionCallContent):
-            parts.append(Part.from_dict({"function_call": {"name": item.name, "args": item.arguments}}))
+            parts.append(
+                Part.from_dict({
+                    "function_call": {
+                        "name": item.name,
+                        "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                    }
+                })
+            )
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
