@@ -205,6 +205,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine("[OK] IntelliSense support - IDE shows available properties for each connector");
         Console.WriteLine("[OK] Type safety - strongly typed search results and filtering");
         Console.WriteLine("[OK] LINQ expressions - familiar &&, ||, Contains(), StartsWith(), comparisons, etc.");
+        Console.WriteLine("[OK] C# version compatibility - expressions work across C# 12, 13, and 14+");
         Console.WriteLine("[OK] 100% backward compatibility - existing ITextSearch code unchanged");
         Console.WriteLine();
 
@@ -212,12 +213,20 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine();
         Console.WriteLine("// Bing: Filter web pages by content and metadata");
         Console.WriteLine("Filter = page => page.Name.Contains(\"Microsoft\") && page.DateLastCrawled > DateTime.Now.AddDays(-7)");
+        Console.WriteLine("//       ↑ String.Contains (instance method) - works in all C# versions");
         Console.WriteLine();
         Console.WriteLine("// Google: Filter search results by domain and content");
         Console.WriteLine("Filter = result => result.Title.Contains(\"AI\") && result.DisplayLink.EndsWith(\".edu\")");
+        Console.WriteLine("//                 ↑ String.Contains (instance method) - works in all C# versions");
         Console.WriteLine();
         Console.WriteLine("// Vector Store: Filter custom record types with complex logic");
         Console.WriteLine("Filter = record => record.Category == \"Technology\" && record.Score > 0.75 && record.Tags.Any(t => t == \"AI\")");
+        Console.WriteLine("//                                                                                         ↑ Use Any() for collections");
+        Console.WriteLine();
+        Console.WriteLine("// C# 14 Compatibility Note:");
+        Console.WriteLine("// - String.Contains() (instance method): ✅ Works in all C# versions");
+        Console.WriteLine("// - For collection filtering, use Any() or Where(): array.Any(x => x == value)");
+        Console.WriteLine("// - Avoid collection.Contains(item) in expressions (C# 14 resolution changes)");
         Console.WriteLine();
 
         Console.WriteLine("The VectorStoreTextSearch already demonstrates this pattern in Step4!");
