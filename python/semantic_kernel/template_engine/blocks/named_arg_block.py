@@ -88,11 +88,20 @@ class NamedArgBlock(Block):
         return fields
 
     def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
-        """Render the named argument block."""
+        """Render the named argument block.
+        
+        When rendering a named argument, we return the actual value from the arguments
+        (not the string representation) so that functions receive the correct type.
+        """
         if self.value:
             return self.value.render()
         if arguments is None:
             return ""
         if self.variable:
-            return self.variable.render(kernel, arguments)
+            # Return the actual value from arguments, not the string representation
+            # Check if the variable name exists in arguments
+            if self.variable.name not in arguments:
+                logger.warning(f"Variable `${self.variable.name}` not found in the KernelArguments")
+                return ""
+            return arguments[self.variable.name]
         return None
