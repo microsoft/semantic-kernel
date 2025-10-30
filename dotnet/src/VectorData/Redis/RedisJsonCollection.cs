@@ -289,6 +289,11 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         };
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
+        if (keysList.Count == 0)
+        {
+            yield break;
+        }
+
         // Create Options
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
@@ -390,6 +395,11 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
             var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key);
             redisRecords.Add((maybePrefixedKey, redisJsonRecord.Key, redisJsonRecord.SerializedRecord));
+        }
+
+        if (redisRecords.Count == 0)
+        {
+            return;
         }
 
         // Upsert.

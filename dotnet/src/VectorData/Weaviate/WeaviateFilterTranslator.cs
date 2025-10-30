@@ -20,7 +20,7 @@ internal class WeaviateFilterTranslator
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
+    internal string? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -28,6 +28,14 @@ internal class WeaviateFilterTranslator
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
+
+        // Weaviate doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
+        // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
+        // nor is 'x && true'.
+        if (lambdaExpression.Body is ConstantExpression { Value: true })
+        {
+            return null;
+        }
 
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
         var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);

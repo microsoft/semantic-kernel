@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from google.cloud.aiplatform_v1beta1.types.content import Candidate, Part
+from google.cloud.aiplatform_v1beta1.types.content import Candidate
+from vertexai.generative_models import Part
 
 from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     finish_reason_from_vertex_ai_to_semantic_kernel,
