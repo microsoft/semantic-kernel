@@ -55,6 +55,9 @@ internal class CosmosMongoFilterTranslator
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
                 => this.GenerateEqualityComparison(property, value: true, ExpressionType.Equal),
+            // Handle true literal (r => true), which is useful for fetching all records
+            ConstantExpression { Value: true }
+                => [],
 
             MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
 

@@ -57,7 +57,7 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case ConstantExpression constant:
-                this.TranslateConstant(constant.Value);
+                this.TranslateConstant(constant.Value, isSearchCondition);
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
@@ -136,7 +136,7 @@ internal abstract class SqlFilterTranslator
             => expression is ConstantExpression { Value: null } or QueryParameterExpression { Value: null };
     }
 
-    protected virtual void TranslateConstant(object? value)
+    protected virtual void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {

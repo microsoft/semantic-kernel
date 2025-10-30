@@ -37,7 +37,25 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     {
         Verify.NotNull(calledToolResult);
 
-        this.CalledToolResult = calledToolResult;
+        this.CalledToolResults = [calledToolResult];
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class with multiple tool results.
+    /// </summary>
+    /// <param name="calledToolResults">The results of tools called by the kernel.</param>
+    public GeminiChatMessageContent(IEnumerable<GeminiFunctionToolResult> calledToolResults)
+        : base(
+            role: AuthorRole.Tool,
+            content: null,
+            modelId: null,
+            innerContent: null,
+            encoding: Encoding.UTF8,
+            metadata: null)
+    {
+        Verify.NotNull(calledToolResults);
+
+        this.CalledToolResults = calledToolResults.ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -62,7 +80,32 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.CalledToolResult = calledToolResult;
+        this.CalledToolResults = calledToolResult != null ? [calledToolResult] : null;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class with multiple tool results.
+    /// </summary>
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="content">Content of the message</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="calledToolResults">The results of tools called by the kernel.</param>
+    /// <param name="metadata">Additional metadata</param>
+    internal GeminiChatMessageContent(
+        AuthorRole role,
+        string? content,
+        string modelId,
+        IEnumerable<GeminiFunctionToolResult>? calledToolResults = null,
+        GeminiMetadata? metadata = null)
+        : base(
+            role: role,
+            content: content,
+            modelId: modelId,
+            innerContent: content,
+            encoding: Encoding.UTF8,
+            metadata: metadata)
+    {
+        this.CalledToolResults = calledToolResults?.ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -96,9 +139,15 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
-    /// The result of tool called by the kernel.
+    /// The results of tools called by the kernel.
     /// </summary>
-    public GeminiFunctionToolResult? CalledToolResult { get; }
+    public IReadOnlyList<GeminiFunctionToolResult>? CalledToolResults { get; }
+
+    /// <summary>
+    /// The result of tool called by the kernel (for backward compatibility).
+    /// Returns the first tool result if multiple exist, or null if none.
+    /// </summary>
+    public GeminiFunctionToolResult? CalledToolResult => this.CalledToolResults?.Count > 0 ? this.CalledToolResults[0] : null;
 
     /// <summary>
     /// The metadata associated with the content.

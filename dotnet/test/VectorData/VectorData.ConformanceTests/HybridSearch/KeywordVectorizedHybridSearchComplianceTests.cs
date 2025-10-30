@@ -142,10 +142,8 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         Assert.Equal(2, results2[1].Record.Code);
     }
 
-    public sealed class VectorAndStringRecord<TRecordKey>
+    public sealed class VectorAndStringRecord<TRecordKey> : TestRecord<TKey>
     {
-        public TRecordKey Key { get; set; } = default!;
-
         public string Text { get; set; } = string.Empty;
 
         public int Code { get; set; }
@@ -153,10 +151,8 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 
-    public sealed class MultiTextStringRecord<TRecordKey>
+    public sealed class MultiTextStringRecord<TRecordKey> : TestRecord<TKey>
     {
-        public TRecordKey Key { get; set; } = default!;
-
         public string Text1 { get; set; } = string.Empty;
 
         public string Text2 { get; set; } = string.Empty;
