@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
@@ -19,8 +20,13 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
     /// <inheritdoc />
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) as string ??
-            throw new InvalidOperationException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
+        var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new InvalidOperationException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.")
+        };
 
         var hashEntries = new List<HashEntry>();
         foreach (var property in model.DataProperties)
@@ -67,7 +73,15 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
         var outputRecord = model.CreateRecord<TConsumerDataModel>()!;
 
         // Set Key.
-        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Key);
+        model.KeyProperty.SetValueAsObject(outputRecord, model.KeyProperty.Type switch
+        {
+            Type t when t == typeof(string)
+                => storageModel.Key,
+            Type t when t == typeof(Guid)
+                => Guid.Parse(storageModel.Key),
+
+            _ => throw new UnreachableException()
+        });
 
         // Set each vector property if embeddings should be returned.
         if (includeVectors)

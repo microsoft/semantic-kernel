@@ -19,6 +19,20 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 
     internal Dictionary<string, object> Parameters => this._parameters;
 
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
+    {
+        switch (value)
+        {
+            case Guid g:
+                // Microsoft.Data.Sqlite writes GUIDs as upper-case strings, align our constant formatting with that.
+                this._sql.Append('\'').Append(g.ToString().ToUpperInvariant()).Append('\'');
+                break;
+            default:
+                base.TranslateConstant(value, isSearchCondition);
+                break;
+        }
+    }
+
     // TODO: support Contains over array fields (#10343)
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");

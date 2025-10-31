@@ -21,9 +21,9 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string";
+        supportedTypes = "string, Guid";
 
-        return type == typeof(string);
+        return type == typeof(string) || type == typeof(Guid);
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

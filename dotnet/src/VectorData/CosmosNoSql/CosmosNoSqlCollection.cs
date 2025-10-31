@@ -134,9 +134,12 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         try
         {
-            if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
+            if (typeof(TKey) != typeof(string)
+                && typeof(TKey) != typeof(Guid)
+                && typeof(TKey) != typeof(CosmosNoSqlCompositeKey)
+                && typeof(TKey) != typeof(object))
             {
-                throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported.");
+                throw new NotSupportedException($"Only string, Guid and {nameof(CosmosNoSqlCompositeKey)} keys are supported.");
             }
 
             this._database = databaseProvider(clientWrapper.Client);
@@ -852,13 +855,22 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         => keys switch
         {
             IEnumerable<CosmosNoSqlCompositeKey> k => k,
+
             IEnumerable<string> k => k.Select(key => new CosmosNoSqlCompositeKey(recordKey: key, partitionKey: key)),
+
+            IEnumerable<Guid> k => k.Select(key =>
+            {
+                var guidString = key.ToString();
+                return new CosmosNoSqlCompositeKey(recordKey: guidString, partitionKey: guidString);
+            }),
+
             IEnumerable<object> k => k.Select(key => key switch
             {
                 string s => new CosmosNoSqlCompositeKey(recordKey: s, partitionKey: s),
                 CosmosNoSqlCompositeKey ck => ck,
                 _ => throw new ArgumentException($"Invalid key type '{key.GetType().Name}'.")
             }),
+
             _ => throw new UnreachableException()
         };
 
