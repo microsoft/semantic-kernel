@@ -78,12 +78,14 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     {
         // Arrange.
         var sut = await CreateVectorStoreTextSearchAsync();
+        ITextSearch<DataModel> typeSafeInterface = sut;
 
         // Act.
-        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        KernelSearchResults<DataModel> searchResults = await typeSafeInterface.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<DataModel> { Top = 2, Skip = 0 });
         var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
+        Assert.All(results, result => Assert.IsType<DataModel>(result));
     }
 
     [Fact]
@@ -117,12 +119,14 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     {
         // Arrange.
         var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
+        ITextSearch<DataModelWithRawEmbedding> typeSafeInterface = sut;
 
         // Act.
-        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        KernelSearchResults<DataModelWithRawEmbedding> searchResults = await typeSafeInterface.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<DataModelWithRawEmbedding> { Top = 2, Skip = 0 });
         var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
+        Assert.All(results, result => Assert.IsType<DataModelWithRawEmbedding>(result));
     }
 
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
@@ -270,17 +274,16 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
             Filter = r => r.Tag == "Even"
         };
 
-        KernelSearchResults<object> searchResults = await typeSafeInterface.GetSearchResultsAsync(
+        KernelSearchResults<DataModel> searchResults = await typeSafeInterface.GetSearchResultsAsync(
             "What is the Semantic Kernel?",
             searchOptions);
         var results = await searchResults.Results.ToListAsync();
 
-        // Assert - Results should be DataModel objects with Tag == "Even"
+        // Assert - Results should be strongly-typed DataModel objects with Tag == "Even"
         Assert.NotEmpty(results);
         Assert.All(results, result =>
         {
-            var dataModel = Assert.IsType<DataModel>(result);
-            Assert.Equal("Even", dataModel.Tag);
+            Assert.Equal("Even", result.Tag); // Direct property access - no cast needed!
         });
     }
 
