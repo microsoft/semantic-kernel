@@ -155,8 +155,16 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
             }
             catch (NotSupportedException ex)
             {
+                // Check if this is a critical unsupported pattern that should not be gracefully degraded
+                if (ex.Message.Contains("Collection Contains filters"))
+                {
+                    // Collection Contains patterns should fail explicitly rather than gracefully degrade
+                    // This helps developers understand that this pattern will never work with the API
+                    throw;
+                }
+
                 this._logger.LogWarning("LINQ expression not fully supported by Brave API, performing search without some filters: {Message}", ex.Message);
-                // Continue with basic search - graceful degradation
+                // Continue with basic search - graceful degradation for other cases
             }
         }
 
@@ -369,18 +377,6 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     {
         if (methodCall.Method.Name == "Contains")
         {
-            // Handle C# 14 MemoryExtensions.Contains compatibility issue
-            // In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains
-            if (methodCall.Object == null && IsMemoryExtensionsContains(methodCall))
-            {
-                throw new NotSupportedException(
-                    "Collection Contains filters (e.g., array.Contains(page.Property)) using MemoryExtensions.Contains (C# 14+) are not supported by Brave Search API. " +
-                    "Brave's API does not support OR logic across multiple values. " +
-                    "Consider either: (1) performing multiple separate searches for each value, or " +
-                    "(2) retrieving broader results and filtering on the client side. " +
-                    "Note: This occurs when using C# 14+ language features with span-based Contains methods.");
-            }
-
             // Check if this is property.Contains(value) or array.Contains(property)
             if (methodCall.Object is MemberExpression member)
             {
@@ -404,35 +400,26 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
             else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
             {
                 // This is array.Contains(property) - e.g., new[] { "US", "GB" }.Contains(page.Country)
-                // This is an extension method call where the first argument is the array
-                var arrayExpr = methodCall.Arguments[0];
-                var propertyExpr = methodCall.Arguments[1];
+                // This pattern is not supported regardless of whether it's Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
+                // Both resolve to extension method calls with methodCall.Object == null
 
-                if (propertyExpr is MemberExpression propertyMember)
+                // Provide detailed error message that covers both C# language versions
+                string errorMessage = "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Brave Search API. " +
+                    "Brave's API does not support OR logic across multiple values. ";
+
+                if (IsMemoryExtensionsContains(methodCall))
                 {
-                    var propertyName = propertyMember.Member.Name;
-                    var arrayValue = ExtractValue(arrayExpr);
-
-                    if (arrayValue is System.Collections.IEnumerable enumerable)
-                    {
-                        // Convert to OR expressions - each value becomes an equality clause
-                        foreach (var value in enumerable)
-                        {
-                            if (value != null)
-                            {
-                                filterClauses.Add(new EqualToFilterClause(propertyName, value));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Contains argument must be an array or collection, got: {arrayValue?.GetType().Name}");
-                    }
+                    errorMessage += "Note: This occurs when using C# 14+ language features with span-based Contains methods (MemoryExtensions.Contains). ";
                 }
                 else
                 {
-                    throw new NotSupportedException("Contains with inline collection requires a property reference as the second argument.");
+                    errorMessage += "Note: This occurs with standard LINQ extension methods (Enumerable.Contains). ";
                 }
+
+                errorMessage += "Consider either: (1) performing multiple separate searches for each value, or " +
+                    "(2) retrieving broader results and filtering on the client side.";
+
+                throw new NotSupportedException(errorMessage);
             }
             else
             {
