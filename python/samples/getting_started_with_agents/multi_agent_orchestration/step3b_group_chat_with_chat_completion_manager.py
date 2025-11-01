@@ -297,7 +297,13 @@ class ChatCompletionGroupChatManager(GroupChatManager):
         string_with_reason = StringResult.model_validate_json(response.content)
 
         return MessageResult(
-            result=ChatMessageContent(role=AuthorRole.ASSISTANT, content=string_with_reason.result),
+            result=ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                content=string_with_reason.result,
+                name=self.__class__.__name__,
+                inner_content=response,
+                metadata=response.metadata,
+            ),
             reason=string_with_reason.reason,
         )
 
