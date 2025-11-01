@@ -156,6 +156,41 @@ public sealed class VertexAIGeminiChatCompletionServiceTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestBodyIncludesGoogleSearchToolWhenSetAsync(bool shouldContain)
+    {
+        // Arrange
+        string model = "gemini-2.5-pro";
+        var sut = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project", httpClient: this._httpClient);
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            GroundingConfig = shouldContain
+                ? new GeminiGroundingConfig() { GoogleSearch = new() }
+                : null
+        };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("my prompt", executionSettings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestBody = UTF8Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+
+        if (shouldContain)
+        {
+            Assert.Contains("googleSearch", requestBody);
+        }
+        else
+        {
+            Assert.DoesNotContain("googleSearch", requestBody);
+        }
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
