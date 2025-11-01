@@ -382,6 +382,32 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     }
 
     [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationWithBinaryFileDataAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Memory<byte> file = await File.ReadAllBytesAsync(Path.Combine("TestData", "employees.pdf"));
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("What positions do the employees have?"),
+            new BinaryContent(file, "application/pdf")
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("accountant", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "Currently GoogleAI always returns zero tokens.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsUsedTokensAsync(ServiceType serviceType)
