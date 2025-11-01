@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process;
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// A test fixture for running shared process tests across multiple runtimes.
@@ -18,8 +16,9 @@ public abstract class ProcessTestFixture
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">An optional initial event.</param>
     /// <param name="externalMessageChannel">channel used for external messages</param>
+    /// <param name="runId">An optional run Id.</param>
     /// <returns>A <see cref="Task{KernelProcessContext}"/></returns>
-    public abstract Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null);
+    public abstract Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null, string? runId = null);
 
     /// <summary>
     /// Starts the specified process.

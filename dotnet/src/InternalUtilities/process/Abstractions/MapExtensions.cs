@@ -8,7 +8,7 @@ internal static class MapExtensions
 {
     public static KernelProcessMap CloneMap(this KernelProcessMap map, ILogger logger)
     {
-        KernelProcessMapState newState = new(map.State.Name, map.State.Version, map.State.Id!);
+        KernelProcessMapState newState = new(map.State.StepId, map.State.Version, map.State.RunId!);
 
         KernelProcessMap copy =
             new(
