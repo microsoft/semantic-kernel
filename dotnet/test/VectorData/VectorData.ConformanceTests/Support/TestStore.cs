@@ -98,6 +98,8 @@ public abstract class TestStore
 
         for (var i = 0; i < 200; i++)
         {
+            // Note that we very intentionally use SearchAsync and not filtering GetAsync, as we want to wait until the data is visible
+            // specifically via vector search (some databases may show data via filtering before they are indexed for vector search).
             var results = collection.SearchAsync(
                 vector,
                 top: recordCount is 0 ? 1 : recordCount,

@@ -83,9 +83,9 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         Verify.NotNull(searchIndexClient);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException("Only string and Guid keys are supported.");
         }
 
         options ??= AzureAISearchCollectionOptions.Default;
@@ -791,7 +791,13 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         Verify.NotNull(key);
 
-        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+        var stringKey = key switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
 
         Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
 

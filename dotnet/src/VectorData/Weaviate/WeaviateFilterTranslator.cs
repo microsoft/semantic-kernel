@@ -20,7 +20,7 @@ internal class WeaviateFilterTranslator
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
+    internal string? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -28,6 +28,14 @@ internal class WeaviateFilterTranslator
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
+
+        // Weaviate doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
+        // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
+        // nor is 'x && true'.
+        if (lambdaExpression.Body is ConstantExpression { Value: true })
+        {
+            return null;
+        }
 
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
         var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
@@ -213,8 +221,41 @@ internal class WeaviateFilterTranslator
                 this.TranslateContains(source, item);
                 return;
 
+            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
+            // See https://github.com/dotnet/runtime/issues/109757 for more context.
+            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
+            // it's null.
+            case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
+                when contains.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (contains.Arguments.Count is 2
+                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var source):
+                this.TranslateContains(source, item);
+                return;
+
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
+        }
+
+        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+        {
+            if (expression is UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Operand: var unwrapped
+                }
+                && implicitCastDeclaringType.GetGenericTypeDefinition() is var genericTypeDefinition
+                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+            {
+                result = unwrapped;
+                return true;
+            }
+
+            result = null;
+            return false;
         }
     }
 
