@@ -59,6 +59,22 @@ public abstract class ToolCallBehavior
     /// </remarks>
     public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
 
+    /// <summary>
+    /// Creates an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
+    /// to the model and attempt to automatically handle any function call requests with the specified maximum number of attempts.
+    /// </summary>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <remarks>
+    /// When successful, tool call requests from the model become an implementation detail, with the service
+    /// handling invoking any requested functions and supplying the results back to the model.
+    /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
+    /// </remarks>
+    /// <returns>A <see cref="ToolCallBehavior"/> instance configured with the specified maximum auto-invoke attempts.</returns>
+    public static ToolCallBehavior CreateAutoInvokeKernelFunctions(int maximumAutoInvokeAttempts)
+    {
+        return new KernelFunctions(autoInvoke: true, maximumAutoInvokeAttempts);
+    }
+
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
@@ -70,6 +86,20 @@ public abstract class ToolCallBehavior
     {
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
+    }
+
+    /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
+    /// <param name="functions">The functions that should be made available to the model.</param>
+    /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <returns>
+    /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// to indicate that the specified functions should be made available to the model.
+    /// </returns>
+    public static ToolCallBehavior EnableFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        Verify.NotNull(functions);
+        return new EnabledFunctions(functions, autoInvoke, maximumAutoInvokeAttempts);
     }
 
     /// <summary>Gets an instance that will request the model to use the specified function.</summary>
@@ -85,10 +115,30 @@ public abstract class ToolCallBehavior
         return new RequiredFunction(function, autoInvoke);
     }
 
+    /// <summary>Gets an instance that will request the model to use the specified function.</summary>
+    /// <param name="function">The function the model should request to use.</param>
+    /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <returns>
+    /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// to indicate that the specified function should be requested by the model.
+    /// </returns>
+    public static ToolCallBehavior RequireFunction(OpenAIFunction function, bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        Verify.NotNull(function);
+        return new RequiredFunction(function, autoInvoke, maximumAutoInvokeAttempts);
+    }
+
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private ToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+    }
+
+    /// <summary>Initializes the instance; prevents external instantiation.</summary>
+    private ToolCallBehavior(bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        this.MaximumAutoInvokeAttempts = autoInvoke ? maximumAutoInvokeAttempts : 0;
     }
 
     /// <summary>
@@ -132,6 +182,8 @@ public abstract class ToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
+        internal KernelFunctions(bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts) { }
+
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
         internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
@@ -170,6 +222,18 @@ public abstract class ToolCallBehavior
         private readonly ChatTool[] _functions;
 
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
+        {
+            this._openAIFunctions = functions.ToArray();
+
+            var defs = new ChatTool[this._openAIFunctions.Length];
+            for (int i = 0; i < defs.Length; i++)
+            {
+                defs[i] = this._openAIFunctions[i].ToFunctionDefinition(false);
+            }
+            this._functions = defs;
+        }
+
+        public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts)
         {
             this._openAIFunctions = functions.ToArray();
 
@@ -238,6 +302,13 @@ public abstract class ToolCallBehavior
         private readonly ChatToolChoice _choice;
 
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke)
+        {
+            this._function = function;
+            this._tool = function.ToFunctionDefinition(false);
+            this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
+        }
+
+        public RequiredFunction(OpenAIFunction function, bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts)
         {
             this._function = function;
             this._tool = function.ToFunctionDefinition(false);
