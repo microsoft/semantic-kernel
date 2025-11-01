@@ -651,13 +651,15 @@ internal static class ModelDiagnostics
         public const string UserMessage = "gen_ai.user.message";
         public const string AssistantMessage = "gen_ai.assistant.message";
         public const string ToolMessage = "gen_ai.tool.message";
+        public const string DeveloperMessage = "gen_ai.tool.developer";
         public const string Choice = "gen_ai.choice";
         public static readonly Dictionary<AuthorRole, string> RoleToEventMap = new()
             {
                 { AuthorRole.System, SystemMessage },
                 { AuthorRole.User, UserMessage },
                 { AuthorRole.Assistant, AssistantMessage },
-                { AuthorRole.Tool, ToolMessage }
+                { AuthorRole.Tool, ToolMessage },
+                { AuthorRole.Developer, DeveloperMessage }
             };
     }
     # endregion
