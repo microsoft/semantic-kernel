@@ -18,7 +18,7 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
     {
         // Test sends: WHERE (NOT (("Int" = 8) OR ("String" = 'foo')))
         // There's a NULL string in the database, and relational null semantics in conjunction with negation makes the default implementation fail.
-        await Assert.ThrowsAsync<FailException>(() => base.Not_over_Or());
+        await Assert.ThrowsAsync<FailException>(base.Not_over_Or);
 
         // Compensate by adding a null check:
         await this.TestFilterAsync(
@@ -29,7 +29,7 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
     public override async Task NotEqual_with_string()
     {
         // As above, null semantics + negation
-        await Assert.ThrowsAsync<FailException>(() => base.NotEqual_with_string());
+        await Assert.ThrowsAsync<FailException>(base.NotEqual_with_string);
 
         await this.TestFilterAsync(
             r => r.String != null && r.String != "foo",
@@ -38,30 +38,35 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
 
     // Array fields not (currently) supported on SQLite (see #10343)
     public override Task Contains_over_field_string_array()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_array());
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_over_field_string_array);
 
     // List fields not (currently) supported on SQLite (see #10343)
     public override Task Contains_over_field_string_List()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_over_field_string_List);
 
     // List fields not (currently) supported on SQLite (see #10343)
     public override Task Contains_with_Enumerable_Contains()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_Enumerable_Contains());
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_with_Enumerable_Contains);
 
 #if !NETFRAMEWORK
     // List fields not (currently) supported on SQLite (see #10343)
     public override Task Contains_with_MemoryExtensions_Contains()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains());
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_with_MemoryExtensions_Contains);
+#endif
+
+#if NET10_0_OR_GREATER
+    public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif
 
     // AnyTagEqualTo not (currently) supported on SQLite
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_array());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_array);
 
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_List()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
+        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_List);
 
     public new class Fixture : FilterTests<long>.Fixture
     {

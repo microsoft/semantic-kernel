@@ -23,12 +23,20 @@ internal class PineconeFilterTranslator
     private Extensions.VectorData.ProviderServices.CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Metadata Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
+    internal Metadata? Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
     {
         this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
+
+        // Pinecone doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
+        // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
+        // nor is 'x && true'.
+        if (lambdaExpression.Body is ConstantExpression { Value: true })
+        {
+            return null;
+        }
 
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
         var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);

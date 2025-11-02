@@ -5,7 +5,7 @@ using Pinecone.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace Pinecone.ConformanceTests.CRUD;
+namespace Pinecone.ConformanceTests;
 
 public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFixture<PineconeFixture>
 {
