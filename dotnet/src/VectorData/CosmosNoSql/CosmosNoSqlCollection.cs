@@ -773,21 +773,14 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// More information about Azure CosmosDB NoSQL distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/vector-search#container-vector-policies" />.
     /// </summary>
     private static DistanceFunction GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
-    {
-        if (string.IsNullOrWhiteSpace(distanceFunction))
+        => distanceFunction switch
         {
-            // Use default distance function.
-            return DistanceFunction.Cosine;
-        }
-
-        return distanceFunction switch
-        {
-            SKDistanceFunction.CosineSimilarity => DistanceFunction.Cosine,
+            SKDistanceFunction.CosineSimilarity or null => DistanceFunction.Cosine,
             SKDistanceFunction.DotProductSimilarity => DistanceFunction.DotProduct,
             SKDistanceFunction.EuclideanDistance => DistanceFunction.Euclidean,
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
+
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
-    }
 
     /// <summary>
     /// Returns <see cref="VectorDataType"/> based on vector property type.

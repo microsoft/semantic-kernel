@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
-using VectorData.ConformanceTests.Models;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
@@ -89,18 +88,25 @@ public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture
 
     public virtual string CollectionName => "CollectionTests";
 
-    public virtual VectorStoreCollection<TKey, SimpleRecord<TKey>> GetCollection()
-        => fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SimpleRecord<TKey>>(this.CollectionName, this.CreateRecordDefinition());
+    public sealed class Record : TestRecord<TKey>
+    {
+        public string? Text { get; set; }
+        public int Number { get; set; }
+        public ReadOnlyMemory<float> Floats { get; set; }
+    }
+
+    public virtual VectorStoreCollection<TKey, Record> GetCollection()
+        => fixture.TestStore.DefaultVectorStore.GetCollection<TKey, Record>(this.CollectionName, this.CreateRecordDefinition());
 
     public virtual VectorStoreCollectionDefinition CreateRecordDefinition()
         => new()
         {
             Properties =
             [
-                new VectorStoreKeyProperty(nameof(SimpleRecord<object>.Key), typeof(TKey)) { StorageName = "key" },
-                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StorageName = "text" },
-                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StorageName = "number" },
-                new VectorStoreVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
+                new VectorStoreKeyProperty(nameof(Record.Key), typeof(TKey)) { StorageName = "key" },
+                new VectorStoreDataProperty(nameof(Record.Text), typeof(string)) { StorageName = "text" },
+                new VectorStoreDataProperty(nameof(Record.Number), typeof(int)) { StorageName = "number" },
+                new VectorStoreVectorProperty(nameof(Record.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
             ]
         };
 

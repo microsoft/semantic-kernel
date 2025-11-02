@@ -6,13 +6,12 @@ using Microsoft.SemanticKernel.Connectors.Redis;
 using Redis.ConformanceTests.Support;
 using StackExchange.Redis;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace Redis.ConformanceTests;
 
 public class RedisHashSetDependencyInjectionTests
-    : DependencyInjectionTests<RedisVectorStore, RedisHashSetCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<RedisVectorStore, RedisHashSetCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     private const string ConnectionConfiguration = "localhost:6379";
 
@@ -31,23 +30,23 @@ public class RedisHashSetDependencyInjectionTests
         {
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
-                    .AddRedisHashSetCollection<SimpleRecord<string>>(name,
+                    .AddRedisHashSetCollection<Record>(name,
                         sp => new FakeDatabase(Provider(sp)), lifetime: lifetime)
                 : services
-                    .AddKeyedRedisHashSetCollection<SimpleRecord<string>>(serviceKey, name,
+                    .AddKeyedRedisHashSetCollection<Record>(serviceKey, name,
                         sp => new FakeDatabase(Provider(sp, serviceKey)), lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
                     .AddSingleton<IDatabase>(new FakeDatabase(ConnectionConfiguration))
-                    .AddRedisHashSetCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddRedisHashSetCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<IDatabase>(new FakeDatabase(ConnectionConfiguration))
-                    .AddKeyedRedisHashSetCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedRedisHashSetCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => services
                     .AddKeyedSingleton<IDatabase>(serviceKey, new FakeDatabase(ConnectionConfiguration))
-                    .AddKeyedRedisHashSetCollection<SimpleRecord<string>>(serviceKey, name,
+                    .AddKeyedRedisHashSetCollection<Record>(serviceKey, name,
                         sp => sp.GetRequiredKeyedService<IDatabase>(serviceKey), lifetime: lifetime);
         }
     }
@@ -77,9 +76,9 @@ public class RedisHashSetDependencyInjectionTests
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedRedisVectorStore("serviceKey", connectionConfiguration: null!));
         Assert.Throws<ArgumentException>(() => services.AddKeyedRedisVectorStore("serviceKey", connectionConfiguration: ""));
 
-        Assert.Throws<ArgumentNullException>(() => services.AddRedisHashSetCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddRedisHashSetCollection<Record>(
             name: "notNull", connectionConfiguration: null!));
-        Assert.Throws<ArgumentException>(() => services.AddRedisHashSetCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddRedisHashSetCollection<Record>(
             name: "notNull", connectionConfiguration: ""));
     }
 }

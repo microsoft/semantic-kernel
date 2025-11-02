@@ -96,6 +96,7 @@ internal static class MongoCollectionCreateMapping
             DistanceFunction.CosineSimilarity or null => "cosine",
             DistanceFunction.DotProductSimilarity => "dotProduct",
             DistanceFunction.EuclideanDistance => "euclidean",
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the MongoDB VectorStore.")
+
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the MongoDB VectorStore.")
         };
 }
