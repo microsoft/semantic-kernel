@@ -213,11 +213,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
-    Task<KernelSearchResults<object>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
+    Task<KernelSearchResults<TRecord>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
         var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
+        return Task.FromResult(new KernelSearchResults<TRecord>(this.GetResultsAsTRecordAsync(searchResponse, cancellationToken)));
     }
 
     #region private
@@ -351,6 +351,28 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<object> GetResultsAsRecordAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (searchResponse is null)
+        {
+            yield break;
+        }
+
+        await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (result.Record is not null)
+            {
+                yield return result.Record;
+                await Task.Yield();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return the search results as strongly-typed <typeparamref name="TRecord"/> instances.
+    /// </summary>
+    /// <param name="searchResponse">Response containing the records matching the query.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<TRecord> GetResultsAsTRecordAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null)
         {
