@@ -24,24 +24,23 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         AssertEquivalent(expectedRecord, received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
-    // TODO: https://github.com/microsoft/semantic-kernel/issues/13303
-    // [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
-    // public virtual Task GetAsync_multiple_records(bool includeVectors)
-    // {
-    //     var expectedRecords = fixture.TestData.Take(2);
-    //     var ids = expectedRecords.Select(record => record[KeyPropertyName]!);
+    [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
+    public virtual async Task GetAsync_multiple_records(bool includeVectors)
+    {
+        var expectedRecords = fixture.TestData.Take(2);
+        var ids = expectedRecords.Select(record => record[KeyPropertyName]!);
 
-    //     var received = await fixture.Collection.GetAsync(ids, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await fixture.Collection.GetAsync(ids, new() { IncludeVectors = includeVectors }).ToArrayAsync();
 
-    //     foreach (var record in expectedRecords)
-    //     {
-    //         AssertEquivalent(
-    //             record,
-    //             received.Single(r => r[KeyPropertyName]!.Equals(record[KeyPropertyName])),
-    //             includeVectors,
-    //             fixture.TestStore.VectorsComparable);
-    //     }
-    // }
+        foreach (var record in expectedRecords)
+        {
+            AssertEquivalent(
+                record,
+                received.Single(r => r[KeyPropertyName]!.Equals(record[KeyPropertyName])),
+                includeVectors,
+                fixture.TestStore.VectorsComparable);
+        }
+    }
 
     [ConditionalFact]
     public virtual async Task GetAsync_throws_for_null_key()
@@ -241,42 +240,39 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         AssertEquivalent(updated, received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
-    // TODO: https://github.com/microsoft/semantic-kernel/issues/13303
-    // [ConditionalFact]
-    // public virtual async Task Insert_multiple_records()
-    // {
-    //     Dictionary<string, object?>[] newRecords =
-    //     [
-    //         new()
-    //         {
-    //             [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
-    //             [IntegerPropertyName] = 100,
-    //             [StringPropertyName] = "New record 1",
-    //             [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 1])
-    //         },
-    //         new()
-    //         {
-    //             [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
-    //             [IntegerPropertyName] = 101,
-    //             [StringPropertyName] = "New record 2",
-    //             [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 2])
-    //         },
-    //     ];
+    [ConditionalFact]
+    public virtual async Task Insert_multiple_records()
+    {
+        Dictionary<string, object?>[] newRecords =
+        [
+            new()
+            {
+                [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
+                [IntegerPropertyName] = 100,
+                [StringPropertyName] = "New record 1",
+                [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 1])
+            },
+            new()
+            {
+                [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
+                [IntegerPropertyName] = 101,
+                [StringPropertyName] = "New record 2",
+                [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 2])
+            },
+        ];
 
-    //     var keys = newRecords.Select(record => record[KeyPropertyName]!).ToArray();
-    //     Assert.Empty(await this.Collection.GetAsync(keys).ToArrayAsync());
+        var keys = newRecords.Select(record => record[KeyPropertyName]!).ToArray();
+        Assert.Empty(await this.Collection.GetAsync(keys).ToArrayAsync());
 
-    //     await this.Collection.UpsertAsync(newRecords);
+        await this.Collection.UpsertAsync(newRecords);
 
-    //     var received = await this.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+        var received = await this.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
 
-    //     Assert.Collection(
-    //         received.OrderBy(r => r[IntegerPropertyName]),
-    //         r => AssertEquivalent(newRecords[0], r, includeVectors: true, fixture.TestStore.VectorsComparable),
-    //         r => AssertEquivalent(newRecords[1], r, includeVectors: true, fixture.TestStore.VectorsComparable));
-
-    //     Assert.Equal(fixture.TestData.Count + 2, await this.GetRecordCount());
-    // }
+        Assert.Collection(
+            received.OrderBy(r => r[IntegerPropertyName]),
+            r => AssertEquivalent(newRecords[0], r, includeVectors: true, fixture.TestStore.VectorsComparable),
+            r => AssertEquivalent(newRecords[1], r, includeVectors: true, fixture.TestStore.VectorsComparable));
+    }
 
     #endregion Upsert
 
