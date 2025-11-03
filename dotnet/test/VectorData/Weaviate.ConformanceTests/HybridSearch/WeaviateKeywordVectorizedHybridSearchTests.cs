@@ -18,14 +18,14 @@ public class WeaviateKeywordVectorizedHybridSearchTests_NamedVectors(
     {
         public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
-        public override string CollectionName => "VectorAndStringHybridSearch";
+        protected override string CollectionNameBase => "VectorAndStringHybridSearch";
     }
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<Guid>.MultiTextFixture
     {
         public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
-        public override string CollectionName => "MultiTextHybridSearch";
+        protected override string CollectionNameBase => "MultiTextHybridSearch";
     }
 }
 
@@ -40,13 +40,13 @@ public class WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector(
     {
         public override TestStore TestStore => WeaviateTestStore.UnnamedVectorInstance;
 
-        public override string CollectionName => "VectorAndStringHybridSearch";
+        protected override string CollectionNameBase => "VectorAndStringHybridSearch";
     }
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<Guid>.MultiTextFixture
     {
         public override TestStore TestStore => WeaviateTestStore.UnnamedVectorInstance;
 
-        public override string CollectionName => "MultiTextHybridSearch";
+        protected override string CollectionNameBase => "MultiTextHybridSearch";
     }
 }

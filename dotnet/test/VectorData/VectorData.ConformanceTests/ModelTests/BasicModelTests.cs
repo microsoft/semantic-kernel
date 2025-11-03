@@ -438,7 +438,7 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, Record>
     {
-        public override string CollectionName => "BasicModelTests";
+        protected override string CollectionNameBase => nameof(BasicModelTests<int>);
 
         protected override List<Record> BuildTestData() =>
         [

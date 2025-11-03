@@ -17,8 +17,5 @@ public class PineconeKeyTypeTests(PineconeKeyTypeTests.Fixture fixture)
     public new class Fixture : KeyTypeTests.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "key-type-tests";
     }
 }

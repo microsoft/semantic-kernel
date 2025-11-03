@@ -217,7 +217,8 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
     public abstract class Fixture : VectorStoreFixture
     {
-        public virtual string CollectionName => "EmbeddingTypeTests";
+        protected virtual string CollectionNameBase => nameof(EmbeddingTypeTests<int>);
+        public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TVectorProperty>(IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions)
             => new()

@@ -12,8 +12,6 @@ public class AzureAISearchDynamicModelTests(AzureAISearchDynamicModelTests.Fixtu
 {
     public new class Fixture : DynamicModelTests<string>.Fixture
     {
-        public override string CollectionName => "dynamic-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }
 }

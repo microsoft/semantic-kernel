@@ -391,7 +391,8 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
 
     public abstract class Fixture : DynamicVectorStoreCollectionFixture<TKey>
     {
-        public override string CollectionName => "DynamicModelTests";
+        protected override string CollectionNameBase => nameof(DynamicModelTests<int>);
+
         protected override string KeyPropertyName => DynamicModelTests<TKey>.KeyPropertyName;
 
         protected override VectorStoreCollection<object, Dictionary<string, object?>> GetCollection()

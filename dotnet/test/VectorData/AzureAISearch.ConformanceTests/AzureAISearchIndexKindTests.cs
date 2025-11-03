@@ -18,8 +18,6 @@ public class AzureAISearchIndexKindTests(AzureAISearchIndexKindTests.Fixture fix
 
     public new class Fixture() : IndexKindTests<string>.Fixture
     {
-        public override string CollectionName => "index-kind-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }
 }
