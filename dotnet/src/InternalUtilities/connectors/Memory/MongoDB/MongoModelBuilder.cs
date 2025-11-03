@@ -44,9 +44,9 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, Guid, ObjectId";
+        supportedTypes = "string, int, long, Guid, ObjectId";
 
-        return type == typeof(string) || type == typeof(Guid) || type == typeof(ObjectId);
+        return type == typeof(string) || type == typeof(int) || type == typeof(long) || type == typeof(Guid) || type == typeof(ObjectId);
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

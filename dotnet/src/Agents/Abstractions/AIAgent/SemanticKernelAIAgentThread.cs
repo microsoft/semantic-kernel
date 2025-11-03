@@ -30,9 +30,13 @@ internal sealed class SemanticKernelAIAgentThread : MAAI.AgentThread
     public override JsonElement Serialize(JsonSerializerOptions? jsonSerializerOptions = null)
         => this._threadSerializer(this.InnerThread, jsonSerializerOptions);
 
+    /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
-        => base.GetService(serviceType, serviceKey)
-        ?? (serviceType == typeof(AgentThread) && serviceKey is null
+    {
+        Throw.IfNull(serviceType);
+
+        return serviceKey is null && serviceType.IsInstanceOfType(this.InnerThread)
         ? this.InnerThread
-        : null);
+        : base.GetService(serviceType, serviceKey);
+    }
 }

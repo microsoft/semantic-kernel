@@ -2,6 +2,9 @@
 
 using System;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Moq;
 using Xunit;
@@ -162,5 +165,79 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Arrange & Act
         var threadMock = new Mock<AgentThread>();
         Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentThread(threadMock.Object, null!));
+    }
+
+    [Fact]
+    public void GetService_WithBaseClassType_ReturnsInnerThread()
+    {
+        // Arrange
+        var concreteThread = new TestAgentThread();
+        var adapter = new SemanticKernelAIAgentThread(concreteThread, (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(AgentThread));
+
+        // Assert
+        Assert.Same(concreteThread, result);
+    }
+
+    [Fact]
+    public void GetService_WithDerivedType_ReturnsInnerThreadWhenMatches()
+    {
+        // Arrange
+        var concreteThread = new TestAgentThread();
+        var adapter = new SemanticKernelAIAgentThread(concreteThread, (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(TestAgentThread));
+
+        // Assert
+        Assert.Same(concreteThread, result);
+    }
+
+    [Fact]
+    public void GetService_WithIncompatibleDerivedType_ReturnsNull()
+    {
+        // Arrange
+        var threadMock = new Mock<AgentThread>();
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(TestAgentThread));
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetService_WithInterfaceType_ReturnsNull()
+    {
+        // Arrange
+        var threadMock = new Mock<AgentThread>();
+        var adapter = new SemanticKernelAIAgentThread(threadMock.Object, (t, o) => default);
+
+        // Act
+        var result = adapter.GetService(typeof(IServiceProvider));
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    private sealed class TestAgentThread : AgentThread
+    {
+        protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult<string?>("test-thread-id");
+        }
+
+        protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

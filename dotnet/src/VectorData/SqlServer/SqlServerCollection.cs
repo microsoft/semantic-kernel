@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -546,13 +547,15 @@ public class SqlServerCollection<TKey, TRecord>
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
-        ReadOnlyMemory<float> vector = searchValue switch
+        SqlVector<float> vector = searchValue switch
         {
-            ReadOnlyMemory<float> r => r,
-            float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
+            SqlVector<float> v => v,
+            ReadOnlyMemory<float> r => new(r),
+            float[] f => new(f),
+            Embedding<float> e => new(e.Vector),
+
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+                => new(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqlServerModelBuilder.SupportedVectorTypes))

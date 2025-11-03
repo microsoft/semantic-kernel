@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using MAAI = Microsoft.Agents.AI;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -49,6 +50,15 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
     }
 
     /// <inheritdoc />
+    public override string Id => this._innerAgent.Id;
+
+    /// <inheritdoc />
+    public override string? Name => this._innerAgent.Name;
+
+    /// <inheritdoc />
+    public override string? Description => this._innerAgent.Description;
+
+    /// <inheritdoc />
     public override MAAI.AgentThread DeserializeThread(JsonElement serializedThread, JsonSerializerOptions? jsonSerializerOptions = null)
         => new SemanticKernelAIAgentThread(this._threadDeserializationFactory(serializedThread, jsonSerializerOptions), this._threadSerializer);
 
@@ -69,7 +79,20 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         {
             OnIntermediateMessage = (msg) =>
             {
-                responseMessages.Add(msg.ToChatMessage());
+                // As a backwards compatibility measure, ChatCompletionService inserts the function result
+                // as a text message followed by a function result message. If we detect that pattern,
+                // we must remove the text message to avoid the function result showing up in the user output.
+                var chatMessage = msg.ToChatMessage();
+                if (chatMessage.Role == ChatRole.Tool
+                    && chatMessage.Contents.Count == 2
+                    && chatMessage.Contents[0] is MEAI.TextContent textContent
+                    && chatMessage.Contents[1] is MEAI.FunctionResultContent functionResultContent
+                    && textContent.Text == functionResultContent.Result?.ToString())
+                {
+                    chatMessage.Contents.RemoveAt(0);
+                }
+
+                responseMessages.Add(chatMessage);
                 return Task.CompletedTask;
             }
         };
@@ -79,8 +102,6 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
         {
             lastResponseItem = responseItem;
-            lastResponseMessage = responseItem.Message.ToChatMessage();
-            responseMessages.Add(lastResponseMessage);
         }
 
         return new MAAI.AgentRunResponse(responseMessages)
@@ -122,5 +143,17 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
                 Contents = update.Contents
             };
         }
+    }
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Throw.IfNull(serviceType);
+
+        return serviceKey is null && serviceType == typeof(Kernel)
+        ? this._innerAgent.Kernel
+        : serviceKey is null && serviceType.IsInstanceOfType(this._innerAgent)
+        ? this._innerAgent
+        : base.GetService(serviceType, serviceKey);
     }
 }
