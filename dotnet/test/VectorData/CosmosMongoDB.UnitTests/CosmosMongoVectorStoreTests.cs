@@ -26,7 +26,7 @@ public sealed class CosmosMongoVectorStoreTests
         using var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, CosmosMongoHotelModel>("collection"));
+        Assert.Throws<NotSupportedException>(() => sut.GetCollection<byte[], CosmosMongoHotelModel>("collection"));
     }
 
     [Fact]

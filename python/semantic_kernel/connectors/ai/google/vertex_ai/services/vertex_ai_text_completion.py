@@ -96,6 +96,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: GenerationResponse = await model.generate_content_async(
@@ -117,6 +118,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
