@@ -103,14 +103,14 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     }
 
     /// <inheritdoc/>
-    async Task<KernelSearchResults<object>> ITextSearch<TavilyWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
+    async Task<KernelSearchResults<TavilyWebPage>> ITextSearch<TavilyWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
     {
         var legacyOptions = this.ConvertToLegacyOptions(searchOptions);
         TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<TavilyWebPage>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #endregion
@@ -553,7 +553,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<object> GetResultsAsWebPageAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<TavilyWebPage> GetResultsAsWebPageAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.Results is null)
         {

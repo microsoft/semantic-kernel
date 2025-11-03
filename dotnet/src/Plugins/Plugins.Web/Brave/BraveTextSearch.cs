@@ -78,7 +78,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<object>(this.GetResultsAsObjectAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #region Generic ITextSearch<BraveWebPage> Implementation
@@ -106,14 +106,14 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <inheritdoc/>
-    async Task<KernelSearchResults<object>> ITextSearch<BraveWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BraveWebPage>? searchOptions, CancellationToken cancellationToken)
+    async Task<KernelSearchResults<BraveWebPage>> ITextSearch<BraveWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BraveWebPage>? searchOptions, CancellationToken cancellationToken)
     {
         var legacyOptions = this.ConvertToLegacyOptions(searchOptions);
         BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsBraveWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<BraveWebPage>(this.GetResultsAsBraveWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #endregion
@@ -548,21 +548,27 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Return the search results as instances of <see cref="BraveWebResult"/>.
+    /// Return the search results as instances of <see cref="object"/>.
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<object> GetResultsAsWebPageAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<object> GetResultsAsObjectAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null) { yield break; }
-
-        if (searchResponse.Web?.Results is { Count: > 0 } webResults)
+        if (searchResponse?.Web?.Results is null)
         {
-            foreach (var webPage in webResults)
+            yield break;
+        }
+
+        foreach (var result in searchResponse.Web.Results)
+        {
+            yield return new BraveWebPage
             {
-                yield return webPage;
-                await Task.Yield();
-            }
+                Title = result.Title,
+                Url = string.IsNullOrWhiteSpace(result.Url) ? null : new Uri(result.Url),
+                Description = result.Description,
+            };
+
+            await Task.Yield();
         }
     }
 
@@ -571,7 +577,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<object> GetResultsAsBraveWebPageAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<BraveWebPage> GetResultsAsBraveWebPageAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null) { yield break; }
 

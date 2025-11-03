@@ -100,10 +100,10 @@ public sealed class BraveTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
 
         // Create an ITextSearch instance using Brave search
-        var textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        KernelSearchResults<BraveWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -111,7 +111,7 @@ public sealed class BraveTextSearchTests : IDisposable
         var resultList = await result.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
-        foreach (BraveWebResult webPage in resultList)
+        foreach (BraveWebPage webPage in resultList)
         {
             Assert.NotNull(webPage.Title);
             Assert.NotNull(webPage.Description);
@@ -191,12 +191,12 @@ public sealed class BraveTextSearchTests : IDisposable
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSkResponseJson));
 
-        // Create an ITextSearch instance using Brave search
+        // Create an ITextSearch instance using Brave search  
         var textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
         TextSearchOptions searchOptions = new() { Top = 5, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        var result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -287,14 +287,14 @@ public sealed class BraveTextSearchTests : IDisposable
             Top = 3,
             Skip = 0
         };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        KernelSearchResults<BraveWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert - Verify generic interface returns results
         Assert.NotNull(result);
         Assert.NotNull(result.Results);
         var resultList = await result.Results.ToListAsync();
         Assert.NotEmpty(resultList);
-        // Results are still objects (BraveSearchResult) not BraveWebPage since that's just for filtering
+        // Results are now strongly typed as BraveWebPage
 
         // Verify the request was made correctly
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -419,7 +419,7 @@ public sealed class BraveTextSearchTests : IDisposable
         {
             if (result is not BraveWebResult webPage)
             {
-                throw new ArgumentException("Result must be a BraveWebPage", nameof(result));
+                throw new ArgumentException("Result must be a BraveWebResult", nameof(result));
             }
 
             return new TextSearchResult(webPage.Description?.ToUpperInvariant() ?? string.Empty)

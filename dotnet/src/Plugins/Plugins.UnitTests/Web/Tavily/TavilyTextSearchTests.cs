@@ -392,14 +392,14 @@ public sealed class TavilyTextSearchTests : IDisposable
             Top = 3,
             Skip = 0
         };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        KernelSearchResults<TavilyWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert - Verify generic interface returns results
         Assert.NotNull(result);
         Assert.NotNull(result.Results);
         var resultList = await result.Results.ToListAsync();
         Assert.NotEmpty(resultList);
-        // Results are still objects (TavilySearchResult) not TavilyWebPage since that's just for filtering
+        // Results are now strongly typed as TavilyWebPage
 
         // Verify the request was made correctly
         var requestContents = this._messageHandlerStub.RequestContents;
