@@ -96,6 +96,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
             Type t when t == typeof(float) => reader.GetFloat(ordinal),
             Type t when t == typeof(double) => reader.GetDouble(ordinal),
             Type t when t == typeof(string) => reader.GetString(ordinal),
+            Type t when t == typeof(Guid) => reader.GetGuid(ordinal),
             Type t when t == typeof(byte[]) => (byte[])reader[ordinal],
             Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[ordinal],
             Type t when t == typeof(Embedding<float>) => (byte[])reader[ordinal],

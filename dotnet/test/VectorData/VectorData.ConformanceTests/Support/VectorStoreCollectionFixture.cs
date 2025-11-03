@@ -1,59 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace VectorData.ConformanceTests.Support;
 
-#pragma warning disable CA1721 // Property names should not match get methods
-
-/// <summary>
-/// A test fixture that sets up a single collection in the test vector store, with a specific record definition
-/// and test data.
-/// </summary>
-public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreFixture
+public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreCollectionFixtureBase<TKey, TRecord>
     where TKey : notnull
-    where TRecord : class
+    where TRecord : TestRecord<TKey>
 {
-    private List<TRecord>? _testData;
-
-    public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
-    protected virtual List<TRecord> BuildTestData() => [];
-
-    public virtual string CollectionName => Guid.NewGuid().ToString();
-    protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
-    protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
-
-    protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
-        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.CreateRecordDefinition());
-
-    public override async Task InitializeAsync()
+    public virtual async Task ReseedAsync()
     {
-        await base.InitializeAsync();
+        // TODO: Use filtering delete, https://github.com/microsoft/semantic-kernel/issues/11830
 
-        this.Collection = this.GetCollection();
+        const int BatchSize = 100;
 
-        if (await this.Collection.CollectionExistsAsync())
+        TKey[] keys;
+        do
         {
-            await this.Collection.EnsureCollectionDeletedAsync();
-        }
+            keys = await this.Collection.GetAsync(r => true, top: BatchSize).Select(r => r.Key).ToArrayAsync();
+            await this.Collection.DeleteAsync(keys);
+        } while (keys.Length == BatchSize);
 
-        await this.Collection.EnsureCollectionExistsAsync();
         await this.SeedAsync();
     }
-
-    public virtual VectorStoreCollection<TKey, TRecord> Collection { get; private set; } = null!;
-
-    public List<TRecord> TestData => this._testData ??= this.BuildTestData();
-
-    protected virtual async Task SeedAsync()
-    {
-        if (this.TestData.Count > 0)
-        {
-            await this.Collection.UpsertAsync(this.TestData);
-            await this.WaitForDataAsync();
-        }
-    }
-
-    protected virtual Task WaitForDataAsync()
-        => this.TestStore.WaitForDataAsync(this.Collection, recordCount: this.TestData.Count);
 }

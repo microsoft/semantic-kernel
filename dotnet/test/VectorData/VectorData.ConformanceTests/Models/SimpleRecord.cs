@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
+using VectorData.ConformanceTests.Support;
 using Xunit;
 
 namespace VectorData.ConformanceTests.Models;
@@ -10,12 +11,9 @@ namespace VectorData.ConformanceTests.Models;
 /// a key, int, string and an embedding.
 /// </summary>
 /// <typeparam name="TKey">TKey is a generic parameter because different connectors support different key types.</typeparam>
-public sealed class SimpleRecord<TKey>
+public sealed class SimpleRecord<TKey> : TestRecord<TKey>
 {
     public const int DimensionCount = 3;
-
-    [VectorStoreKey(StorageName = "key")]
-    public TKey Id { get; set; } = default!;
 
     [VectorStoreData(StorageName = "text")]
     public string? Text { get; set; }
@@ -29,7 +27,7 @@ public sealed class SimpleRecord<TKey>
     public void AssertEqual(SimpleRecord<TKey>? other, bool includeVectors, bool compareVectors)
     {
         Assert.NotNull(other);
-        Assert.Equal(this.Id, other.Id);
+        Assert.Equal(this.Key, other.Key);
         Assert.Equal(this.Text, other.Text);
         Assert.Equal(this.Number, other.Number);
 
@@ -47,4 +45,7 @@ public sealed class SimpleRecord<TKey>
             Assert.Equal(0, other.Floats.Length);
         }
     }
+
+    public override string ToString()
+        => $"Key: {this.Key}, Text: {this.Text}";
 }

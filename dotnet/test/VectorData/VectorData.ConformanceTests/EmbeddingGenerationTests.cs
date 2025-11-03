@@ -340,9 +340,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     #region Support
 
-    public class Record
+    public class Record : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public string? Embedding { get; set; }
 
         public int Counter { get; set; }
@@ -373,9 +372,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? Text { get; set; }
     }
 
-    public class RecordWithRomOfFloatVectorProperty
+    public class RecordWithRomOfFloatVectorProperty : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float> Embedding { get; set; }
 
         public int Counter { get; set; }
