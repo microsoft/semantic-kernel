@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections;
-#if NET8_0_OR_GREATER
 using Microsoft.Extensions.AI;
-#endif
 using Microsoft.Extensions.VectorData;
 using Pgvector;
 using PgVector.ConformanceTests.Support;
@@ -41,15 +39,26 @@ public class PostgresEmbeddingTypeTests(PostgresEmbeddingTypeTests.Fixture fixtu
             new ReadOnlyMemoryEmbeddingGenerator<Half>([(byte)1, (byte)2, (byte)3]));
 #endif
 
-    // TODO: Figure out the embedding generation story for binaryvec/sparsevec - need an Embedding wrapper
-
     [ConditionalFact]
     public virtual Task BitArray()
-        => this.Test<BitArray>(new BitArray(new bool[] { true, false, true }), distanceFunction: DistanceFunction.HammingDistance, embeddingGenerator: null);
+        => this.Test<BitArray>(
+            new BitArray([true, false, true]),
+            new BinaryEmbeddingGenerator(new BitArray([true, false, true])),
+            distanceFunction: DistanceFunction.HammingDistance);
+
+    [ConditionalFact]
+    public virtual Task BinaryEmbedding()
+        => this.Test<BinaryEmbedding>(
+            new BinaryEmbedding(new([true, false, true])),
+            new BinaryEmbeddingGenerator(new BitArray([true, false, true])),
+            distanceFunction: DistanceFunction.HammingDistance,
+            vectorEqualityAsserter: (e, a) => Assert.Equal(e.Vector, a.Vector));
 
     [ConditionalFact]
     public virtual Task SparseVector()
         => this.Test<SparseVector>(new SparseVector(new ReadOnlyMemory<float>([1, 2, 3])), embeddingGenerator: null);
+
+    // TODO: Figure out the embedding generation story for sparsevec - need an Embedding wrapper
 
     public new class Fixture : EmbeddingTypeTests<int>.Fixture
     {
