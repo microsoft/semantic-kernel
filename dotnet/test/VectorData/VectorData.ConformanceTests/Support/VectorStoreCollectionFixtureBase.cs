@@ -19,7 +19,7 @@ public abstract class VectorStoreCollectionFixtureBase<TKey, TRecord> : VectorSt
     public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
     protected virtual List<TRecord> BuildTestData() => [];
 
-    public virtual string CollectionName => Guid.NewGuid().ToString();
+    public abstract string CollectionName { get; }
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
