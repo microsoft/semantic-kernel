@@ -269,7 +269,7 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
     internal static void BuildGetBatchCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
-        NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(model.KeyProperty.Type) ?? throw new UnreachableException($"Unsupported key type {typeof(TKey).Name}");
+        NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(model.KeyProperty.Type) ?? throw new UnreachableException($"Unsupported key type {model.KeyProperty.Type.Name}");
 
         // Generate the column names
         var columns = model.Properties
