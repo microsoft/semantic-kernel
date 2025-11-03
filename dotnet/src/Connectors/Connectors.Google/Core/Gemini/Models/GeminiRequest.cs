@@ -224,6 +224,7 @@ internal sealed class GeminiRequest
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
         AudioContent audioContent => CreateGeminiPartFromAudio(audioContent),
+        BinaryContent binaryContent => CreateGeminiPartFromBinary(binaryContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
 
@@ -297,6 +298,42 @@ internal sealed class GeminiRequest
     {
         return audioContent.MimeType
                ?? throw new InvalidOperationException("Audio content MimeType is empty.");
+    }
+
+    private static GeminiPart CreateGeminiPartFromBinary(BinaryContent binaryContent)
+    {
+        // Binary data takes precedence over URI.
+        if (binaryContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    InlineData = Convert.ToBase64String(binaryContent.Data.Value.ToArray())
+                }
+            };
+        }
+
+        if (binaryContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    FileUri = binaryContent.Uri ?? throw new InvalidOperationException("Binary content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Binary content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromBinaryContent(BinaryContent binaryContent)
+    {
+        return binaryContent.MimeType
+               ?? throw new InvalidOperationException("Binary content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
