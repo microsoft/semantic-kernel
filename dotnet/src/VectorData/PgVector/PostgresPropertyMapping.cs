@@ -30,6 +30,7 @@ internal static class PostgresPropertyMapping
 #endif
 
             BitArray bitArray => bitArray,
+            BinaryEmbedding binaryEmbedding => binaryEmbedding.Vector,
             SparseVector sparseVector => sparseVector,
 
             null => null,
@@ -136,6 +137,7 @@ internal static class PostgresPropertyMapping
 
             Type t when t == typeof(SparseVector) => "SPARSEVEC",
             Type t when t == typeof(BitArray) => "BIT",
+            Type t when t == typeof(BinaryEmbedding) => "BIT",
 
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };
