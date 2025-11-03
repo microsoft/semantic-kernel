@@ -94,10 +94,18 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     }
 
     /// <inheritdoc/>
-    Task<KernelSearchResults<object>> ITextSearch<BingWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    async Task<KernelSearchResults<BingWebPage>> ITextSearch<BingWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
     {
         var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
-        return this.GetSearchResultsAsync(query, legacyOptions, cancellationToken);
+
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
+
+        return new KernelSearchResults<BingWebPage>(
+            this.GetResultsAsBingWebPageAsync(searchResponse, cancellationToken),
+            totalCount,
+            GetResultsMetadata(searchResponse));
     }
 
     #region private
@@ -452,11 +460,30 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     }
 
     /// <summary>
-    /// Return the search results as instances of <see cref="BingWebPage"/>.
+    /// Return the search results as instances of <see cref="object"/>.
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<object> GetResultsAsWebPageAsync(BingSearchResponse<BingWebPage>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
+        {
+            yield break;
+        }
+
+        foreach (var webPage in searchResponse.WebPages.Value)
+        {
+            yield return webPage;
+            await Task.Yield();
+        }
+    }
+
+    /// <summary>
+    /// Return the search results as strongly-typed <see cref="BingWebPage"/> instances.
+    /// </summary>
+    /// <param name="searchResponse">Response containing the web pages matching the query.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<BingWebPage> GetResultsAsBingWebPageAsync(BingSearchResponse<BingWebPage>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
         {

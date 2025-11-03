@@ -372,7 +372,7 @@ public sealed class BingTextSearchTests : IDisposable
             Skip = 0,
             Filter = page => page.Snippet!.Contains("semantic")
         };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        KernelSearchResults<BingWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert - Verify LINQ Snippet.Contains() converted to Bing's inbody: operator
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -852,19 +852,17 @@ public sealed class BingTextSearchTests : IDisposable
             Skip = 0,
             Filter = page => page.Language == "en" && page.DisplayUrl!.Contains("microsoft")
         };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("technology", searchOptions);
+        KernelSearchResults<BingWebPage> result = await textSearch.GetSearchResultsAsync("technology", searchOptions);
 
         // Assert - Verify BingWebPage objects have all expected properties
         Assert.NotNull(result);
         Assert.NotNull(result.Results);
         var resultList = await result.Results.ToListAsync();
         Assert.Equal(10, resultList.Count);
-        foreach (var obj in resultList)
+        foreach (var page in resultList)
         {
-            Assert.NotNull(obj);
-            Assert.IsType<BingWebPage>(obj);
-            var page = (BingWebPage)obj;
-            // Verify key properties are populated
+            Assert.NotNull(page);
+            // Verify key properties are populated - now strongly typed, no cast needed!
             Assert.NotNull(page.Name);
             Assert.NotNull(page.Url);
             Assert.NotNull(page.Snippet);
