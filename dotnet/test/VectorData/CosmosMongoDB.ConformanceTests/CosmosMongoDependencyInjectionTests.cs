@@ -5,13 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 using MongoDB.Driver;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace CosmosMongoDB.ConformanceTests;
 
 public class CosmosMongoDependencyInjectionTests
-    : DependencyInjectionTests<CosmosMongoVectorStore, CosmosMongoCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<CosmosMongoVectorStore, CosmosMongoCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     protected const string ConnectionString = "mongodb://localhost:27017";
     protected const string DatabaseName = "dbName";
@@ -43,22 +42,22 @@ public class CosmosMongoDependencyInjectionTests
                 ? services
                     .AddSingleton<MongoClient>(sp => new MongoClient(MongoClientSettings.FromConnectionString(ConnectionString)))
                     .AddSingleton<IMongoDatabase>(sp => sp.GetRequiredService<MongoClient>().GetDatabase(DatabaseName))
-                    .AddCosmosMongoCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddCosmosMongoCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<MongoClient>(sp => new MongoClient(MongoClientSettings.FromConnectionString(ConnectionString)))
                     .AddSingleton<IMongoDatabase>(sp => sp.GetRequiredService<MongoClient>().GetDatabase(DatabaseName))
-                    .AddKeyedCosmosMongoCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedCosmosMongoCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddCosmosMongoCollection<SimpleRecord<string>>(
+                ? services.AddCosmosMongoCollection<Record>(
                     name, ConnectionString, DatabaseName, lifetime: lifetime)
-                : services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+                : services.AddKeyedCosmosMongoCollection<Record>(
                     serviceKey, name, ConnectionString, DatabaseName, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddCosmosMongoCollection<SimpleRecord<string>>(
+                ? services.AddCosmosMongoCollection<Record>(
                     name, ConnectionStringProvider, DatabaseNameProvider, lifetime: lifetime)
-                : services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+                : services.AddKeyedCosmosMongoCollection<Record>(
                     serviceKey, name, sp => ConnectionStringProvider(sp, serviceKey), sp => DatabaseNameProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
@@ -90,9 +89,9 @@ public class CosmosMongoDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
     }
 
@@ -101,9 +100,9 @@ public class CosmosMongoDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
     }
 
@@ -114,13 +113,13 @@ public class CosmosMongoDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoVectorStore(connectionString: null!, DatabaseName));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoVectorStore(serviceKey: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", connectionString: "", DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionString: "", DatabaseName));
     }
 
@@ -131,13 +130,13 @@ public class CosmosMongoDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoVectorStore(ConnectionString, databaseName: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoVectorStore(serviceKey: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddCosmosMongoCollection<Record>(
             name: "notNull", ConnectionString, databaseName: ""));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: ""));
     }
 }
