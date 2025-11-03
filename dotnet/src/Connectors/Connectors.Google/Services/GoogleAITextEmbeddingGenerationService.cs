@@ -89,5 +89,4 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
     {
         return this._embeddingClient.GenerateEmbeddingsAsync(data, options, cancellationToken);
     }
-
 }

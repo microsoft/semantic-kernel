@@ -65,7 +65,6 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
-        // var geminiRequest = this.GetEmbeddingRequest(data);
         string? taskType = null;
         if (options?.AdditionalProperties?.TryGetValue("task_type", out var taskTypeValue) == true)
         {

@@ -103,5 +103,4 @@ public sealed class GoogleAIEmbeddingRequestTests
         Assert.Contains("\"taskType\":\"RETRIEVAL_DOCUMENT\"", json);
         Assert.Contains("\"model\":\"models/embedding-001\"", json);
     }
-
 }
