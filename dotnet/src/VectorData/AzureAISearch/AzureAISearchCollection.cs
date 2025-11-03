@@ -400,8 +400,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             options,
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         await foreach (var record in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
@@ -442,8 +442,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             },
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         searchOptions.SearchFields.Add(textDataProperty.StorageName);
         var keywordsCombined = string.Join(" ", keywords);
