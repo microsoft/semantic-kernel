@@ -81,7 +81,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.10" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.2" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
@@ -182,7 +182,7 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />

@@ -182,14 +182,14 @@ pytestmark = pytest.mark.parametrize(
         # endregion
         # region Bedrock
         pytest.param(
-            "bedrock_amazon_titan",
+            "bedrock_amazon_nova",
             {},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            id="bedrock_amazon_titan_text_input",
+            id="bedrock_amazon_nova_text_input",
         ),
         pytest.param(
             "bedrock_ai21labs",

@@ -10,9 +10,8 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import vertexai
-from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
-from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
+from vertexai.generative_models import Candidate, Content, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -125,6 +124,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
@@ -154,6 +154,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),

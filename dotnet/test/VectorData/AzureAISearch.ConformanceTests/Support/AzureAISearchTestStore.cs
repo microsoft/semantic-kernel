@@ -48,10 +48,11 @@ internal sealed class AzureAISearchTestStore : TestStore
         VectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
+        Expression<Func<TRecord, object?>>? vectorProperty = null,
         int? vectorSize = null,
         object? dummyVector = null)
     {
-        await base.WaitForDataAsync(collection, recordCount, filter, vectorSize, dummyVector);
+        await base.WaitForDataAsync(collection, recordCount, filter, vectorProperty, vectorSize, dummyVector);
 
         // There seems to be some asynchronicity/race condition specific to Azure AI Search which isn't taken care
         // of by the generic retry loop in the base implementation.
