@@ -94,14 +94,14 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     #region ITextSearch<GoogleWebPage> Implementation
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<GoogleWebPage>> GetSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var legacyOptions = ConvertToLegacyOptions(searchOptions);
         var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsGoogleWebPageAsync(searchResponse, cancellationToken).Cast<object>(), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<GoogleWebPage>(this.GetResultsAsGoogleWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>

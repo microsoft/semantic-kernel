@@ -303,7 +303,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act - Use generic interface with GoogleWebPage
-        KernelSearchResults<object> results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<GoogleWebPage> { Top = 10, Skip = 0 });
+        KernelSearchResults<GoogleWebPage> results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<GoogleWebPage> { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -311,7 +311,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         var resultList = await results.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(4, resultList.Count);
-        foreach (GoogleWebPage result in resultList.Cast<GoogleWebPage>())
+        foreach (GoogleWebPage result in resultList)
         {
             Assert.NotNull(result.Title);
             Assert.NotNull(result.Snippet);
