@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.CRUD;
 using VectorData.ConformanceTests.HybridSearch;
 using VectorData.ConformanceTests.VectorSearch;
 
@@ -13,7 +12,6 @@ public class RedisTestSuiteImplementationTests : TestSuiteImplementationTests
     [
         typeof(VectorSearchDistanceFunctionComplianceTests<>),
         typeof(VectorSearchWithFilterConformanceTests<>),
-        typeof(BatchConformanceTests<>),
 
         // Hybrid search not supported
         typeof(KeywordVectorizedHybridSearchComplianceTests<>)

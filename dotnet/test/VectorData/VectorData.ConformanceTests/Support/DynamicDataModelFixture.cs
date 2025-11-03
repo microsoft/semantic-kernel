@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace VectorData.ConformanceTests.Support;
 
-public abstract class DynamicDataModelFixture<TKey> : VectorStoreCollectionFixture<object, Dictionary<string, object?>>
+public abstract class DynamicDataModelFixture<TKey> : VectorStoreCollectionFixtureBase<object, Dictionary<string, object?>>
 {
     public const string KeyPropertyName = "key";
     public const string StringPropertyName = "text";

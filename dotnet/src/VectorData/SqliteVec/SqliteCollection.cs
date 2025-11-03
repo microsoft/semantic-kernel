@@ -85,9 +85,13 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotNull(connectionString);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(int) && typeof(TKey) != typeof(long) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string)
+            && typeof(TKey) != typeof(int)
+            && typeof(TKey) != typeof(long)
+            && typeof(TKey) != typeof(Guid)
+            && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string, int and long keys are supported.");
+            throw new NotSupportedException("Only string, int, long and Guid keys are supported.");
         }
 
         options ??= SqliteCollectionOptions.Default;
