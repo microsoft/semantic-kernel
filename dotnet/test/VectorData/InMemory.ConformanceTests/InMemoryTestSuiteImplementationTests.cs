@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.HybridSearch;
 
 namespace InMemory.ConformanceTests;
 
@@ -13,6 +12,6 @@ public class InMemoryTestSuiteImplementationTests : TestSuiteImplementationTests
         typeof(DependencyInjectionTests<>),
 
         // Hybrid search not supported
-        typeof(KeywordVectorizedHybridSearchComplianceTests<>)
+        typeof(HybridSearchTests<>)
     ];
 }
