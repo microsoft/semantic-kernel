@@ -939,6 +939,12 @@ class OracleCollection(
         bind_values.append(vector)
         bind_index += 1
 
+        # Build TO_VECTOR() expression from field metadata
+        dim = vector_field.dimensions or len(vector)
+        raw_dtype = (vector_field.type_ or "float32").lower()
+        dtype = VECTOR_TYPE_MAPPING.get(raw_dtype, "FLOAT32")
+        to_vector_expr = f"TO_VECTOR({vector_placeholder}, {dim}, {dtype})"
+
         # Fields to SELECT
         select_fields = [
             f'"{key_field.storage_name or key_field.name}"'
@@ -960,7 +966,7 @@ class OracleCollection(
         distance_fn = DISTANCE_FUNCTION_MAP[vector_field.distance_function]
         distance_expr = (
             f'VECTOR_DISTANCE("{vector_field.storage_name or vector_field.name}", '
-            f'{vector_placeholder}, {distance_fn}) AS "{self._distance_column_name}"'
+            f'{to_vector_expr}, {distance_fn}) AS "{self._distance_column_name}"'
         )
 
         # Final SQL assembly
@@ -986,6 +992,8 @@ class OracleCollection(
         Uses zip() for clean row-to-dict mapping.
         """
         async with await self._get_connection() as conn:
+            conn.inputtypehandler = self._input_type_handler
+            conn.outputtypehandler = self._output_type_handler
             with conn.cursor() as cur:
                 await cur.execute(sql, binds)
                 col_names = [d.name for d in cur.description]
@@ -1026,6 +1034,8 @@ class OracleCollection(
         # If total count is requested, fetch all rows to count.
         if options.include_total_count:
             async with await self._get_connection() as conn:
+                conn.inputtypehandler = self._input_type_handler
+                conn.outputtypehandler = self._output_type_handler
                 with conn.cursor() as cur:
                     await cur.execute(query, bind)
                     rows = await cur.fetchall()
