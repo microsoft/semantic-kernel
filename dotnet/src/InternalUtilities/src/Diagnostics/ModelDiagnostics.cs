@@ -53,7 +53,7 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        const string OperationName = "text.completions";
+        const string OperationName = "text_completion";
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
@@ -105,7 +105,7 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        const string OperationName = "chat.completions";
+        const string OperationName = "chat";
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
