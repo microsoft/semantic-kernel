@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ public static class ChatClientExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatOptions = executionSettings.ToChatOptions(kernel);
+        var chatOptions = executionSettings.ToChatOptions(kernel) ?? new ChatOptions();
 
         // Try to parse the text as a chat history
         if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))
@@ -60,7 +60,7 @@ public static class ChatClientExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatOptions = executionSettings.ToChatOptions(kernel);
+        var chatOptions = executionSettings.ToChatOptions(kernel) ?? new ChatOptions();
 
         // Try to parse the text as a chat history
         if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))

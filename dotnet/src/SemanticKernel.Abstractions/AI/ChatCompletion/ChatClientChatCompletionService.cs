@@ -60,7 +60,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         var completion = await this._chatClient.GetResponseAsync(
             messageList,
-            executionSettings.ToChatOptions(kernel),
+            executionSettings.ToChatOptions(kernel) ?? new ChatOptions(),
             cancellationToken).ConfigureAwait(false);
 
         if (completion.Messages.Count > 0)
@@ -93,7 +93,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
             chatHistory.ToChatMessageList(),
-            executionSettings.ToChatOptions(kernel),
+            executionSettings.ToChatOptions(kernel) ?? new ChatOptions(),
             cancellationToken).ConfigureAwait(false))
         {
             role ??= update.Role;
