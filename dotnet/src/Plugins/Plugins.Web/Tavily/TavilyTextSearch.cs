@@ -83,8 +83,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<string>> ITextSearch<TavilyWebPage>.SearchAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = this.ConvertToLegacyOptions(searchOptions);
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -94,8 +94,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<TextSearchResult>> ITextSearch<TavilyWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = this.ConvertToLegacyOptions(searchOptions);
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -105,8 +105,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<TavilyWebPage>> ITextSearch<TavilyWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = this.ConvertToLegacyOptions(searchOptions);
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -116,6 +116,31 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     #endregion
 
     #region LINQ-to-Tavily Conversion Logic
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions and extracts additional search terms.
+    /// </summary>
+    /// <param name="query">The original search query.</param>
+    /// <param name="options">The generic search options with LINQ filter.</param>
+    /// <returns>A tuple containing the modified query and legacy TextSearchOptions with converted filters.</returns>
+    private (string modifiedQuery, TextSearchOptions legacyOptions) ConvertToLegacyOptionsWithQuery<TRecord>(string query, TextSearchOptions<TRecord>? options)
+    {
+        var legacyOptions = this.ConvertToLegacyOptions(options);
+
+        if (options?.Filter != null)
+        {
+            // Extract search terms from the LINQ expression
+            var additionalSearchTerms = ExtractSearchTermsFromLinqExpression(options.Filter);
+            if (additionalSearchTerms.Count > 0)
+            {
+                // Append additional search terms to the original query
+                var modifiedQuery = $"{query} {string.Join(" ", additionalSearchTerms)}".Trim();
+                return (modifiedQuery, legacyOptions);
+            }
+        }
+
+        return (query, legacyOptions);
+    }
 
     /// <summary>
     /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
@@ -150,22 +175,40 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
                     Filter = convertedFilter
                 };
             }
-            catch (NotSupportedException ex)
+            catch (NotSupportedException)
             {
-                // Check if this is a critical unsupported pattern that should not be gracefully degraded
-                if (ex.Message.Contains("Collection Contains filters"))
-                {
-                    // Collection Contains patterns should fail explicitly rather than gracefully degrade
-                    // This helps developers understand that this pattern will never work with the API
-                    throw;
-                }
-
-                this._logger.LogWarning("LINQ expression not fully supported by Tavily API, performing search without some filters: {Message}", ex.Message);
-                // Continue with basic search - graceful degradation for other cases
+                // All unsupported LINQ patterns should fail explicitly to provide clear developer feedback
+                // This helps developers understand which patterns work with the Tavily API
+                throw;
             }
         }
 
         return legacyOptions;
+    }
+
+    /// <summary>
+    /// Extracts search terms that should be added to the search query from a LINQ expression.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to analyze.</param>
+    /// <returns>A list of search terms to add to the query.</returns>
+    private static List<string> ExtractSearchTermsFromLinqExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        var searchTerms = new List<string>();
+        var filterClauses = new List<FilterClause>();
+
+        // Analyze the LINQ expression to get all filter clauses
+        AnalyzeExpression(linqExpression.Body, filterClauses);
+
+        // Extract search terms from SearchQueryFilterClause instances
+        foreach (var clause in filterClauses)
+        {
+            if (clause is SearchQueryFilterClause searchQueryClause)
+            {
+                searchTerms.Add(searchQueryClause.SearchTerm);
+            }
+        }
+
+        return searchTerms;
     }
 
     /// <summary>
@@ -198,6 +241,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
                         $"Supported properties: {string.Join(", ", s_validFieldNames)}. " +
                         "Example: page => page.Topic == \"general\" && page.TimeRange == \"week\"");
                 }
+            }
+            else if (clause is SearchQueryFilterClause)
+            {
+                // SearchQueryFilterClause is handled at the query level, not the filter level
+                // Skip it here as it's processed by ConvertToLegacyOptionsWithQuery
+                continue;
             }
         }
 
@@ -384,9 +433,14 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
                     {
                         filterClauses.Add(new EqualToFilterClause(propertyName, value));
                     }
+                    else if (propertyName.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // For Title.Contains(), add the term to the search query itself
+                        filterClauses.Add(new SearchQueryFilterClause(value.ToString() ?? string.Empty));
+                    }
                     else
                     {
-                        throw new NotSupportedException($"Contains method is only supported for domain properties (IncludeDomain, ExcludeDomain), not '{propertyName}'.");
+                        throw new NotSupportedException($"Contains method is only supported for domain properties (IncludeDomain, ExcludeDomain) and Title, not '{propertyName}'.");
                     }
                 }
             }
