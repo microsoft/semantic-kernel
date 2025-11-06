@@ -100,10 +100,10 @@ public sealed class BraveTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
 
         // Create an ITextSearch instance using Brave search
-        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+        var textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<BraveWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -111,7 +111,7 @@ public sealed class BraveTextSearchTests : IDisposable
         var resultList = await result.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
-        foreach (BraveWebPage webPage in resultList)
+        foreach (BraveWebPage webPage in resultList.Cast<BraveWebPage>())
         {
             Assert.NotNull(webPage.Title);
             Assert.NotNull(webPage.Description);
@@ -191,7 +191,7 @@ public sealed class BraveTextSearchTests : IDisposable
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSkResponseJson));
 
-        // Create an ITextSearch instance using Brave search  
+        // Create an ITextSearch instance using Brave search
         var textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
@@ -247,7 +247,7 @@ public sealed class BraveTextSearchTests : IDisposable
     #region Generic ITextSearch<BraveWebPage> Interface Tests
 
     [Fact]
-    public async Task GenericSearchAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqSearchAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
@@ -275,7 +275,7 @@ public sealed class BraveTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task GenericGetSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqGetSearchResultsAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
@@ -304,7 +304,7 @@ public sealed class BraveTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task GenericGetTextSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqGetTextSearchResultsAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));

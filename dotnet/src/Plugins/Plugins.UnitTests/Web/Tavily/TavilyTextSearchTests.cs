@@ -350,7 +350,7 @@ public sealed class TavilyTextSearchTests : IDisposable
     #region Generic ITextSearch<TavilyWebPage> Interface Tests
 
     [Fact]
-    public async Task GenericSearchAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqSearchAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
@@ -380,7 +380,7 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task GenericGetSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqGetSearchResultsAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
@@ -410,7 +410,7 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task GenericGetTextSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    public async Task LinqGetTextSearchResultsAsyncReturnsResultsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
