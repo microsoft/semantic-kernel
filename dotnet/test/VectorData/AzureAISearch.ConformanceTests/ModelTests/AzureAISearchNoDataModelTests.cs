@@ -12,8 +12,6 @@ public class AzureAISearchNoDataModelTests(AzureAISearchNoDataModelTests.Fixture
 {
     public new class Fixture : NoDataModelTests<string>.Fixture
     {
-        public override string CollectionName => "nodata-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }
 }

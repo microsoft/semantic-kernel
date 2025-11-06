@@ -18,8 +18,6 @@ public class AzureAISearchDistanceFunctionTests(AzureAISearchDistanceFunctionTes
 
     public new class Fixture() : DistanceFunctionTests<string>.Fixture
     {
-        public override string CollectionName => "distance-functions-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
         // AzureAISearch does not return the expected standard mathematical result for each distance function

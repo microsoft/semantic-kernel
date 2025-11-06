@@ -49,9 +49,6 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "data-type-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override IList<VectorStoreDataProperty> GetDataProperties()
             => base.GetDataProperties().Where(p =>
                 p.Type != typeof(byte)

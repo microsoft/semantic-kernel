@@ -78,7 +78,7 @@ public class MultiVectorModelTests<TKey>(MultiVectorModelTests<TKey>.Fixture fix
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, MultiVectorRecord>
     {
-        public override string CollectionName => "MultiVectorModelTests";
+        protected override string CollectionNameBase => "MultiVectorModelTests";
 
         protected override List<MultiVectorRecord> BuildTestData() =>
         [

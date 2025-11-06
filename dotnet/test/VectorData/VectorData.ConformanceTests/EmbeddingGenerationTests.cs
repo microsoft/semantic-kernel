@@ -436,7 +436,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "EmbeddingGenerationTests";
+        protected override string CollectionNameBase => nameof(EmbeddingGenerationTests<int>);
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -507,7 +507,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "SearchOnlyEmbeddingGenerationTests";
+        protected override string CollectionNameBase => "SearchOnlyEmbeddingGenerationTests";
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()

@@ -21,7 +21,7 @@ public class InMemoryDynamicModelTests(InMemoryDynamicModelTests.Fixture fixture
         // InMemory always returns the vectors (IncludeVectors = false isn't respected)
         var expectedRecord = fixture.TestData[0];
         var received = await fixture.Collection.GetAsync(
-            (int)expectedRecord[DynamicDataModelFixture<int>.KeyPropertyName]!,
+            (int)expectedRecord[KeyPropertyName]!,
             new() { IncludeVectors = false });
 
         AssertEquivalent(expectedRecord, received, includeVectors: true, fixture.TestStore.VectorsComparable);

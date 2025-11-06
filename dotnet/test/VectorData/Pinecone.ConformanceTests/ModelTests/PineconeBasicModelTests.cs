@@ -31,8 +31,5 @@ public class PineconeBasicModelTests(PineconeBasicModelTests.Fixture fixture)
     public new class Fixture : BasicModelTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "basic-model-tests";
     }
 }
