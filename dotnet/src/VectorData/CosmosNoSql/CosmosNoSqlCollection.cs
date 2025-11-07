@@ -860,7 +860,9 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             IEnumerable<object> k => k.Select(key => key switch
             {
                 string s => new CosmosNoSqlCompositeKey(recordKey: s, partitionKey: s),
+                Guid g when g.ToString() is var guidString => new CosmosNoSqlCompositeKey(recordKey: guidString, partitionKey: guidString),
                 CosmosNoSqlCompositeKey ck => ck,
+
                 _ => throw new ArgumentException($"Invalid key type '{key.GetType().Name}'.")
             }),
 

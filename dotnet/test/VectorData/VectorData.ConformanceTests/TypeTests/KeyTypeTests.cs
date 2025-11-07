@@ -14,7 +14,7 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
     [ConditionalFact]
     public virtual Task Guid() => this.Test<Guid>(new Guid("603840bf-cf91-4521-8b8e-8b6a2e75910a"));
 
-    protected virtual async Task Test<TKey>(TKey mainValue)
+    protected virtual async Task Test<TKey>(TKey keyValue)
         where TKey : notnull
     {
         using var collection = fixture.CreateCollection<TKey>();
@@ -24,7 +24,7 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
 
         var record = new Record<TKey>
         {
-            Key = mainValue,
+            Key = keyValue,
             Int = 8,
             Vector = new ReadOnlyMemory<float>([1, 2, 3])
         };
@@ -32,10 +32,37 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
         await collection.UpsertAsync(record);
         await fixture.TestStore.WaitForDataAsync(collection, recordCount: 1);
 
-        var result = await collection.GetAsync(mainValue);
+        var result = await collection.GetAsync(keyValue);
 
         Assert.NotNull(result);
+        Assert.Equal(keyValue, result.Key);
         Assert.Equal(8, result.Int);
+
+        ///////////////////////
+        // Test dynamic mapping
+        ///////////////////////
+        await collection.DeleteAsync(keyValue);
+        await fixture.TestStore.WaitForDataAsync(collection, recordCount: 0);
+
+        using var dynamicCollection = fixture.CreateDynamicCollection<TKey>();
+        await dynamicCollection.EnsureCollectionExistsAsync();
+
+        var dynamicRecord = new Dictionary<string, object?>
+        {
+            [nameof(Record<TKey>.Key)] = keyValue,
+            [nameof(Record<TKey>.Int)] = 8,
+            [nameof(Record<TKey>.Vector)] = new ReadOnlyMemory<float>([1, 2, 3])
+        };
+
+        await dynamicCollection.UpsertAsync(dynamicRecord);
+        await fixture.TestStore.WaitForDataAsync(dynamicCollection, recordCount: 1);
+
+        var dynamicResult = await dynamicCollection.GetAsync(keyValue);
+
+        Assert.NotNull(dynamicResult);
+        Assert.IsType<TKey>(dynamicResult[nameof(Record<TKey>.Key)]);
+        Assert.Equal(keyValue, (TKey)dynamicResult[nameof(Record<TKey>.Key)]!);
+        Assert.Equal(8, dynamicResult[nameof(Record<TKey>.Int)]);
     }
 
     public abstract class Fixture : VectorStoreFixture
@@ -46,6 +73,10 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
         public virtual VectorStoreCollection<TKey, Record<TKey>> CreateCollection<TKey>()
             where TKey : notnull
             => this.TestStore.DefaultVectorStore.GetCollection<TKey, Record<TKey>>(this.CollectionName, this.CreateRecordDefinition<TKey>());
+
+        public virtual VectorStoreCollection<object, Dictionary<string, object?>> CreateDynamicCollection<TKey>()
+            where TKey : notnull
+            => this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition<TKey>());
 
         public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TKey>()
             where TKey : notnull
