@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -9,13 +9,13 @@ namespace Microsoft.Extensions.VectorData;
 /// This filter clause is used when the underlying search service should add the specified
 /// terms to the search query to help find matching results, rather than filtering results
 /// after they are returned.
-/// 
+///
 /// Primary use case: Supporting Title.Contains("value") LINQ expressions for search engines
 /// that don't have field-specific operators (e.g., Brave, Tavily). The implementation extracts
 /// the search term and appends it to the base query for enhanced relevance.
-/// 
+///
 /// Example: Title.Contains("AI") → SearchQueryFilterClause("AI") → query + " AI"
-/// 
+///
 /// See ADR-TextSearch-Contains-Support.md for architectural context and cross-engine comparison.
 /// </remarks>
 public sealed class SearchQueryFilterClause : FilterClause
