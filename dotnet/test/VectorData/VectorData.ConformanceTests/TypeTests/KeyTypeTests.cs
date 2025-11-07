@@ -40,7 +40,8 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
 
     public abstract class Fixture : VectorStoreFixture
     {
-        public virtual string CollectionName => "KeyTypeTests";
+        protected virtual string CollectionNameBase => nameof(KeyTypeTests);
+        public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         public virtual VectorStoreCollection<TKey, Record<TKey>> CreateCollection<TKey>()
             where TKey : notnull

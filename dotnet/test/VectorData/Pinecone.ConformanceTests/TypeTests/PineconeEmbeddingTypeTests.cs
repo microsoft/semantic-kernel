@@ -15,8 +15,5 @@ public class PineconeEmbeddingTypeTests(PineconeEmbeddingTypeTests.Fixture fixtu
     public new class Fixture : EmbeddingTypeTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "embedding-type-tests";
     }
 }

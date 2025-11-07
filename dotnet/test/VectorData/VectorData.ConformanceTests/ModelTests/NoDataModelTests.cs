@@ -53,7 +53,7 @@ public class NoDataModelTests<TKey>(NoDataModelTests<TKey>.Fixture fixture) : IA
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoDataRecord>
     {
-        public override string CollectionName => "NoDataModelTests";
+        protected override string CollectionNameBase => nameof(NoDataModelTests<int>);
 
         protected override List<NoDataRecord> BuildTestData() =>
         [

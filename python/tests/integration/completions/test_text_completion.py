@@ -233,8 +233,8 @@ class TestTextCompletion(CompletionTestBase):
             ),
             "hf_summ": (
                 HuggingFaceTextCompletion(
-                    service_id="jotamunz/billsum_tiny_summarization",
-                    ai_model_id="jotamunz/billsum_tiny_summarization",
+                    service_id="Falconsai/text_summarization",
+                    ai_model_id="Falconsai/text_summarization",
                     task="summarization",
                 )
                 if hugging_face_setup

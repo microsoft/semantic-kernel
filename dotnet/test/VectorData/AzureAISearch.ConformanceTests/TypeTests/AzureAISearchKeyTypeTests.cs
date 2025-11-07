@@ -17,8 +17,5 @@ public class AzureAISearchKeyTypeTests(AzureAISearchKeyTypeTests.Fixture fixture
     public new class Fixture : KeyTypeTests.Fixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
-
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "key-type-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
     }
 }

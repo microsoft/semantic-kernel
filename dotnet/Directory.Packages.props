@@ -155,6 +155,7 @@
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
+    <PackageVersion Include="Humanizer" Version="2.14.1" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.10" />

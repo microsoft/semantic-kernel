@@ -590,7 +590,7 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, FilterRecord>
     {
-        public override string CollectionName => "FilterTests";
+        protected override string CollectionNameBase => nameof(FilterTests<int>);
 
         public virtual string SpecialCharactersText => """>with $om[ specia]"chara<ters'and\stuff""";
 

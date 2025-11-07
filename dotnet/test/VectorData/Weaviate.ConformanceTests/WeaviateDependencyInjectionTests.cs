@@ -4,13 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace Weaviate.ConformanceTests;
 
 public class WeaviateDependencyInjectionTests
-    : DependencyInjectionTests<WeaviateVectorStore, WeaviateCollection<Guid, SimpleRecord<Guid>>, Guid, SimpleRecord<Guid>>
+    : DependencyInjectionTests<WeaviateVectorStore, WeaviateCollection<Guid, DependencyInjectionTests<Guid>.Record>, Guid, DependencyInjectionTests<Guid>.Record>
 {
     private static readonly Uri s_endpoint = new("http://localhost");
     private const string ApiKey = "Fake API Key";
@@ -37,17 +36,17 @@ public class WeaviateDependencyInjectionTests
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
                     .AddSingleton<WeaviateCollectionOptions>(sp => new WeaviateCollectionOptions() { Endpoint = EndpointProvider(sp), ApiKey = ApiKeyProvider(sp) })
-                    .AddWeaviateCollection<SimpleRecord<Guid>>(name, lifetime: lifetime)
+                    .AddWeaviateCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<WeaviateCollectionOptions>(sp => new WeaviateCollectionOptions() { Endpoint = EndpointProvider(sp, serviceKey), ApiKey = ApiKeyProvider(sp, serviceKey) })
-                    .AddKeyedWeaviateCollection<SimpleRecord<Guid>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedWeaviateCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddWeaviateCollection<SimpleRecord<Guid>>(name, s_endpoint, ApiKey, lifetime: lifetime)
-                : services.AddKeyedWeaviateCollection<SimpleRecord<Guid>>(serviceKey, name, s_endpoint, ApiKey, lifetime: lifetime);
+                ? services.AddWeaviateCollection<Record>(name, s_endpoint, ApiKey, lifetime: lifetime)
+                : services.AddKeyedWeaviateCollection<Record>(serviceKey, name, s_endpoint, ApiKey, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) =>
-                services.AddKeyedWeaviateCollection<SimpleRecord<Guid>>(serviceKey, name, s_endpoint, ApiKey, lifetime: lifetime);
+                services.AddKeyedWeaviateCollection<Record>(serviceKey, name, s_endpoint, ApiKey, lifetime: lifetime);
         }
     }
 
@@ -76,9 +75,9 @@ public class WeaviateDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddWeaviateVectorStore(endpoint: null!, apiKey: ApiKey));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedWeaviateVectorStore(serviceKey: "notNull", endpoint: null!, apiKey: ApiKey));
-        Assert.Throws<ArgumentNullException>(() => services.AddWeaviateCollection<SimpleRecord<Guid>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddWeaviateCollection<Record>(
             name: "notNull", endpoint: null!, apiKey: ApiKey));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedWeaviateCollection<SimpleRecord<Guid>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedWeaviateCollection<Record>(
             serviceKey: "notNull", name: "notNull", endpoint: null!, apiKey: ApiKey));
     }
 }

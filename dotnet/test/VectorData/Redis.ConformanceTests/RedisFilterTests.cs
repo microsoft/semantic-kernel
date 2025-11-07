@@ -75,7 +75,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
-        public override string CollectionName => "JsonCollectionFilterTests";
+        protected override string CollectionNameBase => "JsonCollectionFilterTests";
 
         public override string SpecialCharactersText
 #if NET8_0_OR_GREATER
@@ -148,7 +148,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
-        public override string CollectionName => "HashSetCollectionFilterTests";
+        protected override string CollectionNameBase => "HashSetCollectionFilterTests";
 
         public override string SpecialCharactersText
 #if NET8_0_OR_GREATER

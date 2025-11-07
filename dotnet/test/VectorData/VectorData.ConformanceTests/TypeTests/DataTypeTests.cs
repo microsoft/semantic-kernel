@@ -400,7 +400,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, TRecord>
     {
-        public override string CollectionName => "DataTypeTests";
+        protected override string CollectionNameBase => nameof(DataTypeTests<int>);
 
         public virtual bool IsNullSupported => true;
         public virtual bool IsNullFilteringSupported => true;
