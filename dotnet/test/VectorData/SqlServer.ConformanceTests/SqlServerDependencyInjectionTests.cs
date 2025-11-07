@@ -5,13 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace SqlServer.ConformanceTests;
 
 public class SqlServerDependencyInjectionTests
-    : DependencyInjectionTests<SqlServerVectorStore, SqlServerCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<SqlServerVectorStore, SqlServerCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     protected const string ConnectionString = "Server=localhost;Database=master;Integrated Security=True;";
 
@@ -32,15 +31,15 @@ public class SqlServerDependencyInjectionTests
         get
         {
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddSqlServerCollection<string, SimpleRecord<string>>(
+                ? services.AddSqlServerCollection<string, Record>(
                     name, connectionString: ConnectionString, lifetime: lifetime)
-                : services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+                : services.AddKeyedSqlServerCollection<string, Record>(
                     serviceKey, name, connectionString: ConnectionString, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddSqlServerCollection<string, SimpleRecord<string>>(
+                ? services.AddSqlServerCollection<string, Record>(
                     name, ConnectionStringProvider, lifetime: lifetime)
-                : services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+                : services.AddKeyedSqlServerCollection<string, Record>(
                     serviceKey, name, sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
@@ -64,8 +63,8 @@ public class SqlServerDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddSqlServerVectorStore(connectionStringProvider: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerVectorStore(serviceKey: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(name: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(serviceKey: "notNull", name: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, Record>(name: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, Record>(serviceKey: "notNull", name: "notNull", connectionStringProvider: null!));
     }
 
     [Fact]
@@ -73,13 +72,13 @@ public class SqlServerDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, Record>(
             name: "notNull", connectionString: null!));
-        Assert.Throws<ArgumentException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddSqlServerCollection<string, Record>(
             name: "notNull", connectionString: ""));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionString: null!));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedSqlServerCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionString: ""));
     }
 }

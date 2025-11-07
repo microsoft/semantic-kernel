@@ -399,4 +399,78 @@ public partial class ClientCoreTests
             }), false);
         }
     }
+
+    [Fact]
+    public void NonInvocableToolHasValidParametersSchema()
+    {
+        // Arrange & Act
+        // Access the NonInvocableTool through reflection since it's protected
+        var clientCoreType = typeof(ClientCore);
+        var nonInvocableToolField = clientCoreType.GetField("s_nonInvocableFunctionTool",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        Assert.NotNull(nonInvocableToolField);
+
+        var nonInvocableTool = (ChatTool)nonInvocableToolField.GetValue(null)!;
+
+        // Assert
+        Assert.NotNull(nonInvocableTool);
+        Assert.Equal("NonInvocableTool", nonInvocableTool.FunctionName);
+        Assert.Equal("A placeholder tool used when no real tools are available", nonInvocableTool.FunctionDescription);
+
+        // Verify that parameters are not null (this is the key fix for Mistral compatibility)
+        Assert.NotNull(nonInvocableTool.FunctionParameters);
+
+        // Verify the parameters contain a valid JSON schema
+        var parametersJson = nonInvocableTool.FunctionParameters.ToString();
+        Assert.Contains("\"type\":\"object\"", parametersJson);
+        Assert.Contains("\"required\":[]", parametersJson);
+        Assert.Contains("\"properties\":{}", parametersJson);
+
+        // Verify it's valid JSON
+        var parsedJson = JsonSerializer.Deserialize<JsonElement>(parametersJson);
+        Assert.Equal(JsonValueKind.Object, parsedJson.ValueKind);
+        Assert.True(parsedJson.TryGetProperty("type", out var typeProperty));
+        Assert.Equal("object", typeProperty.GetString());
+        Assert.True(parsedJson.TryGetProperty("required", out var requiredProperty));
+        Assert.Equal(JsonValueKind.Array, requiredProperty.ValueKind);
+        Assert.Equal(0, requiredProperty.GetArrayLength());
+        Assert.True(parsedJson.TryGetProperty("properties", out var propertiesProperty));
+        Assert.Equal(JsonValueKind.Object, propertiesProperty.ValueKind);
+    }
+
+    [Fact]
+    public void NonInvocableToolSchemaIsCompatibleWithMistral()
+    {
+        // Arrange & Act
+        var clientCoreType = typeof(ClientCore);
+        var nonInvocableToolField = clientCoreType.GetField("s_nonInvocableFunctionTool",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        var nonInvocableTool = (ChatTool)nonInvocableToolField!.GetValue(null)!;
+
+        // Assert
+        // This test verifies that the tool schema meets Mistral's requirements:
+        // 1. Has a parameters field (not null)
+        // 2. Parameters field contains valid JSON schema
+        // 3. Schema has required type, properties, and required fields
+
+        Assert.NotNull(nonInvocableTool.FunctionParameters);
+
+        var parametersJson = nonInvocableTool.FunctionParameters.ToString();
+        var schema = JsonSerializer.Deserialize<JsonElement>(parametersJson);
+
+        // Verify all required fields for Mistral compatibility
+        Assert.True(schema.TryGetProperty("type", out _), "Schema must have 'type' field");
+        Assert.True(schema.TryGetProperty("properties", out _), "Schema must have 'properties' field");
+        Assert.True(schema.TryGetProperty("required", out _), "Schema must have 'required' field");
+
+        // Verify the schema structure matches what Mistral expects
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.Equal(JsonValueKind.Object, schema.GetProperty("properties").ValueKind);
+        Assert.Equal(JsonValueKind.Array, schema.GetProperty("required").ValueKind);
+
+        // This ensures the tool won't cause 422 errors with Mistral APIs
+        // as described in GitHub issue #13232
+    }
 }

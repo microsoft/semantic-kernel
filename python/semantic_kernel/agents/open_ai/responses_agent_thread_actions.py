@@ -1185,6 +1185,11 @@ class ResponsesAgentThreadActions:
             "parallel_tool_calls": parallel_tool_calls,
         }
 
+        # Add text option if it exists
+        text = merged.get("text")
+        if text is not None:
+            options["text"] = text
+
         # Add reasoning to the options if it is provided.
         # Note that non-reasoning capable models will throw an error if this is set.
         if reasoning is not None:

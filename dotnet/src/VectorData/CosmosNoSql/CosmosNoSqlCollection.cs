@@ -134,9 +134,12 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         try
         {
-            if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
+            if (typeof(TKey) != typeof(string)
+                && typeof(TKey) != typeof(Guid)
+                && typeof(TKey) != typeof(CosmosNoSqlCompositeKey)
+                && typeof(TKey) != typeof(object))
             {
-                throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported.");
+                throw new NotSupportedException($"Only string, Guid and {nameof(CosmosNoSqlCompositeKey)} keys are supported.");
             }
 
             this._database = databaseProvider(clientWrapper.Client);
@@ -322,6 +325,8 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(key);
+
         return await this.GetAsync([key], options, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -343,11 +348,17 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
+        var compositeKeys = GetCompositeKeys(keys).ToList();
+        if (compositeKeys.Count == 0)
+        {
+            yield break;
+        }
+
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
             this._model,
             this._model.KeyProperty.StorageName,
             this._partitionKeyProperty.StorageName,
-            GetCompositeKeys(keys).ToList(),
+            compositeKeys,
             includeVectors);
 
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken).ConfigureAwait(false))
@@ -762,21 +773,14 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// More information about Azure CosmosDB NoSQL distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/vector-search#container-vector-policies" />.
     /// </summary>
     private static DistanceFunction GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
-    {
-        if (string.IsNullOrWhiteSpace(distanceFunction))
+        => distanceFunction switch
         {
-            // Use default distance function.
-            return DistanceFunction.Cosine;
-        }
-
-        return distanceFunction switch
-        {
-            SKDistanceFunction.CosineSimilarity => DistanceFunction.Cosine,
+            SKDistanceFunction.CosineSimilarity or null => DistanceFunction.Cosine,
             SKDistanceFunction.DotProductSimilarity => DistanceFunction.DotProduct,
             SKDistanceFunction.EuclideanDistance => DistanceFunction.Euclidean,
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
+
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
-    }
 
     /// <summary>
     /// Returns <see cref="VectorDataType"/> based on vector property type.
@@ -844,13 +848,22 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         => keys switch
         {
             IEnumerable<CosmosNoSqlCompositeKey> k => k,
+
             IEnumerable<string> k => k.Select(key => new CosmosNoSqlCompositeKey(recordKey: key, partitionKey: key)),
+
+            IEnumerable<Guid> k => k.Select(key =>
+            {
+                var guidString = key.ToString();
+                return new CosmosNoSqlCompositeKey(recordKey: guidString, partitionKey: guidString);
+            }),
+
             IEnumerable<object> k => k.Select(key => key switch
             {
                 string s => new CosmosNoSqlCompositeKey(recordKey: s, partitionKey: s),
                 CosmosNoSqlCompositeKey ck => ck,
                 _ => throw new ArgumentException($"Invalid key type '{key.GetType().Name}'.")
             }),
+
             _ => throw new UnreachableException()
         };
 

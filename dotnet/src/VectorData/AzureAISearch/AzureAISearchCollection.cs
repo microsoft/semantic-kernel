@@ -83,9 +83,9 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         Verify.NotNull(searchIndexClient);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException("Only string and Guid keys are supported.");
         }
 
         options ??= AzureAISearchCollectionOptions.Default;
@@ -400,8 +400,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             options,
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         await foreach (var record in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
@@ -442,8 +442,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             },
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         searchOptions.SearchFields.Add(textDataProperty.StorageName);
         var keywordsCombined = string.Join(" ", keywords);
@@ -791,7 +791,13 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         Verify.NotNull(key);
 
-        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+        var stringKey = key switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
 
         Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
 

@@ -77,6 +77,10 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                     }
 #endif
 
+                    case BitArray bitArray when vectorProperty.Type == typeof(BinaryEmbedding):
+                        vectorProperty.SetValueAsObject(record, new BinaryEmbedding(bitArray));
+                        continue;
+
                     case BitArray bitArray:
                         vectorProperty.SetValueAsObject(record, bitArray);
                         continue;

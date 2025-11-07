@@ -233,8 +233,8 @@ class TestTextCompletion(CompletionTestBase):
             ),
             "hf_summ": (
                 HuggingFaceTextCompletion(
-                    service_id="jotamunz/billsum_tiny_summarization",
-                    ai_model_id="jotamunz/billsum_tiny_summarization",
+                    service_id="Falconsai/text_summarization",
+                    ai_model_id="Falconsai/text_summarization",
                     task="summarization",
                 )
                 if hugging_face_setup
@@ -258,7 +258,7 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.titan-text-premier-v1:0"),
+                self._try_create_bedrock_text_completion_client("amazon.titan-text-express-v1"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (

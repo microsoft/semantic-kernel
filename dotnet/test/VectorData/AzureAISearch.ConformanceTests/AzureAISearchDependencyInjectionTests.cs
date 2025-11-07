@@ -6,13 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace AzureAISearch.ConformanceTests;
 
 public class AzureAISearchDependencyInjectionTests
-    : DependencyInjectionTests<AzureAISearchVectorStore, AzureAISearchCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<AzureAISearchVectorStore, AzureAISearchCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     private static readonly Uri s_endpoint = new("https://localhost");
     private static readonly AzureKeyCredential s_keyCredential = new("fakeKey");
@@ -36,24 +35,24 @@ public class AzureAISearchDependencyInjectionTests
         {
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
             ? services
-                .AddAzureAISearchCollection<SimpleRecord<string>>(name,
+                .AddAzureAISearchCollection<Record>(name,
                     sp => new SearchIndexClient(EndpointProvider(sp), KeyProvider(sp)), lifetime: lifetime)
             : services
-                .AddKeyedAzureAISearchCollection<SimpleRecord<string>>(serviceKey, name,
+                .AddKeyedAzureAISearchCollection<Record>(serviceKey, name,
                     sp => new SearchIndexClient(EndpointProvider(sp, serviceKey), KeyProvider(sp, serviceKey)), lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
                     .AddSingleton<SearchIndexClient>(sp => new SearchIndexClient(s_endpoint, s_keyCredential))
-                    .AddAzureAISearchCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddAzureAISearchCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<SearchIndexClient>(sp => new SearchIndexClient(s_endpoint, s_keyCredential))
-                    .AddKeyedAzureAISearchCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedAzureAISearchCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddAzureAISearchCollection<SimpleRecord<string>>(
+                ? services.AddAzureAISearchCollection<Record>(
                     name, s_endpoint, s_keyCredential, lifetime: lifetime)
-                : services.AddKeyedAzureAISearchCollection<SimpleRecord<string>>(
+                : services.AddKeyedAzureAISearchCollection<Record>(
                     serviceKey, name, s_endpoint, s_keyCredential, lifetime: lifetime);
         }
     }
@@ -89,9 +88,9 @@ public class AzureAISearchDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<Record>(
             name: "notNull", endpoint: null!, s_keyCredential));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<Record>(
             serviceKey: "notNull", name: "notNull", endpoint: null!, s_keyCredential));
     }
 
@@ -100,9 +99,9 @@ public class AzureAISearchDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<Record>(
             name: "notNull", s_endpoint, keyCredential: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<Record>(
             serviceKey: "notNull", name: "notNull", s_endpoint, keyCredential: null!));
     }
 
@@ -111,9 +110,9 @@ public class AzureAISearchDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddAzureAISearchCollection<Record>(
             name: "notNull", s_endpoint, tokenCredential: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedAzureAISearchCollection<Record>(
             serviceKey: "notNull", name: "notNull", s_endpoint, tokenCredential: null!));
     }
 }
