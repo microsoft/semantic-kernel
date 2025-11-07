@@ -1,0 +1,354 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Github Versions API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.github.com"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "basic-error": {
+                "title": "Basic Error",
+                "description": "Basic Error",
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "documentation_url": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "label": {
+                "title": "Label",
+                "description": "Color-coded labels help you categorize and filter your issues (just like labels in Gmail).",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier for the label.",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 208045946
+                    },
+                    "node_id": {
+                        "type": "string",
+                        "example": "MDU6TGFiZWwyMDgwNDU5NDY="
+                    },
+                    "url": {
+                        "description": "URL for the label",
+                        "example": "https://api.github.com/repositories/42/labels/bug",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "name": {
+                        "description": "The name of the label.",
+                        "example": "bug",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Optional description of the label, such as its purpose.",
+                        "type": "string",
+                        "example": "Something isn't working",
+                        "nullable": true
+                    },
+                    "color": {
+                        "description": "6-character hex code, without the leading #, identifying the color",
+                        "example": "FFFFFF",
+                        "type": "string"
+                    },
+                    "default": {
+                        "description": "Whether this label comes by default in a new repository.",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "node_id",
+                    "url",
+                    "name",
+                    "description",
+                    "color",
+                    "default"
+                ]
+            },
+            "tag": {
+                "title": "Tag",
+                "description": "Tag",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "v0.1"
+                    },
+                    "commit": {
+                        "type": "object",
+                        "properties": {
+                            "sha": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "sha",
+                            "url"
+                        ]
+                    },
+                    "zipball_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://github.com/octocat/Hello-World/zipball/v0.1"
+                    },
+                    "tarball_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://github.com/octocat/Hello-World/tarball/v0.1"
+                    },
+                    "node_id": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "node_id",
+                    "commit",
+                    "zipball_url",
+                    "tarball_url"
+                ]
+            }
+        },
+        "examples": {
+            "label-items": {
+                "value": [
+                    {
+                        "id": 208045946,
+                        "node_id": "MDU6TGFiZWwyMDgwNDU5NDY=",
+                        "url": "https://api.github.com/repos/octocat/Hello-World/labels/bug",
+                        "name": "bug",
+                        "description": "Something isn't working",
+                        "color": "f29513",
+                        "default": true
+                    },
+                    {
+                        "id": 208045947,
+                        "node_id": "MDU6TGFiZWwyMDgwNDU5NDc=",
+                        "url": "https://api.github.com/repos/octocat/Hello-World/labels/enhancement",
+                        "name": "enhancement",
+                        "description": "New feature or request",
+                        "color": "a2eeef",
+                        "default": false
+                    }
+                ]
+            },
+            "tag-items": {
+                "value": [
+                    {
+                        "name": "v0.1",
+                        "commit": {
+                            "sha": "c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+                            "url": "https://api.github.com/repos/octocat/Hello-World/commits/c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc"
+                        },
+                        "zipball_url": "https://github.com/octocat/Hello-World/zipball/v0.1",
+                        "tarball_url": "https://github.com/octocat/Hello-World/tarball/v0.1",
+                        "node_id": "MDQ6VXNlcjE="
+                    }
+                ]
+            }
+        },
+        "parameters": {
+            "owner": {
+                "name": "owner",
+                "description": "The account owner of the repository. The name is not case sensitive.",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "repo": {
+                "name": "repo",
+                "description": "The name of the repository without the `.git` extension. The name is not case sensitive.",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "per-page": {
+                "name": "per_page",
+                "description": "The number of results per page (max 100). For more information, see \"[Using pagination in the REST API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api).\"",
+                "in": "query",
+                "schema": {
+                    "type": "integer",
+                    "default": 30
+                }
+            },
+            "page": {
+                "name": "page",
+                "description": "The page number of the results to fetch. For more information, see \"[Using pagination in the REST API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api).\"",
+                "in": "query",
+                "schema": {
+                    "type": "integer",
+                    "default": 1
+                }
+            }
+        },
+        "responses": {
+            "not_found": {
+                "description": "Resource not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/basic-error"
+                        }
+                    }
+                }
+            }
+        },
+        "headers": {
+            "link": {
+                "example": "<https://api.github.com/resource?page=2>; rel=\"next\", <https://api.github.com/resource?page=5>; rel=\"last\"",
+                "schema": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "/repos/{owner}/{repo}/tags": {
+            "get": {
+                "summary": "List repository tags",
+                "description": "",
+                "tags": [
+                    "repos"
+                ],
+                "operationId": "repos/list-tags",
+                "externalDocs": {
+                    "description": "API method documentation",
+                    "url": "https://docs.github.com/rest/repos/repos#list-repository-tags"
+                },
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/owner"
+                    },
+                    {
+                        "$ref": "#/components/parameters/repo"
+                    },
+                    {
+                        "$ref": "#/components/parameters/per-page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/page"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/tag"
+                                    }
+                                },
+                                "examples": {
+                                    "default": {
+                                        "$ref": "#/components/examples/tag-items"
+                                    }
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Link": {
+                                "$ref": "#/components/headers/link"
+                            }
+                        }
+                    }
+                },
+                "x-github": {
+                    "githubCloudOnly": false,
+                    "enabledForGitHubApps": true,
+                    "category": "repos",
+                    "subcategory": "repos"
+                }
+            }
+        },
+        "/repos/{owner}/{repo}/labels": {
+            "get": {
+                "summary": "List labels for a repository",
+                "description": "Lists all labels for a repository.",
+                "tags": [
+                    "issues"
+                ],
+                "operationId": "issues/list-labels-for-repo",
+                "externalDocs": {
+                    "description": "API method documentation",
+                    "url": "https://docs.github.com/rest/issues/labels#list-labels-for-a-repository"
+                },
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/owner"
+                    },
+                    {
+                        "$ref": "#/components/parameters/repo"
+                    },
+                    {
+                        "$ref": "#/components/parameters/per-page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/page"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/label"
+                                    }
+                                },
+                                "examples": {
+                                    "default": {
+                                        "$ref": "#/components/examples/label-items"
+                                    }
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Link": {
+                                "$ref": "#/components/headers/link"
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/not_found"
+                    }
+                },
+                "x-github": {
+                    "githubCloudOnly": false,
+                    "enabledForGitHubApps": true,
+                    "category": "issues",
+                    "subcategory": "labels"
+                }
+            }
+        }
+    }
+}
