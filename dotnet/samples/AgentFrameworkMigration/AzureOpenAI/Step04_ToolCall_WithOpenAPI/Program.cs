@@ -21,7 +21,7 @@ async Task SKAgent()
 {
     Console.WriteLine("\n=== SK Agent ===\n");
 
-    // Create an OpenAI chat client kernel.
+    // Create a kernel with an Azure OpenAI chat client.
     var kernel = Kernel.CreateBuilder().AddAzureOpenAIChatClient(deploymentName, endpoint, new AzureCliCredential()).Build();
 
     // Load the OpenAPI Spec from a file.
