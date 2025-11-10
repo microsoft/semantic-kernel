@@ -12,7 +12,7 @@ public class AzureAISearchKeyTypeTests(AzureAISearchKeyTypeTests.Fixture fixture
     : KeyTypeTests(fixture), IClassFixture<AzureAISearchKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {
