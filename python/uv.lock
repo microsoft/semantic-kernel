@@ -6458,7 +6458,7 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = "~=3.8" },
     { name = "aiortc", specifier = ">=1.9.0" },
-    { name = "aiortc", marker = "extra == 'realtime'", specifier = ">=1.9.0" },
+    { name = "aiortc", marker = "extra == 'realtime'" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
     { name = "azure-ai-agents", specifier = ">=1.2.0b3" },
@@ -6520,7 +6520,7 @@ requires-dist = [
     { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.16" },
     { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.17.0,<5.0" },
     { name = "websockets", specifier = ">=13,<16" },
-    { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
+    { name = "websockets", marker = "extra == 'realtime'" },
 ]
 
 [package.metadata.requires-dev]

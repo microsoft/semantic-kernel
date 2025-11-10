@@ -143,8 +143,8 @@ redis = [
     "redisvl ~= 0.4"
 ]
 realtime = [
-    "websockets >= 13, < 16",
-    "aiortc>=1.9.0",
+    "websockets",
+    "aiortc",
 ]
 sql = [
     "pyodbc >= 5.2"
