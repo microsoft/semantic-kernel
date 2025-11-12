@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.VectorData;
 ///
 /// See ADR-TextSearch-Contains-Support.md for architectural context and cross-engine comparison.
 /// </remarks>
-internal sealed class SearchQueryFilterClause : FilterClause
+public sealed class SearchQueryFilterClause : FilterClause
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchQueryFilterClause"/> class.
