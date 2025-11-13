@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
