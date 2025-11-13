@@ -386,6 +386,90 @@ public interface ITextSearch
 
 **Estimated Timeline**: Phase 2 in next major version (e.g., SK 2.0), Phase 3 in subsequent major version (e.g., SK 3.0). This gives ecosystem minimum 1-2 years to migrate.
 
+### Text Search Contains() Support Implementation
+
+The `ITextSearch<TRecord>` interface supports LINQ expressions, including `Title.Contains("value")` patterns. Different search engine APIs have varying capabilities for handling text matching within specific fields:
+
+- **Bing**: Native advanced search operators (`intitle:`, `inbody:`, `url:`)
+- **Google**: Specialized API parameters (`orTerms` for additional search terms)
+- **Brave/Tavily**: General search APIs without field-specific operators
+
+**Decision**: Implement `Title.Contains()` support using **query enhancement** for Brave and Tavily search engines:
+
+1. **SearchQueryFilterClause**: New filter clause type that adds terms to the search query rather than filtering results
+2. **Query Enhancement Pattern**: Extract terms from `SearchQueryFilterClause` instances and append to base search query
+3. **Dual Processing**: Handle `SearchQueryFilterClause` differently from regular filter clauses in `ConvertToLegacyOptionsWithQuery`
+
+**Implementation Pattern**:
+
+```csharp
+// LINQ Expression: results.Where(r => r.Title.Contains("AI"))
+// Converts to: new SearchQueryFilterClause("AI")
+// Query Enhancement: "original query" + " AI"
+```
+
+**Alternatives Considered**:
+
+1. **Direct API Parameters**: Not available in Brave/Tavily APIs
+2. **Post-Search Filtering**: Would reduce result relevance and performance
+3. **NotSupportedException**: Would limit LINQ expression capabilities
+
+**Consequences**:
+
+- ✅ Consistent LINQ expression support across search engines
+- ✅ Enhanced search relevance by modifying query rather than filtering results
+- ✅ Extensible pattern for future Contains() implementations
+- ✅ Maintains backward compatibility with legacy `ITextSearch` interface
+- ⚠️ Different implementation approaches across search engines (consistency concern)
+- ⚠️ Additional complexity in filter clause processing
+- ⚠️ Query enhancement may affect search precision in some cases
+
+### SearchQueryFilterClause Public Visibility
+
+**Context**: Reviewer feedback requested moving `SearchQueryFilterClause` from `VectorData.Abstractions` to `Plugins.Web` to reduce public API surface. Investigation revealed architectural constraint preventing this move.
+
+**Problem**: `FilterClause` base class has an **internal constructor**, preventing inheritance outside the `VectorData.Abstractions` assembly:
+
+```csharp
+public abstract class FilterClause
+{
+    internal FilterClause()  // ← Blocks external inheritance
+}
+```
+
+Attempted move to `Plugins.Web` fails with:
+```
+error CS0122: 'FilterClause.FilterClause()' is inaccessible due to its protection level
+```
+
+**Decision**: Make `SearchQueryFilterClause` **public** and keep it in `VectorData.Abstractions`.
+
+```csharp
+public sealed class SearchQueryFilterClause : FilterClause
+```
+
+**Rationale**:
+
+- **Why public**: Respects existing `FilterClause` architecture (internal constructor is intentional design)
+- Legitimate reusable abstraction for text search scenarios
+- Consistent with precedent: `EqualToFilterClause`, `AnyTagEqualToFilterClause` are public
+- Cleanest solution with no workarounds
+
+**Alternatives Considered**:
+
+1. **Move to Plugins.Web**: Impossible due to internal constructor
+2. **Internal + InternalsVisibleTo**: Causes 200 CS0436 type conflict errors in CI
+3. **Make FilterClause constructor public**: Too broad, opens VectorData to external filter types
+4. **Don't inherit from FilterClause**: Breaks established pattern, loses type safety
+
+**Consequences**:
+
+- ✅ Respects intentional `FilterClause` architecture
+- ✅ Maintains consistency with other public filter clause types
+- ✅ Clean implementation with no workarounds
+- ✅ Reusable for future text search scenarios
+- ⚠️ Adds to public API surface (minimal impact - single sealed class)
+
 ## Pros and Cons of the Options
 
 ### Option 1: Native LINQ Only
