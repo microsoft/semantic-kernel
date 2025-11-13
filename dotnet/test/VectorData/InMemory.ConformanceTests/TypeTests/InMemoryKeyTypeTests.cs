@@ -22,9 +22,9 @@ public class InMemoryKeyTypeTests(InMemoryKeyTypeTests.Fixture fixture)
     [ConditionalFact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
-    protected override async Task Test<TKey>(TKey keyValue, TKey differentKey)
+    protected override async Task Test<TKey>(TKey key1, TKey key2)
     {
-        await base.Test(keyValue, differentKey);
+        await base.Test(key1, key2);
 
         // For InMemory, delete the collection, otherwise the next test that runs will fail because the collection
         // already exists but with the previous key type.

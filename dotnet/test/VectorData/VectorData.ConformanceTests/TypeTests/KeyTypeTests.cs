@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
@@ -14,9 +15,11 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
     [ConditionalFact]
     public virtual Task Guid() => this.Test<Guid>(new Guid("603840bf-cf91-4521-8b8e-8b6a2e75910a"), new Guid("f507c6a2-43bd-4d8f-8656-890f2cdaf299"));
 
-    protected virtual async Task Test<TKey>(TKey keyValue, TKey differentKey)
+    protected virtual async Task Test<TKey>(TKey key1, TKey key2)
         where TKey : notnull
     {
+        Assert.NotEqual(key1, key2);
+
         using var collection = fixture.CreateCollection<TKey>();
 
         await collection.EnsureCollectionDeletedAsync();
@@ -24,14 +27,14 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
 
         var record = new Record<TKey>
         {
-            Key = keyValue,
+            Key = key1,
             Int = 8,
             Vector = new ReadOnlyMemory<float>([1, 2, 3])
         };
 
         var nextRecord = new Record<TKey>
         {
-            Key = differentKey,
+            Key = key2,
             Int = 9,
             Vector = new ReadOnlyMemory<float>([3, 2, 1])
         };
@@ -40,25 +43,24 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
         await collection.UpsertAsync([record, nextRecord]);
         await fixture.TestStore.WaitForDataAsync(collection, recordCount: 2);
 
-        var result = await collection.GetAsync(keyValue);
+        var result = await collection.GetAsync(key1);
 
         Assert.NotNull(result);
-        Assert.Equal(keyValue, result.Key);
+        Assert.Equal(key1, result.Key);
         Assert.Equal(8, result.Int);
 
-        var results = await collection.GetAsync([keyValue, differentKey]).ToListAsync();
-
+        var results = await collection.GetAsync([key1, key2]).ToListAsync();
         Assert.Equal(2, results.Count);
-        Assert.Equal(keyValue, results[0].Key);
-        Assert.Equal(8, results[0].Int);
-        Assert.Equal(differentKey, results[1].Key);
-        Assert.Equal(9, results[1].Int);
+        var firstRecord = Assert.Single(results, r => r.Key.Equals(key1));
+        Assert.Equal(8, firstRecord.Int);
+        var secondRecord = Assert.Single(results, r => r.Key.Equals(key2));
+        Assert.Equal(9, secondRecord.Int);
 
         ///////////////////////
         // Test dynamic mapping
         ///////////////////////
-        await collection.DeleteAsync(keyValue);
-        await collection.DeleteAsync([keyValue, differentKey]);
+        await collection.DeleteAsync(key1);
+        await collection.DeleteAsync([key1, key2]);
         await fixture.TestStore.WaitForDataAsync(collection, recordCount: 0);
 
         using var dynamicCollection = fixture.CreateDynamicCollection<TKey>();
@@ -66,13 +68,13 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
 
         var dynamicRecord = new Dictionary<string, object?>
         {
-            [nameof(Record<TKey>.Key)] = keyValue,
+            [nameof(Record<TKey>.Key)] = key1,
             [nameof(Record<TKey>.Int)] = 8,
             [nameof(Record<TKey>.Vector)] = new ReadOnlyMemory<float>([1, 2, 3])
         };
         var nextDynamicRecord = new Dictionary<string, object?>
         {
-            [nameof(Record<TKey>.Key)] = differentKey,
+            [nameof(Record<TKey>.Key)] = key2,
             [nameof(Record<TKey>.Int)] = 9,
             [nameof(Record<TKey>.Vector)] = new ReadOnlyMemory<float>([3, 2, 1])
         };
@@ -81,21 +83,21 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
         await dynamicCollection.UpsertAsync([dynamicRecord, nextDynamicRecord]);
         await fixture.TestStore.WaitForDataAsync(dynamicCollection, recordCount: 2);
 
-        var dynamicResult = await dynamicCollection.GetAsync(keyValue);
+        var dynamicResult = await dynamicCollection.GetAsync(key1);
 
         Assert.NotNull(dynamicResult);
         Assert.IsType<TKey>(dynamicResult[nameof(Record<TKey>.Key)]);
-        Assert.Equal(keyValue, (TKey)dynamicResult[nameof(Record<TKey>.Key)]!);
+        Assert.Equal(key1, (TKey)dynamicResult[nameof(Record<TKey>.Key)]!);
         Assert.Equal(8, dynamicResult[nameof(Record<TKey>.Int)]);
 
-        var dynamicResults = await dynamicCollection.GetAsync([keyValue, differentKey]).ToListAsync();
+        var dynamicResults = await dynamicCollection.GetAsync([key1, key2]).ToListAsync();
         Assert.Equal(2, dynamicResults.Count);
-        Assert.IsType<TKey>(dynamicResults[0][nameof(Record<TKey>.Key)]);
-        Assert.Equal(keyValue, (TKey)dynamicResults[0][nameof(Record<TKey>.Key)]!);
-        Assert.Equal(8, dynamicResults[0][nameof(Record<TKey>.Int)]);
-        Assert.IsType<TKey>(dynamicResults[1][nameof(Record<TKey>.Key)]);
-        Assert.Equal(differentKey, (TKey)dynamicResults[1][nameof(Record<TKey>.Key)]!);
-        Assert.Equal(9, dynamicResults[1][nameof(Record<TKey>.Int)]);
+        var firstDynamicRecord = Assert.Single(dynamicResults, r => r[nameof(Record<TKey>.Key)]!.Equals(key1));
+        Assert.IsType<TKey>(firstDynamicRecord[nameof(Record<TKey>.Key)]);
+        Assert.Equal(8, firstDynamicRecord[nameof(Record<TKey>.Int)]);
+        var secondDynamicRecord = Assert.Single(dynamicResults, r => r[nameof(Record<TKey>.Key)]!.Equals(key2));
+        Assert.IsType<TKey>(secondDynamicRecord[nameof(Record<TKey>.Key)]);
+        Assert.Equal(9, secondDynamicRecord[nameof(Record<TKey>.Int)]);
     }
 
     public abstract class Fixture : VectorStoreFixture
