@@ -13,16 +13,16 @@ public class MongoKeyTypeTests(MongoKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<MongoKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task ObjectId() => this.Test<ObjectId>(new("652f8c3e8f9b2c1a4d3e6a7b"));
+    public virtual Task ObjectId() => this.Test<ObjectId>(new("652f8c3e8f9b2c1a4d3e6a7b"), new("b7a6e3d4a1c2b9f8e3c8f256"));
 
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     [ConditionalFact]
-    public virtual Task Int() => this.Test<int>(8);
+    public virtual Task Int() => this.Test<int>(8, 9);
 
     [ConditionalFact]
-    public virtual Task Long() => this.Test<long>(8L);
+    public virtual Task Long() => this.Test<long>(8L, 9L);
 
     public new class Fixture : KeyTypeTests.Fixture
     {

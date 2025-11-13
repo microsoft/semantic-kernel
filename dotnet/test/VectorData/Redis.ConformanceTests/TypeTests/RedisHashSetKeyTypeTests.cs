@@ -13,7 +13,7 @@ public class RedisHashSetKeyTypeTests(RedisHashSetKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<RedisHashSetKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {
