@@ -39,7 +39,7 @@ repos:
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.5.30
+    rev: 0.9.8
     hooks:
       # Update the uv lockfile
       - id: uv-lock
@@ -51,4 +51,3 @@ repos:
       - id: bandit
         args: ["-c", "python/pyproject.toml"]
         additional_dependencies: [ "bandit[toml]" ]
-        
