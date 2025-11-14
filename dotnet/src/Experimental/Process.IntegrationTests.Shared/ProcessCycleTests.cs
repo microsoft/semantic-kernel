@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
-namespace SemanticKernel.Process.IntegrationTests;
+namespace Microsoft.SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// Integration test focusing on cycles in a process.
@@ -54,13 +54,19 @@ public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
             .OnEvent(CommonEvents.StartBRequested)
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
-        myAStep
-            .OnEvent(CommonEvents.AStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
-
-        myBStep
-            .OnEvent(CommonEvents.BStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
+        process.ListenFor().AllOf(
+            [
+                new(CommonEvents.AStepDone, myAStep),
+                new(CommonEvents.BStepDone, myBStep)
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(myCStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "astepdata", inputEvents[myAStep.GetFullEventId(CommonEvents.AStepDone)] },
+                    { "bstepdata", inputEvents[myBStep.GetFullEventId(CommonEvents.BStepDone)] }
+                };
+            }));
 
         myCStep
             .OnEvent(CommonEvents.CStepDone)
@@ -74,7 +80,7 @@ public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
         var processContext = await this._fixture.StartProcessAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
 
         var processState = await processContext.GetStateAsync();
-        var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
+        var cStepState = processState.Steps.Where(s => s.State.StepId == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
 
         Assert.NotNull(cStepState?.State);
         Assert.Equal(3, cStepState.State.CurrentCycle);

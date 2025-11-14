@@ -136,7 +136,7 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
 
     internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
     {
-        return new KernelProcessAgentInvokeTarget(this.Step.Id, this.ThreadEval, this.MessagesInEval, this.InputEvals);
+        return new KernelProcessAgentInvokeTarget(this.Step.StepId, this.ThreadEval, this.MessagesInEval, this.InputEvals);
     }
 }
 
@@ -146,12 +146,14 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
 public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
+    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class. <br/>
+    /// Constructor only meant to be used by internal SK Builders components to allow piping specific parameters if needed. <br/>
+    /// For external use, <see cref="ProcessBuilder.ListenFor"/> with <see cref="ListenForBuilder.AllOf(List{MessageSourceBuilder})"/> should be used for mapping multiple parameters to a step function
     /// </summary>
     /// <param name="step">The step to target.</param>
     /// <param name="functionName">The function to target.</param>
     /// <param name="parameterName">The parameter to target.</param>
-    public ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName = null, string? parameterName = null) : base(ProcessTargetType.KernelFunction)
+    internal ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName, string? parameterName = null) : base(ProcessTargetType.KernelFunction)
     {
         Verify.NotNull(step, nameof(step));
 
@@ -169,11 +171,20 @@ public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
         var target = step.ResolveFunctionTarget(functionName, parameterName);
         if (target == null)
         {
-            throw new InvalidOperationException($"Failed to resolve function target for {step.GetType().Name}, {step.Name}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
+            throw new InvalidOperationException($"Failed to resolve function target for {step.GetType().Name}, {step.StepId}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
         }
 
         this.FunctionName = target.FunctionName!;
         this.ParameterName = target.ParameterName;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
+    /// </summary>
+    /// <param name="step">The step to target.</param>
+    /// <param name="functionName">The function to target.</param>
+    public ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName = null) : this(step, functionName, step is ProcessAgentBuilder ? ProcessAgentBuilder.Constants.MessageParameterName : null)
+    {
     }
 
     /// <summary>
@@ -182,8 +193,8 @@ public record ProcessFunctionTargetBuilder : ProcessTargetBuilder
     /// <returns>An instance of <see cref="KernelProcessFunctionTarget"/></returns>
     internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
     {
-        Verify.NotNull(this.Step.Id);
-        return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId);
+        Verify.NotNull(this.Step.StepId);
+        return new KernelProcessFunctionTarget(this.Step.StepId, this.FunctionName, this.ParameterName, this.TargetEventId);
     }
 
     /// <summary>
@@ -216,8 +227,9 @@ public sealed record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
     /// Initializes a new instance of the <see cref="ProcessStepTargetBuilder"/> class.
     /// </summary>
     /// <param name="stepBuilder"></param>
+    /// <param name="functionName"></param>
     /// <param name="inputMapping"></param>
-    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder)
+    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, string? functionName = null, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder, functionName, null)
     {
         this.InputMapping = inputMapping ?? new Func<Dictionary<string, object?>, Dictionary<string, object?>>((input) => input);
     }
