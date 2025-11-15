@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData;
+
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Represents a filter clause that adds terms to the search query itself for text search engines.
@@ -18,7 +20,7 @@ namespace Microsoft.Extensions.VectorData;
 ///
 /// See ADR-TextSearch-Contains-Support.md for architectural context and cross-engine comparison.
 /// </remarks>
-public sealed class SearchQueryFilterClause : FilterClause
+internal sealed class SearchQueryFilterClause : FilterClause
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchQueryFilterClause"/> class.
