@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable CS0618 // ITextSearch is obsolete
+#pragma warning disable CS8602 // Dereference of a possibly null reference - for LINQ expression properties
 
 using System;
 using System.IO;
@@ -110,7 +111,7 @@ public sealed class BraveTextSearchTests : IDisposable
         var resultList = await result.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
-        foreach (BraveWebResult webPage in resultList)
+        foreach (BraveWebPage webPage in resultList.Cast<BraveWebPage>())
         {
             Assert.NotNull(webPage.Title);
             Assert.NotNull(webPage.Description);
@@ -195,7 +196,7 @@ public sealed class BraveTextSearchTests : IDisposable
 
         // Act
         TextSearchOptions searchOptions = new() { Top = 5, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        var result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -243,6 +244,151 @@ public sealed class BraveTextSearchTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    #region Generic ITextSearch<BraveWebPage> Interface Tests
+
+    [Fact]
+    public async Task LinqSearchAsyncReturnsResultsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BraveWebPage>
+        {
+            Top = 4,
+            Skip = 0
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify basic generic interface functionality
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotEmpty(resultList);
+
+        // Verify the request was made correctly
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("count=4", requestUris[0].AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqGetSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BraveWebPage>
+        {
+            Top = 3,
+            Skip = 0
+        };
+        KernelSearchResults<BraveWebPage> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify generic interface returns results
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotEmpty(resultList);
+        // Results are now strongly typed as BraveWebPage
+
+        // Verify the request was made correctly
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("count=3", requestUris[0].AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task LinqGetTextSearchResultsAsyncReturnsResultsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BraveWebPage>
+        {
+            Top = 5,
+            Skip = 0
+        };
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert - Verify generic interface returns TextSearchResult objects
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotEmpty(resultList);
+        Assert.All(resultList, item => Assert.IsType<TextSearchResult>(item));
+
+        // Verify the request was made correctly
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("count=5", requestUris[0].AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task CollectionContainsFilterThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange - Tests both Enumerable.Contains (C# 13-) and MemoryExtensions.Contains (C# 14+)
+        // The same code array.Contains() resolves differently based on C# language version:
+        // - C# 13 and earlier: Enumerable.Contains (LINQ extension method)
+        // - C# 14 and later: MemoryExtensions.Contains (span-based optimization due to "first-class spans")
+        // Our implementation handles both identically since Brave API has limited query operators
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+        string[] sites = ["microsoft.com", "github.com"];
+
+        // Act & Assert - Verify that collection Contains pattern throws clear exception
+        var searchOptions = new TextSearchOptions<BraveWebPage>
+        {
+            Top = 5,
+            Skip = 0,
+            Filter = page => sites.Contains(page.Url!.ToString())  // Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
+        };
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () =>
+        {
+            await textSearch.SearchAsync("test", searchOptions);
+        });
+
+        // Assert - Verify error message explains the limitation clearly
+        Assert.Contains("Collection Contains filters", exception.Message);
+        Assert.Contains("not supported", exception.Message);
+    }
+
+    [Fact]
+    public async Task StringContainsStillWorksWithLINQFiltersAsync()
+    {
+        // Arrange - Verify that String.Contains (instance method) still works
+        // String.Contains is NOT affected by C# 14 "first-class spans" - only arrays are
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSkResponseJson));
+        ITextSearch<BraveWebPage> textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act - String.Contains should continue to work
+        var searchOptions = new TextSearchOptions<BraveWebPage>
+        {
+            Top = 5,
+            Skip = 0,
+            Filter = page => page.Title.Contains("Kernel")  // String.Contains - instance method
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("Semantic Kernel tutorial", searchOptions);
+
+        // Assert - Verify String.Contains works correctly
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Contains("Kernel", requestUris[0].AbsoluteUri);
+        Assert.Contains("count=5", requestUris[0].AbsoluteUri);
+    }
+
+    #endregion
+
     #region private
     private const string WhatIsTheSkResponseJson = "./TestData/brave_what_is_the_semantic_kernel.json";
     private const string SiteFilterSkResponseJson = "./TestData/brave_site_filter_what_is_the_semantic_kernel.json";
@@ -273,7 +419,7 @@ public sealed class BraveTextSearchTests : IDisposable
         {
             if (result is not BraveWebResult webPage)
             {
-                throw new ArgumentException("Result must be a BraveWebPage", nameof(result));
+                throw new ArgumentException("Result must be a BraveWebResult", nameof(result));
             }
 
             return new TextSearchResult(webPage.Description?.ToUpperInvariant() ?? string.Empty)
