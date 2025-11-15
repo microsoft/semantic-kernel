@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.11" />
     <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.*" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.*" />
 		<PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="Moq" />
