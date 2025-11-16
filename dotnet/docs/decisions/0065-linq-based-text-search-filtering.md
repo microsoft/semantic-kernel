@@ -3,7 +3,7 @@ status: accepted
 contact: alzarei
 date: 2025-10-25
 deciders: roji, westey-m, markwallace-microsoft
-consulted: moonbox3
+consulted:
 informed:
 ---
 
@@ -280,6 +280,107 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 }
 ```
 
+#### FilterClause Architecture: Translation Layer for Both Legacy and Modern Systems
+
+**Key Architectural Decision**: `FilterClause` types (including `SearchQueryFilterClause`) serve as the **common translation target** for both legacy and modern filtering systems in web search connectors.
+
+**FilterClause Role in Pattern B**:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  FilterClause: Common Processing Layer for Web Connectors           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Legacy Path (TextSearchFilter builder API):                        │
+│  ┌────────────────────────────────────────────────────────────┐    │
+│  │ User: new TextSearchFilter().Equality("lang", "en")        │    │
+│  │   ↓ (creates)                                              │    │
+│  │ EqualToFilterClause("lang", "en")                          │    │
+│  │   ↓ (stored in)                                            │    │
+│  │ TextSearchFilter.FilterClauses                             │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  Modern Path (LINQ translator):                                     │
+│  ┌────────────────────────────────────────────────────────────┐    │
+│  │ User: page => page.Language == "en"                        │    │
+│  │   ↓ (LINQ translator analyzes)                             │    │
+│  │ EqualToFilterClause("Language", "en")                      │    │
+│  │   ↓ (creates temporary)                                    │    │
+│  │ TextSearchFilter.FilterClauses                             │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  Both paths converge at FilterClause processing:                    │
+│  ┌────────────────────────────────────────────────────────────┐    │
+│  │ TextSearchFilter.FilterClauses                             │    │
+│  │   ↓ (web connector processes)                              │    │
+│  │ API-specific parameters (Bing operators, Google params)    │    │
+│  │   ↓                                                         │    │
+│  │ HTTP request to external API                               │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**FilterClause Types Used by Web Connectors**:
+
+All web search connectors (Bing, Google, Brave, Tavily) process these `FilterClause` types:
+
+- `EqualToFilterClause`: Equality comparisons (`page.Language == "en"` or `.Equality("language", "en")`)
+- `FilterClause.And`: AND operations (`&&` or chained `.Equality()` calls)
+- `SearchQueryFilterClause`: Query enhancement for `.Contains()` expressions (Brave, Tavily)
+
+**SearchQueryFilterClause: LINQ-Only Filter Type**
+
+`SearchQueryFilterClause` is a specialized filter type that:
+
+1. **Created by**: LINQ translator only (when processing `.Contains()` expressions)
+2. **Used by**: Brave and Tavily text search connectors
+3. **Purpose**: Enhances search queries with additional terms from filter expressions
+4. **Never created by users**: Not exposed in legacy `TextSearchFilter` builder API
+
+Example:
+
+```csharp
+// User writes LINQ expression:
+page => page.Title.Contains("AI") || page.Body.Contains("machine learning")
+
+// LINQ translator creates:
+new TextSearchFilter {
+    FilterClauses = [
+        new SearchQueryFilterClause("AI", "Title"),
+        new SearchQueryFilterClause("machine learning", "Body")
+    ]
+}
+
+// Brave/Tavily connectors process to enhance query:
+// "original query" + " AI machine learning"
+```
+
+**Why FilterClause Stays After Legacy Removal**:
+
+Even when we remove the legacy `ITextSearch` interface and `TextSearchFilter` builder API in Phase 3, `FilterClause` types remain because:
+
+1. **Modern LINQ path still needs them**: The LINQ translator converts expressions to `FilterClause` instances
+2. **Web connectors process them**: All web connectors translate `FilterClause` to API-specific parameters
+3. **Not part of public API**: Users never see `FilterClause` types - they're internal translation layer
+4. **Vector stores bypass them**: Modern vector stores use LINQ expressions directly via `VectorSearchOptions<TRecord>.Filter`
+
+**What Gets Removed vs What Stays in Phase 3**:
+
+❌ **Removed** (user-facing legacy APIs):
+
+- `ITextSearch` (non-generic interface)
+- `TextSearchFilter` builder methods (`.Equality()`, `.AnyTagEqualTo()`)
+- User's ability to manually create filter clauses
+
+✅ **Stays** (internal translation layer):
+
+- `FilterClause` base class and derived types
+- LINQ-to-FilterClause translation in web connectors
+- FilterClause-to-API-parameters conversion
+
+_Note: See "SearchQueryFilterClause Public Visibility" section below for detailed decision rationale on the constructor visibility trade-off._
+
 ### Key Differences Between Patterns:
 
 **VectorStoreTextSearch (Pattern A)**:
@@ -426,7 +527,7 @@ The `ITextSearch<TRecord>` interface supports LINQ expressions, including `Title
 
 ### SearchQueryFilterClause Public Visibility
 
-**Context**: Reviewer feedback requested moving `SearchQueryFilterClause` from `VectorData.Abstractions` to `Plugins.Web` to reduce public API surface. Investigation revealed architectural constraint preventing this move.
+**Context**: `SearchQueryFilterClause` is only used by web search plugins (Brave, Tavily), not vector stores. Moving it from `VectorData.Abstractions` to `Plugins.Web` would reduce MEVD public API surface. However, this required addressing an architectural constraint.
 
 **Problem**: `FilterClause` base class has an **internal constructor**, preventing inheritance outside the `VectorData.Abstractions` assembly:
 
@@ -438,37 +539,46 @@ public abstract class FilterClause
 ```
 
 Attempted move to `Plugins.Web` fails with:
+
 ```
 error CS0122: 'FilterClause.FilterClause()' is inaccessible due to its protection level
 ```
 
-**Decision**: Make `SearchQueryFilterClause` **public** and keep it in `VectorData.Abstractions`.
+**Decision**: Make `FilterClause` constructor **public** and move `SearchQueryFilterClause` to `Plugins.Web` as **internal**.
 
 ```csharp
-public sealed class SearchQueryFilterClause : FilterClause
+// VectorData.Abstractions/FilterClauses/FilterClause.cs
+public abstract class FilterClause
+{
+    public FilterClause()  // Changed from internal to public
+}
+
+// Plugins.Web/FilterClauses/SearchQueryFilterClause.cs
+internal sealed class SearchQueryFilterClause : FilterClause  // Moved and made internal
 ```
 
 **Rationale**:
 
-- **Why public**: Respects existing `FilterClause` architecture (internal constructor is intentional design)
-- Legitimate reusable abstraction for text search scenarios
-- Consistent with precedent: `EqualToFilterClause`, `AnyTagEqualToFilterClause` are public
-- Cleanest solution with no workarounds
+1. **Minimize MEVD public API**: `SearchQueryFilterClause` is only used by web search plugins (Brave, Tavily), not vector stores
+2. **Semantic appropriateness**: Query enhancement is a web search concept, not a vector data concept
+3. **Trade-off accepted**: Opening `FilterClause` to external inheritance is acceptable to keep web-specific types out of MEVD
+4. **Internal in destination**: Making it internal in `Plugins.Web` prevents it from becoming public API surface there
 
 **Alternatives Considered**:
 
-1. **Move to Plugins.Web**: Impossible due to internal constructor
-2. **Internal + InternalsVisibleTo**: Causes 200 CS0436 type conflict errors in CI
-3. **Make FilterClause constructor public**: Too broad, opens VectorData to external filter types
-4. **Don't inherit from FilterClause**: Breaks established pattern, loses type safety
+1. ~~**Keep public in VectorData.Abstractions**~~: Adds to MEVD API surface unnecessarily
+2. ~~**Internal + InternalsVisibleTo**~~: Causes 200 CS0436 type conflict errors in CI (internal utilities exposed to multiple assemblies)
+3. **Make FilterClause constructor public** (SELECTED): Opens to external inheritance but minimizes API surface growth
+4. ~~**Don't inherit from FilterClause**~~: Breaks established pattern, loses type safety
 
 **Consequences**:
 
-- ✅ Respects intentional `FilterClause` architecture
-- ✅ Maintains consistency with other public filter clause types
+- ✅ Reduces MEVD public API surface (SearchQueryFilterClause not exposed)
+- ✅ Semantically appropriate location (web search plugin concept)
 - ✅ Clean implementation with no workarounds
-- ✅ Reusable for future text search scenarios
-- ⚠️ Adds to public API surface (minimal impact - single sealed class)
+- ✅ Internal visibility in Plugins.Web (not exposed to consumers)
+- ⚠️ Opens FilterClause to external inheritance (accepted trade-off)
+- ⚠️ Suppresses CA1012 analyzer warning (abstract types should not have public constructors)
 
 ## Pros and Cons of the Options
 
