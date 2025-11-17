@@ -16,7 +16,7 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
-    CHAT_STREAMING_COMPLETION_OPERATION,
+    CHAT_COMPLETION_OPERATION,
     ChatHistoryMessageTimestampFilter,
     trace_streaming_chat_completion,
 )
@@ -119,7 +119,7 @@ async def test_trace_streaming_chat_completion(
 
         # Before the call to the model
         mock_span.set_attributes.assert_called_with({
-            gen_ai_attributes.OPERATION: CHAT_STREAMING_COMPLETION_OPERATION,
+            gen_ai_attributes.OPERATION: CHAT_COMPLETION_OPERATION,
             gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
             gen_ai_attributes.MODEL: chat_completion.ai_model_id,
         })

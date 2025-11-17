@@ -10,7 +10,7 @@ namespace AzureAISearch.ConformanceTests.Support;
 internal static class AzureAISearchTestEnvironment
 {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-    public static readonly string TestIndexPostfix = new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
+    public static readonly string TestIndexPostfix = '-' + new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
     public static readonly string? ServiceUrl, ApiKey;

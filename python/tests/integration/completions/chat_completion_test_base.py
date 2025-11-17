@@ -155,8 +155,8 @@ class ChatCompletionTestBase(CompletionTestBase):
                 OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
                 OnnxGenAIPromptExecutionSettings,
             ),
-            "bedrock_amazon_titan": (
-                self._try_create_bedrock_chat_completion_client("amazon.titan-text-premier-v1:0"),
+            "bedrock_amazon_nova": (
+                self._try_create_bedrock_chat_completion_client("amazon.nova-lite-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (

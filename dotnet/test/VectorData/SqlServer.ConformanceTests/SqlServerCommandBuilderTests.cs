@@ -2,6 +2,7 @@
 
 using System.Text;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -185,7 +186,8 @@ public class SqlServerCommandBuilderTests
         Assert.Equal("@simpleInt_2", command.Parameters[2].ParameterName);
         Assert.Equal(134, command.Parameters[2].Value);
         Assert.Equal("@embedding_3", command.Parameters[3].ParameterName);
-        Assert.Equal("[10]", command.Parameters[3].Value);
+        var vector = Assert.IsType<SqlVector<float>>(command.Parameters[3].Value);
+        Assert.Equal([10], vector.Memory.ToArray());
     }
 
     [Fact]
@@ -250,7 +252,8 @@ public class SqlServerCommandBuilderTests
             Assert.Equal($"@simpleInt_{4 * i + 2}", command.Parameters[4 * i + 2].ParameterName);
             Assert.Equal(134 + i, command.Parameters[4 * i + 2].Value);
             Assert.Equal($"@embedding_{4 * i + 3}", command.Parameters[4 * i + 3].ParameterName);
-            Assert.Equal($"[1{i}]", command.Parameters[4 * i + 3].Value);
+            var vector = Assert.IsType<SqlVector<float>>(command.Parameters[4 * i + 3].Value);
+            Assert.Equal([10 + i], vector.Memory.ToArray());
         }
     }
 

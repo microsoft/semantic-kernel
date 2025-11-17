@@ -115,7 +115,7 @@ public class RedisCollectionCreateMappingTests
         var vectorProperty = new VectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "Unsupported" };
 
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));
+        Assert.Throws<NotSupportedException>(() => RedisCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));
     }
 
     private static void VerifyFieldName(FieldName fieldName, List<object> expected)

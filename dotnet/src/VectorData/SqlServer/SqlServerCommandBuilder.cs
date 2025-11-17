@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -57,7 +58,15 @@ internal static class SqlServerCommandBuilder
         {
             if (dataProperty.IsIndexed)
             {
-                sb.AppendFormat("CREATE INDEX ");
+                var sqlType = Map(dataProperty);
+                if (sqlType == "JSON")
+                {
+                    sb.AppendFormat("CREATE JSON INDEX ");
+                }
+                else
+                {
+                    sb.AppendFormat("CREATE INDEX ");
+                }
                 sb.AppendIndexName(tableName, dataProperty.StorageName);
                 sb.AppendFormat(" ON ").AppendTableName(schema, tableName);
                 sb.AppendFormat("([{0}]);", dataProperty.StorageName);
@@ -349,16 +358,16 @@ internal static class SqlServerCommandBuilder
         CollectionModel model,
         int top,
         VectorSearchOptions<TRecord> options,
-        ReadOnlyMemory<float> vector)
+        SqlVector<float> vector)
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         (string distanceMetric, string sorting) = MapDistanceFunction(distanceFunction);
 
         SqlCommand command = connection.CreateCommand();
-        command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(vector));
+        command.Parameters.AddWithValue("@vector", vector);
 
         StringBuilder sb = new(200);
-        sb.AppendFormat("SELECT ");
+        sb.Append("SELECT ");
         sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
         sb.AppendFormat("VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
@@ -606,18 +615,28 @@ internal static class SqlServerCommandBuilder
             case byte[] buffer:
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = buffer;
                 break;
-            case ReadOnlyMemory<float> vector:
-                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
-                break;
-            case Embedding<float> { Vector: var vector }:
-                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector, SqlServerJsonSerializerContext.Default.ReadOnlyMemorySingle));
-                break;
-            case float[] vectorArray:
-                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vectorArray, SqlServerJsonSerializerContext.Default.SingleArray));
-                break;
             case DateTime dateTime:
                 command.Parameters.Add(name, System.Data.SqlDbType.DateTime2).Value = dateTime;
                 break;
+
+            // Note that SqlVector doesn't any transformation and can be passed as-is (default case below)
+            case ReadOnlyMemory<float> vector:
+                command.Parameters.AddWithValue(name, new SqlVector<float>(vector));
+                break;
+            case Embedding<float> { Vector: var vector }:
+                command.Parameters.AddWithValue(name, new SqlVector<float>(vector));
+                break;
+            case float[] vectorArray:
+                command.Parameters.AddWithValue(name, new SqlVector<float>(vectorArray));
+                break;
+
+            case string[] strings:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(strings, SqlServerJsonSerializerContext.Default.StringArray));
+                break;
+            case List<string> strings:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(strings, SqlServerJsonSerializerContext.Default.ListString));
+                break;
+
             default:
                 command.Parameters.AddWithValue(name, value);
                 break;
@@ -638,6 +657,7 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
             Type t when t == typeof(bool) => "BIT",
             Type t when t == typeof(DateTime) => "DATETIME2",
+            Type t when t == typeof(DateTimeOffset) => "DATETIMEOFFSET",
 #if NET
             Type t when t == typeof(DateOnly) => "DATE",
             Type t when t == typeof(TimeOnly) => "TIME",
@@ -645,6 +665,8 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(decimal) => "DECIMAL(18,2)",
             Type t when t == typeof(double) => "FLOAT",
             Type t when t == typeof(float) => "REAL",
+
+            Type t when t == typeof(string[]) || t == typeof(List<string>) => "JSON",
 
             _ => throw new NotSupportedException($"Type {property.Type} is not supported.")
         };
