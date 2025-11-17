@@ -14,6 +14,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
@@ -75,6 +76,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <summary>Number of nearest neighbors to use during the vector search.</summary>
     private readonly int? _numCandidates;
 
+    /// <summary><see cref="BsonSerializationInfo"/> to use for serializing key values.</summary>
+    private readonly BsonSerializationInfo _keySerializationInfo;
+
     /// <summary>Types of keys permitted.</summary>
     private static readonly Type[] s_validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId), typeof(int), typeof(long)];
 
@@ -135,6 +139,8 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
             CollectionName = name
         };
+
+        this._keySerializationInfo = this.GetKeySerializationInfo();
     }
 
     /// <inheritdoc />
@@ -676,10 +682,28 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(TKey id)
-        => Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, id);
+        => Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, this._keySerializationInfo.SerializeValue(id));
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
-        => Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, ids);
+        => Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, this._keySerializationInfo.SerializeValues(ids));
+
+    private BsonSerializationInfo GetKeySerializationInfo()
+    {
+        var documentSerializer = BsonSerializer.LookupSerializer<TRecord>();
+        Verify.NotNull(documentSerializer, $"BsonSerializer not found for type '{typeof(TRecord)}'");
+
+        if (documentSerializer is not IBsonDocumentSerializer bsonDocumentSerializer)
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not implement IBsonDocumentSerializer");
+        }
+
+        if (!bsonDocumentSerializer.TryGetMemberSerializationInfo(this._model.KeyProperty.ModelName, out var keySerializationInfo))
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not recognize key property {this._model.KeyProperty.ModelName}");
+        }
+
+        return keySerializationInfo;
+    }
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {

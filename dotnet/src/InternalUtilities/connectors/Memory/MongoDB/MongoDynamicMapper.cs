@@ -30,7 +30,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             : keyValue switch
             {
                 string s => s,
-                Guid g => BsonValue.Create(g),
+                Guid g => new BsonBinaryData(g, GuidRepresentation.Standard),
                 ObjectId o => o,
                 long i => i,
                 int i => i,
