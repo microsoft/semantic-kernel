@@ -682,10 +682,20 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(TKey id)
-        => Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, this._keySerializationInfo.SerializeValue(id));
+    {
+        var bsonValue = id.GetType() == typeof(TKey)
+            ? this._keySerializationInfo.SerializeValue(id)
+            : BsonValueFactory.Create(id);
+        return Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, bsonValue);
+    }
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
-        => Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, this._keySerializationInfo.SerializeValues(ids));
+    {
+        var bsonValues = ids.GetType().GetElementType() == typeof(TKey)
+            ? (BsonArray)this._keySerializationInfo.SerializeValues(ids)
+            : (BsonArray)BsonValueFactory.Create(ids);
+        return Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, bsonValues);
+    }
 
     private BsonSerializationInfo GetKeySerializationInfo()
     {

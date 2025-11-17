@@ -36,14 +36,14 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
                 int i => i,
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectId, long or int.")
             };
 
         foreach (var property in model.DataProperties)
         {
             if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                document[property.StorageName] = BsonValue.Create(dataValue);
+                document[property.StorageName] = BsonValueFactory.Create(dataValue);
             }
         }
 
@@ -167,6 +167,8 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(decimal?) => value.AsNullableDecimal,
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
+            Type t when t == typeof(Guid) => value.AsGuid,
+            Type t when t == typeof(Guid?) => value.AsNullableGuid,
 
             _ => (object?)null
         };
