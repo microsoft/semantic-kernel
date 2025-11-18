@@ -77,7 +77,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private readonly int? _numCandidates;
 
     /// <summary><see cref="BsonSerializationInfo"/> to use for serializing key values.</summary>
-    private readonly BsonSerializationInfo _keySerializationInfo;
+    private readonly BsonSerializationInfo? _keySerializationInfo;
 
     /// <summary>Types of keys permitted.</summary>
     private static readonly Type[] s_validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId), typeof(int), typeof(long)];
@@ -140,7 +140,10 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             CollectionName = name
         };
 
-        this._keySerializationInfo = this.GetKeySerializationInfo();
+        // Cache the key serialization info if possible
+        this._keySerializationInfo = typeof(TKey) == typeof(object)
+            ? null
+            : this.GetKeySerializationInfo();
     }
 
     /// <inheritdoc />
@@ -683,17 +686,15 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
     private FilterDefinition<BsonDocument> GetFilterById(TKey id)
     {
-        var bsonValue = id.GetType() == typeof(TKey)
-            ? this._keySerializationInfo.SerializeValue(id)
-            : BsonValueFactory.Create(id);
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValue = this._keySerializationInfo?.SerializeValue(id) ?? BsonValueFactory.Create(id);
         return Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, bsonValue);
     }
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
     {
-        var bsonValues = ids.GetType().GetElementType() == typeof(TKey)
-            ? (BsonArray)this._keySerializationInfo.SerializeValues(ids)
-            : (BsonArray)BsonValueFactory.Create(ids);
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValues = this._keySerializationInfo.SerializeValues(ids) ?? (BsonArray)BsonValueFactory.Create(ids);
         return Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, bsonValues);
     }
 
