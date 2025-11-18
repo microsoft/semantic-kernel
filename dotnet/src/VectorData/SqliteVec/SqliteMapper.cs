@@ -57,7 +57,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
 
                 var floats = new float[length / 4];
                 var bytes = MemoryMarshal.Cast<float, byte>(floats);
-                stream.ReadExactly(bytes);
+                stream.ReadExactly([.. bytes]);
 #else
                 var floats = MemoryMarshal.Cast<byte, float>((byte[])reader[ordinal]).ToArray();
 #endif
