@@ -284,7 +284,8 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         var keysList = keys switch
         {
             IEnumerable<string> k => k.ToList(),
-            IEnumerable<object> k => k.Cast<string>().ToList(),
+            IEnumerable<Guid> k => k.Select(x => x.ToString()).ToList(),
+            IEnumerable<object> k => k.Select(x => x.ToString()!).ToList(),
             _ => throw new UnreachableException()
         };
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection

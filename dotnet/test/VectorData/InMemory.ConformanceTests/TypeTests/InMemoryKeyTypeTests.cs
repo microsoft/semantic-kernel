@@ -14,17 +14,17 @@ public class InMemoryKeyTypeTests(InMemoryKeyTypeTests.Fixture fixture)
     // The InMemory provider supports all .NET types as keys; below are just a few basic tests.
 
     [ConditionalFact]
-    public virtual Task Int() => this.Test<int>(8);
+    public virtual Task Int() => this.Test<int>(8, 9);
 
     [ConditionalFact]
-    public virtual Task Long() => this.Test<long>(8L);
+    public virtual Task Long() => this.Test<long>(8L, 9L);
 
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
-    protected override async Task Test<TKey>(TKey keyValue)
+    protected override async Task Test<TKey>(TKey key1, TKey key2)
     {
-        await base.Test(keyValue);
+        await base.Test(key1, key2);
 
         // For InMemory, delete the collection, otherwise the next test that runs will fail because the collection
         // already exists but with the previous key type.
