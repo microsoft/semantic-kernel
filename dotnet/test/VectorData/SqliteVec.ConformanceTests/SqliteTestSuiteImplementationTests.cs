@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.HybridSearch;
 using VectorData.ConformanceTests.ModelTests;
 
 namespace SqliteVec.ConformanceTests;
@@ -13,6 +12,6 @@ public class SqliteTestSuiteImplementationTests : TestSuiteImplementationTests
         typeof(DynamicModelTests<>),
 
         // Hybrid search not supported
-        typeof(KeywordVectorizedHybridSearchComplianceTests<>)
+        typeof(HybridSearchTests<>)
     ];
 }

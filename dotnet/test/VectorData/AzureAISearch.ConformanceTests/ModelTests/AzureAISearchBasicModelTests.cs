@@ -12,8 +12,6 @@ public class AzureAISearchBasicModelTests(AzureAISearchBasicModelTests.Fixture f
 {
     public new class Fixture : BasicModelTests<string>.Fixture
     {
-        public override string CollectionName => "basic-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }
 }

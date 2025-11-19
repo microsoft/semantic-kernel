@@ -34,10 +34,8 @@ if TYPE_CHECKING:
 MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings()
 
 # Operation names
-CHAT_COMPLETION_OPERATION = "chat.completions"
-CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
-TEXT_COMPLETION_OPERATION = "text.completions"
-TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
+CHAT_COMPLETION_OPERATION = "chat"
+TEXT_COMPLETION_OPERATION = "text_completions"
 
 
 # We're recording multiple events for the chat history, some of them are emitted within (hundreds of)
@@ -174,7 +172,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
 
             with use_span(
                 _get_completion_span(
-                    CHAT_STREAMING_COMPLETION_OPERATION,
+                    CHAT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
@@ -288,7 +286,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
 
             with use_span(
                 _get_completion_span(
-                    TEXT_STREAMING_COMPLETION_OPERATION,
+                    TEXT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),

@@ -78,6 +78,14 @@ public abstract class TestStore
             _ => throw new NotSupportedException($"Unsupported key of type '{typeof(TKey).Name}', override {nameof(TestStore)}.{nameof(this.GenerateKey)}")
         };
 
+    /// <summary>
+    /// Applies any provider-specific rules to collection names (e.g. all-lowercase).
+    /// </summary>
+    /// <param name="baseName"></param>
+    /// <returns></returns>
+    public virtual string AdjustCollectionName(string baseName)
+        => baseName;
+
     /// <summary>Loops until the expected number of records is visible in the given collection.</summary>
     /// <remarks>Some databases upsert asynchronously, meaning that our seed data may not be visible immediately to tests.</remarks>
     public virtual async Task WaitForDataAsync<TKey, TRecord>(

@@ -5,74 +5,64 @@ using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
-namespace VectorData.ConformanceTests.HybridSearch;
+namespace VectorData.ConformanceTests;
 
 /// <summary>
 /// Base class for common integration tests that should pass for any <see cref="IKeywordHybridSearchable{TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
-public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
-    KeywordVectorizedHybridSearchComplianceTests<TKey>.VectorAndStringFixture vectorAndStringFixture,
-    KeywordVectorizedHybridSearchComplianceTests<TKey>.MultiTextFixture multiTextFixture)
+public abstract class HybridSearchTests<TKey>(
+    HybridSearchTests<TKey>.VectorAndStringFixture vectorAndStringFixture,
+    HybridSearchTests<TKey>.MultiTextFixture multiTextFixture)
     where TKey : notnull
 {
-    protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
-
     [ConditionalFact]
-    public async Task SearchShouldReturnExpectedResultsAsync()
+    public async Task HybridSearchAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
         // All records have the same vector, but the third contains Grapes, so searching for
         // Grapes should return the third record first.
-        var results = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"], top: 3).ToListAsync();
+        var results = await vectorAndStringFixture.HybridSearchable.HybridSearchAsync(vector, ["Grapes"], top: 3).ToListAsync();
+
         // Assert
         Assert.Equal(3, results.Count);
-
         Assert.Equal(3, results[0].Record.Code);
     }
 
     [ConditionalFact]
-    public async Task SearchWithFilterShouldReturnExpectedResultsAsync()
+    public async Task HybridSearchAsync_with_filter()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
         // All records have the same vector, but the second contains Oranges, however
         // adding the filter should limit the results to only the first.
-#pragma warning disable CS0618 // Type or member is obsolete
-        var options = new HybridSearchOptions<VectorAndStringRecord<TKey>>
-        {
-            OldFilter = new VectorSearchFilter().EqualTo("Code", 1)
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
-        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, options).ToListAsync();
+        var results = await vectorAndStringFixture.HybridSearchable
+            .HybridSearchAsync(
+                vector,
+                ["Oranges"],
+                top: 3,
+                new() { Filter = r => r.Code == 1 })
+            .ToListAsync();
 
         // Assert
-        Assert.Single(results);
-
-        Assert.Equal(1, results[0].Record.Code);
+        Assert.Equal(1, Assert.Single(results).Record.Code);
     }
 
     [ConditionalFact]
-    public async Task SearchWithTopShouldReturnExpectedResultsAsync()
+    public async Task HybridSearchAsync_with_top()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
         // All records have the same vector, but the second contains Oranges, so the
         // second should be returned first.
-        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 1).ToListAsync();
+        var results = await vectorAndStringFixture.HybridSearchable.HybridSearchAsync(vector, ["Oranges"], top: 1).ToListAsync();
 
         // Assert
         Assert.Single(results);
@@ -81,17 +71,15 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     }
 
     [ConditionalFact]
-    public async Task SearchWithSkipShouldReturnExpectedResultsAsync()
+    public async Task HybridSearchAsync_with_Skip()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
         // All records have the same vector, but the first and third contain healthy,
         // so when skipping the first two results, we should get the second record.
-        var results = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], top: 3, new() { Skip = 2 }).ToListAsync();
+        var results = await vectorAndStringFixture.HybridSearchable.HybridSearchAsync(vector, ["healthy"], top: 3, new() { Skip = 2 }).ToListAsync();
 
         // Assert
         Assert.Single(results);
@@ -100,15 +88,13 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     }
 
     [ConditionalFact]
-    public async Task SearchWithMultipleKeywordsShouldRankMatchedKeywordsHigherAsync()
+    public async Task HybridSearchAsync_with_multiple_keywords_ranks_matched_keywords_higher()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var results = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"], top: 3).ToListAsync();
+        var results = await vectorAndStringFixture.HybridSearchable.HybridSearchAsync(vector, ["tangy", "nourishing"], top: 3).ToListAsync();
 
         // Assert
         Assert.Equal(3, results.Count);
@@ -119,16 +105,18 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     }
 
     [ConditionalFact]
-    public async Task SearchWithMultiTextRecordSearchesRequestedFieldAsync()
+    public async Task HybridSearchAsync_with_multiple_text_properties()
     {
         // Arrange
-        var hybridSearch = multiTextFixture.Collection as IKeywordHybridSearchable<MultiTextStringRecord<TKey>>;
-
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var results1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
-        var results2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
+        var results1 = await multiTextFixture.HybridSearchable
+            .HybridSearchAsync(vector, ["Apples"], top: 4, new() { AdditionalProperty = r => r.Text2 })
+            .ToListAsync();
+        var results2 = await multiTextFixture.HybridSearchable
+            .HybridSearchAsync(vector, ["Oranges"], top: 4, new() { AdditionalProperty = r => r.Text2 })
+            .ToListAsync();
 
         // Assert
         Assert.Equal(2, results1.Count);
@@ -142,40 +130,45 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         Assert.Equal(2, results2[1].Record.Code);
     }
 
+    [ConditionalFact]
+    public Task HybridSearchAsync_without_explicitly_specified_property_fails()
+        => Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await multiTextFixture.HybridSearchable
+                .HybridSearchAsync(new ReadOnlyMemory<float>([1, 0, 0, 0]), ["Apples"], top: 3)
+                .ToListAsync());
+
     public sealed class VectorAndStringRecord<TRecordKey> : TestRecord<TKey>
     {
         public string Text { get; set; } = string.Empty;
-
         public int Code { get; set; }
-
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 
     public sealed class MultiTextStringRecord<TRecordKey> : TestRecord<TKey>
     {
         public string Text1 { get; set; } = string.Empty;
-
         public string Text2 { get; set; } = string.Empty;
-
         public int Code { get; set; }
-
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 
     public abstract class VectorAndStringFixture : VectorStoreCollectionFixture<TKey, VectorAndStringRecord<TKey>>
     {
-        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        protected override string CollectionNameBase => "HybridSearchTests";
+
+        public IKeywordHybridSearchable<VectorAndStringRecord<TKey>> HybridSearchable
+            => (IKeywordHybridSearchable<VectorAndStringRecord<TKey>>)this.Collection;
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreProperty>()
-                {
+                Properties =
+                [
                     new VectorStoreKeyProperty("Key", typeof(TKey)),
                     new VectorStoreDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
                     new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
-                }
+                ]
             };
 
         protected override List<VectorAndStringRecord<TKey>> BuildTestData()
@@ -209,27 +202,28 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
             ];
         }
 
-        // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
-        // so filtered searches show empty results. Add a filter to the seed data check below.
         protected override Task WaitForDataAsync()
             => this.TestStore.WaitForDataAsync(this.Collection, recordCount: this.TestData.Count, vectorSize: 4);
     }
 
     public abstract class MultiTextFixture : VectorStoreCollectionFixture<TKey, MultiTextStringRecord<TKey>>
     {
-        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        protected override string CollectionNameBase => "MultiTextHybridSearchTests";
+
+        public IKeywordHybridSearchable<MultiTextStringRecord<TKey>> HybridSearchable
+            => (IKeywordHybridSearchable<MultiTextStringRecord<TKey>>)this.Collection;
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreProperty>()
-                {
+                Properties =
+                [
                     new VectorStoreKeyProperty("Key", typeof(TKey)),
                     new VectorStoreDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
                     new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
-                }
+                ]
             };
 
         protected override List<MultiTextStringRecord<TKey>> BuildTestData()
@@ -258,8 +252,6 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
             ];
         }
 
-        // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
-        // so filtered searches show empty results. Add a filter to the seed data check below.
         protected override Task WaitForDataAsync()
             => this.TestStore.WaitForDataAsync(this.Collection, recordCount: this.TestData.Count, vectorSize: 4);
     }

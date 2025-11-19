@@ -30,12 +30,14 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             : keyValue switch
             {
                 string s => s,
+                Guid g => BsonValue.Create(g),
+                ObjectId o => o,
+                long i => i,
+                int i => i,
+
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
                 _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
             };
-
-        document[MongoConstants.MongoReservedKeyPropertyName] = (string)(dataModel[model.KeyProperty.ModelName]
-            ?? throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."));
 
         foreach (var property in model.DataProperties)
         {
@@ -88,9 +90,22 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             switch (property)
             {
                 case KeyPropertyModel keyProperty:
-                    result[keyProperty.ModelName] = storageModel.TryGetValue(MongoConstants.MongoReservedKeyPropertyName, out var keyValue)
-                        ? keyValue.AsString
-                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
+                    if (!storageModel.TryGetValue(MongoConstants.MongoReservedKeyPropertyName, out var keyValue))
+                    {
+                        throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
+                    }
+
+                    result[keyProperty.ModelName] = keyProperty.Type switch
+                    {
+                        var t when t == typeof(string) => keyValue.AsString,
+                        var t when t == typeof(Guid) => keyValue.AsGuid,
+                        var t when t == typeof(ObjectId) => keyValue.AsObjectId,
+                        var t when t == typeof(long) => keyValue.AsInt64,
+                        var t when t == typeof(int) => keyValue.AsInt32,
+
+                        _ => throw new UnreachableException()
+                    };
+
                     continue;
 
                 case DataPropertyModel dataProperty:

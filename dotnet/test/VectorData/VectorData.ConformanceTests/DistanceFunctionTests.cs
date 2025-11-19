@@ -113,7 +113,8 @@ public abstract class DistanceFunctionTests<TKey>(DistanceFunctionTests<TKey>.Fi
 
     public abstract class Fixture : VectorStoreFixture
     {
-        public virtual string CollectionName => "DistanceFunctionTests";
+        protected virtual string CollectionNameBase => nameof(DistanceFunctionTests<int>);
+        public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         protected virtual string? IndexKind => null;
 

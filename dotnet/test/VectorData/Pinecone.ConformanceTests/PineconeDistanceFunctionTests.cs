@@ -38,8 +38,5 @@ public class PineconeDistanceFunctionTests(PineconeDistanceFunctionTests.Fixture
     public new class Fixture() : DistanceFunctionTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "distance-function-tests";
     }
 }
