@@ -18,8 +18,14 @@ public sealed class MilvusFixture : IAsyncLifetime
         => new(this.Host, "root", "milvus", this.Port);
 
     public Task InitializeAsync()
-        => this._container.StartAsync();
+    {
+        return Task.CompletedTask;
+        //=> this._container.StartAsync();
+    }
 
     public Task DisposeAsync()
-        => this._container.DisposeAsync().AsTask();
+    {
+        return Task.CompletedTask;
+        //=> this._container.DisposeAsync().AsTask();
+    }
 }
