@@ -14,7 +14,7 @@ public abstract class FilterClause
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterClause"/> class.
     /// </summary>
-    public FilterClause()
+    protected FilterClause()
     {
     }
 }

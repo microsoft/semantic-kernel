@@ -7,8 +7,6 @@
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
     <!-- temporarily disabled due to mysterious build issue -->
     <EnablePackageValidation>false</EnablePackageValidation>
-    <!-- Suppress CA1012: FilterClause constructor made public to allow Plugins.Web to inherit -->
-    <NoWarn>$(NoWarn);CA1012</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
