@@ -4,7 +4,7 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any
 
-from google.generativeai.protos import Blob, Candidate, FunctionCall, FunctionResponse, Part
+from google.genai.types import FinishReason, Part
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -31,19 +31,19 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def finish_reason_from_google_ai_to_semantic_kernel(
-    finish_reason: Candidate.FinishReason,
+    finish_reason: FinishReason,
 ) -> SemanticKernelFinishReason | None:
     """Convert a Google AI FinishReason to a Semantic Kernel FinishReason.
 
     This is best effort and may not cover all cases as the enums are not identical.
     """
-    if finish_reason == Candidate.FinishReason.STOP:
+    if finish_reason == FinishReason.STOP:
         return SemanticKernelFinishReason.STOP
 
-    if finish_reason == Candidate.FinishReason.MAX_TOKENS:
+    if finish_reason == FinishReason.MAX_TOKENS:
         return SemanticKernelFinishReason.LENGTH
 
-    if finish_reason == Candidate.FinishReason.SAFETY:
+    if finish_reason == FinishReason.SAFETY:
         return SemanticKernelFinishReason.CONTENT_FILTER
 
     return None
@@ -61,7 +61,7 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            parts.append(Part(text=message.content))
+            parts.append(Part.from_text(text=item.text))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
@@ -86,15 +86,12 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     for item in message.items:
         if isinstance(item, TextContent):
             if item.text:
-                parts.append(Part(text=item.text))
+                parts.append(Part.from_text(text=item.text))
         elif isinstance(item, FunctionCallContent):
             parts.append(
-                Part(
-                    function_call=FunctionCall(
-                        name=item.name,
-                        # Convert the arguments to a dictionary if it is a string
-                        args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
-                    )
+                Part.from_function_call(
+                    name=item.name,
+                    args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
                 )
             )
         elif isinstance(item, ImageContent):
@@ -122,14 +119,11 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
         if isinstance(item, FunctionResultContent):
             gemini_function_name = item.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR)
             parts.append(
-                Part(
-                    function_response=FunctionResponse(
-                        name=gemini_function_name,
-                        response={
-                            "name": gemini_function_name,
-                            "content": str(item.result),
-                        },
-                    )
+                Part.from_function_response(
+                    name=gemini_function_name,
+                    response={
+                        "content": str(item.result),
+                    },
                 )
             )
 
@@ -177,7 +171,7 @@ def update_settings_from_function_choice_configuration(
 
 def _create_image_part(image_content: ImageContent) -> Part:
     if image_content.data_uri:
-        return Part(inline_data=Blob(mime_type=image_content.mime_type, data=image_content.data))
+        return Part.from_bytes(data=image_content.data, mime_type=image_content.mime_type)
 
     # The Google AI API doesn't support images from arbitrary URIs:
     # https://github.com/google-gemini/generative-ai-python/issues/357

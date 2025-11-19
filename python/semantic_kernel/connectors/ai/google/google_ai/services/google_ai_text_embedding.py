@@ -3,8 +3,8 @@
 import sys
 from typing import Any
 
-import google.generativeai as genai
-from google.generativeai.types.text_types import BatchEmbeddingDict
+from google.genai import Client
+from google.genai.types import EmbedContentConfigDict, EmbedContentResponse
 from numpy import array, ndarray
 from pydantic import ValidationError
 
@@ -92,16 +92,17 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIEmbeddingPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.embedding_model_id:
             raise ServiceInitializationError("The Google AI embedding model ID is required.")
-        response: BatchEmbeddingDict = await genai.embed_content_async(  # type: ignore
-            model=self.service_settings.embedding_model_id,
-            content=texts,
-            **settings.prepare_settings_dict(),
-        )
 
-        return response["embedding"]
+        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
+            response: EmbedContentResponse = await client.models.embed_content(
+                model=self.service_settings.embedding_model_id,
+                contents=texts,
+                config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+            )
+
+        return [embedding.values for embedding in response.embeddings]
 
     @override
     def get_prompt_execution_settings_class(

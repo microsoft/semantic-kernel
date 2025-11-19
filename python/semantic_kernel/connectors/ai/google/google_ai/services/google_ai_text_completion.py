@@ -4,10 +4,8 @@ import sys
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
-import google.generativeai as genai
-from google.generativeai import GenerativeModel
-from google.generativeai.protos import Candidate
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+from google.genai import Client
+from google.genai.types import Candidate, GenerateContentConfigDict, GenerateContentResponse
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -98,17 +96,15 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-        )
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=prompt,
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-        )
+        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
+            response: GenerateContentResponse = await client.models.generate_content(
+                model=self.service_settings.gemini_model_id,
+                contents=prompt,
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+            )
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
 
@@ -123,25 +119,20 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-        )
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=prompt,
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            stream=True,
-        )
-
-        async for chunk in response:
-            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
+            async for chunk in await client.models.generate_content_stream(
+                model=self.service_settings.gemini_model_id,
+                contents=prompt,
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+            ):
+                yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
 
     # endregion
 
-    def _create_text_content(self, response: AsyncGenerateContentResponse, candidate: Candidate) -> TextContent:
+    def _create_text_content(self, response: GenerateContentResponse, candidate: Candidate) -> TextContent:
         """Create a text content object.
 
         Args:
@@ -184,10 +175,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             metadata=response_metadata,
         )
 
-    def _get_metadata_from_response(
-        self,
-        response: AsyncGenerateContentResponse | GenerateContentResponse,
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: GenerateContentResponse) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
@@ -199,8 +187,8 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         return {
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
-                prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                prompt_tokens=response.usage_metadata.prompt_token_count if response.usage_metadata else None,
+                completion_tokens=response.usage_metadata.candidates_token_count if response.usage_metadata else None,
             ),
         }
 

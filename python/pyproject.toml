@@ -93,7 +93,7 @@ faiss = [
 ]
 google = [
     "google-cloud-aiplatform ~= 1.114.0",
-    "google-generativeai ~= 0.8"
+    "google-genai ~= 1.51.0"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",

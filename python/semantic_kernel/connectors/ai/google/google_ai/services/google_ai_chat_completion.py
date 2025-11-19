@@ -5,15 +5,8 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-import google.generativeai as genai
-from google.generativeai import GenerativeModel
-from google.generativeai.protos import Candidate, Content
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+from google.genai import Client
+from google.genai.types import Candidate, Content, GenerateContentConfigDict, GenerateContentResponse
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -33,7 +26,6 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
     collapse_function_call_results_in_chat_history,
-    filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -53,6 +45,11 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -127,22 +124,17 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-            system_instruction=filter_system_message(chat_history),
-        )
 
         collapse_function_call_results_in_chat_history(chat_history)
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
-        )
+        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
+            response: GenerateContentResponse = await client.models.generate_content(
+                model=self.service_settings.gemini_model_id,
+                contents=self._prepare_chat_history_for_request(chat_history),
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+            )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
 
@@ -158,29 +150,21 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-            system_instruction=filter_system_message(chat_history),
-        )
 
         collapse_function_call_results_in_chat_history(chat_history)
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
-            stream=True,
-        )
-
-        async for chunk in response:
-            yield [
-                self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                for candidate in chunk.candidates
-            ]
+        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
+            async for chunk in await client.models.generate_content_stream(
+                model=self.service_settings.gemini_model_id,
+                contents=self._prepare_chat_history_for_request(chat_history),
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+            ):
+                yield [
+                    self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
+                    for candidate in chunk.candidates
+                ]
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
@@ -233,7 +217,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     # region Non-streaming
 
     def _create_chat_message_content(
-        self, response: AsyncGenerateContentResponse, candidate: Candidate
+        self, response: GenerateContentResponse, candidate: Candidate
     ) -> ChatMessageContent:
         """Create a chat message content object.
 
@@ -333,9 +317,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     # endregion
 
-    def _get_metadata_from_response(
-        self, response: AsyncGenerateContentResponse | GenerateContentResponse
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: GenerateContentResponse) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
@@ -347,8 +329,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         return {
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
-                prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                prompt_tokens=response.usage_metadata.prompt_token_count if response.usage_metadata else None,
+                completion_tokens=response.usage_metadata.candidates_token_count if response.usage_metadata else None,
             ),
         }
 

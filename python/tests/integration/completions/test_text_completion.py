@@ -111,7 +111,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
             id="google_ai_text_completion",
         ),
         pytest.param(
@@ -233,8 +233,8 @@ class TestTextCompletion(CompletionTestBase):
             ),
             "hf_summ": (
                 HuggingFaceTextCompletion(
-                    service_id="jotamunz/billsum_tiny_summarization",
-                    ai_model_id="jotamunz/billsum_tiny_summarization",
+                    service_id="Falconsai/text_summarization",
+                    ai_model_id="Falconsai/text_summarization",
                     task="summarization",
                 )
                 if hugging_face_setup

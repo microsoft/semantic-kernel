@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
+from google.genai.models import AsyncModels
+from google.genai.types import ContentEmbedding, EmbedContentConfigDict, EmbedContentResponse
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -65,12 +67,14 @@ def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
 # endregion init
 
 
-@patch("google.generativeai.embed_content_async")
-async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_embedding(mock_google_model_embed_content, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
-    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
+    mock_google_model_embed_content.return_value = EmbedContentResponse(
+        embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3])]
+    )
     settings = GoogleAIEmbeddingPromptExecutionSettings()
 
     google_ai_text_embedding = GoogleAITextEmbedding()
@@ -81,15 +85,21 @@ async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt)
 
     assert len(response) == 1
     assert response.all() == array([0.1, 0.2, 0.3]).all()
-    mock_embedding_client.assert_called_once_with(model=model_id, content=[prompt])
+    mock_google_model_embed_content.assert_called_once_with(
+        model=model_id,
+        contents=[prompt],
+        config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+    )
 
 
-@patch("google.generativeai.embed_content_async")
-async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_embedding_with_settings(mock_google_model_embed_content, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
-    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
+    mock_google_model_embed_content.return_value = EmbedContentResponse(
+        embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3])]
+    )
     settings = GoogleAIEmbeddingPromptExecutionSettings()
     settings.output_dimensionality = 3
 
@@ -101,37 +111,41 @@ async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_tes
 
     assert len(response) == 1
     assert response.all() == array([0.1, 0.2, 0.3]).all()
-    mock_embedding_client.assert_called_once_with(
+    mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
-        content=[prompt],
-        **settings.prepare_settings_dict(),
+        contents=[prompt],
+        config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
     )
 
 
-@patch("google.generativeai.embed_content_async")
-async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_embedding_without_settings(mock_google_model_embed_content, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly without settings."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
-    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
-
+    mock_google_model_embed_content.return_value = EmbedContentResponse(
+        embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3])]
+    )
     google_ai_text_embedding = GoogleAITextEmbedding()
     response: ndarray = await google_ai_text_embedding.generate_embeddings([prompt])
 
     assert len(response) == 1
     assert response.all() == array([0.1, 0.2, 0.3]).all()
-    mock_embedding_client.assert_called_once_with(
+    mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
-        content=[prompt],
+        contents=[prompt],
+        config=EmbedContentConfigDict(),
     )
 
 
-@patch("google.generativeai.embed_content_async")
-async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_env, prompt):
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_embedding_list_input(mock_google_model_embed_content, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
-    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]}
+    mock_google_model_embed_content.return_value = EmbedContentResponse(
+        embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3]), ContentEmbedding(values=[0.1, 0.2, 0.3])]
+    )
     settings = GoogleAIEmbeddingPromptExecutionSettings()
 
     google_ai_text_embedding = GoogleAITextEmbedding()
@@ -142,15 +156,21 @@ async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_e
 
     assert len(response) == 2
     assert response.all() == array([[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]).all()
-    mock_embedding_client.assert_called_once_with(model=model_id, content=[prompt, prompt])
+    mock_google_model_embed_content.assert_called_once_with(
+        model=model_id,
+        contents=[prompt, prompt],
+        config=EmbedContentConfigDict(),
+    )
 
 
-@patch("google.generativeai.embed_content_async")
-async def test_raw_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_raw_embedding(mock_google_model_embed_content, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
-    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
+    mock_google_model_embed_content.return_value = EmbedContentResponse(
+        embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3])]
+    )
     settings = GoogleAIEmbeddingPromptExecutionSettings()
 
     google_ai_text_embedding = GoogleAITextEmbedding()
@@ -161,4 +181,8 @@ async def test_raw_embedding(mock_embedding_client, google_ai_unit_test_env, pro
 
     assert len(response) == 1
     assert response[0] == [0.1, 0.2, 0.3]
-    mock_embedding_client.assert_called_once_with(model=model_id, content=[prompt])
+    mock_google_model_embed_content.assert_called_once_with(
+        model=model_id,
+        contents=[prompt],
+        config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+    )
