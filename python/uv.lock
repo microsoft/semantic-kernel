@@ -438,17 +438,18 @@ wheels = [
 
 [[package]]
 name = "azure-ai-projects"
-version = "2.0.0b2"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "azure-ai-agents", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-storage-blob", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f2/96/ec17f99f5ced3d82876e89b4f950d8c7466c84d79016c5905b1c03b6c484/azure_ai_projects-2.0.0b2.tar.gz", hash = "sha256:4444cc49c799359b9c25d7f59c126862053cb591b63e69ffc640774b4ceb2b73", size = 369393, upload-time = "2025-11-15T06:17:46.312Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/95/9c04cb5f658c7f856026aa18432e0f0fa254ead2983a3574a0f5558a7234/azure_ai_projects-1.0.0.tar.gz", hash = "sha256:b5f03024ccf0fd543fbe0f5abcc74e45b15eccc1c71ab87fc71c63061d9fd63c", size = 130798, upload-time = "2025-07-31T02:09:27.912Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/41/d9a2b3eb33b4ffd9acfaa115cfd456e32d0c754227d6d78ec5d039ff75c2/azure_ai_projects-2.0.0b2-py3-none-any.whl", hash = "sha256:642496fdf9846c91f3557d39899d3893f0ce8f910334320686fc8f617492351d", size = 234023, upload-time = "2025-11-15T06:17:48.141Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/db/7149cdf71e12d9737f186656176efc94943ead4f205671768c1549593efe/azure_ai_projects-1.0.0-py3-none-any.whl", hash = "sha256:81369ed7a2f84a65864f57d3fa153e16c30f411a1504d334e184fb070165a3fa", size = 115188, upload-time = "2025-07-31T02:09:29.362Z" },
 ]
 
 [[package]]
@@ -6360,7 +6361,7 @@ requires-dist = [
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
     { name = "azure-ai-agents", specifier = ">=1.2.0b3" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
-    { name = "azure-ai-projects", specifier = ">=1.0.0b12" },
+    { name = "azure-ai-projects", specifier = "~=1.0.0b12" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = ">=1.13" },
