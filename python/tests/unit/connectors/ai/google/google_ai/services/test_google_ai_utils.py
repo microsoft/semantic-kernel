@@ -27,6 +27,7 @@ def test_finish_reason_from_google_ai_to_semantic_kernel():
         == SemanticKernelFinishReason.CONTENT_FILTER
     )
     assert finish_reason_from_google_ai_to_semantic_kernel(FinishReason.OTHER) is None
+    assert finish_reason_from_google_ai_to_semantic_kernel(None) is None
 
 
 def test_format_user_message():

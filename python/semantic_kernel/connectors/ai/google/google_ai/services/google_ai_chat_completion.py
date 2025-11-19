@@ -133,14 +133,14 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
             response: GenerateContentResponse = await client.models.generate_content(
                 model=self.service_settings.gemini_model_id,
-                contents=self._prepare_chat_history_for_request(chat_history),
+                contents=self._prepare_chat_history_for_request(chat_history),  # type: ignore[arg-type]
                 config=GenerateContentConfigDict(
-                    **settings.prepare_settings_dict(),
                     system_instruction=filter_system_message(chat_history),
+                    **settings.prepare_settings_dict(),  # type: ignore[typeddict-item]
                 ),
             )
 
-        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
+        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
 
     @override
     @trace_streaming_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
@@ -162,15 +162,15 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
             async for chunk in await client.models.generate_content_stream(
                 model=self.service_settings.gemini_model_id,
-                contents=self._prepare_chat_history_for_request(chat_history),
+                contents=self._prepare_chat_history_for_request(chat_history),  # type: ignore[arg-type]
                 config=GenerateContentConfigDict(
-                    **settings.prepare_settings_dict(),
                     system_instruction=filter_system_message(chat_history),
+                    **settings.prepare_settings_dict(),  # type: ignore[typeddict-item]
                 ),
             ):
                 yield [
                     self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                    for candidate in chunk.candidates
+                    for candidate in chunk.candidates  # type: ignore
                 ]
 
     @override
@@ -241,19 +241,20 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
         items: list[CMC_ITEM_TYPES] = []
-        for idx, part in enumerate(candidate.content.parts):
-            if part.text:
-                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
-            elif part.function_call:
-                items.append(
-                    FunctionCallContent(
-                        id=f"{part.function_call.name}_{idx!s}",
-                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
-                            part.function_call.name
-                        ),
-                        arguments={k: v for k, v in part.function_call.args.items()},
+        if candidate.content and candidate.content.parts:
+            for idx, part in enumerate(candidate.content.parts):
+                if part.text:
+                    items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+                elif part.function_call:
+                    items.append(
+                        FunctionCallContent(
+                            id=f"{part.function_call.name}_{idx!s}",
+                            name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                                part.function_call.name  # type: ignore[arg-type]
+                            ),
+                            arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                        )
                     )
-                )
 
         return ChatMessageContent(
             ai_model_id=self.ai_model_id,
@@ -290,31 +291,32 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
         items: list[STREAMING_ITEM_TYPES] = []
-        for idx, part in enumerate(candidate.content.parts):
-            if part.text:
-                items.append(
-                    StreamingTextContent(
-                        choice_index=candidate.index,
-                        text=part.text,
-                        inner_content=chunk,
-                        metadata=response_metadata,
+        if candidate.content and candidate.content.parts:
+            for idx, part in enumerate(candidate.content.parts):
+                if part.text:
+                    items.append(
+                        StreamingTextContent(
+                            choice_index=candidate.index,
+                            text=part.text,
+                            inner_content=chunk,
+                            metadata=response_metadata,
+                        )
                     )
-                )
-            elif part.function_call:
-                items.append(
-                    FunctionCallContent(
-                        id=f"{part.function_call.name}_{idx!s}",
-                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
-                            part.function_call.name
-                        ),
-                        arguments={k: v for k, v in part.function_call.args.items()},
+                elif part.function_call:
+                    items.append(
+                        FunctionCallContent(
+                            id=f"{part.function_call.name}_{idx!s}",
+                            name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                                part.function_call.name  # type: ignore[arg-type]
+                            ),
+                            arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                        )
                     )
-                )
 
         return StreamingChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
-            choice_index=candidate.index,
+            choice_index=candidate.index or 0,
             items=items,
             inner_content=chunk,
             finish_reason=finish_reason,

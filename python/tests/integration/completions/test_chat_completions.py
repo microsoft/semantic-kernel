@@ -158,7 +158,7 @@ pytestmark = pytest.mark.parametrize(
         # region Google AI
         pytest.param(
             "google_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),

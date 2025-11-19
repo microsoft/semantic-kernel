@@ -103,10 +103,10 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             response: GenerateContentResponse = await client.models.generate_content(
                 model=self.service_settings.gemini_model_id,
                 contents=prompt,
-                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),  # type: ignore[typeddict-item]
             )
 
-        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+        return [self._create_text_content(response, candidate) for candidate in response.candidates]  # type: ignore
 
     @override
     @trace_streaming_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
@@ -126,9 +126,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             async for chunk in await client.models.generate_content_stream(
                 model=self.service_settings.gemini_model_id,
                 contents=prompt,
-                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),  # type: ignore[typeddict-item]
             ):
-                yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+                yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
 
     # endregion
 
@@ -147,7 +147,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
         return TextContent(
             ai_model_id=self.ai_model_id,
-            text=candidate.content.parts[0].text,
+            text=candidate.content.parts[0].text or "" if candidate.content and candidate.content.parts else "",
             inner_content=response,
             metadata=response_metadata,
         )
@@ -169,8 +169,8 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
         return StreamingTextContent(
             ai_model_id=self.ai_model_id,
-            choice_index=candidate.index,
-            text=candidate.content.parts[0].text,
+            choice_index=candidate.index or 0,
+            text=candidate.content.parts[0].text or "" if candidate.content and candidate.content.parts else "",
             inner_content=chunk,
             metadata=response_metadata,
         )

@@ -31,12 +31,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def finish_reason_from_google_ai_to_semantic_kernel(
-    finish_reason: FinishReason,
+    finish_reason: FinishReason | None,
 ) -> SemanticKernelFinishReason | None:
     """Convert a Google AI FinishReason to a Semantic Kernel FinishReason.
 
     This is best effort and may not cover all cases as the enums are not identical.
     """
+    if finish_reason is None:
+        return None
+
     if finish_reason == FinishReason.STOP:
         return SemanticKernelFinishReason.STOP
 
@@ -90,8 +93,8 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
         elif isinstance(item, FunctionCallContent):
             parts.append(
                 Part.from_function_call(
-                    name=item.name,
-                    args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                    name=item.name,  # type: ignore[arg-type]
+                    args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,  # type: ignore[arg-type]
                 )
             )
         elif isinstance(item, ImageContent):
@@ -171,7 +174,7 @@ def update_settings_from_function_choice_configuration(
 
 def _create_image_part(image_content: ImageContent) -> Part:
     if image_content.data_uri:
-        return Part.from_bytes(data=image_content.data, mime_type=image_content.mime_type)
+        return Part.from_bytes(data=image_content.data, mime_type=image_content.mime_type)  # type: ignore[arg-type]
 
     # The Google AI API doesn't support images from arbitrary URIs:
     # https://github.com/google-gemini/generative-ai-python/issues/357

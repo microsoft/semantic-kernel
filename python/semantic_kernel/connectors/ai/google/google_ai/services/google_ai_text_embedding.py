@@ -98,11 +98,11 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
             response: EmbedContentResponse = await client.models.embed_content(
                 model=self.service_settings.embedding_model_id,
-                contents=texts,
-                config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+                contents=texts,  # type: ignore[arg-type]
+                config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
             )
 
-        return [embedding.values for embedding in response.embeddings]
+        return [embedding.values for embedding in response.embeddings]  # type: ignore
 
     @override
     def get_prompt_execution_settings_class(
