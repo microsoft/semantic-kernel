@@ -88,7 +88,7 @@ async def test_embedding(mock_google_model_embed_content, google_ai_unit_test_en
     mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
         contents=[prompt],
-        config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+        config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
     )
 
 
@@ -134,7 +134,7 @@ async def test_embedding_without_settings(mock_google_model_embed_content, googl
     mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
         contents=[prompt],
-        config=EmbedContentConfigDict(),
+        config=EmbedContentConfigDict(output_dimensionality=None),
     )
 
 
@@ -159,7 +159,7 @@ async def test_embedding_list_input(mock_google_model_embed_content, google_ai_u
     mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
         contents=[prompt, prompt],
-        config=EmbedContentConfigDict(),
+        config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
     )
 
 
@@ -184,5 +184,5 @@ async def test_raw_embedding(mock_google_model_embed_content, google_ai_unit_tes
     mock_google_model_embed_content.assert_called_once_with(
         model=model_id,
         contents=[prompt],
-        config=EmbedContentConfigDict(**settings.prepare_settings_dict()),
+        config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
     )
