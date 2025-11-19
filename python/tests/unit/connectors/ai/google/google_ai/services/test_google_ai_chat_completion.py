@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
+from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -85,7 +86,7 @@ async def test_google_ai_chat_completion(
     mock_google_ai_chat_completion_response,
 ) -> None:
     """Test chat completion with GoogleAIChatCompletion"""
-    settings = GoogleAIChatPromptExecutionSettings()
+    settings = GoogleAIChatPromptExecutionSettings(top_k=5, temperature=0.7)
 
     mock_google_ai_model_generate_content.return_value = mock_google_ai_chat_completion_response
 
@@ -97,7 +98,10 @@ async def test_google_ai_chat_completion(
     mock_google_ai_model_generate_content.assert_called_once_with(
         model=google_ai_chat_completion.service_settings.gemini_model_id,
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+        config=GenerateContentConfigDict(
+            **settings.prepare_settings_dict(),
+            system_instruction=filter_system_message(chat_history),
+        ),
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
@@ -189,7 +193,10 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
     mock_google_ai_model_generate_content.assert_awaited_once_with(
         model=google_ai_chat_completion.service_settings.gemini_model_id,
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+        config=GenerateContentConfigDict(
+            **settings.prepare_settings_dict(),
+            system_instruction=filter_system_message(chat_history),
+        ),
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
@@ -225,7 +232,10 @@ async def test_google_ai_streaming_chat_completion(
     mock_google_ai_model_generate_content_stream.assert_called_once_with(
         model=google_ai_chat_completion.service_settings.gemini_model_id,
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+        config=GenerateContentConfigDict(
+            **settings.prepare_settings_dict(),
+            system_instruction=filter_system_message(chat_history),
+        ),
     )
 
 
@@ -327,7 +337,10 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
     mock_google_ai_model_generate_content_stream.assert_awaited_once_with(
         model=google_ai_chat_completion.service_settings.gemini_model_id,
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+        config=GenerateContentConfigDict(
+            **settings.prepare_settings_dict(),
+            system_instruction=filter_system_message(chat_history),
+        ),
     )
 
 

@@ -26,6 +26,7 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
     collapse_function_call_results_in_chat_history,
+    filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -133,7 +134,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             response: GenerateContentResponse = await client.models.generate_content(
                 model=self.service_settings.gemini_model_id,
                 contents=self._prepare_chat_history_for_request(chat_history),
-                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+                config=GenerateContentConfigDict(
+                    **settings.prepare_settings_dict(),
+                    system_instruction=filter_system_message(chat_history),
+                ),
             )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
@@ -159,7 +163,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             async for chunk in await client.models.generate_content_stream(
                 model=self.service_settings.gemini_model_id,
                 contents=self._prepare_chat_history_for_request(chat_history),
-                config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
+                config=GenerateContentConfigDict(
+                    **settings.prepare_settings_dict(),
+                    system_instruction=filter_system_message(chat_history),
+                ),
             ):
                 yield [
                     self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
@@ -201,7 +208,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 # Skip system messages since they are not part of the chat request.
-                # System message will be provided as system_instruction in the model.
+                # System message will be provided as system_instruction in the config.
                 continue
             if message.role == AuthorRole.USER:
                 chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
