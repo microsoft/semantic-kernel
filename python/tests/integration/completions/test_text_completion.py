@@ -17,7 +17,6 @@ from openai import AsyncAzureOpenAI
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.bedrock import BedrockTextCompletion, BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
-from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama import OllamaTextCompletion, OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
@@ -41,8 +40,8 @@ azure_openai_setup = True
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
     "Linux"
 ])
-google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
-vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
@@ -220,7 +219,10 @@ class TestTextCompletion(CompletionTestBase):
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
-            "vertex_ai": (VertexAITextCompletion() if vertex_ai_setup else None, VertexAITextPromptExecutionSettings),
+            "vertex_ai": (
+                GoogleAITextCompletion(use_vertexai=True) if vertex_ai_setup else None,
+                GoogleAITextPromptExecutionSettings,
+            ),
             "hf_t2t": (
                 HuggingFaceTextCompletion(
                     service_id="patrickvonplaten/t5-tiny-random",

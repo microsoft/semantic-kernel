@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from google.genai import Client
 from google.genai.models import AsyncModels
 from google.genai.types import ContentEmbedding, EmbedContentConfigDict, EmbedContentResponse
 from numpy import array, ndarray
@@ -48,15 +49,22 @@ def test_google_ai_text_embedding_init_with_model_id_in_argument(google_ai_unit_
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_EMBEDDING_MODEL_ID"]], indirect=True)
 def test_google_ai_text_embedding_init_with_empty_model_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding with an empty model_id"""
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ServiceInitializationError, match="The Google AI embedding model ID is required."):
         GoogleAITextEmbedding(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
 def test_google_ai_text_embedding_init_with_empty_api_key(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding with an empty api_key"""
-    with pytest.raises(ServiceInitializationError):
-        GoogleAITextEmbedding(env_file_path="fake_env_file_path.env")
+    with pytest.raises(ServiceInitializationError, match="The API key is required when use_vertexai is False."):
+        GoogleAITextEmbedding(use_vertexai=True, env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_PROJECT_ID"]], indirect=True)
+def test_google_ai_text_embedding_init_with_use_vertexai_missing_project_id(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAITextEmbedding with use_vertexai true but missing project ID"""
+    with pytest.raises(ServiceInitializationError, match="Project ID must be provided when use_vertexai is True."):
+        GoogleAITextEmbedding(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
@@ -186,3 +194,30 @@ async def test_raw_embedding(mock_google_model_embed_content, google_ai_unit_tes
         contents=[prompt],
         config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
     )
+
+
+async def test_embedding_with_custom_client(google_ai_unit_test_env, prompt) -> None:
+    """Test embedding with GoogleAITextEmbedding using a custom client"""
+    # Create a custom client with a fake API key for testing
+    custom_client = Client(api_key="fake-api-key-for-testing")
+
+    # Mock the custom client's embed_content method
+    mock_embed_content = AsyncMock(
+        return_value=EmbedContentResponse(embeddings=[ContentEmbedding(values=[0.1, 0.2, 0.3])])
+    )
+    custom_client.aio.models.embed_content = mock_embed_content
+
+    google_ai_text_embedding = GoogleAITextEmbedding(client=custom_client)
+    response: list[list[float]] = await google_ai_text_embedding.generate_embeddings(
+        [prompt],
+        GoogleAIEmbeddingPromptExecutionSettings(),
+    )
+
+    custom_client.close()
+
+    # Verify that the custom client was used and returned the expected response
+    assert len(response) == 1
+    assert response.all() == array([0.1, 0.2, 0.3]).all()
+
+    # Verify that the custom client's method was called
+    mock_embed_content.assert_called_once()

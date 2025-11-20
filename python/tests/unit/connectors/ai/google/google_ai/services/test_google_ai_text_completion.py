@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from google.genai import Client
 from google.genai.models import AsyncModels
 from google.genai.types import GenerateContentConfigDict
 
@@ -48,15 +49,22 @@ def test_google_ai_text_completion_init_with_model_id_in_argument(google_ai_unit
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_GEMINI_MODEL_ID"]], indirect=True)
 def test_google_ai_text_completion_init_with_empty_model_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextCompletion with an empty model_id"""
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ServiceInitializationError, match="The Google AI Gemini model ID is required."):
         GoogleAITextCompletion(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
 def test_google_ai_text_completion_init_with_empty_api_key(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextCompletion with an empty api_key"""
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ServiceInitializationError, match="The API key is required when use_vertexai is False."):
         GoogleAITextCompletion(env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", ["GOOGLE_AI_CLOUD_PROJECT_ID"], indirect=True)
+def test_google_ai_text_completion_init_with_use_vertexai_missing_project_id(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAITextCompletion with use_vertexai true but missing project_id"""
+    with pytest.raises(ServiceInitializationError, match="Project ID must be provided when use_vertexai is True."):
+        GoogleAITextCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
@@ -97,6 +105,38 @@ async def test_google_ai_text_completion(
     assert responses[0].inner_content == mock_google_ai_text_completion_response
 
 
+async def test_google_ai_text_completion_with_custom_client(
+    prompt: str,
+    google_ai_unit_test_env,
+    mock_google_ai_text_completion_response,
+) -> None:
+    """Test text completion with GoogleAITextCompletion using a custom client"""
+    # Create a custom client with a fake API key for testing
+    custom_client = Client(api_key="fake-api-key-for-testing")
+
+    # Mock the custom client's generate_content method
+    mock_generate_content = AsyncMock(return_value=mock_google_ai_text_completion_response)
+    custom_client.aio.models.generate_content = mock_generate_content
+
+    google_ai_text_completion = GoogleAITextCompletion(client=custom_client)
+    responses: list[TextContent] = await google_ai_text_completion.get_text_contents(
+        prompt,
+        GoogleAITextPromptExecutionSettings(),
+    )
+
+    custom_client.close()
+
+    # Verify that the custom client was used and returned the expected response
+    assert len(responses) == 1
+    assert responses[0].text == mock_google_ai_text_completion_response.candidates[0].content.parts[0].text
+    assert "usage" in responses[0].metadata
+    assert "prompt_feedback" in responses[0].metadata
+    assert responses[0].inner_content == mock_google_ai_text_completion_response
+
+    # Verify that the custom client's method was called
+    mock_generate_content.assert_called_once()
+
+
 # endregion text completion
 
 
@@ -126,6 +166,33 @@ async def test_google_ai_streaming_text_completion(
         contents=prompt,
         config=GenerateContentConfigDict(**settings.prepare_settings_dict()),
     )
+
+
+async def test_google_ai_streaming_text_completion_with_custom_client(
+    prompt: str,
+    google_ai_unit_test_env,
+    mock_google_ai_streaming_text_completion_response,
+) -> None:
+    """Test streaming text completion with GoogleAITextCompletion using a custom client"""
+    # Create a custom client with a fake API key for testing
+    custom_client = Client(api_key="fake-api-key-for-testing")
+
+    # Mock the custom client's generate_content_stream method
+    mock_generate_content_stream = AsyncMock(return_value=mock_google_ai_streaming_text_completion_response)
+    custom_client.aio.models.generate_content_stream = mock_generate_content_stream
+
+    google_ai_text_completion = GoogleAITextCompletion(client=custom_client)
+    async for chunks in google_ai_text_completion.get_streaming_text_contents(
+        prompt, GoogleAITextPromptExecutionSettings()
+    ):
+        assert len(chunks) == 1
+        assert "usage" in chunks[0].metadata
+        assert "prompt_feedback" in chunks[0].metadata
+
+    custom_client.close()
+
+    # Verify that the custom client's method was called
+    mock_generate_content_stream.assert_called_once()
 
 
 # endregion streaming text completion

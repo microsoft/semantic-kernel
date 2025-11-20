@@ -39,7 +39,11 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         self,
         gemini_model_id: str | None = None,
         api_key: str | None = None,
+        project_id: str | None = None,
+        region: str | None = None,
+        use_vertexai: bool | None = None,
         service_id: str | None = None,
+        client: Client | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -49,11 +53,18 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         The following environment variables are used:
         - GOOGLE_AI_GEMINI_MODEL_ID
         - GOOGLE_AI_API_KEY
+        - GOOGLE_AI_CLOUD_PROJECT_ID
+        - GOOGLE_AI_CLOUD_REGION
+        - GOOGLE_AI_USE_VERTEXAI
 
         Args:
             gemini_model_id (str | None): The Gemini model ID. (Optional)
             api_key (str | None): The API key. (Optional)
+            project_id (str | None): The Google Cloud project ID. (Optional)
+            region (str | None): The Google Cloud region. (Optional)
+            use_vertexai (bool | None): Whether to use Vertex AI. (Optional)
             service_id (str | None): The service ID. (Optional)
+            client (Client | None): The Google AI Client to use for break glass scenarios. (Optional)
             env_file_path (str | None): The path to the .env file. (Optional)
             env_file_encoding (str | None): The encoding of the .env file. (Optional)
 
@@ -64,18 +75,29 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             google_ai_settings = GoogleAISettings(
                 gemini_model_id=gemini_model_id,
                 api_key=api_key,
+                cloud_project_id=project_id,
+                cloud_region=region,
+                use_vertexai=use_vertexai,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+
         if not google_ai_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
+
+        if not client:
+            if google_ai_settings.use_vertexai and not google_ai_settings.cloud_project_id:
+                raise ServiceInitializationError("Project ID must be provided when use_vertexai is True.")
+            if not google_ai_settings.api_key:
+                raise ServiceInitializationError("The API key is required when use_vertexai is False.")
 
         super().__init__(
             ai_model_id=google_ai_settings.gemini_model_id,
             service_id=service_id or google_ai_settings.gemini_model_id,
             service_settings=google_ai_settings,
+            client=client,
         )
 
     # region Overriding base class methods
@@ -99,12 +121,25 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
 
-        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
-            response: GenerateContentResponse = await client.models.generate_content(
-                model=self.service_settings.gemini_model_id,
+        async def _generate_content(client: Client) -> GenerateContentResponse:
+            return await client.aio.models.generate_content(
+                model=self.service_settings.gemini_model_id,  # type: ignore[arg-type]
                 contents=prompt,
                 config=GenerateContentConfigDict(**settings.prepare_settings_dict()),  # type: ignore[typeddict-item]
             )
+
+        if self.client:
+            response: GenerateContentResponse = await _generate_content(self.client)
+        elif self.service_settings.use_vertexai:
+            with Client(
+                vertexai=True,
+                project=self.service_settings.cloud_project_id,
+                location=self.service_settings.cloud_region,
+            ) as client:
+                response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
+        else:
+            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+                response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]  # type: ignore
 
@@ -122,13 +157,29 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
 
-        async with Client(api_key=self.service_settings.api_key.get_secret_value()).aio as client:
-            async for chunk in await client.models.generate_content_stream(
-                model=self.service_settings.gemini_model_id,
+        async def _generate_content_stream(client: Client) -> AsyncGenerator[GenerateContentResponse, Any]:
+            async for chunk in await client.aio.models.generate_content_stream(
+                model=self.service_settings.gemini_model_id,  # type: ignore[arg-type]
                 contents=prompt,
                 config=GenerateContentConfigDict(**settings.prepare_settings_dict()),  # type: ignore[typeddict-item]
             ):
+                yield chunk
+
+        if self.client:
+            async for chunk in _generate_content_stream(self.client):
                 yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
+        elif self.service_settings.use_vertexai:
+            with Client(
+                vertexai=True,
+                project=self.service_settings.cloud_project_id,
+                location=self.service_settings.cloud_region,
+            ) as client:
+                async for chunk in _generate_content_stream(client):
+                    yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
+        else:
+            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+                async for chunk in _generate_content_stream(client):
+                    yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
 
     # endregion
 

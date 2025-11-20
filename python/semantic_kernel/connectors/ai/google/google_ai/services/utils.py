@@ -101,7 +101,7 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             parts.append(_create_image_part(item))
         else:
             raise ServiceInvalidRequestError(
-                "Unsupported item type in Assistant message while formatting chat history for Vertex AI"
+                "Unsupported item type in Assistant message while formatting chat history for Google AI"
                 f" Inference: {type(item)}"
             )
 

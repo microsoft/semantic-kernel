@@ -171,7 +171,7 @@ pytestmark = pytest.mark.parametrize(
         # region Vertex AI
         pytest.param(
             "vertex_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),

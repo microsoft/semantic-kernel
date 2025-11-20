@@ -28,6 +28,8 @@ def google_ai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "GOOGLE_AI_GEMINI_MODEL_ID": "test-gemini-model-id",
         "GOOGLE_AI_EMBEDDING_MODEL_ID": "test-embedding-model-id",
         "GOOGLE_AI_API_KEY": "test-api-key",
+        "GOOGLE_AI_CLOUD_PROJECT_ID": "test-project-id",
+        "GOOGLE_AI_CLOUD_REGION": "test-region",
     }
 
     env_vars.update(override_env_param_dict)

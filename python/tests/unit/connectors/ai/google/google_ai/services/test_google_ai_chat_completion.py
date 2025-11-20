@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from google.genai import Client
 from google.genai.models import AsyncModels
 from google.genai.types import Content, GenerateContentConfigDict
 
@@ -56,15 +57,22 @@ def test_google_ai_chat_completion_init_with_model_id_in_argument(google_ai_unit
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_GEMINI_MODEL_ID"]], indirect=True)
 def test_google_ai_chat_completion_init_with_empty_model_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAIChatCompletion with an empty model_id"""
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ServiceInitializationError, match="The Google AI Gemini model ID is required."):
         GoogleAIChatCompletion(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
 def test_google_ai_chat_completion_init_with_empty_api_key(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAIChatCompletion with an empty api_key"""
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ServiceInitializationError, match="API key is required when use_vertexai is False."):
         GoogleAIChatCompletion(env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_PROJECT_ID"]], indirect=True)
+def test_google_ai_chat_completion_init_with_use_vertexai_missing_project_id(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with use_vertexai true but missing project_id"""
+    with pytest.raises(ServiceInitializationError, match="Project ID must be provided when use_vertexai is True."):
+        GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
@@ -110,6 +118,37 @@ async def test_google_ai_chat_completion(
     assert "usage" in responses[0].metadata
     assert "prompt_feedback" in responses[0].metadata
     assert responses[0].inner_content == mock_google_ai_chat_completion_response
+
+
+async def test_google_ai_chat_completion_with_custom_client(
+    chat_history: ChatHistory,
+    google_ai_unit_test_env,
+    mock_google_ai_chat_completion_response,
+) -> None:
+    """Test chat completion with GoogleAIChatCompletion using a custom client"""
+    # Create a custom client with a fake API key for testing
+    custom_client = Client(api_key="fake-api-key-for-testing")
+
+    # Mock the custom client's generate_content method
+    mock_generate_content = AsyncMock(return_value=mock_google_ai_chat_completion_response)
+    custom_client.aio.models.generate_content = mock_generate_content
+
+    google_ai_chat_completion = GoogleAIChatCompletion(client=custom_client)
+    responses: list[ChatMessageContent] = await google_ai_chat_completion.get_chat_message_contents(
+        chat_history,
+        GoogleAIChatPromptExecutionSettings(),
+    )
+
+    custom_client.close()
+
+    # Verify that the custom client was used and returned the expected response
+    assert len(responses) == 1
+    assert responses[0].role == "assistant"
+    assert responses[0].content == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
+    assert responses[0].finish_reason == FinishReason.STOP
+
+    # Verify that the custom client's method was called
+    mock_generate_content.assert_called_once()
 
 
 async def test_google_ai_chat_completion_with_function_choice_behavior_fail_verification(
@@ -237,6 +276,41 @@ async def test_google_ai_streaming_chat_completion(
             system_instruction=filter_system_message(chat_history),
         ),
     )
+
+
+async def test_google_ai_streaming_chat_completion_with_custom_client(
+    chat_history: ChatHistory,
+    google_ai_unit_test_env,
+    mock_google_ai_streaming_chat_completion_response,
+) -> None:
+    """Test streaming chat completion with GoogleAIChatCompletion using a custom client"""
+    # Create a custom client with a fake API key for testing
+    custom_client = Client(api_key="fake-api-key-for-testing")
+
+    # Mock the custom client's generate_content_stream method
+    mock_generate_content_stream = AsyncMock(return_value=mock_google_ai_streaming_chat_completion_response)
+    custom_client.aio.models.generate_content_stream = mock_generate_content_stream
+
+    google_ai_chat_completion = GoogleAIChatCompletion(client=custom_client)
+
+    all_messages = []
+    async for messages in google_ai_chat_completion.get_streaming_chat_message_contents(
+        chat_history, GoogleAIChatPromptExecutionSettings()
+    ):
+        all_messages.extend(messages)
+        assert len(messages) == 1
+        assert messages[0].role == "assistant"
+        assert messages[0].finish_reason == FinishReason.STOP
+        assert "usage" in messages[0].metadata
+        assert "prompt_feedback" in messages[0].metadata
+
+    custom_client.close()
+
+    # Verify that the custom client was used and returned the expected response
+    assert len(all_messages) > 0
+
+    # Verify that the custom client's method was called
+    mock_generate_content_stream.assert_called_once()
 
 
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(

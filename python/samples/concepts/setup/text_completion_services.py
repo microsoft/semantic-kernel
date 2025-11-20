@@ -262,12 +262,9 @@ def get_vertex_ai_text_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.google.vertex_ai import (
-        VertexAITextCompletion,
-        VertexAITextPromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.google import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
 
-    text_service = VertexAITextCompletion()
-    request_settings = VertexAITextPromptExecutionSettings()
+    text_service = GoogleAITextCompletion()
+    request_settings = GoogleAITextPromptExecutionSettings()
 
     return text_service, request_settings

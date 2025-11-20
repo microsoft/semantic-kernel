@@ -38,9 +38,9 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
 | [Google AI](./google/README.md) | [`GoogleAIChatCompletion`](./google/google_ai/services/google_ai_chat_completion.py) |
 |           | [`GoogleAITextCompletion`](./google/google_ai/services/google_ai_text_completion.py) |
 |           | [`GoogleAITextEmbedding`](./google/google_ai/services/google_ai_text_embedding.py) |
-| [Vertex AI](./google/README.md) | [`VertexAIChatCompletion`](./google/vertex_ai/services/vertex_ai_chat_completion.py) |
-|           | [`VertexAITextCompletion`](./google/vertex_ai/services/vertex_ai_text_completion.py) |
-|           | [`VertexAITextEmbedding`](./google/vertex_ai/services/vertex_ai_text_embedding.py) |
+| [Vertex AI](./google/README.md) | [`GoogleAIChatCompletion`](./google/google_ai/services/google_ai_chat_completion.py) |
+|           | [`GoogleAITextCompletion`](./google/google_ai/services/google_ai_text_completion.py) |
+|           | [`GoogleAITextEmbedding`](./google/google_ai/services/google_ai_text_embedding.py) |
 | HuggingFace | [`HuggingFaceTextCompletion`](./hugging_face/services/hf_text_completion.py) |
 |             | [`HuggingFaceTextEmbedding`](./hugging_face/services/hf_text_embedding.py) |
 | Mistral AI | [`MistralAIChatCompletion`](./mistral_ai/services/mistral_ai_chat_completion.py) |
