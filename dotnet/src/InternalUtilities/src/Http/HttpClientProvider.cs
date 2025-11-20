@@ -99,7 +99,7 @@ internal static class HttpClientProvider
             catch (PlatformNotSupportedException) { } // not supported on older frameworks
             return handler;
         }
-#elif NET462
+#elif NET462 || NET472
         private static HttpClientHandler CreateHandler()
             => new();
 #endif
