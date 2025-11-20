@@ -54,6 +54,22 @@ public abstract class GeminiToolCallBehavior
     /// </remarks>
     public static GeminiToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
 
+    /// <summary>
+    /// Creates an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
+    /// to the model and attempt to automatically handle any function call requests with the specified maximum number of attempts.
+    /// </summary>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <remarks>
+    /// When successful, tool call requests from the model become an implementation detail, with the service
+    /// handling invoking any requested functions and supplying the results back to the model.
+    /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
+    /// </remarks>
+    /// <returns>A <see cref="GeminiToolCallBehavior"/> instance configured with the specified maximum auto-invoke attempts.</returns>
+    public static GeminiToolCallBehavior CreateAutoInvokeKernelFunctions(int maximumAutoInvokeAttempts)
+    {
+        return new KernelFunctions(autoInvoke: true, maximumAutoInvokeAttempts);
+    }
+
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
@@ -67,10 +83,30 @@ public abstract class GeminiToolCallBehavior
         return new EnabledFunctions(functions, autoInvoke);
     }
 
+    /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
+    /// <param name="functions">The functions that should be made available to the model.</param>
+    /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <returns>
+    /// The <see cref="GeminiToolCallBehavior"/> that may be set into <see cref="GeminiToolCallBehavior"/>
+    /// to indicate that the specified functions should be made available to the model.
+    /// </returns>
+    public static GeminiToolCallBehavior EnableFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        Verify.NotNull(functions);
+        return new EnabledFunctions(functions, autoInvoke, maximumAutoInvokeAttempts);
+    }
+
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private GeminiToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+    }
+
+    /// <summary>Initializes the instance; prevents external instantiation.</summary>
+    private GeminiToolCallBehavior(bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        this.MaximumAutoInvokeAttempts = autoInvoke ? maximumAutoInvokeAttempts : 0;
     }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
@@ -114,6 +150,8 @@ public abstract class GeminiToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
+        internal KernelFunctions(bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts) { }
+
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
         internal override void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request)
@@ -137,9 +175,19 @@ public abstract class GeminiToolCallBehavior
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : GeminiToolCallBehavior(autoInvoke)
+    internal sealed class EnabledFunctions : GeminiToolCallBehavior
     {
-        private readonly GeminiFunction[] _functions = functions.ToArray();
+        private readonly GeminiFunction[] _functions;
+
+        internal EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : base(autoInvoke)
+        {
+            this._functions = functions.ToArray();
+        }
+
+        internal EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts)
+        {
+            this._functions = functions.ToArray();
+        }
 
         public override string ToString() =>
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +
