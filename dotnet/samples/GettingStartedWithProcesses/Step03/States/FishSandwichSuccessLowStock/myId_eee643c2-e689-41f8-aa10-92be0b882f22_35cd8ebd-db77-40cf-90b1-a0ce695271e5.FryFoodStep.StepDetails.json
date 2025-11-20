@@ -1,0 +1,13 @@
+{
+  "stepInfo": {
+    "stepName": "FryFoodStep",
+    "parentId": null,
+    "version": "FryFoodStep.V1",
+    "instanceId": "myId_eee643c2-e689-41f8-aa10-92be0b882f22_35cd8ebd-db77-40cf-90b1-a0ce695271e5"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": null,
+  "instanceId": "myId_eee643c2-e689-41f8-aa10-92be0b882f22_35cd8ebd-db77-40cf-90b1-a0ce695271e5"
+}
