@@ -379,7 +379,7 @@ Even when we remove the legacy `ITextSearch` interface and `TextSearchFilter` bu
 - LINQ-to-FilterClause translation in web connectors
 - FilterClause-to-API-parameters conversion
 
-_Note: See "SearchQueryFilterClause Public Visibility" section below for detailed decision rationale on the constructor visibility trade-off._
+_Note: See "SearchQueryFilterClause Placement Decision" section below for details on the protected constructor and class location._
 
 ### Key Differences Between Patterns:
 
@@ -525,32 +525,19 @@ The `ITextSearch<TRecord>` interface supports LINQ expressions, including `Title
 - ⚠️ Additional complexity in filter clause processing
 - ⚠️ Query enhancement may affect search precision in some cases
 
-### SearchQueryFilterClause Public Visibility
+### SearchQueryFilterClause Placement Decision
 
-**Context**: `SearchQueryFilterClause` is only used by web search plugins (Brave, Tavily), not vector stores. Moving it from `VectorData.Abstractions` to `Plugins.Web` would reduce MEVD public API surface. However, this required addressing an architectural constraint.
+**Context**: `SearchQueryFilterClause` is only used by web search plugins (Brave, Tavily) for query enhancement, not by vector stores. Moving it from `VectorData.Abstractions` to `Plugins.Web` reduces MEVD public API surface.
 
-**Problem**: `FilterClause` base class has an **internal constructor**, preventing inheritance outside the `VectorData.Abstractions` assembly:
+**Problem**: `FilterClause` base class had an `internal` constructor, preventing inheritance outside the `VectorData.Abstractions` assembly.
 
-```csharp
-public abstract class FilterClause
-{
-    internal FilterClause()  // ← Blocks external inheritance
-}
-```
-
-Attempted move to `Plugins.Web` fails with:
-
-```
-error CS0122: 'FilterClause.FilterClause()' is inaccessible due to its protection level
-```
-
-**Decision**: Make `FilterClause` constructor **public** and move `SearchQueryFilterClause` to `Plugins.Web` as **internal**.
+**Decision**: Make `FilterClause` constructor **protected** and move `SearchQueryFilterClause` to `Plugins.Web` as **internal**.
 
 ```csharp
 // VectorData.Abstractions/FilterClauses/FilterClause.cs
 public abstract class FilterClause
 {
-    public FilterClause()  // Changed from internal to public
+    protected FilterClause()  // Changed from internal to protected
 }
 
 // Plugins.Web/FilterClauses/SearchQueryFilterClause.cs
@@ -559,26 +546,19 @@ internal sealed class SearchQueryFilterClause : FilterClause  // Moved and made 
 
 **Rationale**:
 
-1. **Minimize MEVD public API**: `SearchQueryFilterClause` is only used by web search plugins (Brave, Tavily), not vector stores
-2. **Semantic appropriateness**: Query enhancement is a web search concept, not a vector data concept
-3. **Trade-off accepted**: Opening `FilterClause` to external inheritance is acceptable to keep web-specific types out of MEVD
-4. **Internal in destination**: Making it internal in `Plugins.Web` prevents it from becoming public API surface there
-
-**Alternatives Considered**:
-
-1. ~~**Keep public in VectorData.Abstractions**~~: Adds to MEVD API surface unnecessarily
-2. ~~**Internal + InternalsVisibleTo**~~: Causes 200 CS0436 type conflict errors in CI (internal utilities exposed to multiple assemblies)
-3. **Make FilterClause constructor public** (SELECTED): Opens to external inheritance but minimizes API surface growth
-4. ~~**Don't inherit from FilterClause**~~: Breaks established pattern, loses type safety
+1. **Minimize MEVD public API**: `SearchQueryFilterClause` is web search-specific, not part of vector data abstractions
+2. **Semantic appropriateness**: Query enhancement is a web search plugin concept
+3. **Proper encapsulation**: `protected` constructor allows inheritance while preventing external instantiation
+4. **Standard practice**: Abstract base classes should use `protected` constructors
+5. **Clean solution**: No analyzer warnings, no suppressions needed
 
 **Consequences**:
 
 - ✅ Reduces MEVD public API surface (SearchQueryFilterClause not exposed)
 - ✅ Semantically appropriate location (web search plugin concept)
-- ✅ Clean implementation with no workarounds
+- ✅ Proper encapsulation (protected allows inheritance, prevents instantiation)
+- ✅ No analyzer warnings (CA1012 satisfied)
 - ✅ Internal visibility in Plugins.Web (not exposed to consumers)
-- ⚠️ Opens FilterClause to external inheritance (accepted trade-off)
-- ⚠️ Suppresses CA1012 analyzer warning (abstract types should not have public constructors)
 
 ## Pros and Cons of the Options
 
