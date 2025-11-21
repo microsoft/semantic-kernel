@@ -5,15 +5,8 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-import google.generativeai as genai
-from google.generativeai import GenerativeModel
-from google.generativeai.protos import Candidate, Content
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+from google.genai import Client
+from google.genai.types import Candidate, Content, GenerateContentConfigDict, GenerateContentResponse
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -54,6 +47,11 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_chat_completion,
 )
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -70,7 +68,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         self,
         gemini_model_id: str | None = None,
         api_key: str | None = None,
+        project_id: str | None = None,
+        region: str | None = None,
+        use_vertexai: bool | None = None,
         service_id: str | None = None,
+        client: Client | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -80,11 +82,18 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         The following environment variables are used:
         - GOOGLE_AI_GEMINI_MODEL_ID
         - GOOGLE_AI_API_KEY
+        - GOOGLE_AI_CLOUD_PROJECT_ID
+        - GOOGLE_AI_CLOUD_REGION
+        - GOOGLE_AI_USE_VERTEXAI
 
         Args:
             gemini_model_id (str | None): The Gemini model ID. (Optional)
             api_key (str | None): The API key. (Optional)
+            project_id (str | None): The Google Cloud project ID. (Optional)
+            region (str | None): The Google Cloud region. (Optional)
+            use_vertexai (bool | None): Whether to use Vertex AI. (Optional)
             service_id (str | None): The service ID. (Optional)
+            client (Client | None): The Google AI client to use for break glass scenarios. (Optional)
             env_file_path (str | None): The path to the .env file. (Optional)
             env_file_encoding (str | None): The encoding of the .env file. (Optional)
 
@@ -95,18 +104,29 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             google_ai_settings = GoogleAISettings(
                 gemini_model_id=gemini_model_id,
                 api_key=api_key,
+                cloud_project_id=project_id,
+                cloud_region=region,
+                use_vertexai=use_vertexai,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+
         if not google_ai_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
+
+        if not client:
+            if google_ai_settings.use_vertexai and not google_ai_settings.cloud_project_id:
+                raise ServiceInitializationError("Project ID must be provided when use_vertexai is True.")
+            if not google_ai_settings.api_key:
+                raise ServiceInitializationError("The API key is required when use_vertexai is False.")
 
         super().__init__(
             ai_model_id=google_ai_settings.gemini_model_id,
             service_id=service_id or google_ai_settings.gemini_model_id,
             service_settings=google_ai_settings,
+            client=client,
         )
 
     # region Overriding base class methods
@@ -127,24 +147,35 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-            system_instruction=filter_system_message(chat_history),
-        )
 
         collapse_function_call_results_in_chat_history(chat_history)
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
-        )
+        async def _generate_content(client: Client) -> GenerateContentResponse:
+            return await client.aio.models.generate_content(
+                model=self.service_settings.gemini_model_id,  # type: ignore[arg-type]
+                contents=self._prepare_chat_history_for_request(chat_history),  # type: ignore[arg-type]
+                config=GenerateContentConfigDict(
+                    system_instruction=filter_system_message(chat_history),
+                    **settings.prepare_settings_dict(),  # type: ignore[typeddict-item]
+                ),
+            )
 
-        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
+        if self.client:
+            response: GenerateContentResponse = await _generate_content(self.client)
+        elif self.service_settings.use_vertexai:
+            with Client(
+                vertexai=True,
+                project=self.service_settings.cloud_project_id,
+                location=self.service_settings.cloud_region,
+            ) as client:
+                response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
+        else:
+            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+                response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
+
+        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
 
     @override
     @trace_streaming_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
@@ -158,29 +189,46 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         if not self.service_settings.gemini_model_id:
             raise ServiceInitializationError("The Google AI Gemini model ID is required.")
-        model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
-            system_instruction=filter_system_message(chat_history),
-        )
 
         collapse_function_call_results_in_chat_history(chat_history)
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
-            stream=True,
-        )
+        async def _generate_content_stream(client: Client) -> AsyncGenerator[GenerateContentResponse, Any]:
+            async for chunk in await client.aio.models.generate_content_stream(
+                model=self.service_settings.gemini_model_id,  # type: ignore[arg-type]
+                contents=self._prepare_chat_history_for_request(chat_history),  # type: ignore[arg-type]
+                config=GenerateContentConfigDict(
+                    system_instruction=filter_system_message(chat_history),
+                    **settings.prepare_settings_dict(),  # type: ignore[typeddict-item]
+                ),
+            ):
+                yield chunk
 
-        async for chunk in response:
-            yield [
-                self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                for candidate in chunk.candidates
-            ]
+        if self.client:
+            async for chunk in _generate_content_stream(self.client):
+                yield [
+                    self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
+                    for candidate in chunk.candidates  # type: ignore
+                ]
+        elif self.service_settings.use_vertexai:
+            with Client(
+                vertexai=True,
+                project=self.service_settings.cloud_project_id,
+                location=self.service_settings.cloud_region,
+            ) as client:
+                async for chunk in _generate_content_stream(client):
+                    yield [
+                        self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
+                        for candidate in chunk.candidates  # type: ignore
+                    ]
+        else:
+            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+                async for chunk in _generate_content_stream(client):
+                    yield [
+                        self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
+                        for candidate in chunk.candidates  # type: ignore
+                    ]
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
@@ -217,7 +265,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 # Skip system messages since they are not part of the chat request.
-                # System message will be provided as system_instruction in the model.
+                # System message will be provided as system_instruction in the config.
                 continue
             if message.role == AuthorRole.USER:
                 chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
@@ -233,7 +281,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     # region Non-streaming
 
     def _create_chat_message_content(
-        self, response: AsyncGenerateContentResponse, candidate: Candidate
+        self, response: GenerateContentResponse, candidate: Candidate
     ) -> ChatMessageContent:
         """Create a chat message content object.
 
@@ -250,19 +298,20 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
         items: list[CMC_ITEM_TYPES] = []
-        for idx, part in enumerate(candidate.content.parts):
-            if part.text:
-                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
-            elif part.function_call:
-                items.append(
-                    FunctionCallContent(
-                        id=f"{part.function_call.name}_{idx!s}",
-                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
-                            part.function_call.name
-                        ),
-                        arguments={k: v for k, v in part.function_call.args.items()},
+        if candidate.content and candidate.content.parts:
+            for idx, part in enumerate(candidate.content.parts):
+                if part.text:
+                    items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+                elif part.function_call:
+                    items.append(
+                        FunctionCallContent(
+                            id=f"{part.function_call.name}_{idx!s}",
+                            name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                                part.function_call.name  # type: ignore[arg-type]
+                            ),
+                            arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                        )
                     )
-                )
 
         return ChatMessageContent(
             ai_model_id=self.ai_model_id,
@@ -299,31 +348,32 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
         items: list[STREAMING_ITEM_TYPES] = []
-        for idx, part in enumerate(candidate.content.parts):
-            if part.text:
-                items.append(
-                    StreamingTextContent(
-                        choice_index=candidate.index,
-                        text=part.text,
-                        inner_content=chunk,
-                        metadata=response_metadata,
+        if candidate.content and candidate.content.parts:
+            for idx, part in enumerate(candidate.content.parts):
+                if part.text:
+                    items.append(
+                        StreamingTextContent(
+                            choice_index=candidate.index or 0,
+                            text=part.text,
+                            inner_content=chunk,
+                            metadata=response_metadata,
+                        )
                     )
-                )
-            elif part.function_call:
-                items.append(
-                    FunctionCallContent(
-                        id=f"{part.function_call.name}_{idx!s}",
-                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
-                            part.function_call.name
-                        ),
-                        arguments={k: v for k, v in part.function_call.args.items()},
+                elif part.function_call:
+                    items.append(
+                        FunctionCallContent(
+                            id=f"{part.function_call.name}_{idx!s}",
+                            name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                                part.function_call.name  # type: ignore[arg-type]
+                            ),
+                            arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                        )
                     )
-                )
 
         return StreamingChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
-            choice_index=candidate.index,
+            choice_index=candidate.index or 0,
             items=items,
             inner_content=chunk,
             finish_reason=finish_reason,
@@ -333,9 +383,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     # endregion
 
-    def _get_metadata_from_response(
-        self, response: AsyncGenerateContentResponse | GenerateContentResponse
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: GenerateContentResponse) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
@@ -347,8 +395,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         return {
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
-                prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                prompt_tokens=response.usage_metadata.prompt_token_count if response.usage_metadata else None,
+                completion_tokens=response.usage_metadata.candidates_token_count if response.usage_metadata else None,
             ),
         }
 

@@ -62,7 +62,7 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            parts.append(Part.from_text(message.content))
+            parts.append(Part.from_text(item.text))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:

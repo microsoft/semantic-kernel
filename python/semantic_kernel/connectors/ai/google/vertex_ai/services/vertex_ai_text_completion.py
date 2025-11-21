@@ -7,6 +7,7 @@ from typing import Any
 
 import vertexai
 from pydantic import ValidationError
+from typing_extensions import deprecated
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -31,6 +32,10 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
+@deprecated(
+    "VertexAITextCompletion is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAITextCompletion` connectors instead."
+)
 class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     """Vertex AI Text Completion Client."""
 

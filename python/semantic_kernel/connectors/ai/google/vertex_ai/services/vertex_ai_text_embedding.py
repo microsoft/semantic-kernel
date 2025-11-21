@@ -22,7 +22,13 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from typing_extensions import deprecated
 
+
+@deprecated(
+    "VertexAITextEmbedding is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAITextEmbedding` connectors instead."
+)
 class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
     """Vertex AI Text Embedding Service."""
 

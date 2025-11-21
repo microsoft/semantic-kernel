@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from google.generativeai.protos import Candidate, Part
+from google.genai.types import FinishReason, Part
 
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     finish_reason_from_google_ai_to_semantic_kernel,
@@ -14,16 +14,20 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 
 def test_finish_reason_from_google_ai_to_semantic_kernel():
     """Test finish_reason_from_google_ai_to_semantic_kernel."""
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.STOP) == FinishReason.STOP
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.MAX_TOKENS) == FinishReason.LENGTH
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.SAFETY) == FinishReason.CONTENT_FILTER
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.OTHER) is None
+    assert finish_reason_from_google_ai_to_semantic_kernel(FinishReason.STOP) == SemanticKernelFinishReason.STOP
+    assert finish_reason_from_google_ai_to_semantic_kernel(FinishReason.MAX_TOKENS) == SemanticKernelFinishReason.LENGTH
+    assert (
+        finish_reason_from_google_ai_to_semantic_kernel(FinishReason.SAFETY)
+        == SemanticKernelFinishReason.CONTENT_FILTER
+    )
+    assert finish_reason_from_google_ai_to_semantic_kernel(FinishReason.OTHER) is None
+    assert finish_reason_from_google_ai_to_semantic_kernel(None) is None
 
 
 def test_format_user_message():
