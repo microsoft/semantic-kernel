@@ -304,6 +304,11 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION"),
                 "trace": "disabled",
             }
+            
+        if self.ai_model_id == "us.anthropic.claude-sonnet-4-20250514-v1:0" :
+            if 'additionalModelRequestFields' not in prepared_settings or prepared_settings["additionalModelRequestFields"] is None:
+                prepared_settings["additionalModelRequestFields"] = {}
+            prepared_settings["additionalModelRequestFields"]["anthropic_beta"] = ["context-1m-2025-08-07"]
 
         return prepared_settings
 
