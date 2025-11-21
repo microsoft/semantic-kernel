@@ -64,6 +64,7 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
     DistanceFunction.DOT_PROD: "dotProduct",
     DistanceFunction.DEFAULT: "euclidean",
 }
+DRIVER_METADATA = DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel"))
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +211,8 @@ class MongoDBAtlasCollection(
                 managed_client=managed_client,
                 embedding_generator=embedding_generator,
             )
+            if callable(mongo_client.append_metadata):
+                mongo_client.append_metadata(DRIVER_METADATA)
             return
 
         try:
@@ -225,7 +228,7 @@ class MongoDBAtlasCollection(
 
         mongo_client = AsyncMongoClient(
             mongodb_atlas_settings.connection_string.get_secret_value(),
-            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+            driver=DRIVER_METADATA,
         )
 
         super().__init__(
@@ -565,6 +568,8 @@ class MongoDBAtlasStore(VectorStore):
                 database_name=database_name or DEFAULT_DB_NAME,
                 embedding_generator=embedding_generator,
             )
+            if callable(mongo_client.append_metadata):
+                mongo_client.append_metadata(DRIVER_METADATA)
             return
 
         try:
@@ -581,7 +586,7 @@ class MongoDBAtlasStore(VectorStore):
 
         mongo_client = AsyncMongoClient(
             mongodb_atlas_settings.connection_string.get_secret_value(),
-            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+            driver=DRIVER_METADATA,
         )
 
         super().__init__(
