@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// A Tavily Text Search implementation that can be used to perform searches using the Tavily Web Search API.
 /// </summary>
 #pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
-public sealed class TavilyTextSearch : ITextSearch
+public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
 #pragma warning restore CS0618
 {
     /// <summary>
@@ -77,7 +78,431 @@ public sealed class TavilyTextSearch : ITextSearch
         return new KernelSearchResults<object>(this.GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
-    #region private
+    #region Generic ITextSearch<TavilyWebPage> Implementation
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<string>> ITextSearch<TavilyWebPage>.SearchAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearch<TavilyWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<TavilyWebPage>> ITextSearch<TavilyWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<TavilyWebPage>? searchOptions, CancellationToken cancellationToken)
+    {
+        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<TavilyWebPage>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    #endregion
+
+    #region LINQ-to-Tavily Conversion Logic
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions and extracts additional search terms.
+    /// </summary>
+    /// <param name="query">The original search query.</param>
+    /// <param name="options">The generic search options with LINQ filter.</param>
+    /// <returns>A tuple containing the modified query and legacy TextSearchOptions with converted filters.</returns>
+    private (string modifiedQuery, TextSearchOptions legacyOptions) ConvertToLegacyOptionsWithQuery<TRecord>(string query, TextSearchOptions<TRecord>? options)
+    {
+        var legacyOptions = this.ConvertToLegacyOptions(options);
+
+        if (options?.Filter != null)
+        {
+            // Extract search terms from the LINQ expression
+            var additionalSearchTerms = ExtractSearchTermsFromLinqExpression(options.Filter);
+            if (additionalSearchTerms.Count > 0)
+            {
+                // Append additional search terms to the original query
+                var modifiedQuery = $"{query} {string.Join(" ", additionalSearchTerms)}".Trim();
+                return (modifiedQuery, legacyOptions);
+            }
+        }
+
+        return (query, legacyOptions);
+    }
+
+    /// <summary>
+    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
+    /// </summary>
+    /// <param name="options">The generic search options with LINQ filter.</param>
+    /// <returns>Legacy TextSearchOptions with converted filters.</returns>
+    private TextSearchOptions ConvertToLegacyOptions<TRecord>(TextSearchOptions<TRecord>? options)
+    {
+        if (options == null)
+        {
+            return new TextSearchOptions();
+        }
+
+        var legacyOptions = new TextSearchOptions
+        {
+            Top = options.Top,
+            Skip = options.Skip,
+            IncludeTotalCount = options.IncludeTotalCount
+        };
+
+        // Convert LINQ expression to TextSearchFilter if present
+        if (options.Filter != null)
+        {
+            try
+            {
+                var convertedFilter = ConvertLinqExpressionToTavilyFilter(options.Filter);
+                legacyOptions = new TextSearchOptions
+                {
+                    Top = options.Top,
+                    Skip = options.Skip,
+                    IncludeTotalCount = options.IncludeTotalCount,
+                    Filter = convertedFilter
+                };
+            }
+            catch (NotSupportedException)
+            {
+                // All unsupported LINQ patterns should fail explicitly to provide clear developer feedback
+                // This helps developers understand which patterns work with the Tavily API
+                throw;
+            }
+        }
+
+        return legacyOptions;
+    }
+
+    /// <summary>
+    /// Extracts search terms that should be added to the search query from a LINQ expression.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to analyze.</param>
+    /// <returns>A list of search terms to add to the query.</returns>
+    private static List<string> ExtractSearchTermsFromLinqExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        var searchTerms = new List<string>();
+        var filterClauses = new List<FilterClause>();
+
+        // Analyze the LINQ expression to get all filter clauses
+        AnalyzeExpression(linqExpression.Body, filterClauses);
+
+        // Extract search terms from SearchQueryFilterClause instances
+        foreach (var clause in filterClauses)
+        {
+            if (clause is SearchQueryFilterClause searchQueryClause)
+            {
+                searchTerms.Add(searchQueryClause.SearchTerm);
+            }
+        }
+
+        return searchTerms;
+    }
+
+    /// <summary>
+    /// Converts a LINQ expression to Tavily-compatible TextSearchFilter.
+    /// </summary>
+    /// <param name="linqExpression">The LINQ expression to convert.</param>
+    /// <returns>A TextSearchFilter with Tavily-compatible filter clauses.</returns>
+    private static TextSearchFilter ConvertLinqExpressionToTavilyFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    {
+        var filter = new TextSearchFilter();
+        var filterClauses = new List<FilterClause>();
+
+        // Analyze the LINQ expression and convert to filter clauses
+        AnalyzeExpression(linqExpression.Body, filterClauses);
+
+        // Validate and add clauses that are supported by Tavily
+        foreach (var clause in filterClauses)
+        {
+            if (clause is EqualToFilterClause equalityClause)
+            {
+                var mappedFieldName = MapPropertyToTavilyFilter(equalityClause.FieldName);
+                if (mappedFieldName != null)
+                {
+                    filter.Equality(mappedFieldName, equalityClause.Value);
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Property '{equalityClause.FieldName}' cannot be mapped to Tavily API filters. " +
+                        $"Supported properties: {string.Join(", ", s_validFieldNames)}. " +
+                        "Example: page => page.Topic == \"general\" && page.TimeRange == \"week\"");
+                }
+            }
+            else if (clause is SearchQueryFilterClause)
+            {
+                // SearchQueryFilterClause is handled at the query level, not the filter level
+                // Skip it here as it's processed by ConvertToLegacyOptionsWithQuery
+                continue;
+            }
+        }
+
+        return filter;
+    }
+
+    /// <summary>
+    /// Maps TavilyWebPage property names to Tavily API filter parameter names.
+    /// </summary>
+    /// <param name="propertyName">The property name from TavilyWebPage.</param>
+    /// <returns>The corresponding Tavily API parameter name, or null if not mappable.</returns>
+    private static string? MapPropertyToTavilyFilter(string propertyName) =>
+        propertyName.ToUpperInvariant() switch
+        {
+            "TOPIC" => Topic,
+            "TIMERANGE" => TimeRange,
+            "DAYS" => Days,
+            "INCLUDEDOMAIN" => IncludeDomain,
+            "EXCLUDEDOMAIN" => ExcludeDomain,
+            _ => null // Property not mappable to Tavily filters
+        };
+
+    // TODO: Consider extracting LINQ expression analysis logic to a shared utility class
+    // to reduce duplication across text search connectors (Brave, Tavily, etc.).
+    // See code review for details.
+    /// <summary>
+    /// Analyzes a LINQ expression and extracts filter clauses.
+    /// </summary>
+    /// <param name="expression">The expression to analyze.</param>
+    /// <param name="filterClauses">The list to add extracted filter clauses to.</param>
+    private static void AnalyzeExpression(Expression expression, List<FilterClause> filterClauses)
+    {
+        switch (expression)
+        {
+            case BinaryExpression binaryExpr:
+                if (binaryExpr.NodeType == ExpressionType.AndAlso)
+                {
+                    // Handle AND expressions by recursively analyzing both sides
+                    AnalyzeExpression(binaryExpr.Left, filterClauses);
+                    AnalyzeExpression(binaryExpr.Right, filterClauses);
+                }
+                else if (binaryExpr.NodeType == ExpressionType.OrElse)
+                {
+                    // Handle OR expressions by recursively analyzing both sides
+                    // Note: OR results in multiple filter values for the same property (especially for domains)
+                    AnalyzeExpression(binaryExpr.Left, filterClauses);
+                    AnalyzeExpression(binaryExpr.Right, filterClauses);
+                }
+                else if (binaryExpr.NodeType == ExpressionType.Equal)
+                {
+                    // Handle equality expressions
+                    ExtractEqualityClause(binaryExpr, filterClauses);
+                }
+                else if (binaryExpr.NodeType == ExpressionType.NotEqual)
+                {
+                    // Handle inequality expressions (property != value)
+                    // This is supported as a negation pattern
+                    ExtractInequalityClause(binaryExpr, filterClauses);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
+                }
+                break;
+
+            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+                // Handle NOT expressions (negation)
+                AnalyzeNotExpression(unaryExpr, filterClauses);
+                break;
+
+            case MethodCallExpression methodCall:
+                // Handle method calls like Contains, StartsWith, etc.
+                ExtractMethodCallClause(methodCall, filterClauses);
+                break;
+
+            default:
+                throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported in Tavily search filters.");
+        }
+    }
+
+    /// <summary>
+    /// Extracts an equality filter clause from a binary equality expression.
+    /// </summary>
+    /// <param name="binaryExpr">The binary equality expression.</param>
+    /// <param name="filterClauses">The list to add the extracted clause to.</param>
+    private static void ExtractEqualityClause(BinaryExpression binaryExpr, List<FilterClause> filterClauses)
+    {
+        string? propertyName = null;
+        object? value = null;
+
+        // Determine which side is the property and which is the value
+        if (binaryExpr.Left is MemberExpression leftMember)
+        {
+            propertyName = leftMember.Member.Name;
+            value = ExtractValue(binaryExpr.Right);
+        }
+        else if (binaryExpr.Right is MemberExpression rightMember)
+        {
+            propertyName = rightMember.Member.Name;
+            value = ExtractValue(binaryExpr.Left);
+        }
+
+        if (propertyName != null && value != null)
+        {
+            filterClauses.Add(new EqualToFilterClause(propertyName, value));
+        }
+        else
+        {
+            throw new NotSupportedException("Unable to extract property name and value from equality expression.");
+        }
+    }
+
+    /// <summary>
+    /// Extracts an inequality filter clause from a binary not-equal expression.
+    /// </summary>
+    /// <param name="binaryExpr">The binary not-equal expression.</param>
+    /// <param name="filterClauses">The list to add the extracted clause to.</param>
+    private static void ExtractInequalityClause(BinaryExpression binaryExpr, List<FilterClause> filterClauses)
+    {
+        // Note: Inequality is tracked but handled differently depending on the property
+        // For now, we log a warning that inequality filtering may not work as expected
+        string? propertyName = null;
+        object? value = null;
+
+        if (binaryExpr.Left is MemberExpression leftMember)
+        {
+            propertyName = leftMember.Member.Name;
+            value = ExtractValue(binaryExpr.Right);
+        }
+        else if (binaryExpr.Right is MemberExpression rightMember)
+        {
+            propertyName = rightMember.Member.Name;
+            value = ExtractValue(binaryExpr.Left);
+        }
+
+        if (propertyName != null && value != null)
+        {
+            // Add a marker for inequality - this will need special handling in conversion
+            // For now, we don't add it to filter clauses as Tavily API doesn't support direct negation
+            throw new NotSupportedException($"Inequality operator (!=) is not directly supported for property '{propertyName}'. Use NOT operator instead: !(page.{propertyName} == value).");
+        }
+
+        throw new NotSupportedException("Unable to extract property name and value from inequality expression.");
+    }
+
+    /// <summary>
+    /// Analyzes a NOT (negation) expression.
+    /// </summary>
+    /// <param name="unaryExpr">The unary NOT expression.</param>
+    /// <param name="filterClauses">The list to add extracted filter clauses to.</param>
+    private static void AnalyzeNotExpression(UnaryExpression unaryExpr, List<FilterClause> filterClauses)
+    {
+        // NOT expressions are complex for web search APIs
+        // We support simple cases like !(page.Topic == "general")
+        if (unaryExpr.Operand is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
+        {
+            // This is !(property == value), which we can handle for some properties
+            throw new NotSupportedException("NOT operator (!) with equality is not directly supported. Most web search APIs don't support negative filtering.");
+        }
+
+        throw new NotSupportedException("NOT operator (!) is only supported with simple equality expressions.");
+    }
+
+    /// <summary>
+    /// Extracts a filter clause from a method call expression (e.g., Contains, StartsWith).
+    /// </summary>
+    /// <param name="methodCall">The method call expression.</param>
+    /// <param name="filterClauses">The list to add the extracted clause to.</param>
+    private static void ExtractMethodCallClause(MethodCallExpression methodCall, List<FilterClause> filterClauses)
+    {
+        if (methodCall.Method.Name == "Contains")
+        {
+            // Check if this is property.Contains(value) or array.Contains(property)
+            if (methodCall.Object is MemberExpression member)
+            {
+                // This is property.Contains(value) - e.g., page.IncludeDomain.Contains("wikipedia.org")
+                var propertyName = member.Member.Name;
+                var value = ExtractValue(methodCall.Arguments[0]);
+
+                if (value != null)
+                {
+                    // For Contains, we'll map it to equality for domains (Tavily supports domain filtering)
+                    if (propertyName.EndsWith("Domain", StringComparison.OrdinalIgnoreCase))
+                    {
+                        filterClauses.Add(new EqualToFilterClause(propertyName, value));
+                    }
+                    else if (propertyName.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // For Title.Contains(), add the term to the search query itself
+                        filterClauses.Add(new SearchQueryFilterClause(value.ToString() ?? string.Empty));
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Contains method is only supported for domain properties (IncludeDomain, ExcludeDomain) and Title, not '{propertyName}'.");
+                    }
+                }
+            }
+            else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
+            {
+                // This is array.Contains(property) - e.g., new[] { "general", "news" }.Contains(page.Topic)
+                // This pattern is not supported regardless of whether it's Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
+                // Both resolve to extension method calls with methodCall.Object == null
+
+                // Provide detailed error message that covers both C# language versions
+                string errorMessage = "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Tavily Search API. " +
+                    "Tavily's API does not support OR logic across multiple values. ";
+
+                if (IsMemoryExtensionsContains(methodCall))
+                {
+                    errorMessage += "Note: This occurs when using C# 14+ language features with span-based Contains methods (MemoryExtensions.Contains). ";
+                }
+                else
+                {
+                    errorMessage += "Note: This occurs with standard LINQ extension methods (Enumerable.Contains). ";
+                }
+
+                errorMessage += "Consider either: (1) performing multiple separate searches for each value, or " +
+                    "(2) retrieving broader results and filtering on the client side.";
+
+                throw new NotSupportedException(errorMessage);
+            }
+            else
+            {
+                throw new NotSupportedException("Unsupported Contains expression format.");
+            }
+        }
+        else
+        {
+            throw new NotSupportedException($"Method '{methodCall.Method.Name}' is not supported in Tavily search filters. Only 'Contains' is supported.");
+        }
+    }
+
+    /// <summary>
+    /// Extracts a constant value from an expression.
+    /// </summary>
+    /// <param name="expression">The expression to extract the value from.</param>
+    /// <returns>The extracted value, or null if extraction failed.</returns>
+    private static object? ExtractValue(Expression expression)
+    {
+        return expression switch
+        {
+            ConstantExpression constant => constant.Value,
+            MemberExpression member when member.Expression is ConstantExpression constantExpr =>
+                member.Member switch
+                {
+                    System.Reflection.FieldInfo field => field.GetValue(constantExpr.Value),
+                    System.Reflection.PropertyInfo property => property.GetValue(constantExpr.Value),
+                    _ => null
+                },
+            _ => Expression.Lambda(expression).Compile().DynamicInvoke()
+        };
+    }
+
+    #endregion
+
+    #region Private Methods
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
@@ -172,6 +597,41 @@ public sealed class TavilyTextSearch : ITextSearch
             foreach (var image in searchResponse.Images!)
             {
                 yield return image;
+                await Task.Yield();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return the search results as instances of <see cref="TavilyWebPage"/>.
+    /// </summary>
+    /// <param name="searchResponse">Response containing the web pages matching the query.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<TavilyWebPage> GetResultsAsWebPageAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (searchResponse is null || searchResponse.Results is null)
+        {
+            yield break;
+        }
+
+        foreach (var result in searchResponse.Results)
+        {
+            yield return TavilyWebPage.FromSearchResult(result);
+            await Task.Yield();
+        }
+
+        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        {
+            foreach (var image in searchResponse.Images!)
+            {
+                //For images, create a basic TavilyWebPage representation
+                Uri? imageUri = string.IsNullOrWhiteSpace(image.Url) ? null : new Uri(image.Url);
+                yield return new TavilyWebPage(
+                    title: "Image Result",
+                    url: imageUri,
+                    content: image.Description ?? string.Empty,
+                    score: 0.0
+                );
                 await Task.Yield();
             }
         }
@@ -382,6 +842,41 @@ public sealed class TavilyTextSearch : ITextSearch
 
         string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonOptionsCache);
         return new(strPayload, Encoding.UTF8, "application/json");
+    }
+
+    /// <summary>
+    /// Determines if a method call expression is a MemoryExtensions.Contains call (C# 14+ compatibility).
+    /// In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains.
+    /// </summary>
+    /// <param name="methodCall">The method call expression to check.</param>
+    /// <returns>True if this is a MemoryExtensions.Contains call, false otherwise.</returns>
+    private static bool IsMemoryExtensionsContains(MethodCallExpression methodCall)
+    {
+        // Check if this is a static method call (Object is null)
+        if (methodCall.Object != null)
+        {
+            return false;
+        }
+
+        // Check if it's MemoryExtensions.Contains
+        if (methodCall.Method.DeclaringType?.Name != "MemoryExtensions")
+        {
+            return false;
+        }
+
+        // MemoryExtensions.Contains has 2-3 parameters: (ReadOnlySpan<T>, T) or (ReadOnlySpan<T>, T, IEqualityComparer<T>)
+        if (methodCall.Arguments.Count < 2 || methodCall.Arguments.Count > 3)
+        {
+            return false;
+        }        // For our text search scenarios, we don't support span comparers
+        if (methodCall.Arguments.Count == 3)
+        {
+            throw new NotSupportedException(
+                "MemoryExtensions.Contains with custom IEqualityComparer is not supported. " +
+                "Use simple array.Contains(property) expressions without custom comparers.");
+        }
+
+        return true;
     }
     #endregion
 }
