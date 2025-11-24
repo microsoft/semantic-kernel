@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Mapping
 from typing import Any
+from warnings import deprecated
 
 from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
@@ -18,6 +19,11 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated(
+    "The AzureTextCompletion class is deprecated and will be removed after 01/01/2026. "
+    "There won't be a replacement because all text completion models on Azure OpenAI "
+    "have retired. Please migrate to chat completion models before the deprecation date."
+)
 class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     """Azure Text Completion class."""
 
