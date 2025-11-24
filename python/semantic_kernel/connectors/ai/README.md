@@ -24,7 +24,6 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
 |            | [`OpenAITextToAudio`](./open_ai/services/open_ai_text_to_audio.py) |
 |            | [`OpenAIAudioToText`](./open_ai/services/open_ai_audio_to_text.py) |
 | Azure OpenAI | [`AzureChatCompletion`](./open_ai/services/azure_chat_completion.py) |
-|            | [`AzureTextCompletion`](./open_ai/services/azure_text_completion.py) |
 |            | [`AzureTextEmbedding`](./open_ai/services/azure_text_embedding.py) |
 |            | [`AzureTextToImage`](./open_ai/services/azure_text_to_image.py) |
 |            | [`AzureTextToAudio`](./open_ai/services/azure_text_to_audio.py) |

@@ -16,7 +16,6 @@ class Services(str, Enum):
     """
 
     OPENAI = "openai"
-    AZURE_OPENAI = "azure_openai"
     BEDROCK = "bedrock"
     GOOGLE_AI = "google_ai"
     HUGGING_FACE = "huggingface"
@@ -36,7 +35,6 @@ def get_text_completion_service_and_request_settings(
     # Use lambdas or functions to delay instantiation
     text_services = {
         Services.OPENAI: lambda: get_openai_text_completion_service_and_request_settings(),
-        Services.AZURE_OPENAI: lambda: get_azure_openai_text_completion_service_and_request_settings(),
         Services.BEDROCK: lambda: get_bedrock_text_completion_service_and_request_settings(),
         Services.GOOGLE_AI: lambda: get_google_ai_text_completion_service_and_request_settings(),
         Services.HUGGING_FACE: lambda: get_hugging_face_text_completion_service_and_request_settings(),
@@ -71,32 +69,6 @@ def get_openai_text_completion_service_and_request_settings() -> tuple[
 
     text_service = OpenAITextCompletion()
     request_settings = OpenAITextPromptExecutionSettings(max_tokens=20, temperature=0.7, top_p=0.8)
-
-    return text_service, request_settings
-
-
-def get_azure_openai_text_completion_service_and_request_settings() -> tuple[
-    "TextCompletionClientBase", "PromptExecutionSettings"
-]:
-    """Return Azure OpenAI text completion service and request settings.
-
-    The service credentials can be read by 3 ways:
-    1. Via the constructor
-    2. Via the environment variables
-    3. Via an environment file
-
-    The request settings control the behavior of the service. The default settings are sufficient to get started.
-    However, you can adjust the settings to suit your needs.
-    Note: Some of the settings are NOT meant to be set by the user.
-    Please refer to the Semantic Kernel Python documentation for more information:
-    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
-    """
-    from azure.identity import AzureCliCredential
-
-    from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, OpenAITextPromptExecutionSettings
-
-    text_service = AzureTextCompletion(credential=AzureCliCredential())
-    request_settings = OpenAITextPromptExecutionSettings()
 
     return text_service, request_settings
 
