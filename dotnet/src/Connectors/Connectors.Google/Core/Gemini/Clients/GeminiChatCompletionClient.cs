@@ -740,12 +740,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             }
         }
 
-        // Add regular text content if any
+        // Regular text goes into message.Content, not as a separate item
         var regularText = string.Concat(regularTextParts);
-        if (!string.IsNullOrEmpty(regularText))
-        {
-            items.Add(new TextContent(regularText));
-        }
 
         // Gemini sometimes returns function calls with text parts, so collect them
         var toolCalls = candidate.Content?.Parts?
@@ -780,9 +776,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
     {
+        GeminiStreamingChatMessageContent streamingMessage;
+
         if (message.CalledToolResult is not null)
         {
-            return new GeminiStreamingChatMessageContent(
+            streamingMessage = new GeminiStreamingChatMessageContent(
                 role: message.Role,
                 content: message.Content,
                 modelId: this._modelId,
@@ -790,10 +788,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 metadata: message.Metadata,
                 choiceIndex: message.Metadata?.Index ?? 0);
         }
-
-        if (message.ToolCalls is not null)
+        else if (message.ToolCalls is not null)
         {
-            return new GeminiStreamingChatMessageContent(
+            streamingMessage = new GeminiStreamingChatMessageContent(
                 role: message.Role,
                 content: message.Content,
                 modelId: this._modelId,
@@ -801,13 +798,34 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 metadata: message.Metadata,
                 choiceIndex: message.Metadata?.Index ?? 0);
         }
+        else
+        {
+            streamingMessage = new GeminiStreamingChatMessageContent(
+                role: message.Role,
+                content: message.Content,
+                modelId: this._modelId,
+                choiceIndex: message.Metadata?.Index ?? 0,
+                metadata: message.Metadata);
+        }
 
-        return new GeminiStreamingChatMessageContent(
-            role: message.Role,
-            content: message.Content,
-            modelId: this._modelId,
-            choiceIndex: message.Metadata?.Index ?? 0,
-            metadata: message.Metadata);
+        // Copy ReasoningContent items to streaming message, converting to StreamingReasoningContent
+        foreach (var item in message.Items)
+        {
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            if (item is ReasoningContent reasoningContent)
+            {
+                var streamingReasoning = new StreamingReasoningContent(reasoningContent.Text)
+                {
+                    InnerContent = reasoningContent.Text
+                };
+                streamingMessage.Items.Add(streamingReasoning);
+            }
+            // Note: Other item types like TextContent are not copied since the main content
+            // is already in streamingMessage.Content
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        }
+
+        return streamingMessage;
     }
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
