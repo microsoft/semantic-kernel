@@ -46,10 +46,6 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
 
-    [JsonPropertyName("thinkingConfig")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiThinkingConfig? ThinkingConfig { get; set; }
-
     [JsonPropertyName("labels")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Labels { get; set; }
@@ -96,7 +92,6 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
-        AddThinkingConfig(executionSettings, obj);
         AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
@@ -357,14 +352,6 @@ internal sealed class GeminiRequest
         };
     }
 
-    private static void AddThinkingConfig(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
-    {
-        if (executionSettings.ThinkingConfig != null)
-        {
-            request.ThinkingConfig = executionSettings.ThinkingConfig.Clone();
-        }
-    }
-
     internal static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
     {
         if (responseSchemaSettings is null)
@@ -511,7 +498,11 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts
+            };
         }
     }
 
@@ -563,5 +554,9 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
     }
 }
