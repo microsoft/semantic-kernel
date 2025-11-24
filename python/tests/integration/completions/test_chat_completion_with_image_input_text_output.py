@@ -46,6 +46,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
+            marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
             id="openai_image_input_uri",
         ),
         pytest.param(
@@ -185,10 +186,6 @@ pytestmark = pytest.mark.parametrize(
             {},
             marks=[
                 pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
-                pytest.mark.xfail(
-                    reason="Temporarily failing due to Google AI API issue on streaming only: "
-                    "400 Image input modality is not enabled for models/gemini-1.5-flash"
-                ),
             ],
             id="google_ai_image_input_file",
         ),
