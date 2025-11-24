@@ -46,6 +46,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
+            marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
             id="openai_image_input_uri",
         ),
         pytest.param(
