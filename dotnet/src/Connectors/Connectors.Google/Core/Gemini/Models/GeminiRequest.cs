@@ -46,6 +46,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
 
+    [JsonPropertyName("thinkingConfig")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiThinkingConfig? ThinkingConfig { get; set; }
+
     [JsonPropertyName("labels")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Labels { get; set; }
@@ -92,6 +96,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddThinkingConfig(executionSettings, obj);
         AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
@@ -350,6 +355,14 @@ internal sealed class GeminiRequest
             ResponseMimeType = executionSettings.ResponseMimeType,
             ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema),
         };
+    }
+
+    private static void AddThinkingConfig(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
+    {
+        if (executionSettings.ThinkingConfig != null)
+        {
+            request.ThinkingConfig = executionSettings.ThinkingConfig.Clone();
+        }
     }
 
     internal static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)

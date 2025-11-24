@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
@@ -715,20 +716,56 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        // Join text parts
-        string text = string.Concat(candidate.Content?.Parts?.Select(part => part.Text) ?? []);
+        var items = new List<KernelContent>();
+
+        // Process parts to separate regular text from thinking content
+        var regularTextParts = new List<string>();
+
+        if (candidate.Content?.Parts != null)
+        {
+            foreach (var part in candidate.Content.Parts)
+            {
+                if (part.Thought == true && !string.IsNullOrEmpty(part.Text))
+                {
+                    // This is thinking content
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    items.Add(new ReasoningContent(part.Text));
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                }
+                else if (!string.IsNullOrEmpty(part.Text))
+                {
+                    // This is regular text content
+                    regularTextParts.Add(part.Text);
+                }
+            }
+        }
+
+        // Add regular text content if any
+        var regularText = string.Concat(regularTextParts);
+        if (!string.IsNullOrEmpty(regularText))
+        {
+            items.Add(new TextContent(regularText));
+        }
 
         // Gemini sometimes returns function calls with text parts, so collect them
         var toolCalls = candidate.Content?.Parts?
             .Select(part => part.FunctionCall!)
             .Where(toolCall => toolCall is not null).ToArray();
 
-        return new GeminiChatMessageContent(
+        var chatMessage = new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: text,
+            content: regularText,
             modelId: this._modelId,
             functionsToolCalls: toolCalls,
             metadata: GetResponseMetadata(geminiResponse, candidate));
+
+        // Add items to the message
+        foreach (var item in items)
+        {
+            chatMessage.Items.Add(item);
+        }
+
+        return chatMessage;
     }
 
     private static GeminiRequest CreateRequest(

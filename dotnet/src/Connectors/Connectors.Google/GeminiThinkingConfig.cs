@@ -23,6 +23,13 @@ public class GeminiThinkingConfig
     public int? ThinkingBudget { get; set; }
 
     /// <summary>
+    /// Whether to include the thinking content in the response.
+    /// </summary>
+    [JsonPropertyName("include_thoughts")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IncludeThoughts { get; set; }
+
+    /// <summary>
     /// Clones this instance.
     /// </summary>
     /// <returns></returns>

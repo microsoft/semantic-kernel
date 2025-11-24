@@ -221,4 +221,67 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Throws<NotSupportedException>(() => executionSettings.SafetySettings!.Add(new GeminiSafetySetting(GeminiSafetyCategory.Toxicity, GeminiSafetyThreshold.Unspecified)));
         Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1 });
     }
+
+    [Fact]
+    public void ItCreatesThinkingConfigWithIncludeThoughts()
+    {
+        // Arrange & Act
+        var thinkingConfig = new GeminiThinkingConfig
+        {
+            ThinkingBudget = 2000,
+            IncludeThoughts = true
+        };
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ThinkingConfig = thinkingConfig
+        };
+
+        // Assert
+        Assert.NotNull(executionSettings.ThinkingConfig);
+        Assert.Equal(2000, executionSettings.ThinkingConfig.ThinkingBudget);
+        Assert.True(executionSettings.ThinkingConfig.IncludeThoughts);
+    }
+
+    [Fact]
+    public void ItSerializesThinkingConfigWithIncludeThoughts()
+    {
+        // Arrange
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ThinkingConfig = new GeminiThinkingConfig
+            {
+                ThinkingBudget = 1500,
+                IncludeThoughts = true
+            }
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(executionSettings);
+
+        // Assert
+        Assert.Contains("thinking_budget", json);
+        Assert.Contains("1500", json);
+        Assert.Contains("include_thoughts", json);
+        Assert.Contains("true", json);
+    }
+
+    [Fact]
+    public void ItClonesThinkingConfigWithIncludeThoughts()
+    {
+        // Arrange
+        var original = new GeminiThinkingConfig
+        {
+            ThinkingBudget = 3000,
+            IncludeThoughts = true
+        };
+
+        // Act
+        var cloned = original.Clone();
+
+        // Assert
+        Assert.NotSame(original, cloned);
+        Assert.Equal(original.ThinkingBudget, cloned.ThinkingBudget);
+        Assert.Equal(original.IncludeThoughts, cloned.IncludeThoughts);
+    }
 }
