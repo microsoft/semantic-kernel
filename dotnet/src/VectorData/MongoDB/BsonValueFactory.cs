@@ -16,27 +16,12 @@ internal static class BsonValueFactory
     /// <param name="value">The CLR object to create a BSON value for.</param>
     /// <returns>The appropriate <see cref="BsonValue"/> for that CLR type.</returns>
     public static BsonValue Create(object? value)
-    {
-        if (value is null)
+        => value switch
         {
-            return BsonNull.Value;
-        }
-
-        if (value.GetType().IsArray)
-        {
-            if (value is Guid[] guids)
-            {
-                return new BsonArray(Array.ConvertAll(guids, x => new BsonBinaryData(x, GuidRepresentation.Standard)));
-            }
-
-            return new BsonArray(value as Array);
-        }
-
-        if (value is Guid guid)
-        {
-            return new BsonBinaryData(guid, GuidRepresentation.Standard);
-        }
-
-        return BsonValue.Create(value);
-    }
+            null => BsonNull.Value,
+            Guid guid => new BsonBinaryData(guid, GuidRepresentation.Standard),
+            Guid[] guids => new BsonArray(Array.ConvertAll(guids, x => new BsonBinaryData(x, GuidRepresentation.Standard))),
+            Array array => new BsonArray(array),
+            _ => BsonValue.Create(value)
+        };
 }

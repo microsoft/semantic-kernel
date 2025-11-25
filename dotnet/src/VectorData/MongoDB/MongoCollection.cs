@@ -694,7 +694,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
     {
         // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
-        var bsonValues = this._keySerializationInfo.SerializeValues(ids) ?? (BsonArray)BsonValueFactory.Create(ids);
+        var bsonValues = this._keySerializationInfo?.SerializeValues(ids) ?? (BsonArray)BsonValueFactory.Create(ids);
         return Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, bsonValues);
     }
 
