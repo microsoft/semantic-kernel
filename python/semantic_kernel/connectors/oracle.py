@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Oracle Corporation. All rights reserved.
+# Copyright (c) 2025, Oracle Corporation. All rights reserved. # noqa: CPY001
 
 # Standard Library
 import array
@@ -8,24 +8,15 @@ import logging
 import re
 import sys
 import uuid
-from typing import (
-    Any,
-    AsyncIterable,
-    ClassVar,
-    Final,
-    Generic,
-    Mapping,
-    Sequence,
-    TypeVar
-)
+from collections.abc import AsyncIterable, Mapping, Sequence
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 # Third-party Libraries
 import numpy as np
 import oracledb
-from pydantic import Field, SecretStr, PrivateAttr
-from pydantic_settings import SettingsConfigDict
+from pydantic import Field, PrivateAttr, SecretStr
 
-# Semantic Kernel – AI + Data Abstractions
+# Semantic Kernel AI and Data Abstractions
 from semantic_kernel.connectors.ai.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
@@ -44,14 +35,14 @@ from semantic_kernel.data.vector import (
     VectorStoreField,
 )
 
-# Semantic Kernel – Exceptions
+# Semantic Kernel Exceptions
 from semantic_kernel.exceptions import (
+    MemoryConnectorConnectionException,
     VectorSearchExecutionException,
-    VectorStoreOperationException
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions import MemoryConnectorConnectionException
 
-# Semantic Kernel – Utilities & Config
+# Semantic Kernel Utilities & Config
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
@@ -81,14 +72,9 @@ __all__ = [
 ]
 
 # Environment Variable keys for Oracle DB configuration
-USER_ENV_VAR: Final[str] = "ORACLE_USER"
-PASSWORD_ENV_VAR: Final[str] = "ORACLE_PASSWORD"
-CONNECT_STRING_ENV_VAR: Final[str] = "ORACLE_CONNECT_STRING"
 POOL_MIN_ENV_VAR: Final[str] = "ORACLE_POOL_MIN"
 POOL_MAX_ENV_VAR: Final[str] = "ORACLE_POOL_MAX"
 POOL_INCREMENT_ENV_VAR: Final[str] = "ORACLE_POOL_INCREMENT"
-WALLET_LOCATION_ENV_VAR: Final[str] = "ORACLE_WALLET_LOCATION"
-WALLET_PASSWORD_ENV_VAR: Final[str] = "ORACLE_WALLET_PASSWORD"
 
 # Maps Semantic Kernel enums to Oracle SQL keywords
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
@@ -130,9 +116,8 @@ VECTOR_TYPE_MAPPING: dict[str, str] = {
 
 
 def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
-    """
-    Map a Semantic Kernel record *scalar field* type (key or data)
-    to an Oracle SQL column type.
+    """Map a Semantic Kernel record *scalar field* type (key or data).
+
     This is used when generating table DDL for all non-vector fields,
     including primary keys and data fields.
 
@@ -144,7 +129,6 @@ def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
         The corresponding Oracle SQL column type as a string,
         or None if there is no known mapping.
     """
-
     type_mapping = {
         "bool": "BOOLEAN",
         "byte": "NUMBER(3)",
@@ -183,11 +167,7 @@ def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
 
 
 def _sk_vector_element_to_oracle(field_type_str: str) -> str | None:
-    """
-    Convert a Semantic Kernel vector element type string to an Oracle
-    VECTOR element type string.
-    """
-
+    """Convert a Semantic Kernel vector element type string to an Oracle VECTOR element type string."""
     list_pattern = re.compile(r"(?i)^list\[(.*)\]$")
     field_type = field_type_str.strip()
 
@@ -203,9 +183,7 @@ def _sk_vector_element_to_oracle(field_type_str: str) -> str | None:
 
 
 class BindCounter:
-    """
-    Helper class to generate unique bind variable names for SQL queries.
-    """
+    """Helper class to generate unique bind variable names for SQL queries."""
     def __init__(self, start: int = 1):
         self._index = start
 
@@ -253,22 +231,20 @@ class OracleSettings(KernelBaseSettings):
             (Env var ORACLE_WALLET_PASSWORD)
         connection_pool: Optional preconfigured AsyncConnectionPool instance.
     """
-
     env_prefix: ClassVar[str] = "ORACLE_"
-    user: str | None = Field(default=None, validation_alias=USER_ENV_VAR)
-    password: SecretStr | None = Field(default=None, validation_alias=PASSWORD_ENV_VAR)
-    connection_string: str | None = Field(default=None, validation_alias=CONNECT_STRING_ENV_VAR)
+    user: str | None = None
+    password: SecretStr | None = None
+    connection_string: str | None = None
     min: int | None = Field(default=None, validation_alias=POOL_MIN_ENV_VAR)
     max: int | None = Field(default=None, validation_alias=POOL_MAX_ENV_VAR)
     increment: int | None = Field(default=None, validation_alias=POOL_INCREMENT_ENV_VAR)
-    wallet_location: str | None = Field(default=None, validation_alias=WALLET_LOCATION_ENV_VAR)
-    wallet_password: SecretStr | None = Field(default=None, validation_alias=WALLET_PASSWORD_ENV_VAR)
+    wallet_location: str | None = None
+    wallet_password: SecretStr | None = None
 
     _connection_pool: oracledb.AsyncConnectionPool | None = PrivateAttr(default=None)
 
     async def create_connection_pool(self, **kwargs: Any) -> oracledb.AsyncConnectionPool:
         """Creates an async Oracle connection pool."""
-
         try:
             # Create pool with extra user-supplied kwargs
             self._connection_pool = oracledb.create_pool_async(
@@ -300,7 +276,6 @@ class OracleCollection(
     Generic[TKey, TModel],
 ):
     """Oracle implementation of VectorStoreCollection + VectorSearch."""
-
     connection_pool: oracledb.AsyncConnectionPool | None = None
     db_schema: str | None = None
     pool_args: dict[str, Any] | None = None
@@ -308,7 +283,6 @@ class OracleCollection(
     supported_vector_types: ClassVar[set[str] | None] = set(VECTOR_TYPE_MAPPING.keys())
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
     _distance_column_name: str = "SIMILARITY_SKOVS"
-    _settings: OracleSettings = PrivateAttr()
 
     def __init__(
         self,
@@ -337,8 +311,40 @@ class OracleCollection(
             env_file_encoding: The encoding of the environment settings file.
             settings: The settings for creating a new connection pool. If not provided, the settings will be created
                 from the environment.
+            pool_args: Optional dict of additional arguments to configure the connection pool
+                (e.g., timeout, ping_interval).
             **kwargs: Additional arguments.
         """
+        # Build settings from env if we need to manage our own pool
+        settings = settings or OracleSettings(
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+        managed_client = False
+
+        # Create pool if missing
+        if connection_pool is None:
+            try:
+                pool_args = pool_args or {}
+                connection_pool = oracledb.create_pool_async(
+                    user=settings.user,
+                    password=settings.password.get_secret_value() if settings.password else None,
+                    dsn=settings.connection_string,
+                    wallet_location=settings.wallet_location,
+                    wallet_password=settings.wallet_password.get_secret_value() if settings.wallet_password else None,
+                    min=settings.min,
+                    max=settings.max,
+                    increment=settings.increment,
+                    **pool_args,
+                )
+            except Exception as err:
+                raise MemoryConnectorConnectionException(
+                    "Error creating Oracle connection pool."
+                ) from err
+
+            managed_client = True
+        else:
+            managed_client = False
 
         super().__init__(
             collection_name=collection_name,  # type: ignore
@@ -347,18 +353,16 @@ class OracleCollection(
             embedding_generator=embedding_generator,
             connection_pool=connection_pool,  # type: ignore
             db_schema=db_schema,  # type: ignore
+            settings=settings,  # type: ignore
             # This controls whether the connection pool is managed by the collection
             # in the __aenter__ and __aexit__ methods.
-            managed_client=False
+            managed_client=managed_client,
         )
-
-        # Build settings from env if we need to manage our own pool
-        self._settings = settings or OracleSettings(env_file_path=env_file_path, env_file_encoding=env_file_encoding)
 
         # Compute UUID field names once
         self._uuid_fields = [
             field.storage_name or field.name
-            for field in self.definition.data_fields + [self.definition.key_field]
+            for field in (*self.definition.data_fields, self.definition.key_field)
             if field.type_ == "UUID"
         ]
 
@@ -384,12 +388,6 @@ class OracleCollection(
 
     @override
     async def __aenter__(self) -> "OracleCollection":
-        # If the connection pool was not provided, create a new one.
-        if not self.connection_pool:
-            pool_kwargs = self.pool_args or {}
-            self.connection_pool = await self._settings.create_connection_pool(**pool_kwargs)
-            self.managed_client = True
-
         return self
 
     @override
@@ -413,12 +411,10 @@ class OracleCollection(
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         """Deserialize the store models to a list of dicts. Pass the records through without modification."""
-
         return records
 
     def _full_table_name(self) -> str:
         """Return the fully qualified table name with optional schema prefix, quoted."""
-
         self._validate_identifiers(self.collection_name)
         if self.db_schema:
             self._validate_identifiers(self.db_schema)
@@ -426,20 +422,20 @@ class OracleCollection(
         return f'"{self.collection_name}"'
 
     async def _get_connection(self):
-        """
-        Acquire a connection from the pool, ensuring input/output type handlers are always set.
+        """Acquire a connection from the pool, ensuring input/output type handlers are always set.
+
         Raises VectorStoreOperationException if no connection pool is configured.
         """
         pool = self._check_pool()
         conn = await pool.acquire()
-        # if you only want to set these in certain circumstances you can add a parameter to the function for that purpose -- but it should be safe to set at all times
+        # if you only want to set these in certain circumstances you can add a parameter to
+        # the function for that purpose but it should be safe to set at all times
         conn.inputtypehandler = self._input_type_handler
         conn.outputtypehandler = self._output_type_handler
         return conn
 
     def _input_type_handler(self, cursor, value, arraysize):
         """Map Python types to Oracle bind variables with correct DB types."""
-
         if isinstance(value, np.ndarray):
             return cursor.var(
                 oracledb.DB_TYPE_VECTOR,
@@ -466,9 +462,10 @@ class OracleCollection(
                 arraysize=arraysize
             )
 
+        return None
+
     def _numpy_converter_in(self, value):
         """Convert a NumPy array into a Python array.array compatible with Oracle DB_TYPE_VECTOR."""
-
         dtype_name = value.dtype.name
         np_dtype, code = KIND_MAP[dtype_name]
         value = value.astype(np_dtype, copy=False)
@@ -476,7 +473,6 @@ class OracleCollection(
 
     def _output_type_handler(self, cursor, metadata):
         """Map Oracle DB column types to Python-native objects during fetch operations."""
-
         # VECTOR columns to list
         if metadata.type_code == oracledb.DB_TYPE_VECTOR:
             return cursor.var(
@@ -493,10 +489,11 @@ class OracleCollection(
                 outconverter=lambda b: uuid.UUID(bytes=b) if b is not None else None
             )
 
+        return None
+
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         """Serialize a list of dicts of the data to the store model. Pass the records through without modification."""
-
         return records
 
     def _validate_identifiers(self, name: str) -> None:
@@ -511,8 +508,7 @@ class OracleCollection(
             raise VectorStoreOperationException(f"Invalid identifier with quotes: {name}")
 
     def _build_check_table_exists_query(self) -> tuple[str, dict[str, str]]:
-        """
-        Build SQL + bind variables for checking table existence.
+        """Build SQL + bind variables for checking table existence.
 
         - If schema is provided, query ALL_TABLES.
         - If no schema, query USER_TABLES.
@@ -540,10 +536,7 @@ class OracleCollection(
 
     @override
     async def collection_exists(self, **kwargs: Any) -> bool:
-        """
-        Return True if the table backing this collection exists.
-        """
-
+        """Return True if the table backing this collection exists."""
         pool = self._check_pool()
 
         sql, binds = self._build_check_table_exists_query()
@@ -553,7 +546,7 @@ class OracleCollection(
 
     @override
     async def ensure_collection_deleted(self, **kwargs: Any) -> None:
-        """Deletes collection if it exists"""
+        """Deletes collection if it exists."""
         pool = self._check_pool()
         tbl = self._full_table_name()
         drop_sql = f"DROP TABLE IF EXISTS {tbl} CASCADE CONSTRAINTS PURGE"
@@ -569,15 +562,13 @@ class OracleCollection(
         key_field: VectorStoreField,
         data_fields: list[VectorStoreField],
         vector_fields: list[VectorStoreField],
-    ) -> tuple[str, list[str]]:
+    ) -> str:
         col_lines: list[str] = []
-        safe_names: list[str] = []
 
         if not key_field.type_:
             raise VectorStoreOperationException(f"Type missing for key field '{key_field.name}'")
 
         pk_name = key_field.storage_name or key_field.name
-        safe_names.append(pk_name)
         col_lines.append(
             f'"{pk_name}" {_map_scalar_field_type_to_oracle(key_field.type_)} PRIMARY KEY'
         )
@@ -593,7 +584,6 @@ class OracleCollection(
                 )
 
             col_name = f.storage_name or f.name
-            safe_names.append(col_name)
             col_lines.append(f'"{col_name}" {sql_type}')
 
         for f in vector_fields:
@@ -603,22 +593,15 @@ class OracleCollection(
                 )
 
             col_name = f.storage_name or f.name
-            safe_names.append(col_name)
             col_lines.append(
                 f'"{col_name}" VECTOR({f.dimensions} , {_sk_vector_element_to_oracle(f.type_)})'
             )
 
         columns_sql = ",\n  ".join(col_lines)
-        ddl_sql = f'CREATE TABLE IF NOT EXISTS {table} (\n  {columns_sql}\n)'
-
-        return ddl_sql, safe_names
+        return f'CREATE TABLE IF NOT EXISTS {table} (\n  {columns_sql}\n)'
 
     def _create_vector_index(self, table_name: str, vector_field: VectorStoreField) -> str | None:
-        """
-        Build a CREATE VECTOR INDEX statement for an Oracle
-        vector column using HNSW or IVF indexing.
-        """
-
+        """Build a CREATE VECTOR INDEX statement for an Oracle vector column using HNSW or IVF indexing."""
         if vector_field.index_kind not in INDEX_KIND_MAP:
             logger.warning(
                 f"Index kind '{vector_field.index_kind}' is not supported. "
@@ -655,8 +638,8 @@ class OracleCollection(
         )
 
     def _create_data_index(self, table_name: str, field) -> str | None:
-        """
-        Build a CREATE INDEX statement for a single data field if it is indexable.
+        """Build a CREATE INDEX statement for a single data field if it is indexable.
+
         Returns the SQL string or None if no index should be created.
         """
         if not getattr(field, "is_indexed", False):
@@ -669,14 +652,14 @@ class OracleCollection(
             base_table = last_token.strip('"')
             index_name = f'"{base_table}_{col}_idx"'
             return f'CREATE INDEX {index_name} ON {table_name} ("{col}" ASC)'
+        return None
 
     @override
     async def ensure_collection_exists(self, **kwargs: Any) -> None:
         """Create the table (and vector indexes) if not existing."""
-
         pool = self._check_pool()
         tbl = self._full_table_name()
-        create_sql, col_names = self._build_create_table_query(
+        create_sql = self._build_create_table_query(
             table=tbl,
             key_field=self.definition.key_field,
             data_fields=self.definition.data_fields,
@@ -700,10 +683,7 @@ class OracleCollection(
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
-        """
-        Delete the records whose primary keys are in ``keys``
-        """
-
+        """Delete the records whose primary keys are in ``keys``."""
         pool = self._check_pool()
         if not keys:
             return
@@ -728,10 +708,7 @@ class OracleCollection(
         include_vectors: bool = False,
     ) -> tuple[str, list[Any]]:
         # SELECT clause
-        if include_vectors:
-            all_fields = [key_field, *data_fields, *vector_fields]
-        else:
-            all_fields = [key_field, *data_fields]
+        all_fields = [key_field, *data_fields, *vector_fields] if include_vectors else [key_field, *data_fields]
         field_lookup = {f.name: f for f in all_fields}
         select_clause = ", ".join(
             f'"{f.storage_name or f.name}" AS "{f.name}"'
@@ -773,8 +750,7 @@ class OracleCollection(
         options: GetFilteredRecordOptions | None = None,
         **kwargs: Any,
     ) -> OneOrMany[dict[str, Any]] | None:
-        """
-        Retrieve one or more records from the Oracle table.
+        """Retrieve one or more records from the Oracle table.
 
         Returns:
         OneOrMany[dict[str, Any]] | None
@@ -782,7 +758,6 @@ class OracleCollection(
             - A list of dicts when multiple rows match
             - ``None`` when no rows match
         """
-
         pool = self._check_pool()
         if not keys and options is None:
             return None
@@ -811,7 +786,7 @@ class OracleCollection(
         if not rows:
             return None
 
-        # build list‑of‑dict records
+        # build list of dict records
         records: list[dict[str, Any]] = []
         for row in rows:
             record = {col: val for col, val in zip(columns, row)}
@@ -824,11 +799,7 @@ class OracleCollection(
         record: Mapping[str, Any],
         fields: Sequence[VectorStoreField],
     ) -> tuple[Any, ...]:
-        """
-        Convert an in-memory record (dict) into a positional tuple ready for
-        executemany() with Oracle.
-        """
-
+        """Convert an in-memory record (dict) into a positional tuple ready for executemany() with Oracle."""
         row: list[Any] = []
 
         for field in fields:
@@ -839,7 +810,7 @@ class OracleCollection(
                 continue
 
             if field.field_type == "vector" and isinstance(value, (list)):
-                np_dtype, code = KIND_MAP[field.type_]  # type: ignore[index]
+                _, code = KIND_MAP[field.type_]  # type: ignore[index]
                 value = array.array(code, value)
                 row.append(value)
                 continue
@@ -854,11 +825,10 @@ class OracleCollection(
         data_fields: list[VectorStoreField],
         vector_fields: list[VectorStoreField],
     ) -> str:
-        """
-        Build a parameterised MERGE statement for Oracle.
+        """Build a parameterised MERGE statement for Oracle.
+
         One executemany() call executes this MERGE once per record.
         """
-
         all_fields = [key_field, *data_fields, *vector_fields]
         src_bindings = ",\n     ".join(
             f':{idx + 1} AS "{field.storage_name or field.name}"'
@@ -906,7 +876,7 @@ class OracleCollection(
         data_fields = self.definition.data_fields
         vector_fields = self.definition.vector_fields
         table_name = self._full_table_name()
-        ordered_fields = [key_field] + data_fields + vector_fields
+        ordered_fields = [key_field, *data_fields, *vector_fields]
         query = self._build_single_merge_query(table_name, key_field, data_fields, vector_fields)
 
         async with pool.acquire() as conn:
@@ -941,8 +911,11 @@ class OracleCollection(
 
         # Build TO_VECTOR() expression from field metadata
         dim = vector_field.dimensions or len(vector)
+        # Normalize user-provided dtype and map to Oracle-supported VECTOR types.
         raw_dtype = (vector_field.type_ or "float32").lower()
+
         dtype = VECTOR_TYPE_MAPPING.get(raw_dtype, "FLOAT32")
+
         to_vector_expr = f"TO_VECTOR({vector_placeholder}, {dim}, {dtype})"
 
         # Fields to SELECT
@@ -987,8 +960,8 @@ class OracleCollection(
         return sql, bind_values, select_fields
 
     async def _fetch_records(self, sql: str, binds: list[Any]) -> AsyncIterable[dict[str, Any]]:
-        """
-        Execute the SQL with binds and yield rows as dictionaries mapping column name to value.
+        """Execute the SQL with binds and yield rows as dictionaries mapping column name to value.
+
         Uses zip() for clean row-to-dict mapping.
         """
         async with await self._get_connection() as conn:
@@ -1018,16 +991,15 @@ class OracleCollection(
         vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """
-        Execute a vector search and return an async iterable of `VectorSearchResult`
-        objects and, optionally, the total result count.
+        """Execute a vector search and return an async iterable of `VectorSearchResult` objects.
+
+        Optionally, also return the total result count.
 
         - If `options.include_total_count` is **True**, all rows are fetched once,
         counted, normalised, and returned as an in-memory async iterator.
         - Otherwise, rows stream directly via the helper `_fetch_records`, keeping
         memory usage low.
         """
-
         # Build the SQL text and bind dictionary for this search
         query, bind, columns = await self._inner_search_vector(options, values, vector, **kwargs)
 
@@ -1075,7 +1047,7 @@ class OracleCollection(
             raise VectorStoreOperationException("vector_property_name cannot be None")
 
         vector_field = next(
-            (field for field in self.definition.vector_fields if field.name == options.vector_property_name)
+            field for field in self.definition.vector_fields if field.name == options.vector_property_name
         )
 
         dtype = vector_field.type_ if vector_field.type_ else "float32"
@@ -1114,12 +1086,10 @@ class OracleCollection(
         node: ast.AST,
         bind_counter: BindCounter | None = None
     ) -> Any:
-        """
-        Parse a lambda AST node and return a tuple:
-            (sql_expression, bind_values_dict)
+        """Parse a lambda AST node and return a tuple: (sql_expression, bind_values_dict).
+
         Uses bind variables for all scalar values, including dates.
         """
-
         if bind_counter is None:
             bind_counter = BindCounter()
 
@@ -1200,7 +1170,7 @@ class OracleCollection(
                     return (f"NOT ({operand_sql})", bind_dict)
                 raise NotImplementedError(f"Unsupported UnaryOp: {type(node.op)}")
 
-            # Attribute / Name (field)
+            # Handling attribute or name nodes (fields)
             case ast.Attribute():
                 if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(f"Field '{node.attr}' not in data model.")
@@ -1210,7 +1180,7 @@ class OracleCollection(
                     raise VectorStoreOperationException(f"Field '{node.id}' not in data model.")
                 return (f'"{node.id}"', {})
 
-            # Constants (scalars)
+            # Constants (scalar values) used in this module
             case ast.Constant():
                 val = node.value
                 if val is None:
@@ -1229,7 +1199,7 @@ class OracleCollection(
 
             # Function calls
             case ast.Call():
-                # Methods: contains / startswith / endswith / between
+                # Supported methods in this block: contains, startswith, endswith, between
                 if isinstance(node.func, ast.Attribute):
                     obj_sql, obj_bind = self._lambda_parser(node.func.value, bind_counter)
                     bind_dict.update(obj_bind)
@@ -1248,7 +1218,7 @@ class OracleCollection(
                     if method == "between" and len(sql_args) == 2:
                         return (f"{obj_sql} BETWEEN {sql_args[0]} AND {sql_args[1]}", bind_dict)
 
-                # datetime(year, month, day, ...)
+                # Handle datetime function with arguments (year, month, day)
                 if isinstance(node.func, ast.Name) and node.func.id == "datetime":
                     if not (3 <= len(node.args) <= 6):
                         raise NotImplementedError(
@@ -1272,7 +1242,7 @@ class OracleCollection(
                     bind_dict[bind_name] = dt
                     return (f":{bind_name}", bind_dict)
 
-                # date(year, month, day)
+                # Handle date function with arguments (year, month, day)
                 if isinstance(node.func, ast.Name) and node.func.id == "date":
                     if len(node.args) != 3:
                         raise NotImplementedError("date() only supports year, month, day as int constants")
@@ -1299,7 +1269,6 @@ class OracleCollection(
 @release_candidate
 class OracleStore(VectorStore):
     """VectorStore wrapper holding a shared Oracle connection-pool."""
-
     connection_pool: oracledb.AsyncConnectionPool | None = None
     db_schema: str | None = None
     env_file_path: str | None = None
@@ -1343,11 +1312,11 @@ class OracleStore(VectorStore):
             definition: VectorStoreCollectionDefinition describing schema/PK.
             embedding_generator: Overrides store's default generator.
             pool_args: Dict of connection-pool overrides (user, min, max, …).
+            **kwargs: Additional keyword arguments passed to OracleCollection.
 
         Returns:
             OracleCollection ready for use (optionally as an async context manager).
         """
-
         return OracleCollection(
             record_type=record_type,
             collection_name=collection_name,
@@ -1357,7 +1326,8 @@ class OracleStore(VectorStore):
             env_file_path=self.env_file_path,
             env_file_encoding=self.env_file_encoding,
             embedding_generator=embedding_generator or self.embedding_generator,
-            **kwargs,
+            pool_args=pool_args,
+            **kwargs
         )
 
     @override

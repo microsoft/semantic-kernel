@@ -123,6 +123,9 @@ ollama = [
 onnx = [
     "onnxruntime-genai ~= 0.7"
 ]
+oracledb = [
+    "oracledb >= 3.4.1"
+]
 pandas = [
     "pandas ~= 2.2"
 ]

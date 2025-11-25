@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Oracle Corporation. All rights reserved.
+# Copyright (c) 2025, Oracle Corporation. All rights reserved. # noqa: CPY001
 
 from array import array
 from dataclasses import dataclass
@@ -163,6 +163,7 @@ async def test_create_table_with_get_collection(
         for name, args, _ in mock_conn.mock_calls
         if name == "execute"
     ]
+
     assert any("create table" in sql for sql in sql_statements)
     assert any("my_collection" in sql for sql in sql_statements)
     assert any("vector(3 , float64)" in sql for sql in sql_statements)
