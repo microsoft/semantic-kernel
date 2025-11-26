@@ -4,6 +4,7 @@ from array import array
 from dataclasses import dataclass
 from typing import Annotated
 from unittest.mock import AsyncMock, MagicMock
+from types import SimpleNamespace
 
 import oracledb
 import pandas as pd
@@ -374,63 +375,81 @@ async def test_delete_record(oracle_store, mock_connection_pool):
 
 @pytest.mark.asyncio
 async def test_search(oracle_store, mock_connection_pool):
-    mock_cursor = MagicMock()
-    mock_cursor.execute = AsyncMock()
-    mock_cursor.fetchall = AsyncMock(return_value=[(1, [0.1, 0.2, 0.3])])
-    mock_cursor.description = [("id",), ("vector",)]
+    class MockCursor:
+        def __init__(self):
+            self.execute_called_with = []
+            self._rows = [(1, [0.1, 0.2, 0.3])]
+            self.description = [SimpleNamespace(name="id"),
+                                 SimpleNamespace(name="vector")]
+            self._i = 0
 
-    mock_cursor_cm = MagicMock()
-    mock_cursor_cm.__enter__.return_value = mock_cursor
-    mock_cursor_cm.__exit__.return_value = None
+        async def execute(self, sql, binds=None):
+            self.execute_called_with.append((sql, binds))
 
-    mock_conn = AsyncMock()
-    mock_conn.execute = AsyncMock()
-    mock_conn.commit = AsyncMock()
-    mock_conn.inputtypehandler = None
-    mock_conn.cursor = MagicMock(return_value=mock_cursor_cm)
+        def __enter__(self): return self
+        def __exit__(self, exc_type, exc_val, exc_tb): return None
+        async def __aenter__(self): return self
+        async def __aexit__(self, exc_type, exc_val, exc_tb): return None
+
+        def __aiter__(self):
+            self._i = 0
+            return self
+
+        async def __anext__(self):
+            if self._i >= len(self._rows):
+                raise StopAsyncIteration
+            r = self._rows[self._i]; self._i += 1; return r
+
+    mock_cursor = MockCursor()
+
+    class MockConnection:
+        def __init__(self, cur):
+            self._cur = cur
+            self.inputtypehandler = None
+            self.outputtypehandler = None
+            self.execute = AsyncMock()
+            self.commit = AsyncMock()
+        def cursor(self): return self._cur
+
+    mock_conn = MockConnection(mock_cursor)
 
     class MockAcquire:
-        def __init__(self, conn):
-            self._conn = conn
-
+        def __init__(self, conn): self._conn = conn
         def __await__(self):
-            async def _():
-                return self
+            async def _(): return self
             return _().__await__()
+        async def __aenter__(self): return self._conn
+        async def __aexit__(self, exc_type, exc_val, exc_tb): return None
 
-        async def __aenter__(self):
-            return self._conn
-
-        async def __aexit__(self, exc_type, exc_val, exc_tb):
-            return None
-
-    mock_connection_pool.acquire = MagicMock(
-        return_value=MockAcquire(mock_conn)
-    )
+    mock_connection_pool.acquire = lambda **kwargs: MockAcquire(mock_conn)
 
     collection = oracle_store.get_collection(
-        SimpleModel,
-        collection_name="MY_COLLECTION",
+        model=SimpleModel,
+        record_type=SimpleModel,
+        collection_name="MY_COLLECTION"
     )
 
     await collection.ensure_collection_exists()
+    assert mock_conn.execute.await_count >= 1
 
-    results = await collection.search(
+    ks_results = await collection.search(
         vector_property_name="vector",
         vector=[0.1, 0.2, 0.3],
         top=1,
-        filter=lambda x: x.id == [1, 7, 9],
-        include_total_count=True,
+        filter=lambda x: x.id in [1, 7, 9],
         include_vectors=True,
     )
+    results = [r async for r in ks_results.results]
 
-    executed_sql = mock_cursor.execute.call_args_list[0][0][0]
-    assert 'WHERE "id" = (:bind_val1, :bind_val2, :bind_val3)' in executed_sql
+    assert mock_cursor.execute_called_with, "cursor.execute was not called"
+    sql, binds = mock_cursor.execute_called_with[0]
+    assert "SELECT" in sql.upper()
+    assert '"id", "vector", VECTOR_DISTANCE' in sql
+    expected_where = 'WHERE "id" IN (:bind_val1, :bind_val2, :bind_val3)'
+    assert expected_where in sql
 
-    assert results is not None
-    assert results.total_count == 1
-    async for result in results.results:
-        assert result.record.id == 1
-        assert result.record.vector == [0.1, 0.2, 0.3]
+    assert binds is None or isinstance(binds[0], array)
 
-    mock_cursor.fetchall.assert_awaited_once()
+    assert len(results) == 1
+    assert results[0].record.id == 1
+    assert results[0].record.vector == [0.1, 0.2, 0.3]

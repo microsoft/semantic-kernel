@@ -991,43 +991,23 @@ class OracleCollection(
         vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Execute a vector search and return an async iterable of `VectorSearchResult` objects.
 
-        Optionally, also return the total result count.
-
-        - If `options.include_total_count` is **True**, all rows are fetched once,
-        counted, normalised, and returned as an in-memory async iterator.
-        - Otherwise, rows stream directly via the helper `_fetch_records`, keeping
-        memory usage low.
-        """
-        # Build the SQL text and bind dictionary for this search
-        query, bind, columns = await self._inner_search_vector(options, values, vector, **kwargs)
-
-        # If total count is requested, fetch all rows to count.
+        # Oracle does not support accurate total_count
         if options.include_total_count:
-            async with await self._get_connection() as conn:
-                conn.inputtypehandler = self._input_type_handler
-                conn.outputtypehandler = self._output_type_handler
-                with conn.cursor() as cur:
-                    await cur.execute(query, bind)
-                    rows = await cur.fetchall()
+            logger.warning(
+                "`include_total_count=True` is not supported in OracleVectorStore "
+                "and will be ignored."
+            )
 
-                    columns = [desc[0] for desc in cur.description]
-                    row_dicts = [
-                        self._get_record_from_result(dict(zip(columns, row)))
-                        for row in rows
-                    ]
+        # Build SQL & bind parameters
+        query, bind, _ = await self._inner_search_vector(options, values, vector, **kwargs)
 
-                    return KernelSearchResults(
-                        results=self._get_vector_search_results_from_results(row_dicts, options),
-                        total_count=len(row_dicts),
-                    )
-
-        # Otherwise, return results as async iterator
+        # Always run streaming search (even if include_total_count=True)
         stream: AsyncIterable[dict[str, Any]] = self._fetch_records(query, bind)
+
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(stream, options),
-            total_count=None,
+            total_count=None,  # always None in Oracle
         )
 
     async def _inner_search_vector(
