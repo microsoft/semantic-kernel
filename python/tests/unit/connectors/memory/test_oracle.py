@@ -2,9 +2,9 @@
 
 from array import array
 from dataclasses import dataclass
+from types import SimpleNamespace
 from typing import Annotated
 from unittest.mock import AsyncMock, MagicMock
-from types import SimpleNamespace
 
 import oracledb
 import pandas as pd
@@ -47,18 +47,14 @@ def PandasDataframeModel(record) -> tuple:
                 type="float32",
                 dimensions=5,
                 distance_function=DistanceFunction.COSINE_DISTANCE,
-                index_kind=IndexKind.IVF_FLAT
+                index_kind=IndexKind.IVF_FLAT,
             ),
         ],
         to_dict=lambda record, **_: record.to_dict(orient="records"),
         from_dict=lambda records, **_: pd.DataFrame(records),
         container_mode=True,
     )
-    df = (
-        pd.DataFrame([record])
-        if isinstance(record, dict)
-        else pd.DataFrame(record)
-    )
+    df = pd.DataFrame([record]) if isinstance(record, dict) else pd.DataFrame(record)
     return definition, df
 
 
@@ -130,40 +126,26 @@ async def test_collection_exists_false(oracle_store, mock_connection_pool):
 
 
 @pytest.mark.asyncio
-async def test_ensure_collection_exists_creates_when_missing(
-    oracle_store, mock_connection_pool
-):
+async def test_ensure_collection_exists_creates_when_missing(oracle_store, mock_connection_pool):
     conn = AsyncMock()
     conn.fetchone = AsyncMock(return_value=False)
     mock_connection_pool.acquire.return_value.__aenter__.return_value = conn
-    collection = oracle_store.get_collection(
-        SimpleModel, collection_name="NEW"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="NEW")
     await collection.ensure_collection_exists()
     conn.execute.assert_called()
 
 
 @pytest.mark.asyncio
-async def test_create_table_with_get_collection(
-    oracle_store, mock_connection_pool
-):
+async def test_create_table_with_get_collection(oracle_store, mock_connection_pool):
     mock_conn = AsyncMock()
-    mock_connection_pool.acquire.return_value.__aenter__.return_value = (
-        mock_conn
-    )
+    mock_connection_pool.acquire.return_value.__aenter__.return_value = mock_conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel, collection_name="MY_COLLECTION"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="MY_COLLECTION")
 
     await collection.ensure_collection_exists()
 
     mock_conn.execute.assert_awaited()
-    sql_statements = [
-        args[0].lower()
-        for name, args, _ in mock_conn.mock_calls
-        if name == "execute"
-    ]
+    sql_statements = [args[0].lower() for name, args, _ in mock_conn.mock_calls if name == "execute"]
 
     assert any("create table" in sql for sql in sql_statements)
     assert any("my_collection" in sql for sql in sql_statements)
@@ -173,18 +155,14 @@ async def test_create_table_with_get_collection(
 
 
 @pytest.mark.asyncio
-async def test_pandasDataframe_with_get_collection(
-    oracle_store, mock_connection_pool
-):
+async def test_pandasDataframe_with_get_collection(oracle_store, mock_connection_pool):
     mock_conn = AsyncMock()
-    mock_connection_pool.acquire.return_value.__aenter__.return_value = (
-        mock_conn
-    )
+    mock_connection_pool.acquire.return_value.__aenter__.return_value = mock_conn
 
     records = {
         "id": 1,
         "embedding": [1.1, 2.2, 3.3],
-        }
+    }
 
     definition, _ = PandasDataframeModel(records)
 
@@ -196,11 +174,7 @@ async def test_pandasDataframe_with_get_collection(
     await collection.ensure_collection_exists()
 
     mock_conn.execute.assert_awaited()
-    sql_statements = [
-        args[0].lower()
-        for name, args, _ in mock_conn.mock_calls
-        if name == "execute"
-    ]
+    sql_statements = [args[0].lower() for name, args, _ in mock_conn.mock_calls if name == "execute"]
 
     assert any("create table" in sql for sql in sql_statements)
     assert any("my_collection" in sql for sql in sql_statements)
@@ -210,17 +184,11 @@ async def test_pandasDataframe_with_get_collection(
 
 
 @pytest.mark.asyncio
-async def test_index_creation_distance_with_get_collection(
-    oracle_store, mock_connection_pool
-):
+async def test_index_creation_distance_with_get_collection(oracle_store, mock_connection_pool):
     mock_conn = AsyncMock()
-    mock_connection_pool.acquire.return_value.__aenter__.return_value = (
-        mock_conn
-    )
+    mock_connection_pool.acquire.return_value.__aenter__.return_value = mock_conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel, collection_name="COLLECTION_WITH_INDEX"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="COLLECTION_WITH_INDEX")
 
     await collection.ensure_collection_exists()
 
@@ -241,30 +209,20 @@ async def test_ensure_collection_deleted(oracle_store, mock_connection_pool):
     conn.fetchone = AsyncMock(return_value=(1,))
     mock_connection_pool.acquire.return_value.__aenter__.return_value = conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel, collection_name="TO_DELETE"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="TO_DELETE")
 
     await collection.ensure_collection_exists()
     await collection.ensure_collection_deleted()
 
-    assert any(
-        "DROP TABLE" in str(call.args[0])
-        for call in conn.execute.call_args_list
-    )
+    assert any("DROP TABLE" in str(call.args[0]) for call in conn.execute.call_args_list)
 
 
 @pytest.mark.asyncio
 async def test_upsert(oracle_store, mock_connection_pool):
     mock_conn = AsyncMock()
-    mock_connection_pool.acquire.return_value.__aenter__.return_value = (
-        mock_conn
-    )
+    mock_connection_pool.acquire.return_value.__aenter__.return_value = mock_conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel,
-        collection_name="MY_COLLECTION"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="MY_COLLECTION")
 
     await collection.ensure_collection_exists()
     await collection.upsert(SimpleModel(id=1, vector=[0.1, 0.2, 0.3]))
@@ -274,9 +232,9 @@ async def test_upsert(oracle_store, mock_connection_pool):
     merge_sql, params = mock_conn.executemany.call_args[0]
 
     assert merge_sql.startswith('MERGE INTO "MY_SCHEMA"."MY_COLLECTION"')
-    assert "UPDATE SET t.\"vector\"" in merge_sql
+    assert 'UPDATE SET t."vector"' in merge_sql
     assert "WHEN NOT MATCHED THEN" in merge_sql
-    assert "INSERT (\"id\", \"vector\")" in merge_sql
+    assert 'INSERT ("id", "vector")' in merge_sql
 
     expected_param = (1, array("d", [0.1, 0.2, 0.3]))
     assert params[0] == expected_param
@@ -287,13 +245,9 @@ async def test_upsert(oracle_store, mock_connection_pool):
 async def test_get_with_include_vectors(oracle_store, mock_connection_pool):
     mock_conn = AsyncMock()
     mock_conn.description = [("id",), ("vector",)]
-    mock_connection_pool.acquire.return_value.__aenter__.return_value = (
-        mock_conn
-    )
+    mock_connection_pool.acquire.return_value.__aenter__.return_value = mock_conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel, collection_name="MY_COLLECTION"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="MY_COLLECTION")
 
     await collection.ensure_collection_exists()
     await collection.upsert(SimpleModel(id=1, vector=[0.1, 0.2, 0.3]))
@@ -304,10 +258,9 @@ async def test_get_with_include_vectors(oracle_store, mock_connection_pool):
     assert results.vector == [0.1, 0.2, 0.3]
 
     executed_sql = [args[0] for args, _ in mock_conn.fetchall.call_args_list]
-    assert any(
-        'SELECT "id" AS "id", "vector" AS "vector"' in sql
-        for sql in executed_sql
-    ), "Expected vector column to be selected when include_vectors=True"
+    assert any('SELECT "id" AS "id", "vector" AS "vector"' in sql for sql in executed_sql), (
+        "Expected vector column to be selected when include_vectors=True"
+    )
 
     mock_conn.fetchall.reset_mock()
     mock_conn.fetchall.return_value = [(1, None)]
@@ -316,10 +269,9 @@ async def test_get_with_include_vectors(oracle_store, mock_connection_pool):
     assert results.vector is None
 
     executed_sql = [args[0] for args, _ in mock_conn.fetchall.call_args_list]
-    assert any(
-        'SELECT "id" AS "id", "vector" AS "vector"' not in sql
-        for sql in executed_sql
-    ), "Vector column should not be selected when include_vectors=False"
+    assert any('SELECT "id" AS "id", "vector" AS "vector"' not in sql for sql in executed_sql), (
+        "Vector column should not be selected when include_vectors=False"
+    )
 
 
 @pytest.mark.asyncio
@@ -330,16 +282,13 @@ async def test_upsert_and_get(oracle_store, mock_connection_pool):
 
     mock_connection_pool.acquire.return_value.__aenter__.return_value = conn
 
-    collection = oracle_store.get_collection(
-        SimpleModel,
-        collection_name="TEST"
-    )
+    collection = oracle_store.get_collection(SimpleModel, collection_name="TEST")
 
     await collection.ensure_collection_exists()
     await collection.upsert(SimpleModel(id=1, vector=[0.1, 0.2, 0.3]))
-    assert (
-        conn.executemany.await_count >= 1 or conn.execute.await_count >= 1
-    ), "Expected upsert to call executemany() or execute()"
+    assert conn.executemany.await_count >= 1 or conn.execute.await_count >= 1, (
+        "Expected upsert to call executemany() or execute()"
+    )
 
     results = await collection.get([1], include_vectors=True)
 
@@ -379,17 +328,23 @@ async def test_search(oracle_store, mock_connection_pool):
         def __init__(self):
             self.execute_called_with = []
             self._rows = [(1, [0.1, 0.2, 0.3])]
-            self.description = [SimpleNamespace(name="id"),
-                                 SimpleNamespace(name="vector")]
+            self.description = [SimpleNamespace(name="id"), SimpleNamespace(name="vector")]
             self._i = 0
 
         async def execute(self, sql, binds=None):
             self.execute_called_with.append((sql, binds))
 
-        def __enter__(self): return self
-        def __exit__(self, exc_type, exc_val, exc_tb): return None
-        async def __aenter__(self): return self
-        async def __aexit__(self, exc_type, exc_val, exc_tb): return None
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            return None
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            return None
 
         def __aiter__(self):
             self._i = 0
@@ -398,7 +353,10 @@ async def test_search(oracle_store, mock_connection_pool):
         async def __anext__(self):
             if self._i >= len(self._rows):
                 raise StopAsyncIteration
-            r = self._rows[self._i]; self._i += 1; return r
+
+            r = self._rows[self._i]
+            self._i += 1
+            return r
 
     mock_cursor = MockCursor()
 
@@ -409,24 +367,32 @@ async def test_search(oracle_store, mock_connection_pool):
             self.outputtypehandler = None
             self.execute = AsyncMock()
             self.commit = AsyncMock()
-        def cursor(self): return self._cur
+
+        def cursor(self):
+            return self._cur
 
     mock_conn = MockConnection(mock_cursor)
 
     class MockAcquire:
-        def __init__(self, conn): self._conn = conn
+        def __init__(self, conn):
+            self._conn = conn
+
         def __await__(self):
-            async def _(): return self
+            async def _():
+                return self
+
             return _().__await__()
-        async def __aenter__(self): return self._conn
-        async def __aexit__(self, exc_type, exc_val, exc_tb): return None
+
+        async def __aenter__(self):
+            return self._conn
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            return None
 
     mock_connection_pool.acquire = lambda **kwargs: MockAcquire(mock_conn)
 
     collection = oracle_store.get_collection(
-        model=SimpleModel,
-        record_type=SimpleModel,
-        collection_name="MY_COLLECTION"
+        model=SimpleModel, record_type=SimpleModel, collection_name="MY_COLLECTION"
     )
 
     await collection.ensure_collection_exists()

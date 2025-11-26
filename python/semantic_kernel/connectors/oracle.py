@@ -84,14 +84,11 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
     DistanceFunction.DOT_PROD: "DOT",
     DistanceFunction.HAMMING: "HAMMING",
     DistanceFunction.MANHATTAN: "MANHATTAN",
-    DistanceFunction.DEFAULT: "COSINE"
+    DistanceFunction.DEFAULT: "COSINE",
 }
 
 # Maps index kind enums to Oracle SQL keywords
-INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
-    IndexKind.HNSW: "HNSW",
-    IndexKind.IVF_FLAT: "IVF"
-}
+INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {IndexKind.HNSW: "HNSW", IndexKind.IVF_FLAT: "IVF"}
 
 # Maps dtype strings to NumPy types and array codes
 KIND_MAP = {
@@ -100,7 +97,7 @@ KIND_MAP = {
     "float64": (np.float64, "d"),
     "int8": (np.int8, "b"),
     "uint8": (np.uint8, "B"),
-    "binary": (np.uint8, "B")
+    "binary": (np.uint8, "B"),
 }
 
 VECTOR_TYPE_MAPPING: dict[str, str] = {
@@ -144,7 +141,7 @@ def _map_scalar_field_type_to_oracle(field_type_str: str) -> str | None:
         "bytes": "RAW(2000)",
         "dict": "JSON",
         "clob": "CLOB",
-        "blob": "BLOB"
+        "blob": "BLOB",
     }
 
     list_pattern = re.compile(r"list\[(.*)\]")
@@ -184,6 +181,7 @@ def _sk_vector_element_to_oracle(field_type_str: str) -> str | None:
 
 class BindCounter:
     """Helper class to generate unique bind variable names for SQL queries."""
+
     def __init__(self, start: int = 1):
         self._index = start
 
@@ -191,6 +189,7 @@ class BindCounter:
         name = f"bind_val{self._index}"
         self._index += 1
         return name
+
 
 # region: Oracle Settings
 
@@ -231,6 +230,7 @@ class OracleSettings(KernelBaseSettings):
             (Env var ORACLE_WALLET_PASSWORD)
         connection_pool: Optional preconfigured AsyncConnectionPool instance.
     """
+
     env_prefix: ClassVar[str] = "ORACLE_"
     user: str | None = None
     password: SecretStr | None = None
@@ -256,15 +256,14 @@ class OracleSettings(KernelBaseSettings):
                 min=self.min,
                 max=self.max,
                 increment=self.increment,
-                **kwargs  # extra pool params
+                **kwargs,  # extra pool params
             )
 
         except Exception as err:
-            raise MemoryConnectorConnectionException(
-                "Error creating Oracle connection pool."
-            ) from err
+            raise MemoryConnectorConnectionException("Error creating Oracle connection pool.") from err
 
         return self._connection_pool
+
 
 # region: Oracle Collections
 
@@ -276,6 +275,7 @@ class OracleCollection(
     Generic[TKey, TModel],
 ):
     """Oracle implementation of VectorStoreCollection + VectorSearch."""
+
     connection_pool: oracledb.AsyncConnectionPool | None = None
     db_schema: str | None = None
     pool_args: dict[str, Any] | None = None
@@ -296,7 +296,7 @@ class OracleCollection(
         env_file_encoding: str | None = None,
         settings: OracleSettings | None = None,
         pool_args: dict[str, Any] | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize the collection.
 
@@ -338,9 +338,7 @@ class OracleCollection(
                     **pool_args,
                 )
             except Exception as err:
-                raise MemoryConnectorConnectionException(
-                    "Error creating Oracle connection pool."
-                ) from err
+                raise MemoryConnectorConnectionException("Error creating Oracle connection pool.") from err
 
             managed_client = True
         else:
@@ -437,30 +435,16 @@ class OracleCollection(
     def _input_type_handler(self, cursor, value, arraysize):
         """Map Python types to Oracle bind variables with correct DB types."""
         if isinstance(value, np.ndarray):
-            return cursor.var(
-                oracledb.DB_TYPE_VECTOR,
-                arraysize=arraysize,
-                inconverter=self._numpy_converter_in
-            )
+            return cursor.var(oracledb.DB_TYPE_VECTOR, arraysize=arraysize, inconverter=self._numpy_converter_in)
 
         if isinstance(value, uuid.UUID):
-            return cursor.var(
-                oracledb.DB_TYPE_RAW,
-                arraysize=arraysize,
-                inconverter=lambda v: v.bytes
-            )
+            return cursor.var(oracledb.DB_TYPE_RAW, arraysize=arraysize, inconverter=lambda v: v.bytes)
 
         if isinstance(value, (dict, list)):
-            return cursor.var(
-                oracledb.DB_TYPE_JSON,
-                arraysize=arraysize
-            )
+            return cursor.var(oracledb.DB_TYPE_JSON, arraysize=arraysize)
 
         if isinstance(value, bytes):
-            return cursor.var(
-                oracledb.DB_TYPE_RAW,
-                arraysize=arraysize
-            )
+            return cursor.var(oracledb.DB_TYPE_RAW, arraysize=arraysize)
 
         return None
 
@@ -475,18 +459,14 @@ class OracleCollection(
         """Map Oracle DB column types to Python-native objects during fetch operations."""
         # VECTOR columns to list
         if metadata.type_code == oracledb.DB_TYPE_VECTOR:
-            return cursor.var(
-                oracledb.DB_TYPE_VECTOR,
-                arraysize=cursor.arraysize,
-                outconverter=lambda arr: list(arr)
-            )
+            return cursor.var(oracledb.DB_TYPE_VECTOR, arraysize=cursor.arraysize, outconverter=lambda arr: list(arr))
 
         # RAW to UUID
         if metadata.type_code == oracledb.DB_TYPE_RAW and metadata.name in self._uuid_fields:
             return cursor.var(
                 oracledb.DB_TYPE_RAW,
                 arraysize=cursor.arraysize,
-                outconverter=lambda b: uuid.UUID(bytes=b) if b is not None else None
+                outconverter=lambda b: uuid.UUID(bytes=b) if b is not None else None,
             )
 
         return None
@@ -569,9 +549,7 @@ class OracleCollection(
             raise VectorStoreOperationException(f"Type missing for key field '{key_field.name}'")
 
         pk_name = key_field.storage_name or key_field.name
-        col_lines.append(
-            f'"{pk_name}" {_map_scalar_field_type_to_oracle(key_field.type_)} PRIMARY KEY'
-        )
+        col_lines.append(f'"{pk_name}" {_map_scalar_field_type_to_oracle(key_field.type_)} PRIMARY KEY')
 
         for f in data_fields:
             if not f.type_:
@@ -579,26 +557,20 @@ class OracleCollection(
 
             sql_type = _map_scalar_field_type_to_oracle(f.type_)
             if sql_type is None:
-                raise VectorStoreOperationException(
-                    f'Unsupported Oracle type for field "{f.name}" ({f.type_})'
-                )
+                raise VectorStoreOperationException(f'Unsupported Oracle type for field "{f.name}" ({f.type_})')
 
             col_name = f.storage_name or f.name
             col_lines.append(f'"{col_name}" {sql_type}')
 
         for f in vector_fields:
             if not f.type_ or f.dimensions is None:
-                raise VectorStoreOperationException(
-                    f"Vector field '{f.name}' missing type or dimensions"
-                )
+                raise VectorStoreOperationException(f"Vector field '{f.name}' missing type or dimensions")
 
             col_name = f.storage_name or f.name
-            col_lines.append(
-                f'"{col_name}" VECTOR({f.dimensions} , {_sk_vector_element_to_oracle(f.type_)})'
-            )
+            col_lines.append(f'"{col_name}" VECTOR({f.dimensions} , {_sk_vector_element_to_oracle(f.type_)})')
 
         columns_sql = ",\n  ".join(col_lines)
-        return f'CREATE TABLE IF NOT EXISTS {table} (\n  {columns_sql}\n)'
+        return f"CREATE TABLE IF NOT EXISTS {table} (\n  {columns_sql}\n)"
 
     def _create_vector_index(self, table_name: str, vector_field: VectorStoreField) -> str | None:
         """Build a CREATE VECTOR INDEX statement for an Oracle vector column using HNSW or IVF indexing."""
@@ -622,20 +594,12 @@ class OracleCollection(
         index_name = f'"{base_table}_{column}_idx"'
         index_kind = vector_field.index_kind
         if index_kind == IndexKind.HNSW or index_kind == IndexKind.DEFAULT:
-            index_subtype = (
-                f'ORGANIZATION INMEMORY NEIGHBOR GRAPH DISTANCE {distance} '
-            )
+            index_subtype = f"ORGANIZATION INMEMORY NEIGHBOR GRAPH DISTANCE {distance} "
         else:
             # IndexKind.IVF_FLAT
-            index_subtype = (
-                f'ORGANIZATION NEIGHBOR PARTITIONS DISTANCE {distance} '
-            )
+            index_subtype = f"ORGANIZATION NEIGHBOR PARTITIONS DISTANCE {distance} "
 
-        return (
-            f'CREATE VECTOR INDEX IF NOT EXISTS {index_name}\n'
-            f'ON {table_name} ("{column}")\n'
-            f'{index_subtype}'
-        )
+        return f'CREATE VECTOR INDEX IF NOT EXISTS {index_name}\nON {table_name} ("{column}")\n{index_subtype}'
 
     def _create_data_index(self, table_name: str, field) -> str | None:
         """Build a CREATE INDEX statement for a single data field if it is indexable.
@@ -667,13 +631,11 @@ class OracleCollection(
         )
 
         # Combine create table + vector + data indexes
-        statements = [create_sql] + [
-            stmt for vf in self.definition.vector_fields
-            if (stmt := self._create_vector_index(tbl, vf))
-        ] + [
-            stmt for field in self.definition.data_fields
-            if (stmt := self._create_data_index(tbl, field))
-        ]
+        statements = (
+            [create_sql]
+            + [stmt for vf in self.definition.vector_fields if (stmt := self._create_vector_index(tbl, vf))]
+            + [stmt for field in self.definition.data_fields if (stmt := self._create_data_index(tbl, field))]
+        )
 
         async with pool.acquire() as conn:
             for statement in statements:
@@ -690,7 +652,7 @@ class OracleCollection(
 
         tbl = self._full_table_name()
         pk_col = self.definition.key_field.storage_name or self.definition.key_field.name
-        delete_sql = f'DELETE FROM {tbl} WHERE "{pk_col}" = :1'
+        delete_sql = f'DELETE FROM {tbl} WHERE "{pk_col}" = :1'  # nosec B608
 
         async with pool.acquire() as conn:
             binds = [(k,) for k in keys]
@@ -710,12 +672,9 @@ class OracleCollection(
         # SELECT clause
         all_fields = [key_field, *data_fields, *vector_fields] if include_vectors else [key_field, *data_fields]
         field_lookup = {f.name: f for f in all_fields}
-        select_clause = ", ".join(
-            f'"{f.storage_name or f.name}" AS "{f.name}"'
-            for f in all_fields
-        )
+        select_clause = ", ".join(f'"{f.storage_name or f.name}" AS "{f.name}"' for f in all_fields)
 
-        sql = f"SELECT {select_clause} FROM {table}"
+        sql = f"SELECT {select_clause} FROM {table}"  # nosec B608
         bind_values: list[Any] = []
 
         # WHERE clause by keys
@@ -771,7 +730,7 @@ class OracleCollection(
             self.definition.vector_fields,
             keys,
             options,
-            include_vectors
+            include_vectors,
         )
 
         async with pool.acquire() as conn:
@@ -779,9 +738,9 @@ class OracleCollection(
             rows = await conn.fetchall(q, binds)
 
         # Build column list once: key, data, then vector fields
-        columns = ([self.definition.key_field.name] + [f.name for f in self.definition.data_fields])
+        columns = [self.definition.key_field.name] + [f.name for f in self.definition.data_fields]
         if include_vectors:
-            columns = (columns + [f.name for f in self.definition.vector_fields])
+            columns = columns + [f.name for f in self.definition.vector_fields]
 
         if not rows:
             return None
@@ -831,8 +790,7 @@ class OracleCollection(
         """
         all_fields = [key_field, *data_fields, *vector_fields]
         src_bindings = ",\n     ".join(
-            f':{idx + 1} AS "{field.storage_name or field.name}"'
-            for idx, field in enumerate(all_fields)
+            f':{idx + 1} AS "{field.storage_name or field.name}"' for idx, field in enumerate(all_fields)
         )
 
         # When matched then update data
@@ -859,7 +817,7 @@ class OracleCollection(
             WHEN NOT MATCHED THEN
                 INSERT ({insert_columns})
                 VALUES ({insert_values})
-        """
+        """  # nosec B608
         return merge_sql.strip()
 
     @override
@@ -881,10 +839,7 @@ class OracleCollection(
 
         async with pool.acquire() as conn:
             conn.inputtypehandler = self._input_type_handler
-            binds = [
-                self._convert_dict_to_row(record, ordered_fields)
-                for record in records
-            ]
+            binds = [self._convert_dict_to_row(record, ordered_fields) for record in records]
             await conn.executemany(query, binds)
             await conn.commit()
 
@@ -919,11 +874,8 @@ class OracleCollection(
         to_vector_expr = f"TO_VECTOR({vector_placeholder}, {dim}, {dtype})"
 
         # Fields to SELECT
-        select_fields = [
-            f'"{key_field.storage_name or key_field.name}"'
-        ] + [
-            f'"{field.storage_name or field.name}"'
-            for field in data_fields
+        select_fields = [f'"{key_field.storage_name or key_field.name}"'] + [
+            f'"{field.storage_name or field.name}"' for field in data_fields
         ]
         if options.include_vectors:
             select_fields += [f'"{f.storage_name or f.name}"' for f in vector_fields]
@@ -946,7 +898,7 @@ class OracleCollection(
         sql = f"""
             SELECT {select_clause}, {distance_expr}
             FROM {table}
-        """.strip()
+        """.strip()  # nosec B608
 
         if filter_clause:
             sql += f"\nWHERE {filter_clause}"
@@ -991,13 +943,9 @@ class OracleCollection(
         vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-
         # Oracle does not support accurate total_count
         if options.include_total_count:
-            logger.warning(
-                "`include_total_count=True` is not supported in OracleVectorStore "
-                "and will be ignored."
-            )
+            logger.warning("`include_total_count=True` is not supported in OracleVectorStore and will be ignored.")
 
         # Build SQL & bind parameters
         query, bind, _ = await self._inner_search_vector(options, values, vector, **kwargs)
@@ -1053,7 +1001,7 @@ class OracleCollection(
             vector,
             vector_field,
             options,
-            filter_clause
+            filter_clause,
         )
 
         # Append filter binds after vector
@@ -1061,11 +1009,7 @@ class OracleCollection(
         return query, bind_values, columns
 
     @override
-    def _lambda_parser(
-        self,
-        node: ast.AST,
-        bind_counter: BindCounter | None = None
-    ) -> Any:
+    def _lambda_parser(self, node: ast.AST, bind_counter: BindCounter | None = None) -> Any:
         """Parse a lambda AST node and return a tuple: (sql_expression, bind_values_dict).
 
         Uses bind variables for all scalar values, including dates.
@@ -1076,7 +1020,6 @@ class OracleCollection(
         bind_dict: dict[str, Any] = {}
 
         match node:
-
             # Comparisons
             case ast.Compare():
                 # IS / IS NOT NULL
@@ -1097,8 +1040,7 @@ class OracleCollection(
                         right_node = node.comparators[idx]
                         op = node.ops[idx]
                         expr, binds = self._lambda_parser(
-                            ast.Compare(left=left_node, ops=[op], comparators=[right_node]),
-                            bind_counter
+                            ast.Compare(left=left_node, ops=[op], comparators=[right_node]), bind_counter
                         )
                         values.append(expr)
                         bind_dict.update(binds)
@@ -1201,9 +1143,7 @@ class OracleCollection(
                 # Handle datetime function with arguments (year, month, day)
                 if isinstance(node.func, ast.Name) and node.func.id == "datetime":
                     if not (3 <= len(node.args) <= 6):
-                        raise NotImplementedError(
-                            "datetime() only supports between 3 and 6 integer arguments"
-                        )
+                        raise NotImplementedError("datetime() only supports between 3 and 6 integer arguments")
 
                     def get_const(arg: ast.AST) -> int:
                         if isinstance(arg, ast.Constant) and isinstance(arg.value, int):
@@ -1243,12 +1183,14 @@ class OracleCollection(
 
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
+
 # region: Oracle Store
 
 
 @release_candidate
 class OracleStore(VectorStore):
     """VectorStore wrapper holding a shared Oracle connection-pool."""
+
     connection_pool: oracledb.AsyncConnectionPool | None = None
     db_schema: str | None = None
     env_file_path: str | None = None
@@ -1307,7 +1249,7 @@ class OracleStore(VectorStore):
             env_file_encoding=self.env_file_encoding,
             embedding_generator=embedding_generator or self.embedding_generator,
             pool_args=pool_args,
-            **kwargs
+            **kwargs,
         )
 
     @override
