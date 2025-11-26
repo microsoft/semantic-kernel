@@ -56,7 +56,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                 }
 
                 var floats = new float[length / 4];
-                var bytes = MemoryMarshal.Cast<float, byte>(floats);
+                var bytes = MemoryMarshal.Cast<float, byte>(floats.AsSpan());
                 stream.ReadExactly(bytes);
 #else
                 var floats = MemoryMarshal.Cast<byte, float>((byte[])reader[ordinal]).ToArray();
@@ -96,6 +96,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
             Type t when t == typeof(float) => reader.GetFloat(ordinal),
             Type t when t == typeof(double) => reader.GetDouble(ordinal),
             Type t when t == typeof(string) => reader.GetString(ordinal),
+            Type t when t == typeof(Guid) => reader.GetGuid(ordinal),
             Type t when t == typeof(byte[]) => (byte[])reader[ordinal],
             Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[ordinal],
             Type t when t == typeof(Embedding<float>) => (byte[])reader[ordinal],

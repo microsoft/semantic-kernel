@@ -45,7 +45,16 @@ internal class LocalAgentStep : LocalStep
         await this._initializeTask.Value.ConfigureAwait(false);
 
         string targetFunction = "Invoke";
-        KernelArguments arguments = new() { { "message", message.TargetEventData }, { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId } };
+        KernelArguments arguments = new()
+        {
+            { "message", message.TargetEventData switch
+                {
+                    KernelProcessEventData proxyData => proxyData.ToObject(),
+                    _ => message.TargetEventData
+                }
+            },
+            { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId }
+        };
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");

@@ -67,6 +67,7 @@ env:
   GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
   GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
   GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+  GOOGLE_AI_CLOUD_PROJECT_ID: ${{ vars.GOOGLE_AI_CLOUD_PROJECT_ID }}
   VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
   VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
   VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
@@ -322,7 +323,7 @@ jobs:
           # Opens tcp port 6379 on the host and service container
           - 6379:6379
       weaviate:
-        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        image: cr.weaviate.io/semitechnologies/weaviate:1.33.3
         ports:
           - 8080:8080
           - 50051:50051

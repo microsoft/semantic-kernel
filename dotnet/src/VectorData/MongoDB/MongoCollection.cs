@@ -76,7 +76,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private readonly int? _numCandidates;
 
     /// <summary>Types of keys permitted.</summary>
-    private readonly Type[] _validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId)];
+    private static readonly Type[] s_validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId), typeof(int), typeof(long)];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoCollection{TKey, TRecord}"/> class.
@@ -106,9 +106,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (!this._validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
+        if (!s_validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string, Guid and ObjectID keys are supported.");
+            throw new NotSupportedException("Only ObjectID, string, Guid, int and long keys are supported.");
         }
 
         options ??= MongoCollectionOptions.Default;

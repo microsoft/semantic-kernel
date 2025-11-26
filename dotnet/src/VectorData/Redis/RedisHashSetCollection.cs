@@ -88,9 +88,9 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException("Only string and Guid keys are supported.");
         }
 
         options ??= RedisHashSetCollectionOptions.Default;
@@ -128,7 +128,9 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             await this._database.FT().InfoAsync(this.Name).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name"))
+        // "Unknown index name" is returned in Redis Stack
+        // "no such index" is returned in Redis Alpine
+        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name") || ex.Message.Contains("no such index"))
         {
             return false;
         }
@@ -508,7 +510,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     {
         Verify.NotNull(key);
 
-        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+        var stringKey = key switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
 
         Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
 

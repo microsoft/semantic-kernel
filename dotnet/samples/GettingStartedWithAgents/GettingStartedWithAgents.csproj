@@ -18,16 +18,16 @@
     <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" VersionOverride="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" VersionOverride="9.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http" VersionOverride="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" VersionOverride="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="9.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />

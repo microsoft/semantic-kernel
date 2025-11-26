@@ -33,6 +33,7 @@
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Pinecone.Client" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
+    <PackageReference Include="Humanizer" />
   </ItemGroup>
   
   <ItemGroup>

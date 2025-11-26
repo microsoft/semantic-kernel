@@ -3,6 +3,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+
     <NoWarn>$(NoWarn);MEVD9000,MEVD9001</NoWarn> <!-- Experimental MEVD connector-facing APIs -->
     <NoWarn>$(NoWarn);CA1515</NoWarn> <!-- Because an application's API isn't typically referenced from outside the assembly, types can be made internal -->
     <NoWarn>$(NoWarn);CA1707</NoWarn> <!-- Remove the underscores from member name -->
@@ -15,7 +17,10 @@
     <NoWarn>$(NoWarn);CA1863</NoWarn> <!-- Cache a 'CompositeFormat' for repeated use in this formatting operation -->
     <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn> <!-- Consider calling ConfigureAwait on the awaited task -->
     <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Missing XML comment for publicly visible type or member -->
-    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->    
+    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->
+
+    <!-- Remove this after switching to C# 14 -->
+    <NoWarn>$(NoWarn);IDE0340</NoWarn> <!-- Use unbound generic type -->
   </PropertyGroup>
 
 </Project>
