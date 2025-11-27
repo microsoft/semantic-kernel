@@ -12,7 +12,6 @@ This sample shows how to perform text completion. This sample uses the following
 
 # You can select from the following text embedding services:
 # - Services.OPENAI
-# - Services.AZURE_OPENAI
 # - Services.BEDROCK
 # - Services.GOOGLE_AI
 # - Services.HUGGING_FACE

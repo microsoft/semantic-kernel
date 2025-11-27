@@ -238,7 +238,10 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(
+                ("openai", {"enable_kernel_function": True}),
+                marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
+            ),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-image-content-streaming", "openai-image-content-streaming"],
