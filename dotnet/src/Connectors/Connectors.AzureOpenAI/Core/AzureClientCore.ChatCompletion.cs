@@ -23,8 +23,8 @@ internal partial class AzureClientCore
 {
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
-    // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
+    // These delegate instances are used to call the internal extension of AzureChatExtensions.SetNewMaxCompletionTokensPropertyEnabled that accept
+    // a ChatCompletionOptions and a boolean. These should be replaced once SetNewMaxCompletionTokensPropertyEnabled is public again or via SCM Patch.
     private static readonly Action<ChatCompletionOptions, bool>?
         SetNewMaxCompletionTokensPropertyEnabled =
         (Action<ChatCompletionOptions, bool>?)
