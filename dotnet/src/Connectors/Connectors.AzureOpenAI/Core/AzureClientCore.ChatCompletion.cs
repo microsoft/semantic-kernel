@@ -4,7 +4,6 @@ using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text.Json;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -21,19 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal partial class AzureClientCore
 {
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    // These delegate instances are used to call the internal extension of AzureChatExtensions.SetNewMaxCompletionTokensPropertyEnabled that accept
-    // a ChatCompletionOptions and a boolean. These should be replaced once SetNewMaxCompletionTokensPropertyEnabled is public again or via SCM Patch.
-    private static readonly Action<ChatCompletionOptions, bool>?
-        SetNewMaxCompletionTokensPropertyEnabled =
-        (Action<ChatCompletionOptions, bool>?)
-        typeof(AzureChatExtensions).GetMethod(nameof(SetNewMaxCompletionTokensPropertyEnabled), BindingFlags.NonPublic | BindingFlags.Static,
-            null, [typeof(ChatCompletionOptions), typeof(bool)], null)
-        ?.CreateDelegate(typeof(Action<ChatCompletionOptions, bool>));
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore IDE1006 // Naming Styles
-
     /// <inheritdoc/>
     protected override OpenAIPromptExecutionSettings GetSpecializedExecutionSettings(PromptExecutionSettings? executionSettings)
         => AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
@@ -81,7 +67,7 @@ internal partial class AzureClientCore
 
         if (azureSettings.SetNewMaxCompletionTokensEnabled)
         {
-            SetNewMaxCompletionTokensPropertyEnabled?.Invoke(options, true);
+            SetMaxTokenPatchValues(options, true);
         }
 
         if (azureSettings.UserSecurityContext is not null)
@@ -272,5 +258,33 @@ internal partial class AzureClientCore
         }
 
         throw new NotSupportedException($"The provided audio options '{executionSettings.Audio?.GetType()}' is not supported.");
+    }
+
+    private static readonly ReadOnlyMemory<byte> s_newMaxTokenJsonPath = "$.max_completion_tokens"u8.ToArray();
+    private static readonly ReadOnlyMemory<byte> s_oldMaxTokenJsonPath = "$.max_tokens"u8.ToArray();
+
+    private static void SetMaxTokenPatchValues(ChatCompletionOptions options, bool? newPropertyRequested = null)
+    {
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        bool newPropertyInUse = options.Patch.Contains(s_newMaxTokenJsonPath.Span) && !options.Patch.IsRemoved(s_newMaxTokenJsonPath.Span);
+        bool useNewProperty = newPropertyRequested ?? newPropertyInUse;
+
+        ReadOnlySpan<byte> selectedPath = useNewProperty ? s_newMaxTokenJsonPath.Span : s_oldMaxTokenJsonPath.Span;
+        ReadOnlySpan<byte> deselectedPath = useNewProperty ? s_oldMaxTokenJsonPath.Span : s_newMaxTokenJsonPath.Span;
+
+        BinaryData? valueBytes = options.MaxOutputTokenCount is null
+            ? null
+            : BinaryData.FromString(options.MaxOutputTokenCount.ToString()!);
+
+        if (valueBytes is null)
+        {
+            options.Patch.Remove(selectedPath);
+        }
+        else
+        {
+            options.Patch.Set(selectedPath, valueBytes);
+        }
+        options.Patch.Remove(deselectedPath);
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }
