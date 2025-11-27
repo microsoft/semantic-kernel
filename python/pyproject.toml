@@ -125,6 +125,9 @@ onnx = [
   "onnxruntime==1.22.1",
   "onnxruntime-genai==0.9.0"
 ]
+oracledb = [
+    "oracledb >= 3.4.1"
+]
 pandas = [
     "pandas ~= 2.2"
 ]

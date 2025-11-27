@@ -65,13 +65,6 @@ internal partial class AzureClientCore
             options.AudioOptions = GetAudioOptions(executionSettings);
         }
 
-        if (azureSettings.SetNewMaxCompletionTokensEnabled)
-        {
-#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            options.SetNewMaxCompletionTokensPropertyEnabled(true);
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        }
-
         if (azureSettings.UserSecurityContext is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
