@@ -4,6 +4,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -20,6 +21,19 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal partial class AzureClientCore
 {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
+    // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
+    private static readonly Action<ChatCompletionOptions, bool>?
+        SetNewMaxCompletionTokensPropertyEnabled =
+        (Action<ChatCompletionOptions, bool>?)
+        typeof(AzureChatExtensions).GetMethod(nameof(SetNewMaxCompletionTokensPropertyEnabled), BindingFlags.NonPublic | BindingFlags.Static,
+            null, [typeof(ChatCompletionOptions), typeof(bool)], null)
+        ?.CreateDelegate(typeof(Action<ChatCompletionOptions, bool>));
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore IDE1006 // Naming Styles
+
     /// <inheritdoc/>
     protected override OpenAIPromptExecutionSettings GetSpecializedExecutionSettings(PromptExecutionSettings? executionSettings)
         => AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
@@ -63,6 +77,11 @@ internal partial class AzureClientCore
         if (executionSettings.Audio is not null)
         {
             options.AudioOptions = GetAudioOptions(executionSettings);
+        }
+
+        if (azureSettings.SetNewMaxCompletionTokensEnabled)
+        {
+            SetNewMaxCompletionTokensPropertyEnabled?.Invoke(options, true);
         }
 
         if (azureSettings.UserSecurityContext is not null)
