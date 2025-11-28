@@ -81,7 +81,7 @@ internal class CosmosMongoFilterTranslator
         // Short form of equality (instead of $eq)
         if (nodeType is ExpressionType.Equal)
         {
-            return new BsonDocument { [property.StorageName] = BsonValue.Create(value) };
+            return new BsonDocument { [property.StorageName] = BsonValueFactory.Create(value) };
         }
 
         var filterOperator = nodeType switch
@@ -95,7 +95,7 @@ internal class CosmosMongoFilterTranslator
             _ => throw new UnreachableException()
         };
 
-        return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValue.Create(value) } };
+        return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValueFactory.Create(value) } };
     }
 
     private BsonDocument TranslateAndOr(BinaryExpression andOr)
@@ -257,7 +257,7 @@ internal class CosmosMongoFilterTranslator
             {
                 [property.StorageName] = new BsonDocument
                 {
-                    ["$in"] = new BsonArray(from object? element in elements select BsonValue.Create(element))
+                    ["$in"] = new BsonArray(from object? element in elements select BsonValueFactory.Create(element))
                 }
             };
         }
