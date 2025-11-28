@@ -19,7 +19,7 @@ internal class CosmosNoSqlFilterTranslator
     private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    private readonly Dictionary<string, object?> _parameters = new();
+    private readonly Dictionary<string, object?> _parameters = [];
     private readonly StringBuilder _sql = new();
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)

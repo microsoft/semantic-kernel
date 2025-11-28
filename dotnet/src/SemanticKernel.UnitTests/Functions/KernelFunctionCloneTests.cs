@@ -30,8 +30,8 @@ public class KernelFunctionCloneTests
         var clonedAIFunction = clonedFunction.WithKernel(newKernel);
 
         // Invoke both functions
-        var originalResult = await aiFunction.InvokeAsync(new AIFunctionArguments(), default);
-        var clonedResult = await clonedAIFunction.InvokeAsync(new AIFunctionArguments(), default);
+        var originalResult = await aiFunction.InvokeAsync([], default);
+        var clonedResult = await clonedAIFunction.InvokeAsync([], default);
 
         // Assert
         // The results should be different because they use different kernels
@@ -60,8 +60,8 @@ public class KernelFunctionCloneTests
         var aiFunction2 = function.WithKernel(kernel2);
 
         // Invoke both functions
-        var result1 = await aiFunction1.InvokeAsync(new AIFunctionArguments(), default);
-        var result2 = await aiFunction2.InvokeAsync(new AIFunctionArguments(), default);
+        var result1 = await aiFunction1.InvokeAsync([], default);
+        var result2 = await aiFunction2.InvokeAsync([], default);
 
         // Assert
         // The results should be different because they use different kernels

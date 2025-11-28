@@ -17,8 +17,8 @@ internal static class RedisHashSetMappingTestHelpers
 {
     public static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreProperty>()
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", typeof(string)),
             new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
             new VectorStoreDataProperty("IntData", typeof(int)),
@@ -35,7 +35,7 @@ internal static class RedisHashSetMappingTestHelpers
             new VectorStoreDataProperty("NullableFloatData", typeof(float?)),
             new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
-        }
+        ]
     };
 
     public static HashEntry[] CreateHashSet()

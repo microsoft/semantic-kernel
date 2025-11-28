@@ -23,7 +23,7 @@ internal static class PostgresPropertyMapping
             Embedding<float> e => new Pgvector.Vector(e.Vector),
             float[] a => new Pgvector.Vector(a),
 
-#if NET8_0_OR_GREATER
+#if NET
             ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
             Embedding<Half> e => new Pgvector.HalfVector(e.Vector),
             Half[] a => new Pgvector.HalfVector(a),
@@ -128,7 +128,7 @@ internal static class PostgresPropertyMapping
                 || t == typeof(float[])
                 => "VECTOR",
 
-#if NET8_0_OR_GREATER
+#if NET
             Type t when t == typeof(ReadOnlyMemory<Half>)
                 || t == typeof(Embedding<Half>)
                 || t == typeof(Half[])

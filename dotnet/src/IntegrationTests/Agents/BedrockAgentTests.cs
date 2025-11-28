@@ -186,7 +186,7 @@ Dolphin  2")]
     {
         var responses = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input), thread, null, default);
         string responseContent = string.Empty;
-        List<ChatMessageContent> chatMessages = new();
+        List<ChatMessageContent> chatMessages = [];
         await foreach (ChatMessageContent response in responses)
         {
             // Non-streaming invoke will only return one response.
@@ -220,7 +220,7 @@ Dolphin  2")]
     {
         var responses = agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, input), thread, null, default);
         string responseContent = string.Empty;
-        List<StreamingChatMessageContent> chatMessages = new();
+        List<StreamingChatMessageContent> chatMessages = [];
         await foreach (StreamingChatMessageContent response in responses)
         {
             responseContent = response.Content ?? string.Empty;

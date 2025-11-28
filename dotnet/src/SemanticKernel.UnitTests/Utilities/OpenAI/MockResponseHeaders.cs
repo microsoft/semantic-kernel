@@ -12,7 +12,7 @@ public class MockResponseHeaders : PipelineResponseHeaders
 
     public MockResponseHeaders()
     {
-        this._headers = new Dictionary<string, string>();
+        this._headers = [];
     }
 
     public override IEnumerator<KeyValuePair<string, string>> GetEnumerator()

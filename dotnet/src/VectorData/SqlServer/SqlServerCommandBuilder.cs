@@ -475,7 +475,7 @@ internal static class SqlServerCommandBuilder
         {
             // We don't call APIs like char.IsWhitespace as they are expensive
             // as they need to handle all Unicode characters.
-            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z')))
+            if (character is not (>= 'a' and <= 'z' or >= 'A' and <= 'Z'))
             {
                 break;
             }

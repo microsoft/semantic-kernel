@@ -230,7 +230,7 @@ public sealed class BedrockServiceCollectionExtensionTests : IDisposable
                 Message = new Message
                 {
                     Role = role,
-                    Content = new List<ContentBlock> { new() { Text = text } }
+                    Content = [new() { Text = text }]
                 }
             },
             Metrics = new ConverseMetrics(),

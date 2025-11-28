@@ -59,7 +59,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         continue;
                     }
 
-#if NET8_0_OR_GREATER
+#if NET
                     case Pgvector.HalfVector { Memory: ReadOnlyMemory<Half> memory }:
                     {
                         vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch

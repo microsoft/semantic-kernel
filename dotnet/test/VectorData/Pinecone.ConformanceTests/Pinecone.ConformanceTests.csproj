@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- We don't test Full Framework because to does not support Http 2.0 which seems to be enforced by the local emulator. -->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Pinecone.ConformanceTests</RootNamespace>
@@ -32,13 +32,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Pinecone.Client" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="Humanizer" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\VectorData\Pinecone\Pinecone.csproj"/>
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>
+    <ProjectReference Include="..\..\..\src\VectorData\Pinecone\Pinecone.csproj" />
+    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

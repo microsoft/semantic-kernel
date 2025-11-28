@@ -46,7 +46,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                 // In modern .NET, we allocate a float[] of the right size, reinterpret-cast it into byte[],
                 // and then read the data into that via Stream.
                 // In .NET Framework, which doesn't have Span APIs on Stream, we just create a copy (inefficient).
-#if NET8_0_OR_GREATER
+#if NET
                 using var stream = reader.GetStream(ordinal);
 
                 var length = stream.Length;

@@ -195,7 +195,7 @@ public sealed class GoogleAIGeminiChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var contents = optionsJson.GetProperty("contents");
         Assert.Equal(1, contents.GetArrayLength());

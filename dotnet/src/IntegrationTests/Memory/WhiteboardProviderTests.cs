@@ -146,7 +146,7 @@ public class WhiteboardProviderTests
 
         // Assert
         await WhiteboardProvider.WhenProcessingCompleteAsync();
-        var aiContextAdditions = await WhiteboardProvider.ModelInvokingAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
+        var aiContextAdditions = await WhiteboardProvider.ModelInvokingAsync([new(ChatRole.User, string.Empty)]);
         var whiteboardContent = aiContextAdditions.Instructions!;
         this._output.WriteLine(string.Join(Environment.NewLine, whiteboardContent));
 

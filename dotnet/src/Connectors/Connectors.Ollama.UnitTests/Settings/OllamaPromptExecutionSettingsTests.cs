@@ -126,7 +126,7 @@ public class OllamaPromptExecutionSettingsTests
             TopP = 0.85f,
             TopK = 50,
             NumPredict = 100,
-            Stop = new List<string> { "END", "STOP" },
+            Stop = ["END", "STOP"],
             ModelId = "llama2"
         };
 
@@ -198,7 +198,7 @@ public class OllamaPromptExecutionSettingsTests
             TopP = 0.9f,
             TopK = 100,
             NumPredict = 50,
-            Stop = new List<string> { "STOP" }
+            Stop = ["STOP"]
         };
 
         // Act
