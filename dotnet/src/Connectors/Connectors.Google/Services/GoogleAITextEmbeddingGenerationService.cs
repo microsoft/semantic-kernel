@@ -73,14 +73,21 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
     }
 
     /// <summary>
-    /// Generates embeddings for the specified input text, allowing additional configuration
-    /// via <see cref="EmbeddingGenerationOptions"/> (e.g., specifying the Google task type).
+    /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
-    /// <param name="data">The input text collection to generate embeddings for.</param>
-    /// <param name="options">Embedding generation options (e.g., task_type).</param>
-    /// <param name="kernel">Optional Kernel instance.</param>
-    /// <param name="cancellationToken">Token for cancelling the request.</param>
-    /// <returns>A list of generated embeddings.</returns>
+    /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="options">Additional options for embedding generation</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>List of embeddings</returns>
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="options"/> parameter can be used to override default settings such as <see cref="EmbeddingGenerationOptions.ModelId"/> and <see cref="EmbeddingGenerationOptions.Dimensions"/>
+    /// </para>
+    /// <para>
+    /// Additionally a key/value of <c>"taskType"</c> can be provided in the <see cref="EmbeddingGenerationOptions.AdditionalProperties"/> for specific embedding tasks.
+    /// </para>
+    /// </remarks>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         EmbeddingGenerationOptions? options,
