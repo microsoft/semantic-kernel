@@ -270,7 +270,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         // Remove record.
         return this.RunOperationAsync(
@@ -287,7 +287,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             return Task.CompletedTask;
         }
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Select(GetStringKey);
 
         // Remove records.
         return this.RunOperationAsync(
@@ -400,8 +400,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             options,
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         await foreach (var record in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
@@ -442,8 +442,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             },
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         searchOptions.SearchFields.Add(textDataProperty.StorageName);
         var keywordsCombined = string.Join(" ", keywords);
@@ -504,7 +504,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         const string OperationName = "GetDocument";
 
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         var jsonObject = await this.RunOperationAsync(
             OperationName,
@@ -787,7 +787,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             operationName,
             operation);
 
-    private string GetStringKey(TKey key)
+    private static string GetStringKey(TKey key)
     {
         Verify.NotNull(key);
 

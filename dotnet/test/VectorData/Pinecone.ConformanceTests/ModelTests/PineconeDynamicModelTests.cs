@@ -31,8 +31,5 @@ public class PineconeDynamicModelTests(PineconeDynamicModelTests.Fixture fixture
     public new class Fixture : DynamicModelTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "dynamic-model-tests";
     }
 }

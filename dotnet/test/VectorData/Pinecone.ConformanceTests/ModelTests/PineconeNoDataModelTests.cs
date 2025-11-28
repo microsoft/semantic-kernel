@@ -13,8 +13,5 @@ public class PineconeNoDataModelTests(PineconeNoDataModelTests.Fixture fixture)
     public new class Fixture : NoDataModelTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "no-data-model-tests";
     }
 }

@@ -18,30 +18,29 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         var expectedRecord = fixture.TestData[0];
 
         var received = await fixture.Collection.GetAsync(
-            (TKey)expectedRecord[DynamicDataModelFixture<TKey>.KeyPropertyName]!,
+            (TKey)expectedRecord[KeyPropertyName]!,
             new() { IncludeVectors = includeVectors });
 
         AssertEquivalent(expectedRecord, received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
-    // TODO: https://github.com/microsoft/semantic-kernel/issues/13303
-    // [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
-    // public virtual Task GetAsync_multiple_records(bool includeVectors)
-    // {
-    //     var expectedRecords = fixture.TestData.Take(2);
-    //     var ids = expectedRecords.Select(record => record[KeyPropertyName]!);
+    [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
+    public virtual async Task GetAsync_multiple_records(bool includeVectors)
+    {
+        var expectedRecords = fixture.TestData.Take(2);
+        var ids = expectedRecords.Select(record => record[KeyPropertyName]!);
 
-    //     var received = await fixture.Collection.GetAsync(ids, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await fixture.Collection.GetAsync(ids, new() { IncludeVectors = includeVectors }).ToArrayAsync();
 
-    //     foreach (var record in expectedRecords)
-    //     {
-    //         AssertEquivalent(
-    //             record,
-    //             received.Single(r => r[KeyPropertyName]!.Equals(record[KeyPropertyName])),
-    //             includeVectors,
-    //             fixture.TestStore.VectorsComparable);
-    //     }
-    // }
+        foreach (var record in expectedRecords)
+        {
+            AssertEquivalent(
+                record,
+                received.Single(r => r[KeyPropertyName]!.Equals(record[KeyPropertyName])),
+                includeVectors,
+                fixture.TestStore.VectorsComparable);
+        }
+    }
 
     [ConditionalFact]
     public virtual async Task GetAsync_throws_for_null_key()
@@ -209,10 +208,10 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
         var inserted = new Dictionary<string, object?>
         {
-            [DynamicDataModelFixture<TKey>.KeyPropertyName] = expectedKey,
-            [DynamicDataModelFixture<TKey>.StringPropertyName] = "some",
-            [DynamicDataModelFixture<TKey>.IntegerPropertyName] = 123,
-            [DynamicDataModelFixture<TKey>.EmbeddingPropertyName] = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, DynamicDataModelFixture<TKey>.DimensionCount).ToArray())
+            [KeyPropertyName] = expectedKey,
+            [StringPropertyName] = "some",
+            [IntegerPropertyName] = 123,
+            [VectorPropertyName] = new ReadOnlyMemory<float>([10, 0, 0])
         };
 
         Assert.Null(await this.Collection.GetAsync(expectedKey));
@@ -231,7 +230,7 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
             [KeyPropertyName] = existingRecord[KeyPropertyName],
             [StringPropertyName] = "different",
             [IntegerPropertyName] = 456,
-            [EmbeddingPropertyName] = new ReadOnlyMemory<float>(Enumerable.Repeat(0.7f, 3).ToArray())
+            [VectorPropertyName] = new ReadOnlyMemory<float>(Enumerable.Repeat(0.7f, 3).ToArray())
         };
 
         Assert.NotNull(await this.Collection.GetAsync((TKey)existingRecord[KeyPropertyName]!));
@@ -241,42 +240,39 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         AssertEquivalent(updated, received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
-    // TODO: https://github.com/microsoft/semantic-kernel/issues/13303
-    // [ConditionalFact]
-    // public virtual async Task Insert_multiple_records()
-    // {
-    //     Dictionary<string, object?>[] newRecords =
-    //     [
-    //         new()
-    //         {
-    //             [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
-    //             [IntegerPropertyName] = 100,
-    //             [StringPropertyName] = "New record 1",
-    //             [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 1])
-    //         },
-    //         new()
-    //         {
-    //             [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
-    //             [IntegerPropertyName] = 101,
-    //             [StringPropertyName] = "New record 2",
-    //             [EmbeddingPropertyName] = new ReadOnlyMemory<float>([10, 0, 2])
-    //         },
-    //     ];
+    [ConditionalFact]
+    public virtual async Task Insert_multiple_records()
+    {
+        Dictionary<string, object?>[] newRecords =
+        [
+            new()
+            {
+                [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
+                [IntegerPropertyName] = 100,
+                [StringPropertyName] = "New record 1",
+                [VectorPropertyName] = new ReadOnlyMemory<float>([10, 0, 1])
+            },
+            new()
+            {
+                [KeyPropertyName] = fixture.GenerateNextKey<TKey>(),
+                [IntegerPropertyName] = 101,
+                [StringPropertyName] = "New record 2",
+                [VectorPropertyName] = new ReadOnlyMemory<float>([10, 0, 2])
+            },
+        ];
 
-    //     var keys = newRecords.Select(record => record[KeyPropertyName]!).ToArray();
-    //     Assert.Empty(await this.Collection.GetAsync(keys).ToArrayAsync());
+        var keys = newRecords.Select(record => record[KeyPropertyName]!).ToArray();
+        Assert.Empty(await this.Collection.GetAsync(keys).ToArrayAsync());
 
-    //     await this.Collection.UpsertAsync(newRecords);
+        await this.Collection.UpsertAsync(newRecords);
 
-    //     var received = await this.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+        var received = await this.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
 
-    //     Assert.Collection(
-    //         received.OrderBy(r => r[IntegerPropertyName]),
-    //         r => AssertEquivalent(newRecords[0], r, includeVectors: true, fixture.TestStore.VectorsComparable),
-    //         r => AssertEquivalent(newRecords[1], r, includeVectors: true, fixture.TestStore.VectorsComparable));
-
-    //     Assert.Equal(fixture.TestData.Count + 2, await this.GetRecordCount());
-    // }
+        Assert.Collection(
+            received.OrderBy(r => r[IntegerPropertyName]),
+            r => AssertEquivalent(newRecords[0], r, includeVectors: true, fixture.TestStore.VectorsComparable),
+            r => AssertEquivalent(newRecords[1], r, includeVectors: true, fixture.TestStore.VectorsComparable));
+    }
 
     #endregion Upsert
 
@@ -287,9 +283,9 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
     {
         var recordToRemove = fixture.TestData[2];
 
-        Assert.NotNull(await fixture.Collection.GetAsync((TKey)recordToRemove[DynamicDataModelFixture<TKey>.KeyPropertyName]!));
-        await fixture.Collection.DeleteAsync((TKey)recordToRemove[DynamicDataModelFixture<TKey>.KeyPropertyName]!);
-        Assert.Null(await fixture.Collection.GetAsync((TKey)recordToRemove[DynamicDataModelFixture<TKey>.KeyPropertyName]!));
+        Assert.NotNull(await fixture.Collection.GetAsync((TKey)recordToRemove[KeyPropertyName]!));
+        await fixture.Collection.DeleteAsync((TKey)recordToRemove[KeyPropertyName]!);
+        Assert.Null(await fixture.Collection.GetAsync((TKey)recordToRemove[KeyPropertyName]!));
     }
 
     // TODO: https://github.com/microsoft/semantic-kernel/issues/13303
@@ -314,6 +310,51 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
 
     #endregion Delete
 
+    #region Search
+
+    [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
+    public virtual async Task SearchAsync(bool includeVectors)
+    {
+        var expectedRecord = fixture.TestData[0];
+
+        var result = await this.Collection
+            .SearchAsync(
+                expectedRecord[VectorPropertyName]!,
+                top: 1,
+                new() { IncludeVectors = includeVectors })
+            .SingleAsync();
+
+        AssertEquivalent(expectedRecord, result.Record, includeVectors, fixture.TestStore.VectorsComparable);
+    }
+
+    [ConditionalFact]
+    public virtual async Task SearchAsync_with_Skip()
+    {
+        var result = await this.Collection
+            .SearchAsync(
+                fixture.TestData[0][VectorPropertyName]!,
+                top: 1,
+                new() { Skip = 1 })
+            .SingleAsync();
+
+        AssertEquivalent(fixture.TestData[1], result.Record, includeVectors: false, fixture.TestStore.VectorsComparable);
+    }
+
+    [ConditionalFact]
+    public virtual async Task SearchAsync_with_Filter()
+    {
+        var result = await this.Collection
+            .SearchAsync(
+                fixture.TestData[0][VectorPropertyName]!,
+                top: 1,
+                new() { Filter = r => (int)r[IntegerPropertyName]! == 2 })
+            .SingleAsync();
+
+        AssertEquivalent(fixture.TestData[1], result.Record, includeVectors: false, fixture.TestStore.VectorsComparable);
+    }
+
+    #endregion Search
+
     protected static void AssertEquivalent(Dictionary<string, object?> expected, Dictionary<string, object?>? actual, bool includeVectors, bool compareVectors)
     {
         Assert.NotNull(actual);
@@ -325,32 +366,33 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         if (includeVectors)
         {
             Assert.Equal(
-                ((ReadOnlyMemory<float>)expected[EmbeddingPropertyName]!).Length,
-                ((ReadOnlyMemory<float>)actual[EmbeddingPropertyName]!).Length);
+                ((ReadOnlyMemory<float>)expected[VectorPropertyName]!).Length,
+                ((ReadOnlyMemory<float>)actual[VectorPropertyName]!).Length);
 
             if (compareVectors)
             {
                 Assert.Equal(
-                    ((ReadOnlyMemory<float>)expected[EmbeddingPropertyName]!).ToArray(),
-                    ((ReadOnlyMemory<float>)actual[EmbeddingPropertyName]!).ToArray());
+                    ((ReadOnlyMemory<float>)expected[VectorPropertyName]!).ToArray(),
+                    ((ReadOnlyMemory<float>)actual[VectorPropertyName]!).ToArray());
             }
         }
         else
         {
-            Assert.False(actual.ContainsKey(EmbeddingPropertyName));
+            Assert.False(actual.ContainsKey(VectorPropertyName));
         }
     }
 
     public const string KeyPropertyName = "key";
     public const string StringPropertyName = "text";
     public const string IntegerPropertyName = "integer";
-    public const string EmbeddingPropertyName = "embedding";
+    public const string VectorPropertyName = "vector";
 
     protected VectorStoreCollection<object, Dictionary<string, object?>> Collection => fixture.Collection;
 
     public abstract class Fixture : DynamicVectorStoreCollectionFixture<TKey>
     {
-        public override string CollectionName => "DynamicModelTests";
+        protected override string CollectionNameBase => nameof(DynamicModelTests<int>);
+
         protected override string KeyPropertyName => DynamicModelTests<TKey>.KeyPropertyName;
 
         protected override VectorStoreCollection<object, Dictionary<string, object?>> GetCollection()
@@ -364,7 +406,7 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
                     new VectorStoreKeyProperty(this.KeyPropertyName, typeof(TKey)),
                     new VectorStoreDataProperty(StringPropertyName, typeof(string)) { IsIndexed = true},
                     new VectorStoreDataProperty(IntegerPropertyName, typeof(int)) { IsIndexed = true },
-                    new VectorStoreVectorProperty(EmbeddingPropertyName, typeof(ReadOnlyMemory<float>), dimensions: 3)
+                    new VectorStoreVectorProperty(VectorPropertyName, typeof(ReadOnlyMemory<float>), dimensions: 3)
                     {
                         DistanceFunction = this.DistanceFunction,
                         IndexKind = this.IndexKind
@@ -379,21 +421,21 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
                 [this.KeyPropertyName] = this.GenerateNextKey<TKey>(),
                 [StringPropertyName] = "foo",
                 [IntegerPropertyName] = 1,
-                [EmbeddingPropertyName] = new ReadOnlyMemory<float>([1, 2, 3])
+                [VectorPropertyName] = new ReadOnlyMemory<float>([1, 2, 3])
             },
             new()
             {
                 [this.KeyPropertyName] = this.GenerateNextKey<TKey>(),
                 [StringPropertyName] = "bar",
                 [IntegerPropertyName] = 2,
-                [EmbeddingPropertyName] = new ReadOnlyMemory<float>([1, 2, 4])
+                [VectorPropertyName] = new ReadOnlyMemory<float>([1, 2, 4])
             },
             new()
             {
                 [this.KeyPropertyName] = this.GenerateNextKey<TKey>(),
                 [StringPropertyName] = "foo", // identical text as above
                 [IntegerPropertyName] = 3,
-                [EmbeddingPropertyName] = new ReadOnlyMemory<float>([1, 2, 5])
+                [VectorPropertyName] = new ReadOnlyMemory<float>([1, 2, 5])
             }
         ];
     }

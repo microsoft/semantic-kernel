@@ -27,7 +27,9 @@
     <Project Path="samples/GettingStartedWithVectorStores/GettingStartedWithVectorStores.csproj" />
     <Project Path="samples/LearnResources/LearnResources.csproj" />
   </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/" />
+  <Folder Name="/samples/AgentFrameworkMigration/">
+    <File Path="samples/AgentFrameworkMigration/README.md" />
+  </Folder>
   <Folder Name="/samples/AgentFrameworkMigration/OpenAI/">
     <Project Path="samples/AgentFrameworkMigration/OpenAI/Step01_Basics/OpenAI_Step01_Basics.csproj" />
     <Project Path="samples/AgentFrameworkMigration/OpenAI/Step02_ToolCall/OpenAI_Step02_ToolCall.csproj" />
@@ -37,6 +39,7 @@
     <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step01_Basics/AzureOpenAI_Step01_Basics.csproj" />
     <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step02_ToolCall/AzureOpenAI_Step02_ToolCall.csproj" />
     <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step03_DependencyInjection/AzureOpenAI_Step03_DependencyInjection.csproj" />
+    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step04_ToolCall_WithOpenAPI/AzureOpenAI_Step04_ToolCall_WithOpenAPI.csproj" />
   </Folder>
   <Folder Name="/samples/AgentFrameworkMigration/OpenAIAssistants/">
     <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step01_Basics/OpenAIAssistants_Step01_Basics.csproj" />

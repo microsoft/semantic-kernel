@@ -125,7 +125,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         if (!string.IsNullOrEmpty(vectorProperty.IndexKind) && vectorProperty.IndexKind != "PGA")
         {
-            throw new InvalidOperationException(
+            throw new NotSupportedException(
                 $"IndexKind of '{vectorProperty.IndexKind}' for property '{vectorProperty.ModelName}' is not supported. Pinecone only supports 'PGA' (Pinecone Graph Algorithm), which is always enabled.");
         }
 
@@ -233,7 +233,8 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var keysList = keys switch
         {
             IEnumerable<string> k => k.ToList(),
-            IEnumerable<object> k => k.Cast<string>().ToList(),
+            IEnumerable<Guid> k => k.Select(x => x.ToString()).ToList(),
+            IEnumerable<object> k => k.Select(x => x.ToString()!).ToList(),
             _ => throw new UnreachableException("string key should have been validated during model building")
         };
 #pragma warning restore CA1851
@@ -287,7 +288,8 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var keysList = keys switch
         {
             IEnumerable<string> k => k.ToList(),
-            IEnumerable<object> k => k.Cast<string>().ToList(),
+            IEnumerable<Guid> k => k.Select(x => x.ToString()).ToList(),
+            IEnumerable<object> k => k.Select(x => x.ToString()!).ToList(),
             _ => throw new UnreachableException("string key should have been validated during model building")
         };
 

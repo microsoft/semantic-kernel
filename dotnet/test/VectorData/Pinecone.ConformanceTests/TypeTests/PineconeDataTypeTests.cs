@@ -14,9 +14,6 @@ public class PineconeDataTypeTests(PineconeDataTypeTests.Fixture fixture)
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
 
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "data-type-tests";
-
         // Pincone does not support null checks in vector search pre-filters
         public override bool IsNullFilteringSupported => false;
 

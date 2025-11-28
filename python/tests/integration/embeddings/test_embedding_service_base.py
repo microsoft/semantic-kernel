@@ -17,10 +17,6 @@ from semantic_kernel.connectors.ai.google.google_ai import (
     GoogleAIEmbeddingPromptExecutionSettings,
     GoogleAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai import (
-    VertexAIEmbeddingPromptExecutionSettings,
-    VertexAITextEmbedding,
-)
 from semantic_kernel.connectors.ai.hugging_face import HuggingFaceTextEmbedding
 from semantic_kernel.connectors.ai.mistral_ai import MistralAITextEmbedding
 from semantic_kernel.connectors.ai.ollama import OllamaEmbeddingPromptExecutionSettings, OllamaTextEmbedding
@@ -47,7 +43,7 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
     ["MISTRALAI_API_KEY", "MISTRALAI_EMBEDDING_MODEL_ID"], raise_if_not_set=False
 )  # We don't have a MistralAI deployment
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
-vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_EMBEDDING_MODEL_ID"])
 # When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
 bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
@@ -111,8 +107,8 @@ class EmbeddingServiceTestBase:
                 GoogleAIEmbeddingPromptExecutionSettings,
             ),
             "vertex_ai": (
-                VertexAITextEmbedding() if vertex_ai_setup else None,
-                VertexAIEmbeddingPromptExecutionSettings,
+                GoogleAITextEmbedding(use_vertexai=True) if vertex_ai_setup else None,
+                GoogleAIEmbeddingPromptExecutionSettings,
             ),
             "bedrock_amazon_titan-v1": (
                 BedrockTextEmbedding(model_id="amazon.titan-embed-text-v1") if bedrock_setup else None,
