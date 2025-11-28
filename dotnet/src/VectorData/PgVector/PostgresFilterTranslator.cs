@@ -23,7 +23,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._parameterIndex = startParamIndex;
     }
 
-    internal List<object> ParameterValues { get; } = new();
+    internal List<object> ParameterValues { get; } = [];
 
     protected override void TranslateConstant(object? value, bool isSearchCondition)
     {

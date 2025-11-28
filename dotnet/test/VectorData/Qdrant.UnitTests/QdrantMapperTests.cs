@@ -289,7 +289,7 @@ public class QdrantMapperTests
             DataDouble = 5.5d,
             DataBool = true,
             DataDateTimeOffset = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)),
-            DataArrayInt = new List<int> { 1, 2, 3, 4 },
+            DataArrayInt = [1, 2, 3, 4],
             Vector1 = new float[] { 1, 2, 3, 4 },
             Vector2 = new float[] { 5, 6, 7, 8 },
             NotAnnotated = "notAnnotated",
@@ -374,12 +374,12 @@ public class QdrantMapperTests
 
     private static VectorStoreCollectionDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
     {
-        Properties = new List<VectorStoreProperty>
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", keyType) { StorageName = "key" },
             new VectorStoreDataProperty("Data", typeof(string)) { StorageName = "data" },
             new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector" },
-        },
+        ],
     };
 
     private sealed class SinglePropsModel<TKey>
@@ -398,8 +398,8 @@ public class QdrantMapperTests
 
     private static VectorStoreCollectionDefinition CreateMultiPropsVectorStoreRecordDefinition(Type keyType) => new()
     {
-        Properties = new List<VectorStoreProperty>
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", keyType) { StorageName = "key" },
             new VectorStoreDataProperty("DataString", typeof(string)) { StorageName = "dataString" },
             new VectorStoreDataProperty("DataInt", typeof(int)) { StorageName = "dataInt" },
@@ -411,7 +411,7 @@ public class QdrantMapperTests
             new VectorStoreDataProperty("DataArrayInt", typeof(List<int>)) { StorageName = "dataArrayInt" },
             new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector1" },
             new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector2" },
-        },
+        ],
     };
 
     private sealed class MultiPropsModel<TKey>

@@ -192,7 +192,7 @@ public class BinaryContent : KernelContent
         var newMetadata = this.Metadata as Dictionary<string, object?>;
         if (newMetadata is null)
         {
-            newMetadata = new Dictionary<string, object?>();
+            newMetadata = [];
             if (this.Metadata is not null)
             {
                 foreach (var property in this.Metadata!)

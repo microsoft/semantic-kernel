@@ -56,7 +56,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
                 && p.Type != typeof(decimal)
                 && p.Type != typeof(Guid)
                 && p.Type != typeof(DateTime)
-#if NET8_0_OR_GREATER
+#if NET
                 && p.Type != typeof(DateOnly)
                 && p.Type != typeof(TimeOnly)
 #endif

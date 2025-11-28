@@ -445,12 +445,12 @@ public class QdrantCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
                 new VectorStoreDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
                 new VectorStoreVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
-            }
+            ]
         };
 
         // Act.

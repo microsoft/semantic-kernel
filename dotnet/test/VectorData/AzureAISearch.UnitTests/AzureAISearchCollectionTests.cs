@@ -321,8 +321,10 @@ public class AzureAISearchCollectionTests
         // Arrange upload result object.
 #pragma warning disable Moq1002 // Moq: No matching constructor
         var indexingResult = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey1, true, 200);
-        var indexingResults = new List<IndexingResult>();
-        indexingResults.Add(indexingResult.Object);
+        var indexingResults = new List<IndexingResult>
+        {
+            indexingResult.Object
+        };
         var indexDocumentsResultMock = new Mock<IndexDocumentsResult>(MockBehavior.Strict, indexingResults);
 #pragma warning restore Moq1002 // Moq: No matching constructor
 
@@ -363,9 +365,11 @@ public class AzureAISearchCollectionTests
         var indexingResult1 = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey1, true, 200);
         var indexingResult2 = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey2, true, 200);
 
-        var indexingResults = new List<IndexingResult>();
-        indexingResults.Add(indexingResult1.Object);
-        indexingResults.Add(indexingResult2.Object);
+        var indexingResults = new List<IndexingResult>
+        {
+            indexingResult1.Object,
+            indexingResult2.Object
+        };
         var indexDocumentsResultMock = new Mock<IndexDocumentsResult>(MockBehavior.Strict, indexingResults);
 #pragma warning restore Moq1002 // Moq: No matching constructor
 
@@ -408,12 +412,12 @@ public class AzureAISearchCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("Data1", typeof(string)),
                 new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
-            }
+            ]
         };
 
         // Act.

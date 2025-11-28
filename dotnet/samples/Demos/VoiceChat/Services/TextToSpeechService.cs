@@ -21,7 +21,7 @@ public class TextToSpeechService
 
     // Pipeline integration method for transforming chat events into speech events.
     public async Task<SpeechEvent> TransformAsync(ChatEvent evt) =>
-        new SpeechEvent(evt.TurnId, evt.CancellationToken, await this.SynthesizeAsync(evt.Payload, evt.CancellationToken));
+        new(evt.TurnId, evt.CancellationToken, await this.SynthesizeAsync(evt.Payload, evt.CancellationToken));
 
     // Synthesizes speech from text using OpenAI's TTS API.
     private Task<byte[]> SynthesizeAsync(string text, CancellationToken token) =>

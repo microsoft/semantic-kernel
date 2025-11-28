@@ -285,12 +285,12 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("Message must have a role.", exception.Message);
     }
 
-    public static TheoryData<object> JsonObjectsToParse => new()
-    {
+    public static TheoryData<object> JsonObjectsToParse =>
+    [
         new { name = "Alice", age = 25 },
         "{\"name\":\"Alice\",\"age\":25}",
         JsonNode.Parse("{\"name\":\"Alice\",\"age\":25}")!
-    };
+    ];
 
     #region private
 

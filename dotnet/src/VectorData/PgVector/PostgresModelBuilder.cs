@@ -75,7 +75,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         return type == typeof(ReadOnlyMemory<float>) ||
             type == typeof(Embedding<float>) ||
             type == typeof(float[]) ||
-#if NET8_0_OR_GREATER
+#if NET
             type == typeof(ReadOnlyMemory<Half>) ||
             type == typeof(Embedding<Half>) ||
             type == typeof(Half[]) ||
@@ -91,7 +91,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         IEmbeddingGenerator embeddingGenerator,
         Type? userRequestedEmbeddingType)
         => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-#if NET8_0_OR_GREATER
+#if NET
         ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
 #endif
         ?? vectorProperty.ResolveEmbeddingType<BinaryEmbedding>(embeddingGenerator, userRequestedEmbeddingType);

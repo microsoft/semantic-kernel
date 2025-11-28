@@ -265,7 +265,7 @@ public class ServiceConversionExtensionsTests
         oaiSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(JsonSerializer.Serialize(actualSettings));
         Assert.Equal("json_object", oaiSettings?.ResponseFormat?.ToString());
 
-        await client.GetResponseAsync(messages, new() { ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("""
+        await client.GetResponseAsync(messages, new() { ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonElement.Parse("""
             {"type": "string"}
             """)) });
         oaiSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(JsonSerializer.Serialize(actualSettings));

@@ -382,12 +382,12 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                         switch (key)
                         {
                             case ulong l:
-                                ulongKeys = new List<ulong> { l };
+                                ulongKeys = [l];
                                 keyList = ulongKeys;
                                 break;
 
                             case Guid g:
-                                guidKeys = new List<Guid> { g };
+                                guidKeys = [g];
                                 keyList = guidKeys;
                                 break;
 
@@ -610,7 +610,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     #endregion Search
 
     /// <inheritdoc />
-    public async override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);

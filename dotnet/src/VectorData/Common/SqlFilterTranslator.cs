@@ -178,7 +178,7 @@ internal abstract class SqlFilterTranslator
             case DateTime dateTime:
             case DateTimeOffset dateTimeOffset:
             case Array:
-#if NET8_0_OR_GREATER
+#if NET
             case DateOnly dateOnly:
             case TimeOnly timeOnly:
 #endif

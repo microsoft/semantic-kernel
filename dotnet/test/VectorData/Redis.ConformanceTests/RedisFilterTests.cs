@@ -78,7 +78,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
         protected override string CollectionNameBase => "JsonCollectionFilterTests";
 
         public override string SpecialCharactersText
-#if NET8_0_OR_GREATER
+#if NET
             => base.SpecialCharactersText;
 #else
             // Redis client doesn't properly escape '"' on Full Framework.
@@ -151,7 +151,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
         protected override string CollectionNameBase => "HashSetCollectionFilterTests";
 
         public override string SpecialCharactersText
-#if NET8_0_OR_GREATER
+#if NET
             => base.SpecialCharactersText;
 #else
             // Redis client doesn't properly escape '"' on Full Framework.

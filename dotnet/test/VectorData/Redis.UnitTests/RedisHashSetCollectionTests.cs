@@ -429,12 +429,12 @@ public class RedisHashSetCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
                 new VectorStoreDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
                 new VectorStoreVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
-            }
+            ]
         };
 
         // Act.

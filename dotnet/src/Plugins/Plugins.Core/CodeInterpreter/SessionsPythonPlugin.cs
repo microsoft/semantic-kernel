@@ -192,7 +192,7 @@ public sealed partial class SessionsPythonPlugin
 
         using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
 
-        var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
+        var jsonElementResult = JsonElement.Parse(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
 
         var files = jsonElementResult.GetProperty("value");
 

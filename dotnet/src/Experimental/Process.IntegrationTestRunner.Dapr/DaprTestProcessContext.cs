@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Process.Serialization;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests;
+
 internal sealed class DaprTestProcessContext : KernelProcessContext
 {
     private readonly HttpClient _httpClient;
