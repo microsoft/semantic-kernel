@@ -454,13 +454,21 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var kernel = new Kernel();
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
         {
+            KernelFunctionFactory.CreateFromMethod((string? format = null)
+                => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
+
             KernelFunctionFactory.CreateFromMethod(()
-                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
+                parameters: [new KernelParameterMetadata("param1") { ParameterType = typeof(string), Description = "desc", IsRequired = false }]),
         }));
         kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
 
+        // Use multiple function calls response to verify termination stops processing additional tool calls
+        var responseContentWithMultipleFunctions = File.ReadAllText("./TestData/chat_multiple_function_calls_response.json")
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+
         using var handlerStub = new MultipleHttpMessageHandlerStub();
-        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(responseContentWithMultipleFunctions);
         handlerStub.AddJsonResponse(this._responseContent);
 
 #pragma warning disable CA2000
@@ -476,7 +484,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: kernel);
 
         // Assert
-        Assert.Equal(1, filterInvocationCount);
+        Assert.Equal(2, filterInvocationCount);
     }
 
     [Fact]
@@ -540,8 +548,11 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var kernel = new Kernel();
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
         {
-            KernelFunctionFactory.CreateFromMethod(()
+            KernelFunctionFactory.CreateFromMethod((string param1)
                     => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
+
+            KernelFunctionFactory.CreateFromMethod((string format)
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
         }));
         kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
 
