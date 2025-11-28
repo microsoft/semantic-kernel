@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;

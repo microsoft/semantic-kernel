@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
+
 internal class LocalEdgeGroupProcessor
 {
     private readonly KernelProcessEdgeGroup _edgeGroup;
