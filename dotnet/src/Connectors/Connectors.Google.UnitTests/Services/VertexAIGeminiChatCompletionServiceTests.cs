@@ -131,14 +131,12 @@ public sealed class VertexAIGeminiChatCompletionServiceTests : IDisposable
         string model = "gemini-2.5-pro";
         var sut = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project", httpClient: this._httpClient);
 
-#pragma warning disable CS0618 // Type or member is obsolete - testing deprecated ThinkingBudget property
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ThinkingConfig = thinkingBudget.HasValue
                 ? new GeminiThinkingConfig { ThinkingBudget = thinkingBudget.Value }
                 : null
         };
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         var result = await sut.GetChatMessageContentAsync("my prompt", executionSettings);

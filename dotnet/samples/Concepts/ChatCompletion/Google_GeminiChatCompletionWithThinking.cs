@@ -14,7 +14,7 @@ namespace ChatCompletion;
 /// See: https://developers.googleblog.com/en/start-building-with-gemini-25-flash/#:~:text=thinking%20budgets
 /// </para>
 /// </summary>
-public sealed class Google_GeminiChatCompletionWithThinkingBudget(ITestOutputHelper output) : BaseTest(output)
+public sealed class Google_GeminiChatCompletionWithThinking(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GoogleAIChatCompletionUsingThinkingBudget()
@@ -32,13 +32,11 @@ public sealed class Google_GeminiChatCompletionWithThinkingBudget(ITestOutputHel
 
         var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
-#pragma warning disable CS0618 // Type or member is obsolete - ThinkingBudget is deprecated but still needed for Gemini 2.5 models
         var executionSettings = new GeminiPromptExecutionSettings
         {
             // This parameter gives the model how much tokens it can use during the thinking process.
             ThinkingConfig = new() { ThinkingBudget = 2000 }
         };
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for new power tools, any suggestion?");

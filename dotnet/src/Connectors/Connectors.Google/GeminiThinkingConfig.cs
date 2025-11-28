@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
@@ -19,7 +18,6 @@ public class GeminiThinkingConfig
     /// This parameter is specific to Gemini 2.5 and similar experimental models.
     /// If no ThinkingBudget is explicitly set, the API default (likely 0) will be used
     /// </remarks>
-    [Obsolete("ThinkingBudget is deprecated in Gemini 3.0. Use ThinkingLevel instead.")]
     [JsonPropertyName("thinking_budget")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ThinkingBudget { get; set; }

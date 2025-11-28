@@ -708,21 +708,17 @@ public sealed class GeminiRequestTests
     {
         // Arrange
         var prompt = "prompt-example";
-#pragma warning disable CS0618 // Type or member is obsolete - testing deprecated ThinkingBudget property
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ModelId = "gemini-2.5-flash-preview-04-17",
             ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 }
         };
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
-#pragma warning disable CS0618 // Type or member is obsolete - testing deprecated ThinkingBudget property
         Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [Fact]

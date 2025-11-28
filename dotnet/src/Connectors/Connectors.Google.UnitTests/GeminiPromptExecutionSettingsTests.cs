@@ -133,9 +133,7 @@ public sealed class GeminiPromptExecutionSettingsTests
             settings.Category.Equals(category) &&
             settings.Threshold.Equals(threshold));
 
-#pragma warning disable CS0618 // Type or member is obsolete - testing deprecated ThinkingBudget property
         Assert.Equal(1000, executionSettings.ThinkingConfig?.ThinkingBudget);
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [Fact]
