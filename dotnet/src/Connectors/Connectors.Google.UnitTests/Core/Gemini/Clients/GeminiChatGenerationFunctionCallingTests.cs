@@ -463,7 +463,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         }));
         kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
 
-        // Use multiple function calls response to verify termination stops processing additional tool calls
+        // Use multiple function calls response to that filter is invoked for each tool call
         var responseContentWithMultipleFunctions = File.ReadAllText("./TestData/chat_multiple_function_calls_response.json")
             .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
 
