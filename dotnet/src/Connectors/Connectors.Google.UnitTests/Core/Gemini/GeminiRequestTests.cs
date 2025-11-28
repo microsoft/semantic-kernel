@@ -721,6 +721,24 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
     }
 
+    [Fact]
+    public void FromPromptAndExecutionSettingsWithThinkingLevelReturnsInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-3.0-flash",
+            ThinkingConfig = new GeminiThinkingConfig { ThinkingLevel = "high" }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingLevel, request.Configuration?.ThinkingConfig?.ThinkingLevel);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 

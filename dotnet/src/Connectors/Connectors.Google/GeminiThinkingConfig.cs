@@ -22,6 +22,15 @@ public class GeminiThinkingConfig
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ThinkingBudget { get; set; }
 
+    /// <summary>The thinking level parameter specifies the amount of thinking the model should use for its thinking process.</summary>
+    /// <remarks>
+    /// <para>Possible values are "none", "low", "medium", and "high". The default is "medium".</para>
+    /// This parameter is specific to Gemini 3.0 and later models.
+    /// </remarks>
+    [JsonPropertyName("thinking_level")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ThinkingLevel { get; set; }
+
     /// <summary>
     /// Clones this instance.
     /// </summary>
