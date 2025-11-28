@@ -440,6 +440,192 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         Assert.Contains(this._timePluginDate.FullyQualifiedName, functionNames);
     }
 
+    [Fact]
+    public async Task IfAutoInvokeShouldInvokeAutoFunctionInvocationFilterAsync()
+    {
+        // Arrange
+        int filterInvocationCount = 0;
+        var autoFunctionInvocationFilter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            filterInvocationCount++;
+            await next(context);
+        });
+
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod((string? format = null)
+                => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
+
+            KernelFunctionFactory.CreateFromMethod(()
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
+                parameters: [new KernelParameterMetadata("param1") { ParameterType = typeof(string), Description = "desc", IsRequired = false }]),
+        }));
+        kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
+
+        // Use multiple function calls response to that filter is invoked for each tool call
+        var responseContentWithMultipleFunctions = File.ReadAllText("./TestData/chat_multiple_function_calls_response.json")
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(responseContentWithMultipleFunctions);
+        handlerStub.AddJsonResponse(this._responseContent);
+
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: kernel);
+
+        // Assert
+        Assert.Equal(2, filterInvocationCount);
+    }
+
+    [Fact]
+    public async Task IfAutoInvokeShouldProvideCorrectContextToAutoFunctionInvocationFilterAsync()
+    {
+        // Arrange
+        AutoFunctionInvocationContext? capturedContext = null;
+        var autoFunctionInvocationFilter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            capturedContext = context;
+            await next(context);
+        });
+
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(()
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
+        }));
+        kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
+
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: kernel);
+
+        // Assert
+        Assert.NotNull(capturedContext);
+        Assert.Equal(0, capturedContext.RequestSequenceIndex); // First request
+        Assert.Equal(0, capturedContext.FunctionSequenceIndex); // First function in the batch
+        Assert.Equal(1, capturedContext.FunctionCount); // One function call in this response
+        Assert.NotNull(capturedContext.Function);
+        Assert.Equal("Now", capturedContext.Function.Name);
+        Assert.NotNull(capturedContext.ChatHistory);
+        Assert.NotNull(capturedContext.Result);
+    }
+
+    [Fact]
+    public async Task IfAutoInvokeShouldTerminateWhenFilterRequestsTerminationAsync()
+    {
+        // Arrange
+        int filterInvocationCount = 0;
+        var autoFunctionInvocationFilter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            filterInvocationCount++;
+            context.Terminate = true;
+            await next(context);
+        });
+
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod((string param1)
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
+
+            KernelFunctionFactory.CreateFromMethod((string format)
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
+        }));
+        kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
+
+        // Use multiple function calls response to verify termination stops processing additional tool calls
+        var responseContentWithMultipleFunctions = File.ReadAllText("./TestData/chat_multiple_function_calls_response.json")
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(responseContentWithMultipleFunctions);
+        handlerStub.AddJsonResponse(this._responseContent); // This should not be called due to termination
+
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: kernel);
+
+        // Assert
+        // Filter should have been invoked only once (for the first tool call) because termination was requested
+        Assert.Equal(1, filterInvocationCount);
+        // Only 1 request should be made since termination happens after receiving the tool calls
+        // but before making the second request to the model with the tool results
+        Assert.Single(handlerStub.RequestContents);
+    }
+
+    [Fact]
+    public async Task IfAutoInvokeShouldAllowFilterToModifyFunctionResultAsync()
+    {
+        // Arrange
+        const string ModifiedResult = "Modified result by filter";
+        var autoFunctionInvocationFilter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            await next(context);
+            // Modify the result after function execution
+            context.Result = new FunctionResult(context.Function, ModifiedResult);
+        });
+
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(()
+                    => "Original result", "Now", "TimePlugin.Now"),
+        }));
+        kernel.AutoFunctionInvocationFilters.Add(autoFunctionInvocationFilter);
+
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: kernel);
+
+        // Assert - Check that the modified result was sent to the model
+        var secondRequestContent = handlerStub.GetRequestContentAsString(1);
+        Assert.NotNull(secondRequestContent);
+        Assert.Contains(ModifiedResult, secondRequestContent);
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
@@ -464,5 +650,20 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+    }
+
+    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
+    {
+        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
+
+        public AutoFunctionInvocationFilter(Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> callback)
+        {
+            this._callback = callback;
+        }
+
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            await this._callback(context, next);
+        }
     }
 }
