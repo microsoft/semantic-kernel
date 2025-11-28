@@ -67,9 +67,7 @@ internal partial class AzureClientCore
 
         if (azureSettings.SetNewMaxCompletionTokensEnabled)
         {
-#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            options.SetNewMaxCompletionTokensPropertyEnabled(true);
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            SetMaxTokenPatchValues(options, true);
         }
 
         if (azureSettings.UserSecurityContext is not null)
@@ -260,5 +258,33 @@ internal partial class AzureClientCore
         }
 
         throw new NotSupportedException($"The provided audio options '{executionSettings.Audio?.GetType()}' is not supported.");
+    }
+
+    private static readonly ReadOnlyMemory<byte> s_newMaxTokenJsonPath = "$.max_completion_tokens"u8.ToArray();
+    private static readonly ReadOnlyMemory<byte> s_oldMaxTokenJsonPath = "$.max_tokens"u8.ToArray();
+
+    private static void SetMaxTokenPatchValues(ChatCompletionOptions options, bool? newPropertyRequested = null)
+    {
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        bool newPropertyInUse = options.Patch.Contains(s_newMaxTokenJsonPath.Span) && !options.Patch.IsRemoved(s_newMaxTokenJsonPath.Span);
+        bool useNewProperty = newPropertyRequested ?? newPropertyInUse;
+
+        ReadOnlySpan<byte> selectedPath = useNewProperty ? s_newMaxTokenJsonPath.Span : s_oldMaxTokenJsonPath.Span;
+        ReadOnlySpan<byte> deselectedPath = useNewProperty ? s_oldMaxTokenJsonPath.Span : s_newMaxTokenJsonPath.Span;
+
+        BinaryData? valueBytes = options.MaxOutputTokenCount is null
+            ? null
+            : BinaryData.FromString(options.MaxOutputTokenCount.ToString()!);
+
+        if (valueBytes is null)
+        {
+            options.Patch.Remove(selectedPath);
+        }
+        else
+        {
+            options.Patch.Set(selectedPath, valueBytes);
+        }
+        options.Patch.Remove(deselectedPath);
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }
