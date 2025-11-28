@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Xunit;
 
@@ -84,8 +85,14 @@ public sealed class GoogleAIEmbeddingRequestTests
         Assert.Contains($"{DimensionalityJsonPropertyName}:{Dimensions}", json);
     }
 
-    [Fact]
-    public void FromDataShouldIncludeTaskTypeWhenProvided()
+    [Theory]
+    [InlineData("TaskType")]
+    [InlineData("Task_Type")]
+    [InlineData("taskType")]
+    [InlineData("task_Type")]
+    [InlineData("tasktype")]
+    [InlineData("task_type")]
+    public void FromDataShouldIncludeTaskTypeWhenProvided(string additionalPropertyKeyName)
     {
         // Arrange
         var input = new[] { "This is a retrieval document." };
@@ -93,8 +100,10 @@ public sealed class GoogleAIEmbeddingRequestTests
         var dimensions = 1024;
         var taskType = "RETRIEVAL_DOCUMENT";
 
+        var options = new EmbeddingGenerationOptions { AdditionalProperties = new AdditionalPropertiesDictionary { [additionalPropertyKeyName] = taskType } };
+
         // Act
-        var request = GoogleAIEmbeddingRequest.FromData(input, modelId, dimensions, taskType);
+        var request = GoogleAIEmbeddingRequest.FromData(input, modelId, dimensions, options);
 
         // Serialize to JSON (this is what would be sent in the HTTP request)
         var json = System.Text.Json.JsonSerializer.Serialize(request);

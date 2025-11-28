@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
@@ -11,25 +12,48 @@ internal sealed class GoogleAIEmbeddingRequest
     [JsonPropertyName("requests")]
     public IList<RequestEmbeddingContent> Requests { get; set; } = null!;
 
-    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId, int? dimensions = null, string? taskType = null) => new()
+    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId, int? dimensions = null, EmbeddingGenerationOptions? options = null)
     {
-        Requests = data.Select(text => new RequestEmbeddingContent
+        static string? GetTaskType(EmbeddingGenerationOptions? options)
         {
-            Model = $"models/{modelId}",
-            Content = new()
+            if (options?.AdditionalProperties is not null)
             {
-                Parts =
-                [
-                    new()
-                    {
-                        Text = text
-                    }
-                ]
-            },
-            Dimensions = dimensions,
-            TaskType = taskType
-        }).ToList()
-    };
+                object? taskType = null;
+                object? task_type = null;
+
+                // AdditionalProperties is case-insensitive
+                if (options?.AdditionalProperties.TryGetValue("task_type", out task_type) == true ||
+                    options?.AdditionalProperties.TryGetValue("tasktype", out taskType) == true)
+                {
+                    return (task_type ?? taskType)?.ToString();
+                }
+            }
+
+            return null;
+        }
+
+        var request = new GoogleAIEmbeddingRequest
+        {
+            Requests = [.. data.Select(text => new RequestEmbeddingContent
+            {
+                Model = $"models/{modelId}",
+                Content = new()
+                {
+                    Parts =
+                    [
+                        new()
+                        {
+                            Text = text
+                        }
+                    ]
+                },
+                Dimensions = dimensions,
+                TaskType = GetTaskType(options)
+            })]
+        };
+
+        return request;
+    }
 
     internal sealed class RequestEmbeddingContent
     {

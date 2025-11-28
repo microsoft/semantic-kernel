@@ -65,13 +65,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
-        string? taskType = null;
-        if (options?.AdditionalProperties?.TryGetValue("task_type", out var taskTypeValue) == true)
-        {
-            taskType = taskTypeValue?.ToString();
-        }
-
-        var geminiRequest = this.GetEmbeddingRequest(data, taskType);
+        var geminiRequest = this.GetEmbeddingRequest(data, options);
 
         using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
 
@@ -81,8 +75,8 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, string? taskType = null)
-    => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId, this._dimensions, taskType);
+    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
+    => GoogleAIEmbeddingRequest.FromData(data, options?.ModelId ?? this._embeddingModelId, options?.Dimensions ?? this._dimensions, options);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<GoogleAIEmbeddingResponse>(body));
