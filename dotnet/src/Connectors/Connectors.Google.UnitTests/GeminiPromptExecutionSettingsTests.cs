@@ -133,7 +133,56 @@ public sealed class GeminiPromptExecutionSettingsTests
             settings.Category.Equals(category) &&
             settings.Threshold.Equals(threshold));
 
+#pragma warning disable CS0618 // Type or member is obsolete - testing deprecated ThinkingBudget property
         Assert.Equal(1000, executionSettings.ThinkingConfig?.ThinkingBudget);
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    [Fact]
+    public void ItCreatesGeminiExecutionSettingsFromJsonSnakeCaseWithThinkingLevel()
+    {
+        // Arrange
+        var category = GeminiSafetyCategory.Harassment;
+        var threshold = GeminiSafetyThreshold.BlockOnlyHigh;
+        string json = $$"""
+                        {
+                          "temperature": 0.7,
+                          "top_p": 0.7,
+                          "top_k": 25,
+                          "candidate_count": 2,
+                          "stop_sequences": [ "foo", "bar" ],
+                          "max_tokens": 128,
+                          "audio_timestamp": true,
+                          "safety_settings": [
+                            {
+                              "category": "{{category.Label}}",
+                              "threshold": "{{threshold.Label}}"
+                            }
+                          ],
+                          "thinking_config": {
+                            "thinking_level": "high"
+                          }
+                        }
+                        """;
+        var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
+
+        // Act
+        GeminiPromptExecutionSettings executionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(actualSettings);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal(0.7, executionSettings.Temperature);
+        Assert.Equal(0.7, executionSettings.TopP);
+        Assert.Equal(25, executionSettings.TopK);
+        Assert.Equal(2, executionSettings.CandidateCount);
+        Assert.Equal(["foo", "bar"], executionSettings.StopSequences);
+        Assert.Equal(128, executionSettings.MaxTokens);
+        Assert.True(executionSettings.AudioTimestamp);
+        Assert.Single(executionSettings.SafetySettings!, settings =>
+            settings.Category.Equals(category) &&
+            settings.Threshold.Equals(threshold));
+
+        Assert.Equal("high", executionSettings.ThinkingConfig?.ThinkingLevel);
     }
 
     [Fact]
@@ -159,7 +208,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                             }
                           ],
                           "thinking_config": {
-                            "thinking_budget": 1000
+                            "thinking_level": "high"
                           }
                         }
                         """;
@@ -202,7 +251,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                             }
                           ],
                           "thinking_config": {
-                            "thinking_budget": 1000
+                            "thinking_level": "high"
                           }
                         }
                         """;
@@ -219,6 +268,6 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.AudioTimestamp = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences!.Add("baz"));
         Assert.Throws<NotSupportedException>(() => executionSettings.SafetySettings!.Add(new GeminiSafetySetting(GeminiSafetyCategory.Toxicity, GeminiSafetyThreshold.Unspecified)));
-        Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1 });
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingLevel = "low" });
     }
 }

@@ -498,7 +498,13 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+#pragma warning disable CS0618 // Type or member is obsolete - ThinkingBudget is deprecated but still needs to be sent for backwards compatibility
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
+            };
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
@@ -550,5 +556,9 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("thinkingLevel")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThinkingLevel { get; set; }
     }
 }
