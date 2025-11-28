@@ -183,8 +183,10 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equal("high", executionSettings.ThinkingConfig?.ThinkingLevel);
     }
 
-    [Fact]
-    public void PromptExecutionSettingsCloneWorksAsExpected()
+    [Theory]
+    [InlineData("""{ "thinking_budget": 1000 }""")]
+    [InlineData("""{ "thinking_level": "high" }""")]
+    public void PromptExecutionSettingsCloneWorksAsExpected(string thinkingConfigJson)
     {
         // Arrange
         var category = GeminiSafetyCategory.Harassment;
@@ -205,9 +207,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                               "threshold": "{{threshold.Label}}"
                             }
                           ],
-                          "thinking_config": {
-                            "thinking_level": "high"
-                          }
+                          "thinking_config": {{thinkingConfigJson}}
                         }
                         """;
         var executionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json);
@@ -249,7 +249,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                             }
                           ],
                           "thinking_config": {
-                            "thinking_level": "high"
+                            "thinking_budget": 1000
                           }
                         }
                         """;
@@ -266,6 +266,6 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.AudioTimestamp = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences!.Add("baz"));
         Assert.Throws<NotSupportedException>(() => executionSettings.SafetySettings!.Add(new GeminiSafetySetting(GeminiSafetyCategory.Toxicity, GeminiSafetyThreshold.Unspecified)));
-        Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingLevel = "low" });
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1 });
     }
 }
