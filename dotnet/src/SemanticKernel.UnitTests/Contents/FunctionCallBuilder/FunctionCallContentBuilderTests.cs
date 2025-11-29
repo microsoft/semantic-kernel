@@ -212,6 +212,60 @@ public class FunctionCallContentBuilderTests
         Assert.NotNull(functionCall.Exception);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ItShouldRetainArgumentTypesIfSpecified(bool retain)
+    {
+        // Arrange
+        var sut = new FunctionCallContentBuilder(null, retainArgumentTypes: retain);
+
+        // Act
+        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: null, arguments: null);
+        sut.Append(update1);
+
+        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetTemperature", arguments: null);
+        sut.Append(update2);
+
+        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
+        sut.Append(update3);
+
+        var update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\",");
+        sut.Append(update4);
+
+        var update5 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"temperature\":");
+        sut.Append(update5);
+
+        var update6 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "20}");
+        sut.Append(update6);
+
+        var functionCalls = sut.Build();
+
+        // Assert
+        var functionCall = Assert.Single(functionCalls);
+
+        Assert.Equal("f_101", functionCall.Id);
+        Assert.Equal("WeatherUtils", functionCall.PluginName);
+        Assert.Equal("GetTemperature", functionCall.FunctionName);
+        Assert.NotNull(functionCall.Arguments);
+
+        if (retain)
+        {
+            var city = Assert.IsType<JsonElement>(functionCall.Arguments?["city"]);
+            Assert.Equal(JsonValueKind.String, city.ValueKind);
+            Assert.Equal("Seattle", city.GetString());
+
+            var temperature = Assert.IsType<JsonElement>(functionCall.Arguments?["temperature"]);
+            Assert.Equal(JsonValueKind.Number, temperature.ValueKind);
+            Assert.Equal(20, temperature.GetInt32());
+        }
+        else
+        {
+            Assert.Equal("Seattle", functionCall.Arguments?["city"]);
+            Assert.Equal("20", functionCall.Arguments?["temperature"]);
+        }
+    }
+
     private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? callId, string? name, string? arguments, int requestIndex = 0)
     {
         var content = new StreamingChatMessageContent(AuthorRole.Assistant, null);
