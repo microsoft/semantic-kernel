@@ -11,7 +11,10 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public abstract class FilterClause
 {
-    internal FilterClause()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FilterClause"/> class.
+    /// </summary>
+    protected FilterClause()
     {
     }
 }
