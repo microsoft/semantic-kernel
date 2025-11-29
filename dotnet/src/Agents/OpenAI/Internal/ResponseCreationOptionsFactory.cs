@@ -60,8 +60,14 @@ internal static class ResponseCreationOptionsFactory
         if (responseTools is not null && responseTools.Any())
         {
             creationOptions.Tools.AddRange(responseTools);
-            creationOptions.ToolChoice = ResponseToolChoice.CreateAutoChoice();
-            creationOptions.ParallelToolCallsEnabled = true;
+            if (creationOptions.ToolChoice == null)
+            {
+                creationOptions.ToolChoice = ResponseToolChoice.CreateAutoChoice();
+            }
+            if (!creationOptions.ParallelToolCallsEnabled.HasValue)
+            {
+                creationOptions.ParallelToolCallsEnabled = true;
+            }
         }
 
         return creationOptions;
