@@ -270,6 +270,7 @@ internal partial class ClientCore
             ChatFinishReason finishReason = default;
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
+            ChatTokenUsage? finalUsage = null;
 
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
@@ -309,6 +310,11 @@ internal partial class ClientCore
                         streamedRole ??= chatCompletionUpdate.Role;
                         //streamedName ??= update.AuthorName;
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
+
+                        if (chatCompletionUpdate.Usage is not null)
+                        {
+                            finalUsage = chatCompletionUpdate.Usage;
+                        }
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
                         if (functionCallingConfig.AutoInvoke)
@@ -354,6 +360,11 @@ internal partial class ClientCore
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
+                    }
+
+                    if (finalUsage is not null)
+                    {
+                        this.LogUsage(finalUsage);
                     }
 
                     // Translate all entries into ChatCompletionsFunctionToolCall instances.
