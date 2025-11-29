@@ -600,8 +600,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(IEnumerable<GeminiTool.FunctionDeclaration> functions, GeminiFunctionToolCall ftc)
-        => functions.Any(geminiFunction =>
+    private static bool IsRequestableTool(IEnumerable<GeminiTool.FunctionDeclaration>? functions, GeminiFunctionToolCall ftc)
+        => (functions ?? []).Any(geminiFunction =>
             string.Equals(geminiFunction.Name, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase));
 
     private void AddToolResponseMessage(
