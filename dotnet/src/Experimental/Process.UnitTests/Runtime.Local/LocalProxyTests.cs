@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Threading.Tasks;
-using SemanticKernel.Process.TestsShared.CloudEvents;
-using SemanticKernel.Process.TestsShared.Services;
-using SemanticKernel.Process.TestsShared.Setup;
-using SemanticKernel.Process.TestsShared.Steps;
+using Microsoft.SemanticKernel.Process.TestsShared.CloudEvents;
+using Microsoft.SemanticKernel.Process.TestsShared.Services;
+using Microsoft.SemanticKernel.Process.TestsShared.Setup;
+using Microsoft.SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
@@ -269,6 +269,6 @@ public class LocalProxyTests
                     Id = inputEvent,
                     Data = input,
                 },
-                externalMessageChannel);
+                externalMessageChannel: externalMessageChannel);
     }
 }

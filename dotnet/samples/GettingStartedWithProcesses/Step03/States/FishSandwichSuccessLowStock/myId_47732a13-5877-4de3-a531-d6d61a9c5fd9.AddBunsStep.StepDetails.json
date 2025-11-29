@@ -1,0 +1,13 @@
+{
+  "stepInfo": {
+    "stepName": "AddBunsStep",
+    "parentId": null,
+    "version": "v1",
+    "instanceId": "myId_47732a13-5877-4de3-a531-d6d61a9c5fd9"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": null,
+  "instanceId": "myId_47732a13-5877-4de3-a531-d6d61a9c5fd9"
+}

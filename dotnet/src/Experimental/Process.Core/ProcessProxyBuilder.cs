@@ -45,7 +45,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     internal ProcessFunctionTargetBuilder GetExternalFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.ProcessFunctions.EmitExternalEvent, parameterName: "proxyEvent");
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.ProcessFunctions.EmitExternalEvent);
     }
 
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
@@ -65,7 +65,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     }
 
     /// <inheritdoc/>
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
         if (this._externalTopicUsage.All(topic => !topic.Value))
         {
@@ -74,8 +74,8 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
         KernelProcessProxyStateMetadata proxyMetadata = new()
         {
-            Name = this.Name,
-            Id = this.Id,
+            Name = this.StepId,
+            Id = this.StepId,
             EventMetadata = this._eventMetadata,
             PublishTopics = this._externalTopicUsage.ToList().Select(topic => topic.Key).ToList(),
         };
@@ -83,7 +83,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
-        KernelProcessStepState state = new(this.Name, this.Version, this.Id);
+        KernelProcessStepState state = new(this.StepId, this.Version, this.StepId);
 
         return new KernelProcessProxy(state, builtEdges)
         {

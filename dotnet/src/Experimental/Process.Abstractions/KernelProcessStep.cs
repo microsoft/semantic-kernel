@@ -9,6 +9,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class KernelProcessStep
 {
+    /// <summary>
+    /// Name of the step given by the StepBuilder id.
+    /// </summary>
+    public string? StepName { get; init; }
+
     /// <inheritdoc/>
     public virtual ValueTask ActivateAsync(KernelProcessStepState state)
     {

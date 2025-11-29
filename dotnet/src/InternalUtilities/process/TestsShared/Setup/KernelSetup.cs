@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
-using SemanticKernel.Process.TestsShared.Services;
+using Microsoft.SemanticKernel.Process.TestsShared.Services;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
-namespace SemanticKernel.Process.TestsShared.Setup;
+namespace Microsoft.SemanticKernel.Process.TestsShared.Setup;
 
 internal static class KernelSetup
 {

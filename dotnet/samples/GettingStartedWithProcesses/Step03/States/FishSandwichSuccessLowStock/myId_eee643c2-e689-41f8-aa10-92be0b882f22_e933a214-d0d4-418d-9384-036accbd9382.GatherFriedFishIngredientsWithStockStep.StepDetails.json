@@ -1,0 +1,19 @@
+{
+  "stepInfo": {
+    "stepName": "GatherFriedFishIngredientsWithStockStep",
+    "parentId": null,
+    "version": "GatherFishIngredient.V2",
+    "instanceId": "myId_eee643c2-e689-41f8-aa10-92be0b882f22_e933a214-d0d4-418d-9384-036accbd9382"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": {
+    "stateType": "Step03.Steps.GatherIngredientsState, GettingStartedWithProcesses, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "state": {
+      "ObjectType": "Step03.Steps.GatherIngredientsState, GettingStartedWithProcesses, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Content": "{\u0022IngredientsStock\u0022:1}"
+    }
+  },
+  "instanceId": "myId_eee643c2-e689-41f8-aa10-92be0b882f22_e933a214-d0d4-418d-9384-036accbd9382"
+}

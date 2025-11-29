@@ -16,13 +16,22 @@ public static class LocalKernelProcessFactory
     /// <param name="process">Required: The <see cref="KernelProcess"/> to start running.</param>
     /// <param name="kernel">Required: An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
+    /// <param name="processId">Optional: id to be assigined to the running process, if null it will be assigned during runtime</param>
     /// <param name="externalMessageChannel">Optional: an instance of <see cref="IExternalKernelProcessMessageChannel"/>.</param>
+    /// <param name="storageConnector">Optional: an instance of <see cref="IProcessStorageConnector"/>.</param>
     /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interrogate or stop the running process.</returns>
-    public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    public static async Task<LocalKernelProcessContext> StartAsync(
+        this KernelProcess process,
+        Kernel kernel,
+        KernelProcessEvent initialEvent,
+        string? processId = null,
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null,
+        IProcessStorageConnector? storageConnector = null)
     {
         Verify.NotNull(initialEvent, nameof(initialEvent));
+        Verify.NotNullOrWhiteSpace(initialEvent.Id, nameof(initialEvent.Id));
 
-        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, instanceId: processId);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

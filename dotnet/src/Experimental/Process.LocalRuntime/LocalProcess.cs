@@ -37,13 +37,16 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private CancellationTokenSource? _processCancelSource;
     private ProcessStateManager? _processStateManager;
 
+    private List<string> _runningStepIds = [];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    internal LocalProcess(KernelProcess process, Kernel kernel)
-        : base(process, kernel)
+    /// <param name="instanceId">id to be used for LocalProcess as unique identifier</param>
+    internal LocalProcess(KernelProcess process, Kernel kernel, string? instanceId = null)
+        : base(process, kernel, instanceId: instanceId)
     {
         Verify.NotNull(process.Steps);
 
@@ -55,13 +58,23 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
         // if parent id is null this is the root process
+        // if parent id is null this is the root process
         this.RootProcessId = this.ParentProcessId == null ? this.Id : null;
+        this._stepState.ParentId = this.ParentProcessId;
+    }
+
+    internal KernelProcess Process
+    {
+        // Special get to ensure returning most updated process data
+        get => this._process with { State = this._stepState, Steps = this._steps.Select(step => step._stepInfo).ToList() };
     }
 
     /// <summary>
     /// The Id of the root process.
     /// </summary>
     internal string? RootProcessId { get; init; }
+
+    internal new ProcessStorageManager? StorageManager { get; init; }
 
     /// <summary>
     /// Starts the process with an initial event and an optional kernel.
@@ -206,6 +219,22 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+        Dictionary<string, string> processInfoInstanceMap = [];
+
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.InitializeAsync().ConfigureAwait(false);
+            await this.FetchSavedProcessDataAsync().ConfigureAwait(false);
+
+            // Trying to restore step running ids instances from storage before creation of steps
+            var processInfo = await this.StorageManager.GetProcessInfoAsync(this.Process).ConfigureAwait(false);
+            if (processInfo != null && processInfo.Steps.Count > 0)
+            {
+                processInfoInstanceMap = processInfo.Steps;
+            }
+        }
+
+        bool usingExistingProcessInstances = processInfoInstanceMap.Count > 0;
 
         // TODO: Pull user state from persisted state on resume.
         this._processStateManager = new ProcessStateManager(this._process.UserStateType, null);
@@ -247,44 +276,49 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             LocalStep? localStep = null;
 
             // The current step should already have a name.
-            Verify.NotNull(step.State?.Name);
+            Verify.NotNull(step.State?.StepId);
 
-            if (step is KernelProcess processStep)
+            // Assign id to kernelStepInfo if any before creation of Local components
+            if (!processInfoInstanceMap.TryGetValue(step.State.StepId, out string? stepId) && stepId == null)
             {
-                // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(processStep.State.Id))
-                {
-                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
-                }
+                stepId = this.GetChildStepId();
+            }
 
+            KernelProcessStepInfo stepInfo = step.CloneWithIdAndEdges(stepId, this._logger);
+
+            if (stepInfo is KernelProcess processStep)
+            {
+                // Subprocess should be created with an assigned id, only root process can be without the id
+                Verify.NotNullOrWhiteSpace(processStep.State.RunId);
                 localStep =
-                    new LocalProcess(processStep, this._kernel)
+                    new LocalProcess(processStep, this._kernel, stepId)
                     {
                         ParentProcessId = this.Id,
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
+                        StorageManager = this.StorageManager,
                     };
             }
-            else if (step is KernelProcessMap mapStep)
+            else if (stepInfo is KernelProcessMap mapStep)
             {
+                mapStep = mapStep with { Operation = mapStep.Operation with { State = mapStep.Operation.State with { RunId = mapStep.Operation.State.StepId } } };
                 localStep =
                     new LocalMap(mapStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
                     };
             }
-            else if (step is KernelProcessProxy proxyStep)
+            else if (stepInfo is KernelProcessProxy proxyStep)
             {
                 localStep =
-                    new LocalProxy(proxyStep, this._kernel)
+                    new LocalProxy(proxyStep, this._kernel, this.ExternalMessageChannel)
                     {
                         ParentProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel
                     };
             }
-            else if (step is KernelProcessAgentStep agentStep)
+            else if (stepInfo is KernelProcessAgentStep agentStep)
             {
                 if (!this._threads.TryGetValue(agentStep.ThreadName, out KernelProcessAgentThread? thread) || thread is null)
                 {
@@ -296,19 +330,100 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             else
             {
                 // The current step should already have an Id.
-                Verify.NotNull(step.State?.Id);
+                Verify.NotNull(stepInfo.State?.RunId);
 
                 localStep =
-                    new LocalStep(step, this._kernel)
+                    new LocalStep(stepInfo, this._kernel, parentProcessId: this.Id)
                     {
-                        ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy
+                        EventProxy = this.EventProxy,
+                        StorageManager = this.StorageManager,
                     };
             }
 
             this._steps.Add(localStep);
         }
+
+        // Now that children ids are fetched from storage if any
+        if (usingExistingProcessInstances)
+        {
+            await this.FetchProcessChildrenDataAsync().ConfigureAwait(false);
+        }
+
+        // Process steps local instances have been created, saving process info
+        await this.SaveProcessInfoAsync().ConfigureAwait(false);
     }
+
+    #region Storage related methods
+    private string GetChildStepId()
+    {
+        return $"{this.Id}_{Guid.NewGuid()}";
+    }
+
+    /// <summary>
+    /// Fetches process data from storage and children data if child is a step.
+    /// For subprocesses, subprocess children data is fetched by the subprocess itself when it initializes.
+    /// </summary>
+    /// <returns></returns>
+    private async Task FetchSavedProcessDataAsync()
+    {
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.FetchProcessDataAsync(this.Process).ConfigureAwait(false);
+        }
+    }
+
+    private async Task FetchProcessChildrenDataAsync()
+    {
+        if (this.StorageManager != null)
+        {
+            foreach (var step in this._steps)
+            {
+                if (step is not LocalProcess)
+                {
+                    await this.StorageManager.FetchStepDataAsync(step._stepInfo).ConfigureAwait(false);
+                }
+            }
+        }
+    }
+
+    private async Task SaveProcessInfoAsync()
+    {
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.SaveProcessInfoAsync(this.Process).ConfigureAwait(false);
+        }
+    }
+
+    private async Task SaveProcessDataAsync()
+    {
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.SaveProcessInfoAsync(this.Process).ConfigureAwait(false);
+            // TODO: Add other process related components to be persisted: shared state, external undelivered messages, etc
+        }
+    }
+
+    private async Task SaveProcessAndChildrenDataToStorageAsync()
+    {
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.SaveProcessDataToStorageAsync(this.Process).ConfigureAwait(false);
+
+            // Filtering saving only steps that ran in last superstep execution loop
+            var executedSteps = this._steps.Where(step => this._runningStepIds.Contains(step.Id)) ?? [];
+
+            foreach (var step in executedSteps)
+            {
+                if (step is not LocalProcess subprocessStep)
+                {
+                    // Local Process when they run they do their own checkpointing, no need to do it again.
+                    await this.StorageManager.SaveStepDataToStorageAsync(step.StepInfo).ConfigureAwait(false);
+                }
+            }
+            this._runningStepIds = [];
+        }
+    }
+    #endregion
 
     /// <summary>
     /// Initializes this process as a step within another process.
@@ -360,6 +475,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 }
 
                 List<Task> messageTasks = [];
+                this._runningStepIds = [];
+
                 foreach (var message in messagesToProcess)
                 {
                     // Check for end condition
@@ -369,14 +486,28 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         break;
                     }
 
-                    var destinationStep = this._steps.First(v => v.Id == message.DestinationId);
+                    var destinationStep = this._steps.FirstOrDefault(v => v.Name == message.DestinationId);
 
-                    // Send a message to the step
-                    messageTasks.Add(destinationStep.HandleMessageAsync(message));
-                    finalStep = destinationStep;
+                    if (destinationStep != null)
+                    {
+                        this._runningStepIds.Add(destinationStep.Id);
+                        // Send a message to the step
+                        messageTasks.Add(destinationStep.HandleMessageAsync(message));
+                        finalStep = destinationStep;
+                    }
+                    else
+                    {
+                        this._logger?.LogWarning("Could not find destination for event {0} from step {1}", message.SourceEventId, message.SourceId);
+                    }
                 }
 
                 await Task.WhenAll(messageTasks).ConfigureAwait(false);
+
+                // All steps have executed saving process data: state, events, etc
+                await this.SaveProcessDataAsync().ConfigureAwait(false);
+
+                // Now saving checkpoint of process to storage
+                await this.SaveProcessAndChildrenDataToStorageAsync().ConfigureAwait(false);
             }
         }
         catch (Exception ex)
@@ -453,7 +584,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         {
             foreach (KernelProcessEdge edge in defaultConditionedEdges)
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.RunId!, null, null);
                 messageChannel.Enqueue(message);
 
                 // TODO: Handle state here as well
@@ -482,7 +613,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             var processEvent = new ProcessEvent
             {
                 Namespace = this.Name,
-                SourceId = this._process.State.Id!,
+                SourceId = this._process.State.RunId!,
                 Data = null,
                 Visibility = KernelProcessEventVisibility.Internal
             };

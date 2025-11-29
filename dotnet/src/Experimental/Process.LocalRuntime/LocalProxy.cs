@@ -23,11 +23,20 @@ internal sealed class LocalProxy : LocalStep
     /// </summary>
     /// <param name="proxy">an instance of <see cref="KernelProcessProxy"/></param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    internal LocalProxy(KernelProcessProxy proxy, Kernel kernel)
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
+    internal LocalProxy(KernelProcessProxy proxy, Kernel kernel, IExternalKernelProcessMessageChannel? externalMessageChannel)
         : base(proxy, kernel)
     {
         this._proxy = proxy;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._proxy.State.StepId) ?? new NullLogger<LocalStep>();
+        this.ExternalMessageChannel = externalMessageChannel;
+
+        this.InitializeStepInitialInputs();
+    }
+
+    internal override void PopulateInitialInputs()
+    {
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
     }
 
     internal override void AssignStepFunctionParameterValues(ProcessMessage message)

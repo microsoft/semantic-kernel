@@ -1,0 +1,13 @@
+{
+  "stepInfo": {
+    "stepName": "ExternalFriedFishStep",
+    "parentId": null,
+    "version": "v1",
+    "instanceId": "myId_4ee7fb9c-7f48-4178-b072-c7d10188f8d1"
+  },
+  "stepEvents": {
+    "edgeGroupEvents": {}
+  },
+  "stepState": null,
+  "instanceId": "myId_4ee7fb9c-7f48-4178-b072-c7d10188f8d1"
+}
