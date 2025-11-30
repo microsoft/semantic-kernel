@@ -747,9 +747,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             .Select(part => part.FunctionCall!)
             .Where(toolCall => toolCall is not null).ToArray();
 
+        // Pass null if there's no regular (non-thinking) text to avoid creating an empty TextContent item
         var chatMessage = new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: regularText,
+            content: string.IsNullOrEmpty(regularText) ? null : regularText,
             modelId: this._modelId,
             functionsToolCalls: toolCalls,
             metadata: GetResponseMetadata(geminiResponse, candidate));
