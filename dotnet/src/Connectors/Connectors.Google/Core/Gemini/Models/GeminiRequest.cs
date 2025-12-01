@@ -498,7 +498,12 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts,
+                ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
+            };
         }
     }
 
@@ -550,5 +555,13 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
+
+        [JsonPropertyName("thinkingLevel")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThinkingLevel { get; set; }
     }
 }

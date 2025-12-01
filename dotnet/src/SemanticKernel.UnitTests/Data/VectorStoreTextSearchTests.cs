@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
+
 public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete

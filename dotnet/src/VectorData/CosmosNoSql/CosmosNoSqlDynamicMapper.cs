@@ -22,9 +22,9 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
     {
         Verify.NotNull(dataModel);
 
-        var jsonObject = new JsonObject();
-
-        jsonObject[CosmosNoSqlConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var jsonObject = new JsonObject
+        {
+            [CosmosNoSqlConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
@@ -33,7 +33,8 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
                 _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+            }
+        };
 
         foreach (var dataProperty in model.DataProperties)
         {

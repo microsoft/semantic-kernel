@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -595,6 +596,155 @@ public sealed class GeminiChatGenerationTests : IDisposable
         public required List<string> BearerKeys { get; init; }
 
         public ValueTask<string> GetBearerToken() => ValueTask.FromResult(this.BearerKeys[this._index++]);
+    }
+
+    [Fact]
+    public async Task ShouldHandleThoughtAndTextPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "Let me think about this...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "The answer is 42."
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.Equal("The answer is 42.", message.Content);
+        Assert.Equal(2, message.Items.Count);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContent = message.Items.OfType<ReasoningContent>().FirstOrDefault();
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("Let me think about this...", reasoningContent.Text);
+
+        var textContent = message.Items.OfType<TextContent>().FirstOrDefault();
+        Assert.NotNull(textContent);
+        Assert.Equal("The answer is 42.", textContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    [Fact]
+    public async Task ShouldHandleOnlyThoughtPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "This is just thinking content...",
+                                    "thought": true
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.True(string.IsNullOrEmpty(message.Content));
+        Assert.Single(message.Items);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContent = message.Items.OfType<ReasoningContent>().Single();
+        Assert.Equal("This is just thinking content...", reasoningContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    [Fact]
+    public async Task ShouldHandleMultipleThoughtPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "First thought...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "Second thought...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "Final answer."
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.Equal("Final answer.", message.Content);
+        Assert.Equal(3, message.Items.Count);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContents = message.Items.OfType<ReasoningContent>().ToList();
+        Assert.Equal(2, reasoningContents.Count);
+        Assert.Equal("First thought...", reasoningContents[0].Text);
+        Assert.Equal("Second thought...", reasoningContents[1].Text);
+
+        var textContent = message.Items.OfType<TextContent>().Single();
+        Assert.Equal("Final answer.", textContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     private static ChatHistory CreateSampleChatHistory()

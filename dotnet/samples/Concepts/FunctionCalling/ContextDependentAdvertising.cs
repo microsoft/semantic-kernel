@@ -41,7 +41,7 @@ public class ContextDependentAdvertising(ITestOutputHelper output) : BaseTest(ou
         // Loop until the game has started or the max iteration is reached.
         while (!chatHistory.Any(item => item.Content?.Contains("Game started.") ?? false) && iteration < maxIteration)
         {
-            List<KernelFunction> functionsToAdvertise = new();
+            List<KernelFunction> functionsToAdvertise = [];
 
             // Decide game state based on chat history.
             bool mazeCreated = chatHistory.Any(item => item.Content?.Contains("Maze created.") ?? false);

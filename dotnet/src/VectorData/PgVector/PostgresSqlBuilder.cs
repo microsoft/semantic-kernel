@@ -247,7 +247,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     internal static void BuildGetCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
-        List<string> queryColumns = new();
+        List<string> queryColumns = [];
 
         foreach (var property in model.Properties)
         {

@@ -827,8 +827,10 @@ public class KernelFunctionFromPromptTests
 
         var promptConfig = new PromptTemplateConfig(template) { TemplateFormat = templateFormat };
         var func = kernel.CreateFunctionFromPrompt(promptConfig, promptTemplateFactory: new EchoPromptTemplateFactory());
-        var args = new KernelArguments();
-        args["input"] = "Some Input";
+        var args = new KernelArguments
+        {
+            ["input"] = "Some Input"
+        };
 
         // Act
         var result = await kernel.InvokeAsync(func, args);

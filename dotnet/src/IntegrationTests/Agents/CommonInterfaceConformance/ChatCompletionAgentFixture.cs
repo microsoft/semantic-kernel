@@ -64,7 +64,7 @@ public class ChatCompletionAgentFixture : AgentFixture
         return Task.CompletedTask;
     }
 
-    public async override Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
 

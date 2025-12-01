@@ -608,7 +608,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // Based on https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
         foreach (char character in collectionName)
         {
-            if (!((character is >= 'a' and <= 'z') || character is '-' || (character is >= '0' and <= '9')))
+            if (character is not (>= 'a' and <= 'z' or '-' or >= '0' and <= '9'))
             {
                 throw new ArgumentException("Collection name must contain only ASCII lowercase letters, digits and dashes.", nameof(collectionName));
             }

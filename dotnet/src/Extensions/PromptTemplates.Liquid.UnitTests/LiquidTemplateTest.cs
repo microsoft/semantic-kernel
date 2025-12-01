@@ -31,12 +31,12 @@ public class LiquidTemplateTest
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = liquidTemplate,
-            InputVariables = new()
-            {
+            InputVariables =
+            [
                 new() { Name = "customer", AllowDangerouslySetContent = true },
                 new() { Name = "documentation", AllowDangerouslySetContent = true },
                 new() { Name = "history", AllowDangerouslySetContent = true }
-            }
+            ]
         };
 
         // create a dynamic customer object
@@ -590,11 +590,11 @@ public class LiquidTemplateTest
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = template,
-            InputVariables = new()
-            {
+            InputVariables =
+            [
                 new() { Name = "person", AllowDangerouslySetContent = true },
                 new() { Name = "email" }
-            }
+            ]
         };
 
         var arguments = new KernelArguments()
@@ -677,10 +677,10 @@ public class LiquidTemplateTest
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = template,
-            InputVariables = new()
-            {
+            InputVariables =
+            [
                 new() { Name = "items", AllowDangerouslySetContent = true }
-            }
+            ]
         };
 
         var target = new LiquidPromptTemplate(promptConfig);

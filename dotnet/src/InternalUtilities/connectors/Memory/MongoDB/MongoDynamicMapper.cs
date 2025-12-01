@@ -23,9 +23,9 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
     {
         Verify.NotNull(dataModel);
 
-        var document = new BsonDocument();
-
-        document[MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var document = new BsonDocument
+        {
+            [MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
@@ -36,8 +36,9 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
                 int i => i,
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectId, long or int.")
-            };
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectID, long or int.")
+            }
+        };
 
         foreach (var property in model.DataProperties)
         {
@@ -167,8 +168,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(decimal?) => value.AsNullableDecimal,
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
-            Type t when t == typeof(Guid) => value.AsGuid,
-            Type t when t == typeof(Guid?) => value.AsNullableGuid,
 
             _ => (object?)null
         };
