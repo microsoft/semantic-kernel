@@ -64,10 +64,6 @@ internal static class ResponseCreationOptionsFactory
             {
                 creationOptions.ToolChoice = ResponseToolChoice.CreateAutoChoice();
             }
-            if (!creationOptions.ParallelToolCallsEnabled.HasValue)
-            {
-                creationOptions.ParallelToolCallsEnabled = true;
-            }
         }
 
         return creationOptions;
