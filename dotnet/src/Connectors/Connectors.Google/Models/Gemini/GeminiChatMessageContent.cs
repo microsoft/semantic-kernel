@@ -159,9 +159,15 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
-    /// The result of tool called by the kernel.
+    /// The results of tools called by the kernel.
     /// </summary>
-    public GeminiFunctionToolResult? CalledToolResult { get; }
+    public IReadOnlyList<GeminiFunctionToolResult>? CalledToolResults { get; }
+
+    /// <summary>
+    /// The result of tool called by the kernel (for backward compatibility).
+    /// Returns the first tool result if multiple exist, or null if none.
+    /// </summary>
+    public GeminiFunctionToolResult? CalledToolResult => this.CalledToolResults?.Count > 0 ? this.CalledToolResults[0] : null;
 
     /// <summary>
     /// The metadata associated with the content.

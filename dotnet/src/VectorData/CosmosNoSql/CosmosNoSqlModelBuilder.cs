@@ -23,10 +23,9 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        // TODO: Cosmos supports other key types (int, Guid...)
-        supportedTypes = "string";
+        supportedTypes = "string, Guid";
 
-        return type == typeof(string);
+        return type == typeof(string) || type == typeof(Guid);
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

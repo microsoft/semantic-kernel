@@ -56,9 +56,9 @@ internal static class QdrantCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Thrown if the property is missing information or has unsupported options specified.</exception>
     public static VectorParams MapSingleVector(VectorPropertyModel vectorProperty)
     {
-        if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
+        if (vectorProperty!.IndexKind is not null and not IndexKind.Hnsw)
         {
-            throw new InvalidOperationException($"Index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.");
+            throw new NotSupportedException($"Index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.");
         }
 
         return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = QdrantCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty) };
@@ -98,6 +98,6 @@ internal static class QdrantCollectionCreateMapping
             DistanceFunction.EuclideanDistance => Distance.Euclid,
             DistanceFunction.ManhattanDistance => Distance.Manhattan,
 
-            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.")
+            _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.")
         };
 }

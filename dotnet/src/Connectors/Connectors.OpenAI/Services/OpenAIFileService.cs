@@ -121,7 +121,7 @@ public sealed class OpenAIFileService
         using (stream)
         {
             using var memoryStream = new MemoryStream();
-#if NET8_0_OR_GREATER
+#if NET
             await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 #else
             const int DefaultCopyBufferSize = 81920;

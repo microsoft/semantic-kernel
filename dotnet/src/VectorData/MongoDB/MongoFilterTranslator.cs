@@ -51,6 +51,9 @@ internal class MongoFilterTranslator
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type
                 => this.Translate(convert.Operand),
+            // Handle true literal (r => true), which is useful for fetching all records
+            ConstantExpression { Value: true }
+                => [],
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)

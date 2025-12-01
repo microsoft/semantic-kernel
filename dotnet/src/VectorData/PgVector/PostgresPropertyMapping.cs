@@ -23,13 +23,14 @@ internal static class PostgresPropertyMapping
             Embedding<float> e => new Pgvector.Vector(e.Vector),
             float[] a => new Pgvector.Vector(a),
 
-#if NET8_0_OR_GREATER
+#if NET
             ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
             Embedding<Half> e => new Pgvector.HalfVector(e.Vector),
             Half[] a => new Pgvector.HalfVector(a),
 #endif
 
             BitArray bitArray => bitArray,
+            BinaryEmbedding binaryEmbedding => binaryEmbedding.Vector,
             SparseVector sparseVector => sparseVector,
 
             null => null,
@@ -127,7 +128,7 @@ internal static class PostgresPropertyMapping
                 || t == typeof(float[])
                 => "VECTOR",
 
-#if NET8_0_OR_GREATER
+#if NET
             Type t when t == typeof(ReadOnlyMemory<Half>)
                 || t == typeof(Embedding<Half>)
                 || t == typeof(Half[])
@@ -136,6 +137,7 @@ internal static class PostgresPropertyMapping
 
             Type t when t == typeof(SparseVector) => "SPARSEVEC",
             Type t when t == typeof(BitArray) => "BIT",
+            Type t when t == typeof(BinaryEmbedding) => "BIT",
 
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };

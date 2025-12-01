@@ -90,7 +90,7 @@ internal static class ChatHistoryExtensions
         // Skip function related content
         while (truncationIndex < chatHistory.Count)
         {
-            if (chatHistory[truncationIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (chatHistory[truncationIndex].Items.Any(i => i is FunctionCallContent or FunctionResultContent))
             {
                 truncationIndex++;
             }

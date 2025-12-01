@@ -123,7 +123,7 @@ public sealed class WebFileDownloadPlugin
         {
             long totalBytesWritten = 0;
             int bytesRead;
-#if NET6_0_OR_GREATER
+#if NET
             while ((bytesRead = await source.ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken).ConfigureAwait(false)) != 0)
 #else
             while ((bytesRead = await source.ReadAsync(buffer, 0, bufferSize, cancellationToken).ConfigureAwait(false)) != 0)
@@ -133,7 +133,7 @@ public sealed class WebFileDownloadPlugin
                 {
                     throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {this.MaximumDownloadSize} bytes.");
                 }
-#if NET6_0_OR_GREATER
+#if NET
                 await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 #else
                 await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);

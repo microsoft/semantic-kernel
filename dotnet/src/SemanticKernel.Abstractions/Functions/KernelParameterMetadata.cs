@@ -165,7 +165,7 @@ public sealed class KernelParameterMetadata
             // Type must be usable as a generic argument to be used with JsonSchemaBuilder.
             bool invalidAsGeneric =
                 // from RuntimeType.ThrowIfTypeNeverValidGenericArgument
-#if NET_8_OR_GREATER
+#if NET
                 parameterType.IsFunctionPointer ||
 #endif
                 parameterType.IsPointer ||

@@ -52,7 +52,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     // This type does not derive any collection in order to avoid Intellisense suggesting LINQ methods.
     public sealed class OrderByDefinition
     {
-        private readonly List<SortInfo> _values = new();
+        private readonly List<SortInfo> _values = [];
 
         /// <summary>
         /// Gets the expressions to sort by.

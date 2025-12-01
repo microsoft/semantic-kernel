@@ -37,8 +37,8 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         this._client = dockerClientConfiguration.CreateClient();
         this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("HotelId", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
                 new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
@@ -50,12 +50,12 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
                 new VectorStoreDataProperty("Rating", typeof(double)),
                 new VectorStoreDataProperty("Address", typeof(RedisHotelAddress))
-            }
+            ]
         };
         this.BasicVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("HotelId", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
                 new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
@@ -63,7 +63,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
                 new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
                 new VectorStoreDataProperty("Rating", typeof(double)),
-            }
+            ]
         };
     }
 

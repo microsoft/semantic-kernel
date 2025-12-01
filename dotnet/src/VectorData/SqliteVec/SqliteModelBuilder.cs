@@ -20,14 +20,14 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, string";
+        supportedTypes = "int, long, string, Guid";
 
-        return type == typeof(int) || type == typeof(long) || type == typeof(string);
+        return type == typeof(int) || type == typeof(long) || type == typeof(string) || type == typeof(Guid);
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, short, string, bool, float, double, byte[]";
+        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -41,7 +41,8 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
             || type == typeof(bool)
             || type == typeof(float)
             || type == typeof(double)
-            || type == typeof(byte[]);
+            || type == typeof(byte[])
+            || type == typeof(Guid);
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

@@ -203,11 +203,11 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
             {
                 { "5432", default },
             },
-            Env = new List<string>
-            {
+            Env =
+            [
                 "POSTGRES_USER=postgres",
                 "POSTGRES_PASSWORD=example",
-            },
+            ],
         });
 
         await client.Containers.StartContainerAsync(

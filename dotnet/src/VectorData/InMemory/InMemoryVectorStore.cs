@@ -48,7 +48,7 @@ public sealed class InMemoryVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
@@ -79,7 +79,7 @@ public sealed class InMemoryVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override InMemoryDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)

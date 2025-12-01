@@ -27,6 +27,14 @@ internal class RedisFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
+        // Redis doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
+        // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
+        // nor is 'x && true'.
+        if (lambdaExpression.Body is ConstantExpression { Value: true })
+        {
+            return "*";
+        }
+
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
         var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
@@ -116,7 +124,7 @@ internal class RedisFilterTranslator
                     {
                         ExpressionType.Equal when constantValue is byte or short or int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
-#if NET8_0_OR_GREATER
+#if NET
                             => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
 #else
                             => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",

@@ -3,7 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if NET8_0_OR_GREATER
+#if NET
 using System.Globalization;
 #endif
 using System.Linq.Expressions;
@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
-    private readonly List<object> _parameterValues = new();
+    private readonly List<object> _parameterValues = [];
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
@@ -29,12 +29,15 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
+            case bool boolValue when isSearchCondition:
+                this._sql.Append(boolValue ? "1 = 1" : "1 = 0");
+                return;
             case bool boolValue:
-                this._sql.Append(boolValue ? "1" : "0");
+                this._sql.Append(boolValue ? "CAST(1 AS BIT)" : "CAST(0 AS BIT)");
                 return;
             case DateTime dateTime:
                 this._sql.Append('\'').Append(dateTime.ToString("o")).Append('\'');
@@ -42,7 +45,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
             case DateTimeOffset dateTimeOffset:
                 this._sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
-#if NET8_0_OR_GREATER
+#if NET
             case DateOnly dateOnly:
                 this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
                 return;
@@ -54,7 +57,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 #endif
 
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
@@ -108,7 +111,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');
