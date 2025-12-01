@@ -280,7 +280,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Single(options.Tools);
         Assert.NotNull(options.ToolChoice);
         Assert.Equal(ResponseToolChoiceKind.Auto, options.ToolChoice.Kind);
-        Assert.True(options.ParallelToolCallsEnabled);
+        Assert.Null(options.ParallelToolCallsEnabled);
     }
 
     /// <summary>
