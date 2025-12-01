@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
+
 internal class LocalAgentStep : LocalStep
 {
     private new readonly KernelProcessAgentStep _stepInfo;
