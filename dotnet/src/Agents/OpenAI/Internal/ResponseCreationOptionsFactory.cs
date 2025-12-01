@@ -60,7 +60,7 @@ internal static class ResponseCreationOptionsFactory
         if (responseTools is not null && responseTools.Any())
         {
             creationOptions.Tools.AddRange(responseTools);
-            if (creationOptions.ToolChoice == null)
+            if (creationOptions.ToolChoice is null)
             {
                 creationOptions.ToolChoice = ResponseToolChoice.CreateAutoChoice();
             }
