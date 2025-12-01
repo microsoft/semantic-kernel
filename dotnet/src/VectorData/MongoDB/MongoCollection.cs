@@ -701,7 +701,10 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private BsonSerializationInfo GetKeySerializationInfo()
     {
         var documentSerializer = BsonSerializer.LookupSerializer<TRecord>();
-        Verify.NotNull(documentSerializer, $"BsonSerializer not found for type '{typeof(TRecord)}'");
+if (documentSerializer is null)
+{
+    throw new InvalidOperationException($"BsonSerializer not found for type '{typeof(TRecord)}'");
+}
 
         if (documentSerializer is not IBsonDocumentSerializer bsonDocumentSerializer)
         {
