@@ -15,6 +15,9 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/Memory/MongoDB/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\MongoDB\BsonValueFactory.cs">
+      <Link>BsonValueFactory.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <PropertyGroup>
