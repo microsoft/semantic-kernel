@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -29,7 +28,7 @@ public sealed class GeminiRequestTests
             TopP = 0.9,
             AudioTimestamp = true,
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
+            ResponseSchema = JsonElement.Parse(@"{""schema"":""schema""}")
         };
 
         // Act
@@ -630,7 +629,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithNullableArray)
+            ResponseSchema = JsonElement.Parse(schemaWithNullableArray)
         };
 
         // Act
@@ -680,7 +679,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithEnum)
+            ResponseSchema = JsonElement.Parse(schemaWithEnum)
         };
 
         // Act
@@ -744,13 +743,7 @@ public sealed class GeminiRequestTests
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
     {
-#if NET9_0_OR_GREATER
         return JsonElement.DeepEquals(element1, element2);
-#else
-        return JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
-#endif
     }
 
     private static void AssertDeepEquals(JsonElement element1, JsonElement element2)

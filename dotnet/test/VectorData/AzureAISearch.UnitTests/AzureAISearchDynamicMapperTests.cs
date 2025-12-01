@@ -128,24 +128,26 @@ public class AzureAISearchDynamicMapperTests
     {
         // Arrange
         var sut = new AzureAISearchDynamicMapper(s_model, null);
-        var storageModel = new JsonObject();
-        storageModel["Key"] = "key";
-        storageModel["StringDataProp"] = "string";
-        storageModel["IntDataProp"] = 1;
-        storageModel["NullableIntDataProp"] = 2;
-        storageModel["LongDataProp"] = 3L;
-        storageModel["NullableLongDataProp"] = 4L;
-        storageModel["FloatDataProp"] = 5.0f;
-        storageModel["NullableFloatDataProp"] = 6.0f;
-        storageModel["DoubleDataProp"] = 7.0;
-        storageModel["NullableDoubleDataProp"] = 8.0;
-        storageModel["BoolDataProp"] = true;
-        storageModel["NullableBoolDataProp"] = false;
-        storageModel["DateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        storageModel["NullableDateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        storageModel["TagListDataProp"] = new JsonArray { "tag1", "tag2" };
-        storageModel["FloatVector"] = new JsonArray { 1.0f, 2.0f, 3.0f };
-        storageModel["NullableFloatVector"] = new JsonArray { 4.0f, 5.0f, 6.0f };
+        var storageModel = new JsonObject
+        {
+            ["Key"] = "key",
+            ["StringDataProp"] = "string",
+            ["IntDataProp"] = 1,
+            ["NullableIntDataProp"] = 2,
+            ["LongDataProp"] = 3L,
+            ["NullableLongDataProp"] = 4L,
+            ["FloatDataProp"] = 5.0f,
+            ["NullableFloatDataProp"] = 6.0f,
+            ["DoubleDataProp"] = 7.0,
+            ["NullableDoubleDataProp"] = 8.0,
+            ["BoolDataProp"] = true,
+            ["NullableBoolDataProp"] = false,
+            ["DateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            ["NullableDateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            ["TagListDataProp"] = new JsonArray { "tag1", "tag2" },
+            ["FloatVector"] = new JsonArray { 1.0f, 2.0f, 3.0f },
+            ["NullableFloatVector"] = new JsonArray { 4.0f, 5.0f, 6.0f }
+        };
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
@@ -182,11 +184,13 @@ public class AzureAISearchDynamicMapperTests
             new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
         ]);
 
-        var storageModel = new JsonObject();
-        storageModel["Key"] = "key";
-        storageModel["StringDataProp"] = null;
-        storageModel["NullableIntDataProp"] = null;
-        storageModel["NullableFloatVector"] = null;
+        var storageModel = new JsonObject
+        {
+            ["Key"] = "key",
+            ["StringDataProp"] = null,
+            ["NullableIntDataProp"] = null,
+            ["NullableFloatVector"] = null
+        };
 
         var sut = new AzureAISearchDynamicMapper(model, null);
 
@@ -256,8 +260,10 @@ public class AzureAISearchDynamicMapperTests
             new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
-        var storageModel = new JsonObject();
-        storageModel["Key"] = "key";
+        var storageModel = new JsonObject
+        {
+            ["Key"] = "key"
+        };
 
         var sut = new AzureAISearchDynamicMapper(model, null);
 

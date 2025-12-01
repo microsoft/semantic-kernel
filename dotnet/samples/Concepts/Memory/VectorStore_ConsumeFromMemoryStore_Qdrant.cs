@@ -24,7 +24,7 @@ namespace Memory;
 public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
-    private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
 
     [Fact]
     public async Task ConsumeExampleAsync()

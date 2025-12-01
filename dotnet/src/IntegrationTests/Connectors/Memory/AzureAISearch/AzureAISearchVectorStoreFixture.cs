@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -67,8 +66,8 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
         this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("HotelId", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreDataProperty("Description", typeof(string)),
@@ -77,7 +76,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 new VectorStoreDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StorageName = "parking_is_included" },
                 new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
                 new VectorStoreDataProperty("Rating", typeof(double?))
-            }
+            ]
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(embeddingsConfig);

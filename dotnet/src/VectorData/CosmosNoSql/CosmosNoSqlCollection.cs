@@ -722,7 +722,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
         indexingPolicy.VectorIndexes = vectorIndexPaths;
 
-        var fullTextPolicy = new FullTextPolicy() { FullTextPaths = new Collection<FullTextPath>() };
+        var fullTextPolicy = new FullTextPolicy() { FullTextPaths = [] };
         var vectorEmbeddingPolicy = new VectorEmbeddingPolicy(embeddings);
 
         // Process Data properties.

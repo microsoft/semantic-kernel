@@ -23,9 +23,9 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
     {
         Verify.NotNull(dataModel);
 
-        var document = new BsonDocument();
-
-        document[MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var document = new BsonDocument
+        {
+            [MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
@@ -37,7 +37,8 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
                 _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+            }
+        };
 
         foreach (var property in model.DataProperties)
         {

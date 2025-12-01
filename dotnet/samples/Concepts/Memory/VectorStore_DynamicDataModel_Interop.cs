@@ -26,13 +26,13 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
     private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreProperty>
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", typeof(ulong)),
             new VectorStoreDataProperty("Term", typeof(string)),
             new VectorStoreDataProperty("Definition", typeof(string)),
             new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
-        }
+        ]
     };
 
     [Fact]

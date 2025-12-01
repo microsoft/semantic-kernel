@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Pinecone;
@@ -27,12 +26,12 @@ public class PineconeCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("OriginalNameData", typeof(string)),
                 new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>?), 4),
-            }
+            ]
         };
         var pineconeClient = new PineconeClient("fake api key");
 

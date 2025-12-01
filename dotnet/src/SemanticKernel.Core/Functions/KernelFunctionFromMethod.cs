@@ -920,7 +920,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (returnType.IsGenericType)
         {
             // Task<T>
-#if NET6_0_OR_GREATER
+#if NET
             if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
                 ((PropertyInfo)returnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo)) is PropertyInfo taskPropertyInfo &&
                 taskPropertyInfo.GetGetMethod() is MethodInfo taskResultGetter)
@@ -940,7 +940,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             }
 
             // ValueTask<T>
-#if NET6_0_OR_GREATER
+#if NET
             if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
                    returnType.GetMemberWithSameMetadataDefinitionAs(s_valueTaskGetAsTaskMethodInfo) is MethodInfo valueTaskAsTask &&
                    valueTaskAsTask.ReturnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo valueTaskPropertyInfo &&
@@ -965,7 +965,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             // IAsyncEnumerable<T>
             if (returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
             {
-#if NET6_0_OR_GREATER
+#if NET
                 //typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;
                 MethodInfo? getAsyncEnumeratorMethod = returnType.GetMemberWithSameMetadataDefinitionAs(s_asyncEnumerableGetAsyncEnumeratorMethodInfo) as MethodInfo;
 #else
@@ -1142,7 +1142,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
-#if NET6_0_OR_GREATER
+#if NET
     private static readonly MethodInfo s_valueTaskGetAsTaskMethodInfo = typeof(ValueTask<>).GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MemberInfo s_taskGetResultPropertyInfo = typeof(Task<>).GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MethodInfo s_asyncEnumerableGetAsyncEnumeratorMethodInfo = typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;

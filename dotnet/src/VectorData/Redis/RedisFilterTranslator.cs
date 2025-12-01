@@ -124,7 +124,7 @@ internal class RedisFilterTranslator
                     {
                         ExpressionType.Equal when constantValue is byte or short or int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
-#if NET8_0_OR_GREATER
+#if NET
                             => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
 #else
                             => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
