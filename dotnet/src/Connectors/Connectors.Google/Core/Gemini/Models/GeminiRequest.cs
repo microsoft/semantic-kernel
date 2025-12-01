@@ -501,6 +501,7 @@ internal sealed class GeminiRequest
             request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
             {
                 ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts,
                 ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
             };
         }
@@ -554,6 +555,10 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
 
         [JsonPropertyName("thinkingLevel")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

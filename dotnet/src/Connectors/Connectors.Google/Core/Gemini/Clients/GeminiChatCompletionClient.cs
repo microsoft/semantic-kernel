@@ -748,20 +748,53 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        // Join text parts
-        string text = string.Concat(candidate.Content?.Parts?.Select(part => part.Text) ?? []);
+        var items = new List<KernelContent>();
+
+        // Process parts to separate regular text from thinking content
+        var regularTextParts = new List<string>();
+
+        if (candidate.Content?.Parts != null)
+        {
+            foreach (var part in candidate.Content.Parts)
+            {
+                if (part.Thought == true && !string.IsNullOrEmpty(part.Text))
+                {
+                    // This is thinking content
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    items.Add(new ReasoningContent(part.Text));
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                }
+                else if (!string.IsNullOrEmpty(part.Text))
+                {
+                    // This is regular text content
+                    regularTextParts.Add(part.Text);
+                }
+            }
+        }
+
+        // Regular text goes into message.Content, not as a separate item
+        var regularText = string.Concat(regularTextParts);
 
         // Gemini sometimes returns function calls with text parts, so collect them
         var toolCalls = candidate.Content?.Parts?
             .Select(part => part.FunctionCall!)
             .Where(toolCall => toolCall is not null).ToArray();
 
-        return new GeminiChatMessageContent(
+        // Pass null if there's no regular (non-thinking) text to avoid creating an empty TextContent item
+        var chatMessage = new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: text,
+            content: string.IsNullOrEmpty(regularText) ? null : regularText,
             modelId: this._modelId,
             functionsToolCalls: toolCalls,
             metadata: GetResponseMetadata(geminiResponse, candidate));
+
+        // Add items to the message
+        foreach (var item in items)
+        {
+            chatMessage.Items.Add(item);
+        }
+
+        return chatMessage;
     }
 
     private static GeminiRequest CreateRequest(
@@ -776,9 +809,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
     {
+        GeminiStreamingChatMessageContent streamingMessage;
+
         if (message.CalledToolResult is not null)
         {
-            return new GeminiStreamingChatMessageContent(
+            streamingMessage = new GeminiStreamingChatMessageContent(
                 role: message.Role,
                 content: message.Content,
                 modelId: this._modelId,
@@ -786,10 +821,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 metadata: message.Metadata,
                 choiceIndex: message.Metadata?.Index ?? 0);
         }
-
-        if (message.ToolCalls is not null)
+        else if (message.ToolCalls is not null)
         {
-            return new GeminiStreamingChatMessageContent(
+            streamingMessage = new GeminiStreamingChatMessageContent(
                 role: message.Role,
                 content: message.Content,
                 modelId: this._modelId,
@@ -797,13 +831,34 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 metadata: message.Metadata,
                 choiceIndex: message.Metadata?.Index ?? 0);
         }
+        else
+        {
+            streamingMessage = new GeminiStreamingChatMessageContent(
+                role: message.Role,
+                content: message.Content,
+                modelId: this._modelId,
+                choiceIndex: message.Metadata?.Index ?? 0,
+                metadata: message.Metadata);
+        }
 
-        return new GeminiStreamingChatMessageContent(
-            role: message.Role,
-            content: message.Content,
-            modelId: this._modelId,
-            choiceIndex: message.Metadata?.Index ?? 0,
-            metadata: message.Metadata);
+        // Copy ReasoningContent items to streaming message, converting to StreamingReasoningContent
+        foreach (var item in message.Items)
+        {
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            if (item is ReasoningContent reasoningContent)
+            {
+                var streamingReasoning = new StreamingReasoningContent(reasoningContent.Text)
+                {
+                    InnerContent = reasoningContent.Text
+                };
+                streamingMessage.Items.Add(streamingReasoning);
+            }
+            // Note: Other item types like TextContent are not copied since the main content
+            // is already in streamingMessage.Content
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        }
+
+        return streamingMessage;
     }
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
