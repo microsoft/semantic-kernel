@@ -41,12 +41,12 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
         this.CalledToolResults = [calledToolResult];
 
         // Parse plugin and function names from FullyQualifiedName
-        var (pluginName, functionName) = ParseFullyQualifiedName(calledToolResult.FullyQualifiedName);
+        var functionName = FunctionName.Parse(calledToolResult.FullyQualifiedName, GeminiFunction.NameSeparator);
 
         // Also populate Items collection with FunctionResultContent for compatibility with FunctionChoiceBehavior
         this.Items.Add(new FunctionResultContent(
-            functionName: functionName,
-            pluginName: pluginName,
+            functionName: functionName.Name,
+            pluginName: functionName.PluginName,
             callId: null, // Gemini doesn't provide call IDs
             result: calledToolResult.FunctionResult));
     }
@@ -79,11 +79,11 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
         if (calledToolResult is not null)
         {
             // Parse plugin and function names from FullyQualifiedName
-            var (pluginName, functionName) = ParseFullyQualifiedName(calledToolResult.FullyQualifiedName);
+            var functionName = FunctionName.Parse(calledToolResult.FullyQualifiedName, GeminiFunction.NameSeparator);
 
             this.Items.Add(new FunctionResultContent(
-                functionName: functionName,
-                pluginName: pluginName,
+                functionName: functionName.Name,
+                pluginName: functionName.PluginName,
                 callId: null, // Gemini doesn't provide call IDs
                 result: calledToolResult.FunctionResult));
         }
@@ -112,22 +112,6 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             metadata: metadata)
     {
         this.CalledToolResults = calledToolResults?.ToList().AsReadOnly();
-    }
-
-    /// <summary>
-    /// Parses a fully qualified function name into plugin name and function name.
-    /// </summary>
-    private static (string? PluginName, string FunctionName) ParseFullyQualifiedName(string fullyQualifiedName)
-    {
-        int separatorPos = fullyQualifiedName.IndexOf(GeminiFunction.NameSeparator, StringComparison.Ordinal);
-        if (separatorPos >= 0)
-        {
-            string pluginName = fullyQualifiedName.Substring(0, separatorPos).Trim();
-            string functionName = fullyQualifiedName.Substring(separatorPos + GeminiFunction.NameSeparator.Length).Trim();
-            return (pluginName, functionName);
-        }
-
-        return (null, fullyQualifiedName);
     }
 
     /// <summary>
