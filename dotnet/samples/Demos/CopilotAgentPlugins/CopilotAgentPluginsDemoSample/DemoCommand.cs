@@ -16,9 +16,9 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using Spectre.Console.Json;
 
-public class DemoCommand : AsyncCommand<DemoCommand.Settings>
+public class DemoCommand : AsyncCommand<DemoCommand.DemoSettings>
 {
-    public class Settings : CommandSettings
+    public class DemoSettings : CommandSettings
     {
         [CommandOption("--debug")]
         public bool? EnableLogging { get; set; }
@@ -32,7 +32,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static IConfigurationRoot configuration => s_configurationRoot.Value;
 
     private const string CopilotAgentPluginsDirectory = "CopilotAgentPlugins";
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, DemoSettings settings)
     {
         var availableCopilotPlugins = Directory.GetDirectories($"../../../Concepts/Resources/Plugins/{CopilotAgentPluginsDirectory}");
 

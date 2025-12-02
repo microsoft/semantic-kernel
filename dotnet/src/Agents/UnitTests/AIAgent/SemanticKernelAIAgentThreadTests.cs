@@ -33,7 +33,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Arrange
         var threadMock = new Mock<AgentThread>();
         var serializerCallCount = 0;
-        var expectedJsonElement = JsonDocument.Parse("{\"test\": \"value\"}").RootElement;
+        var expectedJsonElement = JsonElement.Parse("{\"test\": \"value\"}");
 
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
         {

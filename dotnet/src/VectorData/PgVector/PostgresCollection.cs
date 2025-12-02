@@ -192,13 +192,18 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
                 generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
             }
-#if NET8_0_OR_GREATER
+#if NET
             else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>>(record, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
                 generatedEmbeddings[vectorProperty] = [await halfTask.ConfigureAwait(false)];
             }
 #endif
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, BinaryEmbedding>(record, cancellationToken, out var binaryTask))
+            {
+                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+                generatedEmbeddings[vectorProperty] = [await binaryTask.ConfigureAwait(false)];
+            }
             else
             {
                 throw new InvalidOperationException(
@@ -262,7 +267,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
                 generatedEmbeddings[vectorProperty] = await floatTask.ConfigureAwait(false);
             }
-#if NET8_0_OR_GREATER
+#if NET
             else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>>(records, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
@@ -409,7 +414,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
                 => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
-#if NET8_0_OR_GREATER
+#if NET
             // Dense float16
             ReadOnlyMemory<Half> r => r,
             Half[] f => new ReadOnlyMemory<Half>(f),
@@ -420,10 +425,9 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // Dense Binary
             BitArray b => b,
-            // TODO: Uncomment once we sync to the latest MEAI
-            // BinaryEmbedding e => e.Vector,
-            // _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TVector, BinaryEmbedding> generator
-            //     => (await generator.GenerateEmbeddingAsync(value, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector,
+            BinaryEmbedding e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, BinaryEmbedding> generator
+                => await generator.GenerateAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // Sparse
             SparseVector sv => sv,

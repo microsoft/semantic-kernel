@@ -43,7 +43,7 @@ public class MongoDataTypeTests(MongoDataTypeTests.Fixture fixture)
             typeof(short),
             typeof(Guid),
             typeof(DateTimeOffset),
-#if NET8_0_OR_GREATER
+#if NET
             typeof(DateOnly),
             typeof(TimeOnly)
 #endif

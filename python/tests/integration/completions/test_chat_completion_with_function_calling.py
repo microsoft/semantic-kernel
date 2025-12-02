@@ -505,10 +505,6 @@ pytestmark = pytest.mark.parametrize(
             {"test_type": FunctionChoiceTestTypes.AUTO},
             marks=[
                 pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
-                pytest.mark.xfail(
-                    reason="Temporarily failing due to Google AI API issue on streaming only: "
-                    "400 Function calling is not enabled for models/gemini-1.5-flash"
-                ),
             ],
             id="google_ai_tool_call_auto",
         ),
@@ -531,10 +527,6 @@ pytestmark = pytest.mark.parametrize(
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
             marks=[
                 pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
-                pytest.mark.xfail(
-                    reason="Temporarily failing due to Google AI API issue on streaming only: "
-                    "400 Function calling is not enabled for models/gemini-1.5-flash"
-                ),
             ],
             id="google_ai_tool_call_non_auto",
         ),
@@ -562,7 +554,6 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
-            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_tool_call_flow",
         ),
         pytest.param(
@@ -583,10 +574,6 @@ pytestmark = pytest.mark.parametrize(
             {"test_type": FunctionChoiceTestTypes.AUTO},
             marks=[
                 pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
-                pytest.mark.xfail(
-                    reason="Temporarily failing due to Google AI API issue on streaming only: "
-                    "400 Function calling is not enabled for models/gemini-1.5-flash"
-                ),
             ],
             id="google_ai_tool_call_auto_complex_return_type",
         ),

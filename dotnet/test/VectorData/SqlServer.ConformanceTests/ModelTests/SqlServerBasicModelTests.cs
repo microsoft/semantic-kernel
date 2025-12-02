@@ -23,7 +23,7 @@ public class SqlServerBasicModelTests(SqlServerBasicModelTests.Fixture fixture)
             Key = fixture.GenerateNextKey<string>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, 3).Select(j => (float)(i + j)).ToArray()
+            Vector = Enumerable.Range(0, 3).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
         var keys = inserted.Select(record => record.Key).ToArray();
 
@@ -53,7 +53,7 @@ public class SqlServerBasicModelTests(SqlServerBasicModelTests.Fixture fixture)
             Key = i < SqlServerMaxParameters ? fixture.GenerateNextKey<string>() : null!,
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, 3).Select(j => (float)(i + j)).ToArray()
+            Vector = Enumerable.Range(0, 3).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
 
         var keys = inserted.Select(record => record.Key).Where(key => key is not null).ToArray();

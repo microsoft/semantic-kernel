@@ -12,13 +12,10 @@ public class PineconeKeyTypeTests(PineconeKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<PineconeKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "key-type-tests";
     }
 }

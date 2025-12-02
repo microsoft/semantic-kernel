@@ -101,7 +101,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
     [ConditionalFact]
     public virtual Task DateOnly()
     {
-#if NET8_0_OR_GREATER
+#if NET
         return fixture.UnsupportedDefaultTypes.Contains(typeof(DateOnly))
             ? Task.CompletedTask
             : this.Test<DateOnly>(
@@ -116,7 +116,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
     [ConditionalFact]
     public virtual Task TimeOnly()
     {
-#if NET8_0_OR_GREATER
+#if NET
         return fixture.UnsupportedDefaultTypes.Contains(typeof(TimeOnly))
             ? Task.CompletedTask
             : this.Test<TimeOnly>(
@@ -400,7 +400,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, TRecord>
     {
-        public override string CollectionName => "DataTypeTests";
+        protected override string CollectionNameBase => nameof(DataTypeTests<int>);
 
         public virtual bool IsNullSupported => true;
         public virtual bool IsNullFilteringSupported => true;
@@ -517,7 +517,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.DateTimeOffset), typeof(DateTimeOffset)) { IsIndexed = true });
             }
 
-#if NET8_0_OR_GREATER
+#if NET
             if (!this.UnsupportedDefaultTypes.Contains(typeof(DateOnly)))
             {
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.DateOnly), typeof(DateOnly)) { IsIndexed = true });
@@ -571,7 +571,7 @@ public abstract class DataTypeTests<TKey>()
         public DateTime DateTime { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }
 
-#if NET8_0_OR_GREATER
+#if NET
         public DateOnly DateOnly { get; set; }
         public TimeOnly TimeOnly { get; set; }
 #endif

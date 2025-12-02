@@ -66,7 +66,7 @@ public class MongoFilterTests(MongoFilterTests.Fixture fixture)
 
 #if NET10_0_OR_GREATER
     [ConditionalFact]
-    public virtual Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
+    public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
         => Assert.ThrowsAsync<NotSupportedException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif
 

@@ -12,13 +12,10 @@ public class AzureAISearchKeyTypeTests(AzureAISearchKeyTypeTests.Fixture fixture
     : KeyTypeTests(fixture), IClassFixture<AzureAISearchKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
-
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "key-type-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
     }
 }

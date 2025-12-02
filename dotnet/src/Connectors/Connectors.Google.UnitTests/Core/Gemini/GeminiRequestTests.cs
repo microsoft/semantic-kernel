@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -29,7 +28,7 @@ public sealed class GeminiRequestTests
             TopP = 0.9,
             AudioTimestamp = true,
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
+            ResponseSchema = JsonElement.Parse(@"{""schema"":""schema""}")
         };
 
         // Act
@@ -372,6 +371,33 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void FromChatHistoryPdfAsBinaryContentItReturnsWithChatHistory()
+    {
+        // Arrange
+        ReadOnlyMemory<byte> pdfAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage(contentItems:
+            [new BinaryContent(new Uri("https://example-file.com/file.pdf")) { MimeType = "application/pdf" }]);
+        chatHistory.AddUserMessage(contentItems:
+            [new BinaryContent(pdfAsBytes, "application/pdf")]);
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Items.Cast<BinaryContent>().Single().Uri,
+                c.Parts![0].FileData!.FileUri),
+            c => Assert.True(pdfAsBytes.ToArray()
+                .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
+    }
+
+    [Fact]
     public void FromChatHistoryUnsupportedContentItThrowsNotSupportedException()
     {
         // Arrange
@@ -603,7 +629,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithNullableArray)
+            ResponseSchema = JsonElement.Parse(schemaWithNullableArray)
         };
 
         // Act
@@ -653,7 +679,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithEnum)
+            ResponseSchema = JsonElement.Parse(schemaWithEnum)
         };
 
         // Act
@@ -692,6 +718,24 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
+    }
+
+    [Fact]
+    public void FromPromptAndExecutionSettingsWithThinkingLevelReturnsInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-3.0-flash",
+            ThinkingConfig = new GeminiThinkingConfig { ThinkingLevel = "high" }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingLevel, request.Configuration?.ThinkingConfig?.ThinkingLevel);
     }
 
     [Fact]
@@ -742,13 +786,7 @@ public sealed class GeminiRequestTests
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
     {
-#if NET9_0_OR_GREATER
         return JsonElement.DeepEquals(element1, element2);
-#else
-        return JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
-#endif
     }
 
     private static void AssertDeepEquals(JsonElement element1, JsonElement element2)

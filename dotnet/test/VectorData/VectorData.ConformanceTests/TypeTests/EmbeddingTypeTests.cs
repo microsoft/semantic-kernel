@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests.Support;
@@ -178,8 +179,23 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
     protected sealed class ReadOnlyMemoryEmbeddingGenerator<T>(T[] data) : IEmbeddingGenerator<string, Embedding<T>>
     {
-        public Task<GeneratedEmbeddings<Embedding<T>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<GeneratedEmbeddings<Embedding<T>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new GeneratedEmbeddings<Embedding<T>>([new(data)]));
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose() { }
+    }
+
+    protected sealed class BinaryEmbeddingGenerator(BitArray data) : IEmbeddingGenerator<string, BinaryEmbedding>
+    {
+        public Task<GeneratedEmbeddings<BinaryEmbedding>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GeneratedEmbeddings<BinaryEmbedding>([new(data)]));
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
         public void Dispose() { }
@@ -201,7 +217,8 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
     public abstract class Fixture : VectorStoreFixture
     {
-        public virtual string CollectionName => "EmbeddingTypeTests";
+        protected virtual string CollectionNameBase => nameof(EmbeddingTypeTests<int>);
+        public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TVectorProperty>(IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions)
             => new()

@@ -31,7 +31,7 @@ public class RedisJsonDataTypeTests(RedisJsonDataTypeTests.Fixture fixture)
             typeof(Guid),
             typeof(DateTime),
             typeof(DateTimeOffset),
-#if NET8_0_OR_GREATER
+#if NET
             typeof(DateOnly),
             typeof(TimeOnly)
 #endif

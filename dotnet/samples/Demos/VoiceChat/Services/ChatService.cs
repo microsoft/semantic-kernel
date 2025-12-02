@@ -28,7 +28,7 @@ public class ChatService
         };
 
         // Initialize chat history with system message from configuration
-        this._chatHistory = new ChatHistory();
+        this._chatHistory = [];
         this._chatHistory.AddSystemMessage(this._chatOptions.SystemMessage);
     }
 
