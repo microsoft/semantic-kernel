@@ -128,7 +128,7 @@ internal sealed class GeminiRequest
         {
             contents[0].Role = null;
         }
-        
+
         GeminiRequest obj = new()
         {
             Contents = contents,
