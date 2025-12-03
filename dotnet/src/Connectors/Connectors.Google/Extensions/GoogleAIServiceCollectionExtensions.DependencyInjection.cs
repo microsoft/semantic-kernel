@@ -57,6 +57,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="services">The service collection to add the Google AI Chat Client to.</param>
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="apiKey">The API key for authentication with the Google AI API.</param>
+    /// <param name="vertexAI">Whether to use Vertex AI.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
@@ -66,6 +67,7 @@ public static class GoogleAIServiceCollectionExtensions
         this IServiceCollection services,
         string modelId,
         string apiKey,
+        bool vertexAI = false,
         string? serviceId = null,
         string? openTelemetrySourceName = null,
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
@@ -78,7 +80,7 @@ public static class GoogleAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var googleClient = new Google.GenAI.Client(apiKey: apiKey);
+            var googleClient = new Google.GenAI.Client(apiKey: apiKey, vertexAI: vertexAI);
 
             var builder = new GoogleGenAIChatClient(googleClient, modelId)
                 .AsBuilder()

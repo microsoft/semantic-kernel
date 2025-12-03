@@ -127,6 +127,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="apiKey">The API key for authentication with the Google AI API.</param>
+    /// <param name="vertexAI">Whether to use Vertex AI.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
@@ -136,6 +137,7 @@ public static class GoogleAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
+        bool vertexAI = false,
         string? serviceId = null,
         string? openTelemetrySourceName = null,
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
@@ -145,6 +147,7 @@ public static class GoogleAIKernelBuilderExtensions
         builder.Services.AddGoogleAIChatClient(
             modelId,
             apiKey,
+            vertexAI,
             serviceId,
             openTelemetrySourceName,
             openTelemetryConfig);
