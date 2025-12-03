@@ -1,0 +1,76 @@
+{
+  "solution": {
+    "path": "SK-dotnet.slnx",
+    "projects":
+    [
+      "src\\SemanticKernel.Abstractions\\SemanticKernel.Abstractions.csproj",
+      "src\\SemanticKernel.Core\\SemanticKernel.Core.csproj",
+      "src\\SemanticKernel.MetaPackage\\SemanticKernel.MetaPackage.csproj",
+
+      "src\\Agents\\A2A\\Agents.A2A.csproj",
+      "src\\Agents\\Abstractions\\Agents.Abstractions.csproj",
+      "src\\Agents\\AzureAI\\Agents.AzureAI.csproj",
+      "src\\Agents\\Bedrock\\Agents.Bedrock.csproj",
+      "src\\Agents\\Copilot\\Agents.CopilotStudio.csproj",
+      "src\\Agents\\Core\\Agents.Core.csproj",
+      "src\\Agents\\Magentic\\Agents.Magentic.csproj",
+      "src\\Agents\\OpenAI\\Agents.OpenAI.csproj",
+      "src\\Agents\\Orchestration\\Agents.Orchestration.csproj",
+      "src\\Agents\\Yaml\\Agents.Yaml.csproj",
+
+      "src\\Agents\\Runtime\\Abstractions\\Runtime.Abstractions.csproj",
+      "src\\Agents\\Runtime\\Core\\Runtime.Core.csproj",
+      "src\\Agents\\Runtime\\InProcess\\Runtime.InProcess.csproj",
+
+      "src\\Connectors\\Connectors.Amazon\\Connectors.Amazon.csproj",
+      "src\\Connectors\\Connectors.AzureAIInference\\Connectors.AzureAIInference.csproj",
+      "src\\Connectors\\Connectors.AzureOpenAI\\Connectors.AzureOpenAI.csproj",
+      "src\\Connectors\\Connectors.Google\\Connectors.Google.csproj",
+      "src\\Connectors\\Connectors.HuggingFace\\Connectors.HuggingFace.csproj",
+      "src\\Connectors\\Connectors.MistralAI\\Connectors.MistralAI.csproj",
+      "src\\Connectors\\Connectors.Ollama\\Connectors.Ollama.csproj",
+      "src\\Connectors\\Connectors.Onnx\\Connectors.Onnx.csproj",
+      "src\\Connectors\\Connectors.OpenAI\\Connectors.OpenAI.csproj",
+
+      "src\\VectorData\\AzureAISearch\\AzureAISearch.csproj",
+      "src\\VectorData\\Chroma\\Chroma.csproj",
+      "src\\VectorData\\CosmosMongoDB\\CosmosMongoDB.csproj",
+      "src\\VectorData\\CosmosNoSql\\CosmosNoSql.csproj",
+      "src\\VectorData\\InMemory\\InMemory.csproj",
+      "src\\VectorData\\Milvus\\Milvus.csproj",
+      "src\\VectorData\\MongoDB\\MongoDB.csproj",
+      "src\\VectorData\\PgVector\\PgVector.csproj",
+      "src\\VectorData\\Pinecone\\Pinecone.csproj",
+      "src\\VectorData\\Qdrant\\Qdrant.csproj",
+      "src\\VectorData\\Redis\\Redis.csproj",
+      "src\\VectorData\\SqliteVec\\SqliteVec.csproj",
+      "src\\VectorData\\SqlServer\\SqlServer.csproj",
+      "src\\VectorData\\VectorData.Abstractions\\VectorData.Abstractions.csproj",
+      "src\\VectorData\\Weaviate\\Weaviate.csproj",
+
+      "src\\Experimental\\Orchestration.Flow\\Experimental.Orchestration.Flow.csproj",
+
+      "src\\Experimental\\Process.Abstractions\\Process.Abstractions.csproj",
+      "src\\Experimental\\Process.Core\\Process.Core.csproj",
+      "src\\Experimental\\Process.LocalRuntime\\Process.LocalRuntime.csproj",
+      "src\\Experimental\\Process.Runtime.Dapr\\Process.Runtime.Dapr.csproj",
+
+      "src\\Functions\\Functions.Grpc\\Functions.Grpc.csproj",
+      "src\\Functions\\Functions.OpenApi.Extensions\\Functions.OpenApi.Extensions.csproj",
+      "src\\Functions\\Functions.OpenApi\\Functions.OpenApi.csproj",
+      "src\\Functions\\Functions.Prompty\\Functions.Prompty.csproj",
+      "src\\Functions\\Functions.Yaml\\Functions.Yaml.csproj",
+
+      "src\\Extensions\\PromptTemplates.Handlebars\\PromptTemplates.Handlebars.csproj",
+      "src\\Extensions\\PromptTemplates.Liquid\\PromptTemplates.Liquid.csproj",
+
+      "src\\Plugins\\Plugins.AI\\Plugins.AI.csproj",
+      "src\\Plugins\\Plugins.Core\\Plugins.Core.csproj",
+      "src\\Plugins\\Plugins.Document\\Plugins.Document.csproj",
+      "src\\Plugins\\Plugins.Memory\\Plugins.Memory.csproj",
+      "src\\Plugins\\Plugins.MsGraph\\Plugins.MsGraph.csproj",
+      "src\\Plugins\\Plugins.StructuredData.EntityFramework\\Plugins.StructuredData.EntityFramework.csproj",
+      "src\\Plugins\\Plugins.Web\\Plugins.Web.csproj"
+    ]
+  }
+}
