@@ -51,21 +51,19 @@ public static class GoogleAIServiceCollectionExtensions
 
 #if NET
     /// <summary>
-    /// Add Google AI <see cref="IChatClient"/> to the specified service collection.
+    /// Add Google GenAI <see cref="IChatClient"/> to the specified service collection.
     /// </summary>
-    /// <param name="services">The service collection to add the Google AI Chat Client to.</param>
+    /// <param name="services">The service collection to add the Google GenAI Chat Client to.</param>
     /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="apiKey">The API key for authentication with the Google AI API.</param>
-    /// <param name="vertexAI">Whether to use Vertex AI.</param>
+    /// <param name="apiKey">The API key for authentication with the Google GenAI API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddGoogleAIChatClient(
+    public static IServiceCollection AddGoogleGenAIChatClient(
         this IServiceCollection services,
         string modelId,
         string apiKey,
-        bool vertexAI = false,
         string? serviceId = null,
         string? openTelemetrySourceName = null,
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
@@ -78,7 +76,56 @@ public static class GoogleAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var googleClient = new Google.GenAI.Client(apiKey: apiKey, vertexAI: vertexAI);
+            var googleClient = new Google.GenAI.Client(apiKey: apiKey);
+
+            var builder = new GoogleGenAIChatClient(googleClient, modelId)
+                .AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory)
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        }
+
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Add Google Vertex AI <see cref="IChatClient"/> to the specified service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the Google Vertex AI Chat Client to.</param>
+    /// <param name="modelId">The model for chat completion.</param>
+    /// <param name="project">The Google Cloud project ID. If null, will attempt to use the GOOGLE_CLOUD_PROJECT environment variable.</param>
+    /// <param name="location">The Google Cloud location (e.g., "us-central1"). If null, will attempt to use the GOOGLE_CLOUD_LOCATION environment variable.</param>
+    /// <param name="credential">The optional <see cref="Google.Apis.Auth.OAuth2.ICredential"/> for authentication. If null, the client will use its internal discovery implementation to get credentials from the environment.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddGoogleVertexAIChatClient(
+        this IServiceCollection services,
+        string modelId,
+        string? project = null,
+        string? location = null,
+        Google.Apis.Auth.OAuth2.ICredential? credential = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        IChatClient Factory(IServiceProvider serviceProvider, object? _)
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var googleClient = new Google.GenAI.Client(vertexAI: true, credential: credential, project: project, location: location);
 
             var builder = new GoogleGenAIChatClient(googleClient, modelId)
                 .AsBuilder()

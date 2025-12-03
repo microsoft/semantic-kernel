@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
-public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class GeminiVertexAIChatClientTests(ITestOutputHelper output) : TestsBase(output)
 {
     private const string SkipReason = "This test is for manual verification.";
 
@@ -25,7 +25,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             new ChatMessage(ChatRole.User, "Call me by my name and expand this abbreviation: LLM")
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var response = await sut.GetResponseAsync(chatHistory);
@@ -51,7 +51,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             new ChatMessage(ChatRole.User, "Call me by my name and write a long story about my name.")
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var responses = await sut.GetStreamingResponseAsync(chatHistory).ToListAsync();
@@ -77,7 +77,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             new ChatMessage(ChatRole.User, "Tell me your name and the value of ACDD.")
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var response = await sut.GetResponseAsync(chatHistory);
@@ -105,7 +105,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             new ChatMessage(ChatRole.User, "Tell me your name and the value of ACDD.")
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var responses = await sut.GetStreamingResponseAsync(chatHistory).ToListAsync();
@@ -130,7 +130,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             new ChatMessage(ChatRole.User, "Call me by my name and expand this abbreviation: LLM")
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var response = await sut.GetResponseAsync(chatHistory);
@@ -158,7 +158,7 @@ public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : Tests
             MaxOutputTokens = 100
         };
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         // Act
         var response = await sut.GetResponseAsync(chatHistory, chatOptions);

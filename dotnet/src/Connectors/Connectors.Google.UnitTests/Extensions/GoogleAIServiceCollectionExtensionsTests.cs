@@ -117,13 +117,13 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
 
 #if NET
     [Fact]
-    public void GoogleAIChatClientShouldBeRegisteredInKernelServicesWithApiKey()
+    public void GoogleGenAIChatClientShouldBeRegisteredInKernelServicesWithApiKey()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGoogleAIChatClient("modelId", "apiKey");
+        kernelBuilder.AddGoogleGenAIChatClient("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -132,18 +132,48 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void GoogleAIChatClientShouldBeRegisteredInServiceCollectionWithApiKey()
+    public void GoogleGenAIChatClientShouldBeRegisteredInServiceCollectionWithApiKey()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGoogleAIChatClient("modelId", "apiKey");
+        services.AddGoogleGenAIChatClient("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var chatClient = serviceProvider.GetRequiredService<IChatClient>();
         Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    public void GoogleVertexAIChatClientShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGoogleVertexAIChatClient("modelId", project: "test-project", location: "us-central1");
+
+        // Assert - just verify no exception during registration
+        // Resolution requires real credentials, so skip that in unit tests
+        var kernel = kernelBuilder.Build();
+        Assert.NotNull(kernel.Services);
+    }
+
+    [Fact]
+    public void GoogleVertexAIChatClientShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGoogleVertexAIChatClient("modelId", project: "test-project", location: "us-central1");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - just verify no exception during registration
+        // Resolution requires real credentials, so skip that in unit tests
+        Assert.NotNull(serviceProvider);
     }
 
     [Fact]
@@ -179,19 +209,35 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void GoogleAIChatClientShouldBeRegisteredWithServiceId()
+    public void GoogleGenAIChatClientShouldBeRegisteredWithServiceId()
     {
         // Arrange
         var services = new ServiceCollection();
         const string serviceId = "test-service-id";
 
         // Act
-        services.AddGoogleAIChatClient("modelId", "apiKey", serviceId: serviceId);
+        services.AddGoogleGenAIChatClient("modelId", "apiKey", serviceId: serviceId);
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var chatClient = serviceProvider.GetKeyedService<IChatClient>(serviceId);
         Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    public void GoogleVertexAIChatClientShouldBeRegisteredWithServiceId()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        const string serviceId = "test-service-id";
+
+        // Act
+        services.AddGoogleVertexAIChatClient("modelId", project: "test-project", location: "us-central1", serviceId: serviceId);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - just verify no exception during registration
+        // Resolution requires real credentials, so skip that in unit tests
+        Assert.NotNull(serviceProvider);
     }
 
     [Fact]

@@ -13,7 +13,7 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 public sealed class GoogleGeminiChatClientTests
 {
     [Fact]
-    public void ChatClientShouldBeCreatedWithApiKey()
+    public void GenAIChatClientShouldBeCreatedWithApiKey()
     {
         // Arrange
         string modelId = "gemini-1.5-pro";
@@ -21,12 +21,28 @@ public sealed class GoogleGeminiChatClientTests
 
         // Act
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIChatClient(modelId, apiKey);
+        kernelBuilder.AddGoogleGenAIChatClient(modelId, apiKey);
         var kernel = kernelBuilder.Build();
 
         // Assert
         var chatClient = kernel.GetRequiredService<IChatClient>();
         Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    public void VertexAIChatClientShouldBeCreated()
+    {
+        // Arrange
+        string modelId = "gemini-1.5-pro";
+
+        // Act
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddGoogleVertexAIChatClient(modelId, project: "test-project", location: "us-central1");
+        var kernel = kernelBuilder.Build();
+
+        // Assert - just verify no exception during registration
+        // Resolution requires real credentials, so skip that in unit tests
+        Assert.NotNull(kernel.Services);
     }
 
     [Fact]
@@ -47,7 +63,7 @@ public sealed class GoogleGeminiChatClientTests
     }
 
     [Fact]
-    public void ChatClientShouldBeCreatedWithServiceId()
+    public void GenAIChatClientShouldBeCreatedWithServiceId()
     {
         // Arrange
         string modelId = "gemini-1.5-pro";
@@ -56,7 +72,7 @@ public sealed class GoogleGeminiChatClientTests
 
         // Act
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIChatClient(modelId, apiKey, serviceId: serviceId);
+        kernelBuilder.AddGoogleGenAIChatClient(modelId, apiKey, serviceId: serviceId);
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -65,43 +81,80 @@ public sealed class GoogleGeminiChatClientTests
     }
 
     [Fact]
-    public void ChatClientThrowsForNullModelId()
+    public void VertexAIChatClientShouldBeCreatedWithServiceId()
     {
         // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
+        string modelId = "gemini-1.5-pro";
+        string serviceId = "test-service";
 
-        // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleAIChatClient(null!, "apiKey"));
+        // Act
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddGoogleVertexAIChatClient(modelId, project: "test-project", location: "us-central1", serviceId: serviceId);
+        var kernel = kernelBuilder.Build();
+
+        // Assert - just verify no exception during registration
+        // Resolution requires real credentials, so skip that in unit tests
+        Assert.NotNull(kernel.Services);
     }
 
     [Fact]
-    public void ChatClientThrowsForEmptyModelId()
+    public void GenAIChatClientThrowsForNullModelId()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleAIChatClient("", "apiKey"));
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleGenAIChatClient(null!, "apiKey"));
     }
 
     [Fact]
-    public void ChatClientThrowsForNullApiKey()
+    public void GenAIChatClientThrowsForEmptyModelId()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleAIChatClient("modelId", (string)null!));
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleGenAIChatClient("", "apiKey"));
     }
 
     [Fact]
-    public void ChatClientThrowsForEmptyApiKey()
+    public void GenAIChatClientThrowsForNullApiKey()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleAIChatClient("modelId", ""));
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleGenAIChatClient("modelId", null!));
+    }
+
+    [Fact]
+    public void GenAIChatClientThrowsForEmptyApiKey()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleGenAIChatClient("modelId", ""));
+    }
+
+    [Fact]
+    public void VertexAIChatClientThrowsForNullModelId()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleVertexAIChatClient(null!, project: "test-project", location: "us-central1"));
+    }
+
+    [Fact]
+    public void VertexAIChatClientThrowsForEmptyModelId()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => kernelBuilder.AddGoogleVertexAIChatClient("", project: "test-project", location: "us-central1"));
     }
 }
 

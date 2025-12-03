@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ using AIFunctionCallContent = Microsoft.Extensions.AI.FunctionCallContent;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
-public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class GeminiVertexAIFunctionCallingChatClientTests(ITestOutputHelper output) : TestsBase(output)
 {
     private const string SkipMessage = "This test is for manual verification.";
 
@@ -24,7 +24,7 @@ public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper 
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>(nameof(CustomerPlugin));
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         var chatHistory = new[]
         {
@@ -65,7 +65,7 @@ public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper 
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>(nameof(CustomerPlugin));
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         var chatHistory = new[]
         {
@@ -104,7 +104,7 @@ public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper 
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         var chatHistory = new[]
         {
@@ -144,7 +144,7 @@ public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper 
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         var chatHistory = new[]
         {
@@ -184,7 +184,7 @@ public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper 
         var kernel = new Kernel();
         kernel.ImportPluginFromType<CustomerPlugin>("CustomerPlugin");
 
-        var sut = this.GetGenAIChatClient();
+        var sut = this.GetVertexAIChatClient();
 
         var chatHistory = new[]
         {
