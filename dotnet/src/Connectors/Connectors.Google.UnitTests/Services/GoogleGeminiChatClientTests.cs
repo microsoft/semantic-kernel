@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if NET
 
 using System;
+using Google.GenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
@@ -34,7 +34,7 @@ public sealed class GoogleGeminiChatClientTests
     {
         // Arrange
         string modelId = "gemini-1.5-pro";
-        var googleClient = new global::Google.GenAI.Client(apiKey: "test-api-key");
+        using var googleClient = new Client(apiKey: "test-api-key");
 
         // Act
         var kernelBuilder = Kernel.CreateBuilder();

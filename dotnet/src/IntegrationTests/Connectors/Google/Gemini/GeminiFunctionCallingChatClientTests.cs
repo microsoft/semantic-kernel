@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ComponentModel;
@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,7 +35,6 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
 
         var tools = kernel.Plugins
             .SelectMany(p => p)
-            .Select(f => f.AsAIFunction())
             .Cast<AITool>()
             .ToList();
 
@@ -80,7 +78,6 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
 
         var tools = kernel.Plugins
             .SelectMany(p => p)
-            .Select(f => f.AsAIFunction())
             .Cast<AITool>()
             .ToList();
 
@@ -122,7 +119,6 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
 
         var tools = kernel.Plugins
             .SelectMany(p => p)
-            .Select(f => f.AsAIFunction())
             .Cast<AITool>()
             .ToList();
 
@@ -133,7 +129,7 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
         };
 
         // Use FunctionInvokingChatClient for auto-invoke
-        var autoInvokingClient = new FunctionInvokingChatClient(sut);
+        using var autoInvokingClient = new FunctionInvokingChatClient(sut);
 
         // Act
         var response = await autoInvokingClient.GetResponseAsync(chatHistory, chatOptions);
@@ -165,7 +161,6 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
 
         var tools = kernel.Plugins
             .SelectMany(p => p)
-            .Select(f => f.AsAIFunction())
             .Cast<AITool>()
             .ToList();
 
@@ -176,7 +171,7 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
         };
 
         // Use FunctionInvokingChatClient for auto-invoke
-        var autoInvokingClient = new FunctionInvokingChatClient(sut);
+        using var autoInvokingClient = new FunctionInvokingChatClient(sut);
 
         // Act
         var responses = await autoInvokingClient.GetStreamingResponseAsync(chatHistory, chatOptions).ToListAsync();
@@ -208,7 +203,6 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
 
         var tools = kernel.Plugins
             .SelectMany(p => p)
-            .Select(f => f.AsAIFunction())
             .Cast<AITool>()
             .ToList();
 
@@ -219,7 +213,7 @@ public sealed class GeminiFunctionCallingChatClientTests(ITestOutputHelper outpu
         };
 
         // Use FunctionInvokingChatClient for auto-invoke
-        var autoInvokingClient = new FunctionInvokingChatClient(sut);
+        using var autoInvokingClient = new FunctionInvokingChatClient(sut);
 
         // Act
         var response = await autoInvokingClient.GetResponseAsync(chatHistory, chatOptions);

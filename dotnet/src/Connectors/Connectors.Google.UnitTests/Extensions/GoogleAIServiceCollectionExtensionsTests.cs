@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Google.GenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -150,7 +151,7 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
-        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+        using var googleClient = new Client(apiKey: "apiKey");
 
         // Act
         kernelBuilder.AddGoogleAIChatClient("modelId", googleClient);
@@ -166,7 +167,7 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+        using var googleClient = new Client(apiKey: "apiKey");
 
         // Act
         services.AddGoogleAIChatClient("modelId", googleClient);
@@ -198,7 +199,7 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+        using var googleClient = new Client(apiKey: "apiKey");
         services.AddSingleton(googleClient);
 
         // Act

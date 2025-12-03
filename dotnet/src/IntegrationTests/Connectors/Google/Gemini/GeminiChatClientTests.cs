@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -12,9 +12,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(output)
 {
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    private const string SkipReason = "This test is for manual verification.";
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientGenerationReturnsValidResponseAsync(bool isVertexAI)
     {
         // Arrange
@@ -40,9 +41,9 @@ public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(
         Assert.Contains("Brandon", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientStreamingReturnsValidResponseAsync(bool isVertexAI)
     {
         // Arrange
@@ -66,9 +67,9 @@ public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(
         this.Output.WriteLine(message);
     }
 
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientWithSystemMessagesAsync(bool isVertexAI)
     {
         // Arrange
@@ -96,9 +97,9 @@ public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(
         Assert.Contains("Roger", content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientStreamingWithSystemMessagesAsync(bool isVertexAI)
     {
         // Arrange
@@ -125,9 +126,9 @@ public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(
         Assert.Contains("Roger", message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientReturnsUsageDetailsAsync(bool isVertexAI)
     {
         // Arrange
@@ -151,9 +152,9 @@ public sealed class GeminiChatClientTests(ITestOutputHelper output) : TestsBase(
         this.Output.WriteLine($"Total tokens: {response.Usage.TotalTokenCount}");
     }
 
-    [RetryTheory]
-    [InlineData(false, Skip = "This test is for manual verification.")]
-    [InlineData(true, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = SkipReason)]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ChatClientWithChatOptionsAsync(bool isVertexAI)
     {
         // Arrange
