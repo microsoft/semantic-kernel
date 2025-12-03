@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -113,4 +114,107 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
         Assert.NotNull(embeddingsGenerationService);
         Assert.IsType<GoogleAIEmbeddingGenerator>(embeddingsGenerationService);
     }
+
+#if NET
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldBeRegisteredInKernelServicesWithApiKey()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGoogleAIChatClient("modelId", "apiKey");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var chatClient = kernel.GetRequiredService<IChatClient>();
+        Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldBeRegisteredInServiceCollectionWithApiKey()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGoogleAIChatClient("modelId", "apiKey");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var chatClient = serviceProvider.GetRequiredService<IChatClient>();
+        Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldBeRegisteredInKernelServicesWithClient()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+
+        // Act
+        kernelBuilder.AddGoogleAIChatClient("modelId", googleClient);
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var chatClient = kernel.GetRequiredService<IChatClient>();
+        Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldBeRegisteredInServiceCollectionWithClient()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+
+        // Act
+        services.AddGoogleAIChatClient("modelId", googleClient);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var chatClient = serviceProvider.GetRequiredService<IChatClient>();
+        Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldBeRegisteredWithServiceId()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        const string serviceId = "test-service-id";
+
+        // Act
+        services.AddGoogleAIChatClient("modelId", "apiKey", serviceId: serviceId);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var chatClient = serviceProvider.GetKeyedService<IChatClient>(serviceId);
+        Assert.NotNull(chatClient);
+    }
+
+    [Fact]
+    [Experimental("SKEXP0070")]
+    public void GoogleAIChatClientShouldResolveFromServiceProviderWhenClientNotProvided()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var googleClient = new global::Google.GenAI.Client(apiKey: "apiKey");
+        services.AddSingleton(googleClient);
+
+        // Act
+        services.AddGoogleAIChatClient("modelId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var chatClient = serviceProvider.GetRequiredService<IChatClient>();
+        Assert.NotNull(chatClient);
+    }
+#endif
 }
