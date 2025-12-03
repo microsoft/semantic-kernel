@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -132,7 +131,6 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0070")]
     public static IKernelBuilder AddGoogleAIChatClient(
         this IKernelBuilder builder,
         string modelId,
@@ -165,7 +163,6 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0070")]
     public static IKernelBuilder AddGoogleAIChatClient(
         this IKernelBuilder builder,
         string modelId,

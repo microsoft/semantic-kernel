@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -117,7 +116,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
 
 #if NET
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldBeRegisteredInKernelServicesWithApiKey()
     {
         // Arrange
@@ -133,7 +131,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldBeRegisteredInServiceCollectionWithApiKey()
     {
         // Arrange
@@ -149,7 +146,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldBeRegisteredInKernelServicesWithClient()
     {
         // Arrange
@@ -166,7 +162,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldBeRegisteredInServiceCollectionWithClient()
     {
         // Arrange
@@ -183,7 +178,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldBeRegisteredWithServiceId()
     {
         // Arrange
@@ -200,7 +194,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Experimental("SKEXP0070")]
     public void GoogleAIChatClientShouldResolveFromServiceProviderWhenClientNotProvided()
     {
         // Arrange

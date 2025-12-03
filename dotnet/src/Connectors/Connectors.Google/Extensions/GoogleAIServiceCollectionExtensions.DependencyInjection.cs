@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -62,7 +61,6 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
-    [Experimental("SKEXP0070")]
     public static IServiceCollection AddGoogleAIChatClient(
         this IServiceCollection services,
         string modelId,
@@ -110,7 +108,6 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
-    [Experimental("SKEXP0070")]
     public static IServiceCollection AddGoogleAIChatClient(
         this IServiceCollection services,
         string modelId,
