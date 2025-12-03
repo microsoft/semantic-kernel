@@ -3,6 +3,8 @@
 using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
@@ -64,6 +66,36 @@ public abstract class TestsBase
             projectId: this.VertexAI.ProjectId),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
+
+    protected IChatClient GetChatClient(bool isVertexAI, string? overrideModelId = null)
+    {
+        var modelId = isVertexAI
+            ? overrideModelId ?? this.VertexAI.Gemini.ModelId
+            : overrideModelId ?? this.GoogleAI.Gemini.ModelId;
+
+        var apiKey = isVertexAI ? this.VertexAI.BearerKey : this.GoogleAI.ApiKey;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleAIChatClient(modelId, apiKey, vertexAI: isVertexAI)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
+
+    protected IChatClient GetChatClientWithVision(bool isVertexAI)
+    {
+        var modelId = isVertexAI
+            ? this.VertexAI.Gemini.VisionModelId
+            : this.GoogleAI.Gemini.VisionModelId;
+
+        var apiKey = isVertexAI ? this.VertexAI.BearerKey : this.GoogleAI.ApiKey;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleAIChatClient(modelId, apiKey, vertexAI: isVertexAI)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
 
     [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     protected ITextEmbeddingGenerationService GetEmbeddingService(ServiceType serviceType) => serviceType switch
