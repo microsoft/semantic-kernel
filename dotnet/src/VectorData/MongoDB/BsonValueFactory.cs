@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -20,8 +22,9 @@ internal static class BsonValueFactory
         {
             null => BsonNull.Value,
             Guid guid => new BsonBinaryData(guid, GuidRepresentation.Standard),
-            Guid[] guids => new BsonArray(Array.ConvertAll(guids, x => new BsonBinaryData(x, GuidRepresentation.Standard))),
+            Object[] array => new BsonArray(Array.ConvertAll(array, Create)),
             Array array => new BsonArray(array),
+            IEnumerable<Object> enumerable => new BsonArray(enumerable.Select(Create)),
             _ => BsonValue.Create(value)
         };
 }
