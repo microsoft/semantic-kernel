@@ -37,7 +37,7 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
         cts.CancelAfter(TimeSpan.FromSeconds(60));
         await this._container.StartAsync(cts.Token);
 
-#pragma warning disable CA2000
+#pragma warning disable CA2000 // Dispose objects before losing scope
         var mongoClient = new MongoClient(new MongoClientSettings
         {
             Server = new MongoServerAddress(this._container.Hostname, this._container.GetMappedPublicPort(MongoDbBuilder.MongoDbPort)),
