@@ -30,13 +30,13 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             : keyValue switch
             {
                 string s => s,
-                Guid g => BsonValue.Create(g),
+                Guid g => new BsonBinaryData(g, GuidRepresentation.Standard),
                 ObjectId o => o,
                 long i => i,
                 int i => i,
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectID, long or int.")
             }
         };
 
@@ -44,7 +44,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         {
             if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                document[property.StorageName] = BsonValue.Create(dataValue);
+                document[property.StorageName] = BsonValueFactory.Create(dataValue);
             }
         }
 

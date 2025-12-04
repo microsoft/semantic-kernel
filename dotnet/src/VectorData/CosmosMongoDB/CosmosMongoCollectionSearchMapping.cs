@@ -50,7 +50,7 @@ internal static class CosmosMongoCollectionSearchMapping
             if (filterClause is EqualToFilterClause equalToFilterClause)
             {
                 propertyName = equalToFilterClause.FieldName;
-                propertyValue = BsonValue.Create(equalToFilterClause.Value);
+                propertyValue = BsonValueFactory.Create(equalToFilterClause.Value);
                 filterOperator = EqualOperator;
             }
             else
