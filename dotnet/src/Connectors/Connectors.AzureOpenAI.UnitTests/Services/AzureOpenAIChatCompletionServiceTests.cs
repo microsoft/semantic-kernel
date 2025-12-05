@@ -418,6 +418,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
     [Theory]
     [InlineData(null, null)]
+    [InlineData("string", "none")]
     [InlineData("string", "low")]
     [InlineData("string", "medium")]
     [InlineData("string", "high")]
