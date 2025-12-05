@@ -51,6 +51,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public double? Temperature
     {
         get => this._temperature;
+
         set
         {
             this.ThrowIfFrozen();
@@ -68,6 +69,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public double? TopP
     {
         get => this._topP;
+
         set
         {
             this.ThrowIfFrozen();
@@ -85,6 +87,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public double? PresencePenalty
     {
         get => this._presencePenalty;
+
         set
         {
             this.ThrowIfFrozen();
@@ -102,6 +105,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public double? FrequencyPenalty
     {
         get => this._frequencyPenalty;
+
         set
         {
             this.ThrowIfFrozen();
@@ -117,6 +121,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public int? MaxTokens
     {
         get => this._maxTokens;
+
         set
         {
             this.ThrowIfFrozen();
@@ -132,6 +137,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public IList<string>? StopSequences
     {
         get => this._stopSequences;
+
         set
         {
             this.ThrowIfFrozen();
@@ -148,6 +154,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public long? Seed
     {
         get => this._seed;
+
         set
         {
             this.ThrowIfFrozen();
@@ -173,6 +180,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public object? ResponseFormat
     {
         get => this._responseFormat;
+
         set
         {
             this.ThrowIfFrozen();
@@ -189,6 +197,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public string? ChatSystemPrompt
     {
         get => this._chatSystemPrompt;
+
         set
         {
             this.ThrowIfFrozen();
@@ -206,6 +215,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public string? ChatDeveloperPrompt
     {
         get => this._chatDeveloperPrompt;
+
         set
         {
             this.ThrowIfFrozen();
@@ -221,6 +231,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public IDictionary<int, int>? TokenSelectionBiases
     {
         get => this._tokenSelectionBiases;
+
         set
         {
             this.ThrowIfFrozen();
@@ -261,6 +272,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public ToolCallBehavior? ToolCallBehavior
     {
         get => this._toolCallBehavior;
+
         set
         {
             this.ThrowIfFrozen();
@@ -276,6 +288,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public string? User
     {
         get => this._user;
+
         set
         {
             this.ThrowIfFrozen();
@@ -293,6 +306,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public bool? Logprobs
     {
         get => this._logprobs;
+
         set
         {
             this.ThrowIfFrozen();
@@ -308,6 +322,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public int? TopLogprobs
     {
         get => this._topLogprobs;
+
         set
         {
             this.ThrowIfFrozen();
@@ -323,6 +338,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public IDictionary<string, string>? Metadata
     {
         get => this._metadata;
+
         set
         {
             this.ThrowIfFrozen();
@@ -339,6 +355,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public bool? Store
     {
         get => this._store;
+
         set
         {
             this.ThrowIfFrozen();
@@ -368,6 +385,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public object? WebSearchOptions
     {
         get => this._webSearchOptions;
+
         set
         {
             this.ThrowIfFrozen();
@@ -395,6 +413,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public object? Modalities
     {
         get => this._responseModalities;
+
         set
         {
             this.ThrowIfFrozen();
@@ -420,6 +439,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public object? Audio
     {
         get => this._audioOptions;
+
         set
         {
             this.ThrowIfFrozen();
@@ -444,9 +464,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         if (this._tokenSelectionBiases is not null)
         {
-            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(
-                this._tokenSelectionBiases
-            );
+            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
         }
 
         if (this._metadata is not null)
@@ -467,14 +485,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromExecutionSettings(
-        PromptExecutionSettings? executionSettings,
-        int? defaultMaxTokens = null
-    )
+    public static OpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
-            return new OpenAIPromptExecutionSettings() { MaxTokens = defaultMaxTokens };
+            return new OpenAIPromptExecutionSettings()
+            {
+                MaxTokens = defaultMaxTokens
+            };
         }
 
         if (executionSettings is OpenAIPromptExecutionSettings settings)
@@ -484,10 +502,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
 
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(
-            json,
-            JsonOptionsCache.ReadPermissive
-        );
+        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
         // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
         openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
@@ -500,28 +515,21 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <typeparam name="T">The type of the settings object to clone.</typeparam>
     /// <returns>A new instance of the settings object.</returns>
-    protected internal T Clone<T>()
-        where T : OpenAIPromptExecutionSettings, new()
+    protected internal T Clone<T>() where T : OpenAIPromptExecutionSettings, new()
     {
         return new T()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
-                : null,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
             Temperature = this.Temperature,
             TopP = this.TopP,
             PresencePenalty = this.PresencePenalty,
             FrequencyPenalty = this.FrequencyPenalty,
             MaxTokens = this.MaxTokens,
-            StopSequences = this.StopSequences is not null
-                ? new List<string>(this.StopSequences)
-                : null,
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             Seed = this.Seed,
             ResponseFormat = this.ResponseFormat,
-            TokenSelectionBiases = this.TokenSelectionBiases is not null
-                ? new Dictionary<int, int>(this.TokenSelectionBiases)
-                : null,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
@@ -530,9 +538,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
-            Metadata = this.Metadata is not null
-                ? new Dictionary<string, string>(this.Metadata)
-                : null,
+            Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
             ReasoningEffort = this.ReasoningEffort,
             WebSearchOptions = this.WebSearchOptions,
             Modalities = this.Modalities,
@@ -544,21 +550,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
     {
         // Inserts system and developer prompts at the beginning of the chat history if they are not already present.
-        if (
-            !string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt)
-            && !chatHistory.Any(m => m.Role == AuthorRole.Developer)
-        )
+        if (!string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
         {
-            chatHistory.Insert(
-                0,
-                new ChatMessageContent(AuthorRole.Developer, this.ChatDeveloperPrompt)
-            );
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.Developer, this.ChatDeveloperPrompt));
         }
 
-        if (
-            !string.IsNullOrWhiteSpace(this.ChatSystemPrompt)
-            && !chatHistory.Any(m => m.Role == AuthorRole.System)
-        )
+        if (!string.IsNullOrWhiteSpace(this.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
             chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, this.ChatSystemPrompt));
         }
