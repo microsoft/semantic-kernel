@@ -141,7 +141,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.StartsWith("https://api-inference.huggingface.co/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith("https://router.huggingface.co/hf-inference/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
