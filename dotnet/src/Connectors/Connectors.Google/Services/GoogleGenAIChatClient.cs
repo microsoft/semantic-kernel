@@ -4,13 +4,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.AI;
+
+// Type aliases to distinguish between Semantic Kernel and M.E.AI types
 using AITextContent = Microsoft.Extensions.AI.TextContent;
 using AIDataContent = Microsoft.Extensions.AI.DataContent;
 using AIUriContent = Microsoft.Extensions.AI.UriContent;
@@ -24,6 +28,13 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// </summary>
 internal sealed class GoogleGenAIChatClient : IChatClient
 {
+    /// <summary>A thought signature that can be used to skip thought validation when sending foreign function calls.</summary>
+    /// <remarks>
+    /// See https://ai.google.dev/gemini-api/docs/thought-signatures#faqs.
+    /// This is more common in agentic scenarios, where a chat history is built up across multiple providers/models.
+    /// </remarks>
+    private static readonly byte[] s_skipThoughtValidation = Encoding.UTF8.GetBytes("skip_thought_signature_validator");
+
     /// <summary>The wrapped <see cref="Client"/> instance (optional).</summary>
     private readonly Client? _client;
 
@@ -133,13 +144,14 @@ internal sealed class GoogleGenAIChatClient : IChatClient
 
         if (serviceKey is null)
         {
-            // If there's a request for metadata, lazily-initialize it and return it.
+            // If there's a request for metadata, lazily-initialize it and return it. We don't need to worry about race conditions,
+            // as there's no requirement that the same instance be returned each time, and creation is idempotent.
             if (serviceType == typeof(ChatClientMetadata))
             {
-                return this._metadata ??= new("google.genai", new Uri("https://generativelanguage.googleapis.com/"), defaultModelId: this._defaultModelId);
+                return this._metadata ??= new("gcp.gen_ai", new Uri("https://generativelanguage.googleapis.com/"), defaultModelId: this._defaultModelId);
             }
 
-            // Allow a consumer to access the underlying client if they need it.
+            // Allow a consumer to "break glass" and access the underlying client if they need it.
             if (serviceType.IsInstanceOfType(this._models))
             {
                 return this._models;
@@ -241,6 +253,18 @@ internal sealed class GoogleGenAIChatClient : IChatClient
                                 Description = af.Description ?? "",
                             });
                             break;
+
+                        case HostedCodeInterpreterTool:
+                            (config.Tools ??= []).Add(new() { CodeExecution = new() });
+                            break;
+
+                        case HostedFileSearchTool:
+                            (config.Tools ??= []).Add(new() { Retrieval = new() });
+                            break;
+
+                        case HostedWebSearchTool:
+                            (config.Tools ??= []).Add(new() { GoogleSearch = new() });
+                            break;
                     }
                 }
             }
@@ -324,11 +348,43 @@ internal sealed class GoogleGenAIChatClient : IChatClient
         {
             var content = contents[i];
 
+            byte[]? thoughtSignature = null;
+            if (content is not TextReasoningContent { ProtectedData: not null } &&
+                i + 1 < contents.Count &&
+                contents[i + 1] is TextReasoningContent nextReasoning &&
+                string.IsNullOrWhiteSpace(nextReasoning.Text) &&
+                nextReasoning.ProtectedData is { } protectedData)
+            {
+                i++;
+                thoughtSignature = Convert.FromBase64String(protectedData);
+            }
+
+            // Before the main switch, do any necessary state tracking. We want to do this
+            // even if the AIContent includes a Part as its RawRepresentation.
+            if (content is AIFunctionCallContent fcc)
+            {
+                (callIdToFunctionNames ??= [])[fcc.CallId] = fcc.Name;
+                callIdToFunctionNames[""] = fcc.Name; // track last function name in case calls don't have IDs
+            }
+
             Part? part = null;
             switch (content)
             {
+                case AIContent aic when aic.RawRepresentation is Part rawPart:
+                    part = rawPart;
+                    break;
+
                 case AITextContent textContent:
                     part = new() { Text = textContent.Text };
+                    break;
+
+                case TextReasoningContent reasoningContent:
+                    part = new()
+                    {
+                        Thought = true,
+                        Text = !string.IsNullOrWhiteSpace(reasoningContent.Text) ? reasoningContent.Text : null,
+                        ThoughtSignature = reasoningContent.ProtectedData is not null ? Convert.FromBase64String(reasoningContent.ProtectedData) : null,
+                    };
                     break;
 
                 case AIDataContent dataContent:
@@ -338,6 +394,7 @@ internal sealed class GoogleGenAIChatClient : IChatClient
                         {
                             MimeType = dataContent.MediaType,
                             Data = dataContent.Data.ToArray(),
+                            DisplayName = dataContent.Name,
                         }
                     };
                     break;
@@ -354,9 +411,6 @@ internal sealed class GoogleGenAIChatClient : IChatClient
                     break;
 
                 case AIFunctionCallContent functionCallContent:
-                    (callIdToFunctionNames ??= [])[functionCallContent.CallId] = functionCallContent.Name;
-                    callIdToFunctionNames[""] = functionCallContent.Name; // track last function name in case calls don't have IDs
-
                     part = new()
                     {
                         FunctionCall = new()
@@ -364,46 +418,144 @@ internal sealed class GoogleGenAIChatClient : IChatClient
                             Id = functionCallContent.CallId,
                             Name = functionCallContent.Name,
                             Args = functionCallContent.Arguments is null ? null : functionCallContent.Arguments as Dictionary<string, object> ?? new(functionCallContent.Arguments!),
-                        }
+                        },
+                        ThoughtSignature = thoughtSignature ?? s_skipThoughtValidation,
                     };
                     break;
 
                 case AIFunctionResultContent functionResultContent:
+                    FunctionResponse funcResponse = new()
+                    {
+                        Id = functionResultContent.CallId,
+                    };
+
+                    if (callIdToFunctionNames?.TryGetValue(functionResultContent.CallId ?? "", out string? functionName) is true ||
+                        callIdToFunctionNames?.TryGetValue("", out functionName) is true)
+                    {
+                        funcResponse.Name = functionName;
+                    }
+
+                    switch (functionResultContent.Result)
+                    {
+                        case null:
+                            break;
+
+                        case AIContent aic when ToFunctionResponsePart(aic) is { } singleContentBlob:
+                            funcResponse.Parts = [singleContentBlob];
+                            break;
+
+                        case IEnumerable<AIContent> aiContents:
+                            List<AIContent>? nonBlobContent = null;
+                            foreach (var aiContent in aiContents)
+                            {
+                                if (ToFunctionResponsePart(aiContent) is { } contentBlob)
+                                {
+                                    (funcResponse.Parts ??= []).Add(contentBlob);
+                                }
+                                else
+                                {
+                                    (nonBlobContent ??= []).Add(aiContent);
+                                }
+                            }
+
+                            if (nonBlobContent is not null)
+                            {
+                                funcResponse.Response = new() { ["result"] = nonBlobContent };
+                            }
+                            break;
+
+                        case AITextContent textContent:
+                            funcResponse.Response = new() { ["result"] = textContent.Text };
+                            break;
+
+                        default:
+                            funcResponse.Response = new() { ["result"] = functionResultContent.Result };
+                            break;
+                    }
+
                     part = new()
                     {
-                        FunctionResponse = new()
-                        {
-                            Id = functionResultContent.CallId,
-                            Name = callIdToFunctionNames?.TryGetValue(functionResultContent.CallId, out string? functionName) is true || callIdToFunctionNames?.TryGetValue("", out functionName) is true ?
-                            functionName :
-                            null,
-                            Response = functionResultContent.Result is null ? null : new() { ["result"] = functionResultContent.Result },
-                        }
+                        FunctionResponse = funcResponse,
                     };
+
+                    static FunctionResponsePart? ToFunctionResponsePart(AIContent content)
+                    {
+                        switch (content)
+                        {
+                            case AIContent when content.RawRepresentation is FunctionResponsePart functionResponsePart:
+                                return functionResponsePart;
+
+                            case AIDataContent dc when IsSupportedMediaType(dc.MediaType):
+                                FunctionResponseBlob dataBlob = new()
+                                {
+                                    MimeType = dc.MediaType,
+                                    Data = dc.Data.Span.ToArray(),
+                                };
+
+                                if (!string.IsNullOrWhiteSpace(dc.Name))
+                                {
+                                    dataBlob.DisplayName = dc.Name;
+                                }
+
+                                return new() { InlineData = dataBlob };
+
+                            case AIUriContent uc when IsSupportedMediaType(uc.MediaType):
+                                return new()
+                                {
+                                    FileData = new()
+                                    {
+                                        MimeType = uc.MediaType,
+                                        FileUri = uc.Uri.AbsoluteUri,
+                                    }
+                                };
+
+                            default:
+                                return null;
+                        }
+
+                        // https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling#mm-fr
+                        static bool IsSupportedMediaType(string mediaType) =>
+                            // images
+                            mediaType.Equals("image/png", StringComparison.OrdinalIgnoreCase) ||
+                            mediaType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) ||
+                            mediaType.Equals("image/webp", StringComparison.OrdinalIgnoreCase) ||
+                            // documents
+                            mediaType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) ||
+                            mediaType.Equals("text/plain", StringComparison.OrdinalIgnoreCase);
+                    }
                     break;
             }
 
             if (part is not null)
             {
+                part.ThoughtSignature ??= thoughtSignature;
                 parts.Add(part);
             }
+
+            thoughtSignature = null;
         }
     }
 
     /// <summary>Creates <see cref="AIContent"/>s for <paramref name="parts"/> and adds them to <paramref name="contents"/>.</summary>
+    [SuppressMessage("Design", "MEAI001:Suppress for experimental types", Justification = "Using experimental MEAI types")]
     private static void AddAIContentsForParts(List<Part> parts, IList<AIContent> contents)
     {
         foreach (var part in parts)
         {
-            AIContent? content = null;
+            AIContent content;
 
             if (!string.IsNullOrEmpty(part.Text))
             {
-                content = new AITextContent(part.Text);
+                content = part.Thought is true ?
+                    new TextReasoningContent(part.Text) :
+                    new AITextContent(part.Text);
             }
             else if (part.InlineData is { } inlineData)
             {
-                content = new AIDataContent(inlineData.Data, inlineData.MimeType ?? "application/octet-stream");
+                content = new AIDataContent(inlineData.Data, inlineData.MimeType ?? "application/octet-stream")
+                {
+                    Name = inlineData.DisplayName,
+                };
             }
             else if (part.FileData is { FileUri: not null } fileData)
             {
@@ -416,16 +568,55 @@ internal sealed class GoogleGenAIChatClient : IChatClient
             else if (part.FunctionResponse is { } functionResponse)
             {
                 content = new AIFunctionResultContent(
-                  functionResponse.Id ?? "",
-                  functionResponse.Response?.TryGetValue("output", out var output) is true ? output :
-                  functionResponse.Response?.TryGetValue("error", out var error) is true ? error :
-                  null);
+                    functionResponse.Id ?? "",
+                    functionResponse.Response?.TryGetValue("output", out var output) is true ? output :
+                    functionResponse.Response?.TryGetValue("error", out var error) is true ? error :
+                    null);
+            }
+            else if (part.ExecutableCode is { Code: not null } executableCode)
+            {
+#pragma warning disable MEAI001 // CodeInterpreterToolCallContent is experimental
+                content = new CodeInterpreterToolCallContent()
+                {
+                    Inputs =
+                    [
+                        new AIDataContent(Encoding.UTF8.GetBytes(executableCode.Code), executableCode.Language switch
+                        {
+                            Language.PYTHON => "text/x-python",
+                            _ => "text/x-source-code",
+                        })
+                    ],
+                };
+#pragma warning restore MEAI001
+            }
+            else if (part.CodeExecutionResult is { Output: { } codeOutput } codeExecutionResult)
+            {
+#pragma warning disable MEAI001 // CodeInterpreterToolResultContent is experimental
+                content = new CodeInterpreterToolResultContent()
+                {
+                    Outputs =
+                    [
+                        codeExecutionResult.Outcome is Outcome.OUTCOME_OK ?
+                            new AITextContent(codeOutput) :
+                            new ErrorContent(codeOutput) { ErrorCode = codeExecutionResult.Outcome.ToString() }
+                    ],
+                };
+#pragma warning restore MEAI001
+            }
+            else
+            {
+                content = new AIContent();
             }
 
-            if (content is not null)
+            content.RawRepresentation = part;
+            contents.Add(content);
+
+            if (part.ThoughtSignature is { } thoughtSignature)
             {
-                content.RawRepresentation = part;
-                contents.Add(content);
+                contents.Add(new TextReasoningContent(null)
+                {
+                    ProtectedData = Convert.ToBase64String(thoughtSignature),
+                });
             }
         }
     }
@@ -446,6 +637,31 @@ internal sealed class GoogleGenAIChatClient : IChatClient
             {
                 AddAIContentsForParts(parts, responseContents);
             }
+
+            // Add any citation metadata.
+            if (candidate.CitationMetadata is { Citations: { Count: > 0 } citations } &&
+                responseContents.OfType<AITextContent>().FirstOrDefault() is AITextContent textContent)
+            {
+                foreach (var citation in citations)
+                {
+                    textContent.Annotations =
+                    [
+                        new CitationAnnotation()
+                        {
+                            Title = citation.Title,
+                            Url = Uri.TryCreate(citation.Uri, UriKind.Absolute, out Uri? uri) ? uri : null,
+                            AnnotatedRegions =
+                            [
+                                new TextSpanAnnotatedRegion()
+                                {
+                                    StartIndex = citation.StartIndex,
+                                    EndIndex = citation.EndIndex,
+                                }
+                            ],
+                        }
+                    ];
+                }
+            }
         }
 
         // Populate error information if there is any.
@@ -465,15 +681,15 @@ internal sealed class GoogleGenAIChatClient : IChatClient
             null => null,
 
             FinishReason.MAX_TOKENS =>
-              ChatFinishReason.Length,
+                ChatFinishReason.Length,
 
             FinishReason.MALFORMED_FUNCTION_CALL or
             FinishReason.UNEXPECTED_TOOL_CALL =>
-              ChatFinishReason.ToolCalls,
+                ChatFinishReason.ToolCalls,
 
             FinishReason.FINISH_REASON_UNSPECIFIED or
             FinishReason.STOP =>
-              ChatFinishReason.Stop,
+                ChatFinishReason.Stop,
 
             _ => ChatFinishReason.ContentFilter,
         };
@@ -497,9 +713,9 @@ internal sealed class GoogleGenAIChatClient : IChatClient
 
         void AddIfPresent(string key, int? value)
         {
-            if (value is int i)
+            if (value is int intValue)
             {
-                (details.AdditionalCounts ??= [])[key] = i;
+                (details.AdditionalCounts ??= [])[key] = intValue;
             }
         }
     }
