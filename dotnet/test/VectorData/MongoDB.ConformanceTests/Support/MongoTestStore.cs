@@ -19,8 +19,8 @@ internal sealed class MongoTestStore : TestStore
 
     private MongoDbContainer? _container;
 
-    private MongoClient? _client;
-    private IMongoDatabase? _database;
+    public MongoClient? _client { get; private set; }
+    public IMongoDatabase? _database { get; private set; }
 
     public MongoClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
     public IMongoDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
@@ -46,8 +46,8 @@ internal sealed class MongoTestStore : TestStore
     private async Task<MongoClientSettings> StartMongoDbContainerAsync()
     {
         this._container = new MongoDbBuilder()
-            .WithImage("mongodb/mongodb-atlas-local:latest")
-            .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new WaitForVectorIndexService()))
+            .WithImage("mongodb/mongodb-atlas-local:7.0.6")
+            .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new MongoDbWaitUntil()))
             .Build();
 
         using CancellationTokenSource cts = new();
@@ -84,56 +84,15 @@ internal sealed class MongoTestStore : TestStore
         }
     }
 
-    private sealed class WaitForVectorIndexService : IWaitUntil
+    private sealed class MongoDbWaitUntil : IWaitUntil
     {
+        /// <inheritdoc />
         public async Task<bool> UntilAsync(IContainer container)
         {
-            var connectionString = $"mongodb://{container.Hostname}:{container.GetMappedPublicPort(27017).ToString()}?directConnection=true";
-            using var client = new MongoClient(connectionString);
-            var databaseName = Guid.NewGuid().ToString();
-            var weGood = false;
+            var (stdout, _) = await container.GetLogsAsync(timestampsEnabled: false)
+                .ConfigureAwait(false);
 
-            try
-            {
-                var database = client.GetDatabase(databaseName);
-                var collectionName = Guid.NewGuid().ToString();
-                await database.CreateCollectionAsync(collectionName);
-
-                var model = new CreateSearchIndexModel(
-                    Guid.NewGuid().ToString(),
-                    SearchIndexType.VectorSearch,
-                    BsonDocument.Parse(
-                        """
-                        {
-                          "fields": [
-                            {
-                              "type": "vector",
-                              "path": "Dummy",
-                              "numDimensions": 8,
-                              "similarity": "cosine"
-                            }
-                          ]
-                        }
-                        """));
-
-                await database.GetCollection<BsonDocument>(collectionName).SearchIndexes.CreateOneAsync(model);
-                weGood = true;
-            }
-            catch
-            {
-                // Intentionally ignored.
-            }
-
-            try
-            {
-                await client.DropDatabaseAsync(databaseName);
-            }
-            catch
-            {
-                // Intentionally ignored.
-            }
-
-            return weGood;
+            return stdout.Contains("\"msg\":\"Waiting for connections\"");
         }
     }
 }
