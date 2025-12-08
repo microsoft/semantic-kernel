@@ -67,6 +67,7 @@ logger = logging.getLogger(__name__)
 # Explicit module exports:
 # Only expose high-level entry points; keep helpers internal.
 __all__ = [
+    "OracleCollection",
     "OracleSettings",
     "OracleStore",
 ]
