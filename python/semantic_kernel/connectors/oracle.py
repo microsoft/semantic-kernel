@@ -1,4 +1,5 @@
-# Copyright (c) 2025, Oracle Corporation. All rights reserved. # noqa: CPY001
+# Copyright (c) Microsoft. All rights reserved.
+# Copyright (c) 2025, Oracle Corporation. All rights reserved.
 
 # Standard Library
 import array
