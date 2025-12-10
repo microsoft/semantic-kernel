@@ -69,14 +69,14 @@ public class HandlebarsPrompts(ITestOutputHelper output) : BaseTest(output)
             Template = template,
             TemplateFormat = "handlebars",
             Name = "ContosoChatPrompt",
-            InputVariables = new()
-            {
+            InputVariables =
+            [
                 // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
                 // Consider encoding for each argument to prevent prompt injection attacks.
                 // If argument value is string, encoding will be performed automatically.
                 new() { Name = "customer", AllowDangerouslySetContent = true },
                 new() { Name = "history", AllowDangerouslySetContent = true },
-            }
+            ]
         };
 
         // Render the prompt

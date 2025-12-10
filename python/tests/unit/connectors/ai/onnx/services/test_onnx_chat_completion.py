@@ -52,8 +52,9 @@ def test_onnx_chat_completion_with_invalid_model():
         )
 
 
-def test_onnx_chat_completion_without_prompt_template():
-    with pytest.raises(TypeError):
+@patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config_vision))
+def test_onnx_chat_completion_with_multimodality_without_prompt_template(gen_ai_config_vision):
+    with pytest.raises(ServiceInitializationError):
         OnnxGenAIChatCompletion()
 
 
@@ -147,7 +148,7 @@ def test_onnx_chat_get_image_history(model):
         )
 
         last_image = chat_completion._get_images_from_history(history)
-        assert last_image == image_content
+        assert last_image == [image_content]
 
 
 @patch("onnxruntime_genai.Model")

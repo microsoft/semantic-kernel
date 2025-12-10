@@ -24,7 +24,7 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0.0b12",
+    "azure-ai-projects ~= 1.0.0b12",
     "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.98.0",
+    "openai >= 1.98.0,<2",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -79,6 +79,10 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
+copilotstudio = [
+    "microsoft-agents-copilotstudio-client >= 0.3.1",
+    "microsoft-agents-activity >= 0.3.1"
+]
 dapr = [
     "dapr>=1.14.0",
     "dapr-ext-fastapi>=1.14.0",
@@ -88,8 +92,8 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.97.0",
-    "google-generativeai ~= 0.8"
+    "google-cloud-aiplatform ~= 1.114.0",
+    "google-genai ~= 1.51.0"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
@@ -117,7 +121,12 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.7"
+  # Pinning due to uv tag-resolution issues on macOS.
+  "onnxruntime==1.22.1",
+  "onnxruntime-genai==0.9.0"
+]
+oracledb = [
+    "oracledb >= 3.4.1"
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -148,7 +157,7 @@ usearch = [
     "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<5.0,!=4.16.7",
+    "weaviate-client>=4.17.0,<5.0",
 ]
 
 [tool.uv]

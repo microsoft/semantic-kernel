@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
-    private readonly Dictionary<string, object> _parameters = new();
+    private readonly Dictionary<string, object> _parameters = [];
 
     internal SqliteFilterTranslator(CollectionModel model, LambdaExpression lambdaExpression)
         : base(model, lambdaExpression, sql: null)
@@ -18,6 +18,20 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     }
 
     internal Dictionary<string, object> Parameters => this._parameters;
+
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
+    {
+        switch (value)
+        {
+            case Guid g:
+                // Microsoft.Data.Sqlite writes GUIDs as upper-case strings, align our constant formatting with that.
+                this._sql.Append('\'').Append(g.ToString().ToUpperInvariant()).Append('\'');
+                break;
+            default:
+                base.TranslateConstant(value, isSearchCondition);
+                break;
+        }
+    }
 
     // TODO: support Contains over array fields (#10343)
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
@@ -45,7 +59,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');

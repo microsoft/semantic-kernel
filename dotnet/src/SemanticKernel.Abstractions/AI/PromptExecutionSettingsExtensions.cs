@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 public static class PromptExecutionSettingsExtensions
 {
     /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
+    [return: NotNullIfNotNull(nameof(settings))]
     public static ChatOptions? ToChatOptions(this PromptExecutionSettings? settings, Kernel? kernel)
     {
         if (settings is null)
@@ -87,6 +88,13 @@ public static class PromptExecutionSettingsExtensions
                     TryConvert(entry.Value, out IList<string>? stopSequences))
                 {
                     options.StopSequences = stopSequences;
+                }
+                else if ((entry.Key.Equals("chat_system_prompt", StringComparison.OrdinalIgnoreCase) ||
+                          entry.Key.Equals("chat_developer_prompt", StringComparison.OrdinalIgnoreCase) ||
+                          entry.Key.Equals("systemInstruction", StringComparison.OrdinalIgnoreCase)) &&
+                         TryConvert(entry.Value, out string? systemInstructions))
+                {
+                    options.Instructions = systemInstructions;
                 }
                 else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
                     entry.Value is { } responseFormat)

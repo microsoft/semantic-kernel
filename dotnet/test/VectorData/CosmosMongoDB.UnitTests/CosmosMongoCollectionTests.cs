@@ -357,11 +357,11 @@ public sealed class CosmosMongoCollectionTests
     {
         var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Id", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string))
-            }
+            ]
         };
 
         await this.TestUpsertWithModelAsync<TestModel>(
@@ -383,11 +383,11 @@ public sealed class CosmosMongoCollectionTests
     {
         var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Id", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string))
-            }
+            ]
         };
 
         await this.TestUpsertWithModelAsync<BsonTestModel>(

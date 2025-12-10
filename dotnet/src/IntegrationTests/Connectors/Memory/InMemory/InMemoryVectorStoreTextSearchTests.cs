@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.InMemory;
 public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
 {
     /// <inheritdoc/>
-    public async override Task<ITextSearch> CreateTextSearchAsync()
+    public override async Task<ITextSearch> CreateTextSearchAsync()
     {
         if (this.VectorStore is null)
         {
