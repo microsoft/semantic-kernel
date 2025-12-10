@@ -10,22 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fluentui-contrib/react-chat": "^0.1.10",
-    "@fluentui/react-components": "^9.61.6",
+    "@fluentui-contrib/react-chat": "^0.2.2",
+    "@fluentui/react-components": "^9.72.7",
     "@microsoft/signalr": "^8.0.7",
     "@protobuf-ts/grpcweb-transport": "^2.9.6",
     "@protobuf-ts/runtime": "^2.9.6",
     "@protobuf-ts/runtime-rpc": "^2.9.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "axios": "^1.7.9",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@protobuf-ts/plugin": "^2.9.6",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -33,6 +34,6 @@
     "globals": "^15.15.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.7"
   }
 }

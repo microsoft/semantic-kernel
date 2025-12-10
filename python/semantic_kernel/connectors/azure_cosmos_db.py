@@ -2,12 +2,12 @@
 
 import ast
 import asyncio
-import json
 import sys
 from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 from azure.cosmos.partition_key import PartitionKey
@@ -47,9 +47,6 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
-from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
-    AsyncDefaultAzureCredentialWrapper,
-)
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -568,6 +565,7 @@ class CosmosNoSqlBase(KernelBaseModel):
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: AsyncTokenCredential | None = None,
         **kwargs,
     ):
         """Initialize the CosmosNoSqlBase.
@@ -583,6 +581,7 @@ class CosmosNoSqlBase(KernelBaseModel):
                                     Defaults to False.
             env_file_path (str): The path to the .env file. Defaults to None.
             env_file_encoding (str): The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
             kwargs: Additional keyword arguments.
         """
         try:
@@ -605,9 +604,11 @@ class CosmosNoSqlBase(KernelBaseModel):
                     str(cosmos_db_nosql_settings.url), credential=cosmos_db_nosql_settings.key.get_secret_value()
                 )
             else:
-                cosmos_client = CosmosClient(
-                    str(cosmos_db_nosql_settings.url), credential=AsyncDefaultAzureCredentialWrapper()
-                )
+                if credential is None:
+                    raise VectorStoreInitializationException(
+                        "The 'credential' parameter is required for authentication."
+                    )
+                cosmos_client = CosmosClient(str(cosmos_db_nosql_settings.url), credential=credential)
 
         super().__init__(
             cosmos_client=cosmos_client,
@@ -680,6 +681,7 @@ class CosmosNoSqlCollection(
         create_database: bool = False,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: AsyncTokenCredential | None = None,
     ):
         """Initializes a new instance of the CosmosNoSqlCollection class.
 
@@ -700,6 +702,7 @@ class CosmosNoSqlCollection(
                                     Defaults to False.
             env_file_path: The path to the .env file. Defaults to None.
             env_file_encoding: The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
         """
         if not collection_name:
             collection_name = _get_collection_name_from_model(record_type, definition)
@@ -722,6 +725,7 @@ class CosmosNoSqlCollection(
             collection_name=collection_name,
             managed_client=cosmos_client is None,
             embedding_generator=embedding_generator,
+            credential=credential,
         )
 
     @override
@@ -790,6 +794,8 @@ class CosmosNoSqlCollection(
                 if isinstance(where_clauses, str)
                 else f"WHERE ({' AND '.join(where_clauses)}) "
             )
+        else:
+            where_clauses = ""  # Empty string instead of None
         vector_field_name = vector_field.storage_name or vector_field.name
         select_clause = self._build_select_clause(options.include_vectors)
         params.append({"name": "@vector", "value": vector})
@@ -797,17 +803,19 @@ class CosmosNoSqlCollection(
             raise VectorStoreModelException(
                 f"Distance function '{vector_field.distance_function}' is not supported by Azure Cosmos DB NoSQL."
             )
-        distance_obj = json.dumps({"distanceFunction": DISTANCE_FUNCTION_MAP_NOSQL[vector_field.distance_function]})
+        # Cosmos DB VectorDistance function only accepts 2 parameters: field and vector
+        # Distance function is configured in the vector index, not in the query
         if search_type == SearchType.VECTOR:
-            distance_clause = f"VectorDistance(c.{vector_field_name}, @vector, false {distance_obj})"
+            distance_clause = f"VectorDistance(c.{vector_field_name}, @vector)"
         elif search_type == SearchType.KEYWORD_HYBRID:
             # Hybrid search: requires both a vector and keywords
             params.append({"name": "@keywords", "value": values})
             text_field = options.additional_property_name
             if not text_field:
                 raise VectorStoreModelException("Hybrid search requires 'keyword_field_name' in options.")
-            distance_clause = f"RRF(VectorDistance(c.{vector_field_name}, @vector, false, {distance_obj}), "
-            f"FullTextScore(c.{text_field}, @keywords))"
+            distance_clause = (
+                f"RRF(VectorDistance(c.{vector_field_name}, @vector), FullTextScore(c.{text_field}, @keywords))"
+            )
         else:
             raise VectorStoreModelException(f"Search type '{search_type}' is not supported.")
         query = (
@@ -815,8 +823,9 @@ class CosmosNoSqlCollection(
             f"{distance_clause} as {NOSQL_SCORE_PROPERTY_NAME} "  # nosec: B608
             "FROM c "
             f"{where_clauses}"  # nosec: B608
-            f"ORDER BY RANK {distance_clause}"  # nosec: B608
+            f"ORDER BY {distance_clause}"  # nosec: B608
         )
+
         container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         try:
             results = container_proxy.query_items(query, parameters=params)
@@ -1023,6 +1032,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: AsyncTokenCredential | None = None,
     ):
         """Initialize the CosmosNoSqlStore.
 
@@ -1038,6 +1048,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
             embedding_generator: The embedding generator to use for generating embeddings.
             env_file_path: The path to the .env file. Defaults to None.
             env_file_encoding: The encoding of the .env file. Defaults to None.
+            credential: The credential to use for authentication to Azure Cosmos DB NoSQL.
         """
         super().__init__(
             url=url,
@@ -1048,6 +1059,7 @@ class CosmosNoSqlStore(CosmosNoSqlBase, VectorStore):
             embedding_generator=embedding_generator,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
+            credential=credential,
         )
 
     @override

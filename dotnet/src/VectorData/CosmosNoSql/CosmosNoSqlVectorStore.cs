@@ -101,7 +101,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
@@ -122,7 +122,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override CosmosNoSqlDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)

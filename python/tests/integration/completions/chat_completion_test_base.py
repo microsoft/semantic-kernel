@@ -12,7 +12,7 @@ else:
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import AzureCliCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion, AnthropicChatPromptExecutionSettings
@@ -23,7 +23,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 from semantic_kernel.connectors.ai.bedrock import BedrockChatCompletion, BedrockChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google.google_ai import GoogleAIChatCompletion, GoogleAIChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.google.vertex_ai import VertexAIChatCompletion, VertexAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion, OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings, ONNXTemplate
@@ -62,7 +61,7 @@ ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
 ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
 ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
-vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
@@ -93,10 +92,11 @@ class ChatCompletionTestBase(CompletionTestBase):
     )  # This needs to be scoped to function to avoid resources getting cleaned up after each test
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
+        credential = AzureCliCredential()
         azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.chat_deployment_name
-        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
         if not ad_token:
             azure_openai_setup = False
         api_version = azure_openai_settings.api_version
@@ -117,14 +117,17 @@ class ChatCompletionTestBase(CompletionTestBase):
                 ai_model_id=deployment_name,
                 client=ChatCompletionsClient(
                     endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                    credential=DefaultAzureCredential(),  # type: ignore
+                    credential=credential,  # type: ignore
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 ),
             )
 
         return {
             "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
-            "azure": (AzureChatCompletion() if azure_openai_setup else None, AzureChatPromptExecutionSettings),
+            "azure": (
+                AzureChatCompletion(credential=credential) if azure_openai_setup else None,
+                AzureChatPromptExecutionSettings,
+            ),
             "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
             "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
@@ -146,13 +149,16 @@ class ChatCompletionTestBase(CompletionTestBase):
                 OllamaChatPromptExecutionSettings,
             ),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
-            "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
+            "vertex_ai": (
+                GoogleAIChatCompletion(use_vertexai=True) if vertex_ai_setup else None,
+                GoogleAIChatPromptExecutionSettings,
+            ),
             "onnx_gen_ai": (
                 OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
                 OnnxGenAIPromptExecutionSettings,
             ),
-            "bedrock_amazon_titan": (
-                self._try_create_bedrock_chat_completion_client("amazon.titan-text-premier-v1:0"),
+            "bedrock_amazon_nova": (
+                self._try_create_bedrock_chat_completion_client("amazon.nova-lite-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (

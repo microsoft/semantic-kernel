@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     # check out the latest version of the code
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 

@@ -3,6 +3,7 @@
 from typing import Annotated
 
 import pytest
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -38,7 +39,9 @@ class TestChatCompletionAgentIntegration:
 
         plugins = []
 
-        service = AzureChatCompletion() if agent_service == "azure" else OpenAIChatCompletion()
+        service = (
+            AzureChatCompletion(credential=AzureCliCredential()) if agent_service == "azure" else OpenAIChatCompletion()
+        )
 
         if params.get("enable_kernel_function"):
             plugins.append(WeatherPlugin())
@@ -235,7 +238,10 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(
+                ("openai", {"enable_kernel_function": True}),
+                marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
+            ),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-image-content-streaming", "openai-image-content-streaming"],

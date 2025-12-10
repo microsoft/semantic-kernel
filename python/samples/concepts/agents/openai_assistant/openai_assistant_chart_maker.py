@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
@@ -16,7 +18,7 @@ in a streaming fashion.
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Get the code interpreter tool and resources
     code_interpreter_tool, code_interpreter_resource = AzureAssistantAgent.configure_code_interpreter_tool()

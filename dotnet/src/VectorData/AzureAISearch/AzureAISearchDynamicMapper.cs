@@ -22,16 +22,19 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
     {
         Verify.NotNull(dataModel);
 
-        var jsonObject = new JsonObject();
-
-        jsonObject[model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var jsonObject = new JsonObject
+        {
+            [model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,
+                Guid g => g.ToString(),
+
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string or Guid.")
+            }
+        };
 
         foreach (var dataProperty in model.DataProperties)
         {
@@ -97,8 +100,15 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             switch (property)
             {
                 case KeyPropertyModel keyProperty:
-                    result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
+                    var key = (string?)storageModel[keyProperty.StorageName]
                         ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+
+                    result[keyProperty.ModelName] = keyProperty.Type switch
+                    {
+                        var t when t == typeof(string) => key,
+                        var t when t == typeof(Guid) => Guid.Parse(key),
+                        _ => throw new UnreachableException()
+                    };
 
                     continue;
 

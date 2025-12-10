@@ -18,6 +18,7 @@ from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
 from openai.types.shared_params.comparison_filter import ComparisonFilter
 from openai.types.shared_params.compound_filter import CompoundFilter
+from openai.types.shared_params.reasoning import Reasoning
 from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
 from pydantic import BaseModel, Field, SecretStr, ValidationError
 
@@ -162,8 +163,8 @@ class ResponsesAgentThread(AgentThread):
         self._client = client
         self._chat_history = ChatHistory() if chat_history is None else chat_history
         self._is_deleted = False
-        self._enable_store = enable_store or True
-        self._response_id: str | None = previous_response_id
+        self._enable_store = True if enable_store is None else bool(enable_store)
+        self._response_id = previous_response_id
 
     def __len__(self) -> int:
         """Returns the length of the chat history."""
@@ -275,6 +276,13 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
     store_enabled: bool = Field(default=True, description="Whether to store responses.")
     text: dict[str, Any] = Field(default_factory=dict)
     tools: list[ToolParam] = Field(default_factory=list)
+    reasoning: Reasoning | dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "Configuration options for reasoning models. Accepts a dict with keys like 'effort' "
+            "(minimal|low|medium|high) and optional 'summary' (auto|concise|detailed)."
+        ),
+    )
 
     def __init__(
         self,
@@ -293,6 +301,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         store_enabled: bool | None = None,
         temperature: float | None = None,
         text: ResponseTextConfigParam | None = None,
@@ -319,6 +328,8 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
                 the plugins take precedence and are added to the kernel by default.
             polling_options: The polling options.
             prompt_template_config: The prompt template configuration.
+            reasoning: The default reasoning configuration object for the agent. Individual invoke calls can
+                override this.
             store_enabled: Whether to enable storing the responses from the agent.
             temperature: The temperature for the agent.
             text: The text/response format configuration for the agent.
@@ -374,6 +385,8 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             args["tools"] = tools
         if top_p is not None:
             args["top_p"] = top_p
+        if reasoning is not None:
+            args["reasoning"] = reasoning
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
@@ -693,7 +706,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             A WebSearchToolParam dictionary with any passed-in parameters.
         """
         tool: WebSearchToolParam = {
-            "type": "web_search_preview",
+            "type": "web_search",
         }
         if context_size is not None:
             tool["search_context_size"] = context_size
@@ -826,7 +839,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         polling_options: RunPollingOptions | None = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
@@ -853,7 +866,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
             polling_options: The polling options at the run-level.
-            reasoning: The reasoning effort.
+            reasoning: The reasoning configuration.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
@@ -870,9 +883,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             construct_thread=lambda: ResponsesAgentThread(client=self.client, enable_store=self.store_enabled),
             expected_type=ResponsesAgentThread,
         )
-
         chat_history = self._prepare_input_message(messages)
-
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -880,6 +891,9 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
+
+        # Apply reasoning priority: per-invocation > constructor default
+        effective_reasoning = reasoning if reasoning is not None else getattr(self, "reasoning", None)
 
         response_level_params = {
             "include": include,
@@ -890,7 +904,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
             "polling_options": polling_options,
-            "reasoning_effort": reasoning,
+            "reasoning": effective_reasoning,
             "text": text,
             "temperature": temperature,
             "tools": tools,
@@ -933,25 +947,25 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
         include: list[
             Literal[
                 "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
             ]
         ]
         | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         polling_options: RunPollingOptions | None = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         top_p: float | None = None,
         truncation: str | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
@@ -973,12 +987,12 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
             polling_options: The polling options at the run-level.
-            reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
             top_p: The top p.
             truncation: The truncation strategy.
+            reasoning: The reasoning configuration.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -1001,6 +1015,9 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
 
+        # Apply reasoning priority: per-invocation > constructor default
+        effective_reasoning = reasoning if reasoning is not None else self.reasoning
+
         response_level_params = {
             "include": include,
             "instructions_override": instructions_override,
@@ -1009,12 +1026,12 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
             "polling_options": polling_options,
-            "reasoning": reasoning,
             "text": text,
             "temperature": temperature,
             "tools": tools,
             "top_p": top_p,
             "truncation": truncation,
+            "reasoning": effective_reasoning,
         }
         response_level_params = {k: v for k, v in response_level_params.items() if v is not None}
 
@@ -1063,12 +1080,12 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
-        reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
         top_p: float | None = None,
         truncation: str | None = None,
+        reasoning: Reasoning | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent.
@@ -1090,7 +1107,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
-            reasoning: The reasoning effort.
+            reasoning: The reasoning configuration.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
@@ -1118,6 +1135,9 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
 
+        # Apply reasoning priority: per-invocation > constructor default
+        effective_reasoning = reasoning if reasoning is not None else getattr(self, "reasoning", None)
+
         response_level_params = {
             "include": include,
             "instructions_override": instructions_override,
@@ -1125,7 +1145,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
-            "reasoning": reasoning,
+            "reasoning": effective_reasoning,
             "temperature": temperature,
             "text": text,
             "tools": tools,
@@ -1149,6 +1169,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             arguments=arguments,
             output_messages=collected_messages,
             function_choice_behavior=function_choice_behavior,
+            on_intermediate_message=on_intermediate_message,
             **response_level_params,  # type: ignore
         ):
             # Before yielding the current streamed message, emit any new full messages first

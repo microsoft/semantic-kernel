@@ -5,7 +5,8 @@ import logging
 from collections.abc import AsyncIterable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
-from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
+from openai import AsyncOpenAI
+from openai._types import Omit, omit
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.file_search_tool import FileSearchTool
 from openai.types.beta.threads.run_create_params import AdditionalMessage, AdditionalMessageAttachment
@@ -483,7 +484,7 @@ class AssistantThreadActions:
                                     tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
                                     content_is_visible = True
                                 if tool_content:
-                                    if output_messages is not None:
+                                    if output_messages is not None and not content_is_visible:
                                         output_messages.append(tool_content)
                                     if content_is_visible:
                                         yield tool_content
@@ -597,7 +598,7 @@ class AssistantThreadActions:
             An async iterable of ChatMessageContent.
         """
         agent_names: dict[str, Any] = {}
-        last_id: str | NotGiven = NOT_GIVEN
+        last_id: str | Omit = omit
 
         while True:
             messages = await client.beta.threads.messages.list(

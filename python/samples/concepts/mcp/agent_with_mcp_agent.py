@@ -4,6 +4,8 @@ import asyncio
 import os
 from pathlib import Path
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
@@ -17,7 +19,7 @@ It uses the Azure OpenAI service to create a agent, so make sure to
 set the required environment variables for the Azure AI Foundry service:
 - AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
 - Optionally: AZURE_OPENAI_API_KEY 
-If this is not set, it will try to use DefaultAzureCredential.
+If this is not set, it's also possible to pass AsyncTokenCredential to the service, e.g. AzureCliCredential.
 """
 
 
@@ -54,7 +56,7 @@ async def main():
         ) as booking_agent,
     ):
         agent = ChatCompletionAgent(
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=AzureCliCredential()),
             name="PersonalAssistant",
             instructions="Help the user with restaurant bookings.",
             plugins=[restaurant_agent, booking_agent, TimePlugin()],

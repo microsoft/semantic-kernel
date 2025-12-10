@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.SqlServer;
 
 namespace SqlServer.ConformanceTests.Support;
 
@@ -17,7 +16,7 @@ internal static class SqlServerTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<SqlServerVectorStore>()
+            .AddUserSecrets<SqlServerTestStore>()
             .Build();
 
         return configuration.GetSection("SqlServer")["ConnectionString"];

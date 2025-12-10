@@ -181,7 +181,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
         Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
@@ -202,7 +202,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
     }
@@ -222,7 +222,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.False(optionsJson.TryGetProperty("functions", out var _));
     }
 
@@ -242,7 +242,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("messages").GetArrayLength());
         Assert.Equal("John Doe", optionsJson.GetProperty("messages")[0].GetProperty("tool_call_id").GetString());
     }
@@ -352,7 +352,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(1, messages.GetArrayLength());
@@ -539,8 +539,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var firstContent = Encoding.UTF8.GetString(requestContents[0]!);
         var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
 
-        var firstContentJson = JsonSerializer.Deserialize<JsonElement>(firstContent);
-        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        var firstContentJson = JsonElement.Parse(firstContent);
+        var secondContentJson = JsonElement.Parse(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
@@ -577,7 +577,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         Assert.NotNull(requestContentByteArray);
 
-        var requestContent = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContentByteArray));
+        var requestContent = JsonElement.Parse(Encoding.UTF8.GetString(requestContentByteArray));
 
         var messages = requestContent.GetProperty("messages");
 
@@ -619,7 +619,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         Assert.NotNull(requestContentByteArray);
 
-        var requestContent = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContentByteArray));
+        var requestContent = JsonElement.Parse(Encoding.UTF8.GetString(requestContentByteArray));
 
         var messages = requestContent.GetProperty("messages");
 
@@ -662,7 +662,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
 
@@ -707,7 +707,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
 
@@ -841,7 +841,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(1, messages.GetArrayLength());
@@ -900,7 +900,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -945,7 +945,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -982,7 +982,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                 format = formatValue;
                 break;
             case "JsonElement.String":
-                format = JsonSerializer.Deserialize<JsonElement>(formatValue);
+                format = JsonElement.Parse(formatValue);
                 break;
             case "ChatResponseFormat":
                 format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
@@ -1010,6 +1010,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     [InlineData("string", "low")]
     [InlineData("string", "medium")]
     [InlineData("string", "high")]
+    [InlineData("string", "minimal")]
     [InlineData("ChatReasonEffortLevel.Low", "low")]
     [InlineData("ChatReasonEffortLevel.Medium", "medium")]
     [InlineData("ChatReasonEffortLevel.High", "high")]
@@ -1051,7 +1052,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         if (expectedEffortLevel is null)
         {
@@ -1147,7 +1148,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());
@@ -1220,7 +1221,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());
@@ -1295,7 +1296,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var requestJsonElement = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestJsonElement = JsonElement.Parse(actualRequestContent);
         var requestResponseFormat = requestJsonElement.GetProperty("response_format");
 
         Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
@@ -1369,7 +1370,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var requestJsonElement = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestJsonElement = JsonElement.Parse(actualRequestContent);
         var requestResponseFormat = requestJsonElement.GetProperty("response_format");
 
         Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
@@ -1463,7 +1464,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
         Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
@@ -1497,7 +1498,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
         Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
@@ -1532,7 +1533,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
         Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
@@ -1580,7 +1581,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!));
+        var optionsJson = JsonElement.Parse(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!));
 
         if (optionValue is null)
         {
@@ -1615,7 +1616,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
@@ -1652,7 +1653,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
-        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestContent = JsonElement.Parse(actualRequestContent);
         var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
 
         var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
@@ -1681,7 +1682,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("web_search_options", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
@@ -1712,7 +1713,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("web_search_options", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
@@ -1738,7 +1739,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("modalities", out var property));
         Assert.Equal(expectedJson, property.GetRawText());
     }
@@ -1767,7 +1768,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("modalities", out var property));
         Assert.Equal(expectedJson, property.GetRawText());
     }
@@ -1792,7 +1793,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("audio", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
@@ -1822,7 +1823,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
         Assert.True(optionsJson.TryGetProperty("audio", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
@@ -1831,11 +1832,11 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public static TheoryData<object, string> WebSearchOptionsData => new()
     {
         { new ChatWebSearchOptions(), "{}" },
-        { JsonSerializer.Deserialize<JsonElement>("{}"), "{}" },
+        { JsonElement.Parse("{}"), "{}" },
         { "{}", "{}" },
         { """{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}""",
           """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
-        { JsonSerializer.Deserialize<JsonElement>("""{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}"""),
+        { JsonElement.Parse("""{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}"""),
           """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
         { ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString("""{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}"""))!,
           """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
@@ -1922,16 +1923,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         { new[] { "text", "audio" }, "[\"text\",\"audio\"]" },
         { "Text", "[\"text\"]" },
         { "Audio", "[\"audio\"]" },
-        { JsonSerializer.Deserialize<JsonElement>("\"text\""), "[\"text\"]" },
-        { JsonSerializer.Deserialize<JsonElement>("\"audio\""), "[\"audio\"]" },
-        { JsonSerializer.Deserialize<JsonElement>("[\"text\", \"audio\"]"), "[\"text\",\"audio\"]" },
+        { JsonElement.Parse("\"text\""), "[\"text\"]" },
+        { JsonElement.Parse("\"audio\""), "[\"audio\"]" },
+        { JsonElement.Parse("[\"text\", \"audio\"]"), "[\"text\",\"audio\"]" },
     };
 
     public static TheoryData<object, string> AudioOptionsData => new()
     {
         { new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3), "{\"voice\":\"alloy\",\"format\":\"mp3\"}" },
         { new ChatAudioOptions(ChatOutputAudioVoice.Echo, ChatOutputAudioFormat.Opus), "{\"voice\":\"echo\",\"format\":\"opus\"}" },
-        { JsonSerializer.Deserialize<JsonElement>("{\"voice\":\"alloy\",\"format\":\"mp3\"}"), "{\"voice\":\"alloy\",\"format\":\"mp3\"}" },
+        { JsonElement.Parse("{\"voice\":\"alloy\",\"format\":\"mp3\"}"), "{\"voice\":\"alloy\",\"format\":\"mp3\"}" },
         { "{\"voice\":\"echo\",\"format\":\"opus\"}", "{\"voice\":\"echo\",\"format\":\"opus\"}" },
     };
 
@@ -1988,7 +1989,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(1, messages.GetArrayLength());
@@ -2198,7 +2199,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(1, messages.GetArrayLength());

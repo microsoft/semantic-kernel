@@ -57,7 +57,9 @@ internal static class ResponseThreadActions
             }
             else
             {
-                inputItems.AddRange(response.OutputItems);
+                var filteredItems = response.OutputItems
+                    .Where(item => item is not ReasoningResponseItem); // Keep items that are not ReasoningResponseItem  
+                inputItems.AddRange(filteredItems);
             }
 
             var message = response.ToChatMessageContent();
@@ -304,7 +306,7 @@ internal static class ResponseThreadActions
 
     private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, OpenAIResponse response)
     {
-        if (response.Status == ResponseStatus.Incomplete || response.Status == ResponseStatus.Failed)
+        if (response.Status is ResponseStatus.Incomplete or ResponseStatus.Failed)
         {
             throw new KernelException(
                 $"Run failed with status: `{response.Status}` for agent `{agent.Name}` with error: {response.Error.Message} or incomplete details: {response.IncompleteStatusDetails.Reason}");

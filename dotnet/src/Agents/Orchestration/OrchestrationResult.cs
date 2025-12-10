@@ -73,12 +73,24 @@ public sealed class OrchestrationResult<TValue> : IDisposable
 
         if (timeout.HasValue)
         {
-            Task[] tasks = { this._completion.Task };
-            if (!Task.WaitAll(tasks, timeout.Value))
+#if NET
+            try
+            {
+                await this._completion.Task.WaitAsync(timeout.Value, cancellationToken).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                this._logger.LogOrchestrationResultTimeout(this.Orchestration, this.Topic);
+                throw;
+            }
+#else
+            Task completedTask = await Task.WhenAny(this._completion.Task, Task.Delay(timeout.Value, cancellationToken)).ConfigureAwait(false);
+            if (completedTask != this._completion.Task)
             {
                 this._logger.LogOrchestrationResultTimeout(this.Orchestration, this.Topic);
                 throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
             }
+#endif
         }
 
         this._logger.LogOrchestrationResultComplete(this.Orchestration, this.Topic);

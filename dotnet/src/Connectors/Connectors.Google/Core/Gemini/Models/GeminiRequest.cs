@@ -119,11 +119,19 @@ internal sealed class GeminiRequest
 
     private static GeminiRequest CreateGeminiRequest(ChatHistory chatHistory)
     {
+        var contents = chatHistory
+            .Where(message => message.Role != AuthorRole.System)
+            .Select(CreateGeminiContentFromChatMessage).ToList();
+
+        // Gemini specific fix: single turn requests must end with "user" role or no role, prevents issue #13262
+        if (contents.Count == 1 && contents[0].Role == AuthorRole.Assistant)
+        {
+            contents[0].Role = null;
+        }
+
         GeminiRequest obj = new()
         {
-            Contents = chatHistory
-                .Where(message => message.Role != AuthorRole.System)
-                .Select(CreateGeminiContentFromChatMessage).ToList(),
+            Contents = contents,
             SystemInstruction = CreateSystemMessages(chatHistory)
         };
         return obj;
@@ -183,15 +191,17 @@ internal sealed class GeminiRequest
         List<GeminiPart> parts = [];
         switch (content)
         {
-            case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                parts.Add(new GeminiPart
-                {
-                    FunctionResponse = new GeminiPart.FunctionResponsePart
+            case GeminiChatMessageContent { CalledToolResults: not null } contentWithCalledTools:
+                // Add all function responses as separate parts in a single message
+                parts.AddRange(contentWithCalledTools.CalledToolResults.Select(toolResult =>
+                    new GeminiPart
                     {
-                        FunctionName = contentWithCalledTool.CalledToolResult.FullyQualifiedName,
-                        Response = new(contentWithCalledTool.CalledToolResult.FunctionResult.GetValue<object>())
-                    }
-                });
+                        FunctionResponse = new GeminiPart.FunctionResponsePart
+                        {
+                            FunctionName = toolResult.FullyQualifiedName,
+                            Response = new(toolResult.FunctionResult.GetValue<object>())
+                        }
+                    }));
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
@@ -222,6 +232,7 @@ internal sealed class GeminiRequest
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
         AudioContent audioContent => CreateGeminiPartFromAudio(audioContent),
+        BinaryContent binaryContent => CreateGeminiPartFromBinary(binaryContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
 
@@ -295,6 +306,42 @@ internal sealed class GeminiRequest
     {
         return audioContent.MimeType
                ?? throw new InvalidOperationException("Audio content MimeType is empty.");
+    }
+
+    private static GeminiPart CreateGeminiPartFromBinary(BinaryContent binaryContent)
+    {
+        // Binary data takes precedence over URI.
+        if (binaryContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    InlineData = Convert.ToBase64String(binaryContent.Data.Value.ToArray())
+                }
+            };
+        }
+
+        if (binaryContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    FileUri = binaryContent.Uri ?? throw new InvalidOperationException("Binary content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Binary content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromBinaryContent(BinaryContent binaryContent)
+    {
+        return binaryContent.MimeType
+               ?? throw new InvalidOperationException("Binary content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
@@ -459,7 +506,12 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts,
+                ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
+            };
         }
     }
 
@@ -511,5 +563,13 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
+
+        [JsonPropertyName("thinkingLevel")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThinkingLevel { get; set; }
     }
 }

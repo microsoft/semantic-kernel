@@ -41,7 +41,7 @@ public class ExceptionJsonConverterTests
         var json = JsonSerializer.Serialize(this._exception, this._options);
 
         // Assert
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+        var jsonElement = JsonElement.Parse(json);
 
         Assert.Equal("System.Text.Json.JsonException", jsonElement.GetProperty("className").GetString());
         Assert.Equal(this._exception!.Message, jsonElement.GetProperty("message").GetString());
@@ -72,7 +72,7 @@ public class ExceptionJsonConverterTests
         var json = JsonSerializer.Serialize(exception, this._options);
 
         // Assert
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+        var jsonElement = JsonElement.Parse(json);
 
         Assert.Equal("System.InvalidOperationException", jsonElement.GetProperty("className").GetString());
         Assert.Equal(exception!.Message, jsonElement.GetProperty("message").GetString());

@@ -59,7 +59,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         continue;
                     }
 
-#if NET8_0_OR_GREATER
+#if NET
                     case Pgvector.HalfVector { Memory: ReadOnlyMemory<Half> memory }:
                     {
                         vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
@@ -76,6 +76,10 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         continue;
                     }
 #endif
+
+                    case BitArray bitArray when vectorProperty.Type == typeof(BinaryEmbedding):
+                        vectorProperty.SetValueAsObject(record, new BinaryEmbedding(bitArray));
+                        continue;
 
                     case BitArray bitArray:
                         vectorProperty.SetValueAsObject(record, bitArray);

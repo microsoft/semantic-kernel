@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies import (
@@ -33,7 +35,7 @@ WRITER_NAME = "Writer"
 def create_kernel() -> Kernel:
     """Creates a Kernel instance with an Azure OpenAI ChatCompletion service."""
     kernel = Kernel()
-    kernel.add_service(service=AzureChatCompletion())
+    kernel.add_service(service=AzureChatCompletion(credential=AzureCliCredential()))
     return kernel
 
 

@@ -37,6 +37,7 @@ from azure.communication.callautomation import (
 )
 from azure.communication.callautomation.aio import CallAutomationClient
 from azure.eventgrid import EventGridEvent, SystemEventNames
+from azure.identity import AzureCliCredential
 from numpy import ndarray
 from quart import Quart, Response, json, request, websocket
 
@@ -160,7 +161,7 @@ async def handle_realtime_messages(client: RealtimeClientBase):
 @app.websocket("/ws")
 async def ws():
     app.logger.info("Client connected to WebSocket")
-    client = AzureRealtimeWebsocket()
+    client = AzureRealtimeWebsocket(credential=AzureCliCredential())
     settings = AzureRealtimeExecutionSettings(
         instructions="""You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.

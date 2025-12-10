@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
@@ -26,7 +28,7 @@ USER_INPUTS = [
 async def main():
     # 1. Create the agent by specifying the service
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Assistant",
         instructions="Answer questions about the world in one sentence.",
     )

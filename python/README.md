@@ -4,7 +4,7 @@ Highlights
 - Flexible Agent Framework: build, orchestrate, and deploy AI agents and multi-agent systems
 - Multi-Agent Systems: Model workflows and collaboration between AI specialists
 - Plugin Ecosystem: Extend with Python, OpenAPI, Model Context Protocol (MCP), and more
-- LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Vertex AI, ONNX, Ollama, NVIDIA NIM, and others
+- LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Google AI, ONNX, Ollama, NVIDIA NIM, and others
 - Vector DB Support: Azure AI Search, Elasticsearch, Chroma, and more
 - Process Framework: Build structured business processes with workflow modeling
 - Multimodal: Text, vision, audio
