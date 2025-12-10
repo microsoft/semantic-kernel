@@ -13,13 +13,12 @@ using System.Threading.Tasks;
 using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.AI;
-
-// Type aliases to distinguish between Semantic Kernel and M.E.AI types
-using AITextContent = Microsoft.Extensions.AI.TextContent;
 using AIDataContent = Microsoft.Extensions.AI.DataContent;
-using AIUriContent = Microsoft.Extensions.AI.UriContent;
 using AIFunctionCallContent = Microsoft.Extensions.AI.FunctionCallContent;
 using AIFunctionResultContent = Microsoft.Extensions.AI.FunctionResultContent;
+// Type aliases to distinguish between Semantic Kernel and M.E.AI types
+using AITextContent = Microsoft.Extensions.AI.TextContent;
+using AIUriContent = Microsoft.Extensions.AI.UriContent;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
@@ -112,7 +111,7 @@ internal sealed class GoogleGenAIChatClient : IChatClient
         (string? modelId, List<Content> contents, GenerateContentConfig config) = this.CreateRequest(messages, options);
 
         // Send it, and process the results.
-        await foreach (GenerateContentResponse generateResult in this._models.GenerateContentStreamAsync(modelId!, contents, config).WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (GenerateContentResponse generateResult in this._models.GenerateContentStreamAsync(modelId!, contents, config).WithCancellation(cancellationToken).ConfigureAwait(false).ConfigureAwait(false))
         {
             // Create a response update for each result in the stream.
             ChatResponseUpdate responseUpdate = new(ChatRole.Assistant, new List<AIContent>())

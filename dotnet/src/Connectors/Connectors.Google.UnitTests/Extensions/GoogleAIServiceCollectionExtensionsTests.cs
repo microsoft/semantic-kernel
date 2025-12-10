@@ -213,14 +213,14 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        const string serviceId = "test-service-id";
+        const string ServiceId = "test-service-id";
 
         // Act
-        services.AddGoogleGenAIChatClient("modelId", "apiKey", serviceId: serviceId);
+        services.AddGoogleGenAIChatClient("modelId", "apiKey", serviceId: ServiceId);
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var chatClient = serviceProvider.GetKeyedService<IChatClient>(serviceId);
+        var chatClient = serviceProvider.GetKeyedService<IChatClient>(ServiceId);
         Assert.NotNull(chatClient);
     }
 
@@ -229,10 +229,10 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        const string serviceId = "test-service-id";
+        const string ServiceId = "test-service-id";
 
         // Act
-        services.AddGoogleVertexAIChatClient("modelId", project: "test-project", location: "us-central1", serviceId: serviceId);
+        services.AddGoogleVertexAIChatClient("modelId", project: "test-project", location: "us-central1", serviceId: ServiceId);
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert - just verify no exception during registration
