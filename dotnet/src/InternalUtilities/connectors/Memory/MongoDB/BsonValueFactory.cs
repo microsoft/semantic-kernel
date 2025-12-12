@@ -22,9 +22,9 @@ internal static class BsonValueFactory
         {
             null => BsonNull.Value,
             Guid guid => new BsonBinaryData(guid, GuidRepresentation.Standard),
-            Object[] array => new BsonArray(Array.ConvertAll(array, Create)),
+            object[] array => new BsonArray(Array.ConvertAll(array, Create)),
             Array array => new BsonArray(array),
-            IEnumerable<Object> enumerable => new BsonArray(enumerable.Select(Create)),
+            IEnumerable<object> enumerable => new BsonArray(enumerable.Select(Create)),
             _ => BsonValue.Create(value)
         };
 }
