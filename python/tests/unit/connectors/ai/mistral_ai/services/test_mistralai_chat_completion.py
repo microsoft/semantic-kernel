@@ -581,7 +581,7 @@ async def test_mistral_ai_chat_completion_reset_function_choice_settings():
     assert settings.tools is None
 
 
-async def test_mistral_ai_chat_completion_service_url():
+def test_mistral_ai_chat_completion_service_url():
     """Test that service_url attempts to use _endpoint from the async_client."""
     async_mock_client = MagicMock(spec=Mistral)
     async_mock_client._endpoint = "mistral"
