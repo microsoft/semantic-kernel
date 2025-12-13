@@ -26,7 +26,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as string items
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 4, Skip = 0 });
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new TextSearchOptions { Top = 4, Skip = 0 });
         Console.WriteLine("——— String Results ———\n");
         await foreach (string result in stringResults.Results)
         {
@@ -35,7 +35,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as TextSearchResult items
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 4, Skip = 4 });
+        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new TextSearchOptions { Top = 4, Skip = 4 });
         Console.WriteLine("\n——— Text Search Results ———\n");
         await foreach (TextSearchResult result in textResults.Results)
         {
@@ -46,7 +46,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as Google.Apis.CustomSearchAPI.v1.Data.Result items
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4, Skip = 8 });
+        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new TextSearchOptions { Top = 4, Skip = 8 });
         Console.WriteLine("\n——— Google Web Page Results ———\n");
         await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in fullResults.Results)
         {
@@ -74,7 +74,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 2, Skip = 0 });
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new TextSearchOptions { Top = 2, Skip = 0 });
         Console.WriteLine("--- Serialized JSON Results ---");
         await foreach (string result in stringResults.Results)
         {
@@ -104,6 +104,113 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         {
             Console.WriteLine(result.Link);
             Console.WriteLine(new string('-', HorizontalRuleLength));
+        }
+    }
+
+    /// <summary>
+    /// Show how to use enhanced LINQ filtering with GoogleTextSearch including Contains, NOT, FileType, and compound AND expressions.
+    /// </summary>
+    [Fact]
+    public async Task UsingGoogleTextSearchWithEnhancedLinqFilteringAsync()
+    {
+        // Create an ITextSearch<GoogleWebPage> instance using Google search
+        var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = TestConfiguration.Google.ApiKey, HttpClientFactory = new CustomHttpClientFactory(this.Output) },
+            searchEngineId: TestConfiguration.Google.SearchEngineId);
+
+        var query = "Semantic Kernel AI";
+
+        // Example 1: Simple equality filtering
+        Console.WriteLine("——— Example 1: Equality Filter (DisplayLink) ———\n");
+        var equalityOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.DisplayLink == "microsoft.com"
+        };
+        var equalityResults = await textSearch.SearchAsync(query, equalityOptions);
+        await foreach (string result in equalityResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
+        }
+
+        // Example 2: Contains filtering
+        Console.WriteLine("\n——— Example 2: Contains Filter (Title) ———\n");
+        var containsOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.Title != null && page.Title.Contains("AI")
+        };
+        var containsResults = await textSearch.SearchAsync(query, containsOptions);
+        await foreach (string result in containsResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
+        }
+
+        // Example 3: NOT Contains filtering (exclusion)
+        Console.WriteLine("\n——— Example 3: NOT Contains Filter (Exclude 'deprecated') ———\n");
+        var notContainsOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.Title != null && !page.Title.Contains("deprecated")
+        };
+        var notContainsResults = await textSearch.SearchAsync(query, notContainsOptions);
+        await foreach (string result in notContainsResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
+        }
+
+        // Example 4: FileFormat filtering
+        Console.WriteLine("\n——— Example 4: FileFormat Filter (PDF files) ———\n");
+        var fileFormatOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.FileFormat == "pdf"
+        };
+        var fileFormatResults = await textSearch.SearchAsync(query, fileFormatOptions);
+        await foreach (string result in fileFormatResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
+        }
+
+        // Example 5: Compound AND filtering (multiple conditions)
+        Console.WriteLine("\n——— Example 5: Compound AND Filter (Title + Site) ———\n");
+        var compoundOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.Title != null && page.Title.Contains("Semantic") &&
+                           page.DisplayLink != null && page.DisplayLink.Contains("microsoft")
+        };
+        var compoundResults = await textSearch.SearchAsync(query, compoundOptions);
+        await foreach (string result in compoundResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
+        }
+
+        // Example 6: Complex compound filtering (equality + contains + exclusion)
+        Console.WriteLine("\n——— Example 6: Complex Compound Filter (FileFormat + Contains + NOT Contains) ———\n");
+        var complexOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 2,
+            Skip = 0,
+            Filter = page => page.FileFormat == "pdf" &&
+                           page.Title != null && page.Title.Contains("AI") &&
+                           page.Snippet != null && !page.Snippet.Contains("deprecated")
+        };
+        var complexResults = await textSearch.SearchAsync(query, complexOptions);
+        await foreach (string result in complexResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine(new string('—', HorizontalRuleLength));
         }
     }
 
