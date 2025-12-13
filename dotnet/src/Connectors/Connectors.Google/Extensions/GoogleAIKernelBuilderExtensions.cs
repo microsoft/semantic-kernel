@@ -118,4 +118,102 @@ public static class GoogleAIKernelBuilderExtensions
             dimensions: dimensions);
         return builder;
     }
+
+#if NET
+    /// <summary>
+    /// Add Google GenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for chat completion.</param>
+    /// <param name="apiKey">The API key for authentication with the Google GenAI API.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddGoogleGenAIChatClient(
+        this IKernelBuilder builder,
+        string modelId,
+        string apiKey,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddGoogleGenAIChatClient(
+            modelId,
+            apiKey,
+            serviceId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Google Vertex AI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for chat completion.</param>
+    /// <param name="project">The Google Cloud project ID. If null, will attempt to use the GOOGLE_CLOUD_PROJECT environment variable.</param>
+    /// <param name="location">The Google Cloud location (e.g., "us-central1"). If null, will attempt to use the GOOGLE_CLOUD_LOCATION environment variable.</param>
+    /// <param name="credential">The optional <see cref="Google.Apis.Auth.OAuth2.ICredential"/> for authentication. If null, the client will use its internal discovery implementation to get credentials from the environment.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddGoogleVertexAIChatClient(
+        this IKernelBuilder builder,
+        string modelId,
+        string? project = null,
+        string? location = null,
+        Google.Apis.Auth.OAuth2.ICredential? credential = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddGoogleVertexAIChatClient(
+            modelId,
+            project,
+            location,
+            credential,
+            serviceId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Google AI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for chat completion.</param>
+    /// <param name="googleClient">The <see cref="Google.GenAI.Client"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddGoogleAIChatClient(
+        this IKernelBuilder builder,
+        string modelId,
+        Google.GenAI.Client? googleClient = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddGoogleAIChatClient(
+            modelId,
+            googleClient,
+            serviceId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+#endif
 }
