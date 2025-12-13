@@ -23,7 +23,7 @@ jobs:
       UV_CACHE_DIR: /tmp/.uv-cache
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
