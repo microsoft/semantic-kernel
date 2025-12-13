@@ -247,11 +247,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="ToolCallBehavior.RequireFunction"/>.
+    /// from <see cref="ToolCallBehavior.RequireFunction(OpenAIFunction, bool)"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions(IEnumerable{OpenAIFunction}, bool)"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
