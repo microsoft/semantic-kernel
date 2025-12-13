@@ -1,4 +1,5 @@
-# Copyright (c) 2025, Oracle Corporation. All rights reserved. # noqa: CPY001
+# Copyright (c) Microsoft. All rights reserved.
+# Copyright (c) 2025, Oracle Corporation. All rights reserved.
 
 # Standard Library
 import array
@@ -67,6 +68,7 @@ logger = logging.getLogger(__name__)
 # Explicit module exports:
 # Only expose high-level entry points; keep helpers internal.
 __all__ = [
+    "OracleCollection",
     "OracleSettings",
     "OracleStore",
 ]
