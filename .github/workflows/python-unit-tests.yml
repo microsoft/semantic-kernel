@@ -24,6 +24,9 @@ jobs:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: true
+          - python-version: "3.14"
+            os: "ubuntu-latest"
+            experimental: true
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
