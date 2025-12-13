@@ -356,7 +356,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
                 var messageContent = chatResponsesEnumerator.Current;
-                if (state.AutoInvoke && messageContent.ToolCalls is not null)
+                if (state.AutoInvoke && messageContent.ToolCalls is { Count: > 0 })
                 {
                     if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
                     {
@@ -776,17 +776,23 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         var regularText = string.Concat(regularTextParts);
 
         // Gemini sometimes returns function calls with text parts, so collect them
-        var toolCalls = candidate.Content?.Parts?
-            .Select(part => part.FunctionCall!)
-            .Where(toolCall => toolCall is not null).ToArray();
+        // Use full GeminiPart[] to preserve ThoughtSignature for function calls with thinking enabled
+        var partsWithFunctionCalls = candidate.Content?.Parts?
+            .Where(part => part.FunctionCall is not null).ToArray();
+
+        // For text responses (no function calls), capture ThoughtSignature from last part for metadata
+        // Per Google docs: "The final content part returned by the model may contain a thought_signature"
+        var lastPart = candidate.Content?.Parts?.LastOrDefault();
+        var hasFunctionCalls = partsWithFunctionCalls is { Length: > 0 };
+        string? textThoughtSignature = (!hasFunctionCalls && lastPart?.FunctionCall is null) ? lastPart?.ThoughtSignature : null;
 
         // Pass null if there's no regular (non-thinking) text to avoid creating an empty TextContent item
         var chatMessage = new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
             content: string.IsNullOrEmpty(regularText) ? null : regularText,
             modelId: this._modelId,
-            functionsToolCalls: toolCalls,
-            metadata: GetResponseMetadata(geminiResponse, candidate));
+            partsWithFunctionCalls: partsWithFunctionCalls,
+            metadata: GetResponseMetadata(geminiResponse, candidate, textThoughtSignature));
 
         // Add items to the message
         foreach (var item in items)
@@ -874,7 +880,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
-        GeminiResponseCandidate candidate) => new()
+        GeminiResponseCandidate candidate,
+        string? thoughtSignature = null) => new()
         {
             FinishReason = candidate.FinishReason,
             Index = candidate.Index,
@@ -887,6 +894,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
             PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
             ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+            ThoughtSignature = thoughtSignature,
         };
 
     private sealed class ChatCompletionState
