@@ -236,6 +236,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
+            // Reset LastMessage at the start of each iteration to detect if tool calls were found
+            state.LastMessage = null;
+
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                 this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
@@ -288,7 +291,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 }
             }
 
-            if (!state.AutoInvoke)
+            // If auto-invoke is disabled or no tool calls were found, we're done
+            if (!state.AutoInvoke || state.LastMessage is null)
             {
                 yield break;
             }
