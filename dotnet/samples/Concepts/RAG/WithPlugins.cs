@@ -60,7 +60,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
         // Add the collection to the kernel as a plugin.
         var textSearch = new VectorStoreTextSearch<FinanceInfo>(collection);
-        kernel.Plugins.Add(textSearch.CreateWithSearch("FinanceSearch", "Can search for budget information"));
+        kernel.Plugins.Add(textSearch.CreateWithSearch(5, "FinanceSearch", "Can search for budget information"));
 
         // Invoke the kernel, using the plugin from within the prompt.
         KernelArguments arguments = new() { { "query", "What is my budget for 2024?" } };
