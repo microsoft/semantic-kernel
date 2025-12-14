@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -16,7 +15,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class BinaryContent : KernelContent
 {
     private string? _dataUri;
