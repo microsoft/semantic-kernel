@@ -1,0 +1,31 @@
+{
+  "id": "msg_01Bq9w938a90dw8q",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_01A09q90qw90lq917835l1",
+      "name": "GetWeather",
+      "input": {
+        "location": "Seattle, WA"
+      }
+    },
+    {
+      "type": "tool_use",
+      "id": "toolu_01A09q90qw90lq917835l2",
+      "name": "GetWeather",
+      "input": {
+        "location": "New York, NY"
+      }
+    }
+  ],
+  "model": "claude-sonnet-4-20250514",
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 60,
+    "output_tokens": 55
+  }
+}
+

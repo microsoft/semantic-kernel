@@ -1,0 +1,27 @@
+{
+  "id": "msg_01TextBeforeToolCall",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "Let me check the weather for you."
+    },
+    {
+      "type": "tool_use",
+      "id": "toolu_01Weather123",
+      "name": "MyPlugin-GetWeather",
+      "input": {
+        "location": "Seattle"
+      }
+    }
+  ],
+  "model": "claude-sonnet-4-20250514",
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 100,
+    "output_tokens": 50
+  }
+}
+
