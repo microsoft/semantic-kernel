@@ -176,6 +176,7 @@
   <Folder Name="/src/connectors/AI/">
     <Project Path="src/Connectors/Connectors.Amazon.UnitTests/Connectors.Amazon.UnitTests.csproj" />
     <Project Path="src/Connectors/Connectors.Amazon/Connectors.Amazon.csproj" />
+    <Project Path="src/Connectors/Connectors.Anthropic/Connectors.Anthropic.csproj" />
     <Project Path="src/Connectors/Connectors.AzureAIInference.UnitTests/Connectors.AzureAIInference.UnitTests.csproj" />
     <Project Path="src/Connectors/Connectors.AzureAIInference/Connectors.AzureAIInference.csproj" />
     <Project Path="src/Connectors/Connectors.AzureOpenAI.UnitTests/Connectors.AzureOpenAI.UnitTests.csproj" />
