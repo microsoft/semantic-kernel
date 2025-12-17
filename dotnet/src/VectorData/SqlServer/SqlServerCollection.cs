@@ -159,7 +159,7 @@ public class SqlServerCollection<TKey, TRecord>
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             connection,
             this._schema,
@@ -177,7 +177,7 @@ public class SqlServerCollection<TKey, TRecord>
     /// <inheritdoc/>
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
             connection, this._schema, this.Name);
 
@@ -193,7 +193,7 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(key);
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(
             connection,
             this._schema,
@@ -213,7 +213,7 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(keys);
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         if (connection.State != ConnectionState.Open)
         {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -300,7 +300,7 @@ public class SqlServerCollection<TKey, TRecord>
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             connection,
             this._schema,
@@ -335,7 +335,7 @@ public class SqlServerCollection<TKey, TRecord>
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = connection.CreateCommand();
         int taken = 0;
 
@@ -422,7 +422,7 @@ public class SqlServerCollection<TKey, TRecord>
             }
         }
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             connection,
             this._schema,
@@ -495,7 +495,7 @@ public class SqlServerCollection<TKey, TRecord>
             }
         }
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         if (connection.State != ConnectionState.Open)
         {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -617,7 +617,7 @@ public class SqlServerCollection<TKey, TRecord>
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
-        SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
             this._schema,
@@ -697,7 +697,7 @@ public class SqlServerCollection<TKey, TRecord>
 
         options ??= new();
 
-        using SqlConnection connection = await  this.GetSqlConnectionAsync().ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
             filter,
             top,
