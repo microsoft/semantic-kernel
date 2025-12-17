@@ -340,9 +340,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     #region Support
 
-    public class Record
+    public class Record : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public string? Embedding { get; set; }
 
         public int Counter { get; set; }
@@ -373,9 +372,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? Text { get; set; }
     }
 
-    public class RecordWithRomOfFloatVectorProperty
+    public class RecordWithRomOfFloatVectorProperty : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float> Embedding { get; set; }
 
         public int Counter { get; set; }
@@ -438,7 +436,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "EmbeddingGenerationTests";
+        protected override string CollectionNameBase => nameof(EmbeddingGenerationTests<int>);
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -509,7 +507,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "SearchOnlyEmbeddingGenerationTests";
+        protected override string CollectionNameBase => "SearchOnlyEmbeddingGenerationTests";
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()

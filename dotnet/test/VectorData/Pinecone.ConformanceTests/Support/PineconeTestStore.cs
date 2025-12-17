@@ -4,6 +4,7 @@
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using Humanizer;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using VectorData.ConformanceTests.Support;
 
@@ -107,6 +108,11 @@ internal sealed class PineconeTestStore : TestStore
 
         return container;
     }
+
+    // Collection name must contain only ASCII lowercase letters, digits and dashes.
+    // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
+    public override string AdjustCollectionName(string baseName)
+        => baseName.Kebaberize();
 
     private sealed class RedirectHandler : DelegatingHandler
     {

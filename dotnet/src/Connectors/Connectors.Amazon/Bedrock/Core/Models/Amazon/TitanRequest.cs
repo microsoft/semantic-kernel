@@ -57,6 +57,6 @@ internal static class TitanRequest
         /// </summary>
         [JsonPropertyName("stopSequences")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<string>? StopSequences { get; set; } = new List<string>();
+        public IList<string>? StopSequences { get; set; } = [];
     }
 }

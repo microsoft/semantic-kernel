@@ -14,6 +14,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
@@ -75,8 +76,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <summary>Number of nearest neighbors to use during the vector search.</summary>
     private readonly int? _numCandidates;
 
+    /// <summary><see cref="BsonSerializationInfo"/> to use for serializing key values.</summary>
+    private readonly BsonSerializationInfo? _keySerializationInfo;
+
     /// <summary>Types of keys permitted.</summary>
-    private readonly Type[] _validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId)];
+    private static readonly Type[] s_validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId), typeof(int), typeof(long)];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoCollection{TKey, TRecord}"/> class.
@@ -106,9 +110,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (!this._validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
+        if (!s_validKeyTypes.Contains(typeof(TKey)) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string, Guid and ObjectID keys are supported.");
+            throw new NotSupportedException("Only ObjectID, string, Guid, int and long keys are supported.");
         }
 
         options ??= MongoCollectionOptions.Default;
@@ -135,6 +139,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
             CollectionName = name
         };
+
+        // Cache the key serialization info if possible
+        this._keySerializationInfo = typeof(TKey) == typeof(object)
+            ? null
+            : this.GetKeySerializationInfo();
     }
 
     /// <inheritdoc />
@@ -676,10 +685,39 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(TKey id)
-        => Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, id);
+    {
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValue = this._keySerializationInfo?.SerializeValue(id) ?? BsonValueFactory.Create(id);
+        return Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, bsonValue);
+    }
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
-        => Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, ids);
+    {
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValues = this._keySerializationInfo?.SerializeValues(ids) ?? (BsonArray)BsonValueFactory.Create(ids);
+        return Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, bsonValues);
+    }
+
+    private BsonSerializationInfo GetKeySerializationInfo()
+    {
+        var documentSerializer = BsonSerializer.LookupSerializer<TRecord>();
+        if (documentSerializer is null)
+        {
+            throw new InvalidOperationException($"BsonSerializer not found for type '{typeof(TRecord)}'");
+        }
+
+        if (documentSerializer is not IBsonDocumentSerializer bsonDocumentSerializer)
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not implement IBsonDocumentSerializer");
+        }
+
+        if (!bsonDocumentSerializer.TryGetMemberSerializationInfo(this._model.KeyProperty.ModelName, out var keySerializationInfo))
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not recognize key property {this._model.KeyProperty.ModelName}");
+        }
+
+        return keySerializationInfo;
+    }
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {

@@ -17,6 +17,7 @@ using Range = Qdrant.Client.Grpc.Range;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+// https://qdrant.tech/documentation/concepts/filtering
 internal class QdrantFilterTranslator
 {
     private CollectionModel _model = null!;
@@ -58,6 +59,8 @@ internal class QdrantFilterTranslator
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
                 => this.GenerateEqual(property.StorageName, value: true),
+            // Handle true literal (r => true), which is useful for fetching all records
+            ConstantExpression { Value: true } => new Filter(),
 
             MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
 
@@ -267,7 +270,8 @@ internal class QdrantFilterTranslator
     #endregion Logical operators
 
     private Filter TranslateMethodCall(MethodCallExpression methodCall)
-        => methodCall switch
+    {
+        return methodCall switch
         {
             // Enumerable.Contains()
             { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
@@ -286,8 +290,68 @@ internal class QdrantFilterTranslator
             } when declaringType.GetGenericTypeDefinition() == typeof(List<>)
                 => this.TranslateContains(source, item),
 
+            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
+            // See https://github.com/dotnet/runtime/issues/109757 for more context.
+            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
+            // it's null.
+            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
+                when contains.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (contains.Arguments.Count is 2
+                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var source)
+                => this.TranslateContains(source, item),
+
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
+
+        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+        {
+            // Different versions of the compiler seem to generate slightly different expression tree representations for this
+            // implicit cast:
+            var (unwrapped, castDeclaringType) = expression switch
+            {
+                UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Operand: var operand
+                } => (operand, implicitCastDeclaringType),
+
+                MethodCallExpression
+                {
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Arguments: [var firstArgument]
+                } => (firstArgument, implicitCastDeclaringType),
+
+                _ => (null, null)
+            };
+
+            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+            if (unwrapped is UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: null
+                } convert
+                && convert.Type == typeof(object[]))
+            {
+                result = convert.Operand;
+                return true;
+            }
+
+            if (unwrapped is not null
+                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+            {
+                result = unwrapped;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+    }
 
     private Filter TranslateContains(Expression source, Expression item)
     {

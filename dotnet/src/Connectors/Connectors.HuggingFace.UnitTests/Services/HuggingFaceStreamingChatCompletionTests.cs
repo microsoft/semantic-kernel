@@ -96,7 +96,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         foreach (Match match in responseChunks)
         {
             i++;
-            JsonElement jsonDeltaChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value)
+            JsonElement jsonDeltaChunk = JsonElement.Parse(match.Groups[1].Value)
                 .GetProperty("choices")[0]
                 .GetProperty("delta");
 
@@ -125,7 +125,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
             i++;
             var messageChunk = chatMessageContents[i];
 
-            JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
+            JsonElement jsonRootChunk = JsonElement.Parse(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
             Assert.IsType<HuggingFaceChatCompletionMetadata>(messageChunk.Metadata);

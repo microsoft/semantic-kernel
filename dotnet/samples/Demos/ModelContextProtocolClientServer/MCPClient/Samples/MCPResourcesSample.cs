@@ -29,7 +29,7 @@ internal sealed class MCPResourcesSample : BaseSample
         Console.WriteLine($"Running the {nameof(MCPResourcesSample)} sample.");
 
         // Create an MCP client
-        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+        McpClient mcpClient = await CreateMcpClientAsync();
 
         // Retrieve list of resources provided by the MCP server and display them
         IList<McpClientResource> resources = await mcpClient.ListResourcesAsync();
@@ -46,7 +46,7 @@ internal sealed class MCPResourcesSample : BaseSample
         };
 
         // Retrieve the `image://cat.jpg` resource from the MCP server
-        ReadResourceResult resource = await mcpClient.ReadResourceAsync("image://cat.jpg");
+        ReadResourceResult resource = await mcpClient.ReadResourceAsync(new Uri("image://cat.jpg"));
 
         // Add the resource to the chat history and prompt the AI model to describe the content of the image
         ChatHistory chatHistory = [];

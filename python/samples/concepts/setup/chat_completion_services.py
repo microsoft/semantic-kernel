@@ -28,6 +28,7 @@ class Services(str, Enum):
     ONNX = "onnx"
     VERTEX_AI = "vertex_ai"
     DEEPSEEK = "deepseek"
+    NVIDIA = "nvidia"
 
 
 service_id = "default"
@@ -64,6 +65,7 @@ def get_chat_completion_service_and_request_settings(
         Services.ONNX: lambda: get_onnx_chat_completion_service_and_request_settings(),
         Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
         Services.DEEPSEEK: lambda: get_deepseek_chat_completion_service_and_request_settings(),
+        Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
     }
 
     # Call the appropriate lambda or function based on the service name
@@ -247,10 +249,7 @@ def get_google_ai_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.google.google_ai import (
-        GoogleAIChatCompletion,
-        GoogleAIChatPromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.google import GoogleAIChatCompletion, GoogleAIChatPromptExecutionSettings
 
     chat_service = GoogleAIChatCompletion(service_id=service_id)
     request_settings = GoogleAIChatPromptExecutionSettings(service_id=service_id)
@@ -330,13 +329,9 @@ def get_onnx_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.onnx import (
-        OnnxGenAIChatCompletion,
-        OnnxGenAIPromptExecutionSettings,
-        ONNXTemplate,
-    )
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
 
-    chat_service = OnnxGenAIChatCompletion(ONNXTemplate.PHI3, service_id=service_id)
+    chat_service = OnnxGenAIChatCompletion(template="phi4mm", service_id=service_id)
     request_settings = OnnxGenAIPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
@@ -358,13 +353,10 @@ def get_vertex_ai_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.google.vertex_ai import (
-        VertexAIChatCompletion,
-        VertexAIChatPromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.google import GoogleAIChatCompletion, GoogleAIChatPromptExecutionSettings
 
-    chat_service = VertexAIChatCompletion(service_id=service_id)
-    request_settings = VertexAIChatPromptExecutionSettings(service_id=service_id)
+    chat_service = GoogleAIChatCompletion(service_id=service_id, use_vertexai=True)
+    request_settings = GoogleAIChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
 
@@ -412,5 +404,29 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
         ),
     )
     request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_nvidia_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return NVIDIA chat completion service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from semantic_kernel.connectors.ai.nvidia import NvidiaChatCompletion, NvidiaChatPromptExecutionSettings
+
+    chat_service = NvidiaChatCompletion(service_id=service_id)
+    request_settings = NvidiaChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings

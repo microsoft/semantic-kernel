@@ -247,7 +247,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     internal static void BuildGetCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
-        List<string> queryColumns = new();
+        List<string> queryColumns = [];
 
         foreach (var property in model.Properties)
         {
@@ -269,7 +269,7 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
     internal static void BuildGetBatchCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
-        NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
+        NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(model.KeyProperty.Type) ?? throw new UnreachableException($"Unsupported key type {model.KeyProperty.Type.Name}");
 
         // Generate the column names
         var columns = model.Properties

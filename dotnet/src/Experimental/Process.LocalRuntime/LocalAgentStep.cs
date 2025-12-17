@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
+
 internal class LocalAgentStep : LocalStep
 {
     private new readonly KernelProcessAgentStep _stepInfo;
@@ -45,7 +46,16 @@ internal class LocalAgentStep : LocalStep
         await this._initializeTask.Value.ConfigureAwait(false);
 
         string targetFunction = "Invoke";
-        KernelArguments arguments = new() { { "message", message.TargetEventData }, { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId } };
+        KernelArguments arguments = new()
+        {
+            { "message", message.TargetEventData switch
+                {
+                    KernelProcessEventData proxyData => proxyData.ToObject(),
+                    _ => message.TargetEventData
+                }
+            },
+            { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId }
+        };
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");

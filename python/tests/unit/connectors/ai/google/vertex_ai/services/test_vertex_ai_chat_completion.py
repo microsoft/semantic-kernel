@@ -4,8 +4,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from google.cloud.aiplatform_v1beta1.types.content import Content
-from vertexai.generative_models import GenerativeModel
+from vertexai.generative_models import Content, GenerativeModel
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
@@ -95,12 +94,23 @@ async def test_vertex_ai_chat_completion(
         chat_history, settings
     )
 
-    mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_called_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.call_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
     assert len(responses) == 1
     assert responses[0].role == "assistant"
     assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
@@ -188,12 +198,23 @@ async def test_vertex_ai_chat_completion_with_function_choice_behavior_no_tool_c
         kernel=kernel,
     )
 
-    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.await_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
     assert len(responses) == 1
     assert responses[0].role == "assistant"
     assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
@@ -225,13 +246,24 @@ async def test_vertex_ai_streaming_chat_completion(
         assert "usage" in messages[0].metadata
         assert "prompt_feedback" in messages[0].metadata
 
-    mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-        stream=True,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_called_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.call_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
+    assert call_args.kwargs["stream"] is True
 
 
 async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
@@ -328,13 +360,24 @@ async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior
         assert len(messages) == 1
         assert messages[0].role == "assistant"
 
-    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-        stream=True,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.await_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
+    assert call_args.kwargs["stream"] is True
 
 
 # endregion streaming chat completion

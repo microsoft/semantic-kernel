@@ -11,38 +11,28 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import pytest
-from azure.identity import AzureCliCredential
-from openai import AsyncAzureOpenAI
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.bedrock import BedrockTextCompletion, BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
-from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama import OllamaTextCompletion, OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureOpenAISettings,
-    AzureTextCompletion,
-    OpenAITextCompletion,
-    OpenAITextPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, OpenAITextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents import StreamingTextContent, TextContent
-from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
 hugging_face_setup = util.find_spec("torch") is not None
 
 
-azure_openai_setup = True
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
     "Linux"
 ])
-google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
-vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
@@ -56,13 +46,6 @@ pytestmark = pytest.mark.parametrize(
             ["Repeat the word Hello once"],
             {},
             id="openai_text_completion",
-        ),
-        pytest.param(
-            "azure",
-            {},
-            ["Repeat the word Hello once"],
-            {},
-            id="azure_text_completion",
         ),
         pytest.param(
             "hf_t2t",
@@ -111,7 +94,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
             id="google_ai_text_completion",
         ),
         pytest.param(
@@ -190,37 +173,15 @@ class TestTextCompletion(CompletionTestBase):
     @override
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
-        azure_openai_setup = True
-        credential = AzureCliCredential()
-        azure_openai_settings = AzureOpenAISettings()
-        endpoint = str(azure_openai_settings.endpoint)
-        deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = get_entra_auth_token(credential, azure_openai_settings.token_endpoint)
-        if not ad_token:
-            azure_openai_setup = False
-        api_version = azure_openai_settings.api_version
-        azure_custom_client = None
-        if azure_openai_setup:
-            azure_custom_client = AzureTextCompletion(
-                async_client=AsyncAzureOpenAI(
-                    azure_endpoint=endpoint,
-                    azure_deployment=deployment_name,
-                    azure_ad_token=ad_token,
-                    api_version=api_version,
-                    default_headers={"Test-User-X-ID": "test"},
-                ),
-            )
-
+        """Get the services to be tested"""
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
-            "azure": (
-                AzureTextCompletion(credential=credential) if azure_openai_setup else None,
-                OpenAITextPromptExecutionSettings,
-            ),
-            "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
-            "vertex_ai": (VertexAITextCompletion() if vertex_ai_setup else None, VertexAITextPromptExecutionSettings),
+            "vertex_ai": (
+                GoogleAITextCompletion(use_vertexai=True) if vertex_ai_setup else None,
+                GoogleAITextPromptExecutionSettings,
+            ),
             "hf_t2t": (
                 HuggingFaceTextCompletion(
                     service_id="patrickvonplaten/t5-tiny-random",
@@ -233,8 +194,8 @@ class TestTextCompletion(CompletionTestBase):
             ),
             "hf_summ": (
                 HuggingFaceTextCompletion(
-                    service_id="jotamunz/billsum_tiny_summarization",
-                    ai_model_id="jotamunz/billsum_tiny_summarization",
+                    service_id="Falconsai/text_summarization",
+                    ai_model_id="Falconsai/text_summarization",
                     task="summarization",
                 )
                 if hugging_face_setup
@@ -258,7 +219,7 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.titan-text-premier-v1:0"),
+                self._try_create_bedrock_text_completion_client("amazon.titan-text-express-v1"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (

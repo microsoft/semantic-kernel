@@ -2,7 +2,6 @@
 
 import ast
 import asyncio
-import json
 import sys
 from collections.abc import Sequence
 from importlib import metadata
@@ -795,6 +794,8 @@ class CosmosNoSqlCollection(
                 if isinstance(where_clauses, str)
                 else f"WHERE ({' AND '.join(where_clauses)}) "
             )
+        else:
+            where_clauses = ""  # Empty string instead of None
         vector_field_name = vector_field.storage_name or vector_field.name
         select_clause = self._build_select_clause(options.include_vectors)
         params.append({"name": "@vector", "value": vector})
@@ -802,17 +803,19 @@ class CosmosNoSqlCollection(
             raise VectorStoreModelException(
                 f"Distance function '{vector_field.distance_function}' is not supported by Azure Cosmos DB NoSQL."
             )
-        distance_obj = json.dumps({"distanceFunction": DISTANCE_FUNCTION_MAP_NOSQL[vector_field.distance_function]})
+        # Cosmos DB VectorDistance function only accepts 2 parameters: field and vector
+        # Distance function is configured in the vector index, not in the query
         if search_type == SearchType.VECTOR:
-            distance_clause = f"VectorDistance(c.{vector_field_name}, @vector, false {distance_obj})"
+            distance_clause = f"VectorDistance(c.{vector_field_name}, @vector)"
         elif search_type == SearchType.KEYWORD_HYBRID:
             # Hybrid search: requires both a vector and keywords
             params.append({"name": "@keywords", "value": values})
             text_field = options.additional_property_name
             if not text_field:
                 raise VectorStoreModelException("Hybrid search requires 'keyword_field_name' in options.")
-            distance_clause = f"RRF(VectorDistance(c.{vector_field_name}, @vector, false, {distance_obj}), "
-            f"FullTextScore(c.{text_field}, @keywords))"
+            distance_clause = (
+                f"RRF(VectorDistance(c.{vector_field_name}, @vector), FullTextScore(c.{text_field}, @keywords))"
+            )
         else:
             raise VectorStoreModelException(f"Search type '{search_type}' is not supported.")
         query = (
@@ -820,8 +823,9 @@ class CosmosNoSqlCollection(
             f"{distance_clause} as {NOSQL_SCORE_PROPERTY_NAME} "  # nosec: B608
             "FROM c "
             f"{where_clauses}"  # nosec: B608
-            f"ORDER BY RANK {distance_clause}"  # nosec: B608
+            f"ORDER BY {distance_clause}"  # nosec: B608
         )
+
         container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         try:
             results = container_proxy.query_items(query, parameters=params)

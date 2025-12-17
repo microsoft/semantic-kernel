@@ -18,6 +18,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
+    google_ai_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
@@ -157,20 +158,20 @@ pytestmark = pytest.mark.parametrize(
         # region Google AI
         pytest.param(
             "google_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
             id="google_ai_text_input",
         ),
         # endregion
         # region Vertex AI
         pytest.param(
             "vertex_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
@@ -182,14 +183,14 @@ pytestmark = pytest.mark.parametrize(
         # endregion
         # region Bedrock
         pytest.param(
-            "bedrock_amazon_titan",
+            "bedrock_amazon_nova",
             {},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            id="bedrock_amazon_titan_text_input",
+            id="bedrock_amazon_nova_text_input",
         ),
         pytest.param(
             "bedrock_ai21labs",

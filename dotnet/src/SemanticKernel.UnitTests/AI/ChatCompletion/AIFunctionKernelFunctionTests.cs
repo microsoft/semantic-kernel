@@ -184,8 +184,8 @@ public class AIFunctionKernelFunctionTests
         var clonedFunction = aiFunction.Clone("NewPlugin");
 
         // Act
-        var result1 = await clonedFunction.InvokeAsync(kernel1, new());
-        var result2 = await clonedFunction.InvokeAsync(kernel2, new());
+        var result1 = await clonedFunction.InvokeAsync(kernel1, []);
+        var result2 = await clonedFunction.InvokeAsync(kernel2, []);
 
         // Assert - verify that the results are different when using different kernels
         var result1Str = result1.GetValue<object>()?.ToString();
