@@ -19,9 +19,9 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Download coverage report
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           run-id: ${{ github.event.workflow_run.id }}

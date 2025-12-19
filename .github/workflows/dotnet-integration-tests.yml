@@ -22,14 +22,14 @@ jobs:
         configuration: [Debug]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         if: ${{ github.event_name != 'pull_request' }}
         with:
           dotnet-version: 10.0.x
@@ -60,7 +60,7 @@ jobs:
           done
 
       - name: Upload dotnet test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dotnet-testresults-${{ matrix.configuration }}
           path: ./TestResults
