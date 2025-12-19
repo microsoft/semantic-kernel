@@ -83,7 +83,7 @@ jobs:
     outputs:
       pythonChanges: ${{ steps.filter.outputs.python}}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -118,7 +118,7 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
       COMPLETIONS_CONCEPT_SAMPLE: "true"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -173,7 +173,7 @@ jobs:
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -214,7 +214,7 @@ jobs:
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -263,7 +263,7 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
       COMPLETIONS_CONCEPT_SAMPLE: "true"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -328,7 +328,7 @@ jobs:
           - 8080:8080
           - 50051:50051
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -386,7 +386,7 @@ jobs:
           - 8080:8080
           - 50051:50051
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -533,14 +533,14 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: core.setFailed('Integration Tests Cancelled!')
 
