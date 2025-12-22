@@ -765,9 +765,16 @@ internal partial class ClientCore
                     continue;
                 }
 
-                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+                var result = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
 
-                toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
+                // OpenAI does not support multimodal tool results - return error message for ImageContent
+                if (result is ImageContent)
+                {
+                    toolMessages.Add(new ToolChatMessage(resultContent.CallId, FunctionCalling.FunctionCallsProcessor.ImageContentNotSupportedErrorMessage));
+                    continue;
+                }
+
+                toolMessages.Add(new ToolChatMessage(resultContent.CallId, (string?)result ?? string.Empty));
             }
 
             if (toolMessages is not null)

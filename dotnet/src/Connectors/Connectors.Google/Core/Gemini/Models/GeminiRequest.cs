@@ -194,14 +194,24 @@ internal sealed class GeminiRequest
             case GeminiChatMessageContent { CalledToolResults: not null } contentWithCalledTools:
                 // Add all function responses as separate parts in a single message
                 parts.AddRange(contentWithCalledTools.CalledToolResults.Select(toolResult =>
-                    new GeminiPart
+                {
+                    var resultValue = toolResult.FunctionResult.GetValue<object>();
+
+                    // Handle ImageContent for multimodal tool results (Gemini 3+ only)
+                    if (resultValue is ImageContent imageContent)
+                    {
+                        return CreateImageFunctionResponsePart(toolResult.FullyQualifiedName, imageContent);
+                    }
+
+                    return new GeminiPart
                     {
                         FunctionResponse = new GeminiPart.FunctionResponsePart
                         {
                             FunctionName = toolResult.FullyQualifiedName,
-                            Response = new(toolResult.FunctionResult.GetValue<object>())
+                            Response = new(resultValue)
                         }
-                    }));
+                    };
+                }));
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
@@ -270,6 +280,37 @@ internal sealed class GeminiRequest
     {
         return imageContent.MimeType
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
+    }
+
+    /// <summary>
+    /// Creates a GeminiPart with FunctionResponse containing multimodal image data (Gemini 3+ only).
+    /// </summary>
+    private static GeminiPart CreateImageFunctionResponsePart(string functionName, ImageContent imageContent)
+    {
+        if (imageContent.Data is not { IsEmpty: false })
+        {
+            throw new InvalidOperationException("ImageContent in function result must contain binary data.");
+        }
+
+        return new GeminiPart
+        {
+            FunctionResponse = new GeminiPart.FunctionResponsePart
+            {
+                FunctionName = functionName,
+                Response = new(new { status = "success", message = "Image data attached" }),
+                Parts =
+                [
+                    new GeminiPart.FunctionResponsePart.FunctionResponsePartContent
+                    {
+                        InlineData = new GeminiPart.InlineDataPart
+                        {
+                            MimeType = GetMimeTypeFromImageContent(imageContent),
+                            InlineData = Convert.ToBase64String(imageContent.Data.Value.ToArray())
+                        }
+                    }
+                ]
+            }
+        };
     }
 
     private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
