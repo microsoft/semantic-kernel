@@ -207,6 +207,16 @@ internal partial class AnthropicClientCore
                 nameof(functionResult));
         }
 
+        // Check for ImageContent (multimodal tool result).
+        // Note: Currently FunctionCallsProcessor converts all results to strings, so this check
+        // will not match. This is forward-compatible preparation for when FunctionCallsProcessor
+        // is updated to preserve ImageContent objects (see: https://github.com/microsoft/semantic-kernel/issues/XXXXX).
+        // Anthropic API natively supports images in tool results via ToolResultBlockParam.Content.
+        if (functionResult.Result is ImageContent imageContent)
+        {
+            return ConvertImageResultContent(functionResult.CallId!, imageContent);
+        }
+
         var resultString = functionResult.Result?.ToString() ?? string.Empty;
 
         // Detect errors to set IsError flag for the Anthropic API.
@@ -222,6 +232,56 @@ internal partial class AnthropicClientCore
             ToolUseID = functionResult.CallId!,
             Content = resultString,
             IsError = isError
+        };
+    }
+
+    /// <summary>
+    /// Converts ImageContent tool result to Anthropic ToolResultBlockParam with multimodal content.
+    /// </summary>
+    /// <remarks>
+    /// The Anthropic API supports multimodal tool results via ToolResultBlockParam.Content as an array of content blocks.
+    /// SDK Type Chain: ToolResultBlockParam.Content → ToolResultBlockParamContent (union type) → IReadOnlyList&lt;Block&gt;
+    /// → Block (union type) → ImageBlockParam → ImageBlockParamSource (union type) → Base64ImageSource.
+    /// All conversions are implicit (verified against official Anthropic NuGet package).
+    /// </remarks>
+    private static ToolResultBlockParam ConvertImageResultContent(string callId, ImageContent imageContent)
+    {
+        // ImageContent.Data is ReadOnlyMemory<byte>?
+        if (!imageContent.Data.HasValue || imageContent.Data.Value.Length == 0)
+        {
+            // No binary data - return error (URI-only ImageContent not supported in tool results)
+            return new ToolResultBlockParam
+            {
+                ToolUseID = callId,
+                Content = "Error: ImageContent requires binary data (Data property). URI-only ImageContent is not supported in tool results.",
+                IsError = true
+            };
+        }
+
+        var imageData = imageContent.Data.Value;
+        var base64Data = Convert.ToBase64String(imageData.ToArray());
+        var mediaType = GetMediaType(imageContent.MimeType);
+
+        // ToolResultBlockParam.Content accepts ToolResultBlockParamContent which can be:
+        // - string (via implicit conversion)
+        // - IReadOnlyList<Block> (via implicit conversion)
+        // Block can contain ImageBlockParam (via implicit conversion)
+        // ImageBlockParam.Source accepts ImageBlockParamSource which wraps Base64ImageSource (via implicit conversion)
+        return new ToolResultBlockParam
+        {
+            ToolUseID = callId,
+            Content = new List<Block>
+            {
+                new ImageBlockParam
+                {
+                    Source = new Base64ImageSource
+                    {
+                        Data = base64Data,
+                        MediaType = mediaType
+                    }
+                }
+            },
+            IsError = false
         };
     }
 
