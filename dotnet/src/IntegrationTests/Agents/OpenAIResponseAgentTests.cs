@@ -218,6 +218,51 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         Assert.Contains("Computer says no", responseText);
     }
 
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIResponseAgent"/> with existing chat history.
+    /// </summary>
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task OpenAIResponseAgentInvokeStreamingWithChatHistoryAsync(bool isOpenAI, bool storeEnabled)
+    {
+        // Arrange
+        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        OpenAIResponseAgent agent = new(client)
+        {
+            StoreEnabled = storeEnabled,
+            Instructions = "Answer all queries in English and French."
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello my name is John");
+        chatHistory.AddAssistantMessage("Hello John, how can I help you today?");
+        chatHistory.AddUserMessage("What is my Name?");
+
+        AgentThread agentThread = storeEnabled ? new OpenAIResponseAgentThread(client) : new ChatHistoryAgentThread();
+
+        // Act
+        string? responseText = null;
+        try
+        {
+            var responseMessages = await agent.InvokeStreamingAsync(chatHistory, agentThread).ToArrayAsync();
+            responseText = string.Join(string.Empty, responseMessages.Select(ri => ri.Message.Content));
+        }
+        finally
+        {
+            if (agentThread.Id is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+        }
+
+        // Assert
+        Assert.NotNull(responseText);
+    }
+
     /// <summary>
     /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
