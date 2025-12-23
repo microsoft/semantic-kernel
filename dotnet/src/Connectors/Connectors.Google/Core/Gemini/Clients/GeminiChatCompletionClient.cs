@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -164,13 +165,21 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
+        // Aggregation state for multi-iteration function calling loops.
+        // Text content from intermediate iterations (before tool calls) would otherwise be lost.
+        // Token usage must be summed across all API calls to report accurate totals.
+        StringBuilder? aggregatedContent = null;
+        int totalPromptTokens = 0;
+        int totalCandidatesTokens = 0;
+        bool hadMultipleIterations = false;
+
         for (state.Iteration = 1; ; state.Iteration++)
         {
             List<GeminiChatMessageContent> chatResponses;
+            GeminiResponse geminiResponse;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                 this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
-                GeminiResponse geminiResponse;
                 try
                 {
                     geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
@@ -190,17 +199,40 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     geminiResponse.UsageMetadata?.CandidatesTokenCount);
             }
 
+            // Aggregate usage across all iterations.
+            totalPromptTokens += geminiResponse.UsageMetadata?.PromptTokenCount ?? 0;
+            totalCandidatesTokens += geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0;
+
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!state.AutoInvoke || chatResponses.Count != 1)
             {
+                // Apply aggregated content and usage to the final message.
+                this.ApplyAggregatedState(chatResponses, aggregatedContent, totalPromptTokens, totalCandidatesTokens, hadMultipleIterations);
                 return chatResponses;
             }
 
             state.LastMessage = chatResponses[0];
             if (state.LastMessage.ToolCalls is null || state.LastMessage.ToolCalls.Count == 0)
             {
+                // Apply aggregated content and usage to the final message.
+                this.ApplyAggregatedState(chatResponses, aggregatedContent, totalPromptTokens, totalCandidatesTokens, hadMultipleIterations);
                 return chatResponses;
+            }
+
+            // We're about to process tool calls and continue the loop - mark that we have multiple iterations.
+            hadMultipleIterations = true;
+
+            // Accumulate text content from this iteration before processing tool calls.
+            // The LLM may generate text (e.g., "Let me check that for you...") before tool calls.
+            if (!string.IsNullOrEmpty(state.LastMessage.Content))
+            {
+                aggregatedContent ??= new StringBuilder();
+                if (aggregatedContent.Length > 0)
+                {
+                    aggregatedContent.Append("\n\n");
+                }
+                aggregatedContent.Append(state.LastMessage.Content);
             }
 
             // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
@@ -213,7 +245,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             // and return the last chat message content that was added to chat history
             if (state.FilterTerminationRequested)
             {
-                return [state.ChatHistory.Last()];
+                var lastMessage = state.ChatHistory.Last();
+                // Apply aggregated content and usage to the filter-terminated message.
+                this.ApplyAggregatedState(lastMessage, aggregatedContent, totalPromptTokens, totalCandidatesTokens, hadMultipleIterations);
+                return [lastMessage];
             }
         }
     }
@@ -888,6 +923,85 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
             ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
         };
+
+    /// <summary>
+    /// Applies aggregated text content and usage from previous iterations to the final message(s).
+    /// This ensures that text generated before tool calls is not lost and that token usage
+    /// reflects the total across all API calls in the function calling loop.
+    /// </summary>
+    /// <param name="messages">The list of messages to update.</param>
+    /// <param name="aggregatedContent">Accumulated text content from previous iterations, or null if none.</param>
+    /// <param name="totalPromptTokens">Total prompt tokens across all iterations.</param>
+    /// <param name="totalCandidatesTokens">Total candidates tokens across all iterations.</param>
+    /// <param name="hadMultipleIterations">Whether the function calling loop had multiple iterations.</param>
+    private void ApplyAggregatedState(
+        List<GeminiChatMessageContent> messages,
+        StringBuilder? aggregatedContent,
+        int totalPromptTokens,
+        int totalCandidatesTokens,
+        bool hadMultipleIterations)
+    {
+        if (messages.Count == 0)
+        {
+            return;
+        }
+
+        this.ApplyAggregatedStateToMessage(messages[0], aggregatedContent, totalPromptTokens, totalCandidatesTokens, hadMultipleIterations);
+    }
+
+    /// <summary>
+    /// Applies aggregated text content and usage from previous iterations to a single message.
+    /// </summary>
+    /// <param name="message">The message to update.</param>
+    /// <param name="aggregatedContent">Accumulated text content from previous iterations, or null if none.</param>
+    /// <param name="totalPromptTokens">Total prompt tokens across all iterations.</param>
+    /// <param name="totalCandidatesTokens">Total candidates tokens across all iterations.</param>
+    /// <param name="hadMultipleIterations">Whether the function calling loop had multiple iterations.</param>
+    private void ApplyAggregatedState(
+        ChatMessageContent message,
+        StringBuilder? aggregatedContent,
+        int totalPromptTokens,
+        int totalCandidatesTokens,
+        bool hadMultipleIterations)
+    {
+        this.ApplyAggregatedStateToMessage(message, aggregatedContent, totalPromptTokens, totalCandidatesTokens, hadMultipleIterations);
+    }
+
+    /// <summary>
+    /// Core implementation for applying aggregated state to a message.
+    /// </summary>
+    private void ApplyAggregatedStateToMessage(
+        ChatMessageContent message,
+        StringBuilder? aggregatedContent,
+        int totalPromptTokens,
+        int totalCandidatesTokens,
+        bool hadMultipleIterations)
+    {
+        // Prepend aggregated content from previous iterations.
+        if (aggregatedContent is { Length: > 0 })
+        {
+            if (!string.IsNullOrEmpty(message.Content))
+            {
+                aggregatedContent.Append("\n\n");
+                aggregatedContent.Append(message.Content);
+            }
+            message.Content = aggregatedContent.ToString();
+        }
+
+        // Update metadata with aggregated usage if we had multiple iterations.
+        // This ensures token counts are accurate even when intermediate iterations had no text content.
+        if (hadMultipleIterations && message.Metadata is GeminiMetadata existingMetadata)
+        {
+            // Create a new metadata dictionary with aggregated values.
+            var updatedDict = new Dictionary<string, object?>(existingMetadata)
+            {
+                [nameof(GeminiMetadata.PromptTokenCount)] = totalPromptTokens,
+                [nameof(GeminiMetadata.CandidatesTokenCount)] = totalCandidatesTokens,
+                [nameof(GeminiMetadata.TotalTokenCount)] = totalPromptTokens + totalCandidatesTokens
+            };
+            message.Metadata = GeminiMetadata.FromDictionary(updatedDict);
+        }
+    }
 
     private sealed class ChatCompletionState
     {
