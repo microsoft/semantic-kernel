@@ -10,7 +10,9 @@ namespace SemanticKernel.UnitTests.Data;
 /// <summary>
 /// Mock implementation of <see cref="ITextSearch"/>
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITextSearch
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     /// <inheritdoc/>
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
