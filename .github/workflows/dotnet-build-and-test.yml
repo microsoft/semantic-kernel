@@ -29,7 +29,7 @@ jobs:
     outputs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: dorny/paths-filter@v2
@@ -69,12 +69,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4.3.1
+        uses: actions/setup-dotnet@v5.0.1
         with:
           global-json-file: ${{ github.workspace }}/dotnet/global.json
 
@@ -191,7 +191,7 @@ jobs:
           reporttypes: "HtmlInline;JsonSummary"
 
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
           path: ./TestResults/Reports # Directory containing files to upload
@@ -232,13 +232,13 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: core.setFailed('Integration Tests Cancelled!')
