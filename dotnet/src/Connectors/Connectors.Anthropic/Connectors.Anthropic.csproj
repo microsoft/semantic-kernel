@@ -5,8 +5,10 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Anthropic</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
-    <VersionSuffix>alpha</VersionSuffix>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- New package - no baseline on NuGet yet -->
+    <DisablePackageBaselineValidation>true</DisablePackageBaselineValidation>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

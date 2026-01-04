@@ -1,18 +1,18 @@
 {
-  "id": "msg_01TextBeforeToolCall",
+  "id": "msg_01AutoInvoke",
   "type": "message",
   "role": "assistant",
   "content": [
     {
       "type": "text",
-      "text": "Let me check the weather for you."
+      "text": "I'll check the weather for you."
     },
     {
       "type": "tool_use",
-      "id": "toolu_01Weather123",
-      "name": "MyPlugin-GetWeather",
+      "id": "toolu_auto_invoke_test",
+      "name": "WeatherPlugin_GetWeather",
       "input": {
-        "location": "Seattle"
+        "location": "Seattle, WA"
       }
     }
   ],
@@ -20,8 +20,8 @@
   "stop_reason": "tool_use",
   "stop_sequence": null,
   "usage": {
-    "input_tokens": 100,
-    "output_tokens": 50
+    "input_tokens": 50,
+    "output_tokens": 45
   }
 }
 

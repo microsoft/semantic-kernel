@@ -3,14 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
-using Microsoft.SemanticKernel.Connectors.Anthropic.Services;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core;
@@ -72,6 +73,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
         Assert.Same(kernel, contextKernel);
         Assert.NotNull(result);
+        Assert.Contains("Hello", result.ToString()); // Verify actual response content from chat_completion_response.json
     }
 
     [Fact]
@@ -206,6 +208,13 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             executionOrder.Add("Filter2-Invoked");
         });
 
+        var filter3 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter3-Invoking");
+            await next(context);
+            executionOrder.Add("Filter3-Invoked");
+        });
+
         var builder = Kernel.CreateBuilder();
         builder.Plugins.Add(plugin);
 
@@ -214,6 +223,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter1);
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter2);
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter3);
 
         var kernel = builder.Build();
 
@@ -235,11 +245,13 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             }));
         }
 
-        // Assert - filters should execute in order: Filter1 invoke -> Filter2 invoke -> Filter2 complete -> Filter1 complete
+        // Assert - filters should execute in order: Filter1 invoke -> Filter2 invoke -> Filter3 invoke -> Filter3 complete -> Filter2 complete -> Filter1 complete
         Assert.Equal("Filter1-Invoking", executionOrder[0]);
         Assert.Equal("Filter2-Invoking", executionOrder[1]);
-        Assert.Equal("Filter2-Invoked", executionOrder[2]);
-        Assert.Equal("Filter1-Invoked", executionOrder[3]);
+        Assert.Equal("Filter3-Invoking", executionOrder[2]);
+        Assert.Equal("Filter3-Invoked", executionOrder[3]);
+        Assert.Equal("Filter2-Invoked", executionOrder[4]);
+        Assert.Equal("Filter1-Invoked", executionOrder[5]);
     }
 
     [Fact]
@@ -376,14 +388,17 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task FilterTerminationReturnsLastMessageAsync()
     {
         // Arrange
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, (context, next) =>
         {
-            // Terminate on first function
+            // Terminate on first function without calling next - skips function execution
             context.Terminate = true;
             context.Result = new FunctionResult(context.Function, "Terminated");
             return Task.CompletedTask;
@@ -399,6 +414,17 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
+        // Functions should not be invoked since we terminate without calling next
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+
+        // The result should reflect the filter-provided result (M.E.AI returns ChatResponse)
+        var chatResponse = result.GetValue<ChatResponse>();
+        Assert.NotNull(chatResponse);
+
+        var lastFunctionResult = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(lastFunctionResult);
+        Assert.Equal("Terminated", lastFunctionResult.ToString());
     }
 
     [Fact]
@@ -518,8 +544,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         builder.Plugins.Add(plugin);
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
 
-        builder.Services.AddSingleton<IChatCompletionService>((_) =>
-            new AnthropicChatCompletionService("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient));
+        // Use M.E.AI ChatClient registration for proper filter integration
+        builder.AddAnthropicChatClient("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient);
 
         return builder.Build();
     }
@@ -628,164 +654,476 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Same(kernel, receivedKernel);
     }
 
-    #endregion
-
-    #region Text and Usage Aggregation Tests
-
-    /// <summary>
-    /// Tests that text content generated before tool calls is preserved in the final response.
-    /// This verifies the fix for the issue where intermediate text was being lost during
-    /// auto function calling iterations.
-    /// </summary>
     [Fact]
-    public async Task TextBeforeToolCallsIsPreservedInFinalResponseAsync()
+    public async Task FilterCanHandleExceptionAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod((string location) => "Sunny, 72°F", "GetWeather");
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+        string? firstFunctionResult = null;
+        string? secondFunctionResult = null;
+        bool firstFunctionCaptured = false;
+        bool secondFunctionCaptured = false;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from Function1"); }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => "Result from Function2", "Function2");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (KernelException exception)
+            {
+                Assert.Equal("Exception from Function1", exception.Message);
+                context.Result = new FunctionResult(context.Result, "Result from filter");
+            }
+
+            // Capture the result for the first invocation of each function
+            if (context.Function.Name == "Function1" && !firstFunctionCaptured)
+            {
+                firstFunctionResult = context.Result?.GetValue<string>();
+                firstFunctionCaptured = true;
+            }
+            else if (context.Function.Name == "Function2" && !secondFunctionCaptured)
+            {
+                secondFunctionResult = context.Result?.GetValue<string>();
+                secondFunctionCaptured = true;
+            }
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        }));
+
+        // Assert
+        Assert.Equal("Result from filter", firstFunctionResult);
+        Assert.Equal("Result from Function2", secondFunctionResult);
+    }
+
+    [Fact]
+    public async Task FilterCanHandleExceptionOnStreamingAsync()
+    {
+        // Arrange
+        string? firstFunctionResult = null;
+        string? secondFunctionResult = null;
+        bool firstFunctionCaptured = false;
+        bool secondFunctionCaptured = false;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from Function1"); }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => "Result from Function2", "Function2");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (KernelException)
+            {
+                context.Result = new FunctionResult(context.Result, "Result from filter");
+            }
+
+            // Capture the result for the first invocation of each function
+            if (context.Function.Name == "Function1" && !firstFunctionCaptured)
+            {
+                firstFunctionResult = context.Result?.GetValue<string>();
+                firstFunctionCaptured = true;
+            }
+            else if (context.Function.Name == "Function2" && !secondFunctionCaptured)
+            {
+                secondFunctionResult = context.Result?.GetValue<string>();
+                secondFunctionCaptured = true;
+            }
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        // Act
+        await foreach (var _ in kernel.InvokePromptStreamingAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        })))
+        { }
+
+        // Assert
+        Assert.Equal("Result from filter", firstFunctionResult);
+        Assert.Equal("Result from Function2", secondFunctionResult);
+    }
+
+    [Fact]
+    public async Task PreFilterCanTerminateOperationAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        }));
+
+        // Assert
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PreFilterCanTerminateOperationOnStreamingAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new AnthropicPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        { }
+
+        // Assert
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PostFilterCanTerminateOperationAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        }));
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
+
+        // Results of function invoked before termination should be returned (M.E.AI returns ChatResponse)
+        var chatResponse = result.GetValue<ChatResponse>();
+        Assert.NotNull(chatResponse);
+
+        var functionResult = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(functionResult);
+        Assert.Equal("function1-value", functionResult.ToString());
+    }
+
+    [Fact]
+    public async Task PostFilterCanTerminateOperationOnStreamingAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new AnthropicPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        List<ChatResponseUpdate> streamingContent = [];
+
+        // Act
+        await foreach (var update in kernel.InvokePromptStreamingAsync<ChatResponseUpdate>("Test prompt", new(executionSettings)))
+        {
+            streamingContent.Add(update);
+        }
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
+
+        // Results of function invoked before termination should be returned (M.E.AI returns ChatResponse)
+        Assert.True(streamingContent.Count >= 1);
+
+        var chatResponse = streamingContent.ToChatResponse();
+        Assert.NotNull(chatResponse);
+
+        var functionResult = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(functionResult);
+        Assert.Equal("function1-value", functionResult.ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var filter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
 
         var builder = Kernel.CreateBuilder();
+
         builder.Plugins.Add(plugin);
-        builder.Services.AddSingleton<IChatCompletionService>((_) =>
-            new AnthropicChatCompletionService("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient));
+
+        builder.AddAnthropicChatClient("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient);
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
 
         var kernel = builder.Build();
 
-        // Response 1: Text + Tool Call, Response 2: Final text
-        this._messageHandlerStub.ResponsesToReturn = GetTextBeforeToolCallResponses();
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What's the weather in Seattle?");
-
-        // Act
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var result = await chatService.GetChatMessageContentsAsync(chatHistory, new AnthropicPromptExecutionSettings
+        var arguments = new KernelArguments(new AnthropicPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        }, kernel);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-
-        var content = result[0].Content;
-        Assert.NotNull(content);
-
-        // The final content should contain BOTH the text from iteration 1 AND iteration 2
-        // separated by \n\n (the aggregation separator)
-        Assert.Contains("Let me check the weather for you.", content);
-        Assert.Contains("The weather in Seattle is sunny and 72°F.", content);
-        Assert.Contains("\n\n", content); // Verify separator is present
-    }
-
-    /// <summary>
-    /// Tests that token usage is correctly aggregated across all function calling iterations.
-    /// This verifies that the metadata contains the total tokens from all API calls.
-    /// </summary>
-    [Fact]
-    public async Task TokenUsageIsAggregatedAcrossIterationsAsync()
-    {
-        // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod((string location) => "Sunny, 72°F", "GetWeather");
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
-
-        var builder = Kernel.CreateBuilder();
-        builder.Plugins.Add(plugin);
-        builder.Services.AddSingleton<IChatCompletionService>((_) =>
-            new AnthropicChatCompletionService("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient));
-
-        var kernel = builder.Build();
-
-        // Response 1: 100 input + 50 output tokens
-        // Response 2: 150 input + 30 output tokens
-        // Total expected: 250 input + 80 output = 330 total
-        this._messageHandlerStub.ResponsesToReturn = GetTextBeforeToolCallResponses();
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What's the weather in Seattle?");
+        });
 
         // Act
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var result = await chatService.GetChatMessageContentsAsync(chatHistory, new AnthropicPromptExecutionSettings
+        if (isStreaming)
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        }, kernel);
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+            await kernel.InvokePromptStreamingAsync("Test prompt", arguments).ToListAsync();
+        }
+        else
+        {
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+            await kernel.InvokePromptAsync("Test prompt", arguments);
+        }
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.NotNull(result[0].Metadata);
-
-        var metadata = result[0].Metadata!;
-
-        // Verify aggregated token counts
-        Assert.True(metadata.ContainsKey("InputTokens"), "Metadata should contain InputTokens");
-        Assert.True(metadata.ContainsKey("OutputTokens"), "Metadata should contain OutputTokens");
-        Assert.True(metadata.ContainsKey("TotalTokens"), "Metadata should contain TotalTokens");
-
-        // Expected: Response 1 (100 + 50) + Response 2 (150 + 30)
-        Assert.Equal(250L, metadata["InputTokens"]);
-        Assert.Equal(80L, metadata["OutputTokens"]);
-        Assert.Equal(330L, metadata["TotalTokens"]);
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 
-    /// <summary>
-    /// Tests that when a filter terminates the function calling loop, the aggregated text
-    /// and usage metadata are still correctly applied to the returned message.
-    /// </summary>
     [Fact]
-    public async Task FilterTerminationPreservesAggregatedTextAndUsageAsync()
+    public async Task PromptExecutionSettingsArePropagatedFromInvokePromptToFilterContextAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod((string location) => "Sunny, 72°F", "GetWeather");
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Function1")]);
+
+        AutoFunctionInvocationContext? actualContext = null;
 
         var kernel = this.GetKernelWithFilter(plugin, (context, next) =>
         {
-            // Terminate immediately - don't execute the function
-            context.Terminate = true;
-            context.Result = new FunctionResult(context.Function, "Filter terminated");
+            actualContext = context;
             return Task.CompletedTask;
         });
 
-        // Response with text before tool call
-        this._messageHandlerStub.ResponsesToReturn = GetTextBeforeToolCallResponses();
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("What's the weather in Seattle?");
-
         // Act
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        var result = await chatService.GetChatMessageContentsAsync(chatHistory, new AnthropicPromptExecutionSettings
+        await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        }, kernel);
+        }));
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-
-        // Even with filter termination, the text from iteration 1 should be preserved
-        var content = result[0].Content;
-        Assert.NotNull(content);
-        Assert.Contains("Let me check the weather for you.", content);
-
-        // And metadata should have the tokens from iteration 1
-        var metadata = result[0].Metadata!;
-        Assert.True(metadata.ContainsKey("InputTokens"));
-        Assert.Equal(100L, metadata["InputTokens"]); // Only first response tokens
-        Assert.Equal(50L, metadata["OutputTokens"]);
+        Assert.NotNull(actualContext);
+        Assert.NotNull(actualContext!.ExecutionSettings);
+        // Note: M.E.AI-based connectors JSON-roundtrip settings through ToChatOptions, so we verify
+        // value equivalence rather than reference equality (unlike direct IChatCompletionService implementations).
+        Assert.NotNull(actualContext.ExecutionSettings!.FunctionChoiceBehavior);
     }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-    private static List<HttpResponseMessage> GetTextBeforeToolCallResponses()
+    [Fact]
+    public async Task PromptExecutionSettingsArePropagatedFromInvokePromptStreamingToFilterContextAsync()
     {
-        return [
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/text_before_tool_call_response.json")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/final_response_after_tool_call.json")) }
-        ];
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Function1")]);
+
+        AutoFunctionInvocationContext? actualContext = null;
+
+        var kernel = this.GetKernelWithFilter(plugin, (context, next) =>
+        {
+            actualContext = context;
+            return Task.CompletedTask;
+        });
+
+        // Act
+        await foreach (var _ in kernel.InvokePromptStreamingAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        })))
+        { }
+
+        // Assert
+        Assert.NotNull(actualContext);
+        Assert.NotNull(actualContext!.ExecutionSettings);
+        // Note: M.E.AI-based connectors JSON-roundtrip settings through ToChatOptions, so we verify
+        // value equivalence rather than reference equality (unlike direct IChatCompletionService implementations).
+        Assert.NotNull(actualContext.ExecutionSettings!.FunctionChoiceBehavior);
     }
-#pragma warning restore CA2000
+
+    [Fact]
+    public async Task FiltersCanSkipSelectiveFunctionExecutionAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Filter delegate is invoked for both functions, but next() is called only for Function2.
+            // Function1 execution is skipped because next() is not called for it.
+            if (context.Function.Name == "Function2")
+            {
+                await next(context);
+            }
+
+            filterInvocations++;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        }));
+
+        // Assert
+        // GetFunctionCallingResponses() returns 2 rounds of tool calls with 2 functions each
+        // Filter is invoked 4 times total (2 functions × 2 rounds)
+        Assert.Equal(4, filterInvocations);
+        Assert.Equal(0, firstFunctionInvocations); // Function1 is always skipped
+        Assert.Equal(2, secondFunctionInvocations); // Function2 executes once per round
+    }
+
+    [Fact]
+    public async Task FunctionSequenceIndexIsCorrectForConcurrentCallsAsync()
+    {
+        // Arrange
+        List<int> functionSequenceNumbers = [];
+        List<int> expectedFunctionSequenceNumbers = [0, 1, 0, 1];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AnthropicPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new()
+            {
+                AllowParallelCalls = true,
+                AllowConcurrentInvocation = true
+            })
+        }));
+
+        // Assert
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
+    }
+
+    private static object? GetLastFunctionResultFromChatResponse(ChatResponse chatResponse)
+    {
+        Assert.NotEmpty(chatResponse.Messages);
+        var chatMessage = chatResponse.Messages.Where(m => m.Role == ChatRole.Tool).Last();
+
+        Assert.NotEmpty(chatMessage.Contents);
+        Assert.Contains(chatMessage.Contents, c => c is Microsoft.Extensions.AI.FunctionResultContent);
+
+        var resultContent = (Microsoft.Extensions.AI.FunctionResultContent)chatMessage.Contents.Last(c => c is Microsoft.Extensions.AI.FunctionResultContent);
+        return resultContent.Result;
+    }
 
     #endregion
 }

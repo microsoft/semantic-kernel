@@ -102,6 +102,34 @@ public sealed class AnthropicPromptExecutionSettingsTests
     }
 
     [Fact]
+    public void ItCreatesAnthropicExecutionSettingsFromExtensionDataWithStrings()
+    {
+        // Arrange - numbers as strings in ExtensionData (tests JsonNumberHandling.AllowReadingFromString through FromExecutionSettings path)
+        PromptExecutionSettings actualSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>
+            {
+                { "max_tokens", "2000" },
+                { "temperature", "0.5" },
+                { "top_p", "0.8" },
+                { "top_k", "50" },
+                { "stop_sequences", new List<object> { "stop1", "stop2" } }
+            }
+        };
+
+        // Act
+        AnthropicPromptExecutionSettings executionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(actualSettings);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal(2000, executionSettings.MaxTokens);
+        Assert.Equal(0.5, executionSettings.Temperature);
+        Assert.Equal(0.8, executionSettings.TopP);
+        Assert.Equal(50, executionSettings.TopK);
+        Assert.Equal(["stop1", "stop2"], executionSettings.StopSequences);
+    }
+
+    [Fact]
     public void ItCreatesAnthropicExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
@@ -545,6 +573,35 @@ public sealed class AnthropicPromptExecutionSettingsTests
         Assert.Equal(2, settings.StopSequences!.Count);
         Assert.Contains("END", settings.StopSequences);
         Assert.Contains("STOP", settings.StopSequences);
+    }
+
+    #endregion
+
+    #region ToChatOptions Tests
+
+    [Fact]
+    public void ItPropagatesValuesToChatOptions()
+    {
+        // Arrange
+        AnthropicPromptExecutionSettings actualSettings = new()
+        {
+            Temperature = 0.7,
+            TopP = 0.9,
+            TopK = 40,
+            MaxTokens = 1024,
+            StopSequences = ["foo", "bar"]
+        };
+
+        // Act
+        Microsoft.Extensions.AI.ChatOptions? actualOptions = actualSettings.ToChatOptions(null);
+
+        // Assert
+        Assert.NotNull(actualOptions);
+        Assert.Equal((float)actualSettings.Temperature, (float)actualOptions.Temperature!, 3);
+        Assert.Equal((float)actualSettings.TopP, (float)actualOptions.TopP!, 3);
+        Assert.Equal(actualSettings.TopK, actualOptions.TopK);
+        Assert.Equal(actualSettings.MaxTokens, actualOptions.MaxOutputTokens);
+        Assert.Equal(actualSettings.StopSequences, actualOptions.StopSequences);
     }
 
     #endregion

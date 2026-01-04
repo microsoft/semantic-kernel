@@ -6,7 +6,7 @@
     {
       "type": "tool_use",
       "id": "toolu_01A09q90qw90lq917835l1",
-      "name": "MyPlugin-Function1",
+      "name": "MyPlugin_Function1",
       "input": {
         "parameter": "function1-value"
       }
@@ -14,7 +14,7 @@
     {
       "type": "tool_use",
       "id": "toolu_01A09q90qw90lq917835l2",
-      "name": "MyPlugin-Function2",
+      "name": "MyPlugin_Function2",
       "input": {
         "parameter": "function2-value"
       }
