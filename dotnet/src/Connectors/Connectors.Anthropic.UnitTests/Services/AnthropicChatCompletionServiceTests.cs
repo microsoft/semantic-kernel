@@ -70,6 +70,25 @@ public sealed class AnthropicChatCompletionServiceTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Sets up a streaming function calling scenario with multiple HTTP responses.
+    /// M.E.AI's FunctionInvokingChatClient automatically processes tool calls, which requires
+    /// multiple HTTP responses: one for the tool call, and one for the final response.
+    /// Uses ReadAllBytes + MemoryStream to properly support streaming content.
+    /// </summary>
+    /// <param name="responseFiles">Test data file names (without path) to queue as responses.</param>
+    private void SetupStreamingFunctionCallScenario(params string[] responseFiles)
+    {
+        foreach (var file in responseFiles)
+        {
+            var fileContent = File.ReadAllBytes($"./TestData/{file}");
+            this._messageHandlerStub.ResponseQueue.Enqueue(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(new MemoryStream(fileContent))
+            });
+        }
+    }
+
     #endregion
 
     #region Constructor Tests
@@ -612,35 +631,17 @@ public sealed class AnthropicChatCompletionServiceTests : IDisposable
     }
 
     /// <summary>
-    /// Tests streaming with tool calls. Currently skipped due to Anthropic SDK bug.
+    /// Tests streaming with tool calls returns content including function call information.
+    /// M.E.AI's FunctionInvokingChatClient automatically processes tool calls, which requires
+    /// multiple HTTP responses: one for the tool call, and one for the final response.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>SDK Bug:</b> The Anthropic SDK's CreateStreaming method disposes the HttpResponseMessage
-    /// before the IAsyncEnumerable is fully consumed, causing ObjectDisposedException.
-    /// </para>
-    /// <para>
-    /// <b>Issue:</b> https://github.com/anthropics/anthropic-sdk-csharp/issues/80
-    /// </para>
-    /// <para>
-    /// <b>TODO:</b> Once the SDK issue is fixed:
-    /// 1. Remove the Skip attribute
-    /// 2. Verify streaming tool calls return FunctionCallContent items
-    /// 3. Add assertions for tool call ID, function name, and arguments
-    /// 4. Consider adding a streaming equivalent of FunctionResultContentShouldBeSerializedToToolResultBlockAsync
-    /// </para>
-    /// </remarks>
-    [Fact(Skip = "Anthropic SDK bug: CreateStreaming disposes HttpResponseMessage before IAsyncEnumerable is fully consumed. " +
-                  "See: https://github.com/anthropics/anthropic-sdk-csharp/issues/80")]
+    [Fact]
     public async Task GetStreamingChatMessageContentsAsyncWithToolCallsReturnsContentAsync()
     {
-        // Arrange
-        var fileContent = await File.ReadAllBytesAsync("./TestData/chat_completion_streaming_tool_call_response.txt");
-        var memoryStream = new MemoryStream(fileContent);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(memoryStream)
-        };
+        // Arrange - Queue multiple responses for FunctionInvokingChatClient's auto-continuation
+        this.SetupStreamingFunctionCallScenario(
+            "chat_completion_streaming_tool_call_response.txt",
+            "final_streaming_response_after_tool_call.txt");
 
         var service = new AnthropicChatCompletionService("claude-sonnet-4-20250514", "test-api-key", httpClient: this._httpClient);
         var chatHistory = new ChatHistory();
@@ -653,11 +654,16 @@ public sealed class AnthropicChatCompletionServiceTests : IDisposable
             chunks.Add(chunk);
         }
 
-        // Assert - When SDK is fixed, add stronger assertions:
-        // - Verify chunks contain FunctionCallContent items
-        // - Verify tool call ID matches expected value
-        // - Verify function name and arguments are correctly parsed
+        // Assert - final response content
         Assert.NotEmpty(chunks);
+        var combinedContent = string.Join("", chunks.Select(c => c.Content ?? ""));
+        Assert.Contains("Seattle", combinedContent, StringComparison.OrdinalIgnoreCase);
+
+        // Verify the chat history contains the function call from the first response
+        var functionCalls = chatHistory.SelectMany(m => m.Items.OfType<FunctionCallContent>()).ToList();
+        Assert.Single(functionCalls);
+        Assert.Equal("GetWeather", functionCalls[0].FunctionName);
+        Assert.Equal("toolu_01A09q90qw90lq917835lq", functionCalls[0].Id);
     }
 
     [Fact]
