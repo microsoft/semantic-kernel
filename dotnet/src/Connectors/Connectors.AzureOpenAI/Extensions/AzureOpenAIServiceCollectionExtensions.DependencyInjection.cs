@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
@@ -350,3 +351,4 @@ public static partial class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 }
+#endif

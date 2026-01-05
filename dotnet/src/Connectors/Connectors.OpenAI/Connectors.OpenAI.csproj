@@ -37,6 +37,10 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+  </ItemGroup>
+
+  <!-- AI Extensions only when UNITY is not defined -->
+  <ItemGroup Condition="!$(DefineConstants.Contains('UNITY'))">
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
   </ItemGroup>
 

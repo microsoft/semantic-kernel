@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -104,3 +105,4 @@ public static class OpenAIChatClientKernelBuilderExtensions
 
     #endregion
 }
+#endif

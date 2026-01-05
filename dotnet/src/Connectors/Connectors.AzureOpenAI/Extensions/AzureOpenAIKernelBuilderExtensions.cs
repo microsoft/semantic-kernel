@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Core;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
@@ -27,6 +29,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static partial class AzureOpenAIKernelBuilderExtensions
 {
+#if !UNITY
     #region Chat Client
 
     /// <summary>
@@ -147,6 +150,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     }
 
     #endregion
+#endif
 
     #region Chat Completion
 
@@ -424,6 +428,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         return builder;
     }
 
+#if !UNITY
     /// <summary>
     /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
@@ -553,6 +558,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
 
         return builder;
     }
+#endif
 
     #endregion
 

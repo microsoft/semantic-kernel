@@ -3,7 +3,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
@@ -95,6 +97,7 @@ public static class OpenAIKernelBuilderExtensions
         return builder;
     }
 
+#if !UNITY
     /// <summary>
     /// Adds <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
@@ -159,6 +162,7 @@ public static class OpenAIKernelBuilderExtensions
 
         return builder;
     }
+#endif
     #endregion
 
     #region Text to Image
