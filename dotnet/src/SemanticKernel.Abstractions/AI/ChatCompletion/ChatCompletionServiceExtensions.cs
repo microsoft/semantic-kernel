@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -112,6 +114,7 @@ public static class ChatCompletionServiceExtensions
         return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
+#if !UNITY
     /// <summary>Creates an <see cref="IChatClient"/> for the specified <see cref="IChatCompletionService"/>.</summary>
     /// <param name="service">The chat completion service to be represented as a chat client.</param>
     /// <returns>
@@ -126,4 +129,5 @@ public static class ChatCompletionServiceExtensions
             chatClient :
             new ChatCompletionServiceChatClient(service);
     }
+#endif
 }

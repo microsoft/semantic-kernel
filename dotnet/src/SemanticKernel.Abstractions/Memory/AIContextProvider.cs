@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -34,6 +36,7 @@ public abstract class AIContextProvider
         return Task.CompletedTask;
     }
 
+#if !UNITY
     /// <summary>
     /// Called just before a message is added to the chat by any participant.
     /// </summary>
@@ -48,6 +51,7 @@ public abstract class AIContextProvider
     {
         return Task.CompletedTask;
     }
+#endif
 
     /// <summary>
     /// Called just before a conversation/thread is deleted.
@@ -64,6 +68,7 @@ public abstract class AIContextProvider
         return Task.CompletedTask;
     }
 
+#if !UNITY
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked
     /// Implementers can load any additional context required at this time,
@@ -73,6 +78,7 @@ public abstract class AIContextProvider
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
     public abstract Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+#endif
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.

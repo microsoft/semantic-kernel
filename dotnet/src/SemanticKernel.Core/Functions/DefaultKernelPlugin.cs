@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -57,12 +59,17 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
             return false;
         }
 
+#if !UNITY
         // When a kernel function is used as an ai function by IChatClients it needs to be discoverable by the FQN.
         function = (KernelFunction?)this._functions.Values
             .Select(f => f as AIFunction)
             .FirstOrDefault(aiFunction => aiFunction.Name == name);
 
         return function is not null;
+#else
+        function = null;
+        return false;
+#endif
     }
 
     /// <inheritdoc/>

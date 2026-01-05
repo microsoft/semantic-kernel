@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -19,6 +21,7 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+#if !UNITY
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
@@ -70,6 +73,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 #pragma warning restore CS0618 // Type or member is obsolete
     {
     }
+#endif
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the

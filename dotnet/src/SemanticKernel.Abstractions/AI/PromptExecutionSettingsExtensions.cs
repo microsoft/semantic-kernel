@@ -7,13 +7,16 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Extensions methods for <see cref="PromptExecutionSettings"/>.</summary>
 public static class PromptExecutionSettingsExtensions
 {
+#if !UNITY
     /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
     [return: NotNullIfNotNull(nameof(settings))]
     public static ChatOptions? ToChatOptions(this PromptExecutionSettings? settings, Kernel? kernel)
@@ -239,4 +242,5 @@ public static class PromptExecutionSettingsExtensions
             return false;
         }
     }
+#endif
 }

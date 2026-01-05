@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -58,3 +59,4 @@ public sealed class ContextualFunctionProviderOptions
     /// </remarks>
     public Func<AIFunction, CancellationToken, Task<string>>? EmbeddingValueProvider { get; set; }
 }
+#endif

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,3 +100,4 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             null;
     }
 }
+#endif

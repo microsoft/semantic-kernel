@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -52,3 +53,4 @@ internal static class ChatResponseUpdateExtensions
         return content;
     }
 }
+#endif

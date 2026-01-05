@@ -10,11 +10,14 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+#if !UNITY
 /// <summary>
 /// An <see cref="AIContextProvider"/> that maintains a whiteboard during a conversation.
 /// </summary>
@@ -335,3 +338,4 @@ public sealed class WhiteboardProvider : AIContextProvider
 internal partial class WhiteboardProviderSourceGenerationContext : JsonSerializerContext
 {
 }
+#endif

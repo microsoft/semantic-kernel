@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -39,3 +40,4 @@ public static class AggregateAIContextProviderExtensions
         return aggregateAIContextProvider.ModelInvokingAsync([.. newMessages.Select(m => m.ToChatMessage())], cancellationToken);
     }
 }
+#endif

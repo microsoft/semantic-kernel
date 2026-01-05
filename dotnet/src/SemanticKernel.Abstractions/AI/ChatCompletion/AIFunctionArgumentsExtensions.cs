@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
@@ -16,3 +17,4 @@ internal static class AIFunctionArgumentsExtensions
         return arguments;
     }
 }
+#endif

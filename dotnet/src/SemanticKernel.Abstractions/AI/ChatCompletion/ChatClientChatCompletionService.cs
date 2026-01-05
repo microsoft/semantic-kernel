@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -117,3 +118,4 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         }
     }
 }
+#endif

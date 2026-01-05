@@ -3,7 +3,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -13,14 +15,20 @@ namespace Microsoft.SemanticKernel.Services;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
 /// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
+#if !UNITY
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClientSelector
+#else
+internal sealed class OrderedAIServiceSelector : IAIServiceSelector
+#endif
 {
     public static OrderedAIServiceSelector Instance { get; } = new();
 
+#if !UNITY
     /// <inheritdoc/>
     [Experimental("SKEXP0001")]
     public bool TrySelectChatClient<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
         => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
+#endif
 
     /// <inheritdoc/>
     public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
@@ -113,10 +121,12 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
             {
                 serviceModelId = aiService.GetModelId();
             }
+#if !UNITY
             else if (service is IChatClient chatClient)
             {
                 serviceModelId = chatClient.GetModelId();
             }
+#endif
 
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
             {

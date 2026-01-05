@@ -41,7 +41,10 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Microsoft.Bcl.HashCode" />-->
-    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.AI" Condition="!$(DefineConstants.Contains('UNITY'))" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

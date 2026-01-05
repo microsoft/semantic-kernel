@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -29,5 +31,7 @@ public sealed class AIContext
     /// <summary>
     /// A list of functions/tools to make available to the AI model for the current invocation.
     /// </summary>
+#if !UNITY
     public IList<AIFunction> AIFunctions { get; set; } = [];
+#endif
 }

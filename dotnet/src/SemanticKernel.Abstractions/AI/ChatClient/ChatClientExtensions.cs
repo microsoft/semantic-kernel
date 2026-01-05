@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -106,3 +107,4 @@ public static class ChatClientExtensions
         return client.GetService<ChatClientMetadata>()?.DefaultModelId;
     }
 }
+#endif

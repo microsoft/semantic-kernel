@@ -9,11 +9,14 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Data;
 
+#if !UNITY
 /// <summary>
 /// A component that does a search based on any messages that the AI model is invoked with and injects the results into the AI model invocation context.
 /// </summary>
@@ -147,6 +150,7 @@ public sealed class TextSearchProvider : AIContextProvider
         return sb.ToString();
     }
 }
+#endif
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,

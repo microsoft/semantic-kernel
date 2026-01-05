@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal static class OpenAIChatResponseFormatBuilder
 {
+#if !UNITY
     /// <summary>
     /// <see cref="Microsoft.Extensions.AI.AIJsonSchemaCreateOptions"/> for JSON schema format for structured outputs.
     /// </summary>
@@ -24,6 +25,7 @@ internal static class OpenAIChatResponseFormatBuilder
             MoveDefaultKeywordToDescription = true,
         }
     };
+#endif
 
     /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs from <see cref="JsonElement"/>.
@@ -50,6 +52,7 @@ internal static class OpenAIChatResponseFormatBuilder
             new BinaryData(Encoding.UTF8.GetBytes(responseFormatElement.ToString())));
     }
 
+#if !UNITY
     /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs from type.
     /// </summary>
@@ -64,6 +67,7 @@ internal static class OpenAIChatResponseFormatBuilder
 
         return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
     }
+#endif
 
     #region private
 

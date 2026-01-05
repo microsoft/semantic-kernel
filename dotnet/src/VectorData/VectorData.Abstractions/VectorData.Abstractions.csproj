@@ -32,7 +32,8 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- AI Extensions only when UNITY is not defined -->
+  <ItemGroup Condition="!$(DefineConstants.Contains('UNITY'))">
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 

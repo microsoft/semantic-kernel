@@ -2,7 +2,8 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -29,5 +30,9 @@ public sealed class VectorStoreCollectionDefinition
     /// <summary>
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
+#if !UNITY
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
+#else
+    public object? EmbeddingGenerator { get; set; }
+#endif
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,3 +120,4 @@ internal static class ChatOptionsExtensions
         return settings;
     }
 }
+#endif

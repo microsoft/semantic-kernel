@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -36,5 +37,9 @@ public abstract class VectorStoreCollectionOptions
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this collection.
     /// </summary>
+#if !UNITY
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
+#else
+    public object? EmbeddingGenerator { get; set; }
+#endif
 }

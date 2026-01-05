@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.Extensions.VectorData;
@@ -46,7 +47,11 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// If not set, embedding generation will be performed in the database, if supported by your connector.
     /// Otherwise, if your database does not support embedding generation, only pregenerated embeddings can be used (for example, <c>ReadOnlyMemory&lt;float&gt;</c>).
     /// </remarks>
+#if !UNITY
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
+#else
+    public object? EmbeddingGenerator { get; set; }
+#endif
 
     /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
@@ -93,6 +98,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     public Type? EmbeddingType { get; set; }
 
+#if !UNITY
     internal virtual VectorPropertyModel CreatePropertyModel()
         => new(this.Name, this.Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
         {
@@ -102,4 +108,14 @@ public class VectorStoreVectorProperty : VectorStoreProperty
             EmbeddingGenerator = this.EmbeddingGenerator,
             EmbeddingType = this.EmbeddingType!
         };
+#else
+    internal virtual VectorPropertyModel CreatePropertyModel()
+        => new(this.Name, this.Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
+        {
+            Dimensions = this.Dimensions,
+            IndexKind = this.IndexKind,
+            DistanceFunction = this.DistanceFunction,
+            EmbeddingType = this.EmbeddingType!
+        };
+#endif
 }

@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
@@ -66,6 +68,7 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         await Task.WhenAll(this.Providers.Select(x => x.ConversationDeletingAsync(conversationId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
+#if !UNITY
     /// <inheritdoc />
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
@@ -83,6 +86,7 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         combinedContext.Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions));
         return combinedContext;
     }
+#endif
 
     /// <inheritdoc />
     public override async Task SuspendingAsync(string? conversationId, CancellationToken cancellationToken = default)

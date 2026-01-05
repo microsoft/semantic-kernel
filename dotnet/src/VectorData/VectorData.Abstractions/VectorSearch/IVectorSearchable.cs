@@ -4,7 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData;
 

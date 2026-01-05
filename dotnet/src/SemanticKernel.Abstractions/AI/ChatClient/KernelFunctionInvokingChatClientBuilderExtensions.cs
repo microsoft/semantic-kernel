@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,3 +33,4 @@ public static class KernelFunctionInvokingChatClientBuilderExtensions
         });
     }
 }
+#endif

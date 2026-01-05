@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 #pragma warning disable IDE0010 // Add missing cases
 
@@ -24,11 +26,8 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static JsonSerializerOptions? s_options;
-    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new();
 
-    private static readonly JsonElement s_trueSchemaAsObject = JsonElement.Parse("{}");
-    private static readonly JsonElement s_falseSchemaAsObject = JsonElement.Parse("""{"not":true}""");
-
+#if !UNITY
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, AIJsonSchemaCreateOptions? configuration = null)
@@ -58,6 +57,25 @@ internal static class KernelJsonSchemaBuilder
 
         return KernelJsonSchema.Parse(schemaDocument.GetRawText());
     }
+#else
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    public static KernelJsonSchema Build(Type type, string? description = null, object? configuration = null)
+    {
+        return Build(type, GetDefaultOptions(), description, configuration);
+    }
+
+    public static KernelJsonSchema Build(
+        Type type,
+        JsonSerializerOptions options,
+        string? description = null,
+        object? configuration = null)
+    {
+        // Simplified schema generation for Unity without AI Extensions
+        var schema = new { type = "object", description };
+        return KernelJsonSchema.Parse(JsonSerializer.Serialize(schema));
+    }
+#endif
 
     [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]

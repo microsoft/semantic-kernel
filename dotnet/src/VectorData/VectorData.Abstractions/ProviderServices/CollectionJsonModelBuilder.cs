@@ -5,7 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -31,11 +32,19 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
+#if !UNITY
     public virtual CollectionModel Build(
         Type type,
         VectorStoreCollectionDefinition? definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
+#else
+    public virtual CollectionModel Build(
+        Type type,
+        VectorStoreCollectionDefinition? definition,
+        object? defaultEmbeddingGenerator,
+        JsonSerializerOptions jsonSerializerOptions)
+#endif
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
 
@@ -45,10 +54,17 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     /// <summary>
     /// Builds and returns a <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
+#if !UNITY
     public virtual CollectionModel BuildDynamic(
         VectorStoreCollectionDefinition definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
+#else
+    public virtual CollectionModel BuildDynamic(
+        VectorStoreCollectionDefinition definition,
+        object? defaultEmbeddingGenerator,
+        JsonSerializerOptions jsonSerializerOptions)
+#endif
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
 

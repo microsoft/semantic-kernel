@@ -3,7 +3,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -36,8 +37,13 @@ public static class VectorDataStrings
     public static string IncludeVectorsNotSupportedWithEmbeddingGeneration
         => "When an embedding generator is configured, `Include Vectors` cannot be enabled.";
 
+#if !UNITY
     public static string IncompatibleEmbeddingGenerator(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator, string supportedOutputTypes)
         => $"Embedding generator '{TypeName(embeddingGenerator.GetType())}' on vector property '{vectorProperty.ModelName}' cannot convert the input type '{TypeName(vectorProperty.Type)}' to a supported vector type (one of: {supportedOutputTypes}).";
+#else
+    public static string IncompatibleEmbeddingGenerator(VectorPropertyModel vectorProperty, object embeddingGenerator, string supportedOutputTypes)
+        => $"Embedding generator '{TypeName(embeddingGenerator.GetType())}' on vector property '{vectorProperty.ModelName}' cannot convert the input type '{TypeName(vectorProperty.Type)}' to a supported vector type (one of: {supportedOutputTypes}).";
+#endif
 
     public static string IncompatibleEmbeddingGeneratorWasConfiguredForInputType(Type inputType, Type embeddingGeneratorType)
         => $"An input of type '{TypeName(inputType)}' was provided, but an incompatible embedding generator of type '{TypeName(embeddingGeneratorType)}' was configured.";

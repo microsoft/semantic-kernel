@@ -5,7 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -13,10 +15,15 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
+#if !UNITY
 public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInvocationContext
+#else
+public class AutoFunctionInvocationContext
+#endif
 {
-    private ChatHistory? _chatHistory;
+    private readonly ChatHistory? _chatHistory;
 
+#if !UNITY
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
@@ -36,6 +43,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         this.AIFunction = aiFunction;
         this.Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
     }
+#endif
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
@@ -58,6 +66,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
+#if !UNITY
         this.Options = new KernelChatOptions(kernel)
         {
             ChatMessageContent = chatMessageContent,
@@ -67,8 +76,35 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         this.Messages = chatHistory.ToChatMessageList();
         chatHistory.SetChatMessageHandlers(this.Messages);
         base.Function = function;
+#else
+        this._chatHistory = chatHistory;
+        this._function = function;
+        this._kernel = kernel;
+        this._chatMessageContent = chatMessageContent;
+#endif
         this.Result = result;
     }
+
+#if UNITY
+    private readonly KernelFunction _function;
+    private readonly Kernel _kernel;
+    private readonly ChatMessageContent _chatMessageContent;
+
+    /// <summary>
+    /// Gets or sets the number of functions being invoked.
+    /// </summary>
+    public int FunctionCount { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the operation is streaming.
+    /// </summary>
+    public bool IsStreaming { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the function invocation should terminate.
+    /// </summary>
+    public bool Terminate { get; set; }
+#endif
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -76,6 +112,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// </summary>
     public CancellationToken CancellationToken { get; init; }
 
+#if !UNITY
     /// <summary>
     /// Gets the <see cref="KernelArguments"/> specialized version of <see cref="AIFunctionArguments"/> associated with the operation.
     /// </summary>
@@ -178,12 +215,59 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
     /// </summary>
     public Kernel Kernel => ((KernelChatOptions)this.Options!).Kernel!;
+#else
+    /// <summary>
+    /// Gets the <see cref="KernelArguments"/> associated with the operation.
+    /// </summary>
+    public KernelArguments? Arguments { get; init; }
+
+    /// <summary>
+    /// Request sequence index of automatic function invocation process. Starts from 0.
+    /// </summary>
+    public int RequestSequenceIndex { get; init; }
+
+    /// <summary>
+    /// Function sequence index. Starts from 0.
+    /// </summary>
+    public int FunctionSequenceIndex { get; init; }
+
+    /// <summary>
+    /// The ID of the tool call.
+    /// </summary>
+    public string? ToolCallId { get; init; }
+
+    /// <summary>
+    /// The chat message content associated with automatic function invocation.
+    /// </summary>
+    public ChatMessageContent ChatMessageContent => this._chatMessageContent;
+
+    /// <summary>
+    /// The execution settings associated with the operation.
+    /// </summary>
+    public PromptExecutionSettings? ExecutionSettings { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
+    /// </summary>
+    public ChatHistory ChatHistory => this._chatHistory!;
+
+    /// <summary>
+    /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
+    /// </summary>
+    public KernelFunction Function => this._function;
+
+    /// <summary>
+    /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
+    /// </summary>
+    public Kernel Kernel => this._kernel;
+#endif
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.
     /// </summary>
     public FunctionResult Result { get; set; }
 
+#if !UNITY
     /// <summary>
     /// Gets or sets the <see cref="Microsoft.Extensions.AI.AIFunction"/> with which this filter is associated.
     /// </summary>
@@ -312,4 +396,5 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         // The moment this class is destroyed, we need to clear the update message overrides
         this._chatHistory?.ClearOverrides();
     }
+#endif
 }

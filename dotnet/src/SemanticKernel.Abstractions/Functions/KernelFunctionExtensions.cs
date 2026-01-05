@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -8,10 +10,10 @@ namespace Microsoft.SemanticKernel;
 public static class KernelFunctionExtensions
 {
     /// <summary>
-    /// Creates a cloned <see cref="KernelFunction"/> for a specific <see cref="Kernel"/>. Useful when this function is used as a lower-level <see cref="AIFunction"/> abstraction directly.
+    /// Creates a cloned <see cref="KernelFunction"/> for a specific <see cref="Kernel"/>.
     /// </summary>
     /// <remarks>
-    /// The provided <see cref="Kernel"/> will be used by default when none is provided using the arguments in <see cref="AIFunction.InvokeAsync"/> or when a null <see cref="Kernel"/> is used when invoking <see cref="KernelFunction.InvokeAsync"/> method.
+    /// The provided <see cref="Kernel"/> will be used by default when none is provided using the arguments or when a null <see cref="Kernel"/> is used when invoking <see cref="KernelFunction.InvokeAsync"/> method.
     /// </remarks>
     /// <param name="kernelFunction">The <see cref="KernelFunction"/> to clone with a default <see cref="Kernel"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to use as the default option.</param>

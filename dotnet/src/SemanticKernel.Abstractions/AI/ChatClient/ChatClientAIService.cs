@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -58,3 +59,4 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => this._chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 }
+#endif

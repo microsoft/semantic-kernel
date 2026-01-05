@@ -646,9 +646,10 @@ internal partial class ClientCore
                 }
 
                 return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatElement);
-
+#if !UNITY
             case Type formatObjectType:
                 return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatObjectType);
+#endif
         }
 
         return null;

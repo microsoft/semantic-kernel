@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -126,3 +127,4 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         return requiredParameterNames;
     }
 }
+#endif

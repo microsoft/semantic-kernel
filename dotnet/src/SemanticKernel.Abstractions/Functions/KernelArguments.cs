@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
@@ -17,7 +19,11 @@ namespace Microsoft.SemanticKernel;
 /// A <see cref="KernelArguments"/> is a dictionary of argument names and values. It also carries a
 /// <see cref="PromptExecutionSettings"/>, accessible via the <see cref="ExecutionSettings"/> property.
 /// </remarks>
+#if !UNITY
 public sealed class KernelArguments : AIFunctionArguments
+#else
+public sealed class KernelArguments : Dictionary<string, object?>
+#endif
 {
     private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 

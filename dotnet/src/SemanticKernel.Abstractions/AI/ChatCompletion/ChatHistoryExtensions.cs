@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -80,6 +82,7 @@ public static class ChatHistoryExtensions
         return chatHistory;
     }
 
+#if !UNITY
     /// <summary>Converts a <see cref="ChatHistory"/> to a <see cref="ChatMessage"/> list.</summary>
     /// <param name="chatHistory">The chat history to convert.</param>
     /// <returns>A list of <see cref="ChatMessage"/> objects.</returns>
@@ -143,4 +146,5 @@ public static class ChatHistoryExtensions
             messages.AddRange(items.Select(i => i.ToChatMessage()));
         }
     }
+#endif
 }

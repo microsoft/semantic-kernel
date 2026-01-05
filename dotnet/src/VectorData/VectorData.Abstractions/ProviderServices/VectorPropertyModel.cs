@@ -7,7 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -72,6 +73,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// <summary>
     /// Gets or sets the embedding generator to use for this property.
     /// </summary>
+#if !UNITY
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
     /// <summary>
@@ -199,6 +201,14 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// Returns the types of input that this property model supports.
     /// </summary>
     public virtual Type[] GetSupportedInputTypes() => [typeof(string), typeof(DataContent)];
+#else
+    public object? EmbeddingGenerator { get; set; }
+
+    /// <summary>
+    /// Returns the types of input that this property model supports.
+    /// </summary>
+    public virtual Type[] GetSupportedInputTypes() => [typeof(string)];
+#endif
 
     /// <inheritdoc/>
     public override string ToString()

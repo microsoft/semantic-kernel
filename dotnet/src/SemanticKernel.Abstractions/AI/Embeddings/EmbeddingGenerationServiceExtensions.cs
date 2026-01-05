@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Embeddings;
@@ -45,6 +47,7 @@ public static class EmbeddingGenerationExtensions
         return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
     }
 
+#if !UNITY
     /// <summary>Creates an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> for the specified <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     /// <param name="service">The embedding generation service to be represented as an embedding generator.</param>
     /// <returns>
@@ -95,6 +98,7 @@ public static class EmbeddingGenerationExtensions
             service :
             new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
     }
+#endif
 
     /// <summary>
     /// Gets the dimensions from <paramref name="service"/>'s <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.
@@ -107,6 +111,7 @@ public static class EmbeddingGenerationExtensions
         return service.Attributes.TryGetValue(DimensionsKey, out object? value) ? value as int? : null;
     }
 
+#if !UNITY
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     private sealed class EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding> : IEmbeddingGenerator<TValue, Embedding<TEmbedding>>
         where TEmbedding : unmanaged
@@ -204,4 +209,5 @@ public static class EmbeddingGenerationExtensions
         {
         }
     }
+#endif
 }

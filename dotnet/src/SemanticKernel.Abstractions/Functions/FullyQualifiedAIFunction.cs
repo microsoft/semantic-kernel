@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
@@ -37,3 +38,4 @@ public abstract class FullyQualifiedAIFunction : AIFunction
             ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
             : this.Metadata.Name;
 }
+#endif

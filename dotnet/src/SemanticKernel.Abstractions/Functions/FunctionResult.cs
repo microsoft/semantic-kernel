@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -104,6 +106,7 @@ public sealed class FunctionResult
                 return innerContent;
             }
 
+#if !UNITY
             // Attempting to use the new Microsoft.Extensions.AI Chat types will trigger automatic conversion of SK chat contents.
 
             // ChatMessageContent as ChatMessage
@@ -119,8 +122,10 @@ public sealed class FunctionResult
             {
                 return (T?)(object)new Microsoft.Extensions.AI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
             }
+#endif
         }
 
+#if !UNITY
         if (this.Value is IReadOnlyList<ChatMessageContent> messageContentList)
         {
             if (messageContentList.Count == 0)
@@ -203,6 +208,7 @@ public sealed class FunctionResult
                 return (T)(object)chatMessage.ToChatMessageContent();
             }
         }
+#endif
 
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }

@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
@@ -93,6 +95,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <inheritdoc/>
     public abstract IEnumerator<KernelFunction> GetEnumerator();
 
+#if !UNITY
     /// <summary>Produces a clone of every <see cref="KernelFunction"/> in the <see cref="KernelPlugin"/> to be used as a lower-level <see cref="AIFunction"/> abstraction.</summary>
     /// <remarks>
     /// Once this function was cloned as a <see cref="AIFunction"/>, the Name will be prefixed by the <see cref="KernelFunction.PluginName"/> i.e: PluginName_FunctionName.
@@ -107,6 +110,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
             yield return functionClone;
         }
     }
+#endif
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();

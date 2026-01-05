@@ -63,4 +63,9 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- Exclude files that use raw string literals with ## which cause preprocessor issues when UNITY is defined -->
+  <ItemGroup Condition="$(DefineConstants.Contains('UNITY'))">
+    <Compile Remove="Memory\Whiteboard\WhiteboardProvider.cs" />
+  </ItemGroup>
+
 </Project>

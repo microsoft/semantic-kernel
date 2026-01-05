@@ -7,11 +7,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+#if !UNITY
 /// <summary>
 /// A component that listens to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
@@ -189,3 +192,4 @@ public sealed class Mem0Provider : AIContextProvider
         }
     }
 }
+#endif

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 
@@ -41,3 +42,4 @@ internal class KernelChatOptions : ChatOptions
         ChatMessageContent = this.ChatMessageContent
     };
 }
+#endif

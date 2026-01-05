@@ -7,7 +7,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -23,7 +25,9 @@ namespace Microsoft.SemanticKernel.Memory;
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
     private readonly ITextEmbeddingGenerationService? _textEmbeddingsService;
+#if !UNITY
     private readonly IEmbeddingGenerator<string, Embedding<float>>? _embeddingGenerator;
+#endif
     private readonly IMemoryStore _storage;
 
     /// <summary>
@@ -40,6 +44,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         this._storage = storage;
     }
 
+#if !UNITY
     /// <summary>
     /// Initializes a new instance of the <see cref="SemanticTextMemory"/> class.
     /// </summary>
@@ -52,6 +57,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;
     }
+#endif
 
     /// <inheritdoc/>
     public async Task<string> SaveInformationAsync(
@@ -166,8 +172,12 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
 
     private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, Kernel? kernel, CancellationToken cancellationToken)
     {
+#if !UNITY
         return (this._textEmbeddingsService is not null)
                     ? await this._textEmbeddingsService.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false)
                     : (await this._embeddingGenerator!.GenerateAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector;
+#else
+        return await this._textEmbeddingsService!.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+#endif
     }
 }

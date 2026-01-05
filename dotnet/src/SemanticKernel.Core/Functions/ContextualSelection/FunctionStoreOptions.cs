@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,3 +21,4 @@ internal sealed class FunctionStoreOptions
     /// </summary>
     public Func<AIFunction, CancellationToken, Task<string>>? EmbeddingValueProvider { get; set; }
 }
+#endif

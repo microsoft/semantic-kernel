@@ -7,7 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
+#if !UNITY
+#endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 [Experimental("MEVD9001")]
 public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
+#if !UNITY
     /// <inheritdoc />
     public override Type? ResolveEmbeddingType<TEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
         => embeddingGenerator switch
@@ -74,4 +76,8 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
 
     /// <inheritdoc />
     public override Type[] GetSupportedInputTypes() => [typeof(TInput)];
+#else
+    /// <inheritdoc />
+    public override Type[] GetSupportedInputTypes() => [typeof(TInput)];
+#endif
 }

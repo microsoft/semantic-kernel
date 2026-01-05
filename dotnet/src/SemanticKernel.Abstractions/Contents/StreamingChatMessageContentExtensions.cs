@@ -3,7 +3,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -11,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public static class StreamingChatMessageContentExtensions
 {
+#if !UNITY
     /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
     public static ChatResponseUpdate ToChatResponseUpdate(this StreamingChatMessageContent content)
@@ -53,4 +56,5 @@ public static class StreamingChatMessageContentExtensions
 
         return update;
     }
+#endif
 }

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
@@ -9,6 +11,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public static class ChatMessageContentExtensions
 {
+#if !UNITY
     /// <summary>Converts a <see cref="ChatMessageContent"/> to a <see cref="ChatMessage"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
     public static ChatMessage ToChatMessage(this ChatMessageContent content)
@@ -73,4 +76,5 @@ public static class ChatMessageContentExtensions
 
         return message;
     }
+#endif
 }

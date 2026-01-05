@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -48,3 +49,4 @@ public static class AIFunctionExtensions
         return aiFunction.InvokeAsync(functionArgumentsClone ?? functionArguments, cancellationToken);
     }
 }
+#endif

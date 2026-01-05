@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !UNITY
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -152,3 +153,4 @@ public sealed class ContextualFunctionProvider : AIContextProvider
                 .Select(m => m.Text));
     }
 }
+#endif

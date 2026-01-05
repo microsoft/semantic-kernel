@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#if !UNITY
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,3 +37,4 @@ public interface IChatClientSelector
         [NotNullWhen(true)] out T? service,
         out PromptExecutionSettings? serviceSettings) where T : class, IChatClient;
 }
+#endif

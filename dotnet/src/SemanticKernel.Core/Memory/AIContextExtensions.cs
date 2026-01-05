@@ -3,10 +3,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if !UNITY
 using Microsoft.Extensions.AI;
+#endif
 
 namespace Microsoft.SemanticKernel;
 
+#if !UNITY
 /// <summary>
 /// Extension methods for <see cref="ICollection{KernelPlugin}"/> to add <see cref="AIContext"/> plugins.
 /// </summary>
@@ -39,3 +42,4 @@ public static class AIContextExtensions
         return pluginName;
     }
 }
+#endif
