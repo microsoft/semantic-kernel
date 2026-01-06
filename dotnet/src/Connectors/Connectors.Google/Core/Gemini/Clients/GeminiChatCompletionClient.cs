@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -354,6 +355,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var chatResponsesEnumerable = this.ProcessChatResponseStreamAsync(responseStream, ct: ct);
         IAsyncEnumerator<GeminiChatMessageContent> chatResponsesEnumerator = null!;
+
+        // Track content and items from chunks before tool calls (lazy-init, only used when AutoInvoke is enabled)
+        StringBuilder? preToolCallContent = null;
+        List<KernelContent>? preToolCallItems = null;
+
         try
         {
             chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
@@ -362,29 +368,111 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 var messageContent = chatResponsesEnumerator.Current;
                 if (state.AutoInvoke && messageContent.ToolCalls is { Count: > 0 })
                 {
-                    if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    // Accumulate all tool calls from streaming chunks (needed for Gemini 3 with thought signatures)
+                    // where multiple chunks may each contain function calls
+                    var allToolCalls = new List<GeminiFunctionToolCall>(messageContent.ToolCalls);
+                    var combinedContent = new StringBuilder();
+                    var allItems = new List<KernelContent>();
+                    GeminiMetadata? lastMetadata = messageContent.Metadata as GeminiMetadata;
+
+                    // Include any content and items accumulated before we saw tool calls
+                    if (preToolCallContent is { Length: > 0 })
                     {
-                        // We disable auto-invoke because we have more than one message in the stream.
-                        // This scenario should not happen but I leave it as a precaution
-                        state.AutoInvoke = false;
-                        // We return the first message
-                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
-                        // We return the second message
-                        messageContent = chatResponsesEnumerator.Current;
-                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
-                        continue;
+                        combinedContent.Append(preToolCallContent);
+                    }
+                    if (preToolCallItems is { Count: > 0 })
+                    {
+                        allItems.AddRange(preToolCallItems);
                     }
 
-                    // If function call was returned there is no more data in stream
-                    state.LastMessage = messageContent;
-
-                    // Yield the message also if it contains text
+                    // Accumulate content and items from first tool-call chunk
                     if (!string.IsNullOrWhiteSpace(messageContent.Content))
                     {
-                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        combinedContent.Append(messageContent.Content);
+                    }
+                    if (messageContent.Items is { Count: > 0 })
+                    {
+                        allItems.AddRange(messageContent.Items);
                     }
 
+                    // Yield the first chunk
+                    yield return this.GetStreamingChatContentFromChatContent(messageContent);
+
+                    // Consume the entire stream - accumulate tool calls, content, and items from all chunks
+                    while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        var nextMessage = chatResponsesEnumerator.Current;
+
+                        // Always update metadata to capture the final chunk's usage stats and finish reason
+                        if (nextMessage.Metadata is GeminiMetadata metadata)
+                        {
+                            lastMetadata = metadata;
+                        }
+
+                        // Accumulate tool calls if present
+                        if (nextMessage.ToolCalls is { Count: > 0 })
+                        {
+                            allToolCalls.AddRange(nextMessage.ToolCalls);
+                        }
+
+                        // Accumulate content if present
+                        if (!string.IsNullOrWhiteSpace(nextMessage.Content))
+                        {
+                            combinedContent.Append(nextMessage.Content);
+                        }
+
+                        // Accumulate items (ReasoningContent) if present
+                        if (nextMessage.Items is { Count: > 0 })
+                        {
+                            allItems.AddRange(nextMessage.Items);
+                        }
+
+                        // Always yield the chunk to the caller for streaming output
+                        yield return this.GetStreamingChatContentFromChatContent(nextMessage);
+                    }
+
+                    // Create a combined message with all accumulated tool calls for auto-invoke processing
+                    // Note: We must preserve thought signatures from each tool call
+                    var combinedMessage = new GeminiChatMessageContent(
+                        role: messageContent.Role,
+                        content: combinedContent.Length > 0 ? combinedContent.ToString() : null,
+                        modelId: messageContent.ModelId ?? this._modelId,
+                        partsWithFunctionCalls: allToolCalls.Select(tc => new GeminiPart
+                        {
+                            FunctionCall = new GeminiPart.FunctionCallPart
+                            {
+                                FunctionName = tc.FullyQualifiedName,
+                                Arguments = tc.Arguments != null ? JsonSerializer.SerializeToNode(tc.Arguments) : null
+                            },
+                            ThoughtSignature = tc.ThoughtSignature
+                        }).ToArray(),
+                        metadata: lastMetadata);
+
+                    // Add accumulated items (ReasoningContent) to the combined message
+                    // These are needed for chat history to preserve the model's reasoning trace
+                    foreach (var item in allItems)
+                    {
+                        combinedMessage.Items.Add(item);
+                    }
+
+                    state.LastMessage = combinedMessage;
                     yield break;
+                }
+
+                // Track content and items before we see tool calls (only if auto-invoke enabled)
+                // This ensures pre-tool-call content is included in state.LastMessage for chat history
+                if (state.AutoInvoke)
+                {
+                    if (!string.IsNullOrWhiteSpace(messageContent.Content))
+                    {
+                        preToolCallContent ??= new StringBuilder();
+                        preToolCallContent.Append(messageContent.Content);
+                    }
+                    if (messageContent.Items is { Count: > 0 })
+                    {
+                        preToolCallItems ??= [];
+                        preToolCallItems.AddRange(messageContent.Items);
+                    }
                 }
 
                 // If we don't want to attempt to invoke any functions, just return the result.
