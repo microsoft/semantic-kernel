@@ -132,8 +132,97 @@ When pulling updates from the main fork, new files or changes may introduce Micr
 - `DataContent`, `AIContent`
 - `ChatRole` (from Microsoft.Extensions.AI, not to be confused with SK's AuthorRole)
 
+## Connector Projects (OpenAI, AzureOpenAI)
+
+The connector projects require special handling because they have files that depend on `Microsoft.Extensions.AI` types like `OpenTelemetryChatClient`, `IEmbeddingGenerator`, and extension methods like `UseKernelFunctionInvocation`.
+
+### Key Changes Required
+
+1. **Define UNITY for netstandard2.0** in the connector csproj files:
+   ```xml
+   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+   </PropertyGroup>
+   ```
+
+2. **Add Microsoft.Extensions.AI package conditionally**:
+   ```xml
+   <ItemGroup Condition="!$(DefineConstants.Contains('UNITY'))">
+     <PackageReference Include="Microsoft.Extensions.AI" />
+     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+   </ItemGroup>
+   ```
+
+3. **Exclude DI extension files for Unity builds**:
+   ```xml
+   <ItemGroup Condition="$(DefineConstants.Contains('UNITY'))">
+     <Compile Remove="Extensions\OpenAIServiceCollectionExtensions.DependencyInjection.cs" />
+     <Compile Remove="Extensions\OpenAIKernelBuilderExtensions.ChatClient.cs" />
+   </ItemGroup>
+   ```
+
+### Files Modified in Connectors
+
+#### Connectors.OpenAI
+- `Connectors.OpenAI.csproj` - Added UNITY define, package references, and file exclusions
+- `Extensions/OpenAIKernelBuilderExtensions.cs` - Added `#if !UNITY` guards for `IEmbeddingGenerator` methods
+- `Extensions/OpenAIServiceCollectionExtensions.DependencyInjection.cs` - Entire file wrapped with `#if !UNITY`
+- `Extensions/OpenAIKernelBuilderExtensions.ChatClient.cs` - Entire file wrapped with `#if !UNITY`
+
+#### Connectors.AzureOpenAI
+- `Connectors.AzureOpenAI.csproj` - Added UNITY define, package references, and file exclusions
+- `Extensions/AzureOpenAIServiceCollectionExtensions.DependencyInjection.cs` - Entire file wrapped with `#if !UNITY`
+- `Extensions/AzureOpenAIKernelBuilderExtensions.cs` - Multiple `#if !UNITY` regions for Chat Client and Embedding methods
+
+### Why Connectors Need UNITY Defined
+
+The core `SemanticKernel.Abstractions` and `SemanticKernel.Core` projects define UNITY for netstandard2.0, which excludes extension methods like `UseKernelFunctionInvocation`. If connector projects don't also define UNITY, they will:
+
+1. Try to call extension methods that don't exist in the referenced assemblies
+2. Reference types like `OpenTelemetryChatClient` that aren't available without `Microsoft.Extensions.AI`
+3. Fail to compile with errors like "does not contain a definition for 'UseKernelFunctionInvocation'"
+
+## Additional Fixes Applied
+
+### KernelJsonSchemaBuilder.cs (InternalUtilities)
+
+The static fields used in the `#if !UNITY` code path were accidentally removed. These must be present inside the `#if !UNITY` block:
+
+```csharp
+#if !UNITY
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new();
+    private static readonly JsonElement s_trueSchemaAsObject = JsonElement.Parse("{}");
+    private static readonly JsonElement s_falseSchemaAsObject = JsonElement.Parse("""{"not":true}""");
+```
+
+### AutoFunctionInvocationContext.cs
+
+The `_chatHistory` field was marked as `readonly` but the non-UNITY code path uses lazy initialization with `??=`. The `readonly` modifier must be removed:
+
+```csharp
+// Before (broken):
+private readonly ChatHistory? _chatHistory;
+
+// After (fixed):
+private ChatHistory? _chatHistory;
+```
+
+### File Naming
+
+Files with curly braces in names like `VectorPropertyModel{TInput}.cs` can cause issues on some systems. Renamed to `VectorPropertyModelOfTInput.cs`.
+
+## Common Error Patterns and Solutions
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `OpenTelemetryChatClient could not be found` | Missing `Microsoft.Extensions.AI` package | Add package reference conditionally |
+| `UseKernelFunctionInvocation could not be found` | Extension method excluded by UNITY in Abstractions | Define UNITY in connector project for netstandard2.0 |
+| `A readonly field cannot be assigned to` | Lazy initialization in non-UNITY code | Remove `readonly` from field |
+| `Merge conflict marker encountered` | Unresolved merge from upstream | Manually resolve conflict markers |
+
 ## Notes
 
 - The `dotnet format` tool runs automatically on Release builds and may make whitespace changes
 - Some XML doc comments will show warnings about unresolved cref attributes - this is expected when types are excluded
 - The UNITY constant is defined in the csproj for netstandard2.0 builds automatically
+- When pulling from main, always check connector projects for new files that may need UNITY guards or exclusions
