@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;

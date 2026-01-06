@@ -21,7 +21,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 public class AutoFunctionInvocationContext
 #endif
 {
-    private readonly ChatHistory? _chatHistory;
+    private ChatHistory? _chatHistory;
 
 #if !UNITY
     /// <summary>

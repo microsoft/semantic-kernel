@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 
 namespace Microsoft.Extensions.VectorData;

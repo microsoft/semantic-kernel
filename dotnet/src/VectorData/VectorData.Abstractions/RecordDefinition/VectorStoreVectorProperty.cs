@@ -2,6 +2,7 @@
 
 using System;
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 using Microsoft.Extensions.VectorData.ProviderServices;
 

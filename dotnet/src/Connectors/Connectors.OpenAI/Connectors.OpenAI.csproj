@@ -13,6 +13,11 @@
     <VersionSuffix>rc</VersionSuffix>
   </PropertyGroup>
 
+  <!-- Define UNITY for netstandard2.0 to match SemanticKernel.Abstractions behavior -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+  </PropertyGroup>
+
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
@@ -41,7 +46,14 @@
 
   <!-- AI Extensions only when UNITY is not defined -->
   <ItemGroup Condition="!$(DefineConstants.Contains('UNITY'))">
+    <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+  </ItemGroup>
+
+  <!-- Exclude DI extensions for netstandard2.0 (Unity) since they depend on Microsoft.Extensions.AI -->
+  <ItemGroup Condition="$(DefineConstants.Contains('UNITY'))">
+    <Compile Remove="Extensions\OpenAIServiceCollectionExtensions.DependencyInjection.cs" />
+    <Compile Remove="Extensions\OpenAIKernelBuilderExtensions.ChatClient.cs" />
   </ItemGroup>
 
 </Project>

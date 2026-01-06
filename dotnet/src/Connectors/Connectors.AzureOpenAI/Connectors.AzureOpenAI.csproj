@@ -12,7 +12,12 @@
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
     <VersionSuffix>rc</VersionSuffix>
   </PropertyGroup>
-  
+
+  <!-- Define UNITY for netstandard2.0 to match SemanticKernel.Abstractions behavior -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+  </PropertyGroup>
+
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
@@ -33,6 +38,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+  </ItemGroup>
+
+  <!-- AI Extensions only when UNITY is not defined -->
+  <ItemGroup Condition="!$(DefineConstants.Contains('UNITY'))">
+    <PackageReference Include="Microsoft.Extensions.AI" />
+  </ItemGroup>
+
+  <!-- Exclude DI extensions for netstandard2.0 (Unity) since they depend on Microsoft.Extensions.AI -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Remove="Extensions\AzureOpenAIServiceCollectionExtensions.DependencyInjection.cs" />
   </ItemGroup>
 
 </Project>

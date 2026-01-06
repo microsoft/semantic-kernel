@@ -59,15 +59,6 @@ public abstract class KernelFunction
 
     /// <summary>The <see cref="Kernel"/> instance that will be prioritized when invoking without a provided <see cref="Kernel"/> argument.</summary>
 #if !UNITY
-    /// <summary>
-
-<<<<<<< TODO: Unmerged change from project 'SemanticKernel.Abstractions(net8.0)', Before:
-    /// 
-=======
-    ///
->>>>>>> After
-    ///
-    /// </summary>
     /// <remarks>This will be normally used when the function is invoked using the <see cref="AIFunction.InvokeAsync(AIFunctionArguments?, CancellationToken)"/> interface.</remarks>
 #endif
     internal Kernel? Kernel { get; set; }

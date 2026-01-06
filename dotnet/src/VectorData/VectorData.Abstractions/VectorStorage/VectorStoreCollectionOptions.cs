@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 
 namespace Microsoft.Extensions.VectorData;

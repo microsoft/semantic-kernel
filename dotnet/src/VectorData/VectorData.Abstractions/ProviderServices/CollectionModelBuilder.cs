@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;

@@ -28,6 +28,10 @@ internal static class KernelJsonSchemaBuilder
     private static JsonSerializerOptions? s_options;
 
 #if !UNITY
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new();
+    private static readonly JsonElement s_trueSchemaAsObject = JsonElement.Parse("{}");
+    private static readonly JsonElement s_falseSchemaAsObject = JsonElement.Parse("""{"not":true}""");
+
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, AIJsonSchemaCreateOptions? configuration = null)

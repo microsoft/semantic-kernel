@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 #if !UNITY
+using Microsoft.Extensions.AI;
 #endif
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
