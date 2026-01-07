@@ -244,7 +244,16 @@ class InMemoryCollection(
 
     def _parse_and_validate_filter(self, filter_str: str) -> Callable:
         """Parse and validate a string filter as a lambda expression, then return the callable."""
-        forbidden_names = {"__import__", "open", "eval", "exec", "__builtins__"}
+        forbidden_names = {
+            "__import__",
+            "open",
+            "eval",
+            "exec",
+            "__builtins__",
+            "__class__",
+            "__bases__",
+            "__subclasses__",
+        }
         try:
             tree = ast.parse(filter_str, mode="eval")
         except SyntaxError as e:
