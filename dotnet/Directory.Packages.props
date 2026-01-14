@@ -70,9 +70,12 @@
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="10.0.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.77.1" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.77.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.81.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageVersion Include="Microsoft.Kiota.Authentication.Azure" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.21.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.1" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
