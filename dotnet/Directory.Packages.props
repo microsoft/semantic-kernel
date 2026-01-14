@@ -89,7 +89,7 @@
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
-    <PackageVersion Include="OData2Linq" Version="2.2.1" />
+    <PackageVersion Include="OData2Linq" Version="2.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.12" />
     <PackageVersion Include="OpenAI" Version="2.7.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.14.0" />
@@ -188,7 +188,7 @@
     <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
-    <PackageVersion Include="Qdrant.Client" Version="1.16.1" />
+    <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
@@ -203,7 +203,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.26.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.24.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
