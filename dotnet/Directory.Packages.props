@@ -83,14 +83,14 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.68.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.14.15" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
-    <PackageVersion Include="OData2Linq" Version="2.2.0" />
-    <PackageVersion Include="OllamaSharp" Version="5.4.11" />
+    <PackageVersion Include="OData2Linq" Version="2.2.1" />
+    <PackageVersion Include="OllamaSharp" Version="5.4.12" />
     <PackageVersion Include="OpenAI" Version="2.7.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
@@ -98,12 +98,12 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
-    <PackageVersion Include="PdfPig" Version="0.1.11" />
+    <PackageVersion Include="PdfPig" Version="0.1.13" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.3-beta" />
-    <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
+    <PackageVersion Include="PuppeteerSharp" Version="20.2.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageVersion Include="System.IO.Packaging" Version="10.0.2" />
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.2" />
     <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
@@ -171,15 +171,15 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
-    <PackageVersion Include="protobuf-net" Version="3.2.45" />
-    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
+    <PackageVersion Include="protobuf-net" Version="3.2.56" />
+    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.52" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.31.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
     <PackageVersion Include="Pgvector" Version="0.3.2" />
     <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
-    <PackageVersion Include="NRedisStack" Version="1.0.0" />
+    <PackageVersion Include="NRedisStack" Version="1.1.1" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.8.1" />
@@ -188,7 +188,7 @@
     <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
-    <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
+    <PackageVersion Include="Qdrant.Client" Version="1.16.1" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
@@ -203,7 +203,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.24.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.26.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
