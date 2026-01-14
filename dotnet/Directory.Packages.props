@@ -35,13 +35,13 @@
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.72.0" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
-    <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.33.4" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
-    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
-    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.71.0" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
-    <PackageVersion Include="Grpc.Tools" Version="2.72.0" />
+    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
+    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.76.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.76.0" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.3" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.4" />
@@ -155,7 +155,7 @@
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
-    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.76.0" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.3.0" />
