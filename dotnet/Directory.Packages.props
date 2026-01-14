@@ -33,7 +33,7 @@
     <PackageVersion Include="Dapr.AspNetCore" Version="1.16.1" />
     <PackageVersion Include="EntityFramework" Version="6.5.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
-    <PackageVersion Include="Google.Apis.Auth" Version="1.72.0" />
+    <PackageVersion Include="Google.Apis.Auth" Version="1.73.0" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
     <PackageVersion Include="Google.Protobuf" Version="3.33.4" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
@@ -42,7 +42,7 @@
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.76.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.76.0" />
-    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.3" />
+    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.4" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
@@ -171,7 +171,7 @@
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
-    <PackageVersion Include="Fluid.Core" Version="2.25.0" />
+    <PackageVersion Include="Fluid.Core" Version="2.31.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
     <PackageVersion Include="Pgvector" Version="0.3.2" />
