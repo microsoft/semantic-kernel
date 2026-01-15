@@ -2,6 +2,8 @@
 
 from unittest.mock import AsyncMock, Mock
 
+import pytest
+
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -25,6 +27,7 @@ def test_conversation_summary_plugin_with_deprecated_value(kernel):
     assert plugin.return_key == "summary"
 
 
+@pytest.mark.asyncio
 async def test_summarize_conversation(kernel: Kernel):
     service = AsyncMock(spec=ChatCompletionClientBase)
     service.service_id = "default"
