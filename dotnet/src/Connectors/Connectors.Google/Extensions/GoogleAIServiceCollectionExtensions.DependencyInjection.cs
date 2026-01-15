@@ -80,7 +80,7 @@ public static class GoogleAIServiceCollectionExtensions
 
             var googleClient = new Google.GenAI.Client(apiKey: apiKey);
 
-            var builder = new GoogleGenAIChatClient(googleClient, modelId)
+            var builder = googleClient.AsIChatClient(modelId)
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
                 .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
@@ -129,7 +129,7 @@ public static class GoogleAIServiceCollectionExtensions
 
             var googleClient = new Google.GenAI.Client(vertexAI: true, credential: credential, project: project, location: location);
 
-            var builder = new GoogleGenAIChatClient(googleClient, modelId)
+            var builder = googleClient.AsIChatClient(modelId)
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
                 .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
@@ -174,7 +174,7 @@ public static class GoogleAIServiceCollectionExtensions
 
             var client = googleClient ?? serviceProvider.GetRequiredService<Google.GenAI.Client>();
 
-            var builder = new GoogleGenAIChatClient(client, modelId)
+            var builder = client.AsIChatClient(modelId)
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
                 .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
