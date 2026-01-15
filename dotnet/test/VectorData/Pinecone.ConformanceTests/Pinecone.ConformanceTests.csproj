@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- We don't test Full Framework because to does not support Http 2.0 which seems to be enforced by the local emulator. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Pinecone.ConformanceTests</RootNamespace>

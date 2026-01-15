@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.CopilotStudio</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.CopilotStudio</RootNamespace>
-    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA1724;IDE1006;SKEXP0110</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>alpha</VersionSuffix>

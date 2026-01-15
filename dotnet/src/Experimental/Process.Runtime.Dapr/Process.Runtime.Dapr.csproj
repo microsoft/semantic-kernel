@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Process.Runtime.Dapr</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
-    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
@@ -40,7 +40,7 @@
     <PackageReference Include="Dapr.Actors" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net10.0'))">
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net8.0'))">
     <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 

@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.PromptTemplates.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.PromptTemplates.Handlebars</RootNamespace>
-    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>

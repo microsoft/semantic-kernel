@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Process.Runtime.Dapr.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.Process.Runtime.Dapr.UnitTests</AssemblyName>
-    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <!-- ;net48 -->
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>

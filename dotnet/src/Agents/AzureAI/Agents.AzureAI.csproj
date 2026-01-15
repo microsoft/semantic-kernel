@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.AzureAI</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.AzureAI</RootNamespace>
-    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0110</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>preview</VersionSuffix>

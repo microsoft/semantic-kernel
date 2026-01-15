@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Plugins.StructuredData.EntityFramework</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <!-- EntityFramework 6.5 is not compatible with .Net Standard 2.0, adding all frameworks strictly after 4.6.2 for compatibility -->
-    <TargetFrameworks>net10.0;net8.0;net462;</TargetFrameworks>
+    <TargetFrameworks>net8.0;net462;</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 

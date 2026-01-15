@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</RootNamespace>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>

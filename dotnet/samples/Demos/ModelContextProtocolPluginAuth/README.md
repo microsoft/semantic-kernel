@@ -57,7 +57,7 @@ First, you need to start the TestOAuthServer which provides OAuth authentication
 
 ```bash
 cd <MCP CSHARP-SDK>\tests\ModelContextProtocol.TestOAuthServer
-dotnet run --framework net10.0
+dotnet run --framework net8.0
 ```
 
 The OAuth server will start at `https://localhost:7029`

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Process.Utilities.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.Process.Utilities.UnitTests</AssemblyName>
-    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>

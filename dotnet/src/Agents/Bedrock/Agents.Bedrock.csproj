@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.Bedrock</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Bedrock</RootNamespace>
-    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0110;CA1724</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>alpha</VersionSuffix>
