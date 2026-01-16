@@ -174,7 +174,17 @@ class InMemoryCollection(
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
-        """Create a In Memory Collection."""
+        """Create a In Memory Collection.
+
+        In Memory collections are ephemeral and exist only in memory.
+        They do not persist data to disk or any external storage.
+
+        > [Important]
+        > Filters are powerful things, so make sure to not allow untrusted input here.
+        > Filters for this collection are parsed and evaluated using Python's `ast` module, so code might be executed.
+        > We only allow certain AST nodes and functions to be used in the filter expressions to mitigate security risks.
+
+        """
         super().__init__(
             record_type=record_type,
             definition=definition,
