@@ -92,6 +92,80 @@ class InMemoryCollection(
     supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
+    # Allowlist of AST node types permitted in filter expressions.
+    # This can be overridden in subclasses to extend or restrict allowed operations.
+    allowed_filter_ast_nodes: ClassVar[set[type]] = {
+        ast.Expression,
+        ast.Lambda,
+        ast.arguments,
+        ast.arg,
+        # Comparisons and boolean operations
+        ast.Compare,
+        ast.BoolOp,
+        ast.UnaryOp,
+        ast.And,
+        ast.Or,
+        ast.Not,
+        ast.Eq,
+        ast.NotEq,
+        ast.Lt,
+        ast.LtE,
+        ast.Gt,
+        ast.GtE,
+        ast.In,
+        ast.NotIn,
+        ast.Is,
+        ast.IsNot,
+        # Data access
+        ast.Name,
+        ast.Load,
+        ast.Attribute,
+        ast.Subscript,
+        ast.Index,  # For Python 3.8 compatibility
+        ast.Slice,
+        # Literals
+        ast.Constant,
+        ast.List,
+        ast.Tuple,
+        ast.Set,
+        ast.Dict,
+        # Basic arithmetic (useful for computed comparisons)
+        ast.BinOp,
+        ast.Add,
+        ast.Sub,
+        ast.Mult,
+        ast.Div,
+        ast.Mod,
+        ast.FloorDiv,
+        # Function calls (restricted to safe builtins separately)
+        ast.Call,
+    }
+
+    # Allowlist of function/method names that can be called in filter expressions.
+    allowed_filter_functions: ClassVar[set[str]] = {
+        "len",
+        "str",
+        "int",
+        "float",
+        "bool",
+        "abs",
+        "min",
+        "max",
+        "sum",
+        "any",
+        "all",
+        "lower",
+        "upper",
+        "strip",
+        "startswith",
+        "endswith",
+        "contains",
+        "get",
+        "keys",
+        "values",
+        "items",
+    }
+
     def __init__(
         self,
         record_type: type[TModel],
@@ -243,39 +317,67 @@ class InMemoryCollection(
         return filtered_records
 
     def _parse_and_validate_filter(self, filter_str: str) -> Callable:
-        """Parse and validate a string filter as a lambda expression, then return the callable."""
-        forbidden_names = {
-            "__import__",
-            "open",
-            "eval",
-            "exec",
-            "__builtins__",
-            "__class__",
-            "__bases__",
-            "__subclasses__",
-        }
+        """Parse and validate a string filter as a lambda expression, then return the callable.
+
+        Uses an allowlist approach - only explicitly permitted AST node types and function names
+        are allowed. This can be customized by overriding `allowed_filter_ast_nodes` and
+        `allowed_filter_functions` class attributes.
+        """
         try:
             tree = ast.parse(filter_str, mode="eval")
         except SyntaxError as e:
             raise VectorStoreOperationException(f"Filter string is not valid Python: {e}") from e
-        # Only allow lambda expressions
+
+        # Only allow lambda expressions at the top level
         if not (isinstance(tree, ast.Expression) and isinstance(tree.body, ast.Lambda)):
             raise VectorStoreOperationException(
                 "Filter string must be a lambda expression, e.g. 'lambda x: x.key == 1'"
             )
-        # Walk the AST to look for forbidden names and attribute access
+
+        # Get the lambda parameter name(s) to allow them as valid Name nodes
+        lambda_node = tree.body
+        lambda_param_names = {arg.arg for arg in lambda_node.args.args}
+
+        # Walk the AST to validate all nodes against the allowlist
         for node in ast.walk(tree):
-            if isinstance(node, ast.Name) and node.id in forbidden_names:
-                raise VectorStoreOperationException(f"Use of '{node.id}' is not allowed in filter expressions.")
-            if isinstance(node, ast.Attribute) and node.attr in forbidden_names:
-                raise VectorStoreOperationException(f"Use of '{node.attr}' is not allowed in filter expressions.")
+            node_type = type(node)
+
+            # Check if the node type is allowed
+            if node_type not in self.allowed_filter_ast_nodes:
+                raise VectorStoreOperationException(
+                    f"AST node type '{node_type.__name__}' is not allowed in filter expressions."
+                )
+
+            # For Name nodes, only allow the lambda parameter
+            if isinstance(node, ast.Name) and node.id not in lambda_param_names:
+                raise VectorStoreOperationException(
+                    f"Use of name '{node.id}' is not allowed in filter expressions. "
+                    f"Only the lambda parameter(s) ({', '.join(lambda_param_names)}) can be used."
+                )
+
+            # For Call nodes, validate that only allowed functions are called
+            if isinstance(node, ast.Call):
+                func_name = None
+                if isinstance(node.func, ast.Name):
+                    func_name = node.func.id
+                elif isinstance(node.func, ast.Attribute):
+                    func_name = node.func.attr
+
+                if func_name and func_name not in self.allowed_filter_functions:
+                    raise VectorStoreOperationException(
+                        f"Function '{func_name}' is not allowed in filter expressions. "
+                        f"Allowed functions: {', '.join(sorted(self.allowed_filter_functions))}"
+                    )
+
         try:
             code = compile(tree, filename="<filter>", mode="eval")
             func = eval(code, {"__builtins__": {}}, {})  # nosec
         except Exception as e:
             raise VectorStoreOperationException(f"Error compiling filter: {e}") from e
+
         if not callable(func):
             raise VectorStoreOperationException("Compiled filter is not callable.")
+
         return func
 
     def _run_filter(self, filter: Callable, record: AttributeDict[TAKey, TAValue]) -> bool:
