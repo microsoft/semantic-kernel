@@ -25,7 +25,7 @@ internal static class KernelContentExtensions
     internal static ResponseContentPart ToResponseContentPart(this TextContent content, bool isOutput)
     {
         return isOutput ?
-            ResponseContentPart.CreateOutputTextPart(content.Text, []) : 
+            ResponseContentPart.CreateOutputTextPart(content.Text, []) :
             ResponseContentPart.CreateInputTextPart(content.Text);
     }
 

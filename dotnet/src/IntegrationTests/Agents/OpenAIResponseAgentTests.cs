@@ -218,7 +218,6 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         Assert.Contains("Computer says no", responseText);
     }
 
-
     /// <summary>
     /// Integration test for <see cref="OpenAIResponseAgent"/> with existing chat history.
     /// </summary>
