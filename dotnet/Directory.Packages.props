@@ -13,36 +13,36 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="9.9.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.0.0" />
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.5.7" />
-    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.6.3" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.7.2" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.32" />
-    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.3.5" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.4" />
-    <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.2.6" />
-    <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.0.0" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.7.5" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.8.5" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.14.5" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.3.8" />
+    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.19" />
+    <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.5.6" />
+    <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.1.0" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.7.0-beta.2" />
-    <PackageVersion Include="Azure.AI.Projects" Version="1.0.0-beta.9" />
-    <PackageVersion Include="Azure.Identity" Version="1.17.0" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.4.0" />
-    <PackageVersion Include="Azure.Search.Documents" Version="11.6.1" />
+    <PackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.17.1" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.5.0" />
+    <PackageVersion Include="Azure.Search.Documents" Version="11.7.0" />
     <PackageVersion Include="Community.OData.Linq" Version="2.1.0" />
-    <PackageVersion Include="Dapr.Actors" Version="1.14.0" />
-    <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
-    <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
+    <PackageVersion Include="Dapr.Actors" Version="1.16.1" />
+    <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.16.1" />
+    <PackageVersion Include="Dapr.AspNetCore" Version="1.16.1" />
     <PackageVersion Include="EntityFramework" Version="6.5.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
-    <PackageVersion Include="Google.Apis.Auth" Version="1.72.0" />
+    <PackageVersion Include="Google.Apis.Auth" Version="1.73.0" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
-    <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.33.4" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
-    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
-    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.71.0" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
-    <PackageVersion Include="Grpc.Tools" Version="2.72.0" />
-    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.3" />
+    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
+    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.76.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.76.0" />
+    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.4" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
@@ -64,30 +64,33 @@
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2" />
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Bcl.Numerics" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Bcl.Numerics" Version="10.0.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.77.1" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.77.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.1" />
-    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.67.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.67.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.67.1" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.81.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageVersion Include="Microsoft.Kiota.Authentication.Azure" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.23.2" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.68.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.14.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql" Version="8.0.7" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
-    <PackageVersion Include="OllamaSharp" Version="5.4.11" />
+    <PackageVersion Include="OllamaSharp" Version="5.4.12" />
     <PackageVersion Include="OpenAI" Version="2.7.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
@@ -95,66 +98,67 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
-    <PackageVersion Include="PdfPig" Version="0.1.11" />
+    <PackageVersion Include="PdfPig" Version="0.1.13" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.3-beta" />
-    <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
-    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-    <PackageVersion Include="System.IO.Packaging" Version="10.0.0" />
-    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.0" />
-    <PackageVersion Include="System.Memory.Data" Version="10.0.0" />
+    <PackageVersion Include="PuppeteerSharp" Version="20.2.5" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageVersion Include="System.IO.Packaging" Version="10.0.2" />
+    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.2" />
+    <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.0" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.2" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
     <PackageVersion Include="A2A" Version="0.3.1-preview" />
     <PackageVersion Include="A2A.AspNetCore" Version="0.3.1-preview" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <!-- Tokenizers -->
-    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.2" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
     <!-- Microsoft.Extensions.* -->
-    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.1-preview.1.25571.5" />    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.1-preview.1.25571.5" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.2" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="FluentAssertions" Version="8.2.0" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageVersion Include="System.Threading.Channels" Version="10.0.0" />
-    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="10.0.0" />
+    <PackageVersion Include="System.Threading.Channels" Version="10.0.2" />
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="10.0.2" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
-    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.76.0" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.3.0" />
@@ -167,10 +171,10 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
-    <PackageVersion Include="protobuf-net" Version="3.2.45" />
-    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
+    <PackageVersion Include="protobuf-net" Version="3.2.56" />
+    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.52" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
-    <PackageVersion Include="Fluid.Core" Version="2.25.0" />
+    <PackageVersion Include="Fluid.Core" Version="2.31.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
     <PackageVersion Include="Pgvector" Version="0.3.2" />
@@ -199,7 +203,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.24.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.26.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -225,8 +229,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.8.3" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.8.1" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.11.4" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.11.4" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.8.1" />
     <!-- SpectreConsole-->
     <PackageVersion Include="Spectre.Console" Version="0.49.1" />
