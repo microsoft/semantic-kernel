@@ -222,7 +222,7 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.amazon.titan-tg1-large"),
+                self._try_create_bedrock_text_completion_client("amazon.titan-tg1-large"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
