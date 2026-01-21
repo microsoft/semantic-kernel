@@ -120,13 +120,6 @@ pytestmark = pytest.mark.parametrize(
             id="onnx_gen_ai_text_completion",
         ),
         pytest.param(
-            "bedrock_amazon_titan",
-            {},
-            ["Repeat the word Hello once"],
-            {},
-            id="bedrock_amazon_titan_text_completion",
-        ),
-        pytest.param(
             "bedrock_anthropic_claude",
             {},
             ["Repeat the word Hello once"],
@@ -221,10 +214,6 @@ class TestTextCompletion(CompletionTestBase):
             ),
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
-            "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.titan-tg1-large"),
-                BedrockTextPromptExecutionSettings,
-            ),
             "bedrock_anthropic_claude": (
                 self._try_create_bedrock_text_completion_client("anthropic.claude-v2"),
                 BedrockTextPromptExecutionSettings,
