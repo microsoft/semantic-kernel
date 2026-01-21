@@ -13,7 +13,7 @@ public class RedisHashSetKeyTypeTests(RedisHashSetKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<RedisHashSetKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {
@@ -25,5 +25,8 @@ public class RedisHashSetKeyTypeTests(RedisHashSetKeyTypeTests.Fixture fixture)
         // we seem to get key values from the previous collection despite having deleted and recreated it. So we uniquify the collection name instead.
         public override VectorStoreCollection<TKey, Record<TKey>> CreateCollection<TKey>()
             => this.TestStore.DefaultVectorStore.GetCollection<TKey, Record<TKey>>(this.CollectionName + (++this._collectionCounter), this.CreateRecordDefinition<TKey>());
+
+        public override VectorStoreCollection<object, Dictionary<string, object?>> CreateDynamicCollection<TKey>()
+            => this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName + (++this._collectionCounter), this.CreateRecordDefinition<TKey>());
     }
 }

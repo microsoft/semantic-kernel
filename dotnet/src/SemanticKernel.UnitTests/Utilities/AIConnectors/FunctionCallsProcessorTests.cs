@@ -876,7 +876,7 @@ public class FunctionCallsProcessorTests
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
                 executionSettings: this._promptExecutionSettings,
-                chatHistory: new ChatHistory(),
+                chatHistory: [],
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,

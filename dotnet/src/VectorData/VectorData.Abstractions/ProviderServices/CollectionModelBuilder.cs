@@ -46,7 +46,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Gets all properties of the record, of all types, indexed by their model name.
     /// </summary>
-    protected Dictionary<string, PropertyModel> PropertyMap { get; } = new();
+    protected Dictionary<string, PropertyModel> PropertyMap { get; } = [];
 
     /// <summary>
     /// Gets the default embedding generator to use for vector properties, when none is specified at the property or collection level.

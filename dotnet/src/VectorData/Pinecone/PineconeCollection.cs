@@ -233,7 +233,8 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var keysList = keys switch
         {
             IEnumerable<string> k => k.ToList(),
-            IEnumerable<object> k => k.Cast<string>().ToList(),
+            IEnumerable<Guid> k => k.Select(x => x.ToString()).ToList(),
+            IEnumerable<object> k => k.Select(x => x.ToString()!).ToList(),
             _ => throw new UnreachableException("string key should have been validated during model building")
         };
 #pragma warning restore CA1851
@@ -287,7 +288,8 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var keysList = keys switch
         {
             IEnumerable<string> k => k.ToList(),
-            IEnumerable<object> k => k.Cast<string>().ToList(),
+            IEnumerable<Guid> k => k.Select(x => x.ToString()).ToList(),
+            IEnumerable<object> k => k.Select(x => x.ToString()!).ToList(),
             _ => throw new UnreachableException("string key should have been validated during model building")
         };
 
@@ -606,7 +608,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // Based on https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
         foreach (char character in collectionName)
         {
-            if (!((character is >= 'a' and <= 'z') || character is '-' || (character is >= '0' and <= '9')))
+            if (character is not (>= 'a' and <= 'z' or '-' or >= '0' and <= '9'))
             {
                 throw new ArgumentException("Collection name must contain only ASCII lowercase letters, digits and dashes.", nameof(collectionName));
             }

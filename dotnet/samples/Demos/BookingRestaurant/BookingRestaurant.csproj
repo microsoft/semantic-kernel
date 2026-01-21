@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace></RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -17,6 +17,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Graph" VersionOverride="5.49.0" />
+    
+    <!-- Microsoft.Graph.Core is referencing really old versions of these libraries that pin old System dependencies.
+         These package references can be removed once Microsoft.Graph updates. -->
+    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" VersionOverride="1.21.0" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" VersionOverride="1.21.0" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" VersionOverride="1.21.0" />
   </ItemGroup>
 
   <ItemGroup>

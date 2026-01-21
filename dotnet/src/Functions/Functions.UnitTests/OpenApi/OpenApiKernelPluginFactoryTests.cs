@@ -17,6 +17,7 @@ using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
+
 public sealed class OpenApiKernelPluginFactoryTests
 {
     /// <summary>

@@ -17,7 +17,7 @@ namespace PgVector.ConformanceTests.TypeTests;
 public class PostgresEmbeddingTypeTests(PostgresEmbeddingTypeTests.Fixture fixture)
     : EmbeddingTypeTests<int>(fixture), IClassFixture<PostgresEmbeddingTypeTests.Fixture>
 {
-#if NET8_0_OR_GREATER
+#if NET
     [ConditionalFact]
     public virtual Task ReadOnlyMemory_of_Half()
         => this.Test<ReadOnlyMemory<Half>>(

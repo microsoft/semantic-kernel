@@ -117,7 +117,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
         {
             FunctionName = function.Name,
             Description = function.Description,
-            Parameters = function.Metadata.Parameters.Where(p => p.Name == "title" || p.Name == "description").ToList(),
+            Parameters = function.Metadata.Parameters.Where(p => p.Name is "title" or "description").ToList(),
             ReturnParameter = function.Metadata.ReturnParameter,
         };
 

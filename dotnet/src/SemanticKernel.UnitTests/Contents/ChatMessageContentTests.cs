@@ -16,6 +16,7 @@ using Xunit;
 #pragma warning disable SKEXP0101
 
 namespace SemanticKernel.UnitTests.Contents;
+
 public class ChatMessageContentTests
 {
     [Fact]

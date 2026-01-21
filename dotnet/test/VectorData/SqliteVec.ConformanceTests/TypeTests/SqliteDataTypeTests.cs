@@ -21,7 +21,7 @@ public class SqliteDataTypeTests(SqliteDataTypeTests.Fixture fixture)
             typeof(DateTime),
             typeof(DateTimeOffset),
             typeof(string[]),
-#if NET8_0_OR_GREATER
+#if NET
             typeof(DateOnly),
             typeof(TimeOnly)
 #endif

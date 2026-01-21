@@ -81,7 +81,7 @@ internal class CosmosMongoFilterTranslator
         // Short form of equality (instead of $eq)
         if (nodeType is ExpressionType.Equal)
         {
-            return new BsonDocument { [property.StorageName] = BsonValue.Create(value) };
+            return new BsonDocument { [property.StorageName] = BsonValueFactory.Create(value) };
         }
 
         var filterOperator = nodeType switch
@@ -95,7 +95,7 @@ internal class CosmosMongoFilterTranslator
             _ => throw new UnreachableException()
         };
 
-        return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValue.Create(value) } };
+        return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValueFactory.Create(value) } };
     }
 
     private BsonDocument TranslateAndOr(BinaryExpression andOr)
@@ -196,14 +196,41 @@ internal class CosmosMongoFilterTranslator
 
         static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
         {
-            if (expression is UnaryExpression
+            // Different versions of the compiler seem to generate slightly different expression tree representations for this
+            // implicit cast:
+            var (unwrapped, castDeclaringType) = expression switch
+            {
+                UnaryExpression
                 {
                     NodeType: ExpressionType.Convert,
                     Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var unwrapped
-                }
-                && implicitCastDeclaringType.GetGenericTypeDefinition() is var genericTypeDefinition
-                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+                    Operand: var operand
+                } => (operand, implicitCastDeclaringType),
+
+                MethodCallExpression
+                {
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Arguments: [var firstArgument]
+                } => (firstArgument, implicitCastDeclaringType),
+
+                _ => (null, null)
+            };
+
+            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+            if (unwrapped is UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: null
+                } convert
+                && convert.Type == typeof(object[]))
+            {
+                result = convert.Operand;
+                return true;
+            }
+
+            if (unwrapped is not null
+                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
             {
                 result = unwrapped;
                 return true;
@@ -257,7 +284,7 @@ internal class CosmosMongoFilterTranslator
             {
                 [property.StorageName] = new BsonDocument
                 {
-                    ["$in"] = new BsonArray(from object? element in elements select BsonValue.Create(element))
+                    ["$in"] = new BsonArray(from object? element in elements select BsonValueFactory.Create(element))
                 }
             };
         }

@@ -12,13 +12,13 @@ public class SqlServerKeyTypeTests(SqlServerKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<SqlServerKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task Int() => this.Test<int>(8);
+    public virtual Task Int() => this.Test<int>(8, 9);
 
     [ConditionalFact]
-    public virtual Task Long() => this.Test<long>(8L);
+    public virtual Task Long() => this.Test<long>(8L, 9L);
 
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {

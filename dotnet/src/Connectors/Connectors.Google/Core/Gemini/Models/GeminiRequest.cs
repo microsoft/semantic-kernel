@@ -119,11 +119,19 @@ internal sealed class GeminiRequest
 
     private static GeminiRequest CreateGeminiRequest(ChatHistory chatHistory)
     {
+        var contents = chatHistory
+            .Where(message => message.Role != AuthorRole.System)
+            .Select(CreateGeminiContentFromChatMessage).ToList();
+
+        // Gemini specific fix: single turn requests must end with "user" role or no role, prevents issue #13262
+        if (contents.Count == 1 && contents[0].Role == AuthorRole.Assistant)
+        {
+            contents[0].Role = null;
+        }
+
         GeminiRequest obj = new()
         {
-            Contents = chatHistory
-                .Where(message => message.Role != AuthorRole.System)
-                .Select(CreateGeminiContentFromChatMessage).ToList(),
+            Contents = contents,
             SystemInstruction = CreateSystemMessages(chatHistory)
         };
         return obj;
@@ -498,7 +506,12 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts,
+                ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
+            };
         }
     }
 
@@ -550,5 +563,13 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
+
+        [JsonPropertyName("thinkingLevel")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThinkingLevel { get; set; }
     }
 }

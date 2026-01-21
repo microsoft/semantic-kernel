@@ -136,14 +136,14 @@ internal static class QdrantFieldMapping
         {
             value.StringValue = dateTimeOffsetValue.ToString("O");
         }
-        else if (sourceValue is IEnumerable<int> ||
-            sourceValue is IEnumerable<long> ||
-            sourceValue is IEnumerable<string> ||
-            sourceValue is IEnumerable<float> ||
-            sourceValue is IEnumerable<double> ||
-            sourceValue is IEnumerable<bool> ||
-            sourceValue is IEnumerable<DateTime> ||
-            sourceValue is IEnumerable<DateTimeOffset>)
+        else if (sourceValue is IEnumerable<int> or
+            IEnumerable<long> or
+            IEnumerable<string> or
+            IEnumerable<float> or
+            IEnumerable<double> or
+            IEnumerable<bool> or
+            IEnumerable<DateTime> or
+            IEnumerable<DateTimeOffset>)
         {
             var listValue = sourceValue as IEnumerable;
             value.ListValue = new ListValue();

@@ -156,7 +156,7 @@ public class FilterTranslationPreprocessor : ExpressionVisitor
                         try
                         {
                             var evaluated = Expression.Lambda<Func<object>>(Expression.Convert(visited, typeof(object)))
-#if NET8_0_OR_GREATER
+#if NET
                                 .Compile(preferInterpretation: true)
 #else
                                 .Compile()

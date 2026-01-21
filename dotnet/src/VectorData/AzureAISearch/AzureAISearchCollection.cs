@@ -270,7 +270,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         // Remove record.
         return this.RunOperationAsync(
@@ -287,7 +287,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             return Task.CompletedTask;
         }
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Select(GetStringKey);
 
         // Remove records.
         return this.RunOperationAsync(
@@ -376,7 +376,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
-            .Select(result => result.Record, cancellationToken);
+            .Select(result => result.Record);
     }
 
     #region Search
@@ -504,7 +504,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         const string OperationName = "GetDocument";
 
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         var jsonObject = await this.RunOperationAsync(
             OperationName,
@@ -787,7 +787,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             operationName,
             operation);
 
-    private string GetStringKey(TKey key)
+    private static string GetStringKey(TKey key)
     {
         Verify.NotNull(key);
 
