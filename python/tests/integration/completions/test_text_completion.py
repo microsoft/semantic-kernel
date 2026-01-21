@@ -94,7 +94,10 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            marks=[
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            ],
             id="google_ai_text_completion",
         ),
         pytest.param(
@@ -219,7 +222,7 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.titan-text-express-v1"),
+                self._try_create_bedrock_text_completion_client("amazon.amazon.titan-tg1-large"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
