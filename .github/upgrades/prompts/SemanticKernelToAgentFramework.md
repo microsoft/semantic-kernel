@@ -384,6 +384,57 @@ AIAgent agent = chatClient.CreateAIAgent(
 7. Pass tools directly to agent creation method
 </configuration_changes>
 
+### Runtime Tool Registration Transformation
+
+<configuration_changes>
+In Semantic Kernel, plugins/tools could be registered via DI and then added to the kernel at runtime. Agent Framework requires tools to be provided either at agent creation time or at runtime via options.
+
+**Replace this Semantic Kernel runtime tool registration pattern:**
+```csharp
+// Semantic Kernel - Tools registered via DI and added to kernel instance
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.Services.AddSingleton<ISearchService, SearchService>();
+kernelBuilder.Plugins.AddFromType<SearchPlugin>();
+
+Kernel kernel = kernelBuilder.Build();
+ChatCompletionAgent agent = new() { Kernel = kernel };
+
+// Tools are available on every invocation
+await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
+```
+
+**With this Agent Framework pattern using runtime tool registration:**
+```csharp
+// Define the tool function
+[Description("Get the weather for a location")]
+static string GetWeather(string location) => $"Weather in {location}: Sunny";
+
+// Create agent without tools
+AIAgent agent = chatClient.CreateAIAgent(
+    instructions: "You are a helpful assistant");
+
+// Provide tools at runtime via ChatClientAgentRunOptions
+var chatOptions = new ChatOptions 
+{ 
+    Tools = [AIFunctionFactory.Create(GetWeather)] 
+};
+var options = new ChatClientAgentRunOptions(chatOptions);
+
+AgentRunResponse result = await agent.RunAsync(userInput, thread, options);
+```
+
+**Required changes:**
+1. Create agent without tools if tools need to be determined at runtime
+2. Create `ChatOptions` with the `Tools` property containing the tools
+3. Wrap `ChatOptions` in `ChatClientAgentRunOptions`
+4. Pass options to `RunAsync()` or `RunStreamingAsync()` methods
+
+**Note:** This pattern is useful for scenarios where tools need to be:
+- Enabled/disabled per user or per request
+- Added based on tenant configuration, licensing, or feature flags
+- Composed dynamically in modular systems
+</configuration_changes>
+
 ### Invocation Method Transformation
 
 <api_changes>
