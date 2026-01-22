@@ -2,6 +2,7 @@
 
 import json
 from typing import Annotated, Any
+from urllib.parse import urlparse
 
 import aiohttp
 
@@ -16,12 +17,53 @@ class HttpPlugin(KernelBaseModel):
     Usage:
         kernel.add_plugin(HttpPlugin(), "http")
 
+        # With allowed domains for security:
+        kernel.add_plugin(HttpPlugin(allowed_domains=["example.com", "api.example.com"]), "http")
+
     Examples:
         {{http.getAsync $url}}
         {{http.postAsync $url}}
         {{http.putAsync $url}}
         {{http.deleteAsync $url}}
     """
+
+    allowed_domains: set[str] | None = None
+    """List of allowed domains to send requests to. If None, all domains are allowed."""
+
+    def _is_uri_allowed(self, url: str) -> bool:
+        """Check if the URL's host is in the allowed domains list.
+
+        Args:
+            url: The URL to check.
+
+        Returns:
+            True if the URL is allowed, False otherwise.
+        """
+        if self.allowed_domains is None:
+            return True
+
+        parsed = urlparse(url)
+        host = parsed.hostname
+        if host is None:
+            return False
+
+        # Case-insensitive comparison
+        return host.lower() in {domain.lower() for domain in self.allowed_domains}
+
+    def _validate_url(self, url: str) -> None:
+        """Validate the URL, checking if it's not empty and is in the allowed domains.
+
+        Args:
+            url: The URL to validate.
+
+        Raises:
+            FunctionExecutionException: If the URL is empty or not in the allowed domains.
+        """
+        if not url:
+            raise FunctionExecutionException("url cannot be `None` or empty")
+
+        if not self._is_uri_allowed(url):
+            raise FunctionExecutionException("Sending requests to the provided location is not allowed.")
 
     @kernel_function(description="Makes a GET request to a url", name="getAsync")
     async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
@@ -33,8 +75,7 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        if not url:
-            raise FunctionExecutionException("url cannot be `None` or empty")
+        self._validate_url(url)
 
         async with aiohttp.ClientSession() as session, session.get(url, raise_for_status=True) as response:
             return await response.text()
@@ -53,8 +94,7 @@ class HttpPlugin(KernelBaseModel):
         returns:
             The response body as a string.
         """
-        if not url:
-            raise FunctionExecutionException("url cannot be `None` or empty")
+        self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
@@ -79,8 +119,7 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        if not url:
-            raise FunctionExecutionException("url cannot be `None` or empty")
+        self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
@@ -100,7 +139,7 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        if not url:
-            raise FunctionExecutionException("url cannot be `None` or empty")
+        self._validate_url(url)
+
         async with aiohttp.ClientSession() as session, session.delete(url, raise_for_status=True) as response:
             return await response.text()
