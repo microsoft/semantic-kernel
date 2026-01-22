@@ -2,17 +2,17 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace SqlServer.ConformanceTests.Support;
+namespace PgVector.ConformanceTests.Support;
 
 #pragma warning disable CA1810 // Initialize all static fields when those fields are declared
 
-internal static class SqlServerTestEnvironment
+internal static class PostgresTestEnvironment
 {
     public static readonly string? ConnectionString;
 
     public static bool IsConnectionStringDefined => ConnectionString is not null;
 
-    static SqlServerTestEnvironment()
+    static PostgresTestEnvironment()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true)
@@ -20,7 +20,7 @@ internal static class SqlServerTestEnvironment
             .AddEnvironmentVariables()
             .Build();
 
-        var sqlServerSection = configuration.GetSection("SqlServer");
-        ConnectionString = sqlServerSection["ConnectionString"];
+        var postgresSection = configuration.GetSection("Postgres");
+        ConnectionString = postgresSection["ConnectionString"];
     }
 }
