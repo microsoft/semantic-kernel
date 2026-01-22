@@ -18,6 +18,7 @@ internal static class PostgresTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
+            .AddUserSecrets<PostgresTestStore>()
             .Build();
 
         var postgresSection = configuration.GetSection("Postgres");
