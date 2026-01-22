@@ -387,52 +387,62 @@ AIAgent agent = chatClient.CreateAIAgent(
 ### Runtime Tool Registration Transformation
 
 <configuration_changes>
-In Semantic Kernel, plugins/tools could be registered via DI and then added to the kernel at runtime. Agent Framework requires tools to be provided either at agent creation time or at runtime via options.
+In Semantic Kernel, plugins/tools could be added to the kernel after it was already built using `kernel.Plugins.Add()`. Agent Framework provides a similar capability using the builder middleware API.
 
-**Replace this Semantic Kernel runtime tool registration pattern:**
+**Replace this Semantic Kernel post-creation tool registration pattern:**
 ```csharp
-// Semantic Kernel - Tools registered via DI and added to kernel instance
-IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-kernelBuilder.Services.AddSingleton<ISearchService, SearchService>();
-kernelBuilder.Plugins.AddFromType<SearchPlugin>();
-
+// Semantic Kernel - Tools added after kernel is already built
 Kernel kernel = kernelBuilder.Build();
 ChatCompletionAgent agent = new() { Kernel = kernel };
 
-// Tools are available on every invocation
+// Later: Add tools to the existing kernel instance
+kernel.Plugins.Add(KernelPluginFactory.CreateFromType<SearchPlugin>());
+
+// Tools are now available on subsequent invocations
 await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
 ```
 
-**With this Agent Framework pattern using runtime tool registration:**
+**With this Agent Framework pattern using builder middleware:**
 ```csharp
 // Define the tool function
 [Description("Get the weather for a location")]
 static string GetWeather(string location) => $"Weather in {location}: Sunny";
 
-// Create agent without tools
-AIAgent agent = chatClient.CreateAIAgent(
+// Start with an existing agent
+AIAgent existingAgent = chatClient.CreateAIAgent(
     instructions: "You are a helpful assistant");
 
-// Provide tools at runtime via ChatClientAgentRunOptions
-var chatOptions = new ChatOptions 
-{ 
-    Tools = [AIFunctionFactory.Create(GetWeather)] 
-};
-var options = new ChatClientAgentRunOptions(chatOptions);
+// Create an augmented agent with additional tools using builder middleware
+var augmentedAgent = existingAgent.AsBuilder()
+    .Use(async (chatMessages, agentThread, agentRunOptions, next, cancellationToken) =>
+    {
+        if (agentRunOptions is ChatClientAgentRunOptions chatClientAgentRunOptions)
+        {
+            chatClientAgentRunOptions.ChatOptions ??= new ChatOptions();
+            chatClientAgentRunOptions.ChatOptions.Tools ??= [];
+            chatClientAgentRunOptions.ChatOptions.Tools.Add(AIFunctionFactory.Create(GetWeather));
+        }
 
-AgentRunResponse result = await agent.RunAsync(userInput, thread, options);
+        return await next(chatMessages, agentThread, agentRunOptions, cancellationToken);
+    })
+    .Build();
+
+// Use the augmented agent with the additional tools
+AgentRunResponse result = await augmentedAgent.RunAsync(userInput, thread);
 ```
 
 **Required changes:**
-1. Create agent without tools if tools need to be determined at runtime
-2. Create `ChatOptions` with the `Tools` property containing the tools
-3. Wrap `ChatOptions` in `ChatClientAgentRunOptions`
-4. Pass options to `RunAsync()` or `RunStreamingAsync()` methods
+1. Call `AsBuilder()` on the existing agent to get a builder
+2. Use the `Use()` middleware method to intercept and modify run options
+3. Add tools to `ChatClientAgentRunOptions.ChatOptions.Tools` in the middleware
+4. Call `Build()` to create the augmented agent instance
+5. Use the new augmented agent for invocations that need the additional tools
 
-**Note:** This pattern is useful for scenarios where tools need to be:
-- Enabled/disabled per user or per request
-- Added based on tenant configuration, licensing, or feature flags
-- Composed dynamically in modular systems
+**Note:** This pattern is the preferred approach as it provides:
+- A controlled environment with a dedicated agent instance
+- No disruption to existing agent usages
+- Dynamic tool composition per user, tenant, or feature flags
+- Modular system composition without recreating agents
 </configuration_changes>
 
 ### Invocation Method Transformation
