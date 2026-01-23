@@ -391,12 +391,18 @@ In Semantic Kernel, plugins/tools could be added to the kernel after it was alre
 
 **Replace this Semantic Kernel post-creation tool registration pattern:**
 ```csharp
+// Define the tool function
+[Description("Get the weather for a location")]
+static string GetWeather(string location) => $"Weather in {location}";
+
 // Semantic Kernel - Tools added after kernel is already built
 Kernel kernel = kernelBuilder.Build();
 ChatCompletionAgent agent = new() { Kernel = kernel };
 
 // Later: Add tools to the existing kernel instance
-kernel.Plugins.Add(KernelPluginFactory.CreateFromType<SearchPlugin>());
+KernelFunction function = KernelFunctionFactory.CreateFromMethod(GetWeather);
+KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]);
+kernel.Plugins.Add(plugin);
 
 // Tools are now available on subsequent invocations
 await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
@@ -406,7 +412,7 @@ await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
 ```csharp
 // Define the tool function
 [Description("Get the weather for a location")]
-static string GetWeather(string location) => $"Weather in {location}: Sunny";
+static string GetWeather(string location) => $"Weather in {location}";
 
 // Start with an existing agent
 AIAgent existingAgent = chatClient.CreateAIAgent(
