@@ -863,4 +863,30 @@ def test_allowed_directories_accepts_list(aca_python_sessions_unit_test_env):
     assert plugin.allowed_download_directories == {"/path/three"}
 
 
+async def test_empty_set_denies_all_uploads(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that an empty set for allowed_upload_directories denies all uploads."""
+    test_file = tmp_path / "test.txt"
+    test_file.write_text("content")
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories=set(),  # Empty set - deny all
+    )
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path=str(test_file))
+
+
+def test_empty_strings_filtered_from_allowed_directories(aca_python_sessions_unit_test_env):
+    """Test that empty strings are filtered out from allowed directories."""
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories=["", "/valid/path", ""],
+        allowed_download_directories=["", ""],
+    )
+
+    assert plugin.allowed_upload_directories == {"/valid/path"}
+    assert plugin.allowed_download_directories == set()  # All empty strings filtered out
+
+
 # endregion

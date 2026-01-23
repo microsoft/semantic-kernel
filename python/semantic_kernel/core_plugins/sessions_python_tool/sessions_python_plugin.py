@@ -66,10 +66,12 @@ class SessionsPythonTool(KernelBaseModel):
             env_file_path: Path to .env file.
             token_endpoint: Token endpoint for authentication.
             credential: Azure credential for authentication.
-            allowed_upload_directories: Set of allowed directories for file uploads.
+            allowed_upload_directories: Set or list of allowed directories for file uploads.
                 If None, upload_file will be disabled (deny-by-default).
-            allowed_download_directories: Set of allowed directories for file downloads.
+                Empty set/list means no directories are allowed (all uploads denied).
+            allowed_download_directories: Set or list of allowed directories for file downloads.
                 If None, all paths are allowed (permissive-by-default).
+                Empty set/list means no directories are allowed (all local downloads denied).
             kwargs: Additional keyword arguments.
         """
         try:
@@ -91,9 +93,11 @@ class SessionsPythonTool(KernelBaseModel):
         if auth_callback is None:
             auth_callback = self._default_auth_callback(aca_settings, credential)
 
-        # Convert lists to sets for consistency
-        upload_dirs = set(allowed_upload_directories) if allowed_upload_directories else None
-        download_dirs = set(allowed_download_directories) if allowed_download_directories else None
+        # Convert lists to sets and filter out empty strings (which resolve to CWD)
+        upload_dirs = {d for d in allowed_upload_directories if d} if allowed_upload_directories is not None else None
+        download_dirs = (
+            {d for d in allowed_download_directories if d} if allowed_download_directories is not None else None
+        )
 
         super().__init__(
             pool_management_endpoint=aca_settings.pool_management_endpoint,
@@ -411,11 +415,11 @@ class SessionsPythonTool(KernelBaseModel):
         Args:
             remote_file_name: The name of the file to download, relative to `/mnt/data`.
             local_file_path: The path to save the downloaded file to. Should include the extension.
-                If not provided, the file is returned as a BufferedReader.
+                If not provided, the file is returned as a BytesIO object.
                 If allowed_download_directories is configured, must be within those directories.
 
         Returns:
-            BufferedReader: The data of the downloaded file.
+            BytesIO | None: The file content as BytesIO if no local_file_path provided, otherwise None.
 
         Raises:
             FunctionExecutionException: If local_file_path is not in allowed directories (when configured).
