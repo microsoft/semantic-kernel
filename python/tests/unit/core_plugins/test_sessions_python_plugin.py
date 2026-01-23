@@ -183,18 +183,19 @@ async def test_empty_call_to_container_fails_raises_exception(aca_python_session
 
 @patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessions_unit_test_env, tmp_path):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
         return result
 
-    with (
-        patch(
-            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-            return_value="test_token",
-        ),
-        patch("builtins.open", mock_open(read_data=b"file data")),
+    # Create a real file in a temp directory for the test
+    test_file = tmp_path / "hello.py"
+    test_file.write_bytes(b"file data")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
     ):
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
         mock_response = httpx.Response(
@@ -231,9 +232,10 @@ async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessi
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            allowed_upload_directories={str(tmp_path)},
         )
 
-        result = await plugin.upload_file(local_file_path="hello.py", remote_file_path="hello.py")
+        result = await plugin.upload_file(local_file_path=str(test_file), remote_file_path="hello.py")
         assert result.filename == "hello.py"
         assert result.size_in_bytes == 123
         assert result.full_path == "/mnt/data/hello.py"
@@ -242,18 +244,21 @@ async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessi
 
 @patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path_and_no_remote(mock_post, mock_get, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path_and_no_remote(
+    mock_post, mock_get, aca_python_sessions_unit_test_env, tmp_path
+):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
         return result
 
-    with (
-        patch(
-            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-            return_value="test_token",
-        ),
-        patch("builtins.open", mock_open(read_data=b"file data")),
+    # Create a real file in a temp directory for the test
+    test_file = tmp_path / "hello.py"
+    test_file.write_bytes(b"file data")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
     ):
         mock_post_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
         mock_post_response = httpx.Response(
@@ -290,16 +295,17 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, mock_get, ac
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            allowed_upload_directories={str(tmp_path)},
         )
 
-        result = await plugin.upload_file(local_file_path="hello.py")
+        result = await plugin.upload_file(local_file_path=str(test_file))
         assert result.filename == "hello.py"
         assert result.size_in_bytes == 123
         mock_post.assert_awaited_once()
 
 
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_test_env, tmp_path):
     """Test throwing exception during file upload."""
 
     async def async_raise_http_error(*args, **kwargs):
@@ -307,32 +313,34 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
         mock_response = httpx.Response(status_code=500, request=mock_request)
         raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
 
-    with (
-        patch(
-            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-            return_value="test_token",
-        ),
-        patch("builtins.open", mock_open(read_data=b"file data")),
+    # Create a real file in a temp directory for the test
+    test_file = tmp_path / "hello.py"
+    test_file.write_bytes(b"file data")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
     ):
         mock_post.side_effect = async_raise_http_error
 
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            allowed_upload_directories={str(tmp_path)},
         )
 
         with pytest.raises(
             FunctionExecutionException, match="Upload failed with status code 500 and error: Internal Server Error"
         ):
-            await plugin.upload_file(local_file_path="hello.py")
+            await plugin.upload_file(local_file_path=str(test_file))
         mock_post.assert_awaited_once()
 
 
 @pytest.mark.parametrize(
-    "local_file_path, input_remote_file_path, expected_remote_file_path",
+    "input_remote_file_path, expected_remote_file_path",
     [
-        ("./file.py", "uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
-        ("./file.py", "/mnt/data/input.py", "/mnt/data/input.py"),
+        ("uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
+        ("/mnt/data/input.py", "/mnt/data/input.py"),
     ],
 )
 @patch("httpx.AsyncClient.get")
@@ -340,22 +348,23 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
 async def test_upload_file_with_buffer(
     mock_post,
     mock_get,
-    local_file_path,
     input_remote_file_path,
     expected_remote_file_path,
     aca_python_sessions_unit_test_env,
+    tmp_path,
 ):
     """Test upload_file when providing file data as a BufferedReader."""
 
     async def async_return(result):
         return result
 
-    with (
-        patch(
-            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-            return_value="test_token",
-        ),
-        patch("builtins.open", mock_open(read_data="print('hello, world~')")),
+    # Create a real file in a temp directory for the test
+    test_file = tmp_path / "file.py"
+    test_file.write_text("print('hello, world~')")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
     ):
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
         mock_response = httpx.Response(
@@ -389,9 +398,12 @@ async def test_upload_file_with_buffer(
         )
         mock_get.return_value = await async_return(mock_get_response)
 
-        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            allowed_upload_directories={str(tmp_path)},
+        )
 
-        result = await plugin.upload_file(local_file_path=local_file_path, remote_file_path=input_remote_file_path)
+        result = await plugin.upload_file(local_file_path=str(test_file), remote_file_path=input_remote_file_path)
         assert result.filename == expected_remote_file_path
         assert result.size_in_bytes == 456
         mock_post.assert_awaited_once()
@@ -491,7 +503,7 @@ async def test_list_files_throws_exception(mock_get, aca_python_sessions_unit_te
 
 
 @patch("httpx.AsyncClient.get")
-async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_env):
+async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_env, tmp_path):
     """Test download_file when saving to a local file path."""
 
     async def async_return(result):
@@ -499,6 +511,8 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
 
     async def mock_auth_callback():
         return "test_token"
+
+    local_file = tmp_path / "local_test.txt"
 
     with (
         patch(
@@ -520,9 +534,10 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
             env_file_path="test.env",
         )
 
-        await plugin.download_file(remote_file_name="remote_test.txt", local_file_path="local_test.txt")
+        await plugin.download_file(remote_file_name="remote_test.txt", local_file_path=str(local_file))
         mock_get.assert_awaited_once()
-        mock_file.assert_called_once_with("local_test.txt", "wb")
+        # Path is canonicalized via os.path.realpath()
+        mock_file.assert_called_once_with(str(local_file), "wb")
         mock_file().write.assert_called_once_with(b"file data")
 
 
@@ -646,3 +661,232 @@ async def test_auth_token_fail(aca_python_sessions_unit_test_env):
 def test_full_path(filename, expected_full_path):
     metadata = SessionsRemoteFileMetadata(filename=filename, size_in_bytes=123)
     assert metadata.full_path == expected_full_path
+
+
+# region Tests for File Operations
+
+
+async def test_upload_file_denied_when_no_allowed_directories(aca_python_sessions_unit_test_env):
+    """Test that upload_file raises an exception when allowed_upload_directories is not configured."""
+    plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+
+    with pytest.raises(FunctionExecutionException, match="File upload is disabled"):
+        await plugin.upload_file(local_file_path="/some/path/file.txt")
+
+
+async def test_upload_file_denied_outside_allowed_directories(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that upload_file raises an exception when path is outside allowed directories."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories={str(allowed_dir)},
+    )
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path="/etc/passwd")
+
+
+async def test_upload_file_path_traversal_blocked(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that path traversal attacks are blocked."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories={str(allowed_dir)},
+    )
+
+    # Attempt path traversal
+    traversal_path = str(allowed_dir / ".." / ".." / "etc" / "passwd")
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path=traversal_path)
+
+
+@patch("httpx.AsyncClient.get")
+@patch("httpx.AsyncClient.post")
+async def test_upload_file_succeeds_within_allowed_directory(
+    mock_post, mock_get, aca_python_sessions_unit_test_env, tmp_path
+):
+    """Test that upload_file succeeds when path is within allowed directories."""
+
+    async def async_return(result):
+        return result
+
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    test_file = allowed_dir / "test.txt"
+    test_file.write_text("test content")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
+    ):
+        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_response = httpx.Response(
+            status_code=200,
+            json={"$id": "1", "value": []},
+            request=mock_request,
+        )
+        mock_post.return_value = await async_return(mock_response)
+
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [
+                    {
+                        "$id": "2",
+                        "properties": {
+                            "$id": "3",
+                            "filename": "test.txt",
+                            "size": 12,
+                            "lastModifiedTime": "2024-07-02T19:29:23.4369699Z",
+                        },
+                    },
+                ],
+            },
+            request=mock_get_request,
+        )
+        mock_get.return_value = await async_return(mock_get_response)
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            allowed_upload_directories={str(allowed_dir)},
+        )
+
+        result = await plugin.upload_file(local_file_path=str(test_file))
+        assert result.filename == "test.txt"
+        mock_post.assert_awaited_once()
+
+
+@patch("httpx.AsyncClient.get")
+async def test_download_file_works_without_allowed_directories(mock_get, aca_python_sessions_unit_test_env, tmp_path):
+    """Test that download_file works without restrictions when allowed_download_directories is None."""
+
+    async def async_return(result):
+        return result
+
+    local_file = tmp_path / "downloaded.txt"
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
+    ):
+        mock_request = httpx.Request(method="GET", url="https://example.com/files/content/remote.txt")
+        mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+        mock_get.return_value = await async_return(mock_response)
+
+        # No allowed_download_directories configured - should work (permissive by default)
+        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+
+        await plugin.download_file(remote_file_name="remote.txt", local_file_path=str(local_file))
+        assert local_file.read_bytes() == b"file data"
+        mock_get.assert_awaited_once()
+
+
+async def test_download_file_denied_outside_allowed_directories(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that download_file raises an exception when path is outside allowed directories."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    outside_dir = tmp_path / "outside"
+    outside_dir.mkdir()
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_download_directories={str(allowed_dir)},
+    )
+
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("httpx.AsyncClient.get") as mock_get,
+    ):
+
+        async def async_return(result):
+            return result
+
+        mock_request = httpx.Request(method="GET", url="https://example.com/files/content/remote.txt")
+        mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+        mock_get.return_value = await async_return(mock_response)
+
+        with pytest.raises(FunctionExecutionException, match="Access denied"):
+            await plugin.download_file(
+                remote_file_name="remote.txt",
+                local_file_path=str(outside_dir / "output.txt"),
+            )
+
+
+@patch("httpx.AsyncClient.get")
+async def test_download_file_succeeds_within_allowed_directory(mock_get, aca_python_sessions_unit_test_env, tmp_path):
+    """Test that download_file succeeds when path is within allowed directories."""
+
+    async def async_return(result):
+        return result
+
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    local_file = allowed_dir / "downloaded.txt"
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
+    ):
+        mock_request = httpx.Request(method="GET", url="https://example.com/files/content/remote.txt")
+        mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+        mock_get.return_value = await async_return(mock_response)
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            allowed_download_directories={str(allowed_dir)},
+        )
+
+        await plugin.download_file(remote_file_name="remote.txt", local_file_path=str(local_file))
+        assert local_file.read_bytes() == b"file data"
+        mock_get.assert_awaited_once()
+
+
+def test_allowed_directories_accepts_list(aca_python_sessions_unit_test_env):
+    """Test that allowed directories can be passed as a list and are converted to a set."""
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories=["/path/one", "/path/two"],
+        allowed_download_directories=["/path/three"],
+    )
+
+    assert plugin.allowed_upload_directories == {"/path/one", "/path/two"}
+    assert plugin.allowed_download_directories == {"/path/three"}
+
+
+async def test_empty_set_denies_all_uploads(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that an empty set for allowed_upload_directories denies all uploads."""
+    test_file = tmp_path / "test.txt"
+    test_file.write_text("content")
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories=set(),  # Empty set - deny all
+    )
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path=str(test_file))
+
+
+def test_empty_strings_filtered_from_allowed_directories(aca_python_sessions_unit_test_env):
+    """Test that empty strings are filtered out from allowed directories."""
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_upload_directories=["", "/valid/path", ""],
+        allowed_download_directories=["", ""],
+    )
+
+    assert plugin.allowed_upload_directories == {"/valid/path"}
+    assert plugin.allowed_download_directories == set()  # All empty strings filtered out
+
+
+# endregion
