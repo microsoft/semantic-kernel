@@ -56,29 +56,47 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         var keyName = model.KeyProperty.StorageName;
 
         StringBuilder createTableCommand = new();
-        createTableCommand.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : "")}{schema}.\"{tableName}\" (");
+        createTableCommand.Append("CREATE TABLE ");
+        if (ifNotExists)
+        {
+            createTableCommand.Append("IF NOT EXISTS ");
+        }
+        createTableCommand.AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine(" (");
 
         // Add the key column
         var keyPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(model.KeyProperty.Type);
-        createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType}{(keyPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
+        createTableCommand.Append("    ").AppendIdentifier(keyName).Append(' ').Append(keyPgTypeInfo.PgType);
+        if (!keyPgTypeInfo.IsNullable)
+        {
+            createTableCommand.Append(" NOT NULL");
+        }
+        createTableCommand.AppendLine(",");
 
         // Add the data columns
         foreach (var dataProperty in model.DataProperties)
         {
-            string columnName = dataProperty.StorageName;
             var dataPgTypeInfo = PostgresPropertyMapping.GetPostgresTypeName(dataProperty.Type);
-            createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType}{(dataPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
+            createTableCommand.Append("    ").AppendIdentifier(dataProperty.StorageName).Append(' ').Append(dataPgTypeInfo.PgType);
+            if (!dataPgTypeInfo.IsNullable)
+            {
+                createTableCommand.Append(" NOT NULL");
+            }
+            createTableCommand.AppendLine(",");
         }
 
         // Add the vector columns
         foreach (var vectorProperty in model.VectorProperties)
         {
-            string columnName = vectorProperty.StorageName;
             var vectorPgTypeInfo = PostgresPropertyMapping.GetPgVectorTypeName(vectorProperty);
-            createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType}{(vectorPgTypeInfo.IsNullable ? "" : " NOT NULL")},");
+            createTableCommand.Append("    ").AppendIdentifier(vectorProperty.StorageName).Append(' ').Append(vectorPgTypeInfo.PgType);
+            if (!vectorPgTypeInfo.IsNullable)
+            {
+                createTableCommand.Append(" NOT NULL");
+            }
+            createTableCommand.AppendLine(",");
         }
 
-        createTableCommand.AppendLine($"    PRIMARY KEY (\"{keyName}\")");
+        createTableCommand.Append("    PRIMARY KEY (").AppendIdentifier(keyName).AppendLine(")");
 
         createTableCommand.AppendLine(");");
 
@@ -90,9 +108,18 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     {
         var indexName = $"{tableName}_{columnName}_index";
 
+        StringBuilder sql = new();
+        sql.Append("CREATE INDEX ");
+        if (ifNotExists)
+        {
+            sql.Append("IF NOT EXISTS ");
+        }
+
         if (!isVector)
         {
-            return $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")}""{indexName}"" ON {schema}.""{tableName}"" (""{columnName}"")";
+            sql.AppendIdentifier(indexName).Append(" ON ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName)
+                .Append(" (").AppendIdentifier(columnName).Append(')');
+            return sql.ToString();
         }
 
         // Only support creating HNSW index creation through the connector.
@@ -116,13 +143,17 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
         };
 
-        return $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{columnName}"" {indexOps})";
+        sql.AppendIdentifier(indexName).Append(" ON ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName)
+            .Append(" USING ").Append(indexTypeName).Append(" (").AppendIdentifier(columnName).Append(' ').Append(indexOps).Append(')');
+        return sql.ToString();
     }
 
     /// <inheritdoc />
     internal static void BuildDropTableCommand(NpgsqlCommand command, string schema, string tableName)
     {
-        command.CommandText = $@"DROP TABLE IF EXISTS {schema}.""{tableName}""";
+        StringBuilder sql = new();
+        sql.Append("DROP TABLE IF EXISTS ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName);
+        command.CommandText = sql.ToString();
     }
 
     /// <inheritdoc />
@@ -136,12 +167,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     {
         StringBuilder sql = new();
 
-        sql
-            .Append("INSERT INTO ")
-            .Append(schema)
-            .Append(".\"")
-            .Append(tableName)
-            .Append("\" (");
+        sql.Append("INSERT INTO ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).Append(" (");
 
         for (var i = 0; i < model.Properties.Count; i++)
         {
@@ -152,7 +178,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
                 sql.Append(", ");
             }
 
-            sql.Append('"').Append(property.StorageName).Append('"');
+            sql.AppendIdentifier(property.StorageName);
         }
 
         sql
@@ -209,9 +235,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
         sql
             .AppendLine()
-            .Append("ON CONFLICT (\"")
-            .Append(model.KeyProperty.StorageName)
-            .Append("\")");
+            .Append("ON CONFLICT (").AppendIdentifier(model.KeyProperty.StorageName).Append(')');
 
         sql
             .AppendLine()
@@ -230,12 +254,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
                 sql.AppendLine(", ");
             }
 
-            sql
-                .Append("    \"")
-                .Append(property.StorageName)
-                .Append("\" = EXCLUDED.\"")
-                .Append(property.StorageName)
-                .Append('"');
+            sql.Append("    ").AppendIdentifier(property.StorageName).Append(" = EXCLUDED.").AppendIdentifier(property.StorageName);
         }
 
         command.CommandText = sql.ToString();
@@ -247,20 +266,22 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     internal static void BuildGetCommand<TKey>(NpgsqlCommand command, string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
-        List<string> queryColumns = [];
+        StringBuilder sql = new();
+        sql.Append("SELECT ");
 
-        foreach (var property in model.Properties)
+        for (var i = 0; i < model.Properties.Count; i++)
         {
-            queryColumns.Add($"\"{property.StorageName}\"");
+            if (i > 0)
+            {
+                sql.Append(", ");
+            }
+            sql.AppendIdentifier(model.Properties[i].StorageName);
         }
 
-        var queryColumnList = string.Join(", ", queryColumns);
+        sql.AppendLine().Append("FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine()
+            .Append("WHERE ").AppendIdentifier(model.KeyProperty.StorageName).Append(" = $1;");
 
-        command.CommandText = $"""
-SELECT {queryColumnList}
-FROM {schema}."{tableName}"
-WHERE "{model.KeyProperty.StorageName}" = ${1};
-""";
+        command.CommandText = sql.ToString();
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new() { Value = key });
     }
@@ -271,21 +292,29 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
     {
         NpgsqlDbType? keyType = PostgresPropertyMapping.GetNpgsqlDbType(model.KeyProperty.Type) ?? throw new UnreachableException($"Unsupported key type {model.KeyProperty.Type.Name}");
 
-        // Generate the column names
-        var columns = model.Properties
-            .Where(p => includeVectors || p is not VectorPropertyModel)
-            .Select(p => p.StorageName)
-            .ToList();
+        StringBuilder sql = new();
+        sql.Append("SELECT ");
 
-        var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
-        var keyParams = string.Join(", ", keys.Select((k, i) => $"${i + 1}"));
+        var first = true;
+        foreach (var property in model.Properties)
+        {
+            if (!includeVectors && property is VectorPropertyModel)
+            {
+                continue;
+            }
 
-        command.CommandText = $"""
-SELECT {columnNames}
-FROM {schema}."{tableName}"
-WHERE "{model.KeyProperty.StorageName}" = ANY($1);
-""";
+            if (!first)
+            {
+                sql.Append(", ");
+            }
+            first = false;
+            sql.AppendIdentifier(property.StorageName);
+        }
 
+        sql.AppendLine().Append("FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine()
+            .Append("WHERE ").AppendIdentifier(model.KeyProperty.StorageName).Append(" = ANY($1);");
+
+        command.CommandText = sql.ToString();
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new()
         {
@@ -297,10 +326,11 @@ WHERE "{model.KeyProperty.StorageName}" = ANY($1);
     /// <inheritdoc />
     internal static void BuildDeleteCommand<TKey>(NpgsqlCommand command, string schema, string tableName, string keyColumn, TKey key)
     {
-        command.CommandText = $"""
-DELETE FROM {schema}."{tableName}"
-WHERE "{keyColumn}" = ${1};
-""";
+        StringBuilder sql = new();
+        sql.Append("DELETE FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine()
+            .Append("WHERE ").AppendIdentifier(keyColumn).Append(" = $1;");
+
+        command.CommandText = sql.ToString();
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new() { Value = key });
     }
@@ -318,14 +348,21 @@ WHERE "{keyColumn}" = ${1};
             }
         }
 
-        command.CommandText = $"""
-DELETE FROM {schema}."{tableName}"
-WHERE "{keyColumn}" = ANY($1);
-""";
+        StringBuilder sql = new();
+        sql.Append("DELETE FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine()
+            .Append("WHERE ").AppendIdentifier(keyColumn).Append(" = ANY($1);");
 
+        command.CommandText = sql.ToString();
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new() { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value });
     }
+
+    /// <summary>
+    /// Appends a properly quoted and escaped PostgreSQL identifier to the StringBuilder.
+    /// In PostgreSQL, identifiers are quoted with double quotes, and embedded double quotes are escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendIdentifier(this StringBuilder sb, string identifier)
+        => sb.Append('"').Append(identifier.Replace("\"", "\"\"")).Append('"');
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
@@ -333,7 +370,16 @@ WHERE "{keyColumn}" = ANY($1);
         NpgsqlCommand command, string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
         VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
-        var columns = string.Join(" ,", model.Properties.Select(property => $"\"{property.StorageName}\""));
+        // Build column list with proper escaping
+        StringBuilder columns = new();
+        for (var i = 0; i < model.Properties.Count; i++)
+        {
+            if (i > 0)
+            {
+                columns.Append(", ");
+            }
+            columns.AppendIdentifier(model.Properties[i].StorageName);
+        }
 
         var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
         var distanceOp = distanceFunction switch
@@ -347,37 +393,42 @@ WHERE "{keyColumn}" = ANY($1);
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 
-        var vectorColumn = vectorProperty.StorageName;
-
         // Start where clause params at 2, vector takes param 1.
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var (where, parameters) = (oldFilter: legacyFilter, newFilter) switch
         {
             (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, model, legacyFilter, startParamIndex: 2),
+            (not null, null) => GenerateLegacyFilterWhereClause(model, legacyFilter, startParamIndex: 2),
             (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex: 2),
             _ => (Clause: string.Empty, Parameters: [])
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-        var commandText = $"""
-SELECT {columns}, "{vectorColumn}" {distanceOp} $1 AS "{PostgresConstants.DistanceColumnName}"
-FROM {schema}."{tableName}" {where}
-ORDER BY {PostgresConstants.DistanceColumnName}
-LIMIT {limit}
-""";
+        StringBuilder sql = new();
+        sql.Append("SELECT ").Append(columns).Append(", ").AppendIdentifier(vectorProperty.StorageName)
+            .Append(' ').Append(distanceOp).Append(" $1 AS ").AppendIdentifier(PostgresConstants.DistanceColumnName).AppendLine()
+            .Append("FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName)
+            .Append(' ').AppendLine(where)
+            .Append("ORDER BY ").AppendLine(PostgresConstants.DistanceColumnName)
+            .Append("LIMIT ").Append(limit);
 
-        if (skip.HasValue) { commandText += $" OFFSET {skip.Value}"; }
+        if (skip.HasValue)
+        {
+            sql.Append(" OFFSET ").Append(skip.Value);
+        }
+
+        var commandText = sql.ToString();
 
         // For cosine similarity, we need to take 1 - cosine distance.
         // However, we can't use an expression in the ORDER BY clause or else the index won't be used.
         // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if (vectorProperty.DistanceFunction == DistanceFunction.CosineSimilarity)
         {
-            commandText = $"""
-SELECT {columns}, 1 - "{PostgresConstants.DistanceColumnName}" AS "{PostgresConstants.DistanceColumnName}"
-FROM ({commandText}) AS subquery
-""";
+            StringBuilder outerSql = new();
+            outerSql.Append("SELECT ").Append(columns).Append(", 1 - ").AppendIdentifier(PostgresConstants.DistanceColumnName)
+                .Append(" AS ").AppendIdentifier(PostgresConstants.DistanceColumnName).AppendLine()
+                .Append("FROM (").Append(commandText).Append(") AS subquery");
+            commandText = outerSql.ToString();
         }
 
         // For inner product, we need to take -1 * inner product.
@@ -385,10 +436,11 @@ FROM ({commandText}) AS subquery
         // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if (vectorProperty.DistanceFunction == DistanceFunction.DotProductSimilarity)
         {
-            commandText = $"""
-SELECT {columns}, -1 * "{PostgresConstants.DistanceColumnName}" AS "{PostgresConstants.DistanceColumnName}"
-FROM ({commandText}) AS subquery
-""";
+            StringBuilder outerSql = new();
+            outerSql.Append("SELECT ").Append(columns).Append(", -1 * ").AppendIdentifier(PostgresConstants.DistanceColumnName)
+                .Append(" AS ").AppendIdentifier(PostgresConstants.DistanceColumnName).AppendLine()
+                .Append("FROM (").Append(commandText).Append(") AS subquery");
+            commandText = outerSql.ToString();
         }
 
         command.CommandText = commandText;
@@ -408,16 +460,21 @@ FROM ({commandText}) AS subquery
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");
+        var first = true;
         foreach (var property in model.Properties)
         {
             if (options.IncludeVectors || property is not VectorPropertyModel)
             {
-                query.AppendFormat("\"{0}\",", property.StorageName);
+                if (!first)
+                {
+                    query.Append(',');
+                }
+                first = false;
+                query.AppendIdentifier(property.StorageName);
             }
         }
-        query.Length--;  // Remove trailing comma
         query.AppendLine();
-        query.AppendFormat("FROM {0}.\"{1}\"", schema, tableName).AppendLine();
+        query.Append("FROM ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName).AppendLine();
 
         PostgresFilterTranslator translator = new(model, filter, startParamIndex: 1, query);
         translator.Translate(appendWhere: true);
@@ -428,14 +485,18 @@ FROM ({commandText}) AS subquery
         {
             query.Append("ORDER BY ");
 
+            var firstOrderBy = true;
             foreach (var sortInfo in orderBy)
             {
-                query.AppendFormat("\"{0}\" {1},",
-                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
-                    sortInfo.Ascending ? "ASC" : "DESC");
+                if (!firstOrderBy)
+                {
+                    query.Append(',');
+                }
+                firstOrderBy = false;
+                query.AppendIdentifier(model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName)
+                    .Append(sortInfo.Ascending ? " ASC" : " DESC");
             }
 
-            query.Length--; // remove the last comma
             query.AppendLine();
         }
 
@@ -459,22 +520,28 @@ FROM ({commandText}) AS subquery
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
+    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
     {
-        var whereClause = new StringBuilder("WHERE ");
-        var filterClauses = new List<string>();
+        StringBuilder whereClause = new("WHERE ");
         var parameters = new List<object>();
 
         var paramIndex = startParamIndex;
+        var first = true;
 
         foreach (var filterClause in legacyFilter.FilterClauses)
         {
+            if (!first)
+            {
+                whereClause.Append(" AND ");
+            }
+            first = false;
+
             if (filterClause is EqualToFilterClause equalTo)
             {
                 var property = model.Properties.FirstOrDefault(p => p.ModelName == equalTo.FieldName);
                 if (property == null) { throw new ArgumentException($"Property {equalTo.FieldName} not found in record definition."); }
 
-                filterClauses.Add($"\"{property.StorageName}\" = ${paramIndex}");
+                whereClause.AppendIdentifier(property.StorageName).Append(" = $").Append(paramIndex);
                 parameters.Add(equalTo.Value);
                 paramIndex++;
             }
@@ -488,7 +555,7 @@ FROM ({commandText}) AS subquery
                     throw new ArgumentException($"Property {anyTagEqualTo.FieldName} must be of type List<string> to use AnyTagEqualTo filter.");
                 }
 
-                filterClauses.Add($"\"{property.StorageName}\" @> ARRAY[${paramIndex}::TEXT]");
+                whereClause.AppendIdentifier(property.StorageName).Append(" @> ARRAY[$").Append(paramIndex).Append("::TEXT]");
                 parameters.Add(anyTagEqualTo.Value);
                 paramIndex++;
             }
@@ -498,7 +565,6 @@ FROM ({commandText}) AS subquery
             }
         }
 
-        whereClause.Append(string.Join(" AND ", filterClauses));
         return (whereClause.ToString(), parameters);
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
