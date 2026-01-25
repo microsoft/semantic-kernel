@@ -117,6 +117,37 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to:
+        // EXISTS(SELECT 1 FROM OPENJSON(column) WHERE value IN ('a', 'b', 'c'))
+        if (values is not IEnumerable elements)
+        {
+            throw new NotSupportedException("Unsupported Any expression");
+        }
+
+        this._sql.Append("EXISTS(SELECT 1 FROM OPENJSON(");
+        this.GenerateColumn(property);
+        this._sql.Append(") WHERE value IN (");
+
+        var isFirst = true;
+        foreach (var element in elements)
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                this._sql.Append(", ");
+            }
+
+            this.TranslateConstant(element, isSearchCondition: false);
+        }
+
+        this._sql.Append("))");
+    }
+
     protected override void TranslateQueryParameter(object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
