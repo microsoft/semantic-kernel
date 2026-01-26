@@ -47,7 +47,7 @@ public class WeaviateVectorStoreFixture : IAsyncLifetime
 
     #region private
 
-    private async static Task WaitForInitializationAsync(HttpClient httpClient)
+    private static async Task WaitForInitializationAsync(HttpClient httpClient)
     {
         const int MaxAttemptCount = 10;
         const int DelayInterval = 1000;

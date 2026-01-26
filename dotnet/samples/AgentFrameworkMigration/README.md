@@ -313,7 +313,7 @@ You will be prompted for any required environment variables if they are not alre
 
 Before you begin, ensure you have the following:
 
-- [.NET 8.0 SDK or later](https://dotnet.microsoft.com/download)
+- [.NET 10.0 SDK or later](https://dotnet.microsoft.com/download)
 - For Azure AI Foundry samples: Azure OpenAI service endpoint and deployment configured
 - For OpenAI samples: OpenAI API key
 - For OpenAI Assistants samples: OpenAI API key with Assistant API access

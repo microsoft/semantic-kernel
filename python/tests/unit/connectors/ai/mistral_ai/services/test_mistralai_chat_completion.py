@@ -534,7 +534,7 @@ async def test_mistral_ai_chat_completion_get_streaming_chat_message_contents_fa
     assert "service failed to complete the prompt" in str(exc.value)
 
 
-async def test_mistral_ai_chat_completion_update_settings_from_function_call_configuration_mistral():
+def test_mistral_ai_chat_completion_update_settings_from_function_call_configuration_mistral():
     """Test update_settings_from_function_call_configuration_mistral sets tools etc."""
 
     chat_completion = MistralAIChatCompletion(
@@ -568,7 +568,7 @@ async def test_mistral_ai_chat_completion_update_settings_from_function_call_con
     assert settings.tools[0]["function"]["name"] == "mod.my_func"
 
 
-async def test_mistral_ai_chat_completion_reset_function_choice_settings():
+def test_mistral_ai_chat_completion_reset_function_choice_settings():
     """Test that _reset_function_choice_settings resets specific attributes."""
     chat_completion = MistralAIChatCompletion(
         ai_model_id="test-model",
@@ -581,7 +581,7 @@ async def test_mistral_ai_chat_completion_reset_function_choice_settings():
     assert settings.tools is None
 
 
-async def test_mistral_ai_chat_completion_service_url():
+def test_mistral_ai_chat_completion_service_url():
     """Test that service_url attempts to use _endpoint from the async_client."""
     async_mock_client = MagicMock(spec=Mistral)
     async_mock_client._endpoint = "mistral"

@@ -18,7 +18,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
-    google_ai_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
@@ -164,7 +163,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            marks=[
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            ],
             id="google_ai_text_input",
         ),
         # endregion

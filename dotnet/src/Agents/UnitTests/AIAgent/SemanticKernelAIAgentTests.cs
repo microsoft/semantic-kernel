@@ -92,7 +92,7 @@ public sealed class SemanticKernelAIAgentTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
         AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => expectedThread;
         var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, ThreadDeserializationFactory, ThreadSerializer);
-        var json = JsonDocument.Parse("{}").RootElement;
+        var json = JsonElement.Parse("{}");
 
         // Act
         var result = adapter.DeserializeThread(json);
@@ -133,7 +133,7 @@ public sealed class SemanticKernelAIAgentTests
         }
 
         var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, DeserializationFactory, (t, o) => default);
-        var json = JsonDocument.Parse("{}").RootElement;
+        var json = JsonElement.Parse("{}");
 
         // Act
         var result = adapter.DeserializeThread(json);

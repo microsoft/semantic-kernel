@@ -161,7 +161,7 @@ public class KernelFunctionTests
 
         // Act
         // Invoke the cloned function with kernel1 explicitly
-        var result = await clonedFunction.InvokeAsync(kernel1, new KernelArguments());
+        var result = await clonedFunction.InvokeAsync(kernel1, []);
 
         // Assert
         // The function should have used kernel1, not kernel2

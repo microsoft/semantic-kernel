@@ -388,7 +388,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             this._hasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
-            .Select(result => result.Record, cancellationToken: cancellationToken);
+            .Select(result => result.Record);
     }
 
     /// <inheritdoc />
@@ -552,14 +552,14 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         // Based on https://weaviate.io/developers/weaviate/starter-guides/managing-collections#collection--property-names
         char first = collectionName[0];
-        if (!(first is >= 'A' and <= 'Z'))
+        if (first is not (>= 'A' and <= 'Z'))
         {
             throw new ArgumentException("Collection name must start with an uppercase ASCII letter.", nameof(collectionName));
         }
 
         foreach (char character in collectionName)
         {
-            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z') || (character is >= '0' and <= '9') || character is '_'))
+            if (character is not (>= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '_'))
             {
                 throw new ArgumentException("Collection name must contain only ASCII letters and digits or underscores. The first character must be an upper case letter.", nameof(collectionName));
             }

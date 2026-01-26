@@ -11,6 +11,7 @@ using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 public sealed class OpenAITextToImageTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()

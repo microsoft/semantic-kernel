@@ -124,8 +124,10 @@ internal sealed class CosmosNoSqlMapper<TRecord>(CollectionModel model, JsonSeri
                     var arrayNode = storageModel[vectorProperty.StorageName];
                     if (arrayNode is not null)
                     {
-                        var embeddingNode = new JsonObject();
-                        embeddingNode[nameof(Embedding<float>.Vector)] = arrayNode.DeepClone();
+                        var embeddingNode = new JsonObject
+                        {
+                            [nameof(Embedding<float>.Vector)] = arrayNode.DeepClone()
+                        };
                         storageModel[vectorProperty.StorageName] = embeddingNode;
                     }
                 }

@@ -271,7 +271,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.Equal(215, getResult.HotelCode);
         Assert.Equal(5, getResult.HotelRating);
         Assert.False(getResult.ParkingIncluded);
-        Assert.Equal(new List<string> { "historic", "philly" }, getResult.Tags);
+        Assert.Equal(["historic", "philly"], getResult.Tags);
         Assert.Equal("An iconic building on broad street", getResult.Description);
         Assert.Equal([10f, 20f, 30f, 40f], getResult.DescriptionEmbedding!.Value.ToArray());
     }
@@ -446,7 +446,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record = new RecordWithEnumerables
         {
             Id = 1,
-            ListInts = new() { 1, 2, 3 },
+            ListInts = [1, 2, 3],
             ArrayInts = new[] { 4, 5, 6 },
         };
 
@@ -503,7 +503,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         record.HotelCode = 1;
         record.ParkingIncluded = true;
         record.HotelRating = 4.5f;
-        record.Tags = new List<string> { "tag1", "tag2" };
+        record.Tags = ["tag1", "tag2"];
         return record;
     }
     private static DateTime TruncateMilliseconds(DateTime dateTime)

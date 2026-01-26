@@ -212,11 +212,11 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         // Arrange
         var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Id", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string))
-            }
+            ]
         };
 
         var model = new TestModel { Id = "key", HotelName = "Test Name" };
@@ -260,11 +260,11 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         // Arrange
         var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Id", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string))
-            }
+            ]
         };
 
         var model = new BsonTestModel { Id = "key", HotelName = "Test Name" };

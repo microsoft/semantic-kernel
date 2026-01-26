@@ -25,7 +25,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private const string ListFilesTestDataFilePath = "./TestData/sessions_python_plugin_file_list.json";
     private const string UpdaloadFileTestDataFilePath = "./TestData/sessions_python_plugin_file_upload.json";
     private const string FileTestDataFilePath = "./TestData/sessions_python_plugin_file.txt";
-    private readonly static string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
+    private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
 
     private readonly SessionsPythonSettings _defaultSettings = new(
         sessionId: Guid.NewGuid().ToString(),

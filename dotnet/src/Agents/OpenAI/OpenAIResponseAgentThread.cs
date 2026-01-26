@@ -63,7 +63,7 @@ public sealed class OpenAIResponseAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected async override Task DeleteInternalAsync(CancellationToken cancellationToken = default)
+    protected override async Task DeleteInternalAsync(CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
         {

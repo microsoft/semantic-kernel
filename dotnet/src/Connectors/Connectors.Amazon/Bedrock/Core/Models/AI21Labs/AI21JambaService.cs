@@ -20,14 +20,14 @@ internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrock
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var settings = AmazonJambaExecutionSettings.FromExecutionSettings(executionSettings);
-        List<AI21JambaRequest.AI21TextGenerationRequest.JambaMessage> messages = new()
-        {
+        List<AI21JambaRequest.AI21TextGenerationRequest.JambaMessage> messages =
+        [
             new AI21JambaRequest.AI21TextGenerationRequest.JambaMessage()
             {
                 Role = "user",
                 Content = prompt
             }
-        };
+        ];
 
         // Get the prompt execution settings from ExtensionData dictionary of PromptExecutionSettings or AmazonJambaTextExecutionSettings specific parameters.
         var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()

@@ -57,7 +57,7 @@ public class RedisCollectionSearchMappingTests
         {
             var byteArray = RedisCollectionSearchMapping.ValidateVectorAndConvertToBytes(unsupportedVector, "Test");
         });
-        Assert.Equal("The provided vector type System.ReadOnlyMemory`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]] is not supported by the Redis Test connector.", exception.Message);
+        Assert.Equal("The provided vector type System.ReadOnlyMemory`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]] is not supported by the Redis Test connector.", exception.Message);
     }
 
     [Fact]

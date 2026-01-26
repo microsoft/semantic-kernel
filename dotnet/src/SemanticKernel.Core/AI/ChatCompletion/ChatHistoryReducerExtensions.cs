@@ -121,7 +121,7 @@ internal static class ChatHistoryReducerExtensions
         // Skip function related content
         while (messageIndex >= 0)
         {
-            if (!chatHistory[messageIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (!chatHistory[messageIndex].Items.Any(i => i is FunctionCallContent or FunctionResultContent))
             {
                 break;
             }

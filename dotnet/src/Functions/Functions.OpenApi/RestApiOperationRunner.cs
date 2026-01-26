@@ -217,7 +217,7 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
-#if NET5_0_OR_GREATER
+#if NET
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
 #else
         requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
@@ -633,7 +633,7 @@ internal sealed class RestApiOperationRunner
     {
         IDictionary<string, object?>? requestOptions = null;
 
-#if NET5_0_OR_GREATER
+#if NET
         requestOptions = requestMessage.Options;
 #else
         requestOptions = requestMessage.Properties;

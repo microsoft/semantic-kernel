@@ -50,8 +50,8 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         this._client = dockerClientConfiguration.CreateClient();
         this.HotelVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("HotelId", typeof(ulong)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
@@ -61,17 +61,17 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
                 new VectorStoreDataProperty("Description", typeof(string)),
                 new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
-            }
+            ]
         };
         this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("HotelId", typeof(Guid)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreDataProperty("Description", typeof(string)),
                 new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
-            }
+            ]
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(embeddingsConfig);
@@ -332,7 +332,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public bool ParkingIncluded { get; set; }
 
         [VectorStoreData(IsIndexed = true)]
-        public List<string> Tags { get; set; } = new List<string>();
+        public List<string> Tags { get; set; } = [];
 
         /// <summary>A datetime metadata field.</summary>
         [VectorStoreData(IsIndexed = true)]

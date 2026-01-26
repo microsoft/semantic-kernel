@@ -22,7 +22,7 @@ internal sealed class MockAgent : ChatHistoryAgent
 
     public IReadOnlyList<ChatMessageContent> Response { get; set; } = [];
 
-    public async override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
@@ -59,7 +59,7 @@ internal sealed class MockAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,

@@ -61,7 +61,7 @@ public sealed class SqlServerVectorStore : VectorStore
     /// <inheritdoc/>
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
@@ -82,7 +82,7 @@ public sealed class SqlServerVectorStore : VectorStore
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)

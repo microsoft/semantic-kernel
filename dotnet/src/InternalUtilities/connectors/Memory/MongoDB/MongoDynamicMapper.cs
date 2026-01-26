@@ -23,27 +23,28 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
     {
         Verify.NotNull(dataModel);
 
-        var document = new BsonDocument();
-
-        document[MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var document = new BsonDocument
+        {
+            [MongoConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,
-                Guid g => BsonValue.Create(g),
+                Guid g => new BsonBinaryData(g, GuidRepresentation.Standard),
                 ObjectId o => o,
                 long i => i,
                 int i => i,
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectID, long or int.")
+            }
+        };
 
         foreach (var property in model.DataProperties)
         {
             if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                document[property.StorageName] = BsonValue.Create(dataValue);
+                document[property.StorageName] = BsonValueFactory.Create(dataValue);
             }
         }
 

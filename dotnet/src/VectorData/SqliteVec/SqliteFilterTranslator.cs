@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
-    private readonly Dictionary<string, object> _parameters = new();
+    private readonly Dictionary<string, object> _parameters = [];
 
     internal SqliteFilterTranslator(CollectionModel model, LambdaExpression lambdaExpression)
         : base(model, lambdaExpression, sql: null)

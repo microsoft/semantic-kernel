@@ -27,7 +27,7 @@ public class PineconeDataTypeTests(PineconeDataTypeTests.Fixture fixture)
             typeof(DateTimeOffset),
             typeof(string[]), // TODO: Error with gRPC status code 3
 
-#if NET8_0_OR_GREATER
+#if NET
             typeof(DateOnly),
             typeof(TimeOnly)
 #endif

@@ -33,7 +33,7 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
-#if NET7_0_OR_GREATER
+#if NET
     [GeneratedRegex(@"\p{L}+", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex AnyLanguageWordRegex();
 #else
@@ -91,8 +91,8 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         // Create a definition so that we can use the dimensions provided at runtime.
         VectorStoreCollectionDefinition ragDocumentDefinition = new()
         {
-            Properties = new List<VectorStoreProperty>()
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(TKey)),
                 new VectorStoreDataProperty("Namespaces", typeof(List<string>)) { IsIndexed = true },
                 new VectorStoreDataProperty("SourceId", typeof(string)) { IsIndexed = true },
@@ -100,7 +100,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 new VectorStoreDataProperty("SourceName", typeof(string)),
                 new VectorStoreDataProperty("SourceLink", typeof(string)),
                 new VectorStoreVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
-            }
+            ]
         };
 
         this._vectorStoreRecordCollection = this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
@@ -262,7 +262,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
-            .Select(x => x.Record, cancellationToken)
+            .Select(x => x.Record)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

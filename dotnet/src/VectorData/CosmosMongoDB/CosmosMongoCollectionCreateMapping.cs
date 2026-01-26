@@ -112,7 +112,7 @@ internal static class CosmosMongoCollectionCreateMapping
         {
             IndexKind.Hnsw => "vector-hnsw",
             IndexKind.IvfFlat => "vector-ivf",
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new NotSupportedException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
 
     /// <summary>
@@ -124,6 +124,6 @@ internal static class CosmosMongoCollectionCreateMapping
             DistanceFunction.CosineDistance => "COS",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
-    <TargetFrameworks>net8.0</TargetFrameworks>    <!-- ;net48 -->
+    <TargetFrameworks>net10.0</TargetFrameworks>    <!-- ;net48 -->
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050,SKEXP0110,SKEXP0120,SKEXP0130,MEVD9000,OPENAI001</NoWarn>

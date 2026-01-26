@@ -29,8 +29,15 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
 async def main():
     credential = AzureCliCredential()
 
+    # Define the resources directory for file uploads
+    resources_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources")
+
     # 1. Create the python code interpreter tool using the SessionsPythonTool
-    python_code_interpreter = SessionsPythonTool(credential=credential)
+    # allowed_upload_directories restricts which local directories can be accessed for uploads
+    python_code_interpreter = SessionsPythonTool(
+        credential=credential,
+        allowed_upload_directories=[resources_dir],
+    )
 
     # 2. Create the agent
     agent = ChatCompletionAgent(
@@ -41,7 +48,7 @@ async def main():
     )
 
     # 3. Upload a CSV file to the session
-    csv_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "sales.csv")
+    csv_file_path = os.path.join(resources_dir, "sales.csv")
     file_metadata = await python_code_interpreter.upload_file(local_file_path=csv_file_path)
 
     # 4. Invoke the agent for a response to a task

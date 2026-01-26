@@ -27,8 +27,7 @@ internal static class OpenAIResponseExtensions
         var kernelContents = response.OutputItems
             .SelectMany(item => item.ToChatMessageContentItemCollection())
             .ToList();
-        ChatMessageContentItemCollection items = new();
-        items.AddRange(kernelContents);
+        ChatMessageContentItemCollection items = [.. kernelContents];
 
         return new ChatMessageContent(
             role,
@@ -175,7 +174,7 @@ internal static class OpenAIResponseExtensions
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in content)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText || part.Kind == ResponseContentPartKind.InputText)
+            if (part.Kind is ResponseContentPartKind.OutputText or ResponseContentPartKind.InputText)
             {
                 collection.Add(new TextContent(part.Text, innerContent: part));
             }
