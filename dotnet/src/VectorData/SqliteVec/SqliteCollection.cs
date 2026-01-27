@@ -101,9 +101,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         this.Name = name;
         this._model = modelFactory(options);
 
-        // Escape both table names before exposing them to anything that may build SQL commands.
-        this._dataTableName = name.EscapeIdentifier();
-        this._vectorTableName = GetVectorTableName(name, options).EscapeIdentifier();
+        this._dataTableName = name;
+        this._vectorTableName = GetVectorTableName(name, options);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
 

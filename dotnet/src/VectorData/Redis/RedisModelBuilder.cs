@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -62,5 +63,49 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
             || type == typeof(ReadOnlyMemory<double>)
             || type == typeof(Embedding<double>)
             || type == typeof(double[]);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        ValidateStorageName(propertyModel);
+    }
+
+    internal static void ValidateStorageName(PropertyModel propertyModel)
+    {
+        // RediSearch field names cannot be escaped in all contexts; storage names are validated during model building.
+        if (!IsValidIdentifier(propertyModel.StorageName))
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid RediSearch field name. " +
+                "RediSearch field names must start with a letter or underscore, and contain only letters, digits, and underscores.");
+        }
+    }
+
+    internal static bool IsValidIdentifier(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return false;
+        }
+
+        var first = name[0];
+        if (!char.IsLetter(first) && first != '_')
+        {
+            return false;
+        }
+
+        for (var i = 1; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (!char.IsLetterOrDigit(c) && c != '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

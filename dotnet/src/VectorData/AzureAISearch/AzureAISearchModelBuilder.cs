@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -70,5 +71,45 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
             || type == typeof(ReadOnlyMemory<float>?)
             || type == typeof(Embedding<float>)
             || type == typeof(float[]);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        // OData identifiers cannot be escaped; storage names are validated during model building.
+        // See https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_ODataIdentifier
+        if (!IsValidIdentifier(propertyModel.StorageName))
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid OData identifier. " +
+                "OData identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
+        }
+    }
+
+    private static bool IsValidIdentifier(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return false;
+        }
+
+        var first = name[0];
+        if (!char.IsLetter(first) && first != '_')
+        {
+            return false;
+        }
+
+        for (var i = 1; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (!char.IsLetterOrDigit(c) && c != '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

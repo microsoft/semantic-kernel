@@ -37,6 +37,10 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
+    // TODO: support Any over array fields (#10343)
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+        => throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
