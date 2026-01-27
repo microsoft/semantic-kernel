@@ -22,8 +22,6 @@ internal static class SqliteCommandBuilder
 {
     internal const string DistancePropertyName = "distance";
 
-    internal static string EscapeIdentifier(this string value) => value.Replace("'", "''").Replace("\"", "\"\"");
-
     public static DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
     {
         Verify.NotNullOrWhiteSpace(tableName);
@@ -46,7 +44,12 @@ internal static class SqliteCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" (");
+        builder.Append("CREATE TABLE ");
+        if (ifNotExists)
+        {
+            builder.Append("IF NOT EXISTS ");
+        }
+        builder.AppendIdentifier(tableName).AppendLine(" (");
 
         builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: true))));
         builder.AppendLine(");");
@@ -55,7 +58,13 @@ internal static class SqliteCommandBuilder
         {
             if (column.HasIndex)
             {
-                builder.AppendLine($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}_{column.Name}_index\" ON \"{tableName}\"(\"{column.Name}\");");
+                builder.Append("CREATE INDEX ");
+                if (ifNotExists)
+                {
+                    builder.Append("IF NOT EXISTS ");
+                }
+                builder.AppendIdentifier($"{tableName}_{column.Name}_index").Append(" ON ")
+                    .AppendIdentifier(tableName).Append('(').AppendIdentifier(column.Name).AppendLine(");");
             }
         }
 
@@ -74,7 +83,12 @@ internal static class SqliteCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" USING vec0(");
+        builder.Append("CREATE VIRTUAL TABLE ");
+        if (ifNotExists)
+        {
+            builder.Append("IF NOT EXISTS ");
+        }
+        builder.AppendIdentifier(tableName).AppendLine(" USING vec0(");
 
         // The vector extension is currently uncapable of handling quoted identifiers.
         builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: false))));
@@ -89,12 +103,11 @@ internal static class SqliteCommandBuilder
 
     public static DbCommand BuildDropTableCommand(SqliteConnection connection, string tableName)
     {
-        string query = $"DROP TABLE IF EXISTS \"{tableName}\";";
+        var builder = new StringBuilder();
+        builder.Append("DROP TABLE IF EXISTS ").AppendIdentifier(tableName).Append(';');
 
         var command = connection.CreateCommand();
-
-        command.CommandText = query;
-
+        command.CommandText = builder.ToString();
         return command;
     }
 
@@ -126,7 +139,7 @@ internal static class SqliteCommandBuilder
                 sql.Append(" OR REPLACE");
             }
 
-            sql.Append(" INTO \"").Append(tableName).Append("\" (");  // TODO: Sanitize
+            sql.Append(" INTO ").AppendIdentifier(tableName).Append(" (");
 
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
             var propertyIndex = 0;
@@ -137,7 +150,7 @@ internal static class SqliteCommandBuilder
                     sql.Append(", ");
                 }
 
-                sql.Append('"').Append(property.StorageName).Append('"'); // TODO: Sanitize
+                sql.AppendIdentifier(property.StorageName);
             }
 
             sql.AppendLine(")");
@@ -212,7 +225,7 @@ internal static class SqliteCommandBuilder
 
         builder.Append("SELECT ");
         builder.AppendColumnNames(includeVectors: false, model.Properties);
-        builder.AppendLine($"FROM \"{tableName}\"");
+        builder.Append("FROM ").AppendIdentifier(tableName).AppendLine();
         builder.AppendWhereClause(whereClause);
 
         if (filterOptions is not null)
@@ -256,7 +269,10 @@ internal static class SqliteCommandBuilder
                 top,
                 skip);
 
-        var queryExtraFilter = $"\"{vectorTableName}\".\"{keyColumnName}\" IN (SELECT \"{keyColumnName}\" FROM {SubqueryName})";
+        var queryExtraFilter = new StringBuilder()
+            .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(keyColumnName)
+            .Append(" IN (SELECT ").AppendIdentifier(keyColumnName).Append(" FROM ").Append(SubqueryName).Append(')')
+            .ToString();
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, queryExtraFilter, []);
 
         foreach (var parameter in subqueryCommand.Parameters)
@@ -264,16 +280,18 @@ internal static class SqliteCommandBuilder
             command.Parameters.Add(parameter);
         }
 
-        builder.AppendLine($"WITH {SubqueryName} AS ({subqueryCommand.CommandText}) ");
+        builder.Append("WITH ").Append(SubqueryName).Append(" AS (").Append(subqueryCommand.CommandText).AppendLine(") ");
 
         builder.Append("SELECT ");
         builder.AppendColumnNames(includeVectors: true, model.Properties, vectorTableName, dataTableName);
         if (includeDistance)
         {
-            builder.AppendLine($", \"{vectorTableName}\".\"{DistancePropertyName}\"");
+            builder.Append(", ").AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(DistancePropertyName).AppendLine();
         }
-        builder.AppendLine($"FROM \"{vectorTableName}\"");
-        builder.AppendLine($"INNER JOIN \"{dataTableName}\" ON \"{vectorTableName}\".\"{keyColumnName}\" = \"{dataTableName}\".\"{keyColumnName}\"");
+        builder.Append("FROM ").AppendIdentifier(vectorTableName).AppendLine();
+        builder.Append("INNER JOIN ").AppendIdentifier(dataTableName).Append(" ON ")
+            .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(keyColumnName).Append(" = ")
+            .AppendIdentifier(dataTableName).Append('.').AppendIdentifier(keyColumnName).AppendLine();
         builder.AppendWhereClause(whereClause);
 
         if (filterOptions is not null)
@@ -282,7 +300,7 @@ internal static class SqliteCommandBuilder
         }
         else if (includeDistance)
         {
-            builder.AppendLine($"ORDER BY \"{vectorTableName}\".\"{DistancePropertyName}\"");
+            builder.Append("ORDER BY ").AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(DistancePropertyName).AppendLine();
         }
 
         builder.AppendLimits(top, skip);
@@ -301,7 +319,7 @@ internal static class SqliteCommandBuilder
 
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
-        builder.AppendLine($"DELETE FROM \"{tableName}\"");
+        builder.Append("DELETE FROM ").AppendIdentifier(tableName).AppendLine();
         builder.AppendWhereClause(whereClause);
 
         command.CommandText = builder.ToString();
@@ -309,30 +327,37 @@ internal static class SqliteCommandBuilder
         return command;
     }
 
+    /// <summary>
+    /// Appends a properly quoted and escaped SQLite identifier to the StringBuilder.
+    /// In SQLite, identifiers are quoted with double quotes, and embedded double quotes are escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendIdentifier(this StringBuilder sb, string identifier)
+        => sb.Append('"').Append(identifier.Replace("\"", "\"\"")).Append('"');
+
     #region private
 
     private static StringBuilder AppendColumnNames(this StringBuilder builder, bool includeVectors, IReadOnlyList<PropertyModel> properties,
-        string? escapedVectorTableName = null, string? escapedDataTableName = null)
+        string? vectorTableName = null, string? dataTableName = null)
     {
         foreach (var property in properties)
         {
-            string? tableName = escapedDataTableName;
+            string? tableName = dataTableName;
             if (property is VectorPropertyModel)
             {
                 if (!includeVectors)
                 {
                     continue;
                 }
-                tableName = escapedVectorTableName;
+                tableName = vectorTableName;
             }
 
             if (tableName is not null)
             {
-                builder.AppendFormat("\"{0}\".\"{1}\",", tableName, property.StorageName);
+                builder.AppendIdentifier(tableName).Append('.').AppendIdentifier(property.StorageName).Append(',');
             }
             else
             {
-                builder.AppendFormat("\"{0}\",", property.StorageName);
+                builder.AppendIdentifier(property.StorageName).Append(',');
             }
         }
 
@@ -355,10 +380,10 @@ internal static class SqliteCommandBuilder
 
                 if (tableName is not null)
                 {
-                    builder.AppendFormat("\"{0}\".", tableName);
+                    builder.AppendIdentifier(tableName).Append('.');
                 }
 
-                builder.AppendFormat("\"{0}\" {1},", storageName, sortInfo.Ascending ? "ASC" : "DESC");
+                builder.AppendIdentifier(storageName).Append(sortInfo.Ascending ? " ASC," : " DESC,");
             }
 
             builder.Length--; // remove the last comma
@@ -397,7 +422,7 @@ internal static class SqliteCommandBuilder
     {
         const string PrimaryKeyIdentifier = "PRIMARY KEY";
 
-        List<string> columnDefinitionParts = [quote ? $"\"{column.Name}\"" : column.Name, column.Type];
+        List<string> columnDefinitionParts = [quote ? QuoteIdentifier(column.Name) : column.Name, column.Type];
 
         if (column.IsPrimary)
         {
@@ -412,6 +437,9 @@ internal static class SqliteCommandBuilder
 
         return string.Join(" ", columnDefinitionParts);
     }
+
+    private static string QuoteIdentifier(string identifier)
+        => $"\"{identifier.Replace("\"", "\"\"")}\"";
 
     private static (DbCommand Command, string WhereClause) GetCommandWithWhereClause(
         SqliteConnection connection,

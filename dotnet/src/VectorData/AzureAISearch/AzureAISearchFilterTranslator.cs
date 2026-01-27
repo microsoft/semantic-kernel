@@ -151,7 +151,8 @@ internal class AzureAISearchFilterTranslator
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this._filter.Append(property.StorageName); // TODO: Escape
+            // OData identifiers cannot be escaped; storage names are validated during model building.
+            this._filter.Append(property.StorageName);
             return;
         }
 
@@ -164,7 +165,8 @@ internal class AzureAISearchFilterTranslator
         {
             // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
             case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this._filter.Append(property.StorageName); // TODO: Escape
+                // OData identifiers cannot be escaped; storage names are validated during model building.
+                this._filter.Append(property.StorageName);
                 return;
 
             // Enumerable.Contains()
@@ -385,7 +387,8 @@ RestartLoop:
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this._filter.Append(property.StorageName); // TODO: Escape
+                // OData identifiers cannot be escaped; storage names are validated during model building.
+                this._filter.Append(property.StorageName);
                 return;
 
             default:

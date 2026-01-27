@@ -35,23 +35,19 @@ internal static class SqlServerCommandBuilder
         sb.Append("CREATE TABLE ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
-        sb.AppendFormat("[{0}] {1} NOT NULL,", model.KeyProperty.StorageName, Map(model.KeyProperty));
-        sb.AppendLine();
+        sb.AppendIdentifier(model.KeyProperty.StorageName).Append(' ').Append(Map(model.KeyProperty)).AppendLine(" NOT NULL,");
 
         foreach (var property in model.DataProperties)
         {
-            sb.AppendFormat("[{0}] {1},", property.StorageName, Map(property));
-            sb.AppendLine();
+            sb.AppendIdentifier(property.StorageName).Append(' ').Append(Map(property)).AppendLine(",");
         }
 
         foreach (var property in model.VectorProperties)
         {
-            sb.AppendFormat("[{0}] VECTOR({1}),", property.StorageName, property.Dimensions);
-            sb.AppendLine();
+            sb.AppendIdentifier(property.StorageName).Append(" VECTOR(").Append(property.Dimensions).AppendLine("),");
         }
 
-        sb.AppendFormat("PRIMARY KEY ([{0}])", model.KeyProperty.StorageName);
-        sb.AppendLine();
+        sb.Append("PRIMARY KEY (").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(")");
         sb.AppendLine(");"); // end the table definition
 
         foreach (var dataProperty in model.DataProperties)
@@ -61,16 +57,15 @@ internal static class SqlServerCommandBuilder
                 var sqlType = Map(dataProperty);
                 if (sqlType == "JSON")
                 {
-                    sb.AppendFormat("CREATE JSON INDEX ");
+                    sb.Append("CREATE JSON INDEX ");
                 }
                 else
                 {
-                    sb.AppendFormat("CREATE INDEX ");
+                    sb.Append("CREATE INDEX ");
                 }
                 sb.AppendIndexName(tableName, dataProperty.StorageName);
-                sb.AppendFormat(" ON ").AppendTableName(schema, tableName);
-                sb.AppendFormat("([{0}]);", dataProperty.StorageName);
-                sb.AppendLine();
+                sb.Append(" ON ").AppendTableName(schema, tableName);
+                sb.Append('(').AppendIdentifier(dataProperty.StorageName).AppendLine(");");
             }
         }
 
@@ -156,16 +151,16 @@ internal static class SqlServerCommandBuilder
 
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
         sb.Append(") AS s (");
-        sb.AppendColumnNames(model.Properties);
+        sb.AppendIdentifiers(model.Properties);
         sb.AppendLine(")");
-        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", model.KeyProperty.StorageName).AppendLine();
+        sb.Append("ON (t.").AppendIdentifier(model.KeyProperty.StorageName).Append(" = s.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(")");
         sb.AppendLine("WHEN MATCHED THEN");
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
             if (property is not KeyPropertyModel) // don't update the key
             {
-                sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
+                sb.Append("t.").AppendIdentifier(property.StorageName).Append(" = s.").AppendIdentifier(property.StorageName).Append(',');
             }
         }
         --sb.Length; // remove the last comma
@@ -174,12 +169,12 @@ internal static class SqlServerCommandBuilder
         sb.Append("WHEN NOT MATCHED THEN");
         sb.AppendLine();
         sb.Append("INSERT (");
-        sb.AppendColumnNames(model.Properties);
+        sb.AppendIdentifiers(model.Properties);
         sb.AppendLine(")");
         sb.Append("VALUES (");
-        sb.AppendColumnNames(model.Properties, prefix: "s.");
+        sb.AppendIdentifiers(model.Properties, prefix: "s.");
         sb.AppendLine(")");
-        sb.AppendFormat("OUTPUT inserted.[{0}];", model.KeyProperty.StorageName);
+        sb.Append("OUTPUT inserted.").AppendIdentifier(model.KeyProperty.StorageName).Append(';');
 
         command.CommandText = sb.ToString();
         return command;
@@ -232,16 +227,16 @@ internal static class SqlServerCommandBuilder
         sb.Length -= (1 + Environment.NewLine.Length); // remove the last comma and newline
 
         sb.Append(") AS s ("); // s stands for source
-        sb.AppendColumnNames(model.Properties);
+        sb.AppendIdentifiers(model.Properties);
         sb.AppendLine(")");
-        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", model.KeyProperty.StorageName).AppendLine();
+        sb.Append("ON (t.").AppendIdentifier(model.KeyProperty.StorageName).Append(" = s.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(")");
         sb.AppendLine("WHEN MATCHED THEN");
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
             if (property is not KeyPropertyModel) // don't update the key
             {
-                sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
+                sb.Append("t.").AppendIdentifier(property.StorageName).Append(" = s.").AppendIdentifier(property.StorageName).Append(',');
             }
         }
         --sb.Length; // remove the last comma
@@ -249,13 +244,12 @@ internal static class SqlServerCommandBuilder
         sb.Append("WHEN NOT MATCHED THEN");
         sb.AppendLine();
         sb.Append("INSERT (");
-        sb.AppendColumnNames(model.Properties);
+        sb.AppendIdentifiers(model.Properties);
         sb.AppendLine(")");
         sb.Append("VALUES (");
-        sb.AppendColumnNames(model.Properties, prefix: "s.");
+        sb.AppendIdentifiers(model.Properties, prefix: "s.");
         sb.AppendLine(")");
-        sb.AppendFormat("OUTPUT inserted.[{0}] INTO @InsertedKeys (KeyColumn);", model.KeyProperty.StorageName);
-        sb.AppendLine();
+        sb.Append("OUTPUT inserted.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(" INTO @InsertedKeys (KeyColumn);");
 
         // The SELECT statement returns the keys of the inserted rows.
         sb.Append("SELECT KeyColumn FROM @InsertedKeys;");
@@ -274,7 +268,7 @@ internal static class SqlServerCommandBuilder
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
-        sb.AppendFormat(" WHERE [{0}] = ", keyProperty.StorageName);
+        sb.Append(" WHERE ").AppendIdentifier(keyProperty.StorageName).Append(" = ");
         sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
         command.AddParameter(keyProperty, keyParamName, key);
 
@@ -289,7 +283,7 @@ internal static class SqlServerCommandBuilder
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
-        sb.AppendFormat(" WHERE [{0}] IN (", keyProperty.StorageName);
+        sb.Append(" WHERE ").AppendIdentifier(keyProperty.StorageName).Append(" IN (");
         sb.AppendKeyParameterList(keys, command, keyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
 
@@ -312,13 +306,13 @@ internal static class SqlServerCommandBuilder
 
         int paramIndex = 0;
         StringBuilder sb = new(200);
-        sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(model.Properties, includeVectors: includeVectors);
+        sb.Append("SELECT ");
+        sb.AppendIdentifiers(model.Properties, includeVectors: includeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, collectionName);
         sb.AppendLine();
-        sb.AppendFormat("WHERE [{0}] = ", model.KeyProperty.StorageName);
+        sb.Append("WHERE ").AppendIdentifier(model.KeyProperty.StorageName).Append(" = ");
         sb.AppendParameterName(model.KeyProperty, ref paramIndex, out string keyParamName);
         command.AddParameter(model.KeyProperty, keyParamName, key);
 
@@ -333,13 +327,13 @@ internal static class SqlServerCommandBuilder
         bool includeVectors)
     {
         StringBuilder sb = new(200);
-        sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(model.Properties, includeVectors: includeVectors);
+        sb.Append("SELECT ");
+        sb.AppendIdentifiers(model.Properties, includeVectors: includeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
-        sb.AppendFormat("WHERE [{0}] IN (", model.KeyProperty.StorageName);
+        sb.Append("WHERE ").AppendIdentifier(model.KeyProperty.StorageName).Append(" IN (");
         sb.AppendKeyParameterList(keys, command, model.KeyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
 
@@ -368,11 +362,10 @@ internal static class SqlServerCommandBuilder
 
         StringBuilder sb = new(200);
         sb.Append("SELECT ");
-        sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
+        sb.AppendIdentifiers(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
-        sb.AppendFormat("VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
-            distanceMetric, vectorProperty.StorageName, vector.Length);
-        sb.AppendLine();
+        sb.Append("VECTOR_DISTANCE('").Append(distanceMetric).Append("', ").AppendIdentifier(vectorProperty.StorageName)
+            .Append(", CAST(@vector AS VECTOR(").Append(vector.Length).AppendLine("))) AS [score]");
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
@@ -410,8 +403,8 @@ internal static class SqlServerCommandBuilder
         SqlCommand command = connection.CreateCommand();
 
         StringBuilder sb = new(200);
-        sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
+        sb.Append("SELECT ");
+        sb.AppendIdentifiers(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
@@ -436,14 +429,18 @@ internal static class SqlServerCommandBuilder
         {
             sb.Append("ORDER BY ");
 
+            var first = true;
             foreach (var sortInfo in orderBy)
             {
-                sb.AppendFormat("[{0}] {1},",
-                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
-                    sortInfo.Ascending ? "ASC" : "DESC");
+                if (!first)
+                {
+                    sb.Append(',');
+                }
+                first = false;
+                sb.AppendIdentifier(model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName)
+                    .Append(sortInfo.Ascending ? " ASC" : " DESC");
             }
 
-            sb.Length--; // remove the last comma
             sb.AppendLine();
         }
         else
@@ -493,28 +490,32 @@ internal static class SqlServerCommandBuilder
 
     internal static StringBuilder AppendTableName(this StringBuilder sb, string? schema, string tableName)
     {
-        // If the column name contains a ], then escape it by doubling it.
+        // If the identifier contains a ], then escape it by doubling it.
         // "Name with [brackets]" becomes [Name with [brackets]]].
-
-        sb.Append('[');
-        int index = sb.Length; // store the index, so we replace ] only for the appended part
 
         if (!string.IsNullOrEmpty(schema))
         {
-            sb.Append(schema);
-            sb.Replace("]", "]]", index, schema!.Length); // replace the ] for schema
-            sb.Append("].[");
-            index = sb.Length;
+            sb.AppendIdentifier(schema!).Append('.');
         }
 
-        sb.Append(tableName);
-        sb.Replace("]", "]]", index, tableName.Length);
-        sb.Append(']');
+        return sb.AppendIdentifier(tableName);
+    }
 
+    /// <summary>
+    /// Appends a properly quoted and escaped SQL Server identifier to the StringBuilder.
+    /// If the identifier contains a ], it is escaped by doubling it.
+    /// </summary>
+    internal static StringBuilder AppendIdentifier(this StringBuilder sb, string identifier)
+    {
+        sb.Append('[');
+        int index = sb.Length;
+        sb.Append(identifier);
+        sb.Replace("]", "]]", index, identifier.Length);
+        sb.Append(']');
         return sb;
     }
 
-    private static StringBuilder AppendColumnNames(this StringBuilder sb,
+    private static StringBuilder AppendIdentifiers(this StringBuilder sb,
         IEnumerable<PropertyModel> properties,
         string? prefix = null,
         bool includeVectors = true)
@@ -531,8 +532,7 @@ internal static class SqlServerCommandBuilder
             {
                 sb.Append(prefix);
             }
-            // Use square brackets to escape column names.
-            sb.AppendFormat("[{0}],", property.StorageName);
+            sb.AppendIdentifier(property.StorageName).Append(',');
             any = true;
         }
 

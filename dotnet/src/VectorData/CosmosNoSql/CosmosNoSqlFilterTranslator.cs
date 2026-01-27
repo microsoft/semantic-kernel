@@ -348,7 +348,11 @@ internal class CosmosNoSqlFilterTranslator
     }
 
     protected virtual void GeneratePropertyAccess(PropertyModel property)
-        => this._sql.Append(CosmosNoSqlConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
+        => this._sql
+            .Append(CosmosNoSqlConstants.ContainerAlias)
+            .Append("[\"")
+            .Append(property.StorageName.Replace(@"\", @"\\").Replace("\"", "\\\""))
+            .Append("\"]");
 
     private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {

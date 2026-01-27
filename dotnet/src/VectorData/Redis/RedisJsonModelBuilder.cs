@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -51,5 +52,13 @@ internal class RedisJsonModelBuilder(CollectionModelBuildingOptions options) : C
             || type == typeof(ReadOnlyMemory<double>)
             || type == typeof(Embedding<double>)
             || type == typeof(double[]);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        RedisModelBuilder.ValidateStorageName(propertyModel);
     }
 }
