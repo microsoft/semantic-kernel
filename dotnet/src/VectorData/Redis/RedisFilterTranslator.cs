@@ -116,6 +116,7 @@ internal class RedisFilterTranslator
                     return true;
                 }
 
+                // Redis field names cannot be escaped in all contexts; storage names are validated during model building.
                 // https://redis.io/docs/latest/develop/interact/search-and-query/query/exact-match
                 this._filter.Append('@').Append(property.StorageName);
 
@@ -251,6 +252,7 @@ internal class RedisFilterTranslator
         // Contains over tag field
         if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
+            // Redis field names cannot be escaped in all contexts; storage names are validated during model building.
             this._filter
                 .Append('@')
                 .Append(property.StorageName)
