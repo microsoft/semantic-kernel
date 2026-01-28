@@ -29,5 +29,5 @@
 			]
 		}
 	},
-	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet && sudo apt-get update && sudo apt-get install -y azure-functions-core-tools-4" // avoids needing to run as 'sudo' when starting KernelHttpServer
+	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet && sudo mv /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.list.disabled && sudo apt-get update && sudo apt-get install -y azure-functions-core-tools-4 && sudo mv /etc/apt/sources.list.d/yarn.list.disabled /etc/apt/sources.list.d/yarn.list" // avoids needing to run as 'sudo' when starting KernelHttpServer
 }
