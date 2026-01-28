@@ -38,6 +38,8 @@ class SessionsPythonTool(KernelBaseModel):
     settings: SessionsPythonSettings
     auth_callback: Callable[..., Any | Awaitable[Any]]
     http_client: AsyncClient
+    enable_dangerous_file_uploads: bool = False
+    """Flag to enable file upload operations. Must be True along with allowed_upload_directories to enable uploads."""
     allowed_upload_directories: set[str] | None = None
     """Allowed local directories for file uploads. If None, upload_file is disabled (deny-by-default)."""
     allowed_download_directories: set[str] | None = None
@@ -52,6 +54,7 @@ class SessionsPythonTool(KernelBaseModel):
         env_file_path: str | None = None,
         token_endpoint: str | None = None,
         credential: TokenCredential | None = None,
+        enable_dangerous_file_uploads: bool = False,
         allowed_upload_directories: set[str] | list[str] | None = None,
         allowed_download_directories: set[str] | list[str] | None = None,
         **kwargs,
@@ -66,12 +69,15 @@ class SessionsPythonTool(KernelBaseModel):
             env_file_path: Path to .env file.
             token_endpoint: Token endpoint for authentication.
             credential: Azure credential for authentication.
+            enable_dangerous_file_uploads: Flag to enable file upload operations.
+                Must be True along with allowed_upload_directories to enable file uploads.
+                Default is False (file uploads disabled).
             allowed_upload_directories: Set or list of allowed directories for file uploads.
                 If None, upload_file will be disabled (deny-by-default).
                 Empty set/list means no directories are allowed (all uploads denied).
             allowed_download_directories: Set or list of allowed directories for file downloads.
                 If None, all paths are allowed (permissive-by-default).
-                Empty set/list means no directories are allowed (all local downloads denied).
+                If configured, downloads are restricted to these directories.
             kwargs: Additional keyword arguments.
         """
         try:
@@ -104,6 +110,7 @@ class SessionsPythonTool(KernelBaseModel):
             settings=settings,
             auth_callback=auth_callback,
             http_client=http_client,
+            enable_dangerous_file_uploads=enable_dangerous_file_uploads,
             allowed_upload_directories=upload_dirs,
             allowed_download_directories=download_dirs,
             **kwargs,
@@ -186,11 +193,17 @@ class SessionsPythonTool(KernelBaseModel):
             str: The canonicalized absolute path.
 
         Raises:
-            FunctionExecutionException: If the path is not within allowed directories.
+            FunctionExecutionException: If file operations are disabled or path is not within allowed directories.
         """
+        if not self.enable_dangerous_file_uploads:
+            raise FunctionExecutionException(
+                "File upload is disabled. Set 'enable_dangerous_file_uploads=True' "
+                "and configure 'allowed_upload_directories' to enable."
+            )
+
         if self.allowed_upload_directories is None:
             raise FunctionExecutionException(
-                "File upload is disabled. Configure 'allowed_upload_directories' to enable."
+                "File upload requires 'allowed_upload_directories' to be configured."
             )
 
         canonical_path = os.path.realpath(local_file_path)
@@ -416,13 +429,13 @@ class SessionsPythonTool(KernelBaseModel):
             remote_file_name: The name of the file to download, relative to `/mnt/data`.
             local_file_path: The path to save the downloaded file to. Should include the extension.
                 If not provided, the file is returned as a BytesIO object.
-                If allowed_download_directories is configured, must be within those directories.
+                Requires 'enable_dangerous_file_uploads=True' and 'allowed_download_directories' to be configured.
 
         Returns:
             BytesIO | None: The file content as BytesIO if no local_file_path provided, otherwise None.
 
         Raises:
-            FunctionExecutionException: If local_file_path is not in allowed directories (when configured).
+            FunctionExecutionException: If file operations are disabled or local_file_path is not in allowed directories.
         """
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update({
