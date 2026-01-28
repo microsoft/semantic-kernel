@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -33,7 +34,8 @@ public class SqlServerCollection<TKey, TRecord>
 
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
-    private readonly string _connectionString;
+    private readonly Func<Task<SqlConnection>>? _sqlConnectionProvider;
+    private readonly string? _connectionString;
     private readonly CollectionModel _model;
     private readonly SqlServerMapper<TRecord> _mapper;
 
@@ -60,6 +62,50 @@ public class SqlServerCollection<TKey, TRecord>
                 : new SqlServerModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
             options)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqlServerCollection{TKey, TRecord}"/> class.
+    /// </summary>
+    /// <param name="sqlConnectionProvider">Provider for the database connection.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="options">Optional configuration options.</param>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+    public SqlServerCollection(
+        Func<Task<SqlConnection>> sqlConnectionProvider,
+        string name,
+        SqlServerCollectionOptions? options = null)
+        : this(
+               sqlConnectionProvider,
+               name,
+               static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                   ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqlServerDynamicCollection)))
+                   : new SqlServerModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+               options)
+    {
+    }
+
+    private SqlServerCollection(Func<Task<SqlConnection>> sqlConnectionProvider, string name, Func<SqlServerCollectionOptions, CollectionModel> modelFactory, SqlServerCollectionOptions? options)
+    {
+        Verify.NotNull(sqlConnectionProvider);
+        Verify.NotNull(name);
+
+        this._sqlConnectionProvider = sqlConnectionProvider;
+        options ??= SqlServerCollectionOptions.Default;
+        this._schema = options.Schema;
+
+        this.Name = name;
+        this._model = modelFactory(options);
+
+        this._mapper = new SqlServerMapper<TRecord>(this._model);
+
+        this._collectionMetadata = new()
+                                   {
+                                       VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+                                       VectorStoreName = "(unknown)",
+                                       CollectionName = name
+                                   };
     }
 
     internal SqlServerCollection(string connectionString, string name, Func<SqlServerCollectionOptions, CollectionModel> modelFactory, SqlServerCollectionOptions? options)
@@ -92,7 +138,7 @@ public class SqlServerCollection<TKey, TRecord>
     /// <inheritdoc/>
     public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableName(
             connection, this._schema, this.Name);
 
@@ -113,7 +159,7 @@ public class SqlServerCollection<TKey, TRecord>
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             connection,
             this._schema,
@@ -131,7 +177,7 @@ public class SqlServerCollection<TKey, TRecord>
     /// <inheritdoc/>
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
             connection, this._schema, this.Name);
 
@@ -147,7 +193,7 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(key);
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(
             connection,
             this._schema,
@@ -167,8 +213,11 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(keys);
 
-        using SqlConnection connection = new(this._connectionString);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         using SqlTransaction transaction = connection.BeginTransaction();
         int taken = 0;
@@ -251,7 +300,7 @@ public class SqlServerCollection<TKey, TRecord>
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             connection,
             this._schema,
@@ -286,7 +335,7 @@ public class SqlServerCollection<TKey, TRecord>
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = connection.CreateCommand();
         int taken = 0;
 
@@ -373,7 +422,7 @@ public class SqlServerCollection<TKey, TRecord>
             }
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             connection,
             this._schema,
@@ -446,8 +495,11 @@ public class SqlServerCollection<TKey, TRecord>
             }
         }
 
-        using SqlConnection connection = new(this._connectionString);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         using SqlTransaction transaction = connection.BeginTransaction();
         int parametersPerRecord = this._model.Properties.Count;
@@ -565,7 +617,7 @@ public class SqlServerCollection<TKey, TRecord>
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
-        SqlConnection connection = new(this._connectionString);
+        SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
             this._schema,
@@ -645,7 +697,7 @@ public class SqlServerCollection<TKey, TRecord>
 
         options ??= new();
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = await this.GetSqlConnectionAsync().ConfigureAwait(false);
         using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
             filter,
             top,
@@ -669,5 +721,14 @@ public class SqlServerCollection<TKey, TRecord>
         {
             yield return this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
         }
+    }
+
+    private async Task<SqlConnection> GetSqlConnectionAsync()
+    {
+        if (this._sqlConnectionProvider != null)
+        {
+            return await this._sqlConnectionProvider().ConfigureAwait(false);
+        }
+        return new SqlConnection(this._connectionString);
     }
 }
