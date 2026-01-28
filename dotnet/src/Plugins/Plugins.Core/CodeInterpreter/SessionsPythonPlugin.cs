@@ -123,13 +123,13 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        var validatedPath = this.ValidateLocalPathForUpload(localFilePath);
+        var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedPath, remoteFileName);
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
-        using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedPath));
+        using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedLocalPath));
 
         using var multipartFormDataContent = new MultipartFormDataContent()
         {
@@ -320,8 +320,7 @@ public sealed partial class SessionsPythonPlugin
                 ? canonicalAllowedDir
                 : canonicalAllowedDir + separator;
 
-            if (canonicalPath.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase) ||
-                canonicalPath.Equals(canonicalAllowedDir, StringComparison.OrdinalIgnoreCase))
+            if (canonicalPath.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
             {
                 return canonicalPath;
             }
@@ -364,8 +363,7 @@ public sealed partial class SessionsPythonPlugin
                 ? canonicalAllowedDir
                 : canonicalAllowedDir + separator;
 
-            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase) ||
-                canonicalTargetDir.Equals(canonicalAllowedDir, StringComparison.OrdinalIgnoreCase))
+            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
             {
                 return canonicalFilePath;
             }
