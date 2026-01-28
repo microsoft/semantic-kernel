@@ -79,6 +79,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
     }
 
     [Fact]
+    public void ItExposesExpectedKernelFunctions()
+    {
+        // Arrange
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(plugin);
+
+        // Assert - Only ExecuteCode, UploadFile, and ListFiles should be exposed
+        // DownloadFile should NOT be exposed as a KernelFunction (matching Python behavior)
+        Assert.Equal(3, kernelPlugin.FunctionCount);
+        Assert.Contains(kernelPlugin, f => f.Name == "ExecuteCode");
+        Assert.Contains(kernelPlugin, f => f.Name == "UploadFile");
+        Assert.Contains(kernelPlugin, f => f.Name == "ListFiles");
+        Assert.DoesNotContain(kernelPlugin, f => f.Name == "DownloadFile");
+    }
+
+    [Fact]
     public async Task ItShouldExecuteCodeAsync()
     {
         var responseContent = File.ReadAllText(CodeExecutionTestDataFilePath);
