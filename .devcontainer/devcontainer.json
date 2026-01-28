@@ -1,7 +1,12 @@
 {
-	"image": "mcr.microsoft.com/devcontainers/universal:latest",
+	//"image": "mcr.microsoft.com/devcontainers/universal:latest",
+	// Workaround for https://github.com/devcontainers/images/issues/1752
+	"build": {
+		"dockerfile": "sk.Dockerfile"
+	},	
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {
 			"version": "2"
 		},
@@ -29,5 +34,5 @@
 			]
 		}
 	},
-	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet && sudo mv /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.list.disabled && sudo apt-get update && sudo apt-get install -y azure-functions-core-tools-4 && sudo mv /etc/apt/sources.list.d/yarn.list.disabled /etc/apt/sources.list.d/yarn.list" // avoids needing to run as 'sudo' when starting KernelHttpServer
+	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
 }
