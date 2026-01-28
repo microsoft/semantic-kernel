@@ -202,9 +202,7 @@ class SessionsPythonTool(KernelBaseModel):
             )
 
         if self.allowed_upload_directories is None:
-            raise FunctionExecutionException(
-                "File upload requires 'allowed_upload_directories' to be configured."
-            )
+            raise FunctionExecutionException("File upload requires 'allowed_upload_directories' to be configured.")
 
         canonical_path = os.path.realpath(local_file_path)
 
