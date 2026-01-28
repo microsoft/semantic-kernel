@@ -429,13 +429,12 @@ class SessionsPythonTool(KernelBaseModel):
             remote_file_name: The name of the file to download, relative to `/mnt/data`.
             local_file_path: The path to save the downloaded file to. Should include the extension.
                 If not provided, the file is returned as a BytesIO object.
-                Requires 'enable_dangerous_file_uploads=True' and 'allowed_download_directories' to be configured.
 
         Returns:
             BytesIO | None: The file content as BytesIO if no local_file_path provided, otherwise None.
 
         Raises:
-            FunctionExecutionException: If file operations are disabled or local_file_path is not in allowed directories.
+            FunctionExecutionException: If local_file_path is not in allowed directories.
         """
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update({
