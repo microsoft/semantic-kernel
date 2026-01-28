@@ -151,10 +151,9 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The data of the downloaded file as byte array.</returns>
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
-    [KernelFunction, Description("Downloads a file from the `/mnt/data` directory of the current session.")]
     public async Task<byte[]> DownloadFileAsync(
-        [Description("The name of the remote file to download, relative to `/mnt/data`.")] string remoteFileName,
-        [Description("The path to save the downloaded file to. If not provided won't save it in the disk.")] string? localFilePath = null,
+        string remoteFileName,
+        string? localFilePath = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
