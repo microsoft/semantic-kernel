@@ -51,7 +51,7 @@ public class PostgresSqlBuilderTests
 
         var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
-        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, ifNotExists: ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, pgVersion: new Version(18, 0), ifNotExists: ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("\"public\".\"testcollection\" (", sql);
@@ -198,10 +198,12 @@ public class PostgresSqlBuilderTests
             ["embedding1"] = new ReadOnlyMemory<float>(s_vector),
         };
 
-        using var command = new NpgsqlCommand();
-        var cmdInfo = PostgresSqlBuilder.BuildUpsertCommand(command, "public", "testcollection", model, [record], generatedEmbeddings: null);
+        using var batch = new NpgsqlBatch();
+        _ = PostgresSqlBuilder.BuildUpsertCommand<int>(batch, "public", "testcollection", model, [record], generatedEmbeddings: null);
 
         // Check for expected properties; integration tests will validate the actual SQL.
+        Assert.Single(batch.BatchCommands);
+        var command = batch.BatchCommands[0];
         Assert.Contains("INSERT INTO \"public\".\"testcollection\" (", command.CommandText);
         Assert.Contains("ON CONFLICT (\"id\")", command.CommandText);
         Assert.Contains("DO UPDATE SET", command.CommandText);
