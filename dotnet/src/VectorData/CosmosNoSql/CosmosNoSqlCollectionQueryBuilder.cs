@@ -51,14 +51,16 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         {
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
-        var fieldsArgument = projectionProperties.Select(p => $"{tableVariableName}.{p.StorageName}");
-        var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
+        var fieldsArgument = projectionProperties.Select(p => GeneratePropertyAccess(tableVariableName, p.StorageName));
+        var vectorDistanceArgument = $"VectorDistance({GeneratePropertyAccess(tableVariableName, vectorPropertyName)}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
 
         // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
         var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
         var formattedKeywords = sanitizedKeywords is not null ? $"\"{string.Join("\", \"", sanitizedKeywords)}\"" : null;
-        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {formattedKeywords})" : null;
+        var fullTextScoreArgument = textPropertyName is not null && keywords is not null
+            ? $"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}, {formattedKeywords})"
+            : null;
 
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
@@ -139,7 +141,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
 
-        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field.StorageName}");
+        var fieldsArgument = projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName));
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
 
@@ -160,9 +162,9 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
             foreach (var sortInfo in orderBy)
             {
-                builder.AppendFormat("{0}.{1} {2},", tableVariableName,
-                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
-                    sortInfo.Ascending ? "ASC" : "DESC");
+                builder
+                    .Append(GeneratePropertyAccess(tableVariableName, model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName))
+                    .Append(sortInfo.Ascending ? " ASC," : " DESC,");
             }
 
             builder.Length--; // remove the last comma
@@ -206,14 +208,14 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         {
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
-        var fields = projectionProperties.Select(field => field.StorageName);
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, fields.Select(field => $"{tableVariableName}.{field}"));
+        var selectClauseArguments = string.Join(SelectClauseDelimiter,
+            projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName)));
 
         var whereClauseArguments = string.Join(OrConditionDelimiter,
             keys.Select((key, index) =>
-                $"({tableVariableName}.{keyStoragePropertyName} = {RecordKeyVariableName}{index} {AndConditionDelimiter} " +
-                $"{tableVariableName}.{partitionKeyStoragePropertyName} = {PartitionKeyVariableName}{index})"));
+                $"({GeneratePropertyAccess(tableVariableName, keyStoragePropertyName)} = {RecordKeyVariableName}{index} {AndConditionDelimiter} " +
+                $"{GeneratePropertyAccess(tableVariableName, partitionKeyStoragePropertyName)} = {PartitionKeyVariableName}{index})"));
 
         var query = $"""
                      SELECT {selectClauseArguments}
@@ -245,7 +247,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         VectorSearchFilter filter,
         CollectionModel model)
     {
-        const string EqualOperator = "=";
         const string ArrayContainsOperator = "ARRAY_CONTAINS";
         const string ConditionValueVariableName = "@cv";
 
@@ -270,13 +271,21 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             if (filterClause is EqualToFilterClause equalToFilterClause)
             {
                 var propertyName = GetStoragePropertyName(equalToFilterClause.FieldName, model);
-                whereClauseBuilder.Append($"{tableVariableName}.{propertyName} {EqualOperator} {queryParameterName}");
+                whereClauseBuilder
+                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
+                    .Append(" = ")
+                    .Append(queryParameterName);
                 queryParameterValue = equalToFilterClause.Value;
             }
             else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
             {
                 var propertyName = GetStoragePropertyName(anyTagEqualToFilterClause.FieldName, model);
-                whereClauseBuilder.Append($"{ArrayContainsOperator}({tableVariableName}.{propertyName}, {queryParameterName})");
+                whereClauseBuilder.Append(ArrayContainsOperator)
+                    .Append('(')
+                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
+                    .Append(", ")
+                    .Append(queryParameterName)
+                    .Append(')');
                 queryParameterValue = anyTagEqualToFilterClause.Value;
             }
             else
@@ -304,6 +313,19 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         return property.StorageName;
     }
+
+    /// <summary>
+    /// Escapes a JSON property name for use in Cosmos NoSQL SQL queries.
+    /// JSON property names within bracket notation need backslash and double-quote escaping.
+    /// </summary>
+    private static string EscapeJsonPropertyName(string propertyName)
+        => propertyName.Replace(@"\", @"\\").Replace("\"", "\\\"");
+
+    /// <summary>
+    /// Generates a property access expression using bracket notation with proper escaping.
+    /// </summary>
+    private static string GeneratePropertyAccess(char alias, string propertyName)
+        => $"{alias}[\"{EscapeJsonPropertyName(propertyName)}\"]";
 
     #endregion
 }

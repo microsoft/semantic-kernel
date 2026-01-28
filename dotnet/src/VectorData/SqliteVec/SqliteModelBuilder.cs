@@ -18,11 +18,17 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
         SupportsMultipleVectors = true,
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "int, long, string, Guid";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
 
-        return type == typeof(int) || type == typeof(long) || type == typeof(string) || type == typeof(Guid);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        var type = keyProperty.Type;
+
+        if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException($"The property type '{type.FullName}' is not supported for key properties by the SqliteVec provider. Supported types are: int, long, string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

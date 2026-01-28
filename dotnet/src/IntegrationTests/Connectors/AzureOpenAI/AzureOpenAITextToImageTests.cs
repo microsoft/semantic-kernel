@@ -24,7 +24,7 @@ public sealed class AzureOpenAITextToImageTests
         .AddUserSecrets<AzureOpenAITextToImageTests>()
         .Build();
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ItCanReturnImageUrlAsync()
     {
         // Arrange

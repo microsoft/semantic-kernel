@@ -22,13 +22,13 @@ public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
-            services => services.AddSqlServerVectorStore(sp => SqlServerTestEnvironment.ConnectionString!)
+            services => services.AddSqlServerVectorStore(sp => SqlServerTestStore.Instance.ConnectionString)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
-            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestEnvironment.ConnectionString!),
-            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestEnvironment.ConnectionString!),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestStore.Instance.ConnectionString),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestStore.Instance.ConnectionString),
         ];
     }
 
@@ -41,13 +41,13 @@ public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
-            services => services.AddSqlServerVectorStore(sp => SqlServerTestEnvironment.ConnectionString!)
+            services => services.AddSqlServerVectorStore(sp => SqlServerTestStore.Instance.ConnectionString)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
-            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestEnvironment.ConnectionString!),
-            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestEnvironment.ConnectionString!),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestStore.Instance.ConnectionString),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestStore.Instance.ConnectionString),
         ];
     }
 }

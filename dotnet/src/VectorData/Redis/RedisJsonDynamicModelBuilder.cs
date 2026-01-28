@@ -17,11 +17,15 @@ internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions optio
         => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
             ?? vectorProperty.ResolveEmbeddingType<Embedding<double>>(embeddingGenerator, userRequestedEmbeddingType);
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "string, Guid";
+        var type = keyProperty.Type;
 
-        return type == typeof(string) || type == typeof(Guid);
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

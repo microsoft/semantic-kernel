@@ -83,6 +83,15 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to: column && ARRAY[values]
+        // The && operator checks if the two arrays have any elements in common
+        this.GenerateColumn(property);
+        this._sql.Append(" && ");
+        this.TranslateConstant(values, isSearchCondition: false);
+    }
+
     protected override void TranslateQueryParameter(object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,

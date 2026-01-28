@@ -1,0 +1,8 @@
+{
+  // Optional: Provide a connection string to use an external SQL Server instance instead of testcontainers
+  // This is useful for running tests against Azure SQL or other external SQL Server instances
+  // If not specified, tests will automatically use a testcontainer
+  "SqlServer": {
+    "ConnectionString": ""
+  }
+}
