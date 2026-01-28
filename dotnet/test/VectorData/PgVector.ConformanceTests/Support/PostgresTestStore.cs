@@ -14,7 +14,7 @@ internal sealed class PostgresTestStore : TestStore
     public static PostgresTestStore Instance { get; } = new();
 
     private static readonly PostgreSqlContainer s_container = new PostgreSqlBuilder()
-        .WithImage("pgvector/pgvector:pg17")
+        .WithImage("pgvector/pgvector:pg18")
         .Build();
 
     private NpgsqlDataSource? _dataSource;
