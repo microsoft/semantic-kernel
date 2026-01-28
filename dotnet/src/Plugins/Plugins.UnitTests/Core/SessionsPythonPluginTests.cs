@@ -292,7 +292,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new ByteArrayContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+        // Downloads are permissive by default - no need for special settings
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt", downloadDiskPath);
