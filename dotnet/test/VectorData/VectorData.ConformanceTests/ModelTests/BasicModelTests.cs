@@ -68,6 +68,26 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
     }
 
     [ConditionalFact]
+    public virtual async Task GetAsync_multiple_records_with_missing_keys_returns_only_existing()
+    {
+        var expectedRecords = fixture.TestData.Take(2).ToArray();
+        var missingKey = fixture.GenerateNextKey<TKey>();
+        var ids = expectedRecords.Select(record => record.Key).Append(missingKey).ToArray();
+
+        var received = await this.Collection.GetAsync(ids).ToListAsync();
+
+        Assert.Equal(2, received.Count);
+
+        foreach (var record in expectedRecords)
+        {
+            record.AssertEqual(
+                received.Single(r => r.Key.Equals(record.Key)),
+                includeVectors: false,
+                fixture.TestStore.VectorsComparable);
+        }
+    }
+
+    [ConditionalFact]
     public virtual async Task GetAsync_returns_empty_for_empty_keys()
     {
         Assert.Empty(await this.Collection.GetAsync([]).ToArrayAsync());
