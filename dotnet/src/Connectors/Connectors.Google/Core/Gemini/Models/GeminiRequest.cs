@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google.Core.Gemini;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
@@ -50,16 +51,23 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Labels { get; set; }
 
+    // These were added to keep a devide from native tools and functionDeclarations
+    // I am currently unsure if this is needed as currently you cannot have both enabled in a
+    // turn. Maybe this will be use in the future.
+    [JsonIgnore]
+    private GeminiTool? _functionDefinitionsBlook { get; set; }
+
     public void AddFunction(GeminiFunction function)
     {
-        // NOTE: Currently Gemini only supports one tool i.e. function calling.
+        // NOTE: Adding in additional tool types has forced me to keep a reference to the functionDeclarations
         this.Tools ??= [];
-        if (this.Tools.Count == 0)
+        if (this._functionDefinitionsBlook is null)
         {
-            this.Tools.Add(new GeminiTool());
+            this._functionDefinitionsBlook = new();
+            this.Tools.Add(this._functionDefinitionsBlook);
         }
-
-        this.Tools[0].Functions.Add(function.ToFunctionDeclaration());
+        this._functionDefinitionsBlook.Functions ??= [];
+        this._functionDefinitionsBlook.Functions!.Add(function.ToFunctionDeclaration());
     }
 
     /// <summary>
@@ -76,6 +84,7 @@ internal sealed class GeminiRequest
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
         AddAdditionalBodyFields(executionSettings, obj);
+        AddNativeTools(executionSettings, obj);
         return obj;
     }
 
@@ -93,6 +102,7 @@ internal sealed class GeminiRequest
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
         AddAdditionalBodyFields(executionSettings, obj);
+        AddNativeTools(executionSettings, obj);
         return obj;
     }
 
@@ -516,6 +526,27 @@ internal sealed class GeminiRequest
         }
 
         return s_options;
+    }
+
+    private static void AddNativeTools(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
+    {
+        if (!executionSettings.NativeToolCalls.ValidateGeminiNativeTools(request))
+        {
+            return;
+        }
+        // initialize Tools if needed
+        request.Tools ??= [];
+
+        // Add all the tools to the GeminiTool seperately
+        var settings = executionSettings.NativeToolCalls;
+        if (settings?.FileSearch is not null)
+        {
+            GeminiTool tool = new()
+            {
+                FileSearch = settings.FileSearch
+            };
+            request.Tools.Add(tool);
+        }
     }
 
     private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
