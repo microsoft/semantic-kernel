@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <RootNamespace>PgVector.ConformanceTests</RootNamespace>
+    <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,11 +21,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\VectorData\PgVector\PgVector.csproj"/>
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>
+    <ProjectReference Include="..\..\..\src\VectorData\PgVector\PgVector.csproj" />
+    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

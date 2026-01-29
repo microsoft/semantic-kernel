@@ -86,7 +86,7 @@ internal static class WeaviateQueryBuilder
         {
             string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 
-            return $$"""{ path: ["{{sortPath}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
+            return $$"""{ path: ["{{JsonEncodedText.Encode(sortPath)}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
         }));
 
         var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
@@ -97,7 +97,7 @@ internal static class WeaviateQueryBuilder
             {{collectionName}} (
               limit: {{top}}
               offset: {{queryOptions.Skip}}
-              where: {{translatedFilter}}
+              {{(translatedFilter is null ? "" : "where: " + translatedFilter)}}
               sort: [ {{sortPaths}} ]
             ) {
               {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
@@ -247,7 +247,7 @@ internal static class WeaviateQueryBuilder
 
             var storageName = property is KeyPropertyModel ? WeaviateConstants.ReservedKeyPropertyName : property.StorageName;
 
-            var operand = $$"""{ path: ["{{storageName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
+            var operand = $$"""{ path: ["{{JsonEncodedText.Encode(storageName)}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
 
             operands.Add(operand);
         }

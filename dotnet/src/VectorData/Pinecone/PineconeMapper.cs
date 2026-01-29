@@ -44,7 +44,12 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
         // TODO: what about sparse values?
         var result = new Vector
         {
-            Id = (string)keyObject,
+            Id = keyObject switch
+            {
+                string s => s,
+                Guid g => g.ToString(),
+                _ => throw new UnreachableException()
+            },
             Values = values,
             Metadata = metadata,
             SparseValues = null
@@ -58,7 +63,13 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
-        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Id);
+        model.KeyProperty.SetValueAsObject(outputRecord, model.KeyProperty.Type switch
+        {
+            var t when t == typeof(string) => storageModel.Id,
+            var t when t == typeof(Guid) => Guid.Parse(storageModel.Id),
+
+            _ => throw new UnreachableException()
+        });
 
         if (includeVectors is true)
         {

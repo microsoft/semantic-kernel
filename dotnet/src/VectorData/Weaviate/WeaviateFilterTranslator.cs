@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,7 +21,7 @@ internal class WeaviateFilterTranslator
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
+    internal string? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -28,6 +29,14 @@ internal class WeaviateFilterTranslator
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
+
+        // Weaviate doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
+        // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
+        // nor is 'x && true'.
+        if (lambdaExpression.Body is ConstantExpression { Value: true })
+        {
+            return null;
+        }
 
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
         var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
@@ -213,6 +222,26 @@ internal class WeaviateFilterTranslator
                 this.TranslateContains(source, item);
                 return;
 
+            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
+            // See https://github.com/dotnet/runtime/issues/109757 for more context.
+            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
+            // it's null.
+            case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
+                when contains.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (contains.Arguments.Count is 2
+                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var source):
+                this.TranslateContains(source, item);
+                return;
+
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            case { Method.Name: nameof(Enumerable.Any), Arguments: [var source, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable):
+                this.TranslateAny(source, lambda);
+                return;
+
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
         }
@@ -234,6 +263,103 @@ internal class WeaviateFilterTranslator
         }
 
         throw new NotSupportedException("Contains supported only over tag field");
+    }
+
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array field is contained in the given values.
+    /// </summary>
+    private void TranslateAny(Expression source, LambdaExpression lambda)
+    {
+        // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
+        // Translates to: { path: ["Field"], operator: ContainsAny, valueText: ["value1", "value2"] }
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression containsCall)
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Match Enumerable.Contains(source, item), List<T>.Contains(item), or MemoryExtensions.Contains
+        var (valuesExpression, itemExpression) = containsCall switch
+        {
+            // Enumerable.Contains(source, item)
+            { Method.Name: nameof(Enumerable.Contains), Arguments: [var src, var item] }
+                when containsCall.Method.DeclaringType == typeof(Enumerable)
+                => (src, item),
+
+            // List<T>.Contains(item)
+            { Method: { Name: nameof(Enumerable.Contains), DeclaringType: { IsGenericType: true } declaringType }, Object: Expression src, Arguments: [var item] }
+                when declaringType.GetGenericTypeDefinition() == typeof(List<>)
+                => (src, item),
+
+            // MemoryExtensions.Contains (C# 14 first-class spans)
+            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] }
+                when containsCall.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (containsCall.Arguments.Count is 2
+                        || (containsCall.Arguments.Count is 3 && containsCall.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var unwrappedSource)
+                => (unwrappedSource, item),
+
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+        };
+
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Extract the values
+        IEnumerable values = valuesExpression switch
+        {
+            NewArrayExpression newArray => ExtractArrayValues(newArray),
+            ConstantExpression { Value: IEnumerable enumerable and not string } => enumerable,
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+        };
+
+        // Generate: { path: ["Field"], operator: ContainsAny, valueText: ["value1", "value2"] }
+        this._filter
+            .Append("{ path: [\"")
+            .Append(JsonEncodedText.Encode(property.StorageName))
+            .Append("\"], operator: ContainsAny, valueText: [");
+
+        var isFirst = true;
+        foreach (var element in values)
+        {
+            if (element is not string stringElement)
+            {
+                throw new NotSupportedException("Any with Contains over non-string arrays is not supported");
+            }
+
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                this._filter.Append(", ");
+            }
+
+            this._filter.Append(JsonSerializer.Serialize(stringElement));
+        }
+
+        this._filter.Append("]}");
+
+        static object?[] ExtractArrayValues(NewArrayExpression newArray)
+        {
+            var result = new object?[newArray.Expressions.Count];
+            for (var i = 0; i < newArray.Expressions.Count; i++)
+            {
+                if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
+                {
+                    throw new NotSupportedException("Invalid element in array");
+                }
+
+                result[i] = elementValue;
+            }
+
+            return result;
+        }
     }
 
     private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
@@ -287,5 +413,64 @@ internal class WeaviateFilterTranslator
         }
 
         return true;
+    }
+
+    private static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+    {
+        // Different versions of the compiler seem to generate slightly different expression tree representations for this
+        // implicit cast:
+        var (unwrapped, castDeclaringType) = expression switch
+        {
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Operand: var operand
+            } => (operand, implicitCastDeclaringType),
+
+            MethodCallExpression
+            {
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Arguments: [var firstArgument]
+            } => (firstArgument, implicitCastDeclaringType),
+
+            // After the preprocessor runs, the Convert node may have Method: null because the visitor
+            // recreates the UnaryExpression with a different operand type (QueryParameterExpression).
+            // Handle this case by checking if the target type is Span<T> or ReadOnlySpan<T>.
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Type: { IsGenericType: true } targetType,
+                Operand: var operand
+            } when targetType.GetGenericTypeDefinition() is var gtd
+                && (gtd == typeof(Span<>) || gtd == typeof(ReadOnlySpan<>))
+                => (operand, targetType),
+
+            _ => (null, null)
+        };
+
+        // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+        // Also handle cases where the preprocessor adds a Convert node back to the array type.
+        while (unwrapped is UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Operand: var innerOperand
+            })
+        {
+            unwrapped = innerOperand;
+        }
+
+        if (unwrapped is not null
+            && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+        {
+            result = unwrapped;
+            return true;
+        }
+
+        result = null;
+        return false;
     }
 }

@@ -1,8 +1,8 @@
 import * as signalR from "@microsoft/signalr";
 import {
-    FeatureDocumentationRequest,
-    DocumentationContentRequest,
     DocumentationApprovalRequest,
+    DocumentationContentRequest,
+    FeatureDocumentationRequest,
 } from "../signalr/documentGeneration";
 
 export class SignalRDocumentationGenerationClient {
@@ -46,7 +46,7 @@ export class SignalRDocumentationGenerationClient {
         return this.connection.invoke("PublishDocumentation", input);
     }
 
-    subscribeToProcessEvents(processId: string, handlers: {
+    subscribeToProcessEvents(_processId: string, handlers: {
         onPublishedDocument: (message: any) => void;
         onDocumentForReview: (message: any) => void;
     }): void {

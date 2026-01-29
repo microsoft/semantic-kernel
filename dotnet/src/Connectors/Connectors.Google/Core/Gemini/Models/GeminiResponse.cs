@@ -40,6 +40,18 @@ internal sealed class GeminiResponse
         public int PromptTokenCount { get; set; }
 
         /// <summary>
+        /// Gets the number of cached content tokens used.
+        /// </summary>
+        [JsonPropertyName("cachedContentTokenCount")]
+        public int CachedContentTokenCount { get; set; }
+
+        /// <summary>
+        /// Gets the number of thoughts tokens used.
+        /// </summary>
+        [JsonPropertyName("thoughtsTokenCount")]
+        public int ThoughtsTokenCount { get; set; }
+
+        /// <summary>
         /// Gets the count of used tokens for all candidates.
         /// </summary>
         [JsonPropertyName("candidatesTokenCount")]

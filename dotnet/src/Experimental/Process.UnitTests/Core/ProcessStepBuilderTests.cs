@@ -242,7 +242,7 @@ public class ProcessStepBuilderTests
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
         {
-            return new Dictionary<string, KernelFunctionMetadata>();
+            return [];
         }
     }
 }

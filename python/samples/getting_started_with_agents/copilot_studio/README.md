@@ -1,6 +1,6 @@
 # Semantic Kernel - CopilotStudioAgent Quickstart
 
-This README provides an overview on how to use the [CopilotStudioAgent](../../../semantic_kernel/agents/copilot_studio/copilot_studio_agent.py) within Semantic Kernel. 
+This README provides an overview on how to use the [CopilotStudioAgent](../../../semantic_kernel/agents/copilot_studio/copilot_studio_agent.py) within Semantic Kernel.
 This agent allows you to interact with Microsoft Copilot Studio agents through programmatic APIs.
 
 > ℹ️ **Note:** Knowledge sources must be configured **within** Microsoft Copilot Studio first. Streaming responses are **not currently supported**.
@@ -11,14 +11,12 @@ This agent allows you to interact with Microsoft Copilot Studio agents through p
 
 1. Python 3.10+
 2. Install Semantic Kernel with Copilot Studio dependencies:
-   - **Until the Copilot Studio packages are on public PyPI**:
      ```bash
      pip install semantic-kernel
-     pip install --extra-index-url https://test.pypi.org/simple \
-       microsoft-agents-core microsoft-agents-copilotstudio-client
+     pip install microsoft-agents-hosting-core microsoft-agents-copilotstudio-client
      ```
 3. An agent created in **Microsoft Copilot Studio**
-4. Ability to create an application identity in Azure for a **Public Client/Native App Registration**, 
+4. Ability to create an application identity in Azure for a **Public Client/Native App Registration**,
 or access to an existing app registration with the `CopilotStudio.Copilots.Invoke` API permission assigned.
 
 ## Create a Copilot Agent in Copilot Studio
@@ -26,7 +24,7 @@ or access to an existing app registration with the `CopilotStudio.Copilots.Invok
 1. Go to [Microsoft Copilot Studio](https://copilotstudio.microsoft.com).
 2. Create a new **Agent**.
 3. Publish your newly created Agent.
-4. In Copilot Studio, navigate to:  
+4. In Copilot Studio, navigate to:
    `Settings` → `Advanced` → `Metadata`
 
    Save the following values:
@@ -45,7 +43,7 @@ You will create a **Native Client Application Identity** (no client secret requi
 4. Fill out:
    - **Name**: Any name you like
    - **Supported account types**: `Accounts in this organization directory only`
-   - **Redirect URI**:  
+   - **Redirect URI**:
      - Platform: `Public client/native (mobile & desktop)`
      - URI: `http://localhost`
 5. Click **Register**
@@ -88,7 +86,7 @@ COPILOT_STUDIO_AGENT_AUTH_MODE=interactive
 
 ## Create an Application Registration in Entra ID – Service Principal Login
 
-> **Warning**: Service Principal login is **not yet supported** in the current version of the `CopilotStudioClient`.  
+> **Warning**: Service Principal login is **not yet supported** in the current version of the `CopilotStudioClient`.
 
 ## Creating a `CopilotStudioAgent` Client
 

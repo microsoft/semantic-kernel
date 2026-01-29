@@ -21,12 +21,15 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
         ReservedKeyStorageName = CosmosNoSqlConstants.ReservedKeyPropertyName
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        // TODO: Cosmos supports other key types (int, Guid...)
-        supportedTypes = "string";
+        var type = keyProperty.Type;
 
-        return type == typeof(string);
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

@@ -23,9 +23,9 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._parameterIndex = startParamIndex;
     }
 
-    internal List<object> ParameterValues { get; } = new();
+    internal List<object> ParameterValues { get; } = [];
 
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
@@ -55,14 +55,14 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
                         this._sql.Append(',');
                     }
 
-                    this.TranslateConstant(element);
+                    this.TranslateConstant(element, isSearchCondition: false);
                 }
 
                 this._sql.Append(']');
                 return;
 
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
@@ -81,6 +81,15 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(" = ANY (");
         this.Translate(source);
         this._sql.Append(')');
+    }
+
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to: column && ARRAY[values]
+        // The && operator checks if the two arrays have any elements in common
+        this.GenerateColumn(property);
+        this._sql.Append(" && ");
+        this.TranslateConstant(values, isSearchCondition: false);
     }
 
     protected override void TranslateQueryParameter(object? value)

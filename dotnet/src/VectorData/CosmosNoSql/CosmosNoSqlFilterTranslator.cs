@@ -19,7 +19,7 @@ internal class CosmosNoSqlFilterTranslator
     private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    private readonly Dictionary<string, object?> _parameters = new();
+    private readonly Dictionary<string, object?> _parameters = [];
     private readonly StringBuilder _sql = new();
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)
@@ -230,6 +230,26 @@ internal class CosmosNoSqlFilterTranslator
                 this.TranslateContains(source, item);
                 return;
 
+            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
+            // See https://github.com/dotnet/runtime/issues/109757 for more context.
+            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
+            // it's null.
+            case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
+                when contains.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (contains.Arguments.Count is 2
+                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var source):
+                this.TranslateContains(source, item);
+                return;
+
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable):
+                this.TranslateAny(anySource, lambda);
+                return;
+
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
         }
@@ -242,6 +262,105 @@ internal class CosmosNoSqlFilterTranslator
         this._sql.Append(", ");
         this.Translate(item);
         this._sql.Append(')');
+    }
+
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array field is contained in the given values.
+    /// </summary>
+    private void TranslateAny(Expression source, LambdaExpression lambda)
+    {
+        // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
+        // Translates to: EXISTS(SELECT VALUE t FROM t IN c["Field"] WHERE ARRAY_CONTAINS(@values, t))
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression containsCall)
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Match Enumerable.Contains(source, item), List<T>.Contains(item), or MemoryExtensions.Contains
+        var (valuesExpression, itemExpression) = containsCall switch
+        {
+            // Enumerable.Contains(source, item)
+            { Method.Name: nameof(Enumerable.Contains), Arguments: [var src, var item] }
+                when containsCall.Method.DeclaringType == typeof(Enumerable)
+                => (src, item),
+
+            // List<T>.Contains(item)
+            { Method: { Name: nameof(Enumerable.Contains), DeclaringType: { IsGenericType: true } declaringType }, Object: Expression src, Arguments: [var item] }
+                when declaringType.GetGenericTypeDefinition() == typeof(List<>)
+                => (src, item),
+
+            // MemoryExtensions.Contains (C# 14 first-class spans)
+            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] }
+                when containsCall.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (containsCall.Arguments.Count is 2
+                        || (containsCall.Arguments.Count is 3 && containsCall.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var unwrappedSource)
+                => (unwrappedSource, item),
+
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+        };
+
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Now extract the values from valuesExpression
+        // Generate: EXISTS(SELECT VALUE t FROM t IN c["Field"] WHERE ARRAY_CONTAINS(@values, t))
+        switch (valuesExpression)
+        {
+            // Inline array: r.Strings.Any(s => new[] { "a", "b" }.Contains(s))
+            case NewArrayExpression newArray:
+            {
+                var values = new object?[newArray.Expressions.Count];
+                for (var i = 0; i < newArray.Expressions.Count; i++)
+                {
+                    values[i] = newArray.Expressions[i] switch
+                    {
+                        ConstantExpression { Value: var v } => v,
+                        QueryParameterExpression { Value: var v } => v,
+                        _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+                    };
+                }
+
+                this.GenerateAnyContains(property, values);
+                return;
+            }
+
+            // Captured/parameterized array or list: r.Strings.Any(s => capturedArray.Contains(s))
+            case QueryParameterExpression queryParameter:
+                this.GenerateAnyContains(property, queryParameter);
+                return;
+
+            // Constant array: shouldn't normally happen, but handle it
+            case ConstantExpression { Value: var value }:
+                this.GenerateAnyContains(property, value);
+                return;
+
+            default:
+                throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+    }
+
+    private void GenerateAnyContains(PropertyModel property, object? values)
+    {
+        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        this.GeneratePropertyAccess(property);
+        this._sql.Append(" WHERE ARRAY_CONTAINS(");
+        this.TranslateConstant(values);
+        this._sql.Append(", t))");
+    }
+
+    private void GenerateAnyContains(PropertyModel property, QueryParameterExpression queryParameter)
+    {
+        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        this.GeneratePropertyAccess(property);
+        this._sql.Append(" WHERE ARRAY_CONTAINS(");
+        this.TranslateQueryParameter(queryParameter.Name, queryParameter.Value);
+        this._sql.Append(", t))");
     }
 
     private void TranslateUnary(UnaryExpression unary)
@@ -288,7 +407,11 @@ internal class CosmosNoSqlFilterTranslator
     }
 
     protected virtual void GeneratePropertyAccess(PropertyModel property)
-        => this._sql.Append(CosmosNoSqlConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
+        => this._sql
+            .Append(CosmosNoSqlConstants.ContainerAlias)
+            .Append("[\"")
+            .Append(property.StorageName.Replace(@"\", @"\\").Replace("\"", "\\\""))
+            .Append("\"]");
 
     private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
@@ -334,5 +457,64 @@ internal class CosmosNoSqlFilterTranslator
         }
 
         return true;
+    }
+
+    private static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+    {
+        // Different versions of the compiler seem to generate slightly different expression tree representations for this
+        // implicit cast:
+        var (unwrapped, castDeclaringType) = expression switch
+        {
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Operand: var operand
+            } => (operand, implicitCastDeclaringType),
+
+            MethodCallExpression
+            {
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Arguments: [var firstArgument]
+            } => (firstArgument, implicitCastDeclaringType),
+
+            // After the preprocessor runs, the Convert node may have Method: null because the visitor
+            // recreates the UnaryExpression with a different operand type (QueryParameterExpression).
+            // Handle this case by checking if the target type is Span<T> or ReadOnlySpan<T>.
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Type: { IsGenericType: true } targetType,
+                Operand: var operand
+            } when targetType.GetGenericTypeDefinition() is var gtd
+                && (gtd == typeof(Span<>) || gtd == typeof(ReadOnlySpan<>))
+                => (operand, targetType),
+
+            _ => (null, null)
+        };
+
+        // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+        // Also handle cases where the preprocessor adds a Convert node back to the array type.
+        while (unwrapped is UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Operand: var innerOperand
+            })
+        {
+            unwrapped = innerOperand;
+        }
+
+        if (unwrapped is not null
+            && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+        {
+            result = unwrapped;
+            return true;
+        }
+
+        result = null;
+        return false;
     }
 }

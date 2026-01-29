@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import IO, Any
 from warnings import warn
 
-from openai._types import NOT_GIVEN, FileTypes, NotGiven
+from openai._types import FileTypes, Omit, omit
 from openai.types.images_response import ImagesResponse
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
@@ -217,7 +217,7 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         elif image_files is not None:
             images = list(image_files)
 
-        mask: FileTypes | NotGiven = NOT_GIVEN
+        mask: FileTypes | Omit = omit
         if mask_path is not None:
             mask = Path(mask_path)
         elif mask_file is not None:
