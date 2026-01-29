@@ -1,5 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Encodings.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -10,7 +11,7 @@ namespace SemanticKernel.Plugins.UnitTests.Web;
 public class SearchUrlPluginTests
 {
     private const string AnyInput = "<something to search for>";
-    private readonly string _encodedInput = UrlEncoder.Default.Encode(AnyInput);
+    private readonly string _encodedInput = Uri.EscapeDataString(AnyInput); // CHANGED: Use Uri.EscapeDataString
 
     [Fact]
     public void ItCanBeInstantiated()
@@ -245,5 +246,158 @@ public class SearchUrlPluginTests
 
         // Assert
         Assert.Equal($"https://wikipedia.org/w/index.php?search={this._encodedInput}", actual);
+    }
+
+    // NEW SECURITY TESTS ADDED
+    [Fact]
+    public void AmazonSearchUrl_ThrowsOnNullQuery()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl(null!));
+    }
+
+    [Fact]
+    public void AmazonSearchUrl_ThrowsOnEmptyQuery()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl(""));
+    }
+
+    [Fact]
+    public void AmazonSearchUrl_ThrowsOnWhitespaceQuery()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl("   "));
+    }
+
+    [Fact]
+    public void AmazonSearchUrl_ThrowsOnVeryLongQuery()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+        var longQuery = new string('a', 3000); // Exceeds 2048 limit
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl(longQuery));
+    }
+
+    [Fact]
+    public void AmazonSearchUrl_ThrowsOnProtocolInjection()
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl("http://evil.com"));
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl("javascript:alert(1)"));
+        Assert.Throws<ArgumentException>(() => plugin.AmazonSearchUrl("data:text/html,<script>alert(1)</script>"));
+    }
+
+    [Theory]
+    [InlineData("search&sort=price")]
+    [InlineData("price<100")]
+    [InlineData("test#fragment")]
+    [InlineData("query?param=value")]
+    [InlineData("path/traversal")]
+    [InlineData("unicode😀test")]
+    [InlineData("test with spaces")]
+    [InlineData("test+plus")]
+    public void AmazonSearchUrl_ProperlyEncodesSpecialCharacters(string query)
+    {
+        // Arrange
+        var plugin = new SearchUrlPlugin();
+        var expectedEncoded = Uri.EscapeDataString(query);
+
+        // Act
+        var result = plugin.AmazonSearchUrl(query);
+
+        // Assert
+        Assert.Equal($"https://www.amazon.com/s?k={expectedEncoded}", result);
+    }
+
+    [Fact]
+    public void UrlEncoding_ComparisonTest()
+    {
+        // This test demonstrates the difference between the old and new encoding
+        string[] testCases = new[]
+        {
+            "search&sort=price",
+            "test with spaces",
+            "c++ programming",
+            "price<100>200",
+            "test#section",
+            "query?param=value",
+            "path/traversal",
+            "user@domain",
+            "percent%20encoded",
+            "unicode😀emoji"
+        };
+
+        foreach (var testCase in testCases)
+        {
+            var oldEncoding = UrlEncoder.Default.Encode(testCase);
+            var newEncoding = Uri.EscapeDataString(testCase);
+            
+            // They should be different in some cases
+            Console.WriteLine($"Input: '{testCase}'");
+            Console.WriteLine($"  Old (UrlEncoder): '{oldEncoding}'");
+            Console.WriteLine($"  New (EscapeDataString): '{newEncoding}'");
+            Console.WriteLine($"  Same: {oldEncoding == newEncoding}");
+            Console.WriteLine();
+        }
+    }
+
+    [Fact]
+    public void AllMethods_ConsistentBehavior()
+    {
+        // Test that all methods use the same encoding
+        var plugin = new SearchUrlPlugin();
+        var testQuery = "test&query=value";
+        var expectedEncoded = Uri.EscapeDataString(testQuery);
+
+        var methods = new (string methodName, Func<string> getResult)[]
+        {
+            ("AmazonSearchUrl", () => plugin.AmazonSearchUrl(testQuery)),
+            ("BingSearchUrl", () => plugin.BingSearchUrl(testQuery)),
+            ("BingImagesSearchUrl", () => plugin.BingImagesSearchUrl(testQuery)),
+            ("BingMapsSearchUrl", () => plugin.BingMapsSearchUrl(testQuery)),
+            ("BingShoppingSearchUrl", () => plugin.BingShoppingSearchUrl(testQuery)),
+            ("BingNewsSearchUrl", () => plugin.BingNewsSearchUrl(testQuery)),
+            ("BingTravelSearchUrl", () => plugin.BingTravelSearchUrl(testQuery)),
+            ("BraveSearchUrl", () => plugin.BraveSearchUrl(testQuery)),
+            ("BraveImagesSearchUrl", () => plugin.BraveImagesSearchUrl(testQuery)),
+            ("BraveNewsSearchUrl", () => plugin.BraveNewsSearchUrl(testQuery)),
+            ("BraveGooglesSearchUrl", () => plugin.BraveGooglesSearchUrl(testQuery)),
+            ("BraveVideosSearchUrl", () => plugin.BraveVideosSearchUrl(testQuery)),
+            ("FacebookSearchUrl", () => plugin.FacebookSearchUrl(testQuery)),
+            ("GitHubSearchUrl", () => plugin.GitHubSearchUrl(testQuery)),
+            ("LinkedInSearchUrl", () => plugin.LinkedInSearchUrl(testQuery)),
+            ("TwitterSearchUrl", () => plugin.TwitterSearchUrl(testQuery)),
+            ("WikipediaSearchUrl", () => plugin.WikipediaSearchUrl(testQuery))
+        };
+
+        foreach (var method in methods)
+        {
+            var result = method.getResult();
+            Assert.Contains(expectedEncoded, result);
+            
+            // Verify no unencoded special characters in the encoded part
+            var baseUrl = result.Split('=')[0] + "=";
+            var encodedPart = result.Substring(baseUrl.Length);
+            Assert.DoesNotContain("&", encodedPart);
+            Assert.DoesNotContain("<", encodedPart);
+            Assert.DoesNotContain(">", encodedPart);
+            Assert.DoesNotContain("#", encodedPart);
+            Assert.DoesNotContain("?", encodedPart);
+        }
     }
 }
