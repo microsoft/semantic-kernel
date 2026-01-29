@@ -111,7 +111,7 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.15",
+    "pymongo >= 4.8.0, < 4.16",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
