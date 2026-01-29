@@ -40,6 +40,18 @@ public sealed class ToolCallBehaviorTests
     }
 
     [Fact]
+    public void CreateAutoInvokeKernelFunctionsWithCustomMaximumReturnsCorrectInstance()
+    {
+        // Arrange & Act
+        const int CustomMaximumAutoInvokeAttempts = 5;
+        var behavior = ToolCallBehavior.CreateAutoInvokeKernelFunctions(CustomMaximumAutoInvokeAttempts);
+
+        // Assert
+        Assert.IsType<KernelFunctions>(behavior);
+        Assert.Equal(CustomMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
     public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
@@ -52,6 +64,19 @@ public sealed class ToolCallBehaviorTests
     }
 
     [Fact]
+    public void EnableFunctionsWithCustomMaximumReturnsCorrectInstance()
+    {
+        // Arrange & Act
+        const int CustomMaximumAutoInvokeAttempts = 10;
+        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null)];
+        var behavior = ToolCallBehavior.EnableFunctions(functions, autoInvoke: true, CustomMaximumAutoInvokeAttempts);
+
+        // Assert
+        Assert.IsType<EnabledFunctions>(behavior);
+        Assert.Equal(CustomMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
     public void RequireFunctionReturnsRequiredFunctionInstance()
     {
         // Arrange & Act
@@ -60,6 +85,18 @@ public sealed class ToolCallBehaviorTests
         // Assert
         Assert.IsType<RequiredFunction>(behavior);
         Assert.Contains($"{nameof(RequiredFunction)}(autoInvoke:{behavior.MaximumAutoInvokeAttempts != 0})", behavior.ToString());
+    }
+
+    [Fact]
+    public void RequireFunctionWithCustomMaximumReturnsCorrectInstance()
+    {
+        // Arrange & Act
+        const int CustomMaximumAutoInvokeAttempts = 3;
+        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null), autoInvoke: true, CustomMaximumAutoInvokeAttempts);
+
+        // Assert
+        Assert.IsType<RequiredFunction>(behavior);
+        Assert.Equal(CustomMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
