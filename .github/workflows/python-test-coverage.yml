@@ -20,7 +20,7 @@ jobs:
     env:
       UV_PYTHON: "3.10"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Save the PR number to a file since the workflow_run event
       # in the coverage report workflow does not have access to it
       - name: Save PR number
@@ -38,7 +38,7 @@ jobs:
       - name: Test with pytest
         run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered --cov-report=xml:python-coverage.xml ./tests/unit
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: |
             python/python-coverage.xml
