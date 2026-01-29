@@ -444,7 +444,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
             options.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
-            options.Filter, options.Skip, options.IncludeVectors, top);
+            options.Filter, options.Skip, options.IncludeVectors, top, options.ScoreThreshold);
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,

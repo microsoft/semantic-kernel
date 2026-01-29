@@ -339,6 +339,14 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // Get the non-null results since any record with a null vector results in a null result.
         var nonNullResults = results.Where(x => x.HasValue).Select(x => x!.Value);
 
+        // Filter by score threshold if specified.
+        if (options.ScoreThreshold is double scoreThreshold)
+        {
+            nonNullResults = InMemoryCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction)
+                ? nonNullResults.Where(x => x.score >= scoreThreshold)
+                : nonNullResults.Where(x => x.score <= scoreThreshold);
+        }
+
         // Sort the results appropriately for the selected distance function and get the right page of results .
         var sortedScoredResults = InMemoryCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :

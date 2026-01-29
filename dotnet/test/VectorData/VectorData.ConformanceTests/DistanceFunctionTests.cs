@@ -57,7 +57,13 @@ public abstract class DistanceFunctionTests<TKey>(DistanceFunctionTests<TKey>.Fi
         ReadOnlyMemory<float> oppositeVector = new([-1, 0, 0, 0]);
         ReadOnlyMemory<float> orthogonalVector = new([0f, -1f, -1f, 0f]);
 
-        double[] scoreDictionary = [expectedExactMatchScore, expectedOppositeScore, expectedOrthogonalScore];
+        double[] scoreDictionary =
+        [
+            expectedExactMatchScore,
+            expectedOppositeScore,
+            expectedOrthogonalScore
+        ];
+
         double[] expectedScores =
         [
             scoreDictionary[resultOrder[0]],
@@ -108,6 +114,49 @@ public abstract class DistanceFunctionTests<TKey>(DistanceFunctionTests<TKey>.Fi
             {
                 Assert.Equal(Math.Round(expectedScores[i], 2), Math.Round(results[i].Score!.Value, 2));
             }
+        }
+
+        await this.TestScoreThreshold(collection);
+    }
+
+    protected virtual async Task TestScoreThreshold(VectorStoreCollection<TKey, SearchRecord> collection)
+    {
+        if (!fixture.TestStore.SupportsScoreThreshold)
+        {
+            await Assert.ThrowsAsync<NotSupportedException>(async () =>
+            {
+                await collection
+                    .SearchAsync(
+                        new ReadOnlyMemory<float>([1, 0, 0, 0]),
+                        top: 3,
+                        new() { ScoreThreshold = 0.9 })
+                    .ToListAsync();
+            });
+
+            return;
+        }
+
+        // Fetch the top three records, then use the second's returned score as the threshold.
+        var results = await collection
+            .SearchAsync(new ReadOnlyMemory<float>([1, 0, 0, 0]), top: 3)
+            .ToListAsync();
+
+        var threshold = results[1].Score;
+
+        var filteredResults = await collection
+            .SearchAsync(
+                new ReadOnlyMemory<float>([1, 0, 0, 0]),
+                top: 3,
+                new() { ScoreThreshold = threshold })
+            .ToListAsync();
+
+        // Some providers use inclusive thresholds (>=), returning 2 results (first and second),
+        // while others use exclusive thresholds (>), returning only 1 result (first).
+        Assert.True(filteredResults.Count is 1 or 2);
+        Assert.Equal(results[0].Record.Key, filteredResults[0].Record.Key);
+        if (filteredResults.Count == 2)
+        {
+            Assert.Equal(results[1].Record.Key, filteredResults[1].Record.Key);
         }
     }
 
