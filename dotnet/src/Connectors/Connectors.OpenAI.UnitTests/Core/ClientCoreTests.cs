@@ -273,7 +273,7 @@ public partial class ClientCoreTests
         await clientCore.GetChatMessageContentsAsync("gpt-4", chatHistory, new OpenAIPromptExecutionSettings(), new Kernel());
 
         // Assert
-        JsonElement jsonString = JsonSerializer.Deserialize<JsonElement>(handler.RequestContent);
+        JsonElement jsonString = JsonElement.Parse(handler.RequestContent);
 
         var function = jsonString.GetProperty("messages")[0].GetProperty("tool_calls")[0].GetProperty("function");
 
@@ -377,7 +377,7 @@ public partial class ClientCoreTests
             // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
             this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
             {
-                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithInvalidFunctionName.Id}}", "Name": "{{s_functionCallWithInvalidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithInvalidFunctionName.FunctionArguments}}"}]""")
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonElement.Parse($$"""[{"Id": "{{s_functionCallWithInvalidFunctionName.Id}}", "Name": "{{s_functionCallWithInvalidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithInvalidFunctionName.FunctionArguments}}"}]""")
             }), true);
         }
 
@@ -395,7 +395,7 @@ public partial class ClientCoreTests
             // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
             this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
             {
-                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithValidFunctionName.Id}}", "Name": "{{s_functionCallWithValidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithValidFunctionName.FunctionArguments}}"}]""")
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonElement.Parse($$"""[{"Id": "{{s_functionCallWithValidFunctionName.Id}}", "Name": "{{s_functionCallWithValidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithValidFunctionName.FunctionArguments}}"}]""")
             }), false);
         }
     }
@@ -428,7 +428,7 @@ public partial class ClientCoreTests
         Assert.Contains("\"properties\":{}", parametersJson);
 
         // Verify it's valid JSON
-        var parsedJson = JsonSerializer.Deserialize<JsonElement>(parametersJson);
+        var parsedJson = JsonElement.Parse(parametersJson);
         Assert.Equal(JsonValueKind.Object, parsedJson.ValueKind);
         Assert.True(parsedJson.TryGetProperty("type", out var typeProperty));
         Assert.Equal("object", typeProperty.GetString());
@@ -458,7 +458,7 @@ public partial class ClientCoreTests
         Assert.NotNull(nonInvocableTool.FunctionParameters);
 
         var parametersJson = nonInvocableTool.FunctionParameters.ToString();
-        var schema = JsonSerializer.Deserialize<JsonElement>(parametersJson);
+        var schema = JsonElement.Parse(parametersJson);
 
         // Verify all required fields for Mistral compatibility
         Assert.True(schema.TryGetProperty("type", out _), "Schema must have 'type' field");

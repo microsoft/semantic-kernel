@@ -68,6 +68,26 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
     }
 
     [ConditionalFact]
+    public virtual async Task GetAsync_multiple_records_with_missing_keys_returns_only_existing()
+    {
+        var expectedRecords = fixture.TestData.Take(2).ToArray();
+        var missingKey = fixture.GenerateNextKey<TKey>();
+        var ids = expectedRecords.Select(record => record.Key).Append(missingKey).ToArray();
+
+        var received = await this.Collection.GetAsync(ids).ToListAsync();
+
+        Assert.Equal(2, received.Count);
+
+        foreach (var record in expectedRecords)
+        {
+            record.AssertEqual(
+                received.Single(r => r.Key.Equals(record.Key)),
+                includeVectors: false,
+                fixture.TestStore.VectorsComparable);
+        }
+    }
+
+    [ConditionalFact]
     public virtual async Task GetAsync_returns_empty_for_empty_keys()
     {
         Assert.Empty(await this.Collection.GetAsync([]).ToArrayAsync());
@@ -190,7 +210,7 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
             Key = expectedKey,
             Text = "New record",
             Number = 123,
-            Floats = new([10, 0, 0])
+            Vector = new([10, 0, 0])
         };
 
         Assert.Null(await this.Collection.GetAsync(expectedKey));
@@ -211,7 +231,7 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
             Key = existingRecord.Key,
             Text = "Updated record",
             Number = 456,
-            Floats = new([10, 0, 0])
+            Vector = new([10, 0, 0])
         };
 
         Assert.NotNull(await this.Collection.GetAsync(existingRecord.Key));
@@ -231,14 +251,14 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
                 Key = fixture.GenerateNextKey<TKey>(),
                 Number = 100,
                 Text = "New record 1",
-                Floats = new([10, 0, 1])
+                Vector = new([10, 0, 1])
             },
             new()
             {
                 Key = fixture.GenerateNextKey<TKey>(),
                 Number = 101,
                 Text = "New record 2",
-                Floats = new([10, 0, 2])
+                Vector = new([10, 0, 2])
             },
         ];
 
@@ -265,14 +285,14 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
                 Key = fixture.TestData[0].Key,
                 Number = 101,
                 Text = "Updated record 1",
-                Floats = new([10, 0, 1])
+                Vector = new([10, 0, 1])
             },
             new()
             {
                 Key = fixture.TestData[1].Key,
                 Number = 102,
                 Text = "Updated record 2",
-                Floats = new([10, 0, 2])
+                Vector = new([10, 0, 2])
             }
         ];
 
@@ -297,14 +317,14 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
                 Key = fixture.GenerateNextKey<TKey>(),
                 Number = 101,
                 Text = "New record",
-                Floats = new([10, 0, 1])
+                Vector = new([10, 0, 1])
             },
             new()
             {
                 Key = fixture.TestData[0].Key,
                 Number = 102,
                 Text = "Updated record",
-                Floats = new([10, 0, 2])
+                Vector = new([10, 0, 2])
             },
         ];
 
@@ -389,11 +409,56 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
 
     #endregion Delete
 
+    #region Search
+
+    [ConditionalTheory, MemberData(nameof(IncludeVectorsData))]
+    public virtual async Task SearchAsync(bool includeVectors)
+    {
+        var expectedRecord = fixture.TestData[0];
+
+        var result = await this.Collection
+            .SearchAsync(
+                expectedRecord.Vector,
+                top: 1,
+                new() { IncludeVectors = includeVectors })
+            .SingleAsync();
+
+        expectedRecord.AssertEqual(result.Record, includeVectors, fixture.TestStore.VectorsComparable);
+    }
+
+    [ConditionalFact]
+    public virtual async Task SearchAsync_with_Skip()
+    {
+        var result = await this.Collection
+            .SearchAsync(
+                fixture.TestData[0].Vector,
+                top: 1,
+                new() { Skip = 1 })
+            .SingleAsync();
+
+        fixture.TestData[1].AssertEqual(result.Record, includeVectors: false, fixture.TestStore.VectorsComparable);
+    }
+
+    [ConditionalFact]
+    public virtual async Task SearchAsync_with_Filter()
+    {
+        var result = await this.Collection
+            .SearchAsync(
+                fixture.TestData[0].Vector,
+                top: 1,
+                new() { Filter = r => r.Number == 2 })
+            .SingleAsync();
+
+        fixture.TestData[1].AssertEqual(result.Record, includeVectors: false, fixture.TestStore.VectorsComparable);
+    }
+
+    #endregion Search
+
     protected VectorStoreCollection<TKey, Record> Collection => fixture.Collection;
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, Record>
     {
-        public override string CollectionName => "BasicModelTests";
+        protected override string CollectionNameBase => nameof(BasicModelTests<int>);
 
         protected override List<Record> BuildTestData() =>
         [
@@ -402,21 +467,21 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
                 Key = this.GenerateNextKey<TKey>(),
                 Number = 1,
                 Text = "foo",
-                Floats = new([1, 2, 3])
+                Vector = new([1, 2, 3])
             },
             new()
             {
                 Key = this.GenerateNextKey<TKey>(),
                 Number = 2,
                 Text = "bar",
-                Floats = new([1, 2, 4])
+                Vector = new([1, 2, 4])
             },
             new()
             {
                 Key = this.GenerateNextKey<TKey>(),
                 Number = 3,
                 Text = "foo", // identical text as above
-                Floats = new([1, 2, 5])
+                Vector = new([1, 2, 5])
             }
         ];
 
@@ -426,7 +491,7 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
                 Properties =
                 [
                     new VectorStoreKeyProperty(nameof(Record.Key), typeof(TKey)),
-                    new VectorStoreVectorProperty(nameof(Record.Floats), typeof(ReadOnlyMemory<float>), 3)
+                    new VectorStoreVectorProperty(nameof(Record.Vector), typeof(ReadOnlyMemory<float>), 3)
                     {
                         DistanceFunction = this.DistanceFunction,
                         IndexKind = this.IndexKind
@@ -446,8 +511,8 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
         [VectorStoreData(StorageName = "number")]
         public int Number { get; set; }
 
-        [VectorStoreVector(Dimensions: 3, StorageName = "embedding")]
-        public ReadOnlyMemory<float> Floats { get; set; }
+        [VectorStoreVector(Dimensions: 3, StorageName = "vector")]
+        public ReadOnlyMemory<float> Vector { get; set; }
 
         public void AssertEqual(Record? other, bool includeVectors, bool compareVectors)
         {
@@ -458,16 +523,16 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
 
             if (includeVectors)
             {
-                Assert.Equal(this.Floats.Span.Length, other.Floats.Span.Length);
+                Assert.Equal(this.Vector.Span.Length, other.Vector.Span.Length);
 
                 if (compareVectors)
                 {
-                    Assert.Equal(this.Floats.ToArray(), other.Floats.ToArray());
+                    Assert.Equal(this.Vector.ToArray(), other.Vector.ToArray());
                 }
             }
             else
             {
-                Assert.Equal(0, other.Floats.Length);
+                Assert.Equal(0, other.Vector.Length);
             }
         }
 

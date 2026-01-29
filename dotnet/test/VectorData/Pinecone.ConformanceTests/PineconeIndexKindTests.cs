@@ -30,8 +30,5 @@ public class PineconeIndexKindTests(PineconeIndexKindTests.Fixture fixture)
     public new class Fixture() : IndexKindTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "index-kind-tests";
     }
 }

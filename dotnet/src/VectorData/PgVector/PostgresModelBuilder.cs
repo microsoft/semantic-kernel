@@ -21,15 +21,22 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         SupportsMultipleVectors = true,
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "short, int, long, string, Guid";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
 
-        return type == typeof(short)
-            || type == typeof(int)
-            || type == typeof(long)
-            || type == typeof(string)
-            || type == typeof(Guid);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        var type = keyProperty.Type;
+
+        if (type != typeof(short)
+            && type != typeof(int)
+            && type != typeof(long)
+            && type != typeof(string)
+            && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: short, int, long, string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
@@ -75,7 +82,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         return type == typeof(ReadOnlyMemory<float>) ||
             type == typeof(Embedding<float>) ||
             type == typeof(float[]) ||
-#if NET8_0_OR_GREATER
+#if NET
             type == typeof(ReadOnlyMemory<Half>) ||
             type == typeof(Embedding<Half>) ||
             type == typeof(Half[]) ||
@@ -91,7 +98,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         IEmbeddingGenerator embeddingGenerator,
         Type? userRequestedEmbeddingType)
         => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-#if NET8_0_OR_GREATER
+#if NET
         ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
 #endif
         ?? vectorProperty.ResolveEmbeddingType<BinaryEmbedding>(embeddingGenerator, userRequestedEmbeddingType);

@@ -1,7 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.onnx.utils import gemma_template, llama_template, phi3_template, phi3v_template
-from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, TextContent
+from semantic_kernel.connectors.ai.onnx.utils import (
+    gemma_template,
+    llama_template,
+    phi3_template,
+    phi3v_template,
+    phi4_template,
+    phi4mm_template,
+)
+from semantic_kernel.contents import AudioContent, AuthorRole, ChatHistory, ImageContent, TextContent
 
 
 def test_phi3v_template_with_text_and_image():
@@ -27,12 +34,48 @@ def test_phi3v_template_with_text_and_image():
     assert phi3v_template(history) == expected_output
 
 
+def test_phi4mm_template_with_text_and_image():
+    history = ChatHistory(
+        messages=[
+            {"role": AuthorRole.SYSTEM, "content": "System message"},
+            {
+                "role": AuthorRole.USER,
+                "items": [
+                    TextContent(text="User text message"),
+                    ImageContent(url="http://example.com/image.png"),
+                    AudioContent(url="http://example.com/audio.mp3"),
+                ],
+            },
+            {"role": AuthorRole.ASSISTANT, "content": "Assistant message"},
+        ]
+    )
+
+    expected_output = (
+        "<|system|>\nSystem message<|end|>\n"
+        "<|user|>\nUser text message<|end|>\n"
+        "<|image_1|>\n"
+        "<|audio_1|>\n"
+        "<|assistant|>\nAssistant message<|end|>\n"
+        "<|assistant|>\n"
+    )
+
+    assert phi4mm_template(history) == expected_output
+
+
 def test_phi3_template_with_only_text():
     history = ChatHistory(messages=[{"role": AuthorRole.USER, "items": [TextContent(text="User text message")]}])
 
     expected_output = "<|user|>\nUser text message<|end|>\n<|assistant|>\n"
 
     assert phi3_template(history) == expected_output
+
+
+def test_phi4_template_with_only_text():
+    history = ChatHistory(messages=[{"role": AuthorRole.USER, "items": [TextContent(text="User text message")]}])
+
+    expected_output = "<|user|>\nUser text message<|end|>\n<|assistant|>\n"
+
+    assert phi4_template(history) == expected_output
 
 
 def test_gemma_template_with_user_and_assistant_messages():

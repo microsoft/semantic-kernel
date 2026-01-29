@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
-    private readonly Dictionary<string, object> _parameters = new();
+    private readonly Dictionary<string, object> _parameters = [];
 
     internal SqliteFilterTranslator(CollectionModel model, LambdaExpression lambdaExpression)
         : base(model, lambdaExpression, sql: null)
@@ -36,6 +36,10 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     // TODO: support Contains over array fields (#10343)
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
+
+    // TODO: support Any over array fields (#10343)
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+        => throw new NotSupportedException("Unsupported method call: Enumerable.Any");
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {

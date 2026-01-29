@@ -12,13 +12,13 @@ public class PostgresKeyTypeTests(PostgresKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<PostgresKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task Int() => this.Test<int>(8);
+    public virtual Task Int() => this.Test<int>(8, supportsAutoGeneration: true);
 
     [ConditionalFact]
-    public virtual Task Long() => this.Test<long>(8L);
+    public virtual Task Long() => this.Test<long>(8L, supportsAutoGeneration: true);
 
     [ConditionalFact]
-    public virtual Task String() => this.Test<string>("foo");
+    public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture
     {

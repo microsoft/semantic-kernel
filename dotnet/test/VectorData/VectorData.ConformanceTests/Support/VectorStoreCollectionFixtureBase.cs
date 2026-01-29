@@ -19,7 +19,17 @@ public abstract class VectorStoreCollectionFixtureBase<TKey, TRecord> : VectorSt
     public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
     protected virtual List<TRecord> BuildTestData() => [];
 
-    public abstract string CollectionName { get; }
+    /// <summary>
+    /// The base name for the test collection used in tests, before any provider-specific collection naming rules have been applied.
+    /// </summary>
+    // TODO: Make protected
+    protected abstract string CollectionNameBase { get; }
+
+    /// <summary>
+    /// The actual name of the test collection, after any provider-specific collection naming rules have been applied.
+    /// </summary>
+    public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
+
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 

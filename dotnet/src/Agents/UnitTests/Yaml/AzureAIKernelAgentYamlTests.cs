@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
@@ -57,7 +58,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
             new FakeTokenCredential(),
             new AIProjectClientOptions
             {
-                Transport = new HttpClientTransport(this._projectHttpClient)
+                Transport = new HttpClientPipelineTransport(this._projectHttpClient)
             });
         builder.Services.AddSingleton(projectClient);
 
@@ -105,7 +106,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal(type, requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
@@ -154,7 +155,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("azure_function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
@@ -194,7 +195,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
@@ -235,7 +236,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("bing_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
@@ -286,7 +287,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(3, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("openapi", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
         Assert.Equal("openapi", requestJson.GetProperty("tools")[1].GetProperty("type").GetString());
@@ -330,7 +331,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("code_interpreter", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
         var toolResources = requestJson.GetProperty("tool_resources");
@@ -373,7 +374,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(agent);
         var requestContent = Encoding.UTF8.GetString(this._agentClientHandlerStub.RequestContent!);
         Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+        var requestJson = JsonElement.Parse(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
         Assert.Equal("azure_ai_search", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
         var toolResources = requestJson.GetProperty("tool_resources");

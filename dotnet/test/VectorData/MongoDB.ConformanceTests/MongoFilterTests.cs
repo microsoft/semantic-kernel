@@ -66,9 +66,22 @@ public class MongoFilterTests(MongoFilterTests.Fixture fixture)
 
 #if NET10_0_OR_GREATER
     [ConditionalFact]
-    public virtual Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
+    public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
         => Assert.ThrowsAsync<NotSupportedException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif
+
+    // Any with Contains over array fields not supported on MongoDB in vector search pre-filters
+    public override Task Any_with_Contains_over_inline_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_inline_string_array);
+
+    public override Task Any_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_captured_string_array);
+
+    public override Task Any_with_Contains_over_captured_string_list()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_captured_string_list);
+
+    public override Task Any_over_List_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_over_List_with_Contains_over_captured_string_array);
 
     // AnyTagEqualTo not (currently) supported on SQLite
     [Obsolete("Legacy filter support")]

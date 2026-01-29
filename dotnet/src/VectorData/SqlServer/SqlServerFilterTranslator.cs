@@ -3,7 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if NET8_0_OR_GREATER
+#if NET
 using System.Globalization;
 #endif
 using System.Linq.Expressions;
@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
-    private readonly List<object> _parameterValues = new();
+    private readonly List<object> _parameterValues = [];
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
@@ -45,7 +45,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
             case DateTimeOffset dateTimeOffset:
                 this._sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
-#if NET8_0_OR_GREATER
+#if NET
             case DateOnly dateOnly:
                 this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
                 return;
@@ -115,6 +115,37 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
 
         this._sql.Append(')');
+    }
+
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to:
+        // EXISTS(SELECT 1 FROM OPENJSON(column) WHERE value IN ('a', 'b', 'c'))
+        if (values is not IEnumerable elements)
+        {
+            throw new NotSupportedException("Unsupported Any expression");
+        }
+
+        this._sql.Append("EXISTS(SELECT 1 FROM OPENJSON(");
+        this.GenerateColumn(property);
+        this._sql.Append(") WHERE value IN (");
+
+        var isFirst = true;
+        foreach (var element in elements)
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                this._sql.Append(", ");
+            }
+
+            this.TranslateConstant(element, isSearchCondition: false);
+        }
+
+        this._sql.Append("))");
     }
 
     protected override void TranslateQueryParameter(object? value)

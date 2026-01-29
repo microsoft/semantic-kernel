@@ -17,7 +17,7 @@ public class WeaviateNoDataModelTests_NamedVectors(WeaviateNoDataModelTests_Name
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        public override string CollectionName => "NoDataNamedCollection";
+        protected override string CollectionNameBase => "NoDataNamedCollection";
     }
 }
 
@@ -31,6 +31,6 @@ public class WeaviateNoDataModelTests_UnnamedVector(WeaviateNoDataModelTests_Unn
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        public override string CollectionName => "NoDataUnnamedCollection";
+        protected override string CollectionNameBase => "NoDataUnnamedCollection";
     }
 }

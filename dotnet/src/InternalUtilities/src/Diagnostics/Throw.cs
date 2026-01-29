@@ -218,7 +218,7 @@ internal static partial class Throw
     public static T IfOutOfRange<T>(T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
         where T : struct, Enum
     {
-#if NET5_0_OR_GREATER
+#if NET
         if (!Enum.IsDefined<T>(argument))
 #else
         if (!Enum.IsDefined(typeof(T), argument))

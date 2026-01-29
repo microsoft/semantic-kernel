@@ -151,7 +151,8 @@ internal class AzureAISearchFilterTranslator
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this._filter.Append(property.StorageName); // TODO: Escape
+            // OData identifiers cannot be escaped; storage names are validated during model building.
+            this._filter.Append(property.StorageName);
             return;
         }
 
@@ -164,7 +165,8 @@ internal class AzureAISearchFilterTranslator
         {
             // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
             case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this._filter.Append(property.StorageName); // TODO: Escape
+                // OData identifiers cannot be escaped; storage names are validated during model building.
+                this._filter.Append(property.StorageName);
                 return;
 
             // Enumerable.Contains()
@@ -201,27 +203,14 @@ internal class AzureAISearchFilterTranslator
                 this.TranslateContains(source, item);
                 return;
 
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            case { Method.Name: nameof(Enumerable.Any), Arguments: [var source, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable):
+                this.TranslateAny(source, lambda);
+                return;
+
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
-        }
-
-        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
-        {
-            if (expression is UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var unwrapped
-                }
-                && implicitCastDeclaringType.GetGenericTypeDefinition() is var genericTypeDefinition
-                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
-            {
-                result = unwrapped;
-                return true;
-            }
-
-            result = null;
-            return false;
         }
     }
 
@@ -239,95 +228,225 @@ internal class AzureAISearchFilterTranslator
 
             // Contains over inline enumerable
             case NewArrayExpression newArray:
-                var elements = new object?[newArray.Expressions.Count];
-
-                for (var i = 0; i < newArray.Expressions.Count; i++)
-                {
-                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
-                    {
-                        throw new NotSupportedException("Invalid element in array");
-                    }
-
-                    if (elementValue is not string)
-                    {
-                        throw new NotSupportedException("Contains over non-string arrays is not supported");
-                    }
-
-                    elements[i] = elementValue;
-                }
-
-                ProcessInlineEnumerable(elements, item);
+                var elements = ExtractArrayValues(newArray);
+                this._filter.Append("search.in(");
+                this.Translate(item);
+                this.GenerateSearchInValues(elements);
                 return;
 
             case ConstantExpression { Value: IEnumerable enumerable and not string }:
-                ProcessInlineEnumerable(enumerable, item);
+                this._filter.Append("search.in(");
+                this.Translate(item);
+                this.GenerateSearchInValues(enumerable);
                 return;
 
             default:
                 throw new NotSupportedException("Unsupported Contains expression");
         }
+    }
 
-        void ProcessInlineEnumerable(IEnumerable elements, Expression item)
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array field is contained in the given values.
+    /// </summary>
+    private void TranslateAny(Expression source, LambdaExpression lambda)
+    {
+        // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
+        // Translates to: Field/any(t: search.in(t, 'value1, value2, value3'))
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression { Method.Name: "Contains" } containsCall)
         {
-            this._filter.Append("search.in(");
-            this.Translate(item);
-            this._filter.Append(", '");
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
 
-            string delimiter = ", ";
-            var startingPosition = this._filter.Length;
+        // Match Enumerable.Contains(source, item), List<T>.Contains(item), or MemoryExtensions.Contains
+        var (valuesExpression, itemExpression) = containsCall switch
+        {
+            // Enumerable.Contains(source, item)
+            { Method.Name: nameof(Enumerable.Contains), Arguments: [var src, var item] }
+                when containsCall.Method.DeclaringType == typeof(Enumerable)
+                => (src, item),
+
+            // List<T>.Contains(item)
+            { Method: { Name: nameof(Enumerable.Contains), DeclaringType: { IsGenericType: true } declaringType }, Object: Expression src, Arguments: [var item] }
+                when declaringType.GetGenericTypeDefinition() == typeof(List<>)
+                => (src, item),
+
+            // MemoryExtensions.Contains (C# 14 first-class spans)
+            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] }
+                when containsCall.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (containsCall.Arguments.Count is 2
+                        || (containsCall.Arguments.Count is 3 && containsCall.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var unwrappedSource)
+                => (unwrappedSource, item),
+
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any"),
+        };
+
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Extract the values and generate the OData filter
+        IEnumerable values = valuesExpression switch
+        {
+            NewArrayExpression newArray => ExtractArrayValues(newArray),
+            ConstantExpression { Value: IEnumerable enumerable and not string } => enumerable,
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+        };
+
+        // Generate: Field/any(t: search.in(t, 'value1, value2, value3'))
+        // OData identifiers cannot be escaped; storage names are validated during model building.
+        this._filter.Append(property.StorageName);
+        this._filter.Append("/any(t: search.in(t");
+        this.GenerateSearchInValues(values);
+        this._filter.Append(')');
+    }
+
+    /// <summary>
+    /// Generates the values portion of a search.in() call, including the comma, quotes, and optional delimiter.
+    /// Appends: , 'value1, value2, value3') or , 'value1|value2|value3', '|')
+    /// </summary>
+    private void GenerateSearchInValues(IEnumerable values)
+    {
+        this._filter.Append(", '");
+
+        string delimiter = ", ";
+        var startingPosition = this._filter.Length;
 
 RestartLoop:
-            var isFirst = true;
-            foreach (string element in elements)
+        var isFirst = true;
+        foreach (var element in values)
+        {
+            if (element is not string stringElement)
             {
-                if (isFirst)
-                {
-                    isFirst = false;
-                }
-                else
-                {
-                    this._filter.Append(delimiter);
-                }
-
-                // The default delimiter for search.in() is comma or space.
-                // If any element contains a comma or space, we switch to using pipe as the delimiter.
-                // If any contains a pipe, we throw (for now).
-                switch (delimiter)
-                {
-                    case ", ":
-                        if (element.IndexOfAny(s_searchInDefaultDelimiter) > -1)
-                        {
-                            delimiter = "|";
-                            this._filter.Length = startingPosition;
-                            goto RestartLoop;
-                        }
-
-                        break;
-
-                    case "|":
-                        if (element.Contains('|'))
-                        {
-                            throw new NotSupportedException("Some elements contain both commas/spaces and pipes, cannot translate Contains");
-                        }
-
-                        break;
-                }
-
-                this._filter.Append(element.Replace("'", "''"));
+                throw new NotSupportedException("search.in() over non-string arrays is not supported");
             }
 
-            this._filter.Append('\'');
-
-            if (delimiter != ", ")
+            if (isFirst)
             {
-                this._filter
-                    .Append(", '")
-                    .Append(delimiter)
-                    .Append('\'');
+                isFirst = false;
+            }
+            else
+            {
+                this._filter.Append(delimiter);
             }
 
-            this._filter.Append(')');
+            // The default delimiter for search.in() is comma or space.
+            // If any element contains a comma or space, we switch to using pipe as the delimiter.
+            // If any contains a pipe, we throw (for now).
+            switch (delimiter)
+            {
+                case ", ":
+                    if (stringElement.IndexOfAny(s_searchInDefaultDelimiter) > -1)
+                    {
+                        delimiter = "|";
+                        this._filter.Length = startingPosition;
+                        goto RestartLoop;
+                    }
+
+                    break;
+
+                case "|":
+                    if (stringElement.Contains('|'))
+                    {
+                        throw new NotSupportedException("Some elements contain both commas/spaces and pipes, cannot translate to search.in()");
+                    }
+
+                    break;
+            }
+
+            this._filter.Append(stringElement.Replace("'", "''"));
         }
+
+        this._filter.Append('\'');
+
+        if (delimiter != ", ")
+        {
+            this._filter
+                .Append(", '")
+                .Append(delimiter)
+                .Append('\'');
+        }
+
+        this._filter.Append(')');
+    }
+
+    private static object?[] ExtractArrayValues(NewArrayExpression newArray)
+    {
+        var result = new object?[newArray.Expressions.Count];
+        for (var i = 0; i < newArray.Expressions.Count; i++)
+        {
+            if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
+            {
+                throw new NotSupportedException("Invalid element in array");
+            }
+
+            result[i] = elementValue;
+        }
+
+        return result;
+    }
+
+    private static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+    {
+        // Different versions of the compiler seem to generate slightly different expression tree representations for this
+        // implicit cast:
+        var (unwrapped, castDeclaringType) = expression switch
+        {
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Operand: var operand
+            } => (operand, implicitCastDeclaringType),
+
+            MethodCallExpression
+            {
+                Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                Arguments: [var firstArgument]
+            } => (firstArgument, implicitCastDeclaringType),
+
+            // After the preprocessor runs, the Convert node may have Method: null because the visitor
+            // recreates the UnaryExpression with a different operand type (QueryParameterExpression).
+            // Handle this case by checking if the target type is Span<T> or ReadOnlySpan<T>.
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Type: { IsGenericType: true } targetType,
+                Operand: var operand
+            } when targetType.GetGenericTypeDefinition() is var gtd
+                && (gtd == typeof(Span<>) || gtd == typeof(ReadOnlySpan<>))
+                => (operand, targetType),
+
+            _ => (null, null)
+        };
+
+        // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+        // Also handle cases where the preprocessor adds a Convert node back to the array type.
+        while (unwrapped is UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Operand: var innerOperand
+            })
+        {
+            unwrapped = innerOperand;
+        }
+
+        if (unwrapped is not null
+            && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+        {
+            result = unwrapped;
+            return true;
+        }
+
+        result = null;
+        return false;
     }
 
     private void TranslateUnary(UnaryExpression unary)
@@ -358,7 +477,8 @@ RestartLoop:
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this._filter.Append(property.StorageName); // TODO: Escape
+                // OData identifiers cannot be escaped; storage names are validated during model building.
+                this._filter.Append(property.StorageName);
                 return;
 
             default:

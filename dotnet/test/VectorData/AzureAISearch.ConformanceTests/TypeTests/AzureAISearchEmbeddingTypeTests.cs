@@ -15,8 +15,5 @@ public class AzureAISearchEmbeddingTypeTests(AzureAISearchEmbeddingTypeTests.Fix
     public new class Fixture : EmbeddingTypeTests<string>.Fixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
-
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "embedding-type-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
     }
 }

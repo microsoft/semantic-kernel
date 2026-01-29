@@ -54,7 +54,8 @@ public abstract class IndexKindTests<TKey>(IndexKindTests<TKey>.Fixture fixture)
 
     public abstract class Fixture : VectorStoreFixture
     {
-        public virtual string CollectionName => "IndexKindTests";
+        protected virtual string CollectionNameBase => nameof(IndexKindTests<int>);
+        public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         protected virtual string? DistanceFunction => null;
 

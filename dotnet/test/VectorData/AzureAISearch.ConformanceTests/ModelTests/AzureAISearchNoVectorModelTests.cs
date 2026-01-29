@@ -12,8 +12,6 @@ public class AzureAISearchNoVectorModelTests(AzureAISearchNoVectorModelTests.Fix
 {
     public new class Fixture : NoVectorModelTests<string>.Fixture
     {
-        public override string CollectionName => "novector-" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }
 }

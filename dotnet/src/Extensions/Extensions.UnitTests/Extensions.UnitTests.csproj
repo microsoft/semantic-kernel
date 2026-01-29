@@ -2,12 +2,11 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Extensions.UnitTests</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <LangVersion>12</LangVersion>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>

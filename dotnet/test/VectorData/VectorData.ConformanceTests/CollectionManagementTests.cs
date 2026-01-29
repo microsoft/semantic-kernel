@@ -86,7 +86,8 @@ public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture
         Assert.NotNull(collectionMetadata.CollectionName);
     }
 
-    public virtual string CollectionName => "CollectionTests";
+    protected virtual string CollectionNameBase => nameof(CollectionManagementTests<object>);
+    public virtual string CollectionName => fixture.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
     public sealed class Record : TestRecord<TKey>
     {

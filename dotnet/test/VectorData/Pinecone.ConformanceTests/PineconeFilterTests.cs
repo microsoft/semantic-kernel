@@ -73,6 +73,19 @@ public class PineconeFilterTests(PineconeFilterTests.Fixture fixture)
         => Assert.ThrowsAsync<NotSupportedException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif
 
+    // Any with Contains over array fields not supported on Pinecone
+    public override Task Any_with_Contains_over_inline_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_inline_string_array);
+
+    public override Task Any_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_captured_string_array);
+
+    public override Task Any_with_Contains_over_captured_string_list()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_with_Contains_over_captured_string_list);
+
+    public override Task Any_over_List_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<NotSupportedException>(base.Any_over_List_with_Contains_over_captured_string_array);
+
     // AnyTagEqualTo not (currently) supported on Pinecone
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()
@@ -85,8 +98,5 @@ public class PineconeFilterTests(PineconeFilterTests.Fixture fixture)
     public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "filter-tests";
     }
 }

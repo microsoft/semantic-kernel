@@ -82,7 +82,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -144,7 +144,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -199,7 +199,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -258,7 +258,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -313,7 +313,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -371,7 +371,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -429,7 +429,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -484,7 +484,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),
@@ -544,7 +544,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
                     Message = new Message
                     {
                         Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
+                        Content = [new() { Text = "I'm doing well." }]
                     }
                 },
                 Metrics = new ConverseMetrics(),

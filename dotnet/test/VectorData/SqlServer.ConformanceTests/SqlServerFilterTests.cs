@@ -57,6 +57,6 @@ public class SqlServerFilterTests(SqlServerFilterTests.Fixture fixture)
 
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
-        public override string CollectionName => s_uniqueName;
+        protected override string CollectionNameBase => s_uniqueName;
     }
 }

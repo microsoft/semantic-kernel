@@ -4,13 +4,9 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import vertexai
 from pydantic import ValidationError
+from typing_extensions import deprecated
 from vertexai.generative_models import Candidate, Content, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -51,11 +47,20 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_chat_completion,
 )
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+@deprecated(
+    "VertexAIChatCompletion is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAIChatCompletion` connectors instead."
+)
 class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     """Google Vertex AI Chat Completion Service."""
 
