@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Sequence
 from typing import Literal
 
 from pydantic import Field
@@ -23,7 +24,9 @@ class DaprStepInfo(KernelBaseModel):
     state: KernelProcessState | KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
 
-    def to_kernel_process_step_info(self, allowed_module_prefixes: list[str] | None = None) -> KernelProcessStepInfo:
+    def to_kernel_process_step_info(
+        self, allowed_module_prefixes: Sequence[str] | None = None
+    ) -> KernelProcessStepInfo:
         """Converts the Dapr step info to a kernel process step info.
 
         Args:

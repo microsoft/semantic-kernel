@@ -3,7 +3,7 @@
 import asyncio
 import json
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from inspect import isawaitable
 from queue import Queue
 from typing import Any
@@ -57,7 +57,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         actor_id: ActorId,
         kernel: Kernel,
         factories: dict[str, Callable],
-        allowed_module_prefixes: list[str] | None = None,
+        allowed_module_prefixes: Sequence[str] | None = None,
     ):
         """Initializes a new instance of StepActor.
 
@@ -66,14 +66,14 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
             factories: The factory dictionary to use for creating the step.
-            allowed_module_prefixes: Optional list of module prefixes that are allowed
+            allowed_module_prefixes: Optional sequence of module prefixes that are allowed
                 for step class loading. If provided, step classes must come from modules
                 starting with one of these prefixes.
         """
         super().__init__(ctx, actor_id)
         self.kernel = kernel
         self.factories: dict[str, Callable] = factories
-        self.allowed_module_prefixes: list[str] | None = allowed_module_prefixes
+        self.allowed_module_prefixes: Sequence[str] | None = allowed_module_prefixes
         self.parent_process_id: str | None = None
         self.step_info: DaprStepInfo | None = None
         self.initialize_task: bool | None = False

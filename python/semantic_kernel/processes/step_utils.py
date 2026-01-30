@@ -2,6 +2,7 @@
 
 import importlib
 import inspect
+from collections.abc import Sequence
 from typing import Any
 
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
@@ -46,7 +47,7 @@ def get_fully_qualified_name(cls) -> str:
 @experimental
 def get_step_class_from_qualified_name(
     full_class_name: str,
-    allowed_module_prefixes: list[str] | None = None,
+    allowed_module_prefixes: Sequence[str] | None = None,
 ) -> type[KernelProcessStep]:
     """Loads and validates a KernelProcessStep class from a fully qualified name.
 

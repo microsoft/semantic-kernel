@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from collections.abc import MutableSequence
+from collections.abc import MutableSequence, Sequence
 from typing import Literal
 
 from pydantic import Field
@@ -20,7 +20,7 @@ class DaprProcessInfo(DaprStepInfo):
     type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
-    def to_kernel_process(self, allowed_module_prefixes: list[str] | None = None) -> KernelProcess:
+    def to_kernel_process(self, allowed_module_prefixes: Sequence[str] | None = None) -> KernelProcess:
         """Converts the Dapr process info to a kernel process.
 
         Args:
