@@ -119,7 +119,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    internal static string BuildCreateIndexSql(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
+    internal static string BuildCreateIndexSql(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool isFullText, string? fullTextLanguage, bool ifNotExists)
     {
         var indexName = $"{tableName}_{columnName}_index";
 
@@ -128,6 +128,15 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         if (ifNotExists)
         {
             sql.Append("IF NOT EXISTS ");
+        }
+
+        if (isFullText)
+        {
+            // Create a GIN index for full-text search
+            var language = fullTextLanguage ?? PostgresConstants.DefaultFullTextSearchLanguage;
+            sql.AppendIdentifier(indexName).Append(" ON ").AppendIdentifier(schema).Append('.').AppendIdentifier(tableName)
+                .Append(" USING GIN (to_tsvector(").AppendLiteral(language).Append(", ").AppendIdentifier(columnName).Append("))");
+            return sql.ToString();
         }
 
         if (!isVector)
@@ -422,6 +431,61 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     internal static StringBuilder AppendIdentifier(this StringBuilder sb, string identifier)
         => sb.Append('"').Append(identifier.Replace("\"", "\"\"")).Append('"');
 
+    /// <summary>
+    /// Appends a properly quoted and escaped PostgreSQL string literal to the StringBuilder.
+    /// In PostgreSQL, string literals are quoted with single quotes, and embedded single quotes are escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendLiteral(this StringBuilder sb, string value)
+        => sb.Append('\'').Append(value.Replace("'", "''")).Append('\'');
+
+    /// <summary>
+    /// Gets the PostgreSQL distance operator for the specified distance function.
+    /// </summary>
+    private static string GetDistanceOperator(string? distanceFunction)
+        => distanceFunction switch
+        {
+            DistanceFunction.EuclideanDistance or null => "<->",
+            DistanceFunction.CosineDistance or DistanceFunction.CosineSimilarity => "<=>",
+            DistanceFunction.ManhattanDistance => "<+>",
+            DistanceFunction.DotProductSimilarity => "<#>",
+            DistanceFunction.HammingDistance => "<~>",
+            _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
+        };
+
+    /// <summary>
+    /// Generates filter clause from either legacy or new filter, returning condition and parameters.
+    /// </summary>
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+    private static (string Clause, List<object> Parameters) GenerateFilterClause<TRecord>(
+        CollectionModel model,
+        VectorSearchFilter? legacyFilter,
+        Expression<Func<TRecord, bool>>? newFilter,
+        int startParamIndex)
+        => (oldFilter: legacyFilter, newFilter) switch
+        {
+            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            (not null, null) => GenerateLegacyFilterWhereClause(model, legacyFilter, startParamIndex),
+            (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex),
+            _ => (Clause: string.Empty, Parameters: new List<object>())
+        };
+
+    /// <summary>
+    /// Generates filter condition (without WHERE keyword) from either legacy or new filter.
+    /// </summary>
+    private static (string Condition, List<object> Parameters) GenerateFilterCondition<TRecord>(
+        CollectionModel model,
+        VectorSearchFilter? legacyFilter,
+        Expression<Func<TRecord, bool>>? newFilter,
+        int startParamIndex)
+        => (oldFilter: legacyFilter, newFilter) switch
+        {
+            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            (not null, null) => GenerateLegacyFilterCondition(model, legacyFilter, startParamIndex),
+            (null, not null) => GenerateNewFilterCondition(model, newFilter, startParamIndex),
+            _ => (Condition: string.Empty, Parameters: new List<object>())
+        };
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
     internal static void BuildGetNearestMatchCommand<TRecord>(
@@ -441,27 +505,10 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         }
 
         var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
-        var distanceOp = distanceFunction switch
-        {
-            DistanceFunction.EuclideanDistance or null => "<->",
-            DistanceFunction.CosineDistance or DistanceFunction.CosineSimilarity => "<=>",
-            DistanceFunction.ManhattanDistance => "<+>",
-            DistanceFunction.DotProductSimilarity => "<#>",
-            DistanceFunction.HammingDistance => "<~>",
-
-            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
-        };
+        var distanceOp = GetDistanceOperator(distanceFunction);
 
         // Start where clause params at 2, vector takes param 1.
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var (where, parameters) = (oldFilter: legacyFilter, newFilter) switch
-        {
-            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            (not null, null) => GenerateLegacyFilterWhereClause(model, legacyFilter, startParamIndex: 2),
-            (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex: 2),
-            _ => (Clause: string.Empty, Parameters: [])
-        };
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        var (where, parameters) = GenerateFilterClause(model, legacyFilter, newFilter, startParamIndex: 2);
 
         StringBuilder sql = new();
         sql.Append("SELECT ").Append(columns).Append(", ").AppendIdentifier(vectorProperty.StorageName)
@@ -605,15 +652,27 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
     internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(CollectionModel model, LambdaExpression newFilter, int startParamIndex)
     {
+        var (condition, parameters) = GenerateNewFilterCondition(model, newFilter, startParamIndex);
+        return (string.IsNullOrEmpty(condition) ? string.Empty : $"WHERE {condition}", parameters);
+    }
+
+    internal static (string Condition, List<object> Parameters) GenerateNewFilterCondition(CollectionModel model, LambdaExpression newFilter, int startParamIndex)
+    {
         PostgresFilterTranslator translator = new(model, newFilter, startParamIndex);
-        translator.Translate(appendWhere: true);
+        translator.Translate(appendWhere: false);
         return (translator.Clause.ToString(), translator.ParameterValues);
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
     {
-        StringBuilder whereClause = new("WHERE ");
+        var (condition, parameters) = GenerateLegacyFilterCondition(model, legacyFilter, startParamIndex);
+        return ($"WHERE {condition}", parameters);
+    }
+
+    internal static (string Condition, List<object> Parameters) GenerateLegacyFilterCondition(CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
+    {
+        StringBuilder condition = new();
         var parameters = new List<object>();
 
         var paramIndex = startParamIndex;
@@ -623,7 +682,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         {
             if (!first)
             {
-                whereClause.Append(" AND ");
+                condition.Append(" AND ");
             }
             first = false;
 
@@ -632,7 +691,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
                 var property = model.Properties.FirstOrDefault(p => p.ModelName == equalTo.FieldName);
                 if (property == null) { throw new ArgumentException($"Property {equalTo.FieldName} not found in record definition."); }
 
-                whereClause.AppendIdentifier(property.StorageName).Append(" = $").Append(paramIndex);
+                condition.AppendIdentifier(property.StorageName).Append(" = $").Append(paramIndex);
                 parameters.Add(equalTo.Value);
                 paramIndex++;
             }
@@ -646,7 +705,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
                     throw new ArgumentException($"Property {anyTagEqualTo.FieldName} must be of type List<string> to use AnyTagEqualTo filter.");
                 }
 
-                whereClause.AppendIdentifier(property.StorageName).Append(" @> ARRAY[$").Append(paramIndex).Append("::TEXT]");
+                condition.AppendIdentifier(property.StorageName).Append(" @> ARRAY[$").Append(paramIndex).Append("::TEXT]");
                 parameters.Add(anyTagEqualTo.Value);
                 paramIndex++;
             }
@@ -656,7 +715,144 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             }
         }
 
-        return (whereClause.ToString(), parameters);
+        return (condition.ToString(), parameters);
+    }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+    /// <summary>
+    /// Builds a hybrid search command that combines vector similarity search with full-text keyword search using RRF (Reciprocal Rank Fusion).
+    /// </summary>
+    internal static void BuildHybridSearchCommand<TRecord>(
+        NpgsqlCommand command, string schema, string tableName, CollectionModel model,
+        VectorPropertyModel vectorProperty, DataPropertyModel textProperty,
+        object vectorValue, ICollection<string> keywords,
+        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter,
+        int? skip, bool includeVectors, int top, double? scoreThreshold = null)
+    {
+        // RRF constant - higher values give more weight to lower-ranked results
+        const int RrfConstant = 60;
+
+        // Build column list with proper escaping (for the final SELECT)
+        StringBuilder columns = new();
+        for (var i = 0; i < model.Properties.Count; i++)
+        {
+            if (!includeVectors && model.Properties[i] is VectorPropertyModel)
+            {
+                continue;
+            }
+
+            if (columns.Length > 0)
+            {
+                columns.Append(", ");
+            }
+
+            columns.Append("t.").AppendIdentifier(model.Properties[i].StorageName);
+        }
+
+        var distanceOp = GetDistanceOperator(vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction);
+
+        // Parameters: $1 = keywords, $2 = vector, $3 = RRF constant
+        // Additional parameters start at $4 for filters
+        var (filterCondition, filterParameters) = GenerateFilterCondition(model, legacyFilter, newFilter, startParamIndex: 4);
+
+        // Build the full table name
+        var fullTableName = new StringBuilder()
+            .AppendIdentifier(schema).Append('.').AppendIdentifier(tableName)
+            .ToString();
+
+        // Use a larger internal limit for the CTEs to get better ranking, then limit final results
+        var internalLimit = (top + (skip ?? 0)) * 2;
+        if (internalLimit < 20)
+        {
+            internalLimit = 20;
+        }
+
+        // Get the full-text search language from the text property
+        var language = textProperty.GetFullTextSearchLanguageOrDefault();
+
+        StringBuilder sql = new();
+        sql.AppendLine()
+            .Append("WITH semantic_search AS (").AppendLine()
+            .Append("    SELECT ").AppendIdentifier(model.KeyProperty.StorageName).Append(", RANK () OVER (ORDER BY ").AppendIdentifier(vectorProperty.StorageName)
+            .Append(' ').Append(distanceOp).Append(" $2) AS rank").AppendLine()
+            .Append("    FROM ").Append(fullTableName);
+
+        // Add filter for semantic search
+        if (!string.IsNullOrEmpty(filterCondition))
+        {
+            sql.AppendLine().Append("    WHERE ").Append(filterCondition);
+        }
+
+        sql.AppendLine()
+            .Append("    ORDER BY ").AppendIdentifier(vectorProperty.StorageName).Append(' ').Append(distanceOp).Append(" $2").AppendLine()
+            .Append("    LIMIT ").Append(internalLimit).AppendLine()
+            .Append("),").AppendLine()
+            .Append("keyword_search AS (").AppendLine()
+            .Append("    SELECT ").AppendIdentifier(model.KeyProperty.StorageName).Append(", RANK () OVER (ORDER BY ts_rank_cd(to_tsvector(").AppendLiteral(language).Append(", ").AppendIdentifier(textProperty.StorageName).Append("), query) DESC) AS rank").AppendLine()
+            .Append("    FROM ").Append(fullTableName).Append(", plainto_tsquery(").AppendLiteral(language).Append(", $1) query").AppendLine()
+            .Append("    WHERE to_tsvector(").AppendLiteral(language).Append(", ").AppendIdentifier(textProperty.StorageName).Append(") @@ query");
+
+        // Add filter for keyword search (using AND since we already have a WHERE clause)
+        if (!string.IsNullOrEmpty(filterCondition))
+        {
+            sql.Append(" AND ").Append(filterCondition);
+        }
+
+        sql.AppendLine()
+            .Append("    ORDER BY ts_rank_cd(to_tsvector(").AppendLiteral(language).Append(", ").AppendIdentifier(textProperty.StorageName).Append("), query) DESC").AppendLine()
+            .Append("    LIMIT ").Append(internalLimit).AppendLine()
+            .Append(')').AppendLine()
+            .Append("SELECT ").Append(columns).Append(',').AppendLine()
+            .Append("    COALESCE(1.0 / ($3 + semantic_search.rank), 0.0) +").AppendLine()
+            .Append("    COALESCE(1.0 / ($3 + keyword_search.rank), 0.0) AS ").AppendIdentifier(PostgresConstants.DistanceColumnName).AppendLine()
+            .Append("FROM semantic_search").AppendLine()
+            .Append("FULL OUTER JOIN keyword_search ON semantic_search.").AppendIdentifier(model.KeyProperty.StorageName).Append(" = keyword_search.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine()
+            .Append("JOIN ").Append(fullTableName).Append(" t ON t.").AppendIdentifier(model.KeyProperty.StorageName).Append(" = COALESCE(semantic_search.").AppendIdentifier(model.KeyProperty.StorageName).Append(", keyword_search.").AppendIdentifier(model.KeyProperty.StorageName).Append(')').AppendLine()
+            .Append("ORDER BY ").AppendIdentifier(PostgresConstants.DistanceColumnName).Append(" DESC");
+
+        var commandText = sql.ToString();
+
+        // Apply score threshold filter if specified (higher RRF scores = better match)
+        if (scoreThreshold.HasValue)
+        {
+            var scoreThresholdParamIndex = filterParameters.Count + 4;
+            StringBuilder outerSql = new();
+            outerSql.Append("SELECT * FROM (").Append(commandText).Append(") AS scored WHERE ")
+                .AppendIdentifier(PostgresConstants.DistanceColumnName).Append(" >= $").Append(scoreThresholdParamIndex);
+            commandText = outerSql.ToString();
+        }
+
+        // Apply LIMIT and OFFSET
+        StringBuilder finalSql = new();
+        finalSql.Append("SELECT * FROM (").Append(commandText).Append(") AS results LIMIT ").Append(top);
+        if (skip > 0)
+        {
+            finalSql.Append(" OFFSET ").Append(skip.Value);
+        }
+
+        command.CommandText = finalSql.ToString();
+
+        Debug.Assert(command.Parameters.Count == 0);
+
+        // $1 = keywords (joined as single string for plainto_tsquery)
+        command.Parameters.Add(new NpgsqlParameter { Value = string.Join(" ", keywords) });
+        // $2 = vector
+        command.Parameters.Add(new NpgsqlParameter { Value = vectorValue });
+        // $3 = RRF constant
+        command.Parameters.Add(new NpgsqlParameter { Value = RrfConstant });
+
+        // Filter parameters starting at $4
+        foreach (var parameter in filterParameters)
+        {
+            command.Parameters.Add(new NpgsqlParameter { Value = parameter });
+        }
+
+        // Score threshold parameter
+        if (scoreThreshold.HasValue)
+        {
+            command.Parameters.Add(new NpgsqlParameter { Value = scoreThreshold.Value });
+        }
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }
