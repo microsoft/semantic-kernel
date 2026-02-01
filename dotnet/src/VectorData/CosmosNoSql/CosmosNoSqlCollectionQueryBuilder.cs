@@ -81,7 +81,13 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var queryParameters = new Dictionary<string, object?>
         {
-            [VectorVariableName] = vector
+            // byte[] and ReadOnlyMemory<byte> are serialized as base64 by System.Text.Json, which causes problems for the VectorDistance function.
+            // Convert to int[] which serializes as a JSON array of numbers.
+            [VectorVariableName] = vector switch
+            {
+                ReadOnlyMemory<byte> byteMemory => ConvertToIntArray(byteMemory.Span),
+                _ => vector
+            }
         };
 
         // Add score threshold filter if specified.
@@ -362,6 +368,21 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     /// </summary>
     private static string GeneratePropertyAccess(char alias, string propertyName)
         => $"{alias}[\"{EscapeJsonPropertyName(propertyName)}\"]";
+
+    /// <summary>
+    /// Converts a byte span to an int array.
+    /// This is needed because byte[] and ReadOnlyMemory&lt;byte&gt; are serialized as base64 by System.Text.Json,
+    /// which causes problems for the VectorDistance function.
+    /// </summary>
+    private static int[] ConvertToIntArray(ReadOnlySpan<byte> bytes)
+    {
+        var result = new int[bytes.Length];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            result[i] = bytes[i];
+        }
+        return result;
+    }
 
     #endregion
 }
