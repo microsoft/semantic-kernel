@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import importlib
 import json
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from inspect import isawaitable
 from queue import Queue
 from typing import Any
@@ -38,7 +37,11 @@ from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
-from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
+from semantic_kernel.processes.step_utils import (
+    find_input_channels,
+    get_fully_qualified_name,
+    get_step_class_from_qualified_name,
+)
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -48,7 +51,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
-    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel, factories: dict[str, Callable]):
+    def __init__(
+        self,
+        ctx: ActorRuntimeContext,
+        actor_id: ActorId,
+        kernel: Kernel,
+        factories: dict[str, Callable],
+        allowed_module_prefixes: Sequence[str] | None = None,
+    ):
         """Initializes a new instance of StepActor.
 
         Args:
@@ -56,10 +66,14 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
             factories: The factory dictionary to use for creating the step.
+            allowed_module_prefixes: Optional sequence of module prefixes that are allowed
+                for step class loading. If provided, step classes must come from modules
+                starting with one of these prefixes.
         """
         super().__init__(ctx, actor_id)
         self.kernel = kernel
         self.factories: dict[str, Callable] = factories
+        self.allowed_module_prefixes: Sequence[str] | None = allowed_module_prefixes
         self.parent_process_id: str | None = None
         self.step_info: DaprStepInfo | None = None
         self.initialize_task: bool | None = False
@@ -168,12 +182,6 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         await self._state_manager.try_add_state(ActorStateKeys.StepIncomingMessagesState.value, messages_to_save)
         await self._state_manager.save_state()
 
-    def _get_class_from_string(self, full_class_name: str):
-        """Gets a class from a string."""
-        module_name, class_name = full_class_name.rsplit(".", 1)
-        module = importlib.import_module(module_name)
-        return getattr(module, class_name)
-
     async def activate_step(self):
         """Initializes the step."""
         # Instantiate an instance of the inner step object and retrieve its class reference.
@@ -184,7 +192,10 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             step_cls = step_object.__class__
             step_instance: KernelProcessStep = step_object  # type: ignore
         else:
-            step_cls = self._get_class_from_string(self.inner_step_type)
+            step_cls = get_step_class_from_qualified_name(
+                self.inner_step_type,
+                allowed_module_prefixes=self.allowed_module_prefixes,
+            )
             step_instance: KernelProcessStep = step_cls()  # type: ignore
 
         kernel_plugin = self.kernel.add_plugin(
