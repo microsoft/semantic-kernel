@@ -88,12 +88,12 @@ public class PostgresSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists));
             return;
         }
 
-        var sql = PostgresSqlBuilder.BuildCreateIndexSql("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("public", "1testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", sql);
@@ -136,11 +136,35 @@ public class PostgresSqlBuilderTests
     [InlineData(false)]
     public void TestBuildCreateNonVectorIndexCommand(bool ifNotExists)
     {
-        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, isFullText: false, fullTextLanguage: null, ifNotExists);
 
         var expectedCommandText = ifNotExists
             ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON \"schema\".\"tableName\" (\"columnName\")"
             : "CREATE INDEX \"tableName_columnName_index\" ON \"schema\".\"tableName\" (\"columnName\")";
+
+        Assert.Equal(expectedCommandText, sql);
+    }
+
+    [Theory]
+    [InlineData(null, "english")]  // Default language
+    [InlineData("spanish", "spanish")]
+    [InlineData("german", "german")]
+    public void TestBuildCreateFullTextIndexCommand(string? configuredLanguage, string expectedLanguage)
+    {
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "content", indexKind: "", distanceFunction: "", isVector: false, isFullText: true, fullTextLanguage: configuredLanguage, ifNotExists: true);
+
+        var expectedCommandText = $"CREATE INDEX IF NOT EXISTS \"tableName_content_index\" ON \"schema\".\"tableName\" USING GIN (to_tsvector('{expectedLanguage}', \"content\"))";
+
+        Assert.Equal(expectedCommandText, sql);
+    }
+
+    [Fact]
+    public void TestBuildCreateFullTextIndexCommand_EscapesSingleQuotes()
+    {
+        // Verify that single quotes in the language name are properly escaped to prevent SQL injection
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "content", indexKind: "", distanceFunction: "", isVector: false, isFullText: true, fullTextLanguage: "test'injection", ifNotExists: true);
+
+        var expectedCommandText = "CREATE INDEX IF NOT EXISTS \"tableName_content_index\" ON \"schema\".\"tableName\" USING GIN (to_tsvector('test''injection', \"content\"))";
 
         Assert.Equal(expectedCommandText, sql);
     }

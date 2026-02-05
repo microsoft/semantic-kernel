@@ -152,13 +152,13 @@ internal static class PostgresPropertyMapping
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
     /// </summary>
     /// <param name="properties">The properties of the vector store record.</param>
-    /// <returns>A list of tuples containing the column name, index kind, and distance function for each property.</returns>
+    /// <returns>A list of tuples containing the column name, index kind, distance function, and full-text language for each property.</returns>
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
+    public static List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
     {
-        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
+        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)>();
         foreach (var property in properties)
         {
             switch (property)
@@ -185,7 +185,7 @@ internal static class PostgresPropertyMapping
                             );
                         }
 
-                        vectorIndexesToCreate.Add((vectorProperty.StorageName, indexKind, distanceFunction, isVector: true));
+                        vectorIndexesToCreate.Add((vectorProperty.StorageName, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null));
                     }
 
                     break;
@@ -193,7 +193,13 @@ internal static class PostgresPropertyMapping
                 case DataPropertyModel dataProperty:
                     if (dataProperty.IsIndexed)
                     {
-                        vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
+                        vectorIndexesToCreate.Add((dataProperty.StorageName, kind: "", function: "", isVector: false, isFullText: false, fullTextLanguage: null));
+                    }
+
+                    if (dataProperty.IsFullTextIndexed)
+                    {
+                        var language = dataProperty.GetFullTextSearchLanguageOrDefault();
+                        vectorIndexesToCreate.Add((dataProperty.StorageName, kind: "", function: "", isVector: false, isFullText: true, fullTextLanguage: language));
                     }
                     break;
 

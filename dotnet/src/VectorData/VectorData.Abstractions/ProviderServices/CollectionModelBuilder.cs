@@ -256,12 +256,8 @@ public abstract class CollectionModelBuilder
             {
                 // Property wasn't found attribute-annotated on the CLR type, so we need to add it.
 
-                var propertyType = definitionProperty.Type;
-                if (propertyType is null)
-                {
-                    throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(definitionProperty));
-                }
-
+                var propertyType = definitionProperty.Type
+                    ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(definitionProperty));
                 switch (definitionProperty)
                 {
                     case VectorStoreKeyProperty definitionKeyProperty:
@@ -288,6 +284,12 @@ public abstract class CollectionModelBuilder
             }
 
             this.SetPropertyStorageName(property, definitionProperty.StorageName, type);
+
+            // Copy provider-specific properties if present
+            if (definitionProperty.ProviderAnnotations is not null)
+            {
+                property.ProviderAnnotations = new Dictionary<string, object?>(definitionProperty.ProviderAnnotations);
+            }
 
             switch (definitionProperty)
             {
