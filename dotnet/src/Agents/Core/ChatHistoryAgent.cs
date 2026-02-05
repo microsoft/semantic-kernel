@@ -25,7 +25,7 @@ public abstract class ChatHistoryAgent : Agent
     /// </summary>
     /// <remarks>
     /// The reducer is automatically applied to the history before invoking the agent, only when using
-    /// an <see cref="AgentChat"/>. It must be explicitly applied via <see cref="ReduceAsync(ChatHistory, CancellationToken)"/>.
+    /// an <see cref="AgentChat"/>. For manual control, use the <c>ReduceAsync</c> methods.
     /// </remarks>
     [Experimental("SKEXP0110")]
     public IChatHistoryReducer? HistoryReducer { get; init; }

@@ -43,7 +43,7 @@ public class ChatReducerTriggerEventTests
 
         // Act - should trigger
         var shouldTrigger = reducer.ShouldTriggerOn(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
-        
+
         // Assert
         Assert.True(shouldTrigger);
         Assert.Single(reducer.TriggerEvents);

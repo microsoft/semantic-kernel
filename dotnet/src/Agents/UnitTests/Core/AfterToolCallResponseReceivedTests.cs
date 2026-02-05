@@ -25,17 +25,17 @@ public class AfterToolCallResponseReceivedTests
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
         var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
-        
+
         history.AddUserMessage("User message 1");
         history.AddAssistantMessage("Assistant response 1");
-        
+
         // Add a function call and result
         history.Add(new ChatMessageContent(AuthorRole.Assistant, [new FunctionCallContent("test-func")]));
         history.Add(new ChatMessageContent(AuthorRole.Tool, [new FunctionResultContent("test-func", "result")]));
-        
+
         // Act - trigger reduction with the AfterToolCallResponseReceived event
         await agent.ReduceAsync(history, ChatReducerTriggerEvent.AfterToolCallResponseReceived);
-        
+
         // Assert - the reducer should have been invoked
         Assert.Equal(1, reducer.InvocationCount);
     }
@@ -50,13 +50,13 @@ public class AfterToolCallResponseReceivedTests
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
         var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
-        
+
         history.AddUserMessage("User message 1");
         history.AddAssistantMessage("Assistant response 1");
-        
+
         // Act - trigger reduction with BeforeMessagesRetrieval (not the configured trigger)
         await agent.ReduceAsync(history, ChatReducerTriggerEvent.BeforeMessagesRetrieval);
-        
+
         // Assert - the reducer should NOT have been invoked because it's only configured for AfterToolCallResponseReceived
         Assert.Equal(0, reducer.InvocationCount);
     }
@@ -71,19 +71,19 @@ public class AfterToolCallResponseReceivedTests
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
         var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
-        
+
         history.AddUserMessage("User message 1");
-        
+
         // Add multiple function calls and results
         for (int i = 0; i < 3; i++)
         {
             history.Add(new ChatMessageContent(AuthorRole.Assistant, [new FunctionCallContent($"test-func-{i}")]));
             history.Add(new ChatMessageContent(AuthorRole.Tool, [new FunctionResultContent($"test-func-{i}", $"result-{i}")]));
-            
+
             // Trigger reduction after each tool call response
             await agent.ReduceAsync(history, ChatReducerTriggerEvent.AfterToolCallResponseReceived);
         }
-        
+
         // Assert - the reducer should have been invoked 3 times
         Assert.Equal(3, reducer.InvocationCount);
     }
