@@ -2,6 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -31,7 +34,7 @@ public abstract class ChatHistoryReducerBase : IChatHistoryReducerWithTrigger
     }
 
     /// <inheritdoc/>
-    public abstract System.Threading.Tasks.Task<IEnumerable<ChatMessageContent>?> ReduceAsync(
+    public abstract Task<IEnumerable<ChatMessageContent>?> ReduceAsync(
         IReadOnlyList<ChatMessageContent> chatHistory,
-        System.Threading.CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 }

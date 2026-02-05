@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -24,7 +23,7 @@ public class AfterToolCallResponseReceivedTests
     {
         // Arrange
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
-        var agent = new TestChatHistoryAgent(reducer);
+        var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
         
         history.AddUserMessage("User message 1");
@@ -49,7 +48,7 @@ public class AfterToolCallResponseReceivedTests
     {
         // Arrange
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
-        var agent = new TestChatHistoryAgent(reducer);
+        var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
         
         history.AddUserMessage("User message 1");
@@ -70,7 +69,7 @@ public class AfterToolCallResponseReceivedTests
     {
         // Arrange
         var reducer = new CountingReducer(ChatReducerTriggerEvent.AfterToolCallResponseReceived);
-        var agent = new TestChatHistoryAgent(reducer);
+        var agent = new MockAgent { HistoryReducer = reducer };
         var history = new ChatHistory();
         
         history.AddUserMessage("User message 1");
@@ -108,39 +107,6 @@ public class AfterToolCallResponseReceivedTests
             this.InvocationCount++;
             // Return null to indicate no reduction occurred (for testing purposes)
             return Task.FromResult<IEnumerable<ChatMessageContent>?>(null);
-        }
-    }
-
-    /// <summary>
-    /// Test implementation of ChatHistoryAgent for testing purposes.
-    /// </summary>
-    private sealed class TestChatHistoryAgent : ChatHistoryAgent
-    {
-        public TestChatHistoryAgent(IChatHistoryReducer? reducer = null)
-        {
-            this.HistoryReducer = reducer;
-        }
-
-        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            ChatHistory history,
-            KernelArguments? arguments = null,
-            Kernel? kernel = null,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            // Simple test implementation: return a single response
-            yield return new ChatMessageContent(AuthorRole.Assistant, "Test response");
-            await Task.CompletedTask;
-        }
-
-        protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-            ChatHistory history,
-            KernelArguments? arguments = null,
-            Kernel? kernel = null,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            // Simple test implementation: return a single streaming response
-            yield return new StreamingChatMessageContent(AuthorRole.Assistant, "Test response");
-            await Task.CompletedTask;
         }
     }
 }
