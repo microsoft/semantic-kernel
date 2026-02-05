@@ -572,6 +572,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 query: query,
                 usingVector: this._hasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
+                scoreThreshold: (float?)options.ScoreThreshold,
                 limit: (ulong)top,
                 offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,
@@ -740,8 +741,9 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             "Query",
             () => this._qdrantClient.QueryAsync(
                 this.Name,
-                prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
+                prefetch: [vectorQuery, keywordQuery],
                 query: fusionQuery,
+                scoreThreshold: (float?)options.ScoreThreshold,
                 limit: (ulong)top,
                 offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,

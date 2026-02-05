@@ -376,6 +376,7 @@ internal static class SqlServerCommandBuilder
         command.Parameters.AddWithValue("@vector", vector);
 
         StringBuilder sb = new(200);
+
         sb.Append("SELECT ");
         sb.AppendIdentifiers(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
@@ -384,6 +385,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
+
         if (options.Filter is not null)
         {
             int startParamIndex = command.Parameters.Count;
@@ -396,8 +398,23 @@ internal static class SqlServerCommandBuilder
             {
                 command.AddParameter(vectorProperty, $"@_{startParamIndex++}", parameter);
             }
+
             sb.AppendLine();
         }
+
+        // If score threshold is specified, wrap in a subquery to filter on the pre-calculated score
+        // This avoids calculating VECTOR_DISTANCE() twice.
+        if (options.ScoreThreshold is not null)
+        {
+            // For SQL Server, all distance metrics return a distance (lower = more similar), so we filter with <=.
+            command.Parameters.AddWithValue("@scoreThreshold", options.ScoreThreshold!.Value);
+
+            var innerQuery = sb.ToString();
+            sb.Clear();
+            sb.Append("SELECT * FROM (").Append(innerQuery).AppendLine(") AS [inner]");
+            sb.AppendLine("WHERE [score] <= @scoreThreshold");
+        }
+
         sb.AppendFormat("ORDER BY [score] {0}", sorting);
         sb.AppendLine();
         // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.

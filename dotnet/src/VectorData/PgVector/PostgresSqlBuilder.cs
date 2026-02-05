@@ -426,7 +426,8 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     /// <inheritdoc />
     internal static void BuildGetNearestMatchCommand<TRecord>(
         NpgsqlCommand command, string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
-        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
+        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit,
+        double? scoreThreshold = null)
     {
         // Build column list with proper escaping
         StringBuilder columns = new();
@@ -501,6 +502,33 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             commandText = outerSql.ToString();
         }
 
+        // Apply score threshold filter if specified.
+        // For similarity functions (higher = more similar), filter out results below the threshold.
+        // For distance functions (lower = more similar), filter out results above the threshold.
+        if (scoreThreshold.HasValue)
+        {
+            var scoreThresholdParamIndex = parameters.Count + 2;
+            var comparisonOp = distanceFunction switch
+            {
+                DistanceFunction.CosineSimilarity or DistanceFunction.DotProductSimilarity
+                    => ">=",
+
+                DistanceFunction.EuclideanDistance
+                    or DistanceFunction.CosineDistance
+                    or DistanceFunction.ManhattanDistance
+                    or DistanceFunction.HammingDistance
+                    => "<=",
+
+                _ => throw new UnreachableException($"Unexpected distance function: {distanceFunction}")
+            };
+
+            StringBuilder outerSql = new();
+            outerSql.Append("SELECT * FROM (").Append(commandText).Append(") AS scored WHERE ")
+                .AppendIdentifier(PostgresConstants.DistanceColumnName).Append(' ').Append(comparisonOp)
+                .Append(" $").Append(scoreThresholdParamIndex);
+            commandText = outerSql.ToString();
+        }
+
         command.CommandText = commandText;
 
         Debug.Assert(command.Parameters.Count == 0);
@@ -509,6 +537,11 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
         foreach (var parameter in parameters)
         {
             command.Parameters.Add(new NpgsqlParameter { Value = parameter });
+        }
+
+        if (scoreThreshold.HasValue)
+        {
+            command.Parameters.Add(new NpgsqlParameter { Value = scoreThreshold.Value });
         }
     }
 
