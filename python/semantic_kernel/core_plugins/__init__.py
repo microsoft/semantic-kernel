@@ -5,6 +5,7 @@ from semantic_kernel.core_plugins.conversation_summary_plugin import (
 )
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.nory_x402_plugin import NoryX402Plugin
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
     SessionsPythonTool,
 )
@@ -17,6 +18,7 @@ __all__ = [
     "ConversationSummaryPlugin",
     "HttpPlugin",
     "MathPlugin",
+    "NoryX402Plugin",
     "SessionsPythonTool",
     "TextMemoryPlugin",
     "TextPlugin",
