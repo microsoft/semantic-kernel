@@ -88,10 +88,11 @@ internal sealed class SqlServerTestStore : TestStore
             WHERE t.name = @tableName
               AND fi.has_crawl_completed = 0";
 
+        using var command = new SqlCommand(checkSql, connection);
+        command.Parameters.AddWithValue("@tableName", tableName);
+
         for (int i = 0; i < 100; i++) // Wait up to 10 seconds
         {
-            using var command = new SqlCommand(checkSql, connection);
-            command.Parameters.AddWithValue("@tableName", tableName);
             var result = await command.ExecuteScalarAsync();
 
             if (result is int count && count == 0)
@@ -103,6 +104,6 @@ internal sealed class SqlServerTestStore : TestStore
             await Task.Delay(TimeSpan.FromMilliseconds(100));
         }
 
-        // Don't fail the test, just log a warning - some tests might not need full-text
+        // Don't fail the test - some tests might not need full-text
     }
 }

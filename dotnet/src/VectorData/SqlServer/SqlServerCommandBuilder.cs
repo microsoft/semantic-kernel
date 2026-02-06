@@ -593,6 +593,11 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine("FROM hybrid_result hr");
         sb.Append("INNER JOIN ").AppendTableName(schema, tableName).AppendLine(" w");
         sb.Append("    ON hr.combined_key = w.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine();
+        if (options.ScoreThreshold.HasValue)
+        {
+            command.Parameters.AddWithValue("@scoreThreshold", options.ScoreThreshold.Value);
+            sb.AppendLine("WHERE hr.[score] >= @scoreThreshold");
+        }
         sb.AppendLine("ORDER BY hr.[score] DESC");
         sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
 

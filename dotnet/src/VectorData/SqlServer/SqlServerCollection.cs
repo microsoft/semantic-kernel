@@ -783,17 +783,9 @@ public class SqlServerCollection<TKey, TRecord>
                     scoreIndex = reader.GetOrdinal("score");
                 }
 
-                var score = reader.GetDouble(scoreIndex);
-
-                // For hybrid search with RRF, higher scores indicate more relevant results
-                if (options.ScoreThreshold.HasValue && score < options.ScoreThreshold.Value)
-                {
-                    continue;
-                }
-
                 yield return new VectorSearchResult<TRecord>(
                     this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors),
-                    score);
+                    reader.GetDouble(scoreIndex));
             }
         }
         finally
