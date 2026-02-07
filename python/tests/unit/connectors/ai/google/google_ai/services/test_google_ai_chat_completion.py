@@ -75,6 +75,21 @@ def test_google_ai_chat_completion_init_with_use_vertexai_missing_project_id(goo
         GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
+def test_google_ai_chat_completion_init_with_vertexai_without_api_key(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with use_vertexai true and no API key"""
+    # This should succeed because API key is not required when using Vertex AI
+    google_ai_chat_completion = GoogleAIChatCompletion(
+        use_vertexai=True,
+        project_id=google_ai_unit_test_env["GOOGLE_AI_CLOUD_PROJECT_ID"],
+        env_file_path="fake_env_file_path.env",
+    )
+
+    assert google_ai_chat_completion.ai_model_id == google_ai_unit_test_env["GOOGLE_AI_GEMINI_MODEL_ID"]
+    assert google_ai_chat_completion.service_settings.use_vertexai is True
+    assert google_ai_chat_completion.service_settings.cloud_project_id == google_ai_unit_test_env["GOOGLE_AI_CLOUD_PROJECT_ID"]
+
+
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
     google_ai_chat_completion = GoogleAIChatCompletion()
     assert google_ai_chat_completion.get_prompt_execution_settings_class() == GoogleAIChatPromptExecutionSettings
