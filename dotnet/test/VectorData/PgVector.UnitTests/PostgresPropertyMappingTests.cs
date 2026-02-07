@@ -104,23 +104,26 @@ public sealed class PostgresPropertyMappingTests
 
         // Assert
         Assert.Equal(3, indexInfo.Count);
-        foreach (var (columnName, indexKind, distanceFunction, isVector) in indexInfo)
+        foreach (var (columnName, indexKind, distanceFunction, isVector, isFullText, fullTextLanguage) in indexInfo)
         {
             if (columnName == "vector1")
             {
                 Assert.True(isVector);
+                Assert.False(isFullText);
                 Assert.Equal(IndexKind.Hnsw, indexKind);
                 Assert.Equal(DistanceFunction.CosineDistance, distanceFunction);
             }
             else if (columnName == "vector3")
             {
                 Assert.True(isVector);
+                Assert.False(isFullText);
                 Assert.Equal(IndexKind.Hnsw, indexKind);
                 Assert.Equal(DistanceFunction.ManhattanDistance, distanceFunction);
             }
             else if (columnName == "data1")
             {
                 Assert.False(isVector);
+                Assert.False(isFullText);
             }
             else
             {

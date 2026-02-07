@@ -434,6 +434,13 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         await foreach (var record in this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false))
         {
+            // Note that unlike regular vector search, Weaviate hybrid search does not support 'certainty' (filtering via score threshold).
+            // So we filter client-side here instead.
+            if (options.ScoreThreshold.HasValue && record.Score < options.ScoreThreshold.Value)
+            {
+                continue;
+            }
+
             yield return record;
         }
     }

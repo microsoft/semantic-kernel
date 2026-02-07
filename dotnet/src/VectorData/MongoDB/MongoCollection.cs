@@ -415,7 +415,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             ScorePropertyName,
             DocumentPropertyName);
 
-        BsonDocument[] pipeline = [searchQuery, projectionQuery];
+        List<BsonDocument> pipeline = [searchQuery, projectionQuery];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(MongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         const string OperationName = "Aggregate";
         using var cursor = await this.RunOperationWithRetryAsync(
@@ -536,7 +542,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
         var numCandidates = this._numCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
 
-        BsonDocument[] pipeline = MongoCollectionSearchMapping.GetHybridSearchPipeline(
+        List<BsonDocument> pipeline = [.. MongoCollectionSearchMapping.GetHybridSearchPipeline(
             vectorArray,
             keywords,
             this.Name,
@@ -548,7 +554,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             DocumentPropertyName,
             itemsAmount,
             numCandidates,
-            filter);
+            filter)];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(MongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",

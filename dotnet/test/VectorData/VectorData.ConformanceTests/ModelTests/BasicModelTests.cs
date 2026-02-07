@@ -452,6 +452,8 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
         fixture.TestData[1].AssertEqual(result.Record, includeVectors: false, fixture.TestStore.VectorsComparable);
     }
 
+    // For ScoreThreshold, see DistanceFunctionTests (to ensure we tests thresholds for each and every function)
+
     #endregion Search
 
     protected VectorStoreCollection<TKey, Record> Collection => fixture.Collection;
