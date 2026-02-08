@@ -1,0 +1,32 @@
+# Source files
+semantic_kernel/
+tests/
+samples/
+
+# Config files
+tsconfig.json
+.eslintrc.json
+.prettierrc.yaml
+.npmrc
+jest.config.js
+
+# Build artifacts
+*.tsbuildinfo
+.DS_Store
+
+# Development
+node_modules/
+coverage/
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
