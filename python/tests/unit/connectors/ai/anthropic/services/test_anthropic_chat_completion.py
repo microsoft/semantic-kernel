@@ -547,3 +547,68 @@ def test_chat_completion_reset_settings(
 
     assert settings.tools is None
     assert settings.tool_choice is None
+
+
+def test_default_headers_with_app_info(anthropic_unit_test_env) -> None:
+    app_info = {"semantic-kernel-version": "python/1.0.0"}
+    mock_client = MagicMock(spec=AsyncAnthropic)
+    with (
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.APP_INFO",
+            app_info,
+        ),
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.AsyncAnthropic",
+            return_value=mock_client,
+        ) as mock_async_anthropic,
+    ):
+        AnthropicChatCompletion()
+
+        mock_async_anthropic.assert_called_once()
+        call_kwargs = mock_async_anthropic.call_args.kwargs
+        headers = call_kwargs["default_headers"]
+        assert "semantic-kernel-version" in headers
+        assert headers["semantic-kernel-version"] == "python/1.0.0"
+        assert "User-Agent" in headers
+
+
+def test_default_headers_merged_with_custom_headers(anthropic_unit_test_env) -> None:
+    app_info = {"semantic-kernel-version": "python/1.0.0"}
+    custom_headers = {"X-Custom-Header": "custom-value"}
+    mock_client = MagicMock(spec=AsyncAnthropic)
+    with (
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.APP_INFO",
+            app_info,
+        ),
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.AsyncAnthropic",
+            return_value=mock_client,
+        ) as mock_async_anthropic,
+    ):
+        AnthropicChatCompletion(default_headers=custom_headers)
+
+        call_kwargs = mock_async_anthropic.call_args.kwargs
+        headers = call_kwargs["default_headers"]
+        assert headers["X-Custom-Header"] == "custom-value"
+        assert headers["semantic-kernel-version"] == "python/1.0.0"
+        assert "User-Agent" in headers
+
+
+def test_default_headers_without_app_info(anthropic_unit_test_env) -> None:
+    mock_client = MagicMock(spec=AsyncAnthropic)
+    with (
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.APP_INFO",
+            None,
+        ),
+        patch(
+            "semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion.AsyncAnthropic",
+            return_value=mock_client,
+        ) as mock_async_anthropic,
+    ):
+        AnthropicChatCompletion()
+
+        call_kwargs = mock_async_anthropic.call_args.kwargs
+        headers = call_kwargs["default_headers"]
+        assert headers == {}
