@@ -299,7 +299,8 @@ internal static class SqliteCommandBuilder
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
-        int skip = 0)
+        int skip = 0,
+        double? scoreThreshold = null)
     {
         const string SubqueryName = "subquery";
 
@@ -339,6 +340,19 @@ internal static class SqliteCommandBuilder
         builder.Append("INNER JOIN ").AppendIdentifier(dataTableName).Append(" ON ")
             .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(keyColumnName).Append(" = ")
             .AppendIdentifier(dataTableName).Append('.').AppendIdentifier(keyColumnName).AppendLine();
+
+        // SQLite vec only supports distance metrics (lower = more similar), so filter with <=
+        if (scoreThreshold.HasValue)
+        {
+            var scoreThresholdClause = new StringBuilder()
+                .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(DistancePropertyName).Append(" <= @scoreThreshold")
+                .ToString();
+            whereClause = string.IsNullOrEmpty(whereClause)
+                ? scoreThresholdClause
+                : $"{whereClause} AND {scoreThresholdClause}";
+            command.Parameters.Add(new SqliteParameter("@scoreThreshold", scoreThreshold.Value));
+        }
+
         builder.AppendWhereClause(whereClause);
 
         if (filterOptions is not null)

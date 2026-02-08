@@ -432,7 +432,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             conditions,
             includeDistance: true,
             extraWhereFilter: extraWhereFilter,
-            extraParameters: extraParameters);
+            extraParameters: extraParameters,
+            scoreThreshold: searchOptions.ScoreThreshold);
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,
