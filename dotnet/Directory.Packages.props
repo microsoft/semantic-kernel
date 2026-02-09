@@ -80,9 +80,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.70.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.70.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.70.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.14.15" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
