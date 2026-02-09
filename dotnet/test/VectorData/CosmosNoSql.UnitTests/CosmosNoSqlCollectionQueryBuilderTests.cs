@@ -48,10 +48,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
@@ -60,10 +62,10 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Contains("SELECT x.id,x.TestProperty1,x.TestProperty2,x.TestProperty3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"test_property_1\"], @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x.TestProperty2 = @cv0 AND ARRAY_CONTAINS(x.TestProperty3, @cv1)", queryText);
-        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x[\"test_property_1\"], @vector)", queryText);
         Assert.Contains("OFFSET 5 LIMIT 10", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
@@ -93,10 +95,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             0,
             includeVectors: true);
@@ -105,10 +109,10 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Contains("SELECT TOP 10 x.id,x.TestProperty1,x.TestProperty2,x.TestProperty3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("SELECT TOP 10 x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"test_property_1\"], @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x.TestProperty2 = @cv0 AND ARRAY_CONTAINS(x.TestProperty3, @cv1)", queryText);
-        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x[\"test_property_1\"], @vector)", queryText);
 
         Assert.DoesNotContain("OFFSET 0 LIMIT 10", queryText);
 
@@ -137,10 +141,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true));
@@ -159,10 +165,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: null,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
@@ -183,9 +191,9 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
     {
         // Arrange
         const string ExpectedQueryText = """
-                                         SELECT x.id,x.TestProperty1,x.TestProperty2
+                                         SELECT x["id"],x["TestProperty1"],x["TestProperty2"]
                                          FROM x
-                                         WHERE (x.id = @rk0  AND  x.TestProperty1 = @pk0)
+                                         WHERE (x["id"] = @rk0  AND  x["TestProperty1"] = @pk0)
                                          """;
 
         const string KeyStoragePropertyName = "id";
@@ -244,10 +252,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             [keywordText],
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
@@ -256,10 +266,10 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Contains("SELECT x.id,x.TestProperty1,x.TestProperty2,x.TestProperty3,VectorDistance(x.TestProperty1, @vector) AS TestScore", queryText);
+        Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"TestProperty1\"], @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x.TestProperty2 = @cv0 AND ARRAY_CONTAINS(x.TestProperty3, @cv1)", queryText);
-        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x.TestProperty1, @vector), FullTextScore(x.TestProperty2, \"hybrid\"))", queryText);
+        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
+        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], \"hybrid\"))", queryText);
         Assert.Contains("OFFSET 5 LIMIT 10", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);

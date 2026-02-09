@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -14,23 +12,20 @@ namespace Microsoft.SemanticKernel.Connectors;
 
 #pragma warning disable MEVD9001 // Microsoft.Extensions.VectorData experimental connector-facing APIs
 
-internal abstract class SqlFilterTranslator
+internal abstract class SqlFilterTranslator : FilterTranslatorBase
 {
-    private readonly CollectionModel _model;
-    private readonly LambdaExpression _lambdaExpression;
-    private readonly ParameterExpression _recordParameter;
     protected readonly StringBuilder _sql;
+    private readonly Expression _preprocessedExpression;
 
     internal SqlFilterTranslator(
         CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder? sql = null)
     {
-        this._model = model;
-        this._lambdaExpression = lambdaExpression;
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
-        this._recordParameter = lambdaExpression.Parameters[0];
         this._sql = sql ?? new();
+
+        this._preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
     }
 
     internal StringBuilder Clause => this._sql;
@@ -42,10 +37,7 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
-        var preprocessedExpression = preprocessor.Preprocess(this._lambdaExpression.Body);
-
-        this.Translate(preprocessedExpression, isSearchCondition: true);
+        this.Translate(this._preprocessedExpression, isSearchCondition: true);
     }
 
     protected void Translate(Expression? node, bool isSearchCondition = false)
@@ -212,95 +204,28 @@ internal abstract class SqlFilterTranslator
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
+        // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
+        if (this.TryBindProperty(methodCall, out var property))
+        {
+            this.GenerateColumn(property, isSearchCondition);
+            return;
+        }
+
         switch (methodCall)
         {
-            // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
-            case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this.GenerateColumn(property, isSearchCondition);
-                return;
-
-            // Enumerable.Contains()
-            case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
-                when contains.Method.DeclaringType == typeof(Enumerable):
+            // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
+            case var _ when TryMatchContains(methodCall, out var source, out var item):
                 this.TranslateContains(source, item);
                 return;
 
-            // List.Contains()
-            case
-            {
-                Method:
-                {
-                    Name: nameof(Enumerable.Contains),
-                    DeclaringType: { IsGenericType: true } declaringType
-                },
-                Object: Expression source,
-                Arguments: [var item]
-            } when declaringType.GetGenericTypeDefinition() == typeof(List<>):
-                this.TranslateContains(source, item);
-                return;
-
-            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
-            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
-            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
-            // See https://github.com/dotnet/runtime/issues/109757 for more context.
-            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
-            // it's null.
-            case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
-                when contains.Method.DeclaringType == typeof(MemoryExtensions)
-                    && (contains.Arguments.Count is 2
-                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
-                    && TryUnwrapSpanImplicitCast(spanArg, out var source):
-                this.TranslateContains(source, item);
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable):
+                this.TranslateAny(anySource, lambda);
                 return;
 
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
-        }
-
-        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
-        {
-            // Different versions of the compiler seem to generate slightly different expression tree representations for this
-            // implicit cast:
-            var (unwrapped, castDeclaringType) = expression switch
-            {
-                UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var operand
-                } => (operand, implicitCastDeclaringType),
-
-                MethodCallExpression
-                {
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Arguments: [var firstArgument]
-                } => (firstArgument, implicitCastDeclaringType),
-
-                _ => (null, null)
-            };
-
-            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
-            if (unwrapped is UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: null
-                } convert
-                && convert.Type == typeof(object[]))
-            {
-                result = convert.Operand;
-                return true;
-            }
-
-            if (unwrapped is not null
-                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
-                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
-            {
-                result = unwrapped;
-                return true;
-            }
-
-            result = null;
-            return false;
         }
     }
 
@@ -350,6 +275,65 @@ internal abstract class SqlFilterTranslator
 
     protected abstract void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value);
 
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array column is contained in the given values.
+    /// </summary>
+    private void TranslateAny(Expression source, LambdaExpression lambda)
+    {
+        // We only support the pattern: r.ArrayColumn.Any(x => values.Contains(x))
+        // where 'values' is an inline array, captured array, or captured list.
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression containsCall
+            || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Now extract the values from valuesExpression
+        switch (valuesExpression)
+        {
+            // Inline array: r.Strings.Any(s => new[] { "a", "b" }.Contains(s))
+            case NewArrayExpression newArray:
+            {
+                var values = new object?[newArray.Expressions.Count];
+                for (var i = 0; i < newArray.Expressions.Count; i++)
+                {
+                    values[i] = newArray.Expressions[i] switch
+                    {
+                        ConstantExpression { Value: var v } => v,
+                        QueryParameterExpression { Value: var v } => v,
+                        _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+                    };
+                }
+
+                this.TranslateAnyContainsOverArrayColumn(property, values);
+                return;
+            }
+
+            // Captured/parameterized array or list: r.Strings.Any(s => capturedArray.Contains(s))
+            case QueryParameterExpression { Value: var value }:
+                this.TranslateAnyContainsOverArrayColumn(property, value);
+                return;
+
+            // Constant array: shouldn't normally happen, but handle it
+            case ConstantExpression { Value: var value }:
+                this.TranslateAnyContainsOverArrayColumn(property, value);
+                return;
+
+            default:
+                throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+    }
+
+    protected abstract void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values);
+
     private void TranslateUnary(UnaryExpression unary, bool isSearchCondition)
     {
         switch (unary.NodeType)
@@ -384,58 +368,5 @@ internal abstract class SqlFilterTranslator
             default:
                 throw new NotSupportedException("Unsupported unary expression node type: " + unary.NodeType);
         }
-    }
-
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
-    {
-        var unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            unwrappedExpression = convert.Operand;
-        }
-
-        var modelName = unwrappedExpression switch
-        {
-            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
-                => memberExpression.Member.Name,
-
-            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
-            MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
-                => keyName,
-
-            _ => null
-        };
-
-        if (modelName is null)
-        {
-            property = null;
-            return false;
-        }
-
-        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
-        {
-            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
-        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
-        unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != unwrappedPropertyType && convertType != typeof(object))
-            {
-                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
-            }
-
-            unwrappedExpression = convert.Operand;
-        }
-
-        return true;
     }
 }

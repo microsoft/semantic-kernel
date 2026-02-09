@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -33,6 +34,9 @@ public abstract class VectorStoreProperty
         this.Name = source.Name;
         this.StorageName = source.StorageName;
         this.Type = source.Type;
+        this.ProviderAnnotations = source.ProviderAnnotations is not null
+            ? new Dictionary<string, object?>(source.ProviderAnnotations)
+            : null;
     }
 
     /// <summary>
@@ -55,4 +59,13 @@ public abstract class VectorStoreProperty
     /// Gets or sets the type of the property.
     /// </summary>
     public Type? Type { get; set; }
+
+    /// <summary>
+    /// Gets or sets a dictionary of provider-specific annotations for this property.
+    /// </summary>
+    /// <remarks>
+    /// This allows setting database-specific configuration options that aren't universal across all vector stores.
+    /// Use provider-specific extension methods to set and get values in a strongly-typed manner.
+    /// </remarks>
+    public Dictionary<string, object?>? ProviderAnnotations { get; set; }
 }

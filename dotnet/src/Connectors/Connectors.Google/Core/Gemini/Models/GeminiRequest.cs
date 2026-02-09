@@ -211,7 +211,8 @@ internal sealed class GeminiRequest
                         {
                             FunctionName = toolCall.FullyQualifiedName,
                             Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
-                        }
+                        },
+                        ThoughtSignature = toolCall.ThoughtSignature
                     }));
                 break;
             default:
@@ -222,6 +223,35 @@ internal sealed class GeminiRequest
         if (parts.Count == 0)
         {
             parts.Add(new GeminiPart { Text = content.Content ?? string.Empty });
+        }
+
+        // Restore ThoughtSignature for text responses (non-ToolCall messages)
+        // Per Google docs: "The final content part returned by the model may contain a thought_signature"
+        if (content is GeminiChatMessageContent geminiContent
+            && (geminiContent.ToolCalls is null || geminiContent.ToolCalls.Count == 0))
+        {
+            string? signature = null;
+
+            // Try typed GeminiMetadata first, then dictionary fallback for deserialized history
+            if (geminiContent.Metadata is GeminiMetadata meta)
+            {
+                signature = meta.ThoughtSignature;
+            }
+            else if (content.Metadata?.TryGetValue("ThoughtSignature", out var sigObj) == true
+                     && sigObj is string sigStr)
+            {
+                signature = sigStr;
+            }
+
+            if (signature is not null)
+            {
+                // Apply signature to last text part
+                var lastTextPart = parts.LastOrDefault(p => p.Text is not null);
+                if (lastTextPart is not null)
+                {
+                    lastTextPart.ThoughtSignature = signature;
+                }
+            }
         }
 
         return parts;
