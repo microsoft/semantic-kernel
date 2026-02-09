@@ -1,3 +1,12 @@
+import {
+  VectorSearchExecutionException,
+  VectorStoreModelDeserializationException,
+  VectorStoreModelException,
+  VectorStoreModelSerializationException,
+  VectorStoreModelValidationError,
+  VectorStoreOperationException,
+  VectorStoreOperationNotSupportedException,
+} from '../exceptions/vector-store-exceptions'
 import { SearchOptions } from './_shared'
 
 /**
@@ -201,7 +210,9 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
       params.definition ??
       (this.recordType as any).__kernel_vectorstoremodel_definition__ ??
       (() => {
-        throw new Error('No definition provided and recordType does not have __kernel_vectorstoremodel_definition__')
+        throw new VectorStoreModelException(
+          'No definition provided and recordType does not have __kernel_vectorstoremodel_definition__'
+        )
       })()
 
     this.embeddingGenerator = params.embeddingGenerator ?? null
@@ -250,7 +261,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
       this.definition.keyField.type_ &&
       !this.supportedKeyTypes.has(this.definition.keyField.type_)
     ) {
-      throw new Error(
+      throw new VectorStoreModelValidationError(
         `Key field must be one of ${Array.from(this.supportedKeyTypes).join(', ')}, got ${this.definition.keyField.type_}`
       )
     }
@@ -259,7 +270,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
     }
     for (const field of this.definition.vectorFields) {
       if (field.type_ && !this.supportedVectorTypes.has(field.type_)) {
-        throw new Error(
+        throw new VectorStoreModelValidationError(
           `Vector field ${field.name} must be one of ${Array.from(this.supportedVectorTypes).join(', ')}, got ${field.type_}`
         )
       }
@@ -308,7 +319,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
         return serialized
       }
     } catch (error) {
-      throw new Error('Error serializing records', { cause: error })
+      throw new VectorStoreModelSerializationException('Error serializing records', { cause: error })
     }
 
     let dictRecords: Array<Record<string, any>> = []
@@ -323,20 +334,22 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
         }
       }
     } catch (error) {
-      throw new Error('Error serializing records', { cause: error })
+      throw new VectorStoreModelSerializationException('Error serializing records', { cause: error })
     }
 
     // Add vectors
     try {
       dictRecords = await this._addVectorsToRecords(dictRecords)
     } catch (error) {
-      throw new Error('Exception occurred while trying to add the vectors to the records', { cause: error })
+      throw new VectorStoreOperationException('Exception occurred while trying to add the vectors to the records', {
+        cause: error,
+      })
     }
 
     try {
       return this._serializeDictsToStoreModels(dictRecords, kwargs)
     } catch (error) {
-      throw new Error('Error serializing records', { cause: error })
+      throw new VectorStoreModelSerializationException('Error serializing records', { cause: error })
     }
   }
 
@@ -424,7 +437,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
       // regardless of mode, only 1 object is returned.
       return this._deserializeDictToDataModel(dictRecord, kwargs)
     } catch (error) {
-      throw new Error('Error deserializing records', { cause: error })
+      throw new VectorStoreModelDeserializationException('Error deserializing records', { cause: error })
     }
   }
 
@@ -476,7 +489,9 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
     let recordObj: Record<string, any> = record as Record<string, any>
     if (Array.isArray(record)) {
       if (record.length > 1) {
-        throw new Error('Cannot deserialize multiple records to a single record unless you are using a container.')
+        throw new VectorStoreModelDeserializationException(
+          'Cannot deserialize multiple records to a single record unless you are using a container.'
+        )
       }
       recordObj = record[0]
     }
@@ -534,7 +549,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
         continue
       }
       if (field.dimensions === null) {
-        throw new Error(`Field ${field.name} has no dimensions, cannot create embedding for field.`)
+        throw new VectorStoreModelException(`Field ${field.name} has no dimensions, cannot create embedding for field.`)
       }
       embeddingsToMake.push([field.storageName || field.name, field.dimensions, embeddingGenerator])
     }
@@ -569,7 +584,7 @@ export abstract class VectorStoreRecordHandler<_TKey = any, TModel = any> {
 
     const vectors = await embeddingGenerator.generateRawEmbeddings(contents, { dimensions })
     if (!vectors) {
-      throw new Error('No vectors were generated.')
+      throw new VectorStoreOperationException('No vectors were generated.')
     }
 
     for (let i = 0; i < inputs.length; i++) {
@@ -725,21 +740,23 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
     const batch = Array.isArray(records) || this._containerMode
 
     if (records === null || records === undefined) {
-      throw new Error('Either record or records must be provided.')
+      throw new VectorStoreOperationException('Either record or records must be provided.')
     }
 
     let data: any
     try {
       data = await this.serialize(records)
     } catch (error) {
-      throw new Error('Error serializing records', { cause: error })
+      throw new VectorStoreModelSerializationException('Error serializing records', { cause: error })
     }
 
     let results: TKey[]
     try {
       results = await this._innerUpsert(Array.isArray(data) ? data : [data], kwargs)
     } catch (error) {
-      throw new Error(`Error upserting record(s) into collection '${this.collectionName}'`, { cause: error })
+      throw new VectorStoreOperationException(`Error upserting record(s) into collection '${this.collectionName}'`, {
+        cause: error,
+      })
     }
 
     if (batch || this._containerMode) {
@@ -828,10 +845,10 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
         try {
           options = new GetFilteredRecordOptions(getArgs)
         } catch (error) {
-          throw new Error('Error creating options', { cause: error })
+          throw new VectorStoreOperationException('Error creating options', { cause: error })
         }
       } else {
-        throw new Error('Either key, keys or options must be provided.')
+        throw new VectorStoreOperationException('Either key, keys or options must be provided.')
       }
     }
 
@@ -839,7 +856,7 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
     try {
       records = await this._innerGet(keys, options, { ...kwargs, includeVectors })
     } catch (error) {
-      throw new Error('Error getting record(s)', { cause: error })
+      throw new VectorStoreOperationException('Error getting record(s)', { cause: error })
     }
 
     if (!records) {
@@ -853,7 +870,7 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
         include_vectors: includeVectors,
       })
     } catch (error) {
-      throw new Error('Error deserializing records', { cause: error })
+      throw new VectorStoreModelDeserializationException('Error deserializing records', { cause: error })
     }
 
     if (batch) {
@@ -865,7 +882,9 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
     if (modelRecords.length === 1) {
       return modelRecords[0]
     }
-    throw new Error('Error deserializing record, multiple records returned', { cause: modelRecords })
+    throw new VectorStoreModelDeserializationException('Error deserializing record, multiple records returned', {
+      cause: modelRecords,
+    })
   }
 
   /**
@@ -882,7 +901,7 @@ export abstract class VectorStoreCollection<TKey = any, TModel = any> extends Ve
     try {
       await this._innerDelete(keysArray, kwargs)
     } catch (error) {
-      throw new Error('Error deleting record(s)', { cause: error })
+      throw new VectorStoreOperationException('Error deleting record(s)', { cause: error })
     }
   }
 }
@@ -1818,7 +1837,9 @@ export abstract class VectorSearch<TKey = any, TModel = any> extends VectorStore
     const searchType = params?.searchType === 'keyword_hybrid' ? SearchType.KEYWORD_HYBRID : SearchType.VECTOR
 
     if (!this.supportedSearchTypes.has(searchType)) {
-      throw new Error(`Search type '${searchType}' is not supported by this vector store: ${this.constructor.name}`)
+      throw new VectorStoreOperationNotSupportedException(
+        `Search type '${searchType}' is not supported by this vector store: ${this.constructor.name}`
+      )
     }
 
     const options = new VectorSearchOptions({
@@ -1904,7 +1925,7 @@ export abstract class VectorSearch<TKey = any, TModel = any> extends VectorStore
             kwargs
           )
         } else {
-          throw new Error(
+          throw new VectorStoreOperationNotSupportedException(
             `Search type '${params.searchType}' is not supported by this vector store: ${this.constructor.name}`
           )
         }
@@ -1929,7 +1950,7 @@ export abstract class VectorSearch<TKey = any, TModel = any> extends VectorStore
 
         return []
       } catch (error) {
-        throw new Error('Exception in search function', { cause: error })
+        throw new VectorSearchExecutionException('Exception in search function', { cause: error })
       }
     }
 

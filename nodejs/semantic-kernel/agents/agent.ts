@@ -601,7 +601,7 @@ export abstract class Agent {
   }): any {
     throw new Error(
       'MCP server conversion not yet implemented in TypeScript. ' +
-        'This requires the semantic_kernel.connectors.mcp module to be ported.'
+        'This requires the semantic-kernel.connectors.mcp module to be ported.'
     )
   }
 }

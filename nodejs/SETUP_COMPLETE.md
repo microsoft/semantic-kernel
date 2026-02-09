@@ -22,7 +22,7 @@ Your `semantic-kernel` package is now ready to be built and published to an arti
 ### 2. TypeScript Configuration (`tsconfig.json`)
 
 - **Output directory**: `./dist`
-- **Includes**: `semantic_kernel/**/*` and `index.ts`
+- **Includes**: `semantic-kernel/**/*` and `index.ts`
 - **Excludes**: Tests and samples from build
 - **Decorators**: Enabled experimental decorators support
 - **Comments**: Preserved in output for better documentation
@@ -38,7 +38,7 @@ Exports core kernel functionality and commonly used classes:
 - ChatHistory, ChatMessageContent, TextContent
 - AuthorRole
 
-#### `/semantic_kernel/connectors/ai/open-ai/index.ts`
+#### `/semantic-kernel/connectors/ai/open-ai/index.ts`
 
 Exports OpenAI connector classes:
 
@@ -46,7 +46,7 @@ Exports OpenAI connector classes:
 - OpenAIChatCompletionBase
 - OpenAIChatPromptExecutionSettings
 
-#### `/semantic_kernel/functions/index.ts`
+#### `/semantic-kernel/functions/index.ts`
 
 Exports function-related classes:
 
@@ -54,7 +54,7 @@ Exports function-related classes:
 - KernelParameterMetadata, FunctionResult
 - KernelArguments
 
-#### `/semantic_kernel/contents/index.ts`
+#### `/semantic-kernel/contents/index.ts`
 
 Exports content classes:
 
@@ -186,7 +186,7 @@ semantic-kernel/
 ├── dist/
 │   ├── index.js
 │   ├── index.d.ts
-│   └── semantic_kernel/
+│   └── semantic-kernel/
 │       ├── kernel.js
 │       ├── kernel.d.ts
 │       ├── connectors/
@@ -231,9 +231,9 @@ npm run build
 Add to the appropriate index file in:
 
 - `/index.ts` for main exports
-- `/semantic_kernel/connectors/ai/open-ai/index.ts` for OpenAI
-- `/semantic_kernel/functions/index.ts` for functions
-- `/semantic_kernel/contents/index.ts` for contents
+- `/semantic-kernel/connectors/ai/open-ai/index.ts` for OpenAI
+- `/semantic-kernel/functions/index.ts` for functions
+- `/semantic-kernel/contents/index.ts` for contents
 
 ### Import errors after installation
 

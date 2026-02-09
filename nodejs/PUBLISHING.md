@@ -68,7 +68,7 @@ This will:
 Check that the `dist` folder contains:
 
 - `index.js` and `index.d.ts` (main entry point)
-- `semantic_kernel/` folder with all compiled modules
+- `semantic-kernel/` folder with all compiled modules
 
 ## Publishing
 
@@ -123,7 +123,7 @@ semantic-kernel/
 ├── dist/
 │   ├── index.js                    # Main entry point
 │   ├── index.d.ts                  # Type definitions
-│   └── semantic_kernel/            # All SDK modules
+│   └── semantic-kernel/            # All SDK modules
 │       ├── kernel.js
 │       ├── connectors/
 │       ├── contents/

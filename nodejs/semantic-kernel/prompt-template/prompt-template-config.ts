@@ -1,5 +1,5 @@
 import { PromptExecutionSettings } from '../connectors/ai/prompt-execution-settings'
-import { DEFAULT_SERVICE_NAME } from '../const.js'
+import { DEFAULT_SERVICE_NAME } from '../const'
 import { KernelParameterMetadata } from '../functions/kernel-parameter-metadata'
 import { KERNEL_TEMPLATE_FORMAT_NAME, TemplateFormatTypes } from './const'
 import { InputVariable } from './input-variable'

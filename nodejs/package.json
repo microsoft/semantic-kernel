@@ -128,20 +128,20 @@
       "import": "./dist/index.js"
     },
     "./kernel": {
-      "types": "./dist/semantic_kernel/kernel.d.ts",
-      "import": "./dist/semantic_kernel/kernel.js"
+      "types": "./dist/semantic-kernel/kernel.d.ts",
+      "import": "./dist/semantic-kernel/kernel.js"
     },
     "./connectors/ai/openai": {
-      "types": "./dist/semantic_kernel/connectors/ai/open-ai/index.d.ts",
-      "import": "./dist/semantic_kernel/connectors/ai/open-ai/index.js"
+      "types": "./dist/semantic-kernel/connectors/ai/open-ai/index.d.ts",
+      "import": "./dist/semantic-kernel/connectors/ai/open-ai/index.js"
     },
     "./functions": {
-      "types": "./dist/semantic_kernel/functions/index.d.ts",
-      "import": "./dist/semantic_kernel/functions/index.js"
+      "types": "./dist/semantic-kernel/functions/index.d.ts",
+      "import": "./dist/semantic-kernel/functions/index.js"
     },
     "./contents": {
-      "types": "./dist/semantic_kernel/contents/index.d.ts",
-      "import": "./dist/semantic_kernel/contents/index.js"
+      "types": "./dist/semantic-kernel/contents/index.d.ts",
+      "import": "./dist/semantic-kernel/contents/index.js"
     }
   }
 }
