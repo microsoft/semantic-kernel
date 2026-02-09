@@ -1,8 +1,11 @@
 import type OpenAI from 'openai'
 import type { Stream } from 'openai/streaming'
 import { KernelJsonSchemaBuilder } from '../../../../schema/kernel-json-schema-builder'
+import { createDefaultLogger } from '../../../../utils/logger'
 import { generateStructuredOutputResponseFormatSchema } from '../../../utils/structured-output-schema'
 import { OpenAIModelTypes } from './open-ai-model-types'
+
+const logger = createDefaultLogger('OpenAIHandler')
 
 /**
  * Response type union for OpenAI API responses.
@@ -316,7 +319,7 @@ export abstract class OpenAIHandler {
     // Handle image responses
     if (response && 'created' in response && 'data' in response && response.usage) {
       // This is likely an ImagesResponse
-      console.log(`OpenAI image usage: ${JSON.stringify(response.usage)}`)
+      logger.info(`OpenAI image usage: ${JSON.stringify(response.usage)}`)
       if (response.usage.input_tokens !== undefined) {
         this.promptTokens += response.usage.input_tokens
       }
@@ -331,7 +334,7 @@ export abstract class OpenAIHandler {
 
     // Handle regular completion responses
     if (response && response.usage && !this.isStream(response)) {
-      console.log(`OpenAI usage: ${JSON.stringify(response.usage)}`)
+      logger.info(`OpenAI usage: ${JSON.stringify(response.usage)}`)
 
       if (response.usage.prompt_tokens !== undefined) {
         this.promptTokens += response.usage.prompt_tokens

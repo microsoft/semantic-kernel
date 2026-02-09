@@ -1,6 +1,9 @@
 import { experimental } from '../../../utils/feature-stage-decorator'
+import { createDefaultLogger, Logger } from '../../../utils/logger'
 import { BaseAgent } from './base-agent'
 import { MessageContext } from './message-context'
+
+const logger: Logger = createDefaultLogger('RoutedAgent')
 
 /**
  * Exception thrown when an agent cannot handle a message.
@@ -217,7 +220,7 @@ export abstract class RoutedAgent extends BaseAgent {
    * @param ctx - The context of the message.
    */
   protected async onUnhandledMessage(message: any, _ctx: MessageContext): Promise<void> {
-    console.info(`Unhandled message: ${JSON.stringify(message)}`)
+    logger.info(`Unhandled message: ${JSON.stringify(message)}`)
   }
 
   /**

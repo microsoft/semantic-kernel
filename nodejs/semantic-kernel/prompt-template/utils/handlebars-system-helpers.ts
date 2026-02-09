@@ -1,6 +1,9 @@
 import { ChatHistory } from '../../contents/chat-history'
 import { ChatMessageContent } from '../../contents/chat-message-content'
 import { CHAT_MESSAGE_CONTENT_TAG } from '../../contents/const'
+import { createDefaultLogger } from '../../utils/logger'
+
+const logger = createDefaultLogger('HandlebarsSystemHelpers')
 
 /**
  * Type definition for Handlebars helper context.
@@ -60,7 +63,7 @@ function _message(this: HandlebarsContext, options: HandlebarsOptions, ...args: 
       content = options.fn(this)
     }
   } catch (e) {
-    console.log('Error rendering message content:', e)
+    logger.error('Error rendering message content:', e)
     // Ignore error
   }
 

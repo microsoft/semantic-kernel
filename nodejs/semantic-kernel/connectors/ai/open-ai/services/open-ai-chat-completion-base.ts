@@ -15,6 +15,7 @@ import { KernelArguments } from '../../../../functions/kernel-arguments'
 import { Kernel } from '../../../../kernel'
 import { KernelJsonSchemaBuilder } from '../../../../schema/kernel-json-schema-builder'
 import { PromptExecutionSettings } from '../../../../services/ai-service-client-base'
+import { createDefaultLogger } from '../../../../utils/logger'
 import { generateStructuredOutputResponseFormatSchema } from '../../../utils/structured-output-schema'
 import { ChatCompletionClientBase } from '../../chat-completion-client-base'
 import { CompletionUsage } from '../../completion-usage'
@@ -24,6 +25,8 @@ import { FunctionChoiceBehavior } from '../../function-choice-behavior'
 import { FunctionChoiceType } from '../../function-choice-type'
 import { OpenAIChatPromptExecutionSettings } from '../prompt-execution-settings/open-ai-prompt-execution-settings'
 import { OpenAIModelTypes } from './open-ai-model-types'
+
+const logger = createDefaultLogger('OpenAIChatCompletionBase')
 
 /**
  * OpenAI chat completion base class.
@@ -167,7 +170,7 @@ export abstract class OpenAIChatCompletionBase extends ChatCompletionClientBase 
     // Handle image responses
     if (response && 'created' in response && 'data' in response && response.usage) {
       // This is likely an ImagesResponse
-      console.log(`OpenAI image usage: ${JSON.stringify(response.usage)}`)
+      logger.info(`OpenAI image usage: ${JSON.stringify(response.usage)}`)
       if (response.usage.input_tokens !== undefined) {
         this.promptTokens += response.usage.input_tokens
       }
@@ -182,7 +185,7 @@ export abstract class OpenAIChatCompletionBase extends ChatCompletionClientBase 
 
     // Handle regular completion responses
     if (response && response.usage && !this.isStream(response)) {
-      console.log(`OpenAI usage: ${JSON.stringify(response.usage)}`)
+      logger.info(`OpenAI usage: ${JSON.stringify(response.usage)}`)
 
       if (response.usage.prompt_tokens !== undefined) {
         this.promptTokens += response.usage.prompt_tokens

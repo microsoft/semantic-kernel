@@ -1,8 +1,11 @@
 import { promises as fs } from 'fs'
+import { createDefaultLogger } from '../utils/logger'
 import { ChatMessageContent } from './chat-message-content'
 import { ContentInitializationError, ContentSerializationError } from './exceptions'
 import { KernelContent } from './kernel-content'
 import { AuthorRole } from './utils/author-role'
+
+const logger = createDefaultLogger('ChatHistory')
 
 const CHAT_HISTORY_TAG = 'chat_history'
 const CHAT_MESSAGE_CONTENT_TAG = 'message'
@@ -316,7 +319,7 @@ export class ChatHistory {
 
       return new ChatHistory(messages)
     } catch (error) {
-      console.error('Failed to parse rendered prompt as XML:', error)
+      logger.error('Failed to parse rendered prompt as XML:', error)
       // Failed to parse, treat as plain text user message
       return new ChatHistory([
         new ChatMessageContent({

@@ -2,6 +2,7 @@ import { TextSearchException } from '../exceptions/search-exceptions'
 import type { KernelFunction } from '../functions/kernel-function'
 import { KernelFunctionFromMethod } from '../functions/kernel-function-from-method'
 import type { KernelParameterMetadata } from '../functions/kernel-parameter-metadata'
+import { createDefaultLogger } from '../utils/logger'
 import {
   DEFAULT_FUNCTION_NAME,
   DEFAULT_PARAMETER_METADATA,
@@ -12,6 +13,8 @@ import {
   createOptions,
   defaultDynamicFilterFunction,
 } from './_shared'
+
+const logger = createDefaultLogger('TextSearch')
 
 /**
  * The default description for search functions.
@@ -190,7 +193,7 @@ export abstract class TextSearch {
         return await this._mapResults(results, stringMapper)
       } catch (e) {
         const msg = `Exception in search function: ${e}`
-        console.error(msg)
+        logger.error(msg)
         throw new TextSearchException(msg)
       }
     }

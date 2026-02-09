@@ -6,10 +6,13 @@ import { BlockTypes } from '../template-engine/blocks/block-types'
 import { NamedArgBlock } from '../template-engine/blocks/named-arg-block'
 import { VarBlock } from '../template-engine/blocks/var-block'
 import { TemplateTokenizer } from '../template-engine/template-tokenizer'
+import { createDefaultLogger, Logger } from '../utils/logger'
 import { KERNEL_TEMPLATE_FORMAT_NAME } from './const'
 import { InputVariable } from './input-variable'
 import { PromptTemplateBase } from './prompt-template-base'
 import { PromptTemplateConfig } from './prompt-template-config'
+
+const logger: Logger = createDefaultLogger('KernelPromptTemplate')
 
 /**
  * HTML escape function for string encoding.
@@ -61,7 +64,7 @@ export class KernelPromptTemplate extends PromptTemplateBase {
    * @returns An array of blocks extracted from the template.
    */
   private extractBlocks(): Block[] {
-    console.debug(`Extracting blocks from template: ${this.promptTemplateConfig.template}`)
+    logger.debug(`Extracting blocks from template: ${this.promptTemplateConfig.template}`)
     if (!this.promptTemplateConfig.template) {
       return []
     }
@@ -159,7 +162,7 @@ export class KernelPromptTemplate extends PromptTemplateBase {
    * @throws TemplateRenderException if an error occurs during rendering.
    */
   private async renderBlocks(blocks: Block[], kernel: Kernel, args?: KernelArguments): Promise<string> {
-    console.debug(`Rendering list of ${blocks.length} blocks`)
+    logger.debug(`Rendering list of ${blocks.length} blocks`)
     const renderedBlocks: string[] = []
     const arguments_ = this._getTrustedArguments(args || new KernelArguments())
     const allowUnsafeFunctionOutput = this._getAllowDangerouslySetFunctionOutput()
@@ -185,18 +188,18 @@ export class KernelPromptTemplate extends PromptTemplateBase {
             const rendered = await codeRenderable.renderCode(kernel, arguments_)
             renderedBlocks.push(allowUnsafeFunctionOutput ? rendered : escapeHtml(rendered))
           } else {
-            console.warn(`Code block does not have renderCode method`)
+            logger.warn(`Code block does not have renderCode method`)
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          console.error(`Error rendering code block: ${message}`)
+          logger.error(`Error rendering code block: ${message}`)
           throw new TemplateRenderException(`Error rendering code block: ${message}`)
         }
       }
     }
 
     const prompt = renderedBlocks.join('')
-    console.debug(`Rendered prompt: ${prompt}`)
+    logger.debug(`Rendered prompt: ${prompt}`)
     return prompt
   }
 

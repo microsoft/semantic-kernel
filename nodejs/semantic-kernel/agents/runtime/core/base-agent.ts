@@ -1,4 +1,5 @@
 import { experimental } from '../../../utils/feature-stage-decorator'
+import { createDefaultLogger, Logger } from '../../../utils/logger'
 import { Agent } from './agent'
 import { AgentId } from './agent-id'
 import { AgentMetadata, CoreAgentMetadata } from './agent-metadata'
@@ -6,6 +7,8 @@ import { AgentType, CoreAgentType } from './agent-type'
 import { CancellationToken } from './cancellation-token'
 import { MessageContext } from './message-context'
 import { TopicId } from './topic'
+
+const logger: Logger = createDefaultLogger('BaseAgent')
 
 /**
  * Interface for core runtime functionality needed by BaseAgent.
@@ -304,7 +307,7 @@ export abstract class BaseAgent implements Agent {
    * Save the state of the agent.
    */
   async saveState(): Promise<Record<string, any>> {
-    console.warn('saveState not implemented')
+    logger.warn('saveState not implemented')
     return {}
   }
 
@@ -312,7 +315,7 @@ export abstract class BaseAgent implements Agent {
    * Load the state of the agent.
    */
   async loadState(_state: Record<string, any>): Promise<void> {
-    console.warn('loadState not implemented')
+    logger.warn('loadState not implemented')
   }
 
   /**

@@ -1,5 +1,8 @@
 import { readFile } from 'fs/promises'
 import { join, resolve } from 'path'
+import { createDefaultLogger } from '../../utils/logger'
+
+const logger = createDefaultLogger('KernelProcessStateMetadata')
 
 /**
  * Process state used for State Persistence serialization.
@@ -111,7 +114,7 @@ export class KernelProcessStateMetadata<TState = any> extends KernelProcessStepS
         stepsState: data.stepsState || {},
       })
     } catch (error) {
-      console.error(`Error reading file '${filePath}':`, error)
+      logger.error(`Error reading file '${filePath}':`, error)
       return null
     }
   }

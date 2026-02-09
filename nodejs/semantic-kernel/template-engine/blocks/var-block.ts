@@ -1,9 +1,12 @@
 import { VarBlockRenderError, VarBlockSyntaxError } from '../../exceptions/template-engine-exceptions'
 import { KernelArguments } from '../../functions/kernel-arguments'
 import { Kernel } from '../../kernel'
+import { createDefaultLogger } from '../../utils/logger'
 import { Block, BlockConfig } from './block'
 import { BlockTypes } from './block-types'
 import { Symbols } from './symbols'
+
+const logger = createDefaultLogger('VarBlock')
 
 const VAR_BLOCK_REGEX = /^[$]{1}(?<name>[0-9A-Za-z_]+)$/
 
@@ -96,14 +99,16 @@ export class VarBlock extends Block {
 
     const value = args.get(this.name)
     if (value === undefined || value === null) {
-      console.warn(`Variable \`${Symbols.VAR_PREFIX}: ${this.name}\` not found in the KernelArguments`)
+      logger.warn(`Variable \`${Symbols.VAR_PREFIX}: ${this.name}\` not found in the KernelArguments`)
+
       return ''
     }
 
     try {
       return String(value)
     } catch (e) {
-      console.log(`Failed to convert variable \`${Symbols.VAR_PREFIX}: ${this.name}\` value to string:`, e)
+      logger.error(`Failed to convert variable \`${Symbols.VAR_PREFIX}: ${this.name}\` value to string:`, e)
+
       throw new VarBlockRenderError(`Block ${this.name} failed to be parsed to a string, type is ${typeof value}`)
     }
   }

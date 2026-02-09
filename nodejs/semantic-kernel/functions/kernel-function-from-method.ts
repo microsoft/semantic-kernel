@@ -1,9 +1,12 @@
 import { FunctionExecutionException, FunctionInitializationError } from '../exceptions/function-exceptions'
 import type { FunctionInvocationContext } from '../filters/functions/function-invocation-context'
+import { createDefaultLogger, Logger } from '../utils/logger'
 import { FunctionResult } from './function-result'
 import { KernelFunction } from './kernel-function'
 import { KernelFunctionMetadata } from './kernel-function-metadata'
 import { KernelParameterMetadata } from './kernel-parameter-metadata'
+
+const logger: Logger = createDefaultLogger('KernelFunctionFromMethod')
 
 /**
  * Semantic Kernel Function from a method.
@@ -103,7 +106,7 @@ export class KernelFunctionFromMethod extends KernelFunction {
         additionalProperties: additionalMetadata || {},
       })
     } catch (error) {
-      console.error('Error creating KernelFunctionMetadata:', error)
+      logger.error('Error creating KernelFunctionMetadata:', error)
       throw new FunctionInitializationError('Failed to create KernelFunctionMetadata')
     }
 
@@ -182,7 +185,7 @@ export class KernelFunctionFromMethod extends KernelFunction {
       try {
         return (paramType as any).model_validate(value)
       } catch (error) {
-        console.error('Error validating parameter with model_validate:', error)
+        logger.error('Error validating parameter with model_validate:', error)
         throw new FunctionExecutionException(`Parameter is expected to be parsed to ${paramType} but is not.`)
       }
     }
@@ -199,7 +202,7 @@ export class KernelFunctionFromMethod extends KernelFunction {
       }
       return paramType(value)
     } catch (error) {
-      console.error('Error parsing parameter:', error)
+      logger.error('Error parsing parameter:', error)
       throw new FunctionExecutionException(`Parameter is expected to be parsed to ${paramType} but is not.`)
     }
   }
@@ -243,7 +246,7 @@ export class KernelFunctionFromMethod extends KernelFunction {
           try {
             value = this._parseParameter(value, param.typeObject)
           } catch (error) {
-            console.error(`Error parsing parameter ${param.name}:`, error)
+            logger.error(`Error parsing parameter ${param.name}:`, error)
             throw new FunctionExecutionException(
               `Parameter ${param.name} is expected to be parsed to ${param.typeObject} but is not.`
             )
@@ -259,7 +262,7 @@ export class KernelFunctionFromMethod extends KernelFunction {
         throw new FunctionExecutionException(`Parameter ${param.name} is required but not provided in the arguments.`)
       }
 
-      console.debug(`Parameter ${param.name} is not provided, using default value ${param.defaultValue}`)
+      logger.debug(`Parameter ${param.name} is not provided, using default value ${param.defaultValue}`)
     }
 
     return functionArguments

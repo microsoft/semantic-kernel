@@ -5,10 +5,13 @@ import {
 } from '../exceptions/template-engine-exceptions'
 import { KernelArguments } from '../functions/kernel-arguments'
 import { Kernel } from '../kernel'
+import { createDefaultLogger } from '../utils/logger'
 import { HANDLEBARS_TEMPLATE_FORMAT_NAME } from './const'
 import { PromptTemplateBase } from './prompt-template-base'
 import { PromptTemplateConfig } from './prompt-template-config'
 import { HANDLEBAR_SYSTEM_HELPERS } from './utils/handlebars-system-helpers'
+
+const logger = createDefaultLogger('HandlebarsPromptTemplate')
 
 /**
  * Create a Handlebars prompt template.
@@ -43,7 +46,8 @@ export class HandlebarsPromptTemplate extends PromptTemplateBase {
       try {
         this._templateCompiler = Handlebars.compile(promptTemplateConfig.template)
       } catch (e) {
-        console.error(`Invalid handlebars template: ${promptTemplateConfig.template} error:`, e)
+        logger.error(`Invalid handlebars template: ${promptTemplateConfig.template} error:`, e)
+
         throw new HandlebarsTemplateSyntaxError(`Invalid handlebars template: ${promptTemplateConfig.template}`)
       }
     }
@@ -101,11 +105,12 @@ export class HandlebarsPromptTemplate extends PromptTemplateBase {
 
       return this._templateCompiler(context, { helpers })
     } catch (e) {
-      console.error(
+      logger.error(
         `Error rendering prompt template: ${this.promptTemplateConfig.template} with arguments: ${JSON.stringify(
           Array.from(trustedArguments.entries())
         )}`
       )
+
       throw new HandlebarsTemplateRenderException(
         `Error rendering prompt template: ${this.promptTemplateConfig.template} ` +
           `with arguments: ${JSON.stringify(Array.from(trustedArguments.entries()))}: error: ${e}`
@@ -165,7 +170,8 @@ export class HandlebarsPromptTemplate extends PromptTemplateBase {
         // For now, we'll use a synchronous placeholder
         result = '[Function execution pending]'
       } catch (e) {
-        console.error(`Error executing function ${func.name}: ${e}`)
+        logger.error(`Error executing function ${func.name}: ${e}`)
+
         result = ''
       }
 

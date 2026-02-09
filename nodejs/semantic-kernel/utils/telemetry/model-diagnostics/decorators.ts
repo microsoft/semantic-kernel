@@ -7,8 +7,11 @@ import { ChatMessageContent } from '../../../contents/chat-message-content'
 import { StreamingChatMessageContent } from '../../../contents/streaming-chat-message-content'
 import { StreamingTextContent } from '../../../contents/streaming-text-content'
 import { TextContent } from '../../../contents/text-content'
+import { createDefaultLogger } from '../../logger'
 import * as genAiAttributes from './gen-ai-attributes'
 import { ModelDiagnosticSettings } from './model-diagnostics-settings'
+
+const logger = createDefaultLogger('ModelDiagnosticsDecorators')
 
 /**
  * Module to instrument GenAI models using OpenTelemetry and OpenTelemetry Semantic Conventions.
@@ -352,7 +355,7 @@ function setCompletionInput(modelProvider: string, prompt: string | ChatHistory)
         const message = chatHistory.messages[idx]
         const eventName = genAiAttributes.ROLE_EVENT_MAP[message.role]
         if (eventName) {
-          console.info(JSON.stringify(message.toDict()), {
+          logger.info(JSON.stringify(message.toDict()), {
             [genAiAttributes.EVENT_NAME]: eventName,
             [genAiAttributes.SYSTEM]: modelProvider,
             CHAT_MESSAGE_INDEX: idx,
@@ -361,7 +364,7 @@ function setCompletionInput(modelProvider: string, prompt: string | ChatHistory)
       }
     } else {
       // String prompt
-      console.info(prompt, {
+      logger.info(prompt, {
         [genAiAttributes.EVENT_NAME]: genAiAttributes.PROMPT,
         [genAiAttributes.SYSTEM]: modelProvider,
       })
@@ -423,7 +426,7 @@ function setCompletionResponse(
         fullResponse.index = (completion as any).choiceIndex
       }
 
-      console.info(JSON.stringify(fullResponse), {
+      logger.info(JSON.stringify(fullResponse), {
         [genAiAttributes.EVENT_NAME]: genAiAttributes.CHOICE,
         [genAiAttributes.SYSTEM]: modelProvider,
       })

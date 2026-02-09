@@ -1,9 +1,12 @@
 import { BlockSyntaxError, CodeBlockTokenError, TemplateSyntaxError } from '../exceptions/template-engine-exceptions'
+import { createDefaultLogger } from '../utils/logger'
 import { Block } from './blocks/block'
 import { BlockTypes } from './blocks/block-types'
 import { Symbols } from './blocks/symbols'
 import { TextBlock } from './blocks/text-block'
 import { CodeTokenizer } from './code-tokenizer'
+
+const logger = createDefaultLogger('TemplateTokenizer')
 
 /**
  * Tokenize the template text into blocks.
@@ -160,9 +163,10 @@ export class TemplateTokenizer {
     } catch (e) {
       if (e instanceof BlockSyntaxError) {
         const msg = `Failed to tokenize code block: ${contentWithoutDelimiters}. ${e}`
-        console.warn(msg)
+        logger.warn(msg)
         throw new TemplateSyntaxError(msg)
       }
+
       throw e
     }
 
@@ -184,9 +188,10 @@ export class TemplateTokenizer {
     } catch (e) {
       if (e instanceof CodeBlockTokenError) {
         const msg = `Failed to tokenize code block: ${contentWithoutDelimiters}. ${e}`
-        console.warn(msg)
+        logger.warn(msg)
         throw new TemplateSyntaxError(msg)
       }
+
       throw e
     }
   }

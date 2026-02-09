@@ -1,3 +1,4 @@
+import { createDefaultLogger } from '../utils/logger'
 import { AnnotationContent } from './annotation-content'
 import { AudioContent } from './audio-content'
 import { BinaryContent } from './binary-content'
@@ -14,6 +15,8 @@ import { TextContent } from './text-content'
 import { AuthorRole } from './utils/author-role'
 import { FinishReason } from './utils/finish-reason'
 import { Status } from './utils/status'
+
+const logger = createDefaultLogger('ChatMessageContent')
 
 export type CMCItemTypes =
   | AnnotationContent
@@ -99,7 +102,7 @@ export class ChatMessageContent extends KernelContent {
    */
   set content(value: string) {
     if (!value) {
-      console.warn(
+      logger.warn(
         'Setting empty content on ChatMessageContent does not work, ' +
           'you can do this through the underlying items if needed, ignoring.'
       )
@@ -188,7 +191,7 @@ export class ChatMessageContent extends KernelContent {
         if (child.tag && TAG_CONTENT_MAP[child.tag]) {
           items.push(TAG_CONTENT_MAP[child.tag].fromElement(child))
         } else {
-          console.warn(`Unknown tag "${child.tag}" in ChatMessageContent, treating as text`)
+          logger.warn(`Unknown tag "${child.tag}" in ChatMessageContent, treating as text`)
           items.push(new TextContent({ text: String(child) }))
         }
       }
@@ -205,7 +208,7 @@ export class ChatMessageContent extends KernelContent {
 
     // Remove choice_index if present (for StreamingChatMessageContent)
     if ('choice_index' in kwargs) {
-      console.info(
+      logger.info(
         'Seems like you are trying to create a StreamingChatMessageContent, ' +
           'use StreamingChatMessageContent.fromElement instead, ignoring that field ' +
           'and creating a ChatMessageContent instance.'

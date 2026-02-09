@@ -1,3 +1,4 @@
+import { createDefaultLogger } from '../utils/logger'
 import { AudioContent } from './audio-content'
 import { BinaryContent } from './binary-content'
 import { ChatMessageContent, CMCItemTypes } from './chat-message-content'
@@ -9,6 +10,8 @@ import { StreamingFileReferenceContent } from './streaming-file-reference-conten
 import { StreamingTextContent } from './streaming-text-content'
 import { AuthorRole } from './utils/author-role'
 import { FinishReason } from './utils/finish-reason'
+
+const logger = createDefaultLogger('StreamingChatMessageContent')
 
 export type StreamingCMCItemTypes =
   | BinaryContent
@@ -170,13 +173,13 @@ export class StreamingChatMessageContent extends ChatMessageContent {
               added = true
               break
             } catch (ex) {
-              console.debug(`Could not add item ${otherItem} to ${item}.`, ex)
+              logger.debug(`Could not add item ${otherItem} to ${item}.`, ex)
               continue
             }
           }
         }
         if (!added) {
-          console.debug(`Could not add item ${otherItem} to any item in the list. Adding it as a new item.`)
+          logger.debug(`Could not add item ${otherItem} to any item in the list. Adding it as a new item.`)
           newItemsList.push(otherItem)
         }
       }

@@ -2,10 +2,13 @@ import { FilterTypes } from '../filters/filter-types'
 import { FunctionInvocationContext } from '../filters/functions/function-invocation-context'
 import { KernelFunction as IKernelFunction, Kernel } from '../kernel'
 import { PromptTemplateConfig } from '../prompt-template/prompt-template-config'
+import { createDefaultLogger, Logger } from '../utils/logger'
 import { FunctionResult } from './function-result'
 import { KernelArguments } from './kernel-arguments'
 import { KernelFunctionMetadata } from './kernel-function-metadata'
 import { KernelParameterMetadata } from './kernel-parameter-metadata'
+
+const logger: Logger = createDefaultLogger('KernelFunction')
 
 /**
  * Histogram for tracking function invocation duration.
@@ -156,8 +159,8 @@ export abstract class KernelFunction implements IKernelFunction {
 
     try {
       // Log function invocation
-      console.debug(`Invoking function: ${this.fullyQualifiedName}`)
-      console.debug(`Function arguments: ${JSON.stringify(arguments_)}`)
+      logger.debug(`Invoking function: ${this.fullyQualifiedName}`)
+      logger.debug(`Function arguments: ${JSON.stringify(arguments_)}`)
 
       // Construct filter call stack
       const stack = kernel.constructCallStack(FilterTypes.FUNCTION_INVOCATION, this._invokeInternal.bind(this))
@@ -166,7 +169,7 @@ export abstract class KernelFunction implements IKernelFunction {
       await stack(functionContext)
 
       // Log success
-      console.debug(`Function invoked successfully: ${this.fullyQualifiedName}`)
+      logger.debug(`Function invoked successfully: ${this.fullyQualifiedName}`)
 
       // Return the result
       if (!functionContext.result) {
@@ -184,7 +187,7 @@ export abstract class KernelFunction implements IKernelFunction {
       if (this.invocationDurationHistogram) {
         this.invocationDurationHistogram.record(duration, attributes)
       }
-      console.debug(`Function completed in ${duration}ms`)
+      logger.debug(`Function completed in ${duration}ms`)
     }
   }
 
@@ -217,8 +220,8 @@ export abstract class KernelFunction implements IKernelFunction {
 
     try {
       // Log function invocation
-      console.debug(`Invoking streaming function: ${this.fullyQualifiedName}`)
-      console.debug(`Function arguments: ${JSON.stringify(arguments_)}`)
+      logger.debug(`Invoking streaming function: ${this.fullyQualifiedName}`)
+      logger.debug(`Function arguments: ${JSON.stringify(arguments_)}`)
 
       // Construct filter call stack
       const stack = kernel.constructCallStack(FilterTypes.FUNCTION_INVOCATION, this._invokeInternalStream.bind(this))
@@ -253,7 +256,7 @@ export abstract class KernelFunction implements IKernelFunction {
       }
 
       // Log results
-      console.debug(`Streaming results: ${JSON.stringify(functionResults)}`)
+      logger.debug(`Streaming results: ${JSON.stringify(functionResults)}`)
     } catch (error) {
       // Handle exception
       this._handleException(error as Error, attributes)
@@ -264,7 +267,7 @@ export abstract class KernelFunction implements IKernelFunction {
       if (this.streamingDurationHistogram) {
         this.streamingDurationHistogram.record(duration, attributes)
       }
-      console.debug(`Streaming function completed in ${duration}ms`)
+      logger.debug(`Streaming function completed in ${duration}ms`)
     }
   }
 
@@ -303,7 +306,7 @@ export abstract class KernelFunction implements IKernelFunction {
     attributes['error.type'] = error.name
 
     // Log the error
-    console.error(`Function error: ${error.message}`, error)
+    logger.error(`Function error: ${error.message}`, error)
 
     // In a full implementation, this would set span attributes and status
     // For now, we just log it

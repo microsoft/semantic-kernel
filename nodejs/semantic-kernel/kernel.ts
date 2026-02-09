@@ -9,6 +9,7 @@ import { EventEmitter } from 'events'
 import { KernelArguments as KernelArgumentsClass } from './functions/kernel-arguments'
 import { KernelFunctionFromPrompt } from './functions/kernel-function-from-prompt'
 import { PromptTemplateConfig as PromptTemplateConfigClass } from './prompt-template/prompt-template-config'
+import { createDefaultLogger, Logger, LoggerOptions } from './utils/logger'
 
 // Type definitions for core Kernel components
 export interface KernelPlugin {
@@ -163,6 +164,8 @@ export interface KernelOptions {
   functionInvocationFilters?: Filter<FunctionInvocationContext>[]
   promptRenderingFilters?: Filter<any>[]
   autoFunctionInvocationFilters?: Filter<AutoFunctionInvocationContext>[]
+  logger?: Logger
+  loggerOptions?: LoggerOptions
 }
 
 /**
@@ -175,9 +178,13 @@ export class Kernel extends EventEmitter {
   private _functionInvocationFilters: Filter<FunctionInvocationContext>[]
   private _promptRenderingFilters: Filter<any>[]
   private _autoFunctionInvocationFilters: Filter<AutoFunctionInvocationContext>[]
+  private _logger: Logger
 
   constructor(options: KernelOptions = {}) {
     super()
+
+    // Initialize logger
+    this._logger = options.logger || createDefaultLogger('Kernel', options.loggerOptions)
 
     // Initialize plugins
     this._plugins = new Map()
@@ -195,6 +202,11 @@ export class Kernel extends EventEmitter {
     this._functionInvocationFilters = options.functionInvocationFilters || []
     this._promptRenderingFilters = options.promptRenderingFilters || []
     this._autoFunctionInvocationFilters = options.autoFunctionInvocationFilters || []
+  }
+
+  // Logger access
+  get logger(): Logger {
+    return this._logger
   }
 
   // Plugin management
@@ -216,11 +228,13 @@ export class Kernel extends EventEmitter {
 
   addPlugin(plugin: KernelPlugin): void {
     this._plugins.set(plugin.name, plugin)
+    this._logger.debug(`Added plugin: ${plugin.name}`)
   }
 
   getPlugin(pluginName: string): KernelPlugin {
     const plugin = this._plugins.get(pluginName)
     if (!plugin) {
+      this._logger.error(`Plugin '${pluginName}' not found`)
       throw new Error(`Plugin '${pluginName}' not found`)
     }
     return plugin
@@ -230,6 +244,7 @@ export class Kernel extends EventEmitter {
     const plugin = this.getPlugin(pluginName)
     const func = plugin.functions.get(functionName)
     if (!func) {
+      this._logger.error(`Function '${functionName}' not found in plugin '${pluginName}'`)
       throw new Error(`Function '${functionName}' not found in plugin '${pluginName}'`)
     }
     return func
@@ -274,6 +289,7 @@ export class Kernel extends EventEmitter {
 
   addService(serviceId: string, service: AIServiceClient): void {
     this._services.set(serviceId, service)
+    this._logger.debug(`Added service: ${serviceId}`)
   }
 
   getService<T extends AIServiceClient>(serviceId?: string, type?: new (...args: any[]) => T): T | null {
@@ -328,6 +344,7 @@ export class Kernel extends EventEmitter {
 
     if (!func) {
       if (!functionName || !pluginName) {
+        this._logger.error('No function, or function name and plugin name provided')
         throw new Error('No function, or function name and plugin name provided')
       }
       func = this.getFunction(pluginName, functionName)
@@ -337,10 +354,10 @@ export class Kernel extends EventEmitter {
       return await func.invoke(this, args, metadata)
     } catch (error) {
       if (error instanceof Error && error.name === 'OperationCancelledException') {
-        console.info(`Operation cancelled during function invocation: ${error.message}`)
+        this._logger.info(`Operation cancelled during function invocation: ${error.message}`)
         return null
       }
-      console.error(
+      this._logger.error(
         `Something went wrong in function invocation. During function invocation: ` +
           `'${func.pluginName}.${func.name}'. Error: ${error}`
       )
@@ -391,12 +408,14 @@ export class Kernel extends EventEmitter {
 
     if (!func) {
       if (!functionName || !pluginName) {
+        this._logger.error('No function(s) or function- and plugin-name provided')
         throw new Error('No function(s) or function- and plugin-name provided')
       }
       func = this.getFunction(pluginName, functionName)
     }
 
     if (!func.invokeStream) {
+      this._logger.error(`Function '${func.name}' does not support streaming`)
       throw new Error(`Function '${func.name}' does not support streaming`)
     }
 
@@ -404,6 +423,9 @@ export class Kernel extends EventEmitter {
 
     for await (const streamMessage of func.invokeStream(this, args)) {
       if (this._isFunctionResult(streamMessage) && streamMessage.metadata?.exception) {
+        this._logger.error(`Error occurred while invoking function: '${func.pluginName}.${func.name}'`, {
+          exception: streamMessage.metadata.exception,
+        })
         throw new Error(`Error occurred while invoking function: '${func.pluginName}.${func.name}'`, {
           cause: streamMessage.metadata.exception,
         })
@@ -474,6 +496,7 @@ export class Kernel extends EventEmitter {
     }
 
     if (!prompt) {
+      this._logger.error('The prompt is either null or empty.')
       throw new Error('The prompt is either null or empty.')
     }
 
@@ -530,6 +553,7 @@ export class Kernel extends EventEmitter {
     }
 
     if (!prompt) {
+      this._logger.error('The prompt is either null or empty.')
       throw new Error('The prompt is either null or empty.')
     }
 
@@ -569,6 +593,7 @@ export class Kernel extends EventEmitter {
 
     try {
       if (!functionCall.name) {
+        this._logger.error('The function name is required.')
         throw new Error('The function name is required.')
       }
 
@@ -579,9 +604,9 @@ export class Kernel extends EventEmitter {
           ? `${functionCall.pluginName}-${functionCall.functionName || functionCall.name}`
           : functionCall.functionName || functionCall.name
         if (!allowedFunctions.includes(fullyQualifiedName)) {
-          throw new Error(
-            `Only functions: [${allowedFunctions.join(', ')}] are allowed, ${fullyQualifiedName} is not allowed.`
-          )
+          const errorMsg = `Only functions: [${allowedFunctions.join(', ')}] are allowed, ${fullyQualifiedName} is not allowed.`
+          this._logger.error(errorMsg)
+          throw new Error(errorMsg)
         }
       }
 
@@ -611,7 +636,9 @@ export class Kernel extends EventEmitter {
       try {
         parsedArgs = functionCall.toKernelArguments()
       } catch (error) {
-        console.info(`Received invalid arguments for function ${functionCall.name}: ${error}. Trying tool call again.`)
+        this._logger.info(
+          `Received invalid arguments for function ${functionCall.name}: ${error}. Trying tool call again.`
+        )
         chatHistory.addMessage({
           role: 'tool',
           content: 'The tool call arguments are malformed. Arguments must be in JSON format. Please try again.',
@@ -638,7 +665,7 @@ export class Kernel extends EventEmitter {
         }
         const msg = msgParts.join(' ') + ' Please revise the arguments to match the function signature.'
 
-        console.info(msg)
+        this._logger.info(msg)
         chatHistory.addMessage({
           role: 'tool',
           content: msg,
@@ -658,7 +685,7 @@ export class Kernel extends EventEmitter {
             .map((p) => p.name)
             .join(', ')}]. ` +
           'Please provide the required arguments and try again.'
-        console.info(msg)
+        this._logger.info(msg)
         chatHistory.addMessage({
           role: 'tool',
           content: msg,
@@ -671,7 +698,7 @@ export class Kernel extends EventEmitter {
         argsCloned.mergeInPlace(parsedArgs)
       }
 
-      console.info(`Calling ${functionCall.name} function with args: ${functionCall.arguments}`)
+      this._logger.info(`Calling ${functionCall.name} function with args: ${functionCall.arguments}`)
 
       const invocationContext: AutoFunctionInvocationContext = {
         function: functionToCall,
@@ -718,7 +745,7 @@ export class Kernel extends EventEmitter {
 
       return invocationContext.terminate ? null : invocationContext
     } catch (error) {
-      console.error(`The function '${functionCall.name}' is not part of the provided functions: ${error}`)
+      this._logger.error(`The function '${functionCall.name}' is not part of the provided functions: ${error}`)
       chatHistory.addMessage({
         role: 'tool',
         content:
@@ -769,7 +796,7 @@ export class Kernel extends EventEmitter {
         context.functionResult = result
       }
     } catch (error) {
-      console.error(`Error invoking function ${context.function.pluginName}.${context.function.name}: ${error}`)
+      this._logger.error(`Error invoking function ${context.function.pluginName}.${context.function.name}: ${error}`)
       const value = `An error occurred while invoking the function ${context.function.pluginName}.${context.function.name}: ${error}`
       if (context.functionResult) {
         context.functionResult.value = value
@@ -821,9 +848,11 @@ export class Kernel extends EventEmitter {
     }
 
     if (!service) {
+      this._logger.error('No service found to generate embeddings.')
       throw new Error('No service found to generate embeddings.')
     }
     if (!vectors) {
+      this._logger.error('No vectors were generated.')
       throw new Error('No vectors were generated.')
     }
 
@@ -879,6 +908,8 @@ export class Kernel extends EventEmitter {
       functionInvocationFilters: this._deepCopy(this._functionInvocationFilters),
       promptRenderingFilters: this._deepCopy(this._promptRenderingFilters),
       autoFunctionInvocationFilters: this._deepCopy(this._autoFunctionInvocationFilters),
+      // Share the same logger instance
+      logger: this._logger,
     })
   }
 

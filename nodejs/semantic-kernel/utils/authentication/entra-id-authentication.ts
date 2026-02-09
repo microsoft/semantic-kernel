@@ -1,4 +1,7 @@
 import { AccessToken, TokenCredential } from '@azure/identity'
+import { createDefaultLogger } from '../logger'
+
+const logger = createDefaultLogger('EntraIdAuthentication')
 
 /**
  * Retrieve a Microsoft Entra Auth Token for a given token endpoint.
@@ -22,7 +25,7 @@ export async function getEntraAuthToken(credential: TokenCredential, tokenEndpoi
     const authToken: AccessToken | null = await credential.getToken(tokenEndpoint)
     return authToken ? authToken.token : null
   } catch (error) {
-    console.error(`Failed to retrieve Azure token for the specified endpoint: ${tokenEndpoint}.`, error)
+    logger.error(`Failed to retrieve Azure token for the specified endpoint: ${tokenEndpoint}.`, error)
     return null
   }
 }

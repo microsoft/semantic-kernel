@@ -5,7 +5,10 @@ import { ImageContent } from '../../contents/image-content'
 import { StreamingChatMessageContent } from '../../contents/streaming-chat-message-content'
 import { TextContent } from '../../contents/text-content'
 import { AuthorRole } from '../../contents/utils/author-role'
+import { createDefaultLogger, Logger } from '../../utils/logger'
 import { Agent, AgentChannel } from '../agent'
+
+const logger: Logger = createDefaultLogger('OpenAIAssistantChannel')
 
 /**
  * OpenAI Assistant Channel.
@@ -49,6 +52,7 @@ export class OpenAIAssistantChannel extends AgentChannel {
     for (const message of history) {
       // Skip messages that contain function calls (already in thread)
       if (message.items.some((item) => item instanceof FunctionCallContent)) {
+        logger.debug('Skipping message with function call content, already in thread')
         continue
       }
 
@@ -136,7 +140,7 @@ export class OpenAIAssistantChannel extends AgentChannel {
               agentNames.set(message.assistant_id, agent.name)
             }
           } catch (error) {
-            console.error(`Failed to retrieve assistant with ID ${message.assistant_id}:`, error)
+            logger.error(`Failed to retrieve assistant with ID ${message.assistant_id}:`, error)
             // If we can't retrieve the assistant, use the ID
             agentNames.set(message.assistant_id, message.assistant_id)
           }

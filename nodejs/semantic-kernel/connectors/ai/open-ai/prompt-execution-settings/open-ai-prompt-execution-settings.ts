@@ -1,4 +1,7 @@
+import { createDefaultLogger, Logger } from '../../../../utils/logger'
 import { PromptExecutionSettings } from '../../prompt-execution-settings'
+
+const logger: Logger = createDefaultLogger('OpenAIPromptExecutionSettings')
 
 /**
  * Common request settings for (Azure) OpenAI services.
@@ -270,7 +273,7 @@ export class OpenAIChatPromptExecutionSettings extends OpenAIPromptExecutionSett
    */
   private _validateFunctionCall(): void {
     if (this.functionCall !== undefined || this.functions !== undefined) {
-      console.warn(
+      logger.warn(
         'The functionCall and functions parameters are deprecated. Please use the toolChoice and tools parameters instead.'
       )
     }

@@ -4,9 +4,12 @@ import { KERNEL_TEMPLATE_FORMAT_NAME, TemplateFormatTypes } from '../prompt-temp
 import { PromptTemplateBase } from '../prompt-template/prompt-template-base'
 import { PromptTemplateConfig } from '../prompt-template/prompt-template-config'
 import { TEMPLATE_FORMAT_MAP } from '../prompt-template/template-format-map'
+import { createDefaultLogger } from '../utils/logger'
 import { KernelFunction } from './kernel-function'
 import { KernelFunctionMetadata } from './kernel-function-metadata'
 import { KernelParameterMetadata } from './kernel-parameter-metadata'
+
+const logger = createDefaultLogger('KernelFunctionFromPrompt')
 
 const PROMPT_RETURN_PARAM: KernelParameterMetadata = new KernelParameterMetadata({
   name: 'return',
@@ -69,13 +72,13 @@ export class KernelFunctionFromPrompt extends KernelFunction {
 
     // Log warnings if conflicting parameters are provided
     if (prompt && promptTemplateConfig && promptTemplateConfig.template !== prompt) {
-      console.warn(
+      logger.warn(
         `Prompt (${prompt}) and PromptTemplateConfig (${promptTemplateConfig.template}) both supplied, ` +
           'using the template in PromptTemplateConfig, ignoring prompt.'
       )
     }
     if (templateFormat && promptTemplateConfig && promptTemplateConfig.templateFormat !== templateFormat) {
-      console.warn(
+      logger.warn(
         `Template (${templateFormat}) and PromptTemplateConfig (${promptTemplateConfig.templateFormat}) ` +
           'both supplied, using the template format in PromptTemplateConfig, ignoring template.'
       )

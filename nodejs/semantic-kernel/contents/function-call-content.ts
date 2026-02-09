@@ -1,8 +1,11 @@
+import { createDefaultLogger } from '../utils/logger'
 import { FUNCTION_CALL_CONTENT_TAG } from './const'
 import { KernelContent } from './kernel-content'
 
 const DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR = '-'
 const EMPTY_VALUES: (string | null | undefined)[] = ['', '{}', null, undefined]
+
+const logger = createDefaultLogger('FunctionCallContent')
 
 /**
  * Class to hold a function call response.
@@ -150,7 +153,7 @@ export class FunctionCallContent extends KernelContent {
     try {
       return JSON.parse(this.arguments)
     } catch (error) {
-      console.error('Failed to parse FunctionCallContent arguments as JSON:', error)
+      logger.error('Failed to parse FunctionCallContent arguments as JSON:', error)
       // Try preprocessing: replace single quotes with double quotes
       try {
         const preprocessed = this.arguments.replace(/(?<!\\)'/g, '"').replace(/\\'/g, "'")

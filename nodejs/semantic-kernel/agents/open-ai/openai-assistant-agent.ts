@@ -2,7 +2,10 @@ import { ChatMessageContent } from '../../contents/chat-message-content'
 import { StreamingChatMessageContent } from '../../contents/streaming-chat-message-content'
 import { AuthorRole } from '../../contents/utils/author-role'
 import { Kernel } from '../../kernel'
+import { createDefaultLogger, Logger } from '../../utils/logger'
 import { Agent, AgentResponseItem, AgentSpec, AgentThread, IntermediateMessageCallback, ToolSpec } from '../agent'
+
+const logger: Logger = createDefaultLogger('OpenAIAssistantAgent')
 
 /**
  * Tool builder function type.
@@ -47,6 +50,8 @@ registerTool('code_interpreter', (spec: ToolSpec) => {
 registerTool('file_search', (spec: ToolSpec) => {
   const vectorStoreIds = spec.options?.vector_store_ids
   if (!vectorStoreIds || !Array.isArray(vectorStoreIds) || vectorStoreIds.length === 0) {
+    logger.error(`Missing or malformed 'vector_store_ids' in tool spec: ${JSON.stringify(spec)}`)
+
     throw new Error(`Missing or malformed 'vector_store_ids' in tool spec: ${JSON.stringify(spec)}`)
   }
   return OpenAIAssistantAgent.configureFileSearchTool({ vectorStoreIds })
@@ -516,7 +521,7 @@ export class OpenAIAssistantAgent extends Agent {
    * @example
    * ```typescript
    * for (const key of agent.getChannelKeys()) {
-   *   console.log('Channel key:', key)
+   *   logger.info('Channel key:', key)
    * }
    * ```
    */

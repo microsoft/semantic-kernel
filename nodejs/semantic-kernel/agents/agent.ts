@@ -4,6 +4,7 @@ import { StreamingChatMessageContent } from '../contents/streaming-chat-message-
 import { AuthorRole } from '../contents/utils/author-role'
 import { KernelArguments } from '../functions/kernel-arguments'
 import { Kernel, KernelPlugin, PromptExecutionSettings, PromptTemplateConfig } from '../kernel'
+import { createDefaultLogger, Logger } from '../utils/logger'
 
 // #region Declarative Spec Definitions
 
@@ -73,6 +74,9 @@ export interface AgentSpec {
 
 // #endregion
 
+// Create module-level logger
+const logger: Logger = createDefaultLogger('Agent')
+
 // #region AgentThread
 
 /**
@@ -87,6 +91,7 @@ export abstract class AgentThread {
    */
   get id(): string | undefined {
     if (this._isDeleted) {
+      logger.error("Thread has been deleted; call 'create()' to recreate it.")
       throw new Error("Thread has been deleted; call 'create()' to recreate it.")
     }
     return this._id
@@ -98,16 +103,19 @@ export abstract class AgentThread {
   async create(): Promise<string | undefined> {
     // A thread should not be recreated after it has been deleted.
     if (this._isDeleted) {
+      logger.error('Cannot create thread because it has already been deleted.')
       throw new Error('Cannot create thread because it has already been deleted.')
     }
 
     // If the thread ID is already set, we're done, just return the Id.
     if (this.id !== undefined) {
+      logger.debug(`Thread already created with ID: ${this.id}`)
       return this.id
     }
 
     // Otherwise, create the thread.
     this._id = await this._create()
+    logger.info(`Thread created with ID: ${this._id}`)
     return this.id
   }
 
@@ -117,16 +125,19 @@ export abstract class AgentThread {
   async delete(): Promise<void> {
     // A thread should not be deleted if it has already been deleted.
     if (this._isDeleted) {
+      logger.debug('Thread already deleted, skipping.')
       return
     }
 
     // If the thread ID is not set, we're done, just return.
     if (this.id === undefined) {
       this._isDeleted = true
+      logger.debug('Thread was not created, marking as deleted.')
       return
     }
 
     // Otherwise, delete the thread.
+    logger.info(`Deleting thread with ID: ${this.id}`)
     await this._delete()
     this._id = undefined
     this._isDeleted = true
@@ -138,9 +149,11 @@ export abstract class AgentThread {
   async onNewMessage(newMessage: ChatMessageContent): Promise<void> {
     // If the thread is not created yet, create it.
     if (this.id === undefined) {
+      logger.debug('Thread not created yet, creating now.')
       await this.create()
     }
 
+    logger.debug(`Processing new message in thread ${this.id}`)
     await this._onNewMessage(newMessage)
   }
 
@@ -266,6 +279,7 @@ export class AgentExecutionException extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'AgentExecutionException'
+    logger.error(`AgentExecutionException: ${message}`)
   }
 }
 
@@ -276,6 +290,7 @@ export class AgentInitializationException extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'AgentInitializationException'
+    logger.error(`AgentInitializationException: ${message}`)
   }
 }
 
@@ -322,14 +337,18 @@ export abstract class Agent {
     this.arguments = config.arguments
     this.promptTemplate = config.promptTemplate
 
+    logger.debug(`Creating agent: ${this.name} (ID: ${this.id})`)
+
     // Configure plugins if provided
     if (config.plugins) {
+      logger.debug(`Configuring ${config.plugins.length} plugin(s) for agent ${this.name}`)
       for (const plugin of config.plugins) {
         this.kernel.addPlugin(plugin)
       }
     }
 
     this._postInit()
+    logger.info(`Agent created: ${this.name} (ID: ${this.id})`)
   }
 
   /**
@@ -339,6 +358,8 @@ export abstract class Agent {
     // Create a minimal universal function for all agents
     const asKernelFunction = async (messages: string | string[], instructionsOverride?: string): Promise<any> => {
       const messageArray = Array.isArray(messages) ? messages : [messages]
+
+      logger.debug(`Calling agent ${this.name} as kernel function with ${messageArray.length} message(s)`)
 
       const responseItem = await this.getResponse({
         messages: messageArray,
@@ -432,6 +453,7 @@ export abstract class Agent {
   *getChannelKeys(): Iterable<string> {
     const channelType = (this.constructor as typeof Agent).channelType
     if (!channelType) {
+      logger.error('Unable to get channel keys. Channel type not configured.')
       throw new Error('Unable to get channel keys. Channel type not configured.')
     }
     yield channelType.name
@@ -443,8 +465,10 @@ export abstract class Agent {
   async createChannel(): Promise<AgentChannel> {
     const channelType = (this.constructor as typeof Agent).channelType
     if (!channelType) {
+      logger.error('Unable to create channel. Channel type not configured.')
       throw new Error('Unable to create channel. Channel type not configured.')
     }
+    logger.debug(`Creating channel of type: ${channelType.name}`)
     return new channelType()
   }
 
@@ -458,11 +482,14 @@ export abstract class Agent {
   async formatInstructions(kernel: Kernel, arguments_?: KernelArguments): Promise<string | undefined> {
     if (this.promptTemplate === undefined) {
       if (this.instructions === undefined) {
+        logger.debug(`Agent ${this.name} has no instructions to format`)
         return undefined
       }
       // Create a basic prompt template if instructions are set
+      logger.debug(`Creating default prompt template for agent ${this.name}`)
       this.promptTemplate = new KernelPromptTemplate({ template: this.instructions })
     }
+    logger.debug(`Formatting instructions for agent ${this.name}`)
     return await this.promptTemplate.render(kernel, arguments_)
   }
 
@@ -483,6 +510,7 @@ export abstract class Agent {
     }
 
     // Both are not undefined, so merge with precedence for overrideArgs
+    logger.debug(`Merging arguments for agent ${this.name}`)
     return this.arguments.merge(overrideArgs)
   }
 
@@ -515,14 +543,15 @@ export abstract class Agent {
     )
 
     if (thread === undefined) {
+      logger.debug(`Creating new thread for agent ${this.name}`)
       thread = constructThread()
       await thread.create()
     }
 
     if (!(thread instanceof expectedType)) {
-      throw new AgentExecutionException(
-        `${this.constructor.name} currently only supports agent threads of type ${expectedType.name}.`
-      )
+      const errorMsg = `${this.constructor.name} currently only supports agent threads of type ${expectedType.name}.`
+      logger.error(errorMsg)
+      throw new AgentExecutionException(errorMsg)
     }
 
     // Track the agent ID as user msg metadata, which is useful for
@@ -532,6 +561,7 @@ export abstract class Agent {
     }
 
     // Notify the thread that new messages are available.
+    logger.debug(`Notifying thread of ${normalizedMessages.length} new message(s) for agent ${this.name}`)
     for (const msg of normalizedMessages) {
       Object.assign(msg.metadata, idMetadata)
       await this._notifyThreadOfNewMessage(thread, msg)
@@ -544,6 +574,7 @@ export abstract class Agent {
    * Notify the thread of a new message.
    */
   protected async _notifyThreadOfNewMessage(thread: AgentThread, newMessage: ChatMessageContent): Promise<void> {
+    logger.debug(`Notifying thread ${thread.id} of new message`)
     await thread.onNewMessage(newMessage)
   }
 
@@ -599,6 +630,7 @@ export abstract class Agent {
     instructions?: string
     lifespan?: any
   }): any {
+    logger.error('MCP server conversion not yet implemented in TypeScript')
     throw new Error(
       'MCP server conversion not yet implemented in TypeScript. ' +
         'This requires the semantic-kernel.connectors.mcp module to be ported.'
@@ -637,6 +669,7 @@ const AGENT_TYPE_REGISTRY: Map<string, new (...args: any[]) => Agent> = new Map(
  */
 export function registerAgentType(agentType: string) {
   return function <T extends new (...args: any[]) => Agent>(constructor: T) {
+    logger.debug(`Registering agent type: ${agentType}`)
     AGENT_TYPE_REGISTRY.set(agentType.toLowerCase(), constructor)
     return constructor
   }
@@ -672,6 +705,7 @@ export class AgentRegistry {
    * Register a new agent type at runtime.
    */
   static registerType(agentType: string, agentCls: new (...args: any[]) => Agent): void {
+    logger.info(`Registering agent type at runtime: ${agentType}`)
     AGENT_TYPE_REGISTRY.set(agentType.toLowerCase(), agentCls)
   }
 
@@ -689,21 +723,26 @@ export class AgentRegistry {
     let { yamlStr } = options
     const yaml = await import('yaml')
 
+    logger.debug('Parsing agent definition from YAML')
+
     // First parse to get the agent type
     let data = yaml.parse(yamlStr) as Record<string, any>
 
     const agentType = (data.type || '').toLowerCase()
     if (!agentType) {
+      logger.error("Missing 'type' field in agent definition")
       throw new AgentInitializationException("Missing 'type' field in agent definition.")
     }
 
     const agentCls = AGENT_TYPE_REGISTRY.get(agentType)
     if (!agentCls) {
+      logger.error(`Agent type '${agentType}' not registered`)
       throw new AgentInitializationException(`Agent type '${agentType}' not registered.`)
     }
 
     // Check if the class supports declarative spec
     if (typeof (agentCls as any).fromDict !== 'function') {
+      logger.error(`Agent class '${agentCls.name}' does not support declarative spec loading`)
       throw new AgentInitializationException(
         `Agent class '${agentCls.name}' does not support declarative spec loading.`
       )
@@ -711,10 +750,12 @@ export class AgentRegistry {
 
     // Resolve placeholders if the class supports it
     if (typeof (agentCls as any).resolvePlaceholders === 'function') {
+      logger.debug('Resolving placeholders in YAML')
       yamlStr = (agentCls as any).resolvePlaceholders(yamlStr, options.settings, options.extras)
       data = yaml.parse(yamlStr) as Record<string, any>
     }
 
+    logger.info(`Creating agent of type '${agentType}' from YAML`)
     return await (agentCls as any).fromDict({
       data,
       kernel: options.kernel,
@@ -738,21 +779,25 @@ export class AgentRegistry {
     const agentType = (options.data.type || '').toLowerCase()
 
     if (!agentType) {
+      logger.error("Missing 'type' field in agent definition")
       throw new AgentInitializationException("Missing 'type' field in agent definition.")
     }
 
     const agentCls = AGENT_TYPE_REGISTRY.get(agentType)
     if (!agentCls) {
+      logger.error(`Agent type '${agentType}' is not supported`)
       throw new AgentInitializationException(`Agent type '${agentType}' is not supported.`)
     }
 
     // Check if the class supports declarative spec
     if (typeof (agentCls as any).fromDict !== 'function') {
+      logger.error(`Agent class '${agentCls.name}' does not support declarative spec loading`)
       throw new AgentInitializationException(
         `Agent class '${agentCls.name}' does not support declarative spec loading.`
       )
     }
 
+    logger.info(`Creating agent of type '${agentType}' from dictionary`)
     return await (agentCls as any).fromDict(options)
   }
 
@@ -772,6 +817,7 @@ export class AgentRegistry {
 
     try {
       const encoding = options.encoding || 'utf-8'
+      logger.info(`Reading agent spec from file: ${options.filePath}`)
       const yamlStr = await fs.readFile(options.filePath, encoding as BufferEncoding)
 
       return await AgentRegistry.createFromYaml({
@@ -783,6 +829,7 @@ export class AgentRegistry {
         ...options,
       })
     } catch (error) {
+      logger.error(`Failed to read agent spec file: ${error}`)
       throw new AgentInitializationException(`Failed to read agent spec file: ${error}`)
     }
   }
@@ -811,7 +858,10 @@ export abstract class DeclarativeSpecMixin extends Agent {
     let { yamlStr } = options
     const { kernel, plugins, promptTemplateConfig, settings, extras } = options
 
+    logger.debug(`Creating ${this.name} from YAML`)
+
     if (settings) {
+      logger.debug('Resolving placeholders in YAML')
       yamlStr = this.resolvePlaceholders(yamlStr, settings, extras)
     }
 
@@ -842,6 +892,8 @@ export abstract class DeclarativeSpecMixin extends Agent {
     const { data, plugins } = options
     const { kernel } = options
 
+    logger.debug(`Creating ${this.name} from dictionary`)
+
     const [extracted, effectiveKernel] = this._normalizeSpecFields({
       kernel,
       plugins,
@@ -867,6 +919,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
     promptTemplateConfig?: PromptTemplateConfig
     [key: string]: any
   }): Promise<Agent> {
+    logger.error('_fromDict must be implemented by subclasses')
     throw new Error('_fromDict must be implemented by subclasses')
   }
 
@@ -891,12 +944,16 @@ export abstract class DeclarativeSpecMixin extends Agent {
     const { data, plugins } = options
     let { kernel } = options
 
+    logger.debug('Normalizing spec fields')
+
     if (!kernel) {
+      logger.debug('No kernel provided, creating new one')
       kernel = new Kernel()
     }
 
     // Plugins provided explicitly
     if (plugins) {
+      logger.debug(`Adding ${plugins.length} plugin(s) to kernel`)
       for (const plugin of plugins) {
         kernel.addPlugin(plugin)
       }
@@ -904,6 +961,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
 
     // Validate tools declared in the spec exist in the kernel
     if (data.tools) {
+      logger.debug('Validating tools in spec')
       this._validateTools(data.tools, kernel)
     }
 
@@ -922,6 +980,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
     // Convert model options to execution settings
     let arguments_: KernelArguments = new KernelArguments()
     if (Object.keys(modelOptions).length > 0) {
+      logger.debug('Converting model options to execution settings')
       const execSettings: PromptExecutionSettings = { ...modelOptions }
       arguments_ = new KernelArguments({ settings: execSettings })
     }
@@ -944,6 +1003,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
     const templateData = data.prompt_template || data.template
     if (templateData) {
       if (typeof templateData === 'object') {
+        logger.debug('Processing prompt template configuration')
         const promptTemplateConfig: PromptTemplateConfig = { ...templateData }
         // If 'instructions' is set in YAML, override the template field in config
         if (data.instructions !== undefined) {
@@ -963,8 +1023,11 @@ export abstract class DeclarativeSpecMixin extends Agent {
    */
   protected static _validateTools(toolsList: any[], kernel: Kernel): void {
     if (!kernel) {
+      logger.error('Kernel instance is required for tool resolution')
       throw new AgentInitializationException('Kernel instance is required for tool resolution.')
     }
+
+    logger.debug(`Validating ${toolsList.length} tool(s)`)
 
     for (const tool of toolsList) {
       const toolId = tool.id
@@ -973,6 +1036,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
       }
 
       if (!toolId.includes('.')) {
+        logger.error(`Tool id '${toolId}' must be in format PluginName.FunctionName`)
         throw new AgentInitializationException(`Tool id '${toolId}' must be in format PluginName.FunctionName`)
       }
 
@@ -980,13 +1044,17 @@ export abstract class DeclarativeSpecMixin extends Agent {
 
       const plugin = kernel.plugins.get(pluginName)
       if (!plugin) {
+        logger.error(`Plugin '${pluginName}' not found in kernel`)
         throw new AgentInitializationException(`Plugin '${pluginName}' not found in kernel.`)
       }
 
       if (!plugin.functions.has(functionName)) {
+        logger.error(`Function '${functionName}' not found in plugin '${pluginName}'`)
         throw new AgentInitializationException(`Function '${functionName}' not found in plugin '${pluginName}'.`)
       }
     }
+
+    logger.debug('All tools validated successfully')
   }
 }
 

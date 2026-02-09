@@ -1,3 +1,4 @@
+import type { Logger } from '../utils/logger'
 import { FunctionResult } from './function-result'
 import { KernelArguments } from './kernel-arguments'
 
@@ -13,7 +14,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param kernelFunctionName - The name of the kernel function
    */
-  static logFunctionInvoking(logger: Console, kernelFunctionName: string): void {
+  static logFunctionInvoking(logger: Logger, kernelFunctionName: string): void {
     logger.info(`Function ${kernelFunctionName} invoking.`)
   }
 
@@ -23,7 +24,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param args - The function arguments
    */
-  static logFunctionArguments(logger: Console, args: KernelArguments): void {
+  static logFunctionArguments(logger: Logger, args: KernelArguments): void {
     logger.debug(`Function arguments:`, args)
   }
 
@@ -33,8 +34,8 @@ export class KernelFunctionLogMessages {
    * @param _logger - The logger instance (unused, kept for API compatibility)
    * @param kernelFunctionName - The name of the kernel function
    */
-  static logFunctionInvokedSuccess(_logger: Console, kernelFunctionName: string): void {
-    console.info(`Function ${kernelFunctionName} succeeded.`)
+  static logFunctionInvokedSuccess(logger: Logger, kernelFunctionName: string): void {
+    logger.info(`Function ${kernelFunctionName} succeeded.`)
   }
 
   /**
@@ -43,7 +44,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param functionResult - The function result
    */
-  static logFunctionResultValue(logger: Console, functionResult?: FunctionResult | null): void {
+  static logFunctionResultValue(logger: Logger, functionResult?: FunctionResult | null): void {
     if (functionResult !== undefined && functionResult !== null) {
       try {
         logger.debug(`Function result:`, functionResult)
@@ -61,7 +62,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param error - The error that occurred
    */
-  static logFunctionError(logger: Console, error: Error): void {
+  static logFunctionError(logger: Logger, error: Error): void {
     logger.error(`Function failed. Error:`, error)
   }
 
@@ -71,8 +72,8 @@ export class KernelFunctionLogMessages {
    * @param _logger - The logger instance (unused, kept for API compatibility)
    * @param duration - The duration in seconds
    */
-  static logFunctionCompleted(_logger: Console, duration: number): void {
-    console.info(`Function completed. Duration: ${duration}s`)
+  static logFunctionCompleted(logger: Logger, duration: number): void {
+    logger.info(`Function completed. Duration: ${duration}s`)
   }
 
   /**
@@ -81,7 +82,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param kernelFunctionName - The name of the kernel function
    */
-  static logFunctionStreamingInvoking(logger: Console, kernelFunctionName: string): void {
+  static logFunctionStreamingInvoking(logger: Logger, kernelFunctionName: string): void {
     logger.info(`Function ${kernelFunctionName} streaming.`)
   }
 
@@ -91,7 +92,7 @@ export class KernelFunctionLogMessages {
    * @param logger - The logger instance
    * @param duration - The duration in seconds
    */
-  static logFunctionStreamingCompleted(logger: Console, duration: number): void {
+  static logFunctionStreamingCompleted(logger: Logger, duration: number): void {
     logger.info(`Function streaming completed. Duration: ${duration}s`)
   }
 }

@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft. All rights reserved.
-
 import { ContentAdditionException } from '../exceptions/content-exceptions'
+import { createDefaultLogger } from '../utils/logger'
+
+const logger = createDefaultLogger('StreamingContentMixin')
 
 /**
  * Mixin class for all streaming kernel contents.
@@ -60,7 +61,7 @@ export abstract class StreamingContentMixin {
               break
             } catch (ex) {
               if (ex instanceof ValueError || ex instanceof ContentAdditionException) {
-                console.debug(`Could not add item ${otherItem} to ${item}.`, ex)
+                logger.debug(`Could not add item ${otherItem} to ${item}.`, ex)
                 continue
               }
               throw ex
@@ -68,7 +69,7 @@ export abstract class StreamingContentMixin {
           }
         }
         if (!added) {
-          console.debug(`Could not add item ${otherItem} to any item in the list. Adding it as a new item.`)
+          logger.debug(`Could not add item ${otherItem} to any item in the list. Adding it as a new item.`)
           newItemsList.push(otherItem)
         }
       }

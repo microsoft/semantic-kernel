@@ -6,8 +6,11 @@ import { FunctionCallContent } from '../../contents/function-call-content'
 import { StreamingChatMessageContent } from '../../contents/streaming-chat-message-content'
 import { Kernel, KernelArguments } from '../../kernel'
 import { AIServiceClientBase, PromptExecutionSettings } from '../../services/ai-service-client-base'
+import { Logger, createDefaultLogger } from '../../utils/logger'
 import { FunctionCallChoiceConfiguration } from './function-call-choice-configuration'
 import { FunctionChoiceType } from './function-choice-type'
+
+const logger: Logger = createDefaultLogger('ChatCompletionClientBase')
 
 const AUTO_FUNCTION_INVOCATION_SPAN_NAME = 'auto_function_invocation'
 
@@ -134,7 +137,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
         // Add the assistant's tool call message to the history
         chatHistory.addMessage(completions[0])
 
-        console.log(`Processing ${fcCount} tool calls in parallel.`)
+        logger.info(`Processing ${fcCount} tool calls in parallel.`)
 
         // Invoke all function calls in parallel
         const results = await Promise.all(
@@ -273,7 +276,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
         chatHistory.addMessage(fullCompletion)
 
         const fcCount = functionCalls.length
-        console.log(`Processing ${fcCount} tool calls in parallel.`)
+        logger.info(`Processing ${fcCount} tool calls in parallel.`)
 
         // Invoke all function calls
         const results = await Promise.all(
@@ -411,7 +414,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
       const availableFunctions = config.availableFunctions || []
       const functionNames = availableFunctions.map((f: any) => f.fullyQualifiedName).join(',')
 
-      console.log(`${AUTO_FUNCTION_INVOCATION_SPAN_NAME}: ${functionNames}`)
+      logger.info(`${AUTO_FUNCTION_INVOCATION_SPAN_NAME}: ${functionNames}`)
     }
 
     return {

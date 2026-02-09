@@ -1,8 +1,11 @@
 import { PromptExecutionSettings } from '../connectors/ai/prompt-execution-settings'
 import { DEFAULT_SERVICE_NAME } from '../const'
 import { KernelParameterMetadata } from '../functions/kernel-parameter-metadata'
+import { createDefaultLogger } from '../utils/logger'
 import { KERNEL_TEMPLATE_FORMAT_NAME, TemplateFormatTypes } from './const'
 import { InputVariable } from './input-variable'
+
+const logger = createDefaultLogger('PromptTemplateConfig')
 
 /**
  * Configuration for a prompt template.
@@ -143,7 +146,8 @@ export class PromptTemplateConfig {
   public addExecutionSettings(settings: PromptExecutionSettings, overwrite: boolean = true): void {
     const serviceId = settings.serviceId || DEFAULT_SERVICE_NAME
     if (this.executionSettings.has(serviceId) && !overwrite) {
-      console.warn('Execution settings already exist and overwrite is set to False')
+      logger.warn('Execution settings already exist and overwrite is set to False')
+
       return
     }
     this.executionSettings.set(serviceId, settings)

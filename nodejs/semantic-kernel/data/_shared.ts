@@ -2,6 +2,9 @@
 // They should not be imported directly, as they are also exposed in both modules.
 
 import { KernelParameterMetadata } from '../functions/kernel-parameter-metadata'
+import { createDefaultLogger, Logger } from '../utils/logger'
+
+const logger: Logger = createDefaultLogger('SharedData')
 
 export type TSearchResult = any
 export type TSearchOptions = SearchOptions
@@ -180,7 +183,7 @@ export function createOptions<T extends SearchOptions>(
       Object.assign(additionalKwargs, options.toObject())
     } catch {
       // This is very unlikely to happen, but if it does, we will just create new options
-      console.warn('Options are not valid. Creating new options from just kwargs.')
+      logger.warn('Options are not valid. Creating new options from just kwargs.')
     }
     Object.assign(kw, additionalKwargs)
     return new optionsClass(kw)
