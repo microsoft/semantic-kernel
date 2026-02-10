@@ -16,7 +16,7 @@
     "@protobuf-ts/grpcweb-transport": "^2.9.6",
     "@protobuf-ts/runtime": "^2.9.6",
     "@protobuf-ts/runtime-rpc": "^2.9.6",
-    "axios": "^1.7.9",
+    "axios": "^1.13.5",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",
