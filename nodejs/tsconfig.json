@@ -13,7 +13,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["node", "jest"],
+    "types": ["node"],
     "sourceMap": true,
     "removeComments": false,
     "noUnusedLocals": true,

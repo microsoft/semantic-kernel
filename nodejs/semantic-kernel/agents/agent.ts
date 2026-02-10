@@ -2,6 +2,11 @@ import { randomUUID } from 'crypto'
 import { ChatMessageContent, CMCItemTypes } from '../contents/chat-message-content'
 import { StreamingChatMessageContent } from '../contents/streaming-chat-message-content'
 import { AuthorRole } from '../contents/utils/author-role'
+import {
+  AgentExecutionException,
+  AgentInitializationException,
+  AgentThreadOperationException,
+} from '../exceptions/agent-exceptions'
 import { KernelArguments } from '../functions/kernel-arguments'
 import { Kernel, KernelPlugin, PromptExecutionSettings, PromptTemplateConfig } from '../kernel'
 import { createDefaultLogger, Logger } from '../utils/logger'
@@ -92,7 +97,7 @@ export abstract class AgentThread {
   get id(): string | undefined {
     if (this._isDeleted) {
       logger.error("Thread has been deleted; call 'create()' to recreate it.")
-      throw new Error("Thread has been deleted; call 'create()' to recreate it.")
+      throw new AgentThreadOperationException("Thread has been deleted; call 'create()' to recreate it.")
     }
     return this._id
   }
@@ -104,7 +109,7 @@ export abstract class AgentThread {
     // A thread should not be recreated after it has been deleted.
     if (this._isDeleted) {
       logger.error('Cannot create thread because it has already been deleted.')
-      throw new Error('Cannot create thread because it has already been deleted.')
+      throw new AgentThreadOperationException('Cannot create thread because it has already been deleted.')
     }
 
     // If the thread ID is already set, we're done, just return the Id.
@@ -273,28 +278,6 @@ export interface PromptTemplateBase {
 }
 
 /**
- * Agent execution exception.
- */
-export class AgentExecutionException extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'AgentExecutionException'
-    logger.error(`AgentExecutionException: ${message}`)
-  }
-}
-
-/**
- * Agent initialization exception.
- */
-export class AgentInitializationException extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'AgentInitializationException'
-    logger.error(`AgentInitializationException: ${message}`)
-  }
-}
-
-/**
  * Callback type for handling intermediate messages.
  */
 export type IntermediateMessageCallback = (message: ChatMessageContent) => Promise<void>
@@ -454,7 +437,7 @@ export abstract class Agent {
     const channelType = (this.constructor as typeof Agent).channelType
     if (!channelType) {
       logger.error('Unable to get channel keys. Channel type not configured.')
-      throw new Error('Unable to get channel keys. Channel type not configured.')
+      throw new AgentInitializationException('Unable to get channel keys. Channel type not configured.')
     }
     yield channelType.name
   }
@@ -466,7 +449,7 @@ export abstract class Agent {
     const channelType = (this.constructor as typeof Agent).channelType
     if (!channelType) {
       logger.error('Unable to create channel. Channel type not configured.')
-      throw new Error('Unable to create channel. Channel type not configured.')
+      throw new AgentInitializationException('Unable to create channel. Channel type not configured.')
     }
     logger.debug(`Creating channel of type: ${channelType.name}`)
     return new channelType()
@@ -631,7 +614,7 @@ export abstract class Agent {
     lifespan?: any
   }): any {
     logger.error('MCP server conversion not yet implemented in TypeScript')
-    throw new Error(
+    throw new AgentInitializationException(
       'MCP server conversion not yet implemented in TypeScript. ' +
         'This requires the semantic-kernel.connectors.mcp module to be ported.'
     )
@@ -920,7 +903,7 @@ export abstract class DeclarativeSpecMixin extends Agent {
     [key: string]: any
   }): Promise<Agent> {
     logger.error('_fromDict must be implemented by subclasses')
-    throw new Error('_fromDict must be implemented by subclasses')
+    throw new AgentInitializationException('_fromDict must be implemented by subclasses')
   }
 
   /**
@@ -999,8 +982,8 @@ export abstract class DeclarativeSpecMixin extends Agent {
       arguments: arguments_,
     }
 
-    // Handle prompt_template if available
-    const templateData = data.prompt_template || data.template
+    // Handle prompt_template if available (supports both snake_case and camelCase)
+    const templateData = data.prompt_template || data.promptTemplate || data.template
     if (templateData) {
       if (typeof templateData === 'object') {
         logger.debug('Processing prompt template configuration')
