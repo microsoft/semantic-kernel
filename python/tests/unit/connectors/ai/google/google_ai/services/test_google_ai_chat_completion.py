@@ -87,7 +87,10 @@ def test_google_ai_chat_completion_init_with_vertexai_without_api_key(google_ai_
 
     assert google_ai_chat_completion.ai_model_id == google_ai_unit_test_env["GOOGLE_AI_GEMINI_MODEL_ID"]
     assert google_ai_chat_completion.service_settings.use_vertexai is True
-    assert google_ai_chat_completion.service_settings.cloud_project_id == google_ai_unit_test_env["GOOGLE_AI_CLOUD_PROJECT_ID"]
+    assert (
+        google_ai_chat_completion.service_settings.cloud_project_id
+        == google_ai_unit_test_env["GOOGLE_AI_CLOUD_PROJECT_ID"]
+    )
 
 
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
