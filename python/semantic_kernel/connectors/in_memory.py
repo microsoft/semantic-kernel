@@ -166,6 +166,63 @@ class InMemoryCollection(
         "items",
     }
 
+    # Blocklist of dangerous attribute names that cannot be accessed in filter expressions.
+    # These attributes can be used to escape the sandbox and execute arbitrary code.
+    blocked_filter_attributes: ClassVar[set[str]] = {
+        # Object introspection - can lead to class/module access
+        "__class__",
+        "__bases__",
+        "__mro__",
+        "__subclasses__",
+        # Code and function internals
+        "__code__",
+        "__globals__",
+        "__closure__",
+        "__func__",
+        "__self__",
+        "__dict__",
+        "__slots__",
+        # Attribute access hooks
+        "__getattr__",
+        "__getattribute__",
+        "__setattr__",
+        "__delattr__",
+        # Import and builtins
+        "__builtins__",
+        "__import__",
+        "__loader__",
+        "__spec__",
+        # Module attributes
+        "__name__",
+        "__qualname__",
+        "__module__",
+        "__file__",
+        "__path__",
+        "__package__",
+        # Descriptor protocol
+        "__get__",
+        "__set__",
+        "__delete__",
+        # Metaclass and creation
+        "__new__",
+        "__init__",
+        "__init_subclass__",
+        "__prepare__",
+        "__call__",
+        # Other dangerous attributes
+        "__reduce__",
+        "__reduce_ex__",
+        "__getstate__",
+        "__setstate__",
+        "func_globals",  # Python 2 compatibility name
+        "gi_frame",  # Generator frame access
+        "gi_code",
+        "f_globals",  # Frame globals
+        "f_locals",
+        "f_builtins",
+        "co_consts",  # Code object constants
+    }
+
     def __init__(
         self,
         record_type: type[TModel],
@@ -356,6 +413,13 @@ class InMemoryCollection(
             if node_type not in self.allowed_filter_ast_nodes:
                 raise VectorStoreOperationException(
                     f"AST node type '{node_type.__name__}' is not allowed in filter expressions."
+                )
+
+            # For Attribute nodes, validate that dangerous dunder attributes are not accessed
+            if isinstance(node, ast.Attribute) and node.attr in self.blocked_filter_attributes:
+                raise VectorStoreOperationException(
+                    f"Access to attribute '{node.attr}' is not allowed in filter expressions. "
+                    "This attribute could be used to escape the filter sandbox."
                 )
 
             # For Name nodes, only allow the lambda parameter
