@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Npgsql;
 using Xunit;
@@ -72,6 +73,35 @@ public class PostgresSqlBuilderTests
         }
 
         // Output
+        this._output.WriteLine(sql);
+    }
+
+    [Fact]
+    public void TestBuildCreateTableCommand_WithTimestampStoreType()
+    {
+        var recordDefinition = new VectorStoreCollectionDefinition()
+        {
+            Properties = [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("created_utc", typeof(DateTime)),
+                new VectorStoreDataProperty("created_local", typeof(DateTime)).WithStoreType("timestamp"),
+                new VectorStoreDataProperty("created_nullable", typeof(DateTime?)).WithStoreType("timestamp without time zone"),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]
+        };
+
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
+
+        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, pgVersion: new Version(18, 0));
+
+        Assert.Contains("\"created_utc\" TIMESTAMPTZ NOT NULL", sql);
+        Assert.Contains("\"created_local\" TIMESTAMP NOT NULL", sql);
+        Assert.Contains("\"created_nullable\" TIMESTAMP", sql);
+        // Make sure it's TIMESTAMP (not TIMESTAMPTZ) for the nullable one
+        var idx = sql.IndexOf("\"created_nullable\"", StringComparison.Ordinal);
+        var fragment = sql.Substring(idx, sql.IndexOf('\n', idx) - idx);
+        Assert.DoesNotContain("TIMESTAMPTZ", fragment);
+
         this._output.WriteLine(sql);
     }
 
@@ -373,7 +403,8 @@ public class PostgresSqlBuilderTests
 
         // Act
         using var command = new NpgsqlCommand();
-        PostgresSqlBuilder.BuildDeleteBatchCommand(command, "public", "testcollection", "id", keys);
+        var keyProperty = new KeyPropertyModel("id", typeof(long));
+        PostgresSqlBuilder.BuildDeleteBatchCommand(command, "public", "testcollection", keyProperty, keys);
 
         // Assert
         Assert.Contains("DELETE", command.CommandText);
