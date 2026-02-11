@@ -13,7 +13,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "@jest/globals"],
     "sourceMap": true,
     "removeComments": false,
     "noUnusedLocals": true,
@@ -27,6 +27,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["semantic-kernel/**/*", "index.ts"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "tests", "samples"]
+  "include": ["semantic-kernel/**/*", "index.ts", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "samples"]
 }

@@ -208,6 +208,19 @@ export abstract class GroupChatManager {
 export class RoundRobinGroupChatManager extends GroupChatManager {
   currentIndex: number = 0
 
+  constructor(options?: {
+    maxRounds?: number
+    humanResponseFunction?: (chatHistory: ChatHistory) => ChatMessageContent | Promise<ChatMessageContent>
+  }) {
+    super()
+    if (options?.maxRounds !== undefined) {
+      this.maxRounds = options.maxRounds
+    }
+    if (options?.humanResponseFunction !== undefined) {
+      this.humanResponseFunction = options.humanResponseFunction
+    }
+  }
+
   async shouldRequestUserInput(_chatHistory: ChatHistory): Promise<BooleanResult> {
     return new BooleanResult(false, 'The default round-robin group chat manager does not request user input.')
   }
@@ -216,7 +229,11 @@ export class RoundRobinGroupChatManager extends GroupChatManager {
     _chatHistory: ChatHistory,
     participantDescriptions: Map<string, string>
   ): Promise<StringResult> {
-    const keys = Array.from(participantDescriptions.keys())
+    // Handle both Map and plain object
+    const keys =
+      participantDescriptions instanceof Map
+        ? Array.from(participantDescriptions.keys())
+        : Object.keys(participantDescriptions)
     const nextAgent = keys[this.currentIndex]
     this.currentIndex = (this.currentIndex + 1) % keys.length
     return new StringResult(nextAgent, 'Round-robin selection.')

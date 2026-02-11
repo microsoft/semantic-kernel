@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc && fix-esm-import-path dist",
+    "build": "tsc -p tsconfig.build.json && fix-esm-import-path dist",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "test": "jest",

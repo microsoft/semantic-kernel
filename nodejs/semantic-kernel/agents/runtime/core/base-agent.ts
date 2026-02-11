@@ -17,18 +17,30 @@ const logger: Logger = createDefaultLogger('BaseAgent')
 export interface CoreRuntime {
   sendMessage(
     message: any,
-    sender: AgentId,
     recipient: AgentId,
-    cancellationToken: CancellationToken,
-    messageId?: string
+    options?: {
+      sender?: AgentId
+      cancellationToken?: CancellationToken
+      messageId?: string
+    }
   ): Promise<any>
 
-  publishMessage(message: any, topicId: TopicId, sender: AgentId, cancellationToken?: CancellationToken): Promise<void>
+  publishMessage(
+    message: any,
+    topicId: TopicId,
+    options?: {
+      sender?: AgentId
+      cancellationToken?: CancellationToken
+      messageId?: string
+    }
+  ): Promise<void>
 
-  registerFactory(
-    type: AgentType,
-    agentFactory: () => Agent | Promise<Agent>,
-    expectedClass: typeof BaseAgent
+  registerFactory<T extends Agent>(
+    type: AgentType | string,
+    agentFactory: () => T | Promise<T>,
+    options?: {
+      expectedClass?: new (...args: any[]) => T
+    }
   ): Promise<AgentType>
 
   addSubscription(subscription: Subscription): Promise<void>
@@ -95,14 +107,22 @@ class AgentInstantiationContext {
 
   static currentRuntime(): CoreRuntime {
     if (this.runtimeStack.length === 0) {
-      throw new Error('No runtime in context')
+      throw new Error(
+        'AgentInstantiationContext.currentRuntime() must be called within an instantiation context such as when the ' +
+          'AgentRuntime is instantiating an agent. Most likely this was caused by directly instantiating an ' +
+          'agent instead of using the AgentRuntime to do so.'
+      )
     }
     return this.runtimeStack[this.runtimeStack.length - 1]
   }
 
   static currentAgentId(): AgentId {
     if (this.agentIdStack.length === 0) {
-      throw new Error('No agent ID in context')
+      throw new Error(
+        'AgentInstantiationContext.currentAgentId() must be called within an instantiation context such as when the ' +
+          'AgentRuntime is instantiating an agent. Most likely this was caused by directly instantiating an ' +
+          'agent instead of using the AgentRuntime to do so.'
+      )
     }
     return this.agentIdStack[this.agentIdStack.length - 1]
   }
@@ -115,6 +135,25 @@ class AgentInstantiationContext {
   static popContext(): void {
     this.runtimeStack.pop()
     this.agentIdStack.pop()
+  }
+
+  /**
+   * Populate the context with runtime and agent ID, execute a function, then clean up.
+   * This is the recommended way to use AgentInstantiationContext.
+   */
+  static populateContext<T>(runtime: CoreRuntime, agentId: AgentId, fn: () => T | Promise<T>): T | Promise<T> {
+    this.pushContext(runtime, agentId)
+    try {
+      const result = fn()
+      if (result instanceof Promise) {
+        return result.finally(() => this.popContext())
+      }
+      this.popContext()
+      return result
+    } catch (error) {
+      this.popContext()
+      throw error
+    }
   }
 }
 
@@ -287,7 +326,11 @@ export abstract class BaseAgent implements Agent {
   ): Promise<any> {
     const cancellationToken = options?.cancellationToken ?? new CancellationToken()
 
-    return await this._runtime.sendMessage(message, this.id, recipient, cancellationToken, options?.messageId)
+    return await this._runtime.sendMessage(message, recipient, {
+      sender: this.id,
+      cancellationToken,
+      messageId: options?.messageId,
+    })
   }
 
   /**
@@ -300,7 +343,10 @@ export abstract class BaseAgent implements Agent {
       cancellationToken?: CancellationToken
     }
   ): Promise<void> {
-    await this._runtime.publishMessage(message, topicId, this.id, options?.cancellationToken)
+    await this._runtime.publishMessage(message, topicId, {
+      sender: this.id,
+      cancellationToken: options?.cancellationToken,
+    })
   }
 
   /**
@@ -339,7 +385,9 @@ export abstract class BaseAgent implements Agent {
     }
   ): Promise<AgentType> {
     const agentType = new CoreAgentType(type)
-    const registeredType = await runtime.registerFactory(agentType, factory, this as any as typeof BaseAgent)
+    const registeredType = await runtime.registerFactory(agentType, factory, {
+      expectedClass: this as any,
+    })
 
     if (!options?.skipClassSubscriptions) {
       const subscriptions: Subscription[] = []
