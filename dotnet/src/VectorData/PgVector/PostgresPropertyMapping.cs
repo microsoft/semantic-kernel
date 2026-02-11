@@ -38,8 +38,11 @@ internal static class PostgresPropertyMapping
             var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
         };
 
-    public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
-        (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
+    /// <summary>
+    /// Gets the NpgsqlDbType for a property, taking into account any store type annotation.
+    /// </summary>
+    internal static NpgsqlDbType? GetNpgsqlDbType(PropertyModel property)
+        => (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
         {
             Type t when t == typeof(bool) => NpgsqlDbType.Boolean,
             Type t when t == typeof(short) => NpgsqlDbType.Smallint,
@@ -50,19 +53,21 @@ internal static class PostgresPropertyMapping
             Type t when t == typeof(decimal) => NpgsqlDbType.Numeric,
             Type t when t == typeof(string) => NpgsqlDbType.Text,
             Type t when t == typeof(byte[]) => NpgsqlDbType.Bytea,
-            Type t when t == typeof(DateTime) => NpgsqlDbType.Timestamp,
-            Type t when t == typeof(DateTimeOffset) => NpgsqlDbType.TimestampTz,
             Type t when t == typeof(Guid) => NpgsqlDbType.Uuid,
+            Type t when t == typeof(DateTimeOffset) => NpgsqlDbType.TimestampTz,
+
+            // DateTime properties map to PG's "timestamp with time zone" (UTC timestamps) by default, aligning with Npgsql/EF/etc.
+            // Users can explicitly opt into "timestamp without time zone".
+            Type t when t == typeof(DateTime) && property.IsTimestampWithoutTimezone() => NpgsqlDbType.Timestamp,
+            Type t when t == typeof(DateTime) => NpgsqlDbType.TimestampTz,
 
             _ => null
         };
 
     /// <summary>
-    /// Maps a .NET type to a PostgreSQL type name.
+    /// Maps a .NET type to a PostgreSQL type name, taking into account any store type annotation on the property.
     /// </summary>
-    /// <param name="propertyType">The .NET type.</param>
-    /// <returns>Tuple of the the PostgreSQL type name and whether it can be NULL</returns>
-    public static (string PgType, bool IsNullable) GetPostgresTypeName(Type propertyType)
+    internal static (string PgType, bool IsNullable) GetPostgresTypeName(PropertyModel property)
     {
         static bool TryGetBaseType(Type type, [NotNullWhen(true)] out string? typeName)
         {
@@ -77,7 +82,7 @@ internal static class PostgresPropertyMapping
                 Type t when t == typeof(decimal) => "NUMERIC",
                 Type t when t == typeof(string) => "TEXT",
                 Type t when t == typeof(byte[]) => "BYTEA",
-                Type t when t == typeof(DateTime) => "TIMESTAMP",
+                Type t when t == typeof(DateTime) => "TIMESTAMPTZ",
                 Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
                 Type t when t == typeof(Guid) => "UUID",
                 _ => null
@@ -86,30 +91,43 @@ internal static class PostgresPropertyMapping
             return typeName is not null;
         }
 
+        var propertyType = property.Type;
+
         // TODO: Handle NRTs properly via NullabilityInfoContext
+
+        (string PgType, bool IsNullable) result;
 
         if (TryGetBaseType(propertyType, out string? pgType))
         {
-            return (pgType, !propertyType.IsValueType);
+            result = (pgType, !propertyType.IsValueType);
         }
-
         // Handle nullable types (e.g. Nullable<int>)
-        if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
+        else if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
             && TryGetBaseType(unwrappedType, out string? underlyingPgType))
         {
-            return (underlyingPgType, true);
+            result = (underlyingPgType, true);
         }
-
         // Handle collections
-        if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
+        else if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
             || (propertyType.IsGenericType
                 && propertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
         {
-            return (elementPgType + "[]", true);
+            result = (elementPgType + "[]", true);
+        }
+        else
+        {
+            throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
         }
 
-        throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
+        if (property.IsTimestampWithoutTimezone())
+        {
+            // Replace TIMESTAMPTZ with TIMESTAMP in the PG type name.
+            // This handles both "TIMESTAMPTZ" and "TIMESTAMPTZ[]" cases.
+            result = ("TIMESTAMP", result.IsNullable);
+        }
+
+        return result;
     }
 
     /// <summary>

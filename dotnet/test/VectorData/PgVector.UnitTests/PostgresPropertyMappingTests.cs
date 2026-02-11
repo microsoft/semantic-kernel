@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.PgVector;
+using NpgsqlTypes;
 using Pgvector;
 using Xunit;
 
@@ -50,14 +51,15 @@ public sealed class PostgresPropertyMappingTests
             (typeof(List<double>), "DOUBLE PRECISION[]"),
             (typeof(List<string>), "TEXT[]"),
             (typeof(List<bool>), "BOOLEAN[]"),
-            (typeof(List<DateTime>), "TIMESTAMP[]"),
+            (typeof(List<DateTime>), "TIMESTAMPTZ[]"),
             (typeof(List<Guid>), "UUID[]"),
         };
 
         // Act & Assert
         foreach (var (type, expectedValue) in typesAndExpectedValues)
         {
-            var (pgType, _) = PostgresPropertyMapping.GetPostgresTypeName(type);
+            var property = new DataPropertyModel("test", type);
+            var (pgType, _) = PostgresPropertyMapping.GetPostgresTypeName(property);
             Assert.Equal(expectedValue, pgType);
         }
     }
@@ -81,7 +83,8 @@ public sealed class PostgresPropertyMappingTests
         // Act & Assert
         foreach (var (type, expectedValue) in typesAndExpectedValues)
         {
-            var (_, isNullable) = PostgresPropertyMapping.GetPostgresTypeName(type);
+            var property = new DataPropertyModel("test", type);
+            var (_, isNullable) = PostgresPropertyMapping.GetPostgresTypeName(property);
             Assert.Equal(expectedValue, isNullable);
         }
     }
@@ -141,5 +144,54 @@ public sealed class PostgresPropertyMappingTests
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PostgresPropertyMapping.GetIndexInfo([vectorProperty]));
+    }
+
+    [Fact]
+    public void GetPostgresTypeName_DateTime_WithTimestampAnnotation_ReturnsTimestamp()
+    {
+        var dataProperty = new DataPropertyModel("created", typeof(DateTime));
+        dataProperty.ProviderAnnotations = new() { ["Postgres:StoreType"] = "timestamp" };
+
+        var (pgType, _) = PostgresPropertyMapping.GetPostgresTypeName(dataProperty);
+        Assert.Equal("TIMESTAMP", pgType);
+    }
+
+    [Fact]
+    public void GetPostgresTypeName_DateTime_WithoutAnnotation_ReturnsTimestampTz()
+    {
+        var dataProperty = new DataPropertyModel("created", typeof(DateTime));
+
+        var (pgType, _) = PostgresPropertyMapping.GetPostgresTypeName(dataProperty);
+        Assert.Equal("TIMESTAMPTZ", pgType);
+    }
+
+    [Fact]
+    public void GetPostgresTypeName_NullableDateTime_WithTimestampAnnotation_ReturnsTimestamp()
+    {
+        var dataProperty = new DataPropertyModel("created", typeof(DateTime?));
+        dataProperty.ProviderAnnotations = new() { ["Postgres:StoreType"] = "timestamp" };
+
+        var (pgType, isNullable) = PostgresPropertyMapping.GetPostgresTypeName(dataProperty);
+        Assert.Equal("TIMESTAMP", pgType);
+        Assert.True(isNullable);
+    }
+
+    [Fact]
+    public void GetNpgsqlDbType_DateTime_WithTimestampAnnotation_ReturnsTimestamp()
+    {
+        var dataProperty = new DataPropertyModel("created", typeof(DateTime));
+        dataProperty.ProviderAnnotations = new() { ["Postgres:StoreType"] = "timestamp" };
+
+        var dbType = PostgresPropertyMapping.GetNpgsqlDbType(dataProperty);
+        Assert.Equal(NpgsqlDbType.Timestamp, dbType);
+    }
+
+    [Fact]
+    public void GetNpgsqlDbType_DateTime_WithoutAnnotation_ReturnsTimestampTz()
+    {
+        var dataProperty = new DataPropertyModel("created", typeof(DateTime));
+
+        var dbType = PostgresPropertyMapping.GetNpgsqlDbType(dataProperty);
+        Assert.Equal(NpgsqlDbType.TimestampTz, dbType);
     }
 }
