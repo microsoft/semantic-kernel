@@ -138,7 +138,8 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         {
             Top = genericOptions.Top,
             Skip = genericOptions.Skip,
-            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToBingFilter(genericOptions.Filter) : null
+            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToBingFilter(genericOptions.Filter) : null,
+            IncludeTotalCount = genericOptions.IncludeTotalCount
         };
     }
 
