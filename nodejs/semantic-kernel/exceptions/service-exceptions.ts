@@ -48,3 +48,13 @@ export class ServiceInitializationError extends ServiceException {
     this.name = 'ServiceInitializationError'
   }
 }
+
+/**
+ * Raised when execution settings are invalid.
+ */
+export class ServiceInvalidExecutionSettingsError extends ServiceException {
+  constructor(message?: string) {
+    super(message)
+    this.name = 'ServiceInvalidExecutionSettingsError'
+  }
+}

@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { ChatHistory } from '../../../../../contents/chat-history'
 import { ChatMessageContent } from '../../../../../contents/chat-message-content'
 import { FunctionCallContent } from '../../../../../contents/function-call-content'
@@ -6,7 +7,10 @@ import { StreamingTextContent } from '../../../../../contents/streaming-text-con
 import { TextContent } from '../../../../../contents/text-content'
 import { AuthorRole } from '../../../../../contents/utils/author-role'
 import { FinishReason } from '../../../../../contents/utils/finish-reason'
-import { ServiceInitializationError } from '../../../../../exceptions/service-exceptions'
+import {
+  ServiceInitializationError,
+  ServiceInvalidExecutionSettingsError,
+} from '../../../../../exceptions/service-exceptions'
 import { PromptExecutionSettings } from '../../../../../services/ai-service-client-base'
 import { ChatCompletionClientBase } from '../../../chat-completion-client-base'
 import { CompletionUsage } from '../../../completion-usage'
@@ -190,6 +194,10 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
     } else {
       executionSettings = settings
     }
+    // Type assertion for safety (matches Python implementation)
+    if (!(executionSettings instanceof GoogleAIChatPromptExecutionSettings)) {
+      throw new ServiceInitializationError('Failed to convert settings to GoogleAIChatPromptExecutionSettings')
+    }
 
     if (!this.serviceSettings.geminiModelId) {
       throw new ServiceInitializationError('The Google AI Gemini model ID is required.')
@@ -253,6 +261,10 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
       executionSettings = this.getPromptExecutionSettingsFromSettings(settings)
     } else {
       executionSettings = settings
+    }
+    // Type assertion for safety (matches Python implementation)
+    if (!(executionSettings instanceof GoogleAIChatPromptExecutionSettings)) {
+      throw new ServiceInitializationError('Failed to convert settings to GoogleAIChatPromptExecutionSettings')
     }
 
     if (!this.serviceSettings.geminiModelId) {
@@ -319,10 +331,10 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
    */
   protected _verifyFunctionChoiceSettings(settings: PromptExecutionSettings): void {
     if (!(settings instanceof GoogleAIChatPromptExecutionSettings)) {
-      throw new ServiceInitializationError('The settings must be a GoogleAIChatPromptExecutionSettings.')
+      throw new ServiceInvalidExecutionSettingsError('The settings must be a GoogleAIChatPromptExecutionSettings.')
     }
     if (settings.candidateCount !== null && settings.candidateCount !== undefined && settings.candidateCount > 1) {
-      throw new ServiceInitializationError(
+      throw new ServiceInvalidExecutionSettingsError(
         'Auto-invocation of tool calls may only be used with a GoogleAIChatPromptExecutionSettings.candidateCount of 1.'
       )
     }
@@ -436,7 +448,7 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
             new FunctionCallContent({
               id: `${part.functionCall.name}_${idx}`,
               name: formatGeminiFunctionNameToKernelFunctionFullyQualifiedName(part.functionCall.name),
-              arguments: part.functionCall.args,
+              arguments: { ...part.functionCall.args },
             })
           )
         }
@@ -493,7 +505,7 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
             new FunctionCallContent({
               id: `${part.functionCall.name}_${idx}`,
               name: formatGeminiFunctionNameToKernelFunctionFullyQualifiedName(part.functionCall.name),
-              arguments: part.functionCall.args,
+              arguments: { ...part.functionCall.args },
             })
           )
         }
@@ -523,8 +535,10 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
     return {
       prompt_feedback: response.prompt_feedback,
       usage: new CompletionUsage({
-        promptTokens: response.usage_metadata?.prompt_token_count ?? undefined,
-        completionTokens: response.usage_metadata?.candidates_token_count ?? undefined,
+        promptTokens: response.usage_metadata ? (response.usage_metadata.prompt_token_count ?? undefined) : undefined,
+        completionTokens: response.usage_metadata
+          ? (response.usage_metadata.candidates_token_count ?? undefined)
+          : undefined,
       }),
     }
   }
@@ -549,24 +563,108 @@ export class GoogleAIChatCompletion extends ChatCompletionClientBase {
    * Helper method to create a Vertex AI client.
    * Implements the client creation pattern from GoogleAIBase.
    *
+   * Creates a client using Vertex AI with the configured project ID and region.
+   * Equivalent to Python's: Client(vertexai=True, project=..., location=...)
+   *
    * @private
    */
   private createVertexAIClient(): GoogleClient {
-    // Implementation would depend on the actual Google AI SDK
-    // This is a placeholder matching the Python pattern
-    throw new Error('createVertexAIClient must be implemented based on your SDK')
+    // This would use the Google GenAI SDK's Client class:
+    // const { Client } = require('@google/generative-ai') or similar
+    // return new Client({
+    //   vertexai: true,
+    //   project: this.serviceSettings.cloudProjectId,
+    //   location: this.serviceSettings.cloudRegion,
+    // })
+    throw new Error(
+      'Vertex AI client creation requires the Google GenAI SDK. ' +
+        'Install the package and implement client creation using: ' +
+        'new Client({ vertexai: true, project: cloudProjectId, location: cloudRegion })'
+    )
   }
 
   /**
    * Helper method to create an API key-based client.
    * Implements the client creation pattern from GoogleAIBase.
    *
+   * Creates a client using an API key for authentication.
+   * Equivalent to Python's: Client(api_key=api_key)
+   *
    * @private
    */
   private createAPIClient(): GoogleClient {
-    // Implementation would depend on the actual Google AI SDK
-    // This is a placeholder matching the Python pattern
-    throw new Error('createAPIClient must be implemented based on your SDK')
+    if (!this.serviceSettings.apiKey) {
+      throw new ServiceInitializationError('API key is required to create a client.')
+    }
+
+    const genAI = new GoogleGenerativeAI(this.serviceSettings.apiKey)
+    const model = genAI.getGenerativeModel({ model: this.serviceSettings.geminiModelId! })
+
+    // Wrap the Google Generative AI client to match our GoogleClient interface
+    return {
+      aio: {
+        models: {
+          generate_content: async (params: {
+            model: string
+            contents: Content[]
+            config: GenerateContentConfig
+          }): Promise<GenerateContentResponse> => {
+            const result = await model.generateContent({
+              contents: params.contents,
+              systemInstruction: params.config.system_instruction,
+              generationConfig: params.config,
+            } as any)
+            const response = result.response
+            return {
+              candidates:
+                response.candidates?.map((candidate) => ({
+                  index: candidate.index,
+                  content: candidate.content,
+                  finish_reason: candidate.finishReason,
+                  safety_ratings: candidate.safetyRatings,
+                })) || [],
+              prompt_feedback: response.promptFeedback,
+              usage_metadata: {
+                prompt_token_count: response.usageMetadata?.promptTokenCount,
+                candidates_token_count: response.usageMetadata?.candidatesTokenCount,
+              },
+            }
+          },
+          generate_content_stream: async (params: {
+            model: string
+            contents: Content[]
+            config: GenerateContentConfig
+          }): Promise<AsyncIterable<GenerateContentResponse>> => {
+            const result = await model.generateContentStream({
+              contents: params.contents,
+              systemInstruction: params.config.system_instruction,
+              generationConfig: params.config,
+            } as any)
+
+            async function* streamWrapper(): AsyncGenerator<GenerateContentResponse, void> {
+              for await (const chunk of result.stream) {
+                yield {
+                  candidates:
+                    chunk.candidates?.map((candidate) => ({
+                      index: candidate.index,
+                      content: candidate.content,
+                      finish_reason: candidate.finishReason,
+                      safety_ratings: candidate.safetyRatings,
+                    })) || [],
+                  prompt_feedback: chunk.promptFeedback,
+                  usage_metadata: {
+                    prompt_token_count: chunk.usageMetadata?.promptTokenCount,
+                    candidates_token_count: chunk.usageMetadata?.candidatesTokenCount,
+                  },
+                }
+              }
+            }
+
+            return streamWrapper()
+          },
+        },
+      },
+    }
   }
 
   /**

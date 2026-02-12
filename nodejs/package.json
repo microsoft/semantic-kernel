@@ -59,6 +59,7 @@
   },
   "homepage": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@modelcontextprotocol/sdk": "1.26.0",
     "@opentelemetry/api": "^1.9.0",
     "@types/pg-format": "1.0.5",

@@ -79,13 +79,25 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
     // const { mergeFunctionResults } = await import('./function-calling-utils');
     const mergeFunctionResults = (messages: any[]) => messages
 
+    // Preserve functionChoiceBehavior before deep copy (it's a class instance that won't survive JSON serialization)
+    const originalFunctionChoiceBehavior = (settings as any).functionChoiceBehavior
+
     // Create a copy of the settings to avoid modifying the original settings
     settings = this._deepCopy(settings)
+
+    // Restore functionChoiceBehavior after deep copy
+    if (originalFunctionChoiceBehavior !== undefined) {
+      ;(settings as any).functionChoiceBehavior = originalFunctionChoiceBehavior
+    }
 
     // Cast to the proper settings class if needed
     const SettingsClass = this.getPromptExecutionSettingsClass()
     if (!(settings instanceof SettingsClass)) {
       settings = this.getPromptExecutionSettingsFromSettings(settings)
+      // Restore functionChoiceBehavior after class conversion as well
+      if (originalFunctionChoiceBehavior !== undefined) {
+        ;(settings as any).functionChoiceBehavior = originalFunctionChoiceBehavior
+      }
     }
 
     const supportsFC = (this.constructor as typeof ChatCompletionClientBase).SUPPORTS_FUNCTION_CALLING
@@ -105,11 +117,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
 
     if (functionChoiceBehavior && kernel) {
       // Configure the function choice behavior into the settings object
-      functionChoiceBehavior.configure({
-        kernel,
-        updateSettingsCallback: this._updateFunctionChoiceSettingsCallback(),
-        settings,
-      })
+      functionChoiceBehavior.configure(kernel, this._updateFunctionChoiceSettingsCallback(), settings)
     }
 
     if (!functionChoiceBehavior || !functionChoiceBehavior.autoInvokeKernelFunctions) {
@@ -203,13 +211,25 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
     // const { mergeStreamingFunctionResults } = await import('./function-calling-utils');
     const mergeStreamingFunctionResults = (messages: any[], _aiModelId?: string, _attempt?: number) => messages
 
+    // Preserve functionChoiceBehavior before deep copy (it's a class instance that won't survive JSON serialization)
+    const originalFunctionChoiceBehavior = (settings as any).functionChoiceBehavior
+
     // Create a copy of the settings to avoid modifying the original settings
     settings = this._deepCopy(settings)
+
+    // Restore functionChoiceBehavior after deep copy
+    if (originalFunctionChoiceBehavior !== undefined) {
+      ;(settings as any).functionChoiceBehavior = originalFunctionChoiceBehavior
+    }
 
     // Cast to the proper settings class if needed
     const SettingsClass = this.getPromptExecutionSettingsClass()
     if (!(settings instanceof SettingsClass)) {
       settings = this.getPromptExecutionSettingsFromSettings(settings)
+      // Restore functionChoiceBehavior after class conversion as well
+      if (originalFunctionChoiceBehavior !== undefined) {
+        ;(settings as any).functionChoiceBehavior = originalFunctionChoiceBehavior
+      }
     }
 
     const supportsFC = (this.constructor as typeof ChatCompletionClientBase).SUPPORTS_FUNCTION_CALLING
@@ -230,11 +250,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
 
     if (functionChoiceBehavior && kernel) {
       // Configure the function choice behavior
-      functionChoiceBehavior.configure({
-        kernel,
-        updateSettingsCallback: this._updateFunctionChoiceSettingsCallback(),
-        settings,
-      })
+      functionChoiceBehavior.configure(kernel, this._updateFunctionChoiceSettingsCallback(), settings)
     }
 
     if (!functionChoiceBehavior || !functionChoiceBehavior.autoInvokeKernelFunctions) {

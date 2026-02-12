@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'events'
+import { ChatMessageContent } from './contents/chat-message-content'
 import { KernelArguments as KernelArgumentsClass } from './functions/kernel-arguments'
 import { KernelFunctionFromPrompt } from './functions/kernel-function-from-prompt'
 import { PromptTemplateConfig as PromptTemplateConfigClass } from './prompt-template/prompt-template-config'
@@ -639,11 +640,13 @@ export class Kernel extends EventEmitter {
         this._logger.info(
           `Received invalid arguments for function ${functionCall.name}: ${error}. Trying tool call again.`
         )
-        chatHistory.addMessage({
-          role: 'tool',
-          content: 'The tool call arguments are malformed. Arguments must be in JSON format. Please try again.',
-          metadata: { functionCall },
-        })
+        chatHistory.addMessage(
+          new ChatMessageContent({
+            role: 'tool' as any,
+            content: 'The tool call arguments are malformed. Arguments must be in JSON format. Please try again.',
+            metadata: { functionCall },
+          })
+        )
         return null
       }
 
@@ -666,11 +669,13 @@ export class Kernel extends EventEmitter {
         const msg = msgParts.join(' ') + ' Please revise the arguments to match the function signature.'
 
         this._logger.info(msg)
-        chatHistory.addMessage({
-          role: 'tool',
-          content: msg,
-          metadata: { functionCall },
-        })
+        chatHistory.addMessage(
+          new ChatMessageContent({
+            role: 'tool' as any,
+            content: msg,
+            metadata: { functionCall },
+          })
+        )
         return null
       }
 
@@ -686,11 +691,13 @@ export class Kernel extends EventEmitter {
             .join(', ')}]. ` +
           'Please provide the required arguments and try again.'
         this._logger.info(msg)
-        chatHistory.addMessage({
-          role: 'tool',
-          content: msg,
-          metadata: { functionCall },
-        })
+        chatHistory.addMessage(
+          new ChatMessageContent({
+            role: 'tool' as any,
+            content: msg,
+            metadata: { functionCall },
+          })
+        )
         return null
       }
 
@@ -732,27 +739,30 @@ export class Kernel extends EventEmitter {
       const isActuallyStreaming = chatHistory.messages.some((msg) => msg.metadata?.streaming === true)
 
       // Add result to chat history
-      const message: ChatMessage = {
-        role: 'tool',
-        content: JSON.stringify(invocationContext.functionResult?.value),
-        metadata: {
-          functionCall,
-          functionResult: invocationContext.functionResult,
-          streaming: isActuallyStreaming,
-        },
-      }
-      chatHistory.addMessage(message)
+      chatHistory.addMessage(
+        new ChatMessageContent({
+          role: 'tool' as any,
+          content: JSON.stringify(invocationContext.functionResult?.value),
+          metadata: {
+            functionCall,
+            functionResult: invocationContext.functionResult,
+            streaming: isActuallyStreaming,
+          },
+        })
+      )
 
       return invocationContext.terminate ? null : invocationContext
     } catch (error) {
       this._logger.error(`The function '${functionCall.name}' is not part of the provided functions: ${error}`)
-      chatHistory.addMessage({
-        role: 'tool',
-        content:
-          `The tool call with name '${functionCall.name}' is not part of the provided tools, ` +
-          'please try again with a supplied tool call name and make sure to validate the name.',
-        metadata: { functionCall, error },
-      })
+      chatHistory.addMessage(
+        new ChatMessageContent({
+          role: 'tool' as any,
+          content:
+            `The tool call with name '${functionCall.name}' is not part of the provided tools, ` +
+            'please try again with a supplied tool call name and make sure to validate the name.',
+          metadata: { functionCall, error },
+        })
+      )
       return null
     }
   }
