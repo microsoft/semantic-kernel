@@ -863,21 +863,7 @@ if (!string.IsNullOrEmpty(generatedCode.ToString()))
 #### Provider-Specific Options Configuration
 
 <configuration_changes>
-For reasoning model settings, use the `ChatOptions.Reasoning` property:
-
-```csharp
-var agentOptions = new ChatClientAgentRunOptions(new ChatOptions
-{
-    MaxOutputTokens = 8000,
-    Reasoning = new()
-    {
-        Effort = ReasoningEffort.High,
-        Output = ReasoningOutput.Full
-    }
-});
-```
-
-For other advanced model settings not available in `ChatOptions`, use the `RawRepresentationFactory` property:
+For advanced model settings not available in `ChatOptions`, use the `RawRepresentationFactory` property:
 
 ```csharp
 var agentOptions = new ChatClientAgentRunOptions(new ChatOptions
@@ -886,18 +872,14 @@ var agentOptions = new ChatClientAgentRunOptions(new ChatOptions
     // Breaking glass to access provider-specific options
     RawRepresentationFactory = (_) => new OpenAI.Responses.CreateResponseOptions()
     {
-        // Provider-specific settings here
+        TruncationMode = OpenAI.Responses.ResponseTruncationMode.Auto,
     }
 });
 ```
 
-**Use the Reasoning property when:**
-1. Configuring reasoning effort level (Low, Medium, High)
-2. Configuring reasoning output format (None, Summary, Full)
-
-**Use RawRepresentationFactory when:**
+**Use this pattern when:**
 1. Standard `ChatOptions` properties don't cover required model settings
-2. Provider-specific configuration is needed beyond reasoning
+2. Provider-specific configuration is needed (e.g., truncation mode)
 3. Advanced SDK features need to be accessed
 </configuration_changes>
 
