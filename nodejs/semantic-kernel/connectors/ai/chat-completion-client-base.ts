@@ -470,11 +470,7 @@ export abstract class ChatCompletionClientBase extends AIServiceClientBase {
     if (obj === null || obj === undefined) {
       return obj
     }
-    const stringified = JSON.stringify(obj)
-    if (stringified === undefined) {
-      return obj
-    }
-    return JSON.parse(stringified)
+    return Object.assign({}, obj)
   }
 
   // #endregion

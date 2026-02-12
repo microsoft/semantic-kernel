@@ -580,13 +580,7 @@ export abstract class OpenAIChatCompletionBase extends ChatCompletionClientBase 
     contentKey: string = 'content'
   ): any[] {
     // Handle case where chatHistory might be wrapped in an object with chatHistory and settings keys
-    let actualChatHistory = chatHistory
-    if ('chatHistory' in (chatHistory as any) && 'settings' in (chatHistory as any)) {
-      logger.debug('ChatHistory parameter appears wrapped, extracting actual ChatHistory')
-      actualChatHistory = (chatHistory as any).chatHistory as ChatHistory
-    }
-
-    return actualChatHistory.messages
+    return chatHistory.messages
       .filter((message) => !(message instanceof AnnotationContent) && !(message instanceof FileReferenceContent))
       .map((message) => {
         const dict = message.toDict(roleKey, contentKey)

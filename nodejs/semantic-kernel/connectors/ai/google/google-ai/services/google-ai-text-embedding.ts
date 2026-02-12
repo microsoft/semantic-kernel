@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { ServiceInitializationError } from '../../../../../exceptions/service-exceptions'
 import { EmbeddingGeneratorBase } from '../../../embedding-generator-base'
 import { PromptExecutionSettings } from '../../../prompt-execution-settings'
@@ -219,13 +220,50 @@ export class GoogleAITextEmbedding extends EmbeddingGeneratorBase {
   /**
    * Helper method to create an API key-based client.
    * Implements the client creation pattern from GoogleAIBase.
+   * Creates a client using the GoogleGenerativeAI SDK with API key authentication.
    *
    * @private
    */
   private createAPIClient(): GoogleClient {
-    // Implementation would depend on the actual Google AI SDK
-    // This is a placeholder matching the Python pattern
-    throw new Error('createAPIClient must be implemented based on your SDK')
+    if (!this.serviceSettings.apiKey) {
+      throw new ServiceInitializationError('API key is required to create a client.')
+    }
+
+    if (!this.serviceSettings.embeddingModelId) {
+      throw new ServiceInitializationError('Embedding model ID is required to create a client.')
+    }
+
+    const genAI = new GoogleGenerativeAI(this.serviceSettings.apiKey)
+    const model = genAI.getGenerativeModel({ model: this.serviceSettings.embeddingModelId })
+
+    // Wrap the Google Generative AI client to match our GoogleClient interface
+    return {
+      aio: {
+        models: {
+          embed_content: async (params: {
+            model: string
+            contents: string[]
+            config: EmbedContentConfig
+          }): Promise<EmbedContentResponse> => {
+            // Use batchEmbedContents to embed multiple texts at once
+            const requests = params.contents.map((text) => ({
+              content: { role: 'user', parts: [{ text }] },
+            }))
+
+            const result = await model.batchEmbedContents({
+              requests,
+            })
+
+            // Transform the response to match our expected format
+            return {
+              embeddings: result.embeddings.map((embedding) => ({
+                values: embedding.values,
+              })),
+            }
+          },
+        },
+      },
+    }
   }
 
   /**
@@ -235,7 +273,8 @@ export class GoogleAITextEmbedding extends EmbeddingGeneratorBase {
    * @private
    */
   private closeClient(_client: GoogleClient): void {
-    // Implement cleanup if needed
-    // Python uses context managers (with statement), TypeScript might need explicit cleanup
+    // No cleanup needed for Google Generative AI SDK
+    // The SDK uses HTTP requests and doesn't maintain persistent connections
+    // that require explicit cleanup
   }
 }

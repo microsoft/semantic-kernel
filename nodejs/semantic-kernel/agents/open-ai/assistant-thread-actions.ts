@@ -450,7 +450,6 @@ export class AssistantThreadActions {
     const functionSteps: Map<string, FunctionCallContent> = new Map()
     const activeMessages: Map<string, RunStep> = new Map()
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       let shouldBreak = false
 
@@ -606,7 +605,6 @@ export class AssistantThreadActions {
     const agentNames: Map<string, string> = new Map()
     let lastId: string | undefined = undefined
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const messagesParams: MessageListParams = {
         order: sortOrder,
@@ -757,7 +755,7 @@ export class AssistantThreadActions {
     pollingOptions: RunPollingOptions
   ): Promise<any> {
     let count = 0
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       await this._sleep(pollingOptions.getPollingInterval(count))
       count++

@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { StreamingTextContent } from '../../../../../contents/streaming-text-content'
 import { TextContent } from '../../../../../contents/text-content'
 import { ServiceInitializationError } from '../../../../../exceptions/service-exceptions'
@@ -366,13 +367,87 @@ export class GoogleAITextCompletion extends TextCompletionClientBase {
   /**
    * Helper method to create an API key-based client.
    * Implements the client creation pattern from GoogleAIBase.
+   * Creates a client using the GoogleGenerativeAI SDK with API key authentication.
    *
    * @private
    */
   private createAPIClient(): GoogleClient {
-    // Implementation would depend on the actual Google AI SDK
-    // This is a placeholder matching the Python pattern
-    throw new Error('createAPIClient must be implemented based on your SDK')
+    if (!this.serviceSettings.apiKey) {
+      throw new ServiceInitializationError('API key is required to create a client.')
+    }
+
+    if (!this.serviceSettings.geminiModelId) {
+      throw new ServiceInitializationError('Gemini model ID is required to create a client.')
+    }
+
+    const genAI = new GoogleGenerativeAI(this.serviceSettings.apiKey)
+    const model = genAI.getGenerativeModel({ model: this.serviceSettings.geminiModelId })
+
+    // Wrap the Google Generative AI client to match our GoogleClient interface
+    return {
+      aio: {
+        models: {
+          generate_content: async (params: {
+            model: string
+            contents: string
+            config: GenerateContentConfig
+          }): Promise<GenerateContentResponse> => {
+            const result = await model.generateContent({
+              contents: [{ role: 'user', parts: [{ text: params.contents }] }],
+              generationConfig: params.config,
+            } as any)
+            const response = result.response
+            return {
+              candidates:
+                response.candidates?.map((candidate) => ({
+                  index: candidate.index,
+                  content: candidate.content,
+                  finish_reason: candidate.finishReason,
+                  safety_ratings: candidate.safetyRatings,
+                  token_count: undefined, // Not provided in SDK response
+                })) || [],
+              prompt_feedback: response.promptFeedback,
+              usage_metadata: {
+                prompt_token_count: response.usageMetadata?.promptTokenCount,
+                candidates_token_count: response.usageMetadata?.candidatesTokenCount,
+              },
+            }
+          },
+          generate_content_stream: async (params: {
+            model: string
+            contents: string
+            config: GenerateContentConfig
+          }): Promise<AsyncIterable<GenerateContentResponse>> => {
+            const result = await model.generateContentStream({
+              contents: [{ role: 'user', parts: [{ text: params.contents }] }],
+              generationConfig: params.config,
+            } as any)
+
+            async function* streamWrapper(): AsyncGenerator<GenerateContentResponse, void> {
+              for await (const chunk of result.stream) {
+                yield {
+                  candidates:
+                    chunk.candidates?.map((candidate) => ({
+                      index: candidate.index,
+                      content: candidate.content,
+                      finish_reason: candidate.finishReason,
+                      safety_ratings: candidate.safetyRatings,
+                      token_count: undefined,
+                    })) || [],
+                  prompt_feedback: chunk.promptFeedback,
+                  usage_metadata: {
+                    prompt_token_count: chunk.usageMetadata?.promptTokenCount,
+                    candidates_token_count: chunk.usageMetadata?.candidatesTokenCount,
+                  },
+                }
+              }
+            }
+
+            return streamWrapper()
+          },
+        },
+      },
+    }
   }
 
   /**
@@ -382,8 +457,9 @@ export class GoogleAITextCompletion extends TextCompletionClientBase {
    * @private
    */
   private closeClient(_client: GoogleClient): void {
-    // Implement cleanup if needed
-    // Python uses context managers (with statement), TypeScript might need explicit cleanup
+    // No cleanup needed for Google Generative AI SDK
+    // The SDK uses HTTP requests and doesn't maintain persistent connections
+    // that require explicit cleanup
   }
 
   /**
