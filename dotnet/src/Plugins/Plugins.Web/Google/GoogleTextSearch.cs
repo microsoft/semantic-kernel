@@ -385,13 +385,9 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
             // Direct API parameters mapped from GoogleWebPage metadata properties
             "FILEFORMAT" => "fileType",       // File type/extension filtering
-            "MIME" => "filter",               // MIME type filtering
-
-            // Locale/Language parameters (if we extend GoogleWebPage)
-            "HL" => "hl",                     // Interface language
-            "GL" => "gl",                     // Geolocation
-            "CR" => "cr",                     // Country restrict
-            "LR" => "lr",                     // Language restrict
+            
+            // Note: 'filter' API parameter is for duplicate content filtering (0/1), not MIME types
+            // Note: HL, GL, CR, LR properties don't exist on GoogleWebPage
 
             _ => null // Property not mappable to Google filters
         };
