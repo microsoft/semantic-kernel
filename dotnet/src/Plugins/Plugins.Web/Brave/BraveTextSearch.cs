@@ -505,8 +505,8 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                 },
             _ => throw new NotSupportedException(
                 $"Unable to extract value from expression of type '{expression.GetType().Name}'. " +
-                $"Only constant expressions and simple member access are supported for AOT compatibility. " +
-                $"Expression: {expression}")
+                "Only constant expressions and simple member access are supported for AOT compatibility. " +
+                "Expression: " + expression)
         };
     }
 
