@@ -28,7 +28,7 @@ export class KernelProcess extends KernelProcessStepInfo {
     if (!params.state) {
       throw new Error('state cannot be null')
     }
-    if (!params.steps) {
+    if (!params.steps || params.steps.length === 0) {
       throw new Error('steps cannot be null')
     }
     if (!params.state.name) {
