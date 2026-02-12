@@ -45,7 +45,9 @@ internal static class ResponseThreadActions
         for (int requestIndex = 0; ; requestIndex++)
         {
             // Create a response using the OpenAI Responses API
-            var clientResult = await agent.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            var clientResult = await agent.Client.CreateResponseAsync(creationOptions, cancellationToken).ConfigureAwait(false);
             var response = clientResult.Value;
             ThrowIfIncompleteOrFailed(agent, response);
 
@@ -148,7 +150,9 @@ internal static class ResponseThreadActions
             Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
             StreamingFunctionCallUpdateContent? functionCallUpdateContent = null;
             ResponseResult? response = null;
-            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)
                 {
