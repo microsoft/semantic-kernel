@@ -615,12 +615,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
 
         foreach (var result in searchResponse.Web.Results)
         {
-            yield return new BraveWebPage
-            {
-                Title = result.Title,
-                Url = string.IsNullOrWhiteSpace(result.Url) ? null : new Uri(result.Url),
-                Description = result.Description,
-            };
+            yield return result;
 
             await Task.Yield();
         }
