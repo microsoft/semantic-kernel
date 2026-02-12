@@ -111,11 +111,11 @@ public sealed class BraveTextSearchTests : IDisposable
         var resultList = await result.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
-        foreach (BraveWebPage webPage in resultList.Cast<BraveWebPage>())
+        foreach (BraveWebResult webResult in resultList.Cast<BraveWebResult>())
         {
-            Assert.NotNull(webPage.Title);
-            Assert.NotNull(webPage.Description);
-            Assert.NotNull(webPage.Url);
+            Assert.NotNull(webResult.Title);
+            Assert.NotNull(webResult.Description);
+            Assert.NotNull(webResult.Url);
         }
     }
 
