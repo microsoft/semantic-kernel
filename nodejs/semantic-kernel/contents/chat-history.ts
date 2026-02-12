@@ -15,7 +15,7 @@ const CHAT_MESSAGE_CONTENT_TAG = 'message'
  */
 export class ChatHistory {
   /** The messages in the chat history */
-  public messages: ChatMessageContent[]
+  public messages: ChatMessageContent[] = []
 
   /** The optional system message */
   public systemMessage?: string

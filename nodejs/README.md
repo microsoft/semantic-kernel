@@ -60,7 +60,13 @@ import { Kernel } from 'semantic-kernel'
 import { OpenAIChatCompletion } from 'semantic-kernel/connectors/ai/openai'
 
 const kernel = new Kernel()
-kernel.addService('chat', new OpenAIChatCompletion())
+
+const chatCompletion = new OpenAIChatCompletion({
+  apiKey: process.env.OPENAI_API_KEY,
+  aiModelId: 'gpt-3.5-turbo',
+})
+
+kernel.addService('chat-completion', chatCompletion)
 
 const prompt = `
 1) A robot may not injure a human being...
@@ -74,7 +80,11 @@ async function main() {
     prompt,
     arguments: { num_words: 5 },
   })
-  console.log(result?.value)
+
+  // Get the text content from the first message
+  const message = result?.value?.[0]
+  const textContent = message?.items?.[0]
+  console.log(textContent?.text)
 }
 
 main()
