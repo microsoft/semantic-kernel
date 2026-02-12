@@ -503,7 +503,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                     System.Reflection.PropertyInfo property => property.GetValue(constantExpr.Value),
                     _ => null
                 },
-            _ => Expression.Lambda(expression).Compile().DynamicInvoke()
+            _ => throw new NotSupportedException(
+                $"Unable to extract value from expression of type '{expression.GetType().Name}'. " +
+                $"Only constant expressions and simple member access are supported for AOT compatibility. " +
+                $"Expression: {expression}")
         };
     }
 
