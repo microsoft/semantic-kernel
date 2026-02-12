@@ -152,6 +152,7 @@ internal static class ResponseThreadActions
             ResponseResult? response = null;
             creationOptions.InputItems.Clear();
             foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            creationOptions.StreamingEnabled = true;
             await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)

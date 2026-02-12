@@ -138,15 +138,10 @@ async Task SKAgent_As_AFAgentAsync()
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
-        // Microsoft.Extensions.AI currently does not have an abstraction for reasoning-effort,
-        // we need to break glass using the RawRepresentationFactory.
-        RawRepresentationFactory = (_) => new OpenAI.Responses.CreateResponseOptions()
+        Reasoning = new()
         {
-            ReasoningOptions = new()
-            {
-                ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-                ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-            }
+            Effort = ReasoningEffort.High,
+            Output = ReasoningOutput.Full
         }
     });
 
@@ -192,15 +187,10 @@ async Task AFAgentAsync()
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
-        // Microsoft.Extensions.AI currently does not have an abstraction for reasoning-effort,
-        // we need to break glass using the RawRepresentationFactory.
-        RawRepresentationFactory = (_) => new OpenAI.Responses.CreateResponseOptions()
+        Reasoning = new()
         {
-            ReasoningOptions = new()
-            {
-                ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-                ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-            }
+            Effort = ReasoningEffort.High,
+            Output = ReasoningOutput.Full
         }
     });
 
