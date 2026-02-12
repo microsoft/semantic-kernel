@@ -385,7 +385,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
             // Direct API parameters mapped from GoogleWebPage metadata properties
             "FILEFORMAT" => "fileType",       // File type/extension filtering
-            
+
             // Note: 'filter' API parameter is for duplicate content filtering (0/1), not MIME types
             // Note: HL, GL, CR, LR properties don't exist on GoogleWebPage
 
