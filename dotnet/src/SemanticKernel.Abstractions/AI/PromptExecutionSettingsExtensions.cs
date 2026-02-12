@@ -121,7 +121,7 @@ public static class PromptExecutionSettingsExtensions
                         "LOW" => ReasoningEffort.Low,
                         "MEDIUM" => ReasoningEffort.Medium,
                         "HIGH" => ReasoningEffort.High,
-                        "EXTRAHIGH" or "EXTRA_HIGH" => ReasoningEffort.ExtraHigh,
+                        "XHIGH" => ReasoningEffort.ExtraHigh,
                         _ => null,
                     };
                 }
