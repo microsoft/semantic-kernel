@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { FunctionCallChoiceConfiguration } from './function-call-choice-configuration'
+import { combineFilterDicts } from './function-calling-utils'
 import { FunctionChoiceType } from './function-choice-type'
 
 const DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
@@ -222,7 +223,15 @@ export class FunctionChoiceBehavior {
     if (functions && Array.isArray(functions)) {
       const validFqns = functions.map((name: string) => name.replace('.', '-'))
       if (filters) {
-        filters = combineFilterDicts(filters, { includedFunctions: validFqns })
+        // Convert FunctionFilters to Record<string, string[]> for combineFilterDicts
+        const filtersDict: Record<string, string[]> = {}
+        if (filters.excludedPlugins) filtersDict.excludedPlugins = filters.excludedPlugins
+        if (filters.includedPlugins) filtersDict.includedPlugins = filters.includedPlugins
+        if (filters.excludedFunctions) filtersDict.excludedFunctions = filters.excludedFunctions
+        if (filters.includedFunctions) filtersDict.includedFunctions = filters.includedFunctions
+
+        const combined = combineFilterDicts(filtersDict, { includedFunctions: validFqns })
+        filters = combined as FunctionFilters
       } else {
         filters = { includedFunctions: validFqns }
       }
@@ -271,28 +280,4 @@ export class FunctionChoiceBehavior {
       `The specified type \`${typeValue}\` is not supported. Allowed types are: \`auto\`, \`none\`, \`required\`.`
     )
   }
-}
-
-/**
- * Combine filter dictionaries.
- *
- * @private
- */
-function combineFilterDicts(filters1: FunctionFilters, filters2: FunctionFilters): FunctionFilters {
-  const combined: FunctionFilters = { ...filters1 }
-
-  if (filters2.excludedPlugins) {
-    combined.excludedPlugins = [...(combined.excludedPlugins || []), ...filters2.excludedPlugins]
-  }
-  if (filters2.includedPlugins) {
-    combined.includedPlugins = [...(combined.includedPlugins || []), ...filters2.includedPlugins]
-  }
-  if (filters2.excludedFunctions) {
-    combined.excludedFunctions = [...(combined.excludedFunctions || []), ...filters2.excludedFunctions]
-  }
-  if (filters2.includedFunctions) {
-    combined.includedFunctions = [...(combined.includedFunctions || []), ...filters2.includedFunctions]
-  }
-
-  return combined
 }
