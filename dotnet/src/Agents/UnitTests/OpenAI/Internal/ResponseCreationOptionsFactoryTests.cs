@@ -96,7 +96,7 @@ public class ResponseCreationOptionsFactoryTests
         // Arrange
         var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
         var mockThread = CreateMockAgentThread(null);
-        var responseCreationOptions = new ResponseCreationOptions
+        var responseCreationOptions = new CreateResponseOptions
         {
             EndUserId = "custom-user",
             Instructions = "Custom instructions",
@@ -142,7 +142,7 @@ public class ResponseCreationOptionsFactoryTests
         // Arrange
         var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: true);
         var mockThread = CreateMockAgentThread(null);
-        var responseCreationOptions = new ResponseCreationOptions
+        var responseCreationOptions = new CreateResponseOptions
         {
             EndUserId = null, // Should fallback to agent display name
             Instructions = null, // Should fallback to agent instructions + additional
@@ -297,7 +297,7 @@ public class ResponseCreationOptionsFactoryTests
         // Custom invoke options should be respected
         var invokeOptions = new OpenAIResponseAgentInvokeOptions
         {
-            ResponseCreationOptions = new ResponseCreationOptions
+            ResponseCreationOptions = new CreateResponseOptions
             {
                 ToolChoice = ResponseToolChoice.CreateNoneChoice(),
                 ParallelToolCallsEnabled = false
@@ -317,7 +317,7 @@ public class ResponseCreationOptionsFactoryTests
 
     private static OpenAIResponseAgent CreateMockAgent(string? name, string? instructions, bool storeEnabled)
     {
-        var mockClient = new Mock<OpenAIResponseClient>();
+        var mockClient = new Mock<ResponsesClient>();
         var mockAgent = new OpenAIResponseAgent(mockClient.Object)
         {
             Name = name ?? "UnnamedAgent",

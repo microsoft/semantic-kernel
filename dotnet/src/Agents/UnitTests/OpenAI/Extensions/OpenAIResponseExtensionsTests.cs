@@ -16,13 +16,13 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 public class OpenAIResponseExtensionsTests
 {
     /// <summary>
-    /// Verify conversion from <see cref="OpenAIResponse"/> to <see cref="ChatMessageContent"/>.
+    /// Verify conversion from <see cref="ResponseResult"/> to <see cref="ChatMessageContent"/>.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithOpenAIResponse()
     {
         // Arrange
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
+        ResponseResult mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
             [
                 ResponseItem.CreateUserMessageItem("This is a user message."),
             ]);
@@ -197,7 +197,7 @@ public class OpenAIResponseExtensionsTests
     }
 
     /// <summary>
-    /// Verify that OpenAIResponse with both ReasoningResponseItem and MessageResponseItem generates correct content types.
+    /// Verify that ResponseResult with both ReasoningResponseItem and MessageResponseItem generates correct content types.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithMixedResponseItems()
@@ -206,7 +206,7 @@ public class OpenAIResponseExtensionsTests
         var reasoningResponseItem = this.CreateReasoningResponseItem("Thinking about the answer...");
         var messageResponseItem = ResponseItem.CreateAssistantMessageItem("Here is my response.");
 
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
+        ResponseResult mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
             [
                 reasoningResponseItem,
                 messageResponseItem
@@ -231,13 +231,13 @@ public class OpenAIResponseExtensionsTests
     }
 
     #region private
-    private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
+    private ResponseResult CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems) =>
+        OpenAIResponsesModelFactory.ResponseResult(
             model: model,
             outputItems: outputItems);
 
-    private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
+    private ResponseResult CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice) =>
+        OpenAIResponsesModelFactory.ResponseResult(
             id: id,
             createdAt: createdAt,
             error: error,

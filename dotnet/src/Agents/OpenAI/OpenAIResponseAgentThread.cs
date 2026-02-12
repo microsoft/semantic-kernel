@@ -14,14 +14,14 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIResponseAgentThread : AgentThread
 {
-    private readonly OpenAIResponseClient _client;
+    private readonly ResponsesClient _client;
     private bool _isDeleted = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIResponseAgentThread"/> class.
     /// </summary>
     /// <param name="client">The agents client to use for interacting with responses.</param>
-    public OpenAIResponseAgentThread(OpenAIResponseClient client)
+    public OpenAIResponseAgentThread(ResponsesClient client)
     {
         Verify.NotNull(client);
 
@@ -33,7 +33,7 @@ public sealed class OpenAIResponseAgentThread : AgentThread
     /// </summary>
     /// <param name="client">The agents client to use for interacting with responses.</param>
     /// <param name="responseId">The ID of an existing response to resume.</param>
-    public OpenAIResponseAgentThread(OpenAIResponseClient client, string responseId)
+    public OpenAIResponseAgentThread(ResponsesClient client, string responseId)
     {
         Verify.NotNull(client);
         Verify.NotNull(responseId);
