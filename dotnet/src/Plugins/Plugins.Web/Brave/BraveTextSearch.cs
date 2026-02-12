@@ -496,17 +496,31 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         return expression switch
         {
             ConstantExpression constant => constant.Value,
-            MemberExpression member when member.Expression is ConstantExpression constantExpr =>
-                member.Member switch
-                {
-                    System.Reflection.FieldInfo field => field.GetValue(constantExpr.Value),
-                    System.Reflection.PropertyInfo property => property.GetValue(constantExpr.Value),
-                    _ => null
-                },
+            MemberExpression member => ExtractMemberValue(member),
             _ => throw new NotSupportedException(
-                $"Unable to extract value from expression of type '{expression.GetType().Name}'. " +
-                "Only constant expressions and simple member access are supported for AOT compatibility. " +
+                $"Unable to extract value from expression of node type '{expression.NodeType}'. " +
+                "Only constant expressions and member access are supported for AOT compatibility. " +
                 "Expression: " + expression)
+        };
+    }
+
+    /// <summary>
+    /// Extracts a value from a member expression by walking the member access chain.
+    /// </summary>
+    /// <param name="memberExpression">The member expression to evaluate.</param>
+    /// <returns>The extracted value, or null if extraction failed.</returns>
+    private static object? ExtractMemberValue(MemberExpression memberExpression)
+    {
+        // Recursively evaluate the member's expression (handles nested member access)
+        var target = memberExpression.Expression is not null
+            ? ExtractValue(memberExpression.Expression)
+            : null;
+
+        return memberExpression.Member switch
+        {
+            System.Reflection.FieldInfo field => field.GetValue(target),
+            System.Reflection.PropertyInfo property => property.GetValue(target),
+            _ => null
         };
     }
 
