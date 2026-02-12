@@ -237,12 +237,74 @@ export class KernelFunctionFromPrompt extends KernelFunction {
    * @param context - The function invocation context.
    */
   protected async _invokeInternalStream(context: FunctionInvocationContext): Promise<void> {
+    const { FunctionResult } = await import('./function-result.js')
+    const { ChatHistory } = await import('../contents/chat-history.js')
+
     // Render the prompt
     const renderedPrompt = await this.promptTemplate.render(context.kernel, context.arguments)
 
-    // This would stream results from the AI service
+    // Get the AI service from the kernel
+    let aiService: any = null
+    let executionSettings: PromptExecutionSettings | undefined
+
+    // Try to find a service that matches our execution settings
+    if (this.promptExecutionSettings.size > 0) {
+      for (const [serviceId, settings] of this.promptExecutionSettings.entries()) {
+        const service = context.kernel.getService(serviceId)
+        if (service) {
+          aiService = service
+          executionSettings = settings
+          break
+        }
+      }
+    }
+
+    // If no service found via settings, try to find any chat completion service
+    if (!aiService) {
+      for (const service of context.kernel.services.values()) {
+        if (typeof (service as any).getStreamingChatMessageContents === 'function') {
+          aiService = service
+          executionSettings = this.promptExecutionSettings.get('default')
+          break
+        }
+      }
+    }
+
+    if (!aiService) {
+      throw new Error('No AI service found in kernel. Please add a chat completion service.')
+    }
+
+    // Handle chat completion service streaming
+    if (typeof aiService.getStreamingChatMessageContents === 'function') {
+      const chatHistory = ChatHistory.fromRenderedPrompt(renderedPrompt)
+      const value = aiService.getStreamingChatMessageContents(chatHistory, executionSettings || {}, {
+        kernel: context.kernel,
+        arguments: context.arguments,
+      })
+
+      context.result = new FunctionResult({
+        function: this.metadata,
+        value: value,
+        renderedPrompt: renderedPrompt,
+      })
+      return
+    }
+
+    // Handle text completion service streaming
+    if (typeof (aiService as any).getStreamingTextContents === 'function') {
+      const value = aiService.getStreamingTextContents(renderedPrompt, executionSettings || {})
+
+      context.result = new FunctionResult({
+        function: this.metadata,
+        value: value,
+        renderedPrompt: renderedPrompt,
+      })
+      return
+    }
+
     throw new Error(
-      `KernelFunctionFromPrompt._invokeInternalStream not fully implemented yet. Rendered prompt: ${renderedPrompt.substring(0, 100)}...`
+      `Service type '${aiService.constructor.name}' is not a valid AI service for streaming. ` +
+        'Only services with getStreamingChatMessageContents or getStreamingTextContents are supported.'
     )
   }
 }

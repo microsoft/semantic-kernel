@@ -1,5 +1,7 @@
 import { Message } from 'google-protobuf'
-import { Any as AnyProto } from 'google-protobuf/google/protobuf/any_pb'
+import * as anyPb from 'google-protobuf/google/protobuf/any_pb.js'
+
+const AnyProto = (anyPb as any).Any
 
 /**
  * Content type constants

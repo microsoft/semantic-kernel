@@ -142,6 +142,10 @@
       "types": "./dist/semantic-kernel/connectors/ai/open-ai/index.d.ts",
       "import": "./dist/semantic-kernel/connectors/ai/open-ai/index.js"
     },
+    "./connectors/ai/azure-openai": {
+      "types": "./dist/semantic-kernel/connectors/ai/open-ai/index.d.ts",
+      "import": "./dist/semantic-kernel/connectors/ai/open-ai/index.js"
+    },
     "./functions": {
       "types": "./dist/semantic-kernel/functions/index.d.ts",
       "import": "./dist/semantic-kernel/functions/index.js"
@@ -149,6 +153,10 @@
     "./contents": {
       "types": "./dist/semantic-kernel/contents/index.d.ts",
       "import": "./dist/semantic-kernel/contents/index.js"
+    },
+    "./agents": {
+      "types": "./dist/semantic-kernel/agents/index.d.ts",
+      "import": "./dist/semantic-kernel/agents/index.js"
     }
   }
 }

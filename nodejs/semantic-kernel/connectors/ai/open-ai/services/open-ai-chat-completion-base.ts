@@ -300,7 +300,7 @@ export abstract class OpenAIChatCompletionBase extends ChatCompletionClientBase 
 
     const openAISettings = settings as OpenAIChatPromptExecutionSettings
     openAISettings.stream = true
-    ;(openAISettings as any).streamOptions = { includeUsage: true }
+    ;(openAISettings as any).streamOptions = { include_usage: true }
     ;(openAISettings as any).messages = this._prepareChatHistoryForRequest(chatHistory)
     openAISettings.aiModelId = openAISettings.aiModelId || this.aiModelId
 
