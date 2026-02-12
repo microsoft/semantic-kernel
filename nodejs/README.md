@@ -100,28 +100,31 @@ import { OpenAIChatCompletion } from 'semantic-kernel/connectors/ai/openai'
 import { ChatHistory } from 'semantic-kernel/contents'
 
 async function main() {
-  const service = new OpenAIChatCompletion()
+  const service = new OpenAIChatCompletion({
+    apiKey: process.env.OPENAI_API_KEY,
+    aiModelId: 'gpt-3.5-turbo',
+  }))
   const settings = {
     temperature: 0.7,
     maxTokens: 150,
   }
 
-  const chatHistory = new ChatHistory({
-    systemMessage: 'You are a helpful assistant.',
-  })
+  const chatHistory = new ChatHistory()
+  chatHistory.addSystemMessage('You are a helpful assistant.')
   chatHistory.addUserMessage('Write a haiku about Semantic Kernel.')
 
-  const response = await service.getChatMessageContent({
+  const response = await service.getChatMessageContent(
     chatHistory,
     settings,
-  })
+  )
+
   console.log(response.content)
 
   /*
     Output:
 
-    Thoughts weave through context,  
-    Semantic threads interlace—  
+    Thoughts weave through context,
+    Semantic threads interlace—
     Kernel sparks meaning.
     */
 }
@@ -248,7 +251,13 @@ import { Kernel } from 'semantic-kernel'
 import { OpenAIChatCompletion } from 'semantic-kernel/connectors/ai/openai'
 
 const kernel = new Kernel()
-kernel.addService('chat', new OpenAIChatCompletion())
+kernel.addService(
+  'chat',
+  new OpenAIChatCompletion({
+    apiKey: process.env.OPENAI_API_KEY,
+    aiModelId: 'gpt-3.5-turbo',
+  })
+)
 
 async function main() {
   const prompt = 'Write a short story about a robot learning to paint.'
