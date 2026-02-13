@@ -741,7 +741,7 @@ public sealed class BingTextSearchTests : IDisposable
         // Assert - Verify that negation on query parameter throws ArgumentException
         var exception = await Assert.ThrowsAsync<ArgumentException>(
             async () => await textSearch.SearchAsync("content", searchOptions));
-        
+
         Assert.Contains("Negation (!= operator) is not supported for query parameter", exception.Message);
         Assert.Contains("IsFamilyFriendly", exception.Message);
         Assert.Contains("Negation only works with advanced search operators", exception.Message);
