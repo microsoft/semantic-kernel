@@ -724,30 +724,27 @@ public sealed class BingTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task GenericSearchAsyncWithIsFamilyFriendlyInequalityProducesNegatedSafeSearchAsync()
+    public async Task GenericSearchAsyncWithIsFamilyFriendlyInequalityThrowsExceptionAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
         ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
-        // Act - IsFamilyFriendly with inequality (converts to negated value)
+        // Act - IsFamilyFriendly with inequality (should throw ArgumentException)
         var searchOptions = new TextSearchOptions<BingWebPage>
         {
             Top = 4,
             Skip = 0,
             Filter = page => page.IsFamilyFriendly != true
         };
-        KernelSearchResults<string> result = await textSearch.SearchAsync("content", searchOptions);
 
-        // Assert - Verify negated boolean converted properly (note: safeSearch is a query parameter, not an advanced search keyword)
-        // Query parameters don't support negation prefix like advanced search keywords, so false != true becomes -true value
-        var requestUris = this._messageHandlerStub.RequestUris;
-        Assert.Single(requestUris);
-        Assert.NotNull(requestUris[0]);
-        string uri = requestUris[0].AbsoluteUri;
-        // The actual behavior: != true gets processed as negation marker, resulting in safeSearch=-true (treated as invalid/ignored)
-        // This test documents current behavior - inequality on boolean query params has limitations
-        Assert.Contains("safeSearch", uri);
+        // Assert - Verify that negation on query parameter throws ArgumentException
+        var exception = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await textSearch.SearchAsync("content", searchOptions));
+        
+        Assert.Contains("Negation (!= operator) is not supported for query parameter", exception.Message);
+        Assert.Contains("IsFamilyFriendly", exception.Message);
+        Assert.Contains("Negation only works with advanced search operators", exception.Message);
     }
 
     [Fact]

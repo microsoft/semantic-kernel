@@ -386,7 +386,9 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             // Direct API parameters mapped from GoogleWebPage metadata properties
             "FILEFORMAT" => "fileType",       // File type/extension filtering
 
-            // Note: 'filter' API parameter is for duplicate content filtering (0/1), not MIME types
+            // Note: GoogleWebPage does expose a Mime property, but the Google Custom Search 'filter'
+            //       API parameter does not accept MIME types; it only accepts 0 or 1 for duplicate
+            //       content filtering. Therefore, no Mime-to-filter mapping is defined here.
             // Note: HL, GL, CR, LR properties don't exist on GoogleWebPage
 
             _ => null // Property not mappable to Google filters
@@ -408,11 +410,6 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             "orTerms" => "Title",
             "excludeTerms" => "Title",
             "fileType" => "FileFormat",
-            "filter" => "Mime",
-            "hl" => "HL",
-            "gl" => "GL",
-            "cr" => "CR",
-            "lr" => "LR",
             _ => null
         };
     }
