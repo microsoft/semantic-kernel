@@ -1,5 +1,3 @@
-import pytest
-
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import (
     GoogleAIChatCompletion,
