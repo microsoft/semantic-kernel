@@ -743,7 +743,7 @@ public sealed class BingTextSearchTests : IDisposable
             async () => await textSearch.SearchAsync("content", searchOptions));
 
         Assert.Contains("Negation (!= operator) is not supported for query parameter", exception.Message);
-        Assert.Contains("IsFamilyFriendly", exception.Message);
+        Assert.Contains("safeSearch", exception.Message); // Query parameter name, not property name
         Assert.Contains("Negation only works with advanced search operators", exception.Message);
     }
 
