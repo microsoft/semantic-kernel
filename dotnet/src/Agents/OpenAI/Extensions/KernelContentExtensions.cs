@@ -10,11 +10,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 internal static class KernelContentExtensions
 {
-    internal static ResponseContentPart ToResponseContentPart(this KernelContent content)
+    internal static ResponseContentPart ToResponseContentPart(this KernelContent content, bool isOutput = false)
     {
         return content switch
         {
-            TextContent textContent => textContent.ToResponseContentPart(),
+            TextContent textContent => textContent.ToResponseContentPart(isOutput),
             ImageContent imageContent => imageContent.ToResponseContentPart(),
             BinaryContent binaryContent => binaryContent.ToResponseContentPart(),
             FileReferenceContent fileReferenceContent => fileReferenceContent.ToResponseContentPart(),
@@ -22,9 +22,11 @@ internal static class KernelContentExtensions
         };
     }
 
-    internal static ResponseContentPart ToResponseContentPart(this TextContent content)
+    internal static ResponseContentPart ToResponseContentPart(this TextContent content, bool isOutput)
     {
-        return ResponseContentPart.CreateInputTextPart(content.Text);
+        return isOutput ?
+            ResponseContentPart.CreateOutputTextPart(content.Text, []) :
+            ResponseContentPart.CreateInputTextPart(content.Text);
     }
 
     internal static ResponseContentPart ToResponseContentPart(this ImageContent content)
