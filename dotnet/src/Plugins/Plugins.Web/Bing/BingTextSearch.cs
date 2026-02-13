@@ -614,6 +614,15 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                     }
                     else if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
+                        // Query parameters do not support negation (!=) - throw if attempted
+                        if (isNegated)
+                        {
+                            throw new ArgumentException(
+                                $"Negation (!= operator) is not supported for query parameter '{equalityFilterClause.FieldName}'. " +
+                                $"Negation only works with advanced search operators: {string.Join(", ", s_advancedSearchKeywords)}.",
+                                nameof(searchOptions));
+                        }
+
                         string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase));
                         queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(actualValue));
                     }
