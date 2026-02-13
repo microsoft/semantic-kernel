@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 ///
 /// Example: Title.Contains("AI") → SearchQueryFilterClause("AI") → query + " AI"
 ///
-/// See ADR-TextSearch-Contains-Support.md for architectural context and cross-engine comparison.
+/// See docs/decisions/0065-linq-based-text-search-filtering.md for architectural context and cross-engine comparison.
 /// </remarks>
 internal sealed class SearchQueryFilterClause : FilterClause
 {
