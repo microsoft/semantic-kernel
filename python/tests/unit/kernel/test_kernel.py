@@ -1038,24 +1038,36 @@ def test_kernel_deep_copy(
 
 
 def test_kernel_model_dump_fail_with_services(kernel: Kernel):
-    open_ai_chat_completion = OpenAIChatCompletion(ai_model_id="abc", api_key="abc")
-    kernel.add_service(open_ai_chat_completion)
+    class _UnserializableService:
+        service_id = "unserializable"
+
+        def __init__(self):
+            async def _agen():
+                yield "tick"
+
+            # Async generator objects are not deepcopy/pickle friendly.
+            self._bad = _agen()
+
+    kernel.add_service(_UnserializableService())
 
     with pytest.raises(TypeError):
-        # This will fail because OpenAIChatCompletion is not serializable, more specifically,
-        # the client is not serializable
         kernel.model_dump(deep=True)
 
-
 def test_kernel_deep_copy_fail_with_services(kernel: Kernel):
-    open_ai_chat_completion = OpenAIChatCompletion(ai_model_id="abc", api_key="abc")
-    kernel.add_service(open_ai_chat_completion)
+    class _UnserializableService:
+        service_id = "unserializable"
+
+        def __init__(self):
+            async def _agen():
+                yield "tick"
+
+            # Async generator objects are not deepcopy/pickle friendly.
+            self._bad = _agen()
+
+    kernel.add_service(_UnserializableService())
 
     with pytest.raises(TypeError):
-        # This will fail because OpenAIChatCompletion is not serializable, more specifically,
-        # the client is not serializable
         kernel.model_copy(deep=True)
-
 
 def test_kernel_clone(
     kernel: Kernel,
