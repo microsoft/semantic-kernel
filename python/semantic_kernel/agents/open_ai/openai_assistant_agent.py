@@ -8,7 +8,6 @@ from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from openai import AsyncOpenAI
-from openai._types import Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
@@ -35,6 +34,7 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.open_ai._types_compat import Omit, omit
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
