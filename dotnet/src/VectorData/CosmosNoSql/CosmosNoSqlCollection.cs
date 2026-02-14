@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -323,9 +324,33 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(key);
 
-        return await this.GetAsync([key], options, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
+        const string OperationName = "ReadItem";
+
+        var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
+        var (documentId, partitionKey) = this.GetDocumentIdAndPartitionKey(key);
+
+        var jsonObject = await this.RunOperationAsync(OperationName, async () =>
+        {
+            try
+            {
+                var response = await this._database
+                    .GetContainer(this.Name)
+                    .ReadItemAsync<JsonObject>(documentId, partitionKey, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                return response.Resource;
+            }
+            catch (CosmosException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }).ConfigureAwait(false);
+
+        return jsonObject is null ? default : this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
     }
 
     /// <inheritdoc />
@@ -336,7 +361,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(keys);
 
-        const string OperationName = "GetItemQueryIterator";
+        const string OperationName = "ReadManyItems";
 
         var includeVectors = options?.IncludeVectors ?? false;
         if (includeVectors && this._model.EmbeddingGenerationRequired)
@@ -344,18 +369,20 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var documentIds = keys.Select(k => this.GetDocumentIdAndPartitionKey(k).DocumentId).ToList();
-        if (documentIds.Count == 0)
+        var items = keys.Select(this.GetDocumentIdAndPartitionKey).ToList();
+
+        if (items.Count == 0)
         {
             yield break;
         }
 
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
-            this._model,
-            documentIds,
-            includeVectors);
+        var response = await this.RunOperationAsync(OperationName, () =>
+            this._database
+                .GetContainer(this.Name)
+                .ReadManyItemsAsync<JsonObject>(items, cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
-        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken).ConfigureAwait(false))
+        foreach (var jsonObject in response.Resource)
         {
             var record = this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
 

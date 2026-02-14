@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
@@ -184,45 +183,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
-    }
-
-    [Fact]
-    public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
-    {
-        // Arrange
-        const string ExpectedQueryText = """
-                                         SELECT x["id"],x["TestProperty1"],x["TestProperty2"]
-                                         FROM x
-                                         WHERE (x["id"] = @rk0)
-                                         """;
-
-        var model = new CosmosNoSqlModelBuilder().BuildDynamic(
-            new()
-            {
-                Properties =
-                [
-                    new VectorStoreKeyProperty("Key", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty1", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty2", typeof(string))
-                ]
-            },
-            defaultEmbeddingGenerator: null);
-        List<string> documentIds = ["id"];
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
-            model,
-            documentIds,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
-
-        Assert.Equal("@rk0", queryParameters[0].Name);
-        Assert.Equal("id", queryParameters[0].Value);
     }
 
     [Fact]

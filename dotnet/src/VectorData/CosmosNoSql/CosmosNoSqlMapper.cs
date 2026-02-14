@@ -118,30 +118,34 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
         // See above comment.
         RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);
 
-        if (includeVectors)
+        foreach (var vectorProperty in this._model.VectorProperties)
         {
-            foreach (var vectorProperty in this._model.VectorProperties)
+            if (!includeVectors)
             {
-                var arrayNode = storageModel[vectorProperty.StorageName];
-                if (arrayNode is null)
-                {
-                    continue;
-                }
-
-                // Embedding<T> is stored as a simple JSON array, so convert it to the expected object shape for deserialization
-                if (vectorProperty.Type == typeof(Embedding<float>)
-                    || vectorProperty.Type == typeof(Embedding<byte>)
-                    || vectorProperty.Type == typeof(Embedding<sbyte>))
-                {
-                    storageModel[vectorProperty.StorageName] = new JsonObject
-                    {
-                        [nameof(Embedding<>.Vector)] = arrayNode.DeepClone()
-                    };
-                }
-
-                // For byte[], ReadOnlyMemory<byte>, sbyte[], ReadOnlyMemory<sbyte>, float[], ReadOnlyMemory<float>,
-                // the custom converters (for byte) and default converters (for others) handle deserialization correctly.
+                // Remove vector properties so they deserialize as default (e.g. empty ReadOnlyMemory<float>).
+                storageModel.Remove(vectorProperty.StorageName);
+                continue;
             }
+
+            var arrayNode = storageModel[vectorProperty.StorageName];
+            if (arrayNode is null)
+            {
+                continue;
+            }
+
+            // Embedding<T> is stored as a simple JSON array, so convert it to the expected object shape for deserialization
+            if (vectorProperty.Type == typeof(Embedding<float>)
+                || vectorProperty.Type == typeof(Embedding<byte>)
+                || vectorProperty.Type == typeof(Embedding<sbyte>))
+            {
+                storageModel[vectorProperty.StorageName] = new JsonObject
+                {
+                    [nameof(Embedding<>.Vector)] = arrayNode.DeepClone()
+                };
+            }
+
+            // For byte[], ReadOnlyMemory<byte>, sbyte[], ReadOnlyMemory<sbyte>, float[], ReadOnlyMemory<float>,
+            // the custom converters (for byte) and default converters (for others) handle deserialization correctly.
         }
 
         return storageModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;

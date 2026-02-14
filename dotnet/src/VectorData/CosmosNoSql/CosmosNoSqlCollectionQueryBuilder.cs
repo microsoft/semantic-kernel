@@ -224,55 +224,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         return queryDefinition;
     }
 
-    /// <summary>
-    /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL.
-    /// </summary>
-    public static QueryDefinition BuildSelectQuery(
-        CollectionModel model,
-        List<string> documentIds,
-        bool includeVectors)
-    {
-        Verify.True(documentIds.Count > 0, "At least one document ID should be provided.", nameof(documentIds));
-
-        const string RecordKeyVariableName = "@rk";
-
-        var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
-
-        IEnumerable<PropertyModel> projectionProperties = model.Properties;
-        if (!includeVectors)
-        {
-            projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
-        }
-
-        var selectClauseArguments = string.Join(
-            ",",
-            projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName)));
-
-        // Build WHERE clause using only the document id.
-        // The partition key is provided via RequestOptions for point reads, not in the query.
-        var whereClauseArguments = string.Join(
-            " OR ",
-            documentIds.Select((_, index) =>
-                $"({GeneratePropertyAccess(tableVariableName, model.KeyProperty.StorageName)} = {RecordKeyVariableName}{index})"));
-
-        var query = $"""
-                     SELECT {selectClauseArguments}
-                     FROM {tableVariableName}
-                     WHERE {whereClauseArguments}
-                     """;
-
-        var queryDefinition = new QueryDefinition(query);
-
-        for (var i = 0; i < documentIds.Count; i++)
-        {
-            var documentIdString = documentIds[i];
-            Verify.NotNullOrWhiteSpace(documentIdString);
-            queryDefinition.WithParameter($"{RecordKeyVariableName}{i}", documentIdString);
-        }
-
-        return queryDefinition;
-    }
-
     #region private
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete

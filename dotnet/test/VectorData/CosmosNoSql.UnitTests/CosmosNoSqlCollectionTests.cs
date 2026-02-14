@@ -370,27 +370,18 @@ public sealed class CosmosNoSqlCollectionTests
 
         var jsonObject = new JsonObject { ["id"] = RecordKey, ["HotelName"] = "Test Name" };
 
-        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
-        mockFeedResponse
+        var mockItemResponse = new Mock<ItemResponse<JsonObject>>();
+        mockItemResponse
             .Setup(l => l.Resource)
-            .Returns([jsonObject]);
-
-        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
-        mockFeedIterator
-            .SetupSequence(l => l.HasMoreResults)
-            .Returns(true)
-            .Returns(false);
-
-        mockFeedIterator
-            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockFeedResponse.Object);
+            .Returns(jsonObject);
 
         this._mockContainer
-            .Setup(l => l.GetItemQueryIterator<JsonObject>(
-                It.IsAny<QueryDefinition>(),
-                It.IsAny<string>(),
-                It.IsAny<QueryRequestOptions>()))
-            .Returns(mockFeedIterator.Object);
+            .Setup(l => l.ReadItemAsync<JsonObject>(
+                RecordKey,
+                new PartitionKey(RecordKey),
+                It.IsAny<ItemRequestOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockItemResponse.Object);
 
         using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
@@ -419,22 +410,12 @@ public sealed class CosmosNoSqlCollectionTests
             .Setup(l => l.Resource)
             .Returns([jsonObject1, jsonObject2, jsonObject3]);
 
-        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
-        mockFeedIterator
-            .SetupSequence(l => l.HasMoreResults)
-            .Returns(true)
-            .Returns(false);
-
-        mockFeedIterator
-            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockFeedResponse.Object);
-
         this._mockContainer
-            .Setup(l => l.GetItemQueryIterator<JsonObject>(
-                It.IsAny<QueryDefinition>(),
-                It.IsAny<string>(),
-                It.IsAny<QueryRequestOptions>()))
-            .Returns(mockFeedIterator.Object);
+            .Setup(l => l.ReadManyItemsAsync<JsonObject>(
+                It.IsAny<IReadOnlyList<(string id, PartitionKey partitionKey)>>(),
+                It.IsAny<ReadManyRequestOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
 
         using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
