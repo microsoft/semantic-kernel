@@ -193,11 +193,8 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         const string ExpectedQueryText = """
                                          SELECT x["id"],x["TestProperty1"],x["TestProperty2"]
                                          FROM x
-                                         WHERE (x["id"] = @rk0  AND  x["TestProperty1"] = @pk0)
+                                         WHERE (x["id"] = @rk0)
                                          """;
-
-        const string KeyStoragePropertyName = "id";
-        const string PartitionKeyPropertyName = "TestProperty1";
 
         var model = new CosmosNoSqlModelBuilder().BuildDynamic(
             new()
@@ -210,14 +207,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
                 ]
             },
             defaultEmbeddingGenerator: null);
-        var keys = new List<CosmosNoSqlCompositeKey> { new("id", "TestProperty1") };
+        List<string> documentIds = ["id"];
 
         // Act
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
             model,
-            KeyStoragePropertyName,
-            PartitionKeyPropertyName,
-            keys,
+            documentIds,
             includeVectors: true);
 
         var queryText = queryDefinition.QueryText;
@@ -228,9 +223,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
 
         Assert.Equal("@rk0", queryParameters[0].Name);
         Assert.Equal("id", queryParameters[0].Value);
-
-        Assert.Equal("@pk0", queryParameters[1].Name);
-        Assert.Equal("TestProperty1", queryParameters[1].Value);
     }
 
     [Fact]

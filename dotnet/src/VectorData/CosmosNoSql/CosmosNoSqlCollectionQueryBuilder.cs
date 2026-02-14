@@ -16,10 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 /// </summary>
 internal static class CosmosNoSqlCollectionQueryBuilder
 {
-    private const string SelectClauseDelimiter = ",";
-    private const string AndConditionDelimiter = " AND ";
-    private const string OrConditionDelimiter = " OR ";
-
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL using vector search.
     /// </summary>
@@ -66,7 +62,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
+        var selectClauseArguments = string.Join(",", [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
@@ -127,7 +123,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
                 builder.Append(filterClause);
                 if (scoreThresholdClause is not null)
                 {
-                    builder.Append(AndConditionDelimiter);
+                    builder.Append(" AND ");
                 }
             }
 
@@ -185,7 +181,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var fieldsArgument = projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName));
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
+        var selectClauseArguments = string.Join(",", [.. fieldsArgument]);
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
         // since it's more optimized.
@@ -233,15 +229,12 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     /// </summary>
     public static QueryDefinition BuildSelectQuery(
         CollectionModel model,
-        string keyStoragePropertyName,
-        string partitionKeyStoragePropertyName,
-        List<CosmosNoSqlCompositeKey> keys,
+        List<string> documentIds,
         bool includeVectors)
     {
-        Verify.True(keys.Count > 0, "At least one key should be provided.", nameof(keys));
+        Verify.True(documentIds.Count > 0, "At least one document ID should be provided.", nameof(documentIds));
 
         const string RecordKeyVariableName = "@rk";
-        const string PartitionKeyVariableName = "@pk";
 
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
 
@@ -251,13 +244,16 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter,
+        var selectClauseArguments = string.Join(
+            ",",
             projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName)));
 
-        var whereClauseArguments = string.Join(OrConditionDelimiter,
-            keys.Select((key, index) =>
-                $"({GeneratePropertyAccess(tableVariableName, keyStoragePropertyName)} = {RecordKeyVariableName}{index} {AndConditionDelimiter} " +
-                $"{GeneratePropertyAccess(tableVariableName, partitionKeyStoragePropertyName)} = {PartitionKeyVariableName}{index})"));
+        // Build WHERE clause using only the document id.
+        // The partition key is provided via RequestOptions for point reads, not in the query.
+        var whereClauseArguments = string.Join(
+            " OR ",
+            documentIds.Select((_, index) =>
+                $"({GeneratePropertyAccess(tableVariableName, model.KeyProperty.StorageName)} = {RecordKeyVariableName}{index})"));
 
         var query = $"""
                      SELECT {selectClauseArguments}
@@ -267,16 +263,11 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var queryDefinition = new QueryDefinition(query);
 
-        for (var i = 0; i < keys.Count; i++)
+        for (var i = 0; i < documentIds.Count; i++)
         {
-            var recordKey = keys[i].RecordKey;
-            var partitionKey = keys[i].PartitionKey;
-
-            Verify.NotNullOrWhiteSpace(recordKey);
-            Verify.NotNullOrWhiteSpace(partitionKey);
-
-            queryDefinition.WithParameter($"{RecordKeyVariableName}{i}", recordKey);
-            queryDefinition.WithParameter($"{PartitionKeyVariableName}{i}", partitionKey);
+            var documentIdString = documentIds[i];
+            Verify.NotNullOrWhiteSpace(documentIdString);
+            queryDefinition.WithParameter($"{RecordKeyVariableName}{i}", documentIdString);
         }
 
         return queryDefinition;

@@ -159,15 +159,15 @@ public static class CosmosNoSqlServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<string, TRecord>), serviceKey, (sp, _) =>
+        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<CosmosNoSqlKey, TRecord>), serviceKey, (sp, _) =>
         {
             var database = sp.GetRequiredService<Database>();
             options = GetCollectionOptions(sp, _ => options);
 
-            return new CosmosNoSqlCollection<string, TRecord>(database, name, options);
+            return new CosmosNoSqlCollection<CosmosNoSqlKey, TRecord>(database, name, options);
         }, lifetime));
 
-        AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
+        AddAbstractions<CosmosNoSqlKey, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
@@ -267,12 +267,12 @@ public static class CosmosNoSqlServiceCollectionExtensions
         Verify.NotNull(connectionStringProvider);
         Verify.NotNull(databaseNameProvider);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<string, TRecord>), serviceKey, (sp, _) =>
+        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<CosmosNoSqlKey, TRecord>), serviceKey, (sp, _) =>
         {
             var options = GetCollectionOptions(sp, optionsProvider);
             var clientOptions = CreateClientOptions(options?.JsonSerializerOptions);
 
-            return new CosmosNoSqlCollection<string, TRecord>(
+            return new CosmosNoSqlCollection<CosmosNoSqlKey, TRecord>(
                 connectionString: connectionStringProvider(sp),
                 databaseName: databaseNameProvider(sp),
                 name: name,
@@ -280,7 +280,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
                 options);
         }, lifetime));
 
-        AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
+        AddAbstractions<CosmosNoSqlKey, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
