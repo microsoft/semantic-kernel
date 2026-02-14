@@ -6,7 +6,6 @@ from collections.abc import AsyncIterable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
 from openai import AsyncOpenAI
-from openai._types import Omit, omit
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.file_search_tool import FileSearchTool
 from openai.types.beta.threads.run_create_params import AdditionalMessage, AdditionalMessageAttachment
@@ -34,6 +33,7 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.open_ai._types_compat import Omit, omit
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -618,7 +618,7 @@ class AssistantThreadActions:
                     if agent.name and agent.name.strip():
                         agent_names[agent.id] = agent.name
 
-                assistant_name = agent_names.get(message.assistant_id or "", None) or message.assistant_id or message.id
+                assistant_name = agent_names.get(message.assistant_id or "") or message.assistant_id or message.id
                 content = generate_message_content(str(assistant_name), message)
 
                 if len(content.items) > 0:

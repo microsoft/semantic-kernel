@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import IO, Any
 from warnings import warn
 
-from openai._types import FileTypes, Omit, omit
 from openai.types.images_response import ImagesResponse
 
+from semantic_kernel.connectors.ai.open_ai._types_compat import FileTypes, Omit, omit
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
     ImageSize,
     OpenAITextToImageExecutionSettings,
