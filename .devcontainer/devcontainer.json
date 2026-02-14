@@ -1,5 +1,9 @@
 {
-	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	//"image": "mcr.microsoft.com/devcontainers/universal:latest",
+	// Workaround for https://github.com/devcontainers/images/issues/1752
+	"build": {
+		"dockerfile": "sk.Dockerfile"
+	},	
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {},
@@ -12,7 +16,6 @@
 		"ghcr.io/azure/azure-dev/azd:0": {
 			"version": "latest"
 		},
-		"ghcr.io/devcontainers/features/common-utils:2": {},
 		"ghcr.io/devcontainers/features/dotnet:2": {
 			"version": "none",
 			"dotnetRuntimeVersions": "10.0",
@@ -23,6 +26,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"GitHub.copilot",
+				"GitHub.vscode-github-actions",
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
 				"esbenp.prettier-vscode"
