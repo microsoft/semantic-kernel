@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Pgvector;
 
@@ -90,6 +91,22 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
             type == typeof(BinaryEmbedding) ||
             type == typeof(BitArray) ||
             type == typeof(SparseVector);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        if (propertyModel.IsTimestampWithoutTimezone())
+        {
+            var type = Nullable.GetUnderlyingType(propertyModel.Type) ?? propertyModel.Type;
+            if (type != typeof(DateTime))
+            {
+                throw new NotSupportedException(
+                    $"Property '{propertyModel.ModelName}' has store type 'timestamp' configured, but this is only supported for DateTime properties. The property type is '{propertyModel.Type.Name}'.");
+            }
+        }
     }
 
     /// <inheritdoc />
