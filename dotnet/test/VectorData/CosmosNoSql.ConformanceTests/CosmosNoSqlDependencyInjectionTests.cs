@@ -7,12 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 using VectorData.ConformanceTests;
 using Xunit;
-using TestRecord = VectorData.ConformanceTests.DependencyInjectionTests<string>.Record;
 
 namespace CosmosNoSql.ConformanceTests.DependencyInjection;
 
 public class CosmosNoSqlDependencyInjectionTests
-    : DependencyInjectionTests<CosmosNoSqlVectorStore, CosmosNoSqlCollection<CosmosNoSqlKey, TestRecord>, CosmosNoSqlKey, TestRecord>
+    : DependencyInjectionTests<CosmosNoSqlVectorStore, CosmosNoSqlCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     protected const string ConnectionString = "AccountEndpoint=https://test.documents.azure.com:443/;AccountKey=mock;";
     protected const string DatabaseName = "dbName";
@@ -49,22 +48,22 @@ public class CosmosNoSqlDependencyInjectionTests
                 ? services
                     .AddSingleton<CosmosClient>(sp => new CosmosClient(ConnectionString, s_clientOptions))
                     .AddSingleton<Database>(sp => sp.GetRequiredService<CosmosClient>().GetDatabase(DatabaseName))
-                    .AddCosmosNoSqlCollection<TestRecord>(name, lifetime: lifetime)
+                    .AddCosmosNoSqlCollection<string, Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<CosmosClient>(sp => new CosmosClient(ConnectionString, s_clientOptions))
                     .AddSingleton<Database>(sp => sp.GetRequiredService<CosmosClient>().GetDatabase(DatabaseName))
-                    .AddKeyedCosmosNoSqlCollection<TestRecord>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedCosmosNoSqlCollection<string, Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddCosmosNoSqlCollection<TestRecord>(
+                ? services.AddCosmosNoSqlCollection<string, Record>(
                     name, ConnectionString, DatabaseName, lifetime: lifetime)
-                : services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+                : services.AddKeyedCosmosNoSqlCollection<string, Record>(
                     serviceKey, name, ConnectionString, DatabaseName, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddCosmosNoSqlCollection<TestRecord>(
+                ? services.AddCosmosNoSqlCollection<string, Record>(
                     name, ConnectionStringProvider, DatabaseNameProvider, lifetime: lifetime)
-                : services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+                : services.AddKeyedCosmosNoSqlCollection<string, Record>(
                     serviceKey, name, sp => ConnectionStringProvider(sp, serviceKey), sp => DatabaseNameProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
@@ -96,9 +95,9 @@ public class CosmosNoSqlDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
     }
 
@@ -107,9 +106,9 @@ public class CosmosNoSqlDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
     }
 
@@ -120,13 +119,13 @@ public class CosmosNoSqlDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlVectorStore(connectionString: null!, DatabaseName));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlVectorStore(serviceKey: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", connectionString: "", DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", connectionString: "", DatabaseName));
     }
 
@@ -137,13 +136,13 @@ public class CosmosNoSqlDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlVectorStore(ConnectionString, databaseName: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlVectorStore(serviceKey: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentException>(() => services.AddCosmosNoSqlCollection<string, Record>(
             name: "notNull", ConnectionString, databaseName: ""));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosNoSqlCollection<TestRecord>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedCosmosNoSqlCollection<string, Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: ""));
     }
 }

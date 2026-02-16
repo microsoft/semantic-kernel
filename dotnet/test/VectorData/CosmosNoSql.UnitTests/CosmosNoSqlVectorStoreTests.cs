@@ -55,6 +55,32 @@ public sealed class CosmosNoSqlVectorStoreTests
     }
 
     [Fact]
+    public void GetCollectionWithStringKeyReturnsCollection()
+    {
+        // Arrange
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+
+        // Act
+        var collection = sut.GetCollection<string, CosmosNoSqlHotel>("collection1");
+
+        // Assert
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void GetCollectionWithGuidKeyReturnsCollection()
+    {
+        // Arrange
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+
+        // Act
+        var collection = sut.GetCollection<Guid, GuidKeyHotel>("collection1");
+
+        // Assert
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
     {
         // Arrange
@@ -103,4 +129,15 @@ public sealed class CosmosNoSqlVectorStoreTests
         // Assert
         Assert.Equal(expectedCollectionNames, actualCollectionNames);
     }
+
+#pragma warning disable CA1812
+    private sealed class GuidKeyHotel
+    {
+        [Microsoft.Extensions.VectorData.VectorStoreKey]
+        public Guid Id { get; set; }
+
+        [Microsoft.Extensions.VectorData.VectorStoreData]
+        public string? Name { get; set; }
+    }
+#pragma warning restore CA1812
 }

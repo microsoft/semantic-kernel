@@ -24,7 +24,7 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         using var collection = new CosmosNoSqlCollection<CosmosNoSqlKey, PartitionedHotel>(
             store.Database,
             collectionName,
-            new() { PartitionKeyPropertyNames = [nameof(PartitionedHotel.HotelName)] });
+            new() { PartitionKeyProperties = [nameof(PartitionedHotel.HotelName)] });
 
         await collection.EnsureCollectionExistsAsync();
 
@@ -62,10 +62,10 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         var store = (CosmosNoSqlTestStore)fixture.TestStore;
         var collectionName = fixture.TestStore.AdjustCollectionName($"IndexingMode_{indexingMode}");
 
-        using var collection = new CosmosNoSqlCollection<CosmosNoSqlKey, IndexingModeHotel>(
+        using var collection = new CosmosNoSqlCollection<string, IndexingModeHotel>(
             store.Database,
             collectionName,
-            new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None, PartitionKeyPropertyNames = ["HotelId"] });
+            new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
 
         await collection.EnsureCollectionExistsAsync();
 
@@ -79,13 +79,12 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
             };
 
             await collection.UpsertAsync(record);
-            var key = new CosmosNoSqlKey(record.HotelId, record.HotelId);
-            var fetched = await collection.GetAsync(key);
+            var fetched = await collection.GetAsync(record.HotelId);
 
             Assert.NotNull(fetched);
 
-            await collection.DeleteAsync(key);
-            Assert.Null(await collection.GetAsync(key));
+            await collection.DeleteAsync(record.HotelId);
+            Assert.Null(await collection.GetAsync(record.HotelId));
         }
         finally
         {

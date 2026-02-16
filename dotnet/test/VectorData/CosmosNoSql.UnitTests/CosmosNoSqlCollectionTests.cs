@@ -42,7 +42,7 @@ public sealed class CosmosNoSqlCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<NotSupportedException>(() => new CosmosNoSqlCollection<CosmosNoSqlKey, object>(this._mockDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new CosmosNoSqlCollection<string, object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -56,7 +56,7 @@ public sealed class CosmosNoSqlCollectionTests
         mockDatabase.Setup(l => l.Client).Returns(mockClient.Object);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(mockDatabase.Object, "collection"));
+        var exception = Assert.Throws<ArgumentException>(() => new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(mockDatabase.Object, "collection"));
         Assert.Contains(nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions), exception.Message);
     }
 
@@ -64,10 +64,9 @@ public sealed class CosmosNoSqlCollectionTests
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        using var collection = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var collection = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         Assert.NotNull(collection);
     }
@@ -82,10 +81,10 @@ public sealed class CosmosNoSqlCollectionTests
         };
 
         // Act
-        using var collection = new CosmosNoSqlCollection<CosmosNoSqlKey, TestModel>(
+        using var collection = new CosmosNoSqlCollection<string, TestModel>(
             this._mockDatabase.Object,
             "collection",
-            new() { Definition = definition, PartitionKeyPropertyNames = ["Id"] });
+            new() { Definition = definition });
 
         // Assert
         Assert.NotNull(collection);
@@ -118,10 +117,9 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            collectionName,
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            collectionName);
 
         // Act
         var actualResult = await sut.CollectionExistsAsync();
@@ -161,14 +159,13 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, TestIndexingModel>(
+        using var sut = new CosmosNoSqlCollection<string, TestIndexingModel>(
             this._mockDatabase.Object,
             CollectionName,
             new()
             {
                 IndexingMode = indexingMode,
-                Automatic = indexingMode != IndexingMode.None,
-                PartitionKeyPropertyNames = ["Id"]
+                Automatic = indexingMode != IndexingMode.None
             });
 
         var expectedVectorEmbeddingPolicy = new VectorEmbeddingPolicy(
@@ -266,10 +263,9 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            CollectionName,
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            CollectionName);
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -294,17 +290,25 @@ public sealed class CosmosNoSqlCollectionTests
         const string RecordKey = "recordKey";
         const string PartitionKey = "partitionKey";
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
-            this._mockDatabase.Object,
-            "collection",
-            useExplicitPartitionKey ? null : new() { PartitionKeyPropertyNames = ["HotelId"] });
-
         // Act
-        var key = useExplicitPartitionKey
-            ? new CosmosNoSqlKey(RecordKey, PartitionKey)
-            : new CosmosNoSqlKey(RecordKey, RecordKey);
+        if (useExplicitPartitionKey)
+        {
+            using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+                this._mockDatabase.Object,
+                "collection");
 
-        await sut.DeleteAsync(key);
+            await ((VectorStoreCollection<CosmosNoSqlKey, CosmosNoSqlHotel>)sut).DeleteAsync(
+                new CosmosNoSqlKey(RecordKey, PartitionKey));
+        }
+        else
+        {
+            using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+                this._mockDatabase.Object,
+                "collection");
+
+            await ((VectorStoreCollection<string, CosmosNoSqlHotel>)sut).DeleteAsync(
+                RecordKey);
+        }
 
         // Assert
         this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(
@@ -321,15 +325,12 @@ public sealed class CosmosNoSqlCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
-        // With the new design, keys must be CosmosNoSqlKey
-        var cosmosKeys = recordKeys.Select(k => new CosmosNoSqlKey(k, k)).ToList();
-        await sut.DeleteAsync(cosmosKeys);
+        await sut.DeleteAsync(recordKeys);
 
         // Assert
         foreach (var key in recordKeys)
@@ -347,10 +348,9 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task DeleteCollectionInvokesValidMethodsAsync()
     {
         // Arrange
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
         await sut.EnsureCollectionDeletedAsync();
@@ -383,13 +383,12 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockItemResponse.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
-        var result = await sut.GetAsync(new CosmosNoSqlKey(RecordKey, RecordKey));
+        var result = await sut.GetAsync(RecordKey);
 
         // Assert
         Assert.NotNull(result);
@@ -417,19 +416,12 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockFeedResponse.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
-        var keys = new List<CosmosNoSqlKey>
-        {
-            new("key1", "key1"),
-            new("key2", "key2"),
-            new("key3", "key3")
-        };
-        var results = await sut.GetAsync(keys).ToListAsync();
+        var results = await sut.GetAsync(["key1", "key2", "key3"]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -451,10 +443,9 @@ public sealed class CosmosNoSqlCollectionTests
         // Arrange
         var hotel = new CosmosNoSqlHotel("key") { HotelName = "Test Name" };
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
         await sut.UpsertAsync(hotel);
@@ -478,10 +469,9 @@ public sealed class CosmosNoSqlCollectionTests
         var hotel2 = new CosmosNoSqlHotel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new CosmosNoSqlHotel("key3") { HotelName = "Test Name 3" };
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
         await sut.UpsertAsync([hotel1, hotel2, hotel3]);
@@ -523,10 +513,9 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act
         var results = await sut.SearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).ToListAsync();
@@ -543,10 +532,9 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
@@ -557,10 +545,9 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
-        using var sut = new CosmosNoSqlCollection<CosmosNoSqlKey, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyNames = ["HotelId"] });
+            "collection");
 
         var searchOptions = new VectorSearchOptions<CosmosNoSqlHotel> { VectorProperty = r => "non-existent-property" };
 
@@ -662,6 +649,153 @@ public sealed class CosmosNoSqlCollectionTests
 
         [VectorStoreData]
         public string? NonIndexableData1 { get; set; }
+    }
+#pragma warning restore CA1812
+
+    [Fact]
+    public void ConstructorWithStringKeyInitializesCollection()
+    {
+        // String TKey should work; partition key auto-defaults to the key property.
+        using var collection = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void ConstructorWithStringKeyAndExplicitPartitionKeyInitializesCollection()
+    {
+        // String TKey should work when partition key explicitly points to the key property.
+        using var collection = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection",
+            new() { PartitionKeyProperties = ["HotelId"] });
+
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void ConstructorWithStringKeyRejectsNonKeyPartitionKey()
+    {
+        // String TKey requires the partition key to be the key property.
+        var exception = Assert.Throws<ArgumentException>(() => new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection",
+            new() { PartitionKeyProperties = ["HotelName"] }));
+
+        Assert.Contains("partition key must be the key property", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithStringKeyRejectsEmptyPartitionKey()
+    {
+        // String TKey cannot use empty partition key (PartitionKey.None) - that requires CosmosNoSqlKey.
+        var exception = Assert.Throws<ArgumentException>(() => new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection",
+            new() { PartitionKeyProperties = [] }));
+
+        Assert.Contains("partition key must be the key property", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithGuidKeyInitializesCollection()
+    {
+        // Guid TKey should work; partition key auto-defaults to the key property.
+        using var collection = new CosmosNoSqlCollection<Guid, GuidKeyModel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void ConstructorWithGuidKeyRejectsNonKeyPartitionKey()
+    {
+        // Guid TKey requires the partition key to be the key property.
+        var exception = Assert.Throws<ArgumentException>(() => new CosmosNoSqlCollection<Guid, GuidKeyModel>(
+            this._mockDatabase.Object,
+            "collection",
+            new() { PartitionKeyProperties = ["Name"] }));
+
+        Assert.Contains("partition key must be the key property", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithUnsupportedKeyTypeThrowsException()
+    {
+        var exception = Assert.Throws<NotSupportedException>(() => new CosmosNoSqlCollection<int, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection"));
+
+        Assert.Contains("string, Guid, or CosmosNoSqlKey", exception.Message);
+    }
+
+    [Fact]
+    public async Task DeleteWithStringKeyInvokesValidMethodsAsync()
+    {
+        // Arrange
+        const string RecordKey = "recordKey";
+
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act
+        await sut.DeleteAsync(RecordKey);
+
+        // Assert: with string key, partition key = document id
+        this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(
+            RecordKey,
+            new PartitionKey(RecordKey),
+            It.IsAny<ItemRequestOptions>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    [Fact]
+    public async Task GetWithStringKeyReturnsValidRecordAsync()
+    {
+        // Arrange
+        const string RecordKey = "key";
+
+        var jsonObject = new JsonObject { ["id"] = RecordKey, ["HotelName"] = "Test Name" };
+
+        var mockItemResponse = new Mock<ItemResponse<JsonObject>>();
+        mockItemResponse
+            .Setup(l => l.Resource)
+            .Returns(jsonObject);
+
+        this._mockContainer
+            .Setup(l => l.ReadItemAsync<JsonObject>(
+                RecordKey,
+                new PartitionKey(RecordKey),
+                It.IsAny<ItemRequestOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act
+        var result = await sut.GetAsync(RecordKey);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(RecordKey, result.HotelId);
+        Assert.Equal("Test Name", result.HotelName);
+    }
+
+#pragma warning disable CA1812
+    private sealed class GuidKeyModel
+    {
+        [VectorStoreKey]
+        public Guid Id { get; set; }
+
+        [VectorStoreData]
+        public string? Name { get; set; }
     }
 #pragma warning restore CA1812
 

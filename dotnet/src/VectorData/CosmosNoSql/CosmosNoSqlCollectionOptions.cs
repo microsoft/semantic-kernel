@@ -24,7 +24,7 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source) : base(source)
     {
         this.JsonSerializerOptions = source?.JsonSerializerOptions;
-        this.PartitionKeyPropertyNames = source?.PartitionKeyPropertyNames is { Count: > 0 } names ? [.. names] : [];
+        this.PartitionKeyProperties = source?.PartitionKeyProperties is null ? null : [.. source.PartitionKeyProperties];
         this.IndexingMode = source?.IndexingMode ?? Default.IndexingMode;
         this.Automatic = source?.Automatic ?? Default.Automatic;
     }
@@ -39,20 +39,17 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Cosmos DB supports up to 3 levels of hierarchical partition keys. Provide the property names in hierarchical order.
-    /// For a single partition key, provide a list with one element. For hierarchical partition keys, provide up to 3 elements.
-    /// </para>
-    /// <para>
     /// Selecting a partition key is critical for performance and scalability. Choose properties with high cardinality
     /// that evenly distribute requests. See <see href="https://learn.microsoft.com/azure/cosmos-db/partitioning-overview"/> for guidance.
     /// </para>
     /// <para>
-    /// If empty, you must use <see cref="CosmosNoSqlKey"/> as the key type with an explicitly constructed
-    /// <see cref="PartitionKey"/>. If your scenario does not require partitioning, use <see cref="PartitionKey.None"/>,
-    /// though this is not recommended for production workloads.
+    /// When <see langword="null" /> (the default), the key property (document ID) is automatically used as the partition key - a common
+    /// Cosmos DB strategy; in this mode, the collection key type must be <see cref="string"/> or <see cref="System.Guid"/>.
+    /// To use a different partition key (or hierarchical partition keys), specify the key properties here and use
+    /// <see cref="CosmosNoSqlKey"/> as the key type.
     /// </para>
     /// </remarks>
-    public IReadOnlyList<string> PartitionKeyPropertyNames { get; set; } = [];
+    public IReadOnlyList<string>? PartitionKeyProperties { get; set; }
 
     /// <summary>
     /// Specifies the indexing mode in the Azure Cosmos DB service.

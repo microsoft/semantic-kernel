@@ -27,7 +27,9 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure CosmosDB NoSQL as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Must be <see cref="CosmosNoSqlKey"/>.</typeparam>
+/// <typeparam name="TKey">
+///     The data type of the record key. Supported types are <see cref="string"/> and <see cref="Guid"/> (in which case the partition key
+///     is the document ID), and <see cref="CosmosNoSqlKey"/> (for other partition key configurations).</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
@@ -134,10 +136,10 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         Func<CosmosNoSqlCollectionOptions, CollectionModel> modelFactory,
         CosmosNoSqlCollectionOptions? options)
     {
-        // Validate TKey: must be CosmosNoSqlKey, or object (used by CosmosNoSqlDynamicCollection).
-        if (typeof(TKey) != typeof(object) && typeof(TKey) != typeof(CosmosNoSqlKey))
+        // Validate TKey: must be string or Guid (partition key = document ID), CosmosNoSqlKey (other parittion key cases), or object (used by CosmosNoSqlDynamicCollection).
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(CosmosNoSqlKey) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException($"The key type must be CosmosNoSqlKey. Received: {typeof(TKey).Name}");
+            throw new NotSupportedException($"The key type must be string, Guid, or CosmosNoSqlKey. Received: {typeof(TKey).Name}");
         }
 
         try
@@ -166,26 +168,47 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
 
             // Setup partition key properties (supports hierarchical partition keys up to 3 levels)
-            if (options.PartitionKeyPropertyNames.Count > 3)
+            if (options.PartitionKeyProperties is null)
             {
-                throw new ArgumentException("Cosmos DB supports at most 3 levels of hierarchical partition keys.");
+                // No partition key property names configured: default to using the key property as the partition key.
+                // This is the most common Cosmos DB strategy where the document ID and partition key are the same value.
+                this._partitionKeyProperties = [this._model.KeyProperty];
+            }
+            else
+            {
+                if (options.PartitionKeyProperties.Count > 3)
+                {
+                    throw new ArgumentException("Cosmos DB supports at most 3 levels of hierarchical partition keys.");
+                }
+
+                this._partitionKeyProperties = new List<PropertyModel>(options.PartitionKeyProperties.Count);
+
+                foreach (var propertyName in options.PartitionKeyProperties)
+                {
+                    if (!this._model.PropertyMap.TryGetValue(propertyName, out var property))
+                    {
+                        throw new ArgumentException($"Partition key property '{propertyName}' is not part of the record definition.");
+                    }
+
+                    if (property.Type != typeof(string) && property.Type != typeof(bool) && property.Type != typeof(double) && property.Type != typeof(Guid))
+                    {
+                        throw new ArgumentException($"Partition key property '{propertyName}' must be string, bool, double, or Guid.");
+                    }
+
+                    this._partitionKeyProperties.Add(property);
+                }
             }
 
-            this._partitionKeyProperties = new List<PropertyModel>(options.PartitionKeyPropertyNames.Count);
-
-            foreach (var propertyName in options.PartitionKeyPropertyNames)
+            // When using simple key types (string/Guid), the partition key must be the key property only,
+            // since the partition key value cannot be independently specified via a simple key.
+            // Users who need hierarchical partition keys, a non-key partition key, or no partition key at all
+            // must use CosmosNoSqlKey as the key type.
+            if ((typeof(TKey) == typeof(string) || typeof(TKey) == typeof(Guid))
+                && (this._partitionKeyProperties is not [var singlePkProperty] || singlePkProperty != this._model.KeyProperty))
             {
-                if (!this._model.PropertyMap.TryGetValue(propertyName, out var property))
-                {
-                    throw new ArgumentException($"Partition key property '{propertyName}' is not part of the record definition.");
-                }
-
-                if (property.Type != typeof(string) && property.Type != typeof(bool) && property.Type != typeof(double) && property.Type != typeof(Guid))
-                {
-                    throw new ArgumentException($"Partition key property '{propertyName}' must be string, bool, double, or Guid.");
-                }
-
-                this._partitionKeyProperties.Add(property);
+                throw new ArgumentException(
+                    $"When using {typeof(TKey).Name} as the key type, the partition key must be the key property " +
+                    $"('{this._model.KeyProperty.ModelName}'). To use a different partition key configuration, use CosmosNoSqlKey as the key type.");
             }
 
             this._collectionMetadata = new()
@@ -706,10 +729,14 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// Gets the document ID and partition key from a key.
     /// </summary>
     private (string DocumentId, PartitionKey PartitionKey) GetDocumentIdAndPartitionKey(TKey key)
-        => key is CosmosNoSqlKey cosmosKey
-            ? (cosmosKey.DocumentId, cosmosKey.PartitionKey)
-            : throw new InvalidOperationException(
-                $"Keys must be of type CosmosNoSqlKey. Received key of type '{key.GetType().FullName}'.");
+        => key switch
+        {
+            CosmosNoSqlKey cosmosKey => (cosmosKey.DocumentId, cosmosKey.PartitionKey),
+            string s => (s, new PartitionKey(s)),
+            Guid g => (g.ToString(), new PartitionKey(g.ToString())),
+            _ => throw new InvalidOperationException(
+                $"Keys must be of type string, Guid, or CosmosNoSqlKey. Received key of type '{key.GetType().FullName}'.")
+        };
 
     /// <summary>
     /// Returns instance of <see cref="ContainerProperties"/> with applied indexing policy.
