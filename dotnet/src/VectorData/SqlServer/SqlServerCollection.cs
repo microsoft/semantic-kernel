@@ -24,7 +24,8 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public class SqlServerCollection<TKey, TRecord>
 #pragma warning restore CA1711
-    : VectorStoreCollection<TKey, TRecord>
+    : VectorStoreCollection<TKey, TRecord>,
+      IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 {
@@ -32,6 +33,7 @@ public class SqlServerCollection<TKey, TRecord>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly HybridSearchOptions<TRecord> s_defaultHybridSearchOptions = new();
 
     private readonly string _connectionString;
     private readonly CollectionModel _model;
@@ -635,6 +637,74 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        Verify.NotNull(searchValue);
+        Verify.NotNull(keywords);
+        Verify.NotLessThan(top, 1);
+
+        options ??= s_defaultHybridSearchOptions;
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (options.OldFilter is not null)
+        {
+            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use Filter instead.");
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(new VectorSearchOptions<TRecord> { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
+
+        SqlVector<float> vector = searchValue switch
+        {
+            SqlVector<float> v => v,
+            ReadOnlyMemory<float> r => new(r),
+            float[] f => new(f),
+            Embedding<float> e => new(e.Vector),
+
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => new(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqlServerModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        var keywordsCombined = string.Join(" ", keywords);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
+        // when the user is done with the results.
+        SqlConnection connection = new(this._connectionString);
+        SqlCommand command = SqlServerCommandBuilder.SelectHybrid(
+            connection,
+            this._schema,
+            this.Name,
+            vectorProperty,
+            textDataProperty,
+            this._model,
+            top,
+            options,
+            vector,
+            keywordsCombined);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        await foreach (var record in this.ReadHybridSearchResultsAsync(connection, command, options, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
+    }
+
     #endregion Search
 
     /// <inheritdoc />
@@ -678,6 +748,43 @@ public class SqlServerCollection<TKey, TRecord>
 
                 yield return new VectorSearchResult<TRecord>(
                     this._mapper.MapFromStorageToDataModel(reader, includeVectors),
+                    reader.GetDouble(scoreIndex));
+            }
+        }
+        finally
+        {
+            command.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadHybridSearchResultsAsync(
+        SqlConnection connection,
+        SqlCommand command,
+        HybridSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        try
+        {
+            using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "HybridSearch",
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken).ConfigureAwait(false);
+
+            int scoreIndex = -1;
+            while (await reader.ReadWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "HybridSearch",
+                cancellationToken).ConfigureAwait(false))
+            {
+                if (scoreIndex < 0)
+                {
+                    scoreIndex = reader.GetOrdinal("score");
+                }
+
+                yield return new VectorSearchResult<TRecord>(
+                    this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors),
                     reader.GetDouble(scoreIndex));
             }
         }
