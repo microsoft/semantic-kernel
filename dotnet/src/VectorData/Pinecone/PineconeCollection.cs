@@ -432,6 +432,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
+
         if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
@@ -500,6 +501,12 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         foreach (var record in records)
         {
+            // Pinecone returns similarity scores where higher values indicate more similar results.
+            if (options.ScoreThreshold.HasValue && record.Score < options.ScoreThreshold.Value)
+            {
+                continue;
+            }
+
             yield return record;
         }
     }

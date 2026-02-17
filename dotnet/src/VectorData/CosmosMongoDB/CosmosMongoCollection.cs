@@ -419,7 +419,13 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             ScorePropertyName,
             DocumentPropertyName);
 
-        BsonDocument[] pipeline = [searchQuery, projectionQuery];
+        List<BsonDocument> pipeline = [searchQuery, projectionQuery];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(CosmosMongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         const string OperationName = "Aggregate";
         var cursor = await this.RunOperationAsync(

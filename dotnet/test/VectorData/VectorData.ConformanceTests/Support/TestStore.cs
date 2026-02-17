@@ -19,6 +19,12 @@ public abstract class TestStore
     /// returned cannot be compared with the original ones.
     /// </summary>
     public virtual bool VectorsComparable => true;
+
+    /// <summary>
+    /// Whether the database supports filtering by score threshold in vector search.
+    /// </summary>
+    public virtual bool SupportsScoreThreshold => true;
+
     public virtual string DefaultDistanceFunction => DistanceFunction.CosineSimilarity;
     public virtual string DefaultIndexKind => IndexKind.Flat;
 
