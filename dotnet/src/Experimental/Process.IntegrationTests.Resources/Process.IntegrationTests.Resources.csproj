@@ -18,7 +18,6 @@
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
-    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
   </ItemGroup>
 
 </Project>

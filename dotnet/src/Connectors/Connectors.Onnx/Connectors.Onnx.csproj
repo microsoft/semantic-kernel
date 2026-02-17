@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <PackageReference Include="FastBertTokenizer" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
   </ItemGroup>

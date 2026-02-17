@@ -26,8 +26,6 @@
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Agents\Core\Agents.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
   </ItemGroup>
 
 </Project>

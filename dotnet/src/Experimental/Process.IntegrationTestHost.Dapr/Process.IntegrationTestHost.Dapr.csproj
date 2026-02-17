@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
-    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
     <ProjectReference Include="..\Process.IntegrationTests.Resources\Process.IntegrationTests.Resources.csproj" />
     <ProjectReference Include="..\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
   </ItemGroup>

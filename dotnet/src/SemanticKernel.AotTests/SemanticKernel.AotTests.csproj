@@ -22,10 +22,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Abstractions" />
     <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Core" />
-    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Connectors.Onnx" />
   </ItemGroup>
 
 </Project>
