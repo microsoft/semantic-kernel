@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -271,6 +274,8 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     /// <summary>
     /// Execute a vector search and return the results using legacy filtering for backward compatibility.
+    /// Converts legacy <see cref="FilterClause"/> values to a LINQ expression tree for the modern
+    /// <see cref="VectorSearchOptions{TRecord}.Filter"/> property.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Search options with legacy TextSearchFilter.</param>
@@ -281,11 +286,9 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            OldFilter = searchOptions.Filter?.FilterClauses is not null
-                ? new VectorSearchFilter(searchOptions.Filter.FilterClauses)
+            Filter = searchOptions.Filter?.FilterClauses is not null
+                ? BuildFilterExpression(searchOptions.Filter.FilterClauses)
                 : null,
-#pragma warning restore CS0618
             Skip = searchOptions.Skip,
         };
 
@@ -431,6 +434,63 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 await Task.Yield();
             }
         }
+    }
+
+    /// <summary>
+    /// Converts a collection of legacy <see cref="FilterClause"/> instances to a LINQ expression tree.
+    /// </summary>
+    /// <remarks>
+    /// Building expression trees via <see cref="Expression"/> factory methods is pure data-structure
+    /// construction and is fully AOT-compatible. The resulting expression is analyzed (not compiled)
+    /// by the vector store provider.
+    /// </remarks>
+    /// <param name="filterClauses">The filter clauses to convert.</param>
+    /// <returns>A LINQ expression representing all clauses combined with AND, or <c>null</c> if no clauses are provided.</returns>
+    private static Expression<Func<TRecord, bool>>? BuildFilterExpression(IEnumerable<FilterClause> filterClauses)
+    {
+        var clauses = filterClauses.ToList();
+        if (clauses.Count == 0)
+        {
+            return null;
+        }
+
+        var parameter = Expression.Parameter(typeof(TRecord), "record");
+        Expression? combined = null;
+
+        foreach (var clause in clauses)
+        {
+            Expression condition;
+
+            if (clause is EqualToFilterClause equalTo)
+            {
+                // Use PropertyInfo overload to avoid IL2026 trimming warning.
+                // TRecord is annotated with [DynamicallyAccessedMembers(PublicProperties)]
+                // so reflection access to public properties is trim-safe.
+                var propertyInfo = typeof(TRecord).GetProperty(equalTo.FieldName, BindingFlags.Public | BindingFlags.Instance)
+                    ?? throw new InvalidOperationException($"Property '{equalTo.FieldName}' not found on type '{typeof(TRecord).FullName}'.");
+                var property = Expression.Property(parameter, propertyInfo);
+
+                // Create a typed constant matching the property type.
+                // This produces the same expression tree shape as a user-written
+                // LINQ expression (e.g., record.Tag == "Even"), which all MEVD
+                // filter translators handle correctly. Avoid boxing to object,
+                // which breaks analyzing connectors (NotSupportedException on
+                // Convert-to-object nodes) and InMemory (reference equality
+                // instead of value equality).
+                var value = Expression.Constant(equalTo.Value, propertyInfo.PropertyType);
+                condition = Expression.Equal(property, value);
+            }
+            else
+            {
+                throw new NotSupportedException($"Filter clause type '{clause.GetType().Name}' is not supported for conversion to LINQ expression.");
+            }
+
+            combined = combined is null
+                ? condition
+                : Expression.AndAlso(combined, condition);
+        }
+
+        return Expression.Lambda<Func<TRecord, bool>>(combined!, parameter);
     }
 
     #endregion
