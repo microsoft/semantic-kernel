@@ -12,11 +12,6 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public sealed class CollectionModelBuildingOptions
 {
     /// <summary>
-    /// Gets a value that indicates whether multiple key properties are supported.
-    /// </summary>
-    public required bool SupportsMultipleKeys { get; init; }
-
-    /// <summary>
     /// Gets a value that indicates whether multiple vector properties are supported.
     /// </summary>
     public required bool SupportsMultipleVectors { get; init; }

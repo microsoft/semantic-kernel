@@ -16,7 +16,6 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 

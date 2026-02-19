@@ -12,7 +12,6 @@ internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_mod
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
