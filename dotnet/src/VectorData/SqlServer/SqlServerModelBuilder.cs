@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
     internal const string SupportedVectorTypes = "SqlVector<float>, ReadOnlyMemory<float>, Embedding<float>, float[]";
+    internal const string SupportedIndexKinds = $"{IndexKind.Flat}, {IndexKind.DiskAnn}";
 
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
@@ -31,6 +33,23 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
         {
             throw new NotSupportedException(
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: int, long, string, Guid.");
+        }
+    }
+
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        if (propertyModel is VectorPropertyModel vectorProperty)
+        {
+            switch (vectorProperty.IndexKind)
+            {
+                case IndexKind.Flat or IndexKind.DiskAnn or null or "":
+                    break;
+                default:
+                    throw new NotSupportedException(
+                        $"Index kind '{vectorProperty.IndexKind}' is not supported by the SQL Server connector. Supported index kinds: {SupportedIndexKinds}");
+            }
         }
     }
 
