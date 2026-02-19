@@ -23,6 +23,24 @@ public class MongoDataTypeTests(MongoDataTypeTests.Fixture fixture)
             instantiationExpression: () => new DateTime(2020, 1, 1, 12, 30, 45),
             isFilterable: false); // Operand type is not supported for $vectorSearch: date
 
+    // MongoDB stores DateTimeOffset as UTC BsonDateTime; the offset is lost on round-trip.
+    public override Task DateTimeOffset()
+        => this.Test<DateTimeOffset>(
+            "DateTimeOffset",
+            new DateTimeOffset(2020, 1, 1, 12, 30, 45, TimeSpan.Zero),
+            new DateTimeOffset(2021, 2, 3, 13, 40, 55, TimeSpan.Zero),
+            instantiationExpression: () => new DateTimeOffset(2020, 1, 1, 12, 30, 45, TimeSpan.Zero),
+            isFilterable: false); // Operand type is not supported for $vectorSearch: date
+
+#if NET
+    public override Task DateOnly()
+        => this.Test<DateOnly>(
+            "DateOnly",
+            new DateOnly(2020, 1, 1),
+            new DateOnly(2021, 2, 3),
+            isFilterable: false); // Operand type is not supported for $vectorSearch: date
+#endif
+
     public override Task String_array()
         => this.Test<string[]>(
             "StringArray",
@@ -42,9 +60,7 @@ public class MongoDataTypeTests(MongoDataTypeTests.Fixture fixture)
             typeof(byte),
             typeof(short),
             typeof(Guid),
-            typeof(DateTimeOffset),
 #if NET
-            typeof(DateOnly),
             typeof(TimeOnly)
 #endif
         ];

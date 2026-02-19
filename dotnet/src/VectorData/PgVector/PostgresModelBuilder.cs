@@ -65,6 +65,10 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
                 type == typeof(byte[]) ||
                 type == typeof(DateTime) ||
                 type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+                type == typeof(TimeOnly) ||
+#endif
                 type == typeof(Guid);
     }
 

@@ -156,6 +156,14 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTimeOffset):
                         property.SetValue(record, reader.GetFieldValue<DateTimeOffset>(ordinal));
                         return;
+#if NET
+                    case var t when t == typeof(DateOnly):
+                        property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal));
+                        return;
+                    case var t when t == typeof(TimeOnly):
+                        property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal));
+                        return;
+#endif
                     case var t when t == typeof(byte[]):
                         property.SetValue(record, reader.GetFieldValue<byte[]>(ordinal));
                         return;
@@ -203,6 +211,14 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                             case Type t when t == typeof(List<DateTimeOffset>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<DateTimeOffset>>(ordinal));
                                 return;
+#if NET
+                            case Type t when t == typeof(List<DateOnly>):
+                                property.SetValueAsObject(record, reader.GetFieldValue<List<DateOnly>>(ordinal));
+                                return;
+                            case Type t when t == typeof(List<TimeOnly>):
+                                property.SetValueAsObject(record, reader.GetFieldValue<List<TimeOnly>>(ordinal));
+                                return;
+#endif
                             case Type t when t == typeof(List<byte[]>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<byte[]>>(ordinal));
                                 return;

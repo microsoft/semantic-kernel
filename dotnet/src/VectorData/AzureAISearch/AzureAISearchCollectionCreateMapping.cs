@@ -128,7 +128,11 @@ internal static class AzureAISearchCollectionCreateMapping
             // Half is also listed by the SDK, but currently not supported.
             Type t when t == typeof(float) => SearchFieldDataType.Double,
             Type t when t == typeof(double) => SearchFieldDataType.Double,
+            Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
+#if NET
+            Type t when t == typeof(DateOnly) => SearchFieldDataType.DateTimeOffset,
+#endif
 
             Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
             Type t when t == typeof(List<string>) => SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -142,8 +146,14 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<float>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#if NET
+            Type t when t == typeof(DateOnly[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateOnly>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#endif
 
             _ => throw new NotSupportedException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };

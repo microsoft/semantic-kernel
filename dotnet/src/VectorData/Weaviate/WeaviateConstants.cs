@@ -43,7 +43,13 @@ internal sealed class WeaviateConstants
         Converters =
         {
             new WeaviateDateTimeOffsetConverter(),
-            new WeaviateNullableDateTimeOffsetConverter()
+            new WeaviateNullableDateTimeOffsetConverter(),
+            new WeaviateDateTimeConverter(),
+            new WeaviateNullableDateTimeConverter(),
+#if NET
+            new WeaviateDateOnlyConverter(),
+            new WeaviateNullableDateOnlyConverter(),
+#endif
         }
     };
 }

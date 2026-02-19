@@ -61,6 +61,11 @@ internal static class PostgresPropertyMapping
             Type t when t == typeof(DateTime) && property.IsTimestampWithoutTimezone() => NpgsqlDbType.Timestamp,
             Type t when t == typeof(DateTime) => NpgsqlDbType.TimestampTz,
 
+#if NET
+            Type t when t == typeof(DateOnly) => NpgsqlDbType.Date,
+            Type t when t == typeof(TimeOnly) => NpgsqlDbType.Time,
+#endif
+
             _ => null
         };
 
@@ -84,6 +89,10 @@ internal static class PostgresPropertyMapping
                 Type t when t == typeof(byte[]) => "BYTEA",
                 Type t when t == typeof(DateTime) => "TIMESTAMPTZ",
                 Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
+#if NET
+                Type t when t == typeof(DateOnly) => "DATE",
+                Type t when t == typeof(TimeOnly) => "TIME",
+#endif
                 Type t when t == typeof(Guid) => "UUID",
                 _ => null
             };
