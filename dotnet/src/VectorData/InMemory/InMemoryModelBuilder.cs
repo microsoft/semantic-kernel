@@ -28,6 +28,14 @@ internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions
         }
     }
 
+    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = null;
+
+        // All .NET key types are supported by the InMemory provider.
+        return true;
+    }
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "";

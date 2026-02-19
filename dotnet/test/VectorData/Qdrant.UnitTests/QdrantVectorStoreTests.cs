@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -48,6 +49,29 @@ public class QdrantVectorStoreTests
 
         // Act & Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName));
+    }
+
+    [Fact]
+    public void QdrantModelBuilderExposesKeyTypeValidationCompatibilityMethod()
+    {
+        // Arrange.
+        var method = typeof(QdrantModelBuilder).GetMethod(
+            "IsKeyPropertyTypeValid",
+            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        var sut = new QdrantModelBuilder(hasNamedVectors: false);
+        var validArgs = new object?[] { typeof(ulong), null };
+        var invalidArgs = new object?[] { typeof(string), null };
+
+        // Act.
+        var validResult = (bool?)method?.Invoke(sut, validArgs);
+        var invalidResult = (bool?)method?.Invoke(sut, invalidArgs);
+
+        // Assert.
+        Assert.NotNull(method);
+        Assert.True(validResult);
+        Assert.Null(validArgs[1]);
+        Assert.False(invalidResult);
+        Assert.Equal("ulong, Guid", invalidArgs[1]);
     }
 
     [Fact]

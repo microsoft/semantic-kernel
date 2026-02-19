@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -41,6 +42,25 @@ public class InMemoryVectorStoreTests
         // Assert.
         Assert.NotNull(actual);
         Assert.IsType<InMemoryCollection<int, SinglePropsModel<int>>>(actual);
+    }
+
+    [Fact]
+    public void InMemoryModelBuilderExposesKeyTypeValidationCompatibilityMethod()
+    {
+        // Arrange.
+        var method = typeof(InMemoryModelBuilder).GetMethod(
+            "IsKeyPropertyTypeValid",
+            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        var sut = new InMemoryModelBuilder();
+        var args = new object?[] { typeof(string), null };
+
+        // Act.
+        var isSupported = (bool?)method?.Invoke(sut, args);
+
+        // Assert.
+        Assert.NotNull(method);
+        Assert.True(isSupported);
+        Assert.Null(args[1]);
     }
 
     [Fact]

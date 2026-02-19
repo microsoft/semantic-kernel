@@ -24,11 +24,23 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
     {
         var type = keyProperty.Type;
 
-        if (type != typeof(ulong) && type != typeof(Guid))
+        if (!this.IsKeyPropertyTypeValid(type, out _))
         {
             throw new NotSupportedException(
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be either ulong or Guid.");
         }
+    }
+
+    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        if (type == typeof(ulong) || type == typeof(Guid))
+        {
+            supportedTypes = null;
+            return true;
+        }
+
+        supportedTypes = "ulong, Guid";
+        return false;
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

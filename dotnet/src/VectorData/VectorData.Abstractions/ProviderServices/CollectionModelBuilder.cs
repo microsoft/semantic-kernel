@@ -540,6 +540,28 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Validates that the .NET type for a key property is supported by the provider.
     /// </summary>
+    /// <remarks>
+    /// This compatibility hook allows providers to expose key-type support as a boolean check,
+    /// while existing providers can continue using <see cref="ValidateKeyProperty(KeyPropertyModel)"/>.
+    /// </remarks>
+    protected virtual bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        try
+        {
+            this.ValidateKeyProperty(new KeyPropertyModel(nameof(type), type));
+            supportedTypes = null;
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            supportedTypes = "Provider-specific key type constraints are not satisfied.";
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates that the .NET type for a key property is supported by the provider.
+    /// </summary>
     /// <returns><c>true</c> if the provider supports auto-generating keys of the specified type; otherwise, <c>false</c>.</returns>
     protected abstract void ValidateKeyProperty(KeyPropertyModel keyProperty);
 
