@@ -16,6 +16,7 @@
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj"/>
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
   </ItemGroup>
 
 </Project>
