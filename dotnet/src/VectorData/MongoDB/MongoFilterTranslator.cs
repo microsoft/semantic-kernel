@@ -69,7 +69,11 @@ internal class MongoFilterTranslator : FilterTranslatorBase
             throw new NotSupportedException("MongoDB does not support null checks in vector search pre-filters");
         }
 
-        if (value is DateTime or decimal or IList)
+        if (value is DateTime or DateTimeOffset or decimal or IList
+#if NET
+            or DateOnly
+#endif
+        )
         {
             // Operand type is not supported for $vectorSearch: date/decimal
             throw new NotSupportedException($"MongoDB does not support type {value.GetType().Name} in vector search pre-filters.");
