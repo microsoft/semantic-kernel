@@ -185,7 +185,7 @@ public abstract class DistanceFunctionTests<TKey>(DistanceFunctionTests<TKey>.Fi
                 ]
             };
 
-            return this.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(this.CollectionName, definition);
+            return this.TestStore.CreateCollection<TKey, SearchRecord>(this.CollectionName, definition);
         }
     }
 
