@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal sealed class AIFunctionKernelFunction : KernelFunction
 {
     private readonly AIFunction _aiFunction;
+    private readonly JsonElement _jsonSchema;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
         base(
@@ -33,13 +34,18 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     {
         // Kernel functions created from AI functions are always fully qualified
         this._aiFunction = aiFunction;
+        this._jsonSchema = aiFunction.JsonSchema.Clone();
     }
 
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string? pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
         this._aiFunction = other._aiFunction;
+        this._jsonSchema = other._jsonSchema;
     }
+
+    /// <inheritdoc />
+    public override JsonElement JsonSchema => this._jsonSchema;
 
     public override KernelFunction Clone(string? pluginName = null)
     {
