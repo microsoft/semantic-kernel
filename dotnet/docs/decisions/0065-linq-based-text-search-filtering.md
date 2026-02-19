@@ -60,7 +60,7 @@ This is explicitly a **temporary architectural state**, not a permanent design. 
 **Bad, because**:
 
 - **Dual code paths**: Maintains two implementations per class (**temporary** during transition period)
-- **Obsolete API usage**: Non-generic path uses deprecated `VectorSearchFilter.OldFilter` with pragma suppressions (**temporary**)
+- **Legacy translation**: Non-generic path converts `FilterClause` to LINQ expression trees at runtime (**temporary**)
 - **Documentation burden**: Must explain when to use which interface during transition period
 - **Temporary complexity**: Additional maintenance burden until legacy interface removal
 
@@ -106,28 +106,30 @@ Pattern A: Direct LINQ Passthrough          Pattern B: LINQ-to-Legacy Conversion
 │ Legacy Path:                 │           │ Legacy Path:                     │
 │  TextSearchFilter            │           │  TextSearchFilter                │
 │       ↓                      │           │       ↓                          │
-│  VectorSearchFilter.OldFilter│           │  Bing API parameters             │
-│  (obsolete, pragma)          │           │       ↓                          │
+│  BuildFilterExpression()     │           │  Bing API parameters             │
+│  (clause → LINQ tree)        │           │       ↓                          │
 │       ↓                      │           │  HTTP GET request                │
-│  Vector Store                │           │                                  │
-│                              │           │ Modern Path:                     │
-│ Modern Path:                 │           │  Expression<Func<T, bool>>       │
+│  VectorSearchOptions.Filter  │           │                                  │
+│       ↓                      │           │ Modern Path:                     │
+│  Vector Store                │           │  Expression<Func<T, bool>>       │
+│                              │           │       ↓                          │
+│ Modern Path:                 │           │  LINQ tree analysis              │
 │  Expression<Func<T, bool>>   │           │       ↓                          │
-│       ↓                      │           │  LINQ tree analysis              │
+│       ↓                      │           │  TextSearchFilter (conversion)   │
 │  VectorSearchOptions.Filter  │           │       ↓                          │
-│  (direct passthrough)        │           │  TextSearchFilter (conversion)   │
-│       ↓                      │           │       ↓                          │
-│  Vector Store                │           │  Delegate to legacy path         │
+│  (direct passthrough)        │           │  Delegate to legacy path         │
+│       ↓                      │           │                                  │
+│  Vector Store                │           │                                  │
 └──────────────────────────────┘           └──────────────────────────────────┘
 
-Key: Two INDEPENDENT paths             Key: Modern converts to legacy
-     NO translation between them             Reuses existing implementation
+Key: Both paths use                     Key: Modern converts to legacy
+     VectorSearchOptions.Filter              Reuses existing implementation
 ```
 
 **Key Architectural Characteristics**:
 
 1. **Interface Layer**: Two separate interfaces: legacy (`ITextSearch`) and modern (`ITextSearch<TRecord>`)
-2. **Pattern A (VectorStoreTextSearch)**: Two completely independent code paths - NO translation, NO conversion overhead
+2. **Pattern A (VectorStoreTextSearch)**: Both paths converge on `VectorSearchOptions.Filter` — legacy clauses are converted to LINQ expression trees via `BuildFilterExpression()`, modern path passes LINQ directly
 3. **Pattern B (Web Connectors)**: LINQ expressions converted to legacy `TextSearchFilter`, then delegated to existing implementation
 4. **RequiresDynamicCode**: NONE - No `[RequiresDynamicCode]` attributes on either interface or implementations
 5. **AOT Compatibility**: Both interfaces are AOT-compatible (no attributes blocking compilation or runtime)
@@ -138,7 +140,7 @@ All implementations follow the dual interface pattern, but with **two different 
 
 #### Pattern A: Direct LINQ Passthrough (VectorStoreTextSearch)
 
-VectorStoreTextSearch has two **completely independent** code paths with NO conversion:
+VectorStoreTextSearch uses `VectorSearchOptions.Filter` (LINQ) for **both** code paths. The legacy path converts `FilterClause` values to a LINQ expression tree via `BuildFilterExpression()` — this is pure data-structure construction and fully AOT-compatible:
 
 ```csharp
 #pragma warning disable CS0618 // ITextSearch is obsolete - backward compatibility
@@ -165,16 +167,14 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch, ITextSearch<TR
         return Task.FromResult(CreateStringSearchResponse(searchResponse));
     }
 
-    // Legacy path: Uses obsolete VectorSearchFilter.OldFilter
+    // Legacy path: Converts FilterClauses to LINQ expression tree
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(
         string query, TextSearchOptions? searchOptions, ...)
     {
         var vectorSearchOptions = new VectorSearchOptions<TRecord> {
-            #pragma warning disable CS0618
-            OldFilter = searchOptions.Filter?.FilterClauses is not null
-                ? new VectorSearchFilter(searchOptions.Filter.FilterClauses)
+            Filter = searchOptions.Filter?.FilterClauses is not null
+                ? BuildFilterExpression(searchOptions.Filter.FilterClauses)
                 : null,
-            #pragma warning restore CS0618
         };
         // ... execute
     }
@@ -514,12 +514,10 @@ Keep both interfaces but convert TextSearchFilter to LINQ internally.
 
 - Good, because avoids obsolete API usage (no VectorSearchFilter dependency)
 - Good, because reuses single implementation path
-- Bad, because **BREAKING CHANGE**: RequiresDynamicCode cascades to ALL TextSearch APIs
-- Bad, because makes entire TextSearch plugin ecosystem AOT-incompatible
-- Bad, because introduces unnecessary conversion overhead
-- Bad, because complex exception handling for translation failures
+- Good, because building expression trees is pure data-structure construction, fully AOT-compatible
+- Bad, because introduces conversion overhead (though minimal for simple equality clauses)
 
-**Why Not Chosen**: AOT incompatibility and breaking changes unacceptable.
+**Update**: This option was originally rejected based on an incorrect assessment that `RequiresDynamicCode` would cascade to all TextSearch APIs. In fact, **building** expression trees (`Expression.Property`, `Expression.Equal`, `Expression.Lambda`) is fully AOT-compatible — only **compiling** expression trees (`Expression.Compile()`) requires dynamic code generation. Since MEVD's `VectorSearchOptions<TRecord>.Filter` analyzes the expression tree without compiling it, there is no AOT incompatibility. This approach was adopted in the `VectorStoreTextSearch` legacy path to enable MEVD to remove its obsolete `OldFilter` property before publishing 1.0 provider versions.
 
 ### Option 3: Adapter Pattern
 
