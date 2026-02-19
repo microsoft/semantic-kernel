@@ -151,9 +151,11 @@ internal static class QdrantFieldMapping
             case DateTime dateTimeValue:
                 value.StringValue = dateTimeValue.ToString("O");
                 break;
+#if NET
             case DateOnly dateOnlyValue:
                 value.StringValue = dateOnlyValue.ToString("O");
                 break;
+#endif
             case IEnumerable<int> or
                     IEnumerable<long> or
                     IEnumerable<string> or
