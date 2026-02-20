@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -89,6 +90,39 @@ public class KernelJsonSchemaTests
         Assert.ThrowsAny<JsonException>(() => KernelJsonSchema.Parse(InvalidJsonSchema));
         Assert.ThrowsAny<JsonException>(() => KernelJsonSchema.Parse((ReadOnlySpan<char>)InvalidJsonSchema));
         Assert.ThrowsAny<JsonException>(() => KernelJsonSchema.Parse(Encoding.UTF8.GetBytes(InvalidJsonSchema)));
+    }
+
+    [Fact]
+    public void ItShouldExcludeReadOnlyPropertiesFromSchema()
+    {
+        var function = KernelFunctionFactory.CreateFromMethod(
+            (MyComplexType input) => { },
+            "TestFunction");
+
+        var schema = function.Metadata.Parameters[0].Schema;
+        var jsonSchemaString = schema?.ToString();
+
+        Assert.NotNull(jsonSchemaString);
+        Assert.Contains("Status", jsonSchemaString); 
+        Assert.DoesNotContain("Derived", jsonSchemaString); 
+    }
+
+    /// <summary>
+    /// A helper class specific to this test case.
+    /// Used to verify that read-only properties are ignored by the schema generator.
+    /// </summary>
+    private class MyComplexType
+    {
+        [Description("The current status of the user account")]
+        public MyStatus Status { get; set; }
+
+        public string Derived => $"Status is {Status}";
+    }
+
+    private enum MyStatus
+    {
+        Active,
+        Inactive
     }
 
     // TODO: KernelJsonSchema currently validates that the input is valid JSON but not that it's valid JSON schema.
