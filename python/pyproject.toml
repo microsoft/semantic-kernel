@@ -71,6 +71,9 @@ autogen = [
 aws = [
     "boto3>=1.36.4,<1.41.0",
 ]
+camb = [
+    "camb-sdk >= 0.0.2"
+]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
