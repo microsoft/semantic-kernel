@@ -68,14 +68,14 @@ public abstract class RedisFilterTests(FilterTests<string>.Fixture fixture)
     #endregion
 }
 
-public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterTests.Fixture fixture)
-    : RedisFilterTests(fixture), IClassFixture<RedisJsonCollectionBasicFilterTests.Fixture>
+public class RedisJsonFilterTests(RedisJsonFilterTests.Fixture fixture)
+    : RedisFilterTests(fixture), IClassFixture<RedisJsonFilterTests.Fixture>
 {
     public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
-        protected override string CollectionNameBase => "JsonCollectionFilterTests";
+        protected override string CollectionNameBase => "JsonFilterTests";
 
         public override string SpecialCharactersText
 #if NET
@@ -100,8 +100,8 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
     }
 }
 
-public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicFilterTests.Fixture fixture)
-    : RedisFilterTests(fixture), IClassFixture<RedisHashSetCollectionBasicFilterTests.Fixture>
+public class RedisHashSetFilterTests(RedisHashSetFilterTests.Fixture fixture)
+    : RedisFilterTests(fixture), IClassFixture<RedisHashSetFilterTests.Fixture>
 {
     // Null values are not supported in Redis HashSet
     public override Task Equal_with_null_reference_type()
@@ -143,6 +143,19 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_List());
+
+    // Array fields not supported on Redis HashSet - Any tests
+    public override Task Any_with_Contains_over_inline_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Any_with_Contains_over_inline_string_array());
+
+    public override Task Any_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Any_with_Contains_over_captured_string_array());
+
+    public override Task Any_with_Contains_over_captured_string_list()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Any_with_Contains_over_captured_string_list());
+
+    public override Task Any_over_List_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Any_over_List_with_Contains_over_captured_string_array());
 
     public new class Fixture : FilterTests<string>.Fixture
     {

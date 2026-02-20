@@ -35,6 +35,7 @@
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.73.0" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
+    <PackageVersion Include="Google.GenAI" Version="0.11.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.33.4" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
@@ -79,9 +80,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.71.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.71.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.71.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.47.0-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.14.15" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
@@ -184,6 +185,7 @@
     <PackageVersion Include="Testcontainers" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.8.1" />
     <PackageVersion Include="Testcontainers.MongoDB" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Qdrant" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />

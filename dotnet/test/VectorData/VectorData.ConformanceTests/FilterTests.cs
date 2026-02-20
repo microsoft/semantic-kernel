@@ -366,6 +366,42 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
 
 #pragma warning restore RCS1196 // Call extension method as instance method
 
+    [ConditionalFact]
+    public virtual Task Any_with_Contains_over_inline_string_array()
+        => this.TestFilterAsync(
+            r => r.StringArray.Any(s => new[] { "x", "z", "nonexistent" }.Contains(s)),
+            r => ((string[])r["StringArray"]!).Any(s => new[] { "x", "z", "nonexistent" }.Contains(s)));
+
+    [ConditionalFact]
+    public virtual Task Any_with_Contains_over_captured_string_array()
+    {
+        string[] tagsToFind = ["x", "z", "nonexistent"];
+
+        return this.TestFilterAsync(
+            r => r.StringArray.Any(s => tagsToFind.Contains(s)),
+            r => ((string[])r["StringArray"]!).Any(s => tagsToFind.Contains(s)));
+    }
+
+    [ConditionalFact]
+    public virtual Task Any_with_Contains_over_captured_string_list()
+    {
+        List<string> tagsToFind = ["x", "z", "nonexistent"];
+
+        return this.TestFilterAsync(
+            r => r.StringArray.Any(s => tagsToFind.Contains(s)),
+            r => ((string[])r["StringArray"]!).Any(s => tagsToFind.Contains(s)));
+    }
+
+    [ConditionalFact]
+    public virtual Task Any_over_List_with_Contains_over_captured_string_array()
+    {
+        string[] tagsToFind = ["x", "z", "nonexistent"];
+
+        return this.TestFilterAsync(
+            r => r.StringList.Any(s => tagsToFind.Contains(s)),
+            r => ((List<string>)r["StringList"]!).Any(s => tagsToFind.Contains(s)));
+    }
+
     #endregion Contains
 
     #region Variable types
@@ -604,7 +640,7 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
 
             if (this.TestDynamic)
             {
-                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
+                this.DynamicCollection = this.TestStore.CreateDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
             }
         }
 

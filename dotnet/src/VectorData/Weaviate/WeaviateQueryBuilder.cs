@@ -43,6 +43,12 @@ internal static class WeaviateQueryBuilder
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
 
+        // Weaviate nearVector supports distance parameter for thresholding.
+        // Distance works for all distance functions (lower values = more similar).
+        var distanceFilter = searchOptions.ScoreThreshold.HasValue
+            ? $"distance: {searchOptions.ScoreThreshold.Value}"
+            : string.Empty;
+
         return $$"""
         {
           Get {
@@ -53,6 +59,7 @@ internal static class WeaviateQueryBuilder
               nearVector: {
                 {{GetTargetVectorsQuery(hasNamedVectors, vectorPropertyName)}}
                 vector: {{vectorArray}}
+                {{distanceFilter}}
               }
             ) {
               {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
@@ -86,7 +93,7 @@ internal static class WeaviateQueryBuilder
         {
             string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 
-            return $$"""{ path: ["{{sortPath}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
+            return $$"""{ path: ["{{JsonEncodedText.Encode(sortPath)}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
         }));
 
         var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
@@ -128,6 +135,7 @@ internal static class WeaviateQueryBuilder
         HybridSearchOptions<TRecord> searchOptions,
         bool hasNamedVectors)
     {
+        // https://docs.weaviate.io/weaviate/api/graphql/search-operators#hybrid
         var vectorsQuery = GetVectorsPropertyQuery(searchOptions.IncludeVectors, hasNamedVectors, model);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -247,7 +255,7 @@ internal static class WeaviateQueryBuilder
 
             var storageName = property is KeyPropertyModel ? WeaviateConstants.ReservedKeyPropertyName : property.StorageName;
 
-            var operand = $$"""{ path: ["{{storageName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
+            var operand = $$"""{ path: ["{{JsonEncodedText.Encode(storageName)}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
 
             operands.Add(operand);
         }

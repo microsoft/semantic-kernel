@@ -368,16 +368,19 @@ public class CollectionModelBuilderTests
     {
         private static readonly CollectionModelBuildingOptions s_defaultOptions = new()
         {
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = true,
             RequiresAtLeastOneVector = false
         };
 
-        protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
         {
-            supportedTypes = "string, int";
+            var type = keyProperty.Type;
 
-            return type == typeof(string) || type == typeof(int);
+            if (type != typeof(string) && type != typeof(int))
+            {
+                throw new NotSupportedException(
+                    $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, int.");
+            }
         }
 
         protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

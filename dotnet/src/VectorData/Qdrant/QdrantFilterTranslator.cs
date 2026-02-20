@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,21 +16,14 @@ using Range = Qdrant.Client.Grpc.Range;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
-// https://qdrant.tech/documentation/concepts/filtering
-internal class QdrantFilterTranslator
-{
-    private CollectionModel _model = null!;
-    private ParameterExpression _recordParameter = null!;
+#pragma warning disable MEVD9001 // Experimental: filter translation base types
 
+// https://qdrant.tech/documentation/concepts/filtering
+internal class QdrantFilterTranslator : FilterTranslatorBase
+{
     internal Filter Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        this._model = model;
-
-        Debug.Assert(lambdaExpression.Parameters.Count == 1);
-        this._recordParameter = lambdaExpression.Parameters[0];
-
-        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
-        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
+        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return this.Translate(preprocessedExpression);
     }
@@ -273,84 +265,17 @@ internal class QdrantFilterTranslator
     {
         return methodCall switch
         {
-            // Enumerable.Contains()
-            { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
-                when contains.Method.DeclaringType == typeof(Enumerable)
+            // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
+            _ when TryMatchContains(methodCall, out var source, out var item)
                 => this.TranslateContains(source, item),
 
-            // List.Contains()
-            {
-                Method:
-                {
-                    Name: nameof(Enumerable.Contains),
-                    DeclaringType: { IsGenericType: true } declaringType
-                },
-                Object: Expression source,
-                Arguments: [var item]
-            } when declaringType.GetGenericTypeDefinition() == typeof(List<>)
-                => this.TranslateContains(source, item),
-
-            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
-            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
-            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
-            // See https://github.com/dotnet/runtime/issues/109757 for more context.
-            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
-            // it's null.
-            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
-                when contains.Method.DeclaringType == typeof(MemoryExtensions)
-                    && (contains.Arguments.Count is 2
-                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
-                    && TryUnwrapSpanImplicitCast(spanArg, out var source)
-                => this.TranslateContains(source, item),
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable)
+                => this.TranslateAny(anySource, lambda),
 
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
-
-        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
-        {
-            // Different versions of the compiler seem to generate slightly different expression tree representations for this
-            // implicit cast:
-            var (unwrapped, castDeclaringType) = expression switch
-            {
-                UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var operand
-                } => (operand, implicitCastDeclaringType),
-
-                MethodCallExpression
-                {
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Arguments: [var firstArgument]
-                } => (firstArgument, implicitCastDeclaringType),
-
-                _ => (null, null)
-            };
-
-            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
-            if (unwrapped is UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: null
-                } convert
-                && convert.Type == typeof(object[]))
-            {
-                result = convert.Operand;
-                return true;
-            }
-
-            if (unwrapped is not null
-                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
-                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
-            {
-                result = unwrapped;
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
     }
 
     private Filter TranslateContains(Expression source, Expression item)
@@ -424,56 +349,87 @@ internal class QdrantFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array field is contained in the given values.
+    /// </summary>
+    private Filter TranslateAny(Expression source, LambdaExpression lambda)
     {
-        var unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
+        // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression containsCall
+            || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {
-            unwrappedExpression = convert.Operand;
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
         }
 
-        var modelName = unwrappedExpression switch
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
         {
-            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
-                => memberExpression.Member.Name,
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
 
-            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
-            MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
-                => keyName,
-
-            _ => null
+        // Extract the values
+        IEnumerable values = valuesExpression switch
+        {
+            NewArrayExpression newArray => ExtractArrayValues(newArray),
+            ConstantExpression { Value: IEnumerable enumerable and not string } => enumerable,
+            _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
         };
 
-        if (modelName is null)
+        // Generate a Match condition with RepeatedStrings or RepeatedIntegers
+        // This works because in Qdrant, matching against an array field with multiple values
+        // returns records where ANY element matches ANY of the values
+        var elementType = property.Type.IsArray
+            ? property.Type.GetElementType()
+            : property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof(List<>)
+                ? property.Type.GetGenericArguments()[0]
+                : null;
+
+        switch (elementType)
         {
-            property = null;
-            return false;
+            case var t when t == typeof(string):
+                var strings = new RepeatedStrings();
+
+                foreach (var value in values)
+                {
+                    strings.Strings.Add(value is string or null
+                        ? (string?)value
+                        : throw new ArgumentException("Non-string element in string Any array"));
+                }
+
+                return new Filter { Must = { new Condition { Field = new FieldCondition { Key = property.StorageName, Match = new Match { Keywords = strings } } } } };
+
+            case var t when t == typeof(int):
+                var ints = new RepeatedIntegers();
+
+                foreach (var value in values)
+                {
+                    ints.Integers.Add(value is int intValue
+                        ? intValue
+                        : throw new ArgumentException("Non-int element in int Any array"));
+                }
+
+                return new Filter { Must = { new Condition { Field = new FieldCondition { Key = property.StorageName, Match = new Match { Integers = ints } } } } };
+
+            default:
+                throw new NotSupportedException("Any with Contains only supported over array of ints or strings");
         }
 
-        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        static object?[] ExtractArrayValues(NewArrayExpression newArray)
         {
-            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
-        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
-        unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != unwrappedPropertyType && convertType != typeof(object))
+            var result = new object?[newArray.Expressions.Count];
+            for (var i = 0; i < newArray.Expressions.Count; i++)
             {
-                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+                if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
+                {
+                    throw new NotSupportedException("Invalid element in array");
+                }
+
+                result[i] = elementValue;
             }
 
-            unwrappedExpression = convert.Operand;
+            return result;
         }
-
-        return true;
     }
 }

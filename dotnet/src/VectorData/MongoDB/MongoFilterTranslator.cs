@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -13,22 +11,15 @@ using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
+#pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 // MongoDB query reference: https://www.mongodb.com/docs/manual/reference/operator/query
 // Information specific to vector search pre-filter: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter
-internal class MongoFilterTranslator
+internal class MongoFilterTranslator : FilterTranslatorBase
 {
-    private CollectionModel _model = null!;
-    private ParameterExpression _recordParameter = null!;
-
     internal BsonDocument Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        this._model = model;
-
-        Debug.Assert(lambdaExpression.Parameters.Count == 1);
-        this._recordParameter = lambdaExpression.Parameters[0];
-
-        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
-        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
+        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return this.Translate(preprocessedExpression);
     }
@@ -167,83 +158,12 @@ internal class MongoFilterTranslator
     {
         return methodCall switch
         {
-            // Enumerable.Contains()
-            { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
-                when contains.Method.DeclaringType == typeof(Enumerable)
-                => this.TranslateContains(source, item),
-
-            // List.Contains()
-            {
-                Method:
-                {
-                    Name: nameof(Enumerable.Contains),
-                    DeclaringType: { IsGenericType: true } declaringType
-                },
-                Object: Expression source,
-                Arguments: [var item]
-            } when declaringType.GetGenericTypeDefinition() == typeof(List<>) => this.TranslateContains(source, item),
-
-            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
-            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
-            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
-            // See https://github.com/dotnet/runtime/issues/109757 for more context.
-            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
-            // it's null.
-            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
-                when contains.Method.DeclaringType == typeof(MemoryExtensions)
-                    && (contains.Arguments.Count is 2
-                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
-                    && TryUnwrapSpanImplicitCast(spanArg, out var source)
+            // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
+            _ when TryMatchContains(methodCall, out var source, out var item)
                 => this.TranslateContains(source, item),
 
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
-
-        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
-        {
-            // Different versions of the compiler seem to generate slightly different expression tree representations for this
-            // implicit cast:
-            var (unwrapped, castDeclaringType) = expression switch
-            {
-                UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var operand
-                } => (operand, implicitCastDeclaringType),
-
-                MethodCallExpression
-                {
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Arguments: [var firstArgument]
-                } => (firstArgument, implicitCastDeclaringType),
-
-                _ => (null, null)
-            };
-
-            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
-            if (unwrapped is UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: null
-                } convert
-                && convert.Type == typeof(object[]))
-            {
-                result = convert.Operand;
-                return true;
-            }
-
-            if (unwrapped is not null
-                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
-                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
-            {
-                result = unwrapped;
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
     }
 
     private BsonDocument TranslateContains(Expression source, Expression item)
@@ -292,58 +212,5 @@ internal class MongoFilterTranslator
                 }
             };
         }
-    }
-
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
-    {
-        var unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            unwrappedExpression = convert.Operand;
-        }
-
-        var modelName = unwrappedExpression switch
-        {
-            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
-                => memberExpression.Member.Name,
-
-            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
-            MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
-                => keyName,
-
-            _ => null
-        };
-
-        if (modelName is null)
-        {
-            property = null;
-            return false;
-        }
-
-        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
-        {
-            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
-        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
-        unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != unwrappedPropertyType && convertType != typeof(object))
-            {
-                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
-            }
-
-            unwrappedExpression = convert.Operand;
-        }
-
-        return true;
     }
 }

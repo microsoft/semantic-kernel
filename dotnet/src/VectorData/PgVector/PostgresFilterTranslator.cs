@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
@@ -29,18 +30,29 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     {
         switch (value)
         {
-            // TODO: This aligns with our mapping of DateTime to PG's timestamp (as opposed to timestamptz) - we probably want to
-            // change that to timestamptz (aligning with Npgsql and EF). See #10641.
             case DateTime dateTime:
-                this._sql.Append('\'').Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture)).Append('\'');
-                return;
+                switch (dateTime.Kind)
+                {
+                    case DateTimeKind.Utc:
+                        this._sql.Append('\'').Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFZ", CultureInfo.InvariantCulture)).Append('\'');
+                        return;
+
+                    case DateTimeKind.Unspecified:
+                    case DateTimeKind.Local:
+                        this._sql.Append('\'').Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture)).Append('\'');
+                        return;
+
+                    default:
+                        throw new UnreachableException();
+                }
+
             case DateTimeOffset dateTimeOffset:
                 if (dateTimeOffset.Offset != TimeSpan.Zero)
                 {
-                    throw new NotSupportedException("DateTimeOffset with non-zero offset is not supported with PostgreSQL");
+                    throw new NotSupportedException("DateTimeOffset with non-zero offset is not supported with PostgreSQL. Use DateTimeOffset.UtcNow or convert to UTC.");
                 }
 
-                this._sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture)).Append("Z'");
+                this._sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFZ", CultureInfo.InvariantCulture)).Append('\'');
                 return;
 
             // Array constants (ARRAY[1, 2, 3])
@@ -81,6 +93,15 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(" = ANY (");
         this.Translate(source);
         this._sql.Append(')');
+    }
+
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to: column && ARRAY[values]
+        // The && operator checks if the two arrays have any elements in common
+        this.GenerateColumn(property);
+        this._sql.Append(" && ");
+        this.TranslateConstant(values, isSearchCondition: false);
     }
 
     protected override void TranslateQueryParameter(object? value)
