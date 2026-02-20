@@ -16,26 +16,26 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsKeyPropertyTypeValidCore(type, out supportedTypes);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
+        }
+    }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
         => IsDataPropertyTypeValidCore(type, out supportedTypes);
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
         => IsVectorPropertyTypeValidCore(type, out supportedTypes);
-
-    internal static bool IsKeyPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "string, Guid";
-
-        return type == typeof(string) || type == typeof(Guid);
-    }
 
     internal static bool IsDataPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

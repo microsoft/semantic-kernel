@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
@@ -48,10 +47,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
@@ -93,10 +94,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             0,
             includeVectors: true);
@@ -137,10 +140,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true));
@@ -159,10 +164,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             keywords: null,
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
             oldFilter: null,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
@@ -176,53 +183,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
-    }
-
-    [Fact]
-    public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
-    {
-        // Arrange
-        const string ExpectedQueryText = """
-                                         SELECT x["id"],x["TestProperty1"],x["TestProperty2"]
-                                         FROM x
-                                         WHERE (x["id"] = @rk0  AND  x["TestProperty1"] = @pk0)
-                                         """;
-
-        const string KeyStoragePropertyName = "id";
-        const string PartitionKeyPropertyName = "TestProperty1";
-
-        var model = new CosmosNoSqlModelBuilder().BuildDynamic(
-            new()
-            {
-                Properties =
-                [
-                    new VectorStoreKeyProperty("Key", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty1", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty2", typeof(string))
-                ]
-            },
-            defaultEmbeddingGenerator: null);
-        var keys = new List<CosmosNoSqlCompositeKey> { new("id", "TestProperty1") };
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
-            model,
-            KeyStoragePropertyName,
-            PartitionKeyPropertyName,
-            keys,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
-
-        Assert.Equal("@rk0", queryParameters[0].Name);
-        Assert.Equal("id", queryParameters[0].Value);
-
-        Assert.Equal("@pk0", queryParameters[1].Name);
-        Assert.Equal("TestProperty1", queryParameters[1].Value);
     }
 
     [Fact]
@@ -244,10 +204,12 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             [keywordText],
             this._model,
             vectorPropertyName,
+            distanceFunction: null,
             textPropertyName,
             ScorePropertyName,
             oldFilter: filter,
             filter: null,
+            scoreThreshold: null,
             10,
             5,
             includeVectors: true);
