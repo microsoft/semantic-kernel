@@ -17,8 +17,6 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// the search term and appends it to the base query for enhanced relevance.
 ///
 /// Example: Title.Contains("AI") → SearchQueryFilterClause("AI") → query + " AI"
-///
-/// See docs/decisions/0065-linq-based-text-search-filtering.md for architectural context and cross-engine comparison.
 /// </remarks>
 internal sealed class SearchQueryFilterClause : FilterClause
 {
