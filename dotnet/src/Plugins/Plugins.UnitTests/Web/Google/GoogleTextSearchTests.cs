@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable CS0618 // ITextSearch is obsolete
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance - tests intentionally use interface types
 
 using System;
 using System.IO;
@@ -729,6 +730,157 @@ public sealed class GoogleTextSearchTests : IDisposable
         Assert.Contains("Collection Contains filters", exception.Message);
         Assert.Contains("not supported by Google Custom Search API", exception.Message);
         Assert.Contains("OR logic", exception.Message);
+    }
+
+    #endregion
+
+    #region Default Search Parameter Tests
+
+    [Fact]
+    public async Task DefaultGeoLocationIsAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions { GeoLocation = "us" });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", new TextSearchOptions { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("gl=us", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task DefaultInterfaceLanguageIsAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions { InterfaceLanguage = "en" });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", new TextSearchOptions { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("hl=en", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task MultipleDefaultParametersAreAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions
+            {
+                GeoLocation = "us",
+                InterfaceLanguage = "en",
+                LanguageRestrict = "lang_en",
+                DuplicateContentFilter = "1"
+            });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", new TextSearchOptions { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("gl=us", uri);
+        Assert.Contains("hl=en", uri);
+        Assert.Contains("lr=lang_en", uri);
+        Assert.Contains("filter=1", uri);
+    }
+
+    [Fact]
+    public async Task FilterOverridesDefaultParameterAsync()
+    {
+        // Arrange: Set GeoLocation as default, then override via legacy filter
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions { GeoLocation = "us" });
+        var searchOptions = new TextSearchOptions { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("gl", "de") };
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert: Only de should appear, not us
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("gl=de", uri);
+        Assert.DoesNotContain("gl=us", uri);
+    }
+
+    [Fact]
+    public async Task DefaultParametersWorkWithGenericInterfaceAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<GoogleWebPage> textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions { InterfaceLanguage = "fr" });
+
+        // Act
+        var searchOptions = new TextSearchOptions<GoogleWebPage> { Top = 4, Skip = 0 };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("hl=fr", requestUris[0]!.AbsoluteUri);
+
+        // Clean up
+        ((IDisposable)textSearch).Dispose();
+    }
+
+    [Fact]
+    public async Task DefaultParametersCoexistWithLinqFiltersAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<GoogleWebPage> textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new GoogleTextSearchOptions
+            {
+                GeoLocation = "us",
+                InterfaceLanguage = "en"
+            });
+
+        // Act: LINQ filter for site search + default search params
+        var searchOptions = new TextSearchOptions<GoogleWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.DisplayLink == "microsoft.com"
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert: Both LINQ filter and defaults should appear
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("siteSearch=microsoft.com", uri);
+        Assert.Contains("gl=us", uri);
+        Assert.Contains("hl=en", uri);
+
+        // Clean up
+        ((IDisposable)textSearch).Dispose();
     }
 
     #endregion

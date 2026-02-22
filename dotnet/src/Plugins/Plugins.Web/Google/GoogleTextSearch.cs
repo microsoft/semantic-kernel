@@ -56,6 +56,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         this._logger = options?.LoggerFactory?.CreateLogger(typeof(GoogleTextSearch)) ?? NullLogger.Instance;
         this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
         this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        this._options = options;
     }
 
     /// <inheritdoc/>
@@ -427,6 +428,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     private readonly string? _searchEngineId;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
+    private readonly GoogleTextSearchOptions? _options;
 
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
@@ -505,6 +507,8 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <param name="searchOptions">Text search options</param>
     private void AddFilters(CseResource.ListRequest search, TextSearchOptions searchOptions)
     {
+        HashSet<string> processedParams = new(StringComparer.OrdinalIgnoreCase);
+
         if (searchOptions.Filter is not null)
         {
             var filterClauses = searchOptions.Filter.FilterClauses;
@@ -521,6 +525,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                     if (s_searchPropertySetters.TryGetValue(equalityFilterClause.FieldName.ToUpperInvariant(), out var setter))
                     {
                         setter.Invoke(search, value);
+                        processedParams.Add(equalityFilterClause.FieldName);
                     }
                     else
                     {
@@ -528,6 +533,61 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                     }
                 }
             }
+        }
+
+        // Apply default search parameters from constructor options (only for params not already set by filter)
+        this.ApplyDefaultSearchParameters(search, processedParams);
+    }
+
+    /// <summary>
+    /// Applies default Google search parameters from <see cref="GoogleTextSearchOptions"/> to the search request.
+    /// Parameters already set by filter clauses are not overridden.
+    /// </summary>
+    private void ApplyDefaultSearchParameters(CseResource.ListRequest search, HashSet<string> processedParams)
+    {
+        if (this._options is null)
+        {
+            return;
+        }
+
+        if (this._options.CountryRestrict is not null && !processedParams.Contains("cr"))
+        {
+            search.Cr = this._options.CountryRestrict;
+        }
+
+        if (this._options.DateRestrict is not null && !processedParams.Contains("dateRestrict"))
+        {
+            search.DateRestrict = this._options.DateRestrict;
+        }
+
+        if (this._options.GeoLocation is not null && !processedParams.Contains("gl"))
+        {
+            search.Gl = this._options.GeoLocation;
+        }
+
+        if (this._options.InterfaceLanguage is not null && !processedParams.Contains("hl"))
+        {
+            search.Hl = this._options.InterfaceLanguage;
+        }
+
+        if (this._options.LinkSite is not null && !processedParams.Contains("linkSite"))
+        {
+            search.LinkSite = this._options.LinkSite;
+        }
+
+        if (this._options.LanguageRestrict is not null && !processedParams.Contains("lr"))
+        {
+            search.Lr = this._options.LanguageRestrict;
+        }
+
+        if (this._options.Rights is not null && !processedParams.Contains("rights"))
+        {
+            search.Rights = this._options.Rights;
+        }
+
+        if (this._options.DuplicateContentFilter is not null && !processedParams.Contains("filter"))
+        {
+            search.Filter = this._options.DuplicateContentFilter;
         }
     }
 #pragma warning restore CS0618 // FilterClause is obsolete

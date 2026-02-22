@@ -44,6 +44,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearch)));
         this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
         this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        this._options = options;
     }
 
     /// <inheritdoc/>
@@ -116,6 +117,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     private readonly Uri? _uri = null;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
+    private readonly BingTextSearchOptions? _options;
 
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
@@ -448,7 +450,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{this._uri}?q={this.BuildQuery(query, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -588,11 +590,12 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// </summary>
     /// <param name="query">The query.</param>
     /// <param name="searchOptions">The search options.</param>
-    private static string BuildQuery(string query, TextSearchOptions searchOptions)
+    private string BuildQuery(string query, TextSearchOptions searchOptions)
     {
         StringBuilder fullQuery = new();
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
         StringBuilder queryParams = new();
+        HashSet<string> processedQueryParams = new(StringComparer.OrdinalIgnoreCase);
         if (searchOptions.Filter is not null)
         {
             var filterClauses = searchOptions.Filter.FilterClauses;
@@ -625,6 +628,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 
                         string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase));
                         queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(actualValue));
+                        processedQueryParams.Add(queryParam!);
                     }
                     else
                     {
@@ -634,9 +638,48 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             }
         }
 
+        // Apply default search parameters from constructor options (only for params not already set by filter)
+        this.AppendDefaultSearchParameters(queryParams, processedQueryParams);
+
         fullQuery.Append($"&count={searchOptions.Top}&offset={searchOptions.Skip}{queryParams}");
 
         return fullQuery.ToString();
+    }
+
+    /// <summary>
+    /// Appends default Bing search parameters from <see cref="BingTextSearchOptions"/> to the query.
+    /// Parameters already set by filter clauses are not overridden.
+    /// </summary>
+    private void AppendDefaultSearchParameters(StringBuilder queryParams, HashSet<string> processedQueryParams)
+    {
+        AppendIfNotSet(queryParams, processedQueryParams, "mkt", this._options?.Market);
+        AppendIfNotSet(queryParams, processedQueryParams, "freshness", this._options?.Freshness);
+        AppendIfNotSet(queryParams, processedQueryParams, "safeSearch", this._options?.SafeSearch);
+        AppendIfNotSet(queryParams, processedQueryParams, "cc", this._options?.CountryCode);
+        AppendIfNotSet(queryParams, processedQueryParams, "setLang", this._options?.SetLanguage);
+        AppendIfNotSet(queryParams, processedQueryParams, "responseFilter", this._options?.ResponseFilter);
+        AppendIfNotSet(queryParams, processedQueryParams, "promote", this._options?.Promote);
+        AppendIfNotSet(queryParams, processedQueryParams, "textFormat", this._options?.TextFormat);
+
+        if (this._options?.AnswerCount is int answerCount && !processedQueryParams.Contains("answerCount"))
+        {
+            queryParams.Append("&answerCount=").Append(answerCount);
+        }
+
+        if (this._options?.TextDecorations is bool textDecorations && !processedQueryParams.Contains("textDecorations"))
+        {
+#pragma warning disable CA1308 // Bing API requires lowercase boolean values
+            queryParams.Append("&textDecorations=").Append(textDecorations.ToString().ToLowerInvariant());
+#pragma warning restore CA1308
+        }
+    }
+
+    private static void AppendIfNotSet(StringBuilder queryParams, HashSet<string> processedQueryParams, string paramName, string? value)
+    {
+        if (value is not null && !processedQueryParams.Contains(paramName))
+        {
+            queryParams.Append('&').Append(paramName).Append('=').Append(Uri.EscapeDataString(value));
+        }
     }
 #pragma warning restore CS0618 // FilterClause is obsolete
 
