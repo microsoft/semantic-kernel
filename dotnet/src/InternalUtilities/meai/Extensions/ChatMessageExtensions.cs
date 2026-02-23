@@ -35,14 +35,8 @@ internal static class ChatMessageExtensions
                 Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(uc.Uri),
                 Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
                 Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
-                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(
-                    functionName: fcc.Name,
-                    id: fcc.CallId,
-                    arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
-                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(
-                    functionName: GetFunctionCallContent(frc.CallId)?.Name,
-                    callId: frc.CallId,
-                    result: frc.Result),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => CreateFunctionCallContent(fcc),
+                Microsoft.Extensions.AI.FunctionResultContent frc => CreateFunctionResultContent(frc),
                 _ => null
             };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -57,6 +51,71 @@ internal static class ChatMessageExtensions
         }
 
         return result;
+
+        Microsoft.SemanticKernel.FunctionCallContent CreateFunctionCallContent(Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+        {
+            var (functionName, pluginName) = ParseFunctionName(functionCallContent.Name);
+
+            return new Microsoft.SemanticKernel.FunctionCallContent(
+                functionName: functionName,
+                pluginName: pluginName,
+                id: functionCallContent.CallId,
+                arguments: functionCallContent.Arguments is not null ? new(functionCallContent.Arguments) : null);
+        }
+
+        Microsoft.SemanticKernel.FunctionResultContent CreateFunctionResultContent(Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+        {
+            string? functionName = null;
+            string? pluginName = null;
+
+            if (GetFunctionCallContent(functionResultContent.CallId) is { } functionCallContent)
+            {
+                (functionName, pluginName) = ParseFunctionName(functionCallContent.Name);
+            }
+
+            return new Microsoft.SemanticKernel.FunctionResultContent(
+                functionName: functionName,
+                pluginName: pluginName,
+                callId: functionResultContent.CallId,
+                result: functionResultContent.Result);
+        }
+
+        static (string FunctionName, string? PluginName) ParseFunctionName(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return (string.Empty, null);
+            }
+
+            // Most connectors use "." or "-" as the fully-qualified separator.
+            var parsed = FunctionName.Parse(name, ".");
+            if (!string.IsNullOrEmpty(parsed.PluginName))
+            {
+                return (parsed.Name, parsed.PluginName);
+            }
+
+            parsed = FunctionName.Parse(name, "-");
+            if (!string.IsNullOrEmpty(parsed.PluginName))
+            {
+                return (parsed.Name, parsed.PluginName);
+            }
+
+            // Some Ollama models return tool names as "<plugin>_<FunctionName>".
+            int underscore = name.IndexOf('_');
+            if (underscore > 0 &&
+                underscore == name.LastIndexOf('_') &&
+                underscore + 1 < name.Length &&
+                char.IsUpper(name[underscore + 1]))
+            {
+                parsed = FunctionName.Parse(name, "_");
+                if (!string.IsNullOrEmpty(parsed.PluginName))
+                {
+                    return (parsed.Name, parsed.PluginName);
+                }
+            }
+
+            return (name, null);
+        }
 
         Microsoft.Extensions.AI.FunctionCallContent? GetFunctionCallContent(string callId)
             => response?.Messages
