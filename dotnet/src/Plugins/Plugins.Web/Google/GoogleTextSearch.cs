@@ -63,7 +63,8 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
@@ -74,7 +75,8 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
@@ -85,7 +87,8 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
@@ -97,10 +100,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<GoogleWebPage>> GetSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var legacyOptions = ConvertToLegacyOptions(searchOptions);
-        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+        long? totalCount = includeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
         return new KernelSearchResults<GoogleWebPage>(this.GetResultsAsGoogleWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -108,10 +111,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var legacyOptions = ConvertToLegacyOptions(searchOptions);
-        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+        long? totalCount = includeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -119,59 +122,50 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions<GoogleWebPage>? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var legacyOptions = ConvertToLegacyOptions(searchOptions);
-        var searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        var searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions?.IncludeTotalCount == true ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+        long? totalCount = includeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <summary>
-    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
-    /// Attempts to translate simple LINQ expressions to Google API filters where possible.
+    /// Extracts search parameters from generic <see cref="TextSearchOptions{TRecord}"/>.
+    /// This is the primary entry point for the LINQ-based filtering path.
     /// </summary>
-    /// <param name="genericOptions">The generic search options with LINQ filtering.</param>
-    /// <returns>Legacy TextSearchOptions with equivalent filtering.</returns>
-    private static TextSearchOptions ConvertToLegacyOptions(TextSearchOptions<GoogleWebPage>? genericOptions)
+    private static (int Top, int Skip, bool IncludeTotalCount, List<(string FieldName, object Value)> Filters) ExtractSearchParameters<TRecord>(TextSearchOptions<TRecord>? searchOptions)
     {
-        if (genericOptions == null)
-        {
-            return new TextSearchOptions();
-        }
-
-        return new TextSearchOptions
-        {
-            Top = genericOptions.Top,
-            Skip = genericOptions.Skip,
-            IncludeTotalCount = genericOptions.IncludeTotalCount,
-            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToGoogleFilter(genericOptions.Filter) : null
-        };
+        var top = searchOptions?.Top ?? 3;
+        var skip = searchOptions?.Skip ?? 0;
+        var includeTotalCount = searchOptions?.IncludeTotalCount ?? false;
+        var filters = searchOptions?.Filter != null ? ExtractFiltersFromExpression(searchOptions.Filter) : [];
+        return (top, skip, includeTotalCount, filters);
     }
 
     /// <summary>
-    /// Converts a LINQ expression to a TextSearchFilter compatible with Google Custom Search API.
+    /// Walks a LINQ expression tree and extracts Google API filter key-value pairs directly.
     /// Supports property equality expressions, string Contains operations, NOT operations (inequality and negation),
     /// and compound AND expressions that map to Google's filter capabilities.
     /// </summary>
-    /// <param name="linqExpression">The LINQ expression to convert.</param>
-    /// <returns>A TextSearchFilter with equivalent filtering.</returns>
+    /// <param name="linqExpression">The LINQ expression to walk.</param>
+    /// <returns>A list of (FieldName, Value) pairs for Google API filters.</returns>
     /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
-    private static TextSearchFilter ConvertLinqExpressionToGoogleFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    private static List<(string FieldName, object Value)> ExtractFiltersFromExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
     {
         // Handle compound AND expressions: expr1 && expr2
         if (linqExpression.Body is BinaryExpression andExpr && andExpr.NodeType == ExpressionType.AndAlso)
         {
-            var filter = new TextSearchFilter();
-            CollectAndCombineFilters(andExpr, filter);
-            return filter;
+            var filters = new List<(string FieldName, object Value)>();
+            CollectAndCombineFilters(andExpr, filters);
+            return filters;
         }
 
         // Handle simple expressions using the shared processing logic
-        var textSearchFilter = new TextSearchFilter();
-        if (TryProcessSingleExpression(linqExpression.Body, textSearchFilter))
+        var result = new List<(string FieldName, object Value)>();
+        if (TryProcessSingleExpression(linqExpression.Body, result))
         {
-            return textSearchFilter;
+            return result;
         }
 
         // Generate helpful error message with supported patterns
@@ -188,41 +182,41 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// Recursively collects and combines filters from compound AND expressions.
     /// </summary>
     /// <param name="expression">The expression to process.</param>
-    /// <param name="filter">The filter to accumulate results into.</param>
-    private static void CollectAndCombineFilters(Expression expression, TextSearchFilter filter)
+    /// <param name="filters">The filter list to accumulate results into.</param>
+    private static void CollectAndCombineFilters(Expression expression, List<(string FieldName, object Value)> filters)
     {
         if (expression is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.AndAlso)
         {
             // Recursively process both sides of the AND
-            CollectAndCombineFilters(binaryExpr.Left, filter);
-            CollectAndCombineFilters(binaryExpr.Right, filter);
+            CollectAndCombineFilters(binaryExpr.Left, filters);
+            CollectAndCombineFilters(binaryExpr.Right, filters);
         }
         else
         {
             // Process individual expression using shared logic
-            TryProcessSingleExpression(expression, filter);
+            TryProcessSingleExpression(expression, filters);
         }
     }
 
     /// <summary>
     /// Shared logic to process a single LINQ expression and add appropriate filters.
-    /// Consolidates duplicate code between ConvertLinqExpressionToGoogleFilter and CollectAndCombineFilters.
+    /// Consolidates duplicate code between ExtractFiltersFromExpression and CollectAndCombineFilters.
     /// </summary>
     /// <param name="expression">The expression to process.</param>
-    /// <param name="filter">The filter to add results to.</param>
+    /// <param name="filters">The filter list to add results to.</param>
     /// <returns>True if the expression was successfully processed, false otherwise.</returns>
-    private static bool TryProcessSingleExpression(Expression expression, TextSearchFilter filter)
+    private static bool TryProcessSingleExpression(Expression expression, List<(string FieldName, object Value)> filters)
     {
         // Handle equality: record.PropertyName == "value"
         if (expression is BinaryExpression equalExpr && equalExpr.NodeType == ExpressionType.Equal)
         {
-            return TryProcessEqualityExpression(equalExpr, filter);
+            return TryProcessEqualityExpression(equalExpr, filters);
         }
 
         // Handle inequality (NOT): record.PropertyName != "value"
         if (expression is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
         {
-            return TryProcessInequalityExpression(notEqualExpr, filter);
+            return TryProcessInequalityExpression(notEqualExpr, filters);
         }
 
         // Handle Contains method calls
@@ -231,7 +225,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             // String.Contains (instance method) - supported for substring search
             if (methodCall.Method.DeclaringType == typeof(string))
             {
-                return TryProcessContainsExpression(methodCall, filter);
+                return TryProcessContainsExpression(methodCall, filters);
             }
 
             // Collection Contains (static methods) - NOT supported due to Google API limitations
@@ -255,7 +249,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         // Handle NOT expressions: !record.PropertyName.Contains("value")
         if (expression is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
         {
-            return TryProcessNotExpression(unaryExpr, filter);
+            return TryProcessNotExpression(unaryExpr, filters);
         }
 
         return false;
@@ -280,7 +274,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <summary>
     /// Processes equality expressions: record.PropertyName == "value"
     /// </summary>
-    private static bool TryProcessEqualityExpression(BinaryExpression equalExpr, TextSearchFilter filter)
+    private static bool TryProcessEqualityExpression(BinaryExpression equalExpr, List<(string FieldName, object Value)> filters)
     {
         if (equalExpr.Left is MemberExpression memberExpr && equalExpr.Right is ConstantExpression constExpr)
         {
@@ -289,7 +283,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
             if (googleFilterName != null && value != null)
             {
-                filter.Equality(googleFilterName, value);
+                filters.Add((googleFilterName, value));
                 return true;
             }
         }
@@ -299,7 +293,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <summary>
     /// Processes inequality expressions: record.PropertyName != "value"
     /// </summary>
-    private static bool TryProcessInequalityExpression(BinaryExpression notEqualExpr, TextSearchFilter filter)
+    private static bool TryProcessInequalityExpression(BinaryExpression notEqualExpr, List<(string FieldName, object Value)> filters)
     {
         if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
         {
@@ -308,7 +302,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             // Map to excludeTerms for text fields
             if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
             {
-                filter.Equality("excludeTerms", value);
+                filters.Add(("excludeTerms", value));
                 return true;
             }
         }
@@ -318,7 +312,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <summary>
     /// Processes Contains expressions: record.PropertyName.Contains("value")
     /// </summary>
-    private static bool TryProcessContainsExpression(MethodCallExpression methodCall, TextSearchFilter filter)
+    private static bool TryProcessContainsExpression(MethodCallExpression methodCall, List<(string FieldName, object Value)> filters)
     {
         if (methodCall.Object is MemberExpression memberExpr &&
             methodCall.Arguments.Count == 1 &&
@@ -332,11 +326,11 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                 // For Contains operations on text fields, use exactTerms or orTerms
                 if (googleFilterName == "exactTerms")
                 {
-                    filter.Equality("orTerms", value); // More flexible than exactTerms
+                    filters.Add(("orTerms", value)); // More flexible than exactTerms
                 }
                 else
                 {
-                    filter.Equality(googleFilterName, value);
+                    filters.Add((googleFilterName, value));
                 }
                 return true;
             }
@@ -347,7 +341,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <summary>
     /// Processes NOT expressions: !record.PropertyName.Contains("value")
     /// </summary>
-    private static bool TryProcessNotExpression(UnaryExpression unaryExpr, TextSearchFilter filter)
+    private static bool TryProcessNotExpression(UnaryExpression unaryExpr, List<(string FieldName, object Value)> filters)
     {
         if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
             notMethodCall.Method.Name == "Contains" &&
@@ -361,7 +355,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                 object? value = constExpr.Value;
                 if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
                 {
-                    filter.Equality("excludeTerms", value);
+                    filters.Add(("excludeTerms", value));
                     return true;
                 }
             }
@@ -469,69 +463,83 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// Execute a Google search
     /// </summary>
     /// <param name="query">The query string.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
+    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken)
     {
-        var count = searchOptions.Top;
-        var offset = searchOptions.Skip;
-
-        if (count <= 0 || count > MaxCount)
+        if (top <= 0 || top > MaxCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), count, $"{nameof(searchOptions)}.Count value must be must be greater than 0 and less than or equals 10.");
+            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} value must be greater than 0 and less than or equals 10.");
         }
 
-        if (offset < 0)
+        if (skip < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), offset, $"{nameof(searchOptions)}.Offset value must be must be greater than 0.");
+            throw new ArgumentOutOfRangeException(nameof(skip), skip, $"{nameof(skip)} value must be greater than or equal to 0.");
         }
 
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
         search.Q = query;
-        search.Num = count;
-        search.Start = offset;
+        search.Num = top;
+        search.Start = skip;
 
-        this.AddFilters(search, searchOptions);
+        this.ApplyFilters(search, filters);
 
         return await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete
+#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
-    /// Add basic filters to the Google search metadata.
+    /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
+    /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
+    /// It will be removed when the legacy ITextSearch interface is retired.
+    /// </summary>
+    private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
+    {
+        var filters = new List<(string FieldName, object Value)>();
+        if (filter is not null)
+        {
+            foreach (var clause in filter.FilterClauses)
+            {
+                if (clause is EqualToFilterClause eq && eq.Value is not null)
+                {
+                    filters.Add((eq.FieldName, eq.Value));
+                }
+            }
+        }
+        return filters;
+    }
+#pragma warning restore CS0618
+
+    /// <summary>
+    /// Apply pre-extracted filter key-value pairs to the Google search request.
+    /// Both LINQ and legacy paths converge here after producing the same (FieldName, Value) list.
     /// </summary>
     /// <param name="search">Google search metadata</param>
-    /// <param name="searchOptions">Text search options</param>
-    private void AddFilters(CseResource.ListRequest search, TextSearchOptions searchOptions)
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
+    private void ApplyFilters(CseResource.ListRequest search, List<(string FieldName, object Value)> filters)
     {
         HashSet<string> processedParams = new(StringComparer.OrdinalIgnoreCase);
 
-        if (searchOptions.Filter is not null)
+        foreach (var (fieldName, value) in filters)
         {
-            var filterClauses = searchOptions.Filter.FilterClauses;
-
-            foreach (var filterClause in filterClauses)
+            if (value is not string stringValue)
             {
-                if (filterClause is EqualToFilterClause equalityFilterClause)
-                {
-                    if (equalityFilterClause.Value is not string value)
-                    {
-                        continue;
-                    }
+                continue;
+            }
 
-                    if (s_searchPropertySetters.TryGetValue(equalityFilterClause.FieldName.ToUpperInvariant(), out var setter))
-                    {
-                        setter.Invoke(search, value);
-                        processedParams.Add(equalityFilterClause.FieldName);
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
-                    }
-                }
+            if (s_searchPropertySetters.TryGetValue(fieldName.ToUpperInvariant(), out var setter))
+            {
+                setter.Invoke(search, stringValue);
+                processedParams.Add(fieldName);
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown filter field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(filters));
             }
         }
 
@@ -590,7 +598,6 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             search.Filter = this._options.DuplicateContentFilter;
         }
     }
-#pragma warning restore CS0618 // FilterClause is obsolete
 
     /// <summary>
     /// Return the search results as instances of <see cref="TextSearchResult"/>.

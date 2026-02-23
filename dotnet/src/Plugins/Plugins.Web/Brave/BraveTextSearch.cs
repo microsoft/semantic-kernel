@@ -51,7 +51,8 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
@@ -62,7 +63,8 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
@@ -74,7 +76,8 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
@@ -86,10 +89,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<string>> ITextSearch<BraveWebPage>.SearchAsync(string query, TextSearchOptions<BraveWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
+        long? totalCount = includeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -97,10 +100,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<TextSearchResult>> ITextSearch<BraveWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<BraveWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
+        long? totalCount = includeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -108,10 +111,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// <inheritdoc/>
     async Task<KernelSearchResults<BraveWebPage>> ITextSearch<BraveWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BraveWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, legacyOptions) = this.ConvertToLegacyOptionsWithQuery(query, searchOptions);
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, legacyOptions, cancellationToken).ConfigureAwait(false);
+        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
+        long? totalCount = includeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
         return new KernelSearchResults<BraveWebPage>(this.GetResultsAsBraveWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -121,197 +124,59 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     #region LINQ-to-Brave Conversion Logic
 
     /// <summary>
-    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions and extracts additional search terms.
+    /// Extracts search parameters from generic <see cref="TextSearchOptions{TRecord}"/>.
+    /// This is the primary entry point for the LINQ-based filtering path.
+    /// Brave supports query modification via Title.Contains() which appends terms to the query.
     /// </summary>
-    /// <param name="query">The original search query.</param>
-    /// <param name="options">The generic search options with LINQ filter.</param>
-    /// <returns>A tuple containing the modified query and legacy TextSearchOptions with converted filters.</returns>
-    private (string modifiedQuery, TextSearchOptions legacyOptions) ConvertToLegacyOptionsWithQuery<TRecord>(string query, TextSearchOptions<TRecord>? options)
+    private static (string ModifiedQuery, int Top, int Skip, bool IncludeTotalCount, List<(string FieldName, object Value)> Filters) ExtractSearchParameters<TRecord>(string query, TextSearchOptions<TRecord>? searchOptions)
     {
-        var legacyOptions = this.ConvertToLegacyOptions(options);
+        var top = searchOptions?.Top ?? 3;
+        var skip = searchOptions?.Skip ?? 0;
+        var includeTotalCount = searchOptions?.IncludeTotalCount ?? false;
 
-        if (options?.Filter != null)
+        if (searchOptions?.Filter == null)
         {
-            // Extract search terms from the LINQ expression
-            var additionalSearchTerms = ExtractSearchTermsFromLinqExpression(options.Filter);
-            if (additionalSearchTerms.Count > 0)
-            {
-                // Append additional search terms to the original query
-                var modifiedQuery = $"{query} {string.Join(" ", additionalSearchTerms)}".Trim();
-                return (modifiedQuery, legacyOptions);
-            }
+            return (query, top, skip, includeTotalCount, []);
         }
 
-        return (query, legacyOptions);
+        var filters = new List<(string FieldName, object Value)>();
+        var queryTerms = new List<string>();
+
+        ExtractFiltersFromExpression(searchOptions.Filter.Body, filters, queryTerms);
+
+        // Append query terms from Title.Contains() to the search query
+        var modifiedQuery = queryTerms.Count > 0
+            ? $"{query} {string.Join(" ", queryTerms)}".Trim()
+            : query;
+
+        return (modifiedQuery, top, skip, includeTotalCount, filters);
     }
 
     /// <summary>
-    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
-    /// </summary>
-    /// <param name="options">The generic search options with LINQ filter.</param>
-    /// <returns>Legacy TextSearchOptions with converted filters.</returns>
-    private TextSearchOptions ConvertToLegacyOptions<TRecord>(TextSearchOptions<TRecord>? options)
-    {
-        if (options == null)
-        {
-            return new TextSearchOptions();
-        }
-
-        var legacyOptions = new TextSearchOptions
-        {
-            Top = options.Top,
-            Skip = options.Skip,
-            IncludeTotalCount = options.IncludeTotalCount
-        };
-
-        // Convert LINQ expression to TextSearchFilter if present
-        if (options.Filter != null)
-        {
-            try
-            {
-                var convertedFilter = ConvertLinqExpressionToBraveFilter(options.Filter);
-                legacyOptions = new TextSearchOptions
-                {
-                    Top = options.Top,
-                    Skip = options.Skip,
-                    IncludeTotalCount = options.IncludeTotalCount,
-                    Filter = convertedFilter
-                };
-            }
-            catch (NotSupportedException)
-            {
-                // All unsupported LINQ patterns should fail explicitly to provide clear developer feedback
-                // This helps developers understand which patterns work with the Brave API
-                throw;
-            }
-        }
-
-        return legacyOptions;
-    }
-
-    /// <summary>
-    /// Extracts search terms that should be added to the search query from a LINQ expression.
-    /// </summary>
-    /// <param name="linqExpression">The LINQ expression to analyze.</param>
-    /// <returns>A list of search terms to add to the query.</returns>
-    private static List<string> ExtractSearchTermsFromLinqExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
-    {
-        var searchTerms = new List<string>();
-        var filterClauses = new List<FilterClause>();
-
-        // Analyze the LINQ expression to get all filter clauses
-        AnalyzeExpression(linqExpression.Body, filterClauses);
-
-        // Extract search terms from SearchQueryFilterClause instances
-        foreach (var clause in filterClauses)
-        {
-            if (clause is SearchQueryFilterClause searchQueryClause)
-            {
-                searchTerms.Add(searchQueryClause.SearchTerm);
-            }
-        }
-
-        return searchTerms;
-    }
-
-    /// <summary>
-    /// Converts a LINQ expression to Brave-compatible TextSearchFilter.
-    /// </summary>
-    /// <param name="linqExpression">The LINQ expression to convert.</param>
-    /// <returns>A TextSearchFilter with Brave-compatible filter clauses.</returns>
-    private static TextSearchFilter ConvertLinqExpressionToBraveFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
-    {
-        var filter = new TextSearchFilter();
-        var filterClauses = new List<FilterClause>();
-
-        // Analyze the LINQ expression and convert to filter clauses
-        AnalyzeExpression(linqExpression.Body, filterClauses);
-
-        // Validate and add clauses that are supported by Brave
-        foreach (var clause in filterClauses)
-        {
-            if (clause is EqualToFilterClause equalityClause)
-            {
-                var mappedFieldName = MapPropertyToBraveFilter(equalityClause.FieldName);
-                if (mappedFieldName != null)
-                {
-                    filter.Equality(mappedFieldName, equalityClause.Value);
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        $"Property '{equalityClause.FieldName}' cannot be mapped to Brave API filters. " +
-                        $"Supported properties: {string.Join(", ", s_queryParameters)}. " +
-                        "Example: page => page.Country == \"US\" && page.SafeSearch == \"moderate\"");
-                }
-            }
-            else if (clause is SearchQueryFilterClause)
-            {
-                // SearchQueryFilterClause is handled at the query level, not the filter level
-                // Skip it here as it's processed by ConvertToLegacyOptionsWithQuery
-                continue;
-            }
-        }
-
-        return filter;
-    }
-
-    /// <summary>
-    /// Maps BraveWebPage property names to Brave API filter parameter names.
-    /// </summary>
-    /// <param name="propertyName">The property name from BraveWebPage.</param>
-    /// <returns>The corresponding Brave API parameter name, or null if not mappable.</returns>
-    private static string? MapPropertyToBraveFilter(string propertyName) =>
-        propertyName.ToUpperInvariant() switch
-        {
-            "COUNTRY" => BraveParamCountry,
-            "SEARCHLANG" => BraveParamSearchLang,
-            "UILANG" => BraveParamUiLang,
-            "SAFESEARCH" => BraveParamSafeSearch,
-            "TEXTDECORATIONS" => BraveParamTextDecorations,
-            "SPELLCHECK" => BraveParamSpellCheck,
-            "RESULTFILTER" => BraveParamResultFilter,
-            "UNITS" => BraveParamUnits,
-            "EXTRASNIPPETS" => BraveParamExtraSnippets,
-            _ => null // Property not mappable to Brave filters
-        };
-
-    // TODO: Consider extracting LINQ expression analysis logic to a shared utility class
-    // to reduce duplication across text search connectors (Brave, Tavily, etc.).
-    // See code review for details.
-    /// <summary>
-    /// Analyzes a LINQ expression and extracts filter clauses.
+    /// Walks a LINQ expression tree and extracts Brave API filter key-value pairs and query terms directly.
+    /// Supports equality expressions, Contains() method calls, and logical AND/OR operators.
     /// </summary>
     /// <param name="expression">The expression to analyze.</param>
-    /// <param name="filterClauses">The list to add extracted filter clauses to.</param>
-    private static void AnalyzeExpression(Expression expression, List<FilterClause> filterClauses)
+    /// <param name="filters">The list to add filter key-value pairs to.</param>
+    /// <param name="queryTerms">The list to add query modification terms to.</param>
+    private static void ExtractFiltersFromExpression(Expression expression, List<(string FieldName, object Value)> filters, List<string> queryTerms)
     {
         switch (expression)
         {
             case BinaryExpression binaryExpr:
-                if (binaryExpr.NodeType == ExpressionType.AndAlso)
+                if (binaryExpr.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse)
                 {
-                    // Handle AND expressions by recursively analyzing both sides
-                    AnalyzeExpression(binaryExpr.Left, filterClauses);
-                    AnalyzeExpression(binaryExpr.Right, filterClauses);
-                }
-                else if (binaryExpr.NodeType == ExpressionType.OrElse)
-                {
-                    // Handle OR expressions by recursively analyzing both sides
-                    // Note: OR results in multiple filter values for the same property
-                    AnalyzeExpression(binaryExpr.Left, filterClauses);
-                    AnalyzeExpression(binaryExpr.Right, filterClauses);
+                    // Handle AND/OR expressions by recursively analyzing both sides
+                    ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
+                    ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
                 }
                 else if (binaryExpr.NodeType == ExpressionType.Equal)
                 {
-                    // Handle equality expressions
-                    ExtractEqualityClause(binaryExpr, filterClauses);
+                    ProcessEqualityClause(binaryExpr, filters);
                 }
                 else if (binaryExpr.NodeType == ExpressionType.NotEqual)
                 {
-                    // Handle inequality expressions (property != value)
-                    // This is supported as a negation pattern
-                    ExtractInequalityClause(binaryExpr, filterClauses);
+                    ProcessInequalityClause(binaryExpr);
                 }
                 else
                 {
@@ -320,13 +185,11 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                 break;
 
             case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
-                // Handle NOT expressions (negation)
-                AnalyzeNotExpression(unaryExpr, filterClauses);
+                ProcessNotExpression(unaryExpr);
                 break;
 
             case MethodCallExpression methodCall:
-                // Handle method calls like Contains, StartsWith, etc.
-                ExtractMethodCallClause(methodCall, filterClauses);
+                ProcessMethodCallClause(methodCall, filters, queryTerms);
                 break;
 
             default:
@@ -335,16 +198,13 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Extracts an equality filter clause from a binary equality expression.
+    /// Processes an equality expression and maps the property to a Brave API filter directly.
     /// </summary>
-    /// <param name="binaryExpr">The binary equality expression.</param>
-    /// <param name="filterClauses">The list to add the extracted clause to.</param>
-    private static void ExtractEqualityClause(BinaryExpression binaryExpr, List<FilterClause> filterClauses)
+    private static void ProcessEqualityClause(BinaryExpression binaryExpr, List<(string FieldName, object Value)> filters)
     {
         string? propertyName = null;
         object? value = null;
 
-        // Determine which side is the property and which is the value
         if (binaryExpr.Left is MemberExpression leftMember)
         {
             propertyName = leftMember.Member.Name;
@@ -358,7 +218,18 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
 
         if (propertyName != null && value != null)
         {
-            filterClauses.Add(new EqualToFilterClause(propertyName, value));
+            var mappedFieldName = MapPropertyToBraveFilter(propertyName);
+            if (mappedFieldName != null)
+            {
+                filters.Add((mappedFieldName, value));
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    $"Property '{propertyName}' cannot be mapped to Brave API filters. " +
+                    $"Supported properties: {string.Join(", ", s_queryParameters)}. " +
+                    "Example: page => page.Country == \"US\" && page.SafeSearch == \"moderate\"");
+            }
         }
         else
         {
@@ -367,32 +238,23 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Extracts an inequality filter clause from a binary not-equal expression.
+    /// Processes an inequality expression — not supported by Brave API.
     /// </summary>
-    /// <param name="binaryExpr">The binary not-equal expression.</param>
-    /// <param name="filterClauses">The list to add the extracted clause to.</param>
-    private static void ExtractInequalityClause(BinaryExpression binaryExpr, List<FilterClause> filterClauses)
+    private static void ProcessInequalityClause(BinaryExpression binaryExpr)
     {
-        // Note: Inequality is tracked but handled differently depending on the property
-        // For now, we log a warning that inequality filtering may not work as expected
         string? propertyName = null;
-        object? value = null;
 
         if (binaryExpr.Left is MemberExpression leftMember)
         {
             propertyName = leftMember.Member.Name;
-            value = ExtractValue(binaryExpr.Right);
         }
         else if (binaryExpr.Right is MemberExpression rightMember)
         {
             propertyName = rightMember.Member.Name;
-            value = ExtractValue(binaryExpr.Left);
         }
 
-        if (propertyName != null && value != null)
+        if (propertyName != null)
         {
-            // Add a marker for inequality - this will need special handling in conversion
-            // For now, we don't add it to filter clauses as Brave API doesn't support direct negation
             throw new NotSupportedException($"Inequality operator (!=) is not directly supported for property '{propertyName}'. Use NOT operator instead: !(page.{propertyName} == value).");
         }
 
@@ -400,17 +262,12 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Analyzes a NOT (negation) expression.
+    /// Processes a NOT (negation) expression — not supported by Brave API.
     /// </summary>
-    /// <param name="unaryExpr">The unary NOT expression.</param>
-    /// <param name="filterClauses">The list to add extracted filter clauses to.</param>
-    private static void AnalyzeNotExpression(UnaryExpression unaryExpr, List<FilterClause> filterClauses)
+    private static void ProcessNotExpression(UnaryExpression unaryExpr)
     {
-        // NOT expressions are complex for web search APIs
-        // We support simple cases like !(page.SafeSearch == "off")
         if (unaryExpr.Operand is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
         {
-            // This is !(property == value), which we can handle for some properties
             throw new NotSupportedException("NOT operator (!) with equality is not directly supported. Most web search APIs don't support negative filtering.");
         }
 
@@ -418,32 +275,32 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Extracts a filter clause from a method call expression (e.g., Contains, StartsWith).
+    /// Processes a method call expression (Contains) and maps to filters or query terms directly.
     /// </summary>
-    /// <param name="methodCall">The method call expression.</param>
-    /// <param name="filterClauses">The list to add the extracted clause to.</param>
-    private static void ExtractMethodCallClause(MethodCallExpression methodCall, List<FilterClause> filterClauses)
+    private static void ProcessMethodCallClause(MethodCallExpression methodCall, List<(string FieldName, object Value)> filters, List<string> queryTerms)
     {
         if (methodCall.Method.Name == "Contains")
         {
-            // Check if this is property.Contains(value) or array.Contains(property)
             if (methodCall.Object is MemberExpression member)
             {
-                // This is property.Contains(value) - e.g., page.ResultFilter.Contains("web")
+                // Instance method: property.Contains(value) - e.g., page.ResultFilter.Contains("web")
                 var propertyName = member.Member.Name;
                 var value = ExtractValue(methodCall.Arguments[0]);
 
                 if (value != null)
                 {
-                    // For Contains, we'll map it to equality for certain properties
                     if (propertyName.Equals("ResultFilter", StringComparison.OrdinalIgnoreCase))
                     {
-                        filterClauses.Add(new EqualToFilterClause(propertyName, value));
+                        var mappedFieldName = MapPropertyToBraveFilter(propertyName);
+                        if (mappedFieldName != null)
+                        {
+                            filters.Add((mappedFieldName, value));
+                        }
                     }
                     else if (propertyName.Equals("Title", StringComparison.OrdinalIgnoreCase))
                     {
-                        // For Title.Contains(), add the term to the search query itself
-                        filterClauses.Add(new SearchQueryFilterClause(value.ToString() ?? string.Empty));
+                        // For Title.Contains(), add the term to the search query
+                        queryTerms.Add(value.ToString() ?? string.Empty);
                     }
                     else
                     {
@@ -453,11 +310,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
             }
             else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
             {
-                // This is array.Contains(property) - e.g., new[] { "US", "GB" }.Contains(page.Country)
-                // This pattern is not supported regardless of whether it's Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
-                // Both resolve to extension method calls with methodCall.Object == null
-
-                // Provide detailed error message that covers both C# language versions
+                // Static method: array.Contains(property) - NOT supported
                 string errorMessage = "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Brave Search API. " +
                     "Brave's API does not support OR logic across multiple values. ";
 
@@ -487,10 +340,31 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     }
 
     /// <summary>
-    /// Extracts a constant value from an expression.
+    /// Maps BraveWebPage property names to Brave API filter parameter names.
     /// </summary>
-    /// <param name="expression">The expression to extract the value from.</param>
-    /// <returns>The extracted value, or null if extraction failed.</returns>
+    /// <param name="propertyName">The property name from BraveWebPage.</param>
+    /// <returns>The corresponding Brave API parameter name, or null if not mappable.</returns>
+    private static string? MapPropertyToBraveFilter(string propertyName) =>
+        propertyName.ToUpperInvariant() switch
+        {
+            "COUNTRY" => BraveParamCountry,
+            "SEARCHLANG" => BraveParamSearchLang,
+            "UILANG" => BraveParamUiLang,
+            "SAFESEARCH" => BraveParamSafeSearch,
+            "TEXTDECORATIONS" => BraveParamTextDecorations,
+            "SPELLCHECK" => BraveParamSpellCheck,
+            "RESULTFILTER" => BraveParamResultFilter,
+            "UNITS" => BraveParamUnits,
+            "EXTRASNIPPETS" => BraveParamExtraSnippets,
+            _ => null // Property not mappable to Brave filters
+        };
+
+    /// <summary>
+    /// Extracts a value from an expression node (constant or member access).
+    /// Used by filter extraction to evaluate expression values for AOT compatibility.
+    /// </summary>
+    /// <param name="expression">The expression to extract a value from.</param>
+    /// <returns>The extracted value.</returns>
     private static object? ExtractValue(Expression expression)
     {
         return expression switch
@@ -566,14 +440,16 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     private const string DefaultUri = "https://api.search.brave.com/res/v1/web/search";
 
     /// <summary>
-    /// Execute a Bing search query and return the results.
+    /// Execute a Brave search query and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<BraveSearchResponse<BraveWebResult>?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
+    private async Task<BraveSearchResponse<BraveWebResult>?> ExecuteSearchAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -589,24 +465,26 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// Sends a GET request to the specified URI.
     /// </summary>
     /// <param name="query">The query string.</param>
-    /// <param name="searchOptions">The search options.</param>
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(query);
 
-        if (searchOptions.Top is <= 0 or >= 21)
+        if (top is <= 0 or >= 21)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions.Top, $"{nameof(searchOptions.Top)} value must be greater than 0 and less than 21.");
+            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} value must be greater than 0 and less than 21.");
         }
 
-        if (searchOptions.Skip is < 0 or > 10)
+        if (skip is < 0 or > 10)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions.Skip, $"{nameof(searchOptions.Skip)} value must be equal or greater than 0 and less than 10.");
+            throw new ArgumentOutOfRangeException(nameof(skip), skip, $"{nameof(skip)} value must be equal or greater than 0 and less than 10.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{this._uri}?q={BuildQuery(query, top, skip, filters)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -764,41 +642,60 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         }
     }
 
+#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
-    /// Build a query string from the <see cref="TextSearchOptions"/>
+    /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
+    /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
+    /// It will be removed when the legacy ITextSearch interface is retired.
+    /// </summary>
+    private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
+    {
+        var filters = new List<(string FieldName, object Value)>();
+        if (filter is not null)
+        {
+            foreach (var clause in filter.FilterClauses)
+            {
+                if (clause is EqualToFilterClause eq && eq.Value is not null)
+                {
+                    filters.Add((eq.FieldName, eq.Value));
+                }
+            }
+        }
+        return filters;
+    }
+#pragma warning restore CS0618
+
+    /// <summary>
+    /// Build a Brave API query string from pre-extracted filter key-value pairs.
+    /// Both LINQ and legacy paths converge here after producing the same (FieldName, Value) list.
     /// </summary>
     /// <param name="query">The query.</param>
-    /// <param name="searchOptions">The search options.</param>
-    private static string BuildQuery(string query, TextSearchOptions searchOptions)
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
+    private static string BuildQuery(string query, int top, int skip, List<(string FieldName, object Value)> filters)
     {
         StringBuilder fullQuery = new();
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
         StringBuilder queryParams = new();
-        if (searchOptions.Filter is not null)
+
+        foreach (var (fieldName, value) in filters)
         {
-            var filterClauses = searchOptions.Filter.FilterClauses;
-
-            foreach (var filterClause in filterClauses)
+            if (s_queryParameters.Contains(fieldName, StringComparer.OrdinalIgnoreCase) && value is not null)
             {
-                if (filterClause is EqualToFilterClause equalityFilterClause)
-                {
-                    if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
-                    {
-                        string queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase))!;
+                string queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(fieldName, StringComparison.OrdinalIgnoreCase))!;
 
-                        CheckQueryValidation(queryParam, equalityFilterClause.Value);
+                CheckQueryValidation(queryParam, value);
 
-                        queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
-                    }
-                }
+                queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(value.ToString()!));
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown filter field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(filters));
             }
         }
 
-        fullQuery.Append($"&count={searchOptions.Top}&offset={searchOptions.Skip}{queryParams}");
+        fullQuery.Append($"&count={top}&offset={skip}{queryParams}");
 
         return fullQuery.ToString();
     }
