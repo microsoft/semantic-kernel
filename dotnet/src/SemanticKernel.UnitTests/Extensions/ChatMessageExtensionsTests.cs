@@ -201,6 +201,44 @@ public sealed class ChatMessageExtensionsTests
     }
 
     [Fact]
+    public void ToChatMessageContentWithUnderscoreQualifiedFunctionCallParsesPluginAndFunction()
+    {
+        // Arrange
+        var chatMessage = new ChatMessage(ChatRole.Assistant, [
+            new Microsoft.Extensions.AI.FunctionCallContent("call-123", "time_ReadFile")
+        ]);
+
+        // Act
+        var result = chatMessage.ToChatMessageContent();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        var functionCall = Assert.IsType<Microsoft.SemanticKernel.FunctionCallContent>(result.Items[0]);
+        Assert.Equal("time", functionCall.PluginName);
+        Assert.Equal("ReadFile", functionCall.FunctionName);
+    }
+
+    [Fact]
+    public void ToChatMessageContentWithSnakeCaseFunctionNameDoesNotSplitIntoPluginAndFunction()
+    {
+        // Arrange
+        var chatMessage = new ChatMessage(ChatRole.Assistant, [
+            new Microsoft.Extensions.AI.FunctionCallContent("call-123", "my_function")
+        ]);
+
+        // Act
+        var result = chatMessage.ToChatMessageContent();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        var functionCall = Assert.IsType<Microsoft.SemanticKernel.FunctionCallContent>(result.Items[0]);
+        Assert.Null(functionCall.PluginName);
+        Assert.Equal("my_function", functionCall.FunctionName);
+    }
+
+    [Fact]
     public void ToChatMessageContentWithFunctionResultContentCreatesFunctionResultContent()
     {
         // Arrange
@@ -221,6 +259,30 @@ public sealed class ChatMessageExtensionsTests
         var functionResult = Assert.IsType<Microsoft.SemanticKernel.FunctionResultContent>(result.Items[0]);
         Assert.Equal("call-123", functionResult.CallId);
         Assert.Equal("MyFunction", functionResult.FunctionName);
+        Assert.Equal("result value", functionResult.Result);
+    }
+
+    [Fact]
+    public void ToChatMessageContentWithFunctionResultContentParsesPluginNameFromMatchedFunctionCall()
+    {
+        // Arrange
+        var functionCallMessage = new ChatMessage(ChatRole.Assistant, [
+            new Microsoft.Extensions.AI.FunctionCallContent("call-123", "time_ReadFile")
+        ]);
+        var resultMessage = new ChatMessage(ChatRole.Tool, [
+            new Microsoft.Extensions.AI.FunctionResultContent("call-123", "result value")
+        ]);
+        var response = new ChatResponse(new[] { functionCallMessage, resultMessage });
+
+        // Act
+        var result = resultMessage.ToChatMessageContent(response);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        var functionResult = Assert.IsType<Microsoft.SemanticKernel.FunctionResultContent>(result.Items[0]);
+        Assert.Equal("time", functionResult.PluginName);
+        Assert.Equal("ReadFile", functionResult.FunctionName);
         Assert.Equal("result value", functionResult.Result);
     }
 
