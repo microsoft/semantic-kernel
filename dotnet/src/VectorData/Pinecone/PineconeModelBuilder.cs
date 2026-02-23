@@ -15,7 +15,6 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = true,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = false,
     };
 

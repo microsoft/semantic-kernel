@@ -119,8 +119,9 @@ public class SqlServerCommandBuilderTests
 
         using SqlConnection connection = CreateConnection();
 
-        using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists, model);
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists, model);
 
+        var command = Assert.Single(commands);
         string expectedCommand =
         """
         BEGIN
@@ -140,6 +141,227 @@ public class SqlServerCommandBuilderTests
         }
 
         Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void CreateTable_WithDiskAnnIndex()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists: false, model);
+
+        Assert.Equal(3, commands.Count);
+        Assert.Equal(
+        """
+        BEGIN
+        CREATE TABLE [schema].[table] (
+        [id] BIGINT IDENTITY,
+        [name] NVARCHAR(MAX),
+        [embedding] VECTOR(10),
+        PRIMARY KEY ([id])
+        );
+        END;
+        """, commands[0].CommandText, ignoreLineEndingDifferences: true);
+        Assert.Equal("ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;", commands[1].CommandText);
+        Assert.Equal(
+        """
+        CREATE VECTOR INDEX index_table_embedding ON [schema].[table]([embedding]) WITH (METRIC = 'COSINE', TYPE = 'DISKANN');
+
+        """, commands[2].CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void CreateTable_WithDiskAnnIndex_EuclideanDistance()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.EuclideanDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists: false, model);
+
+        Assert.Equal(3, commands.Count);
+        Assert.Equal(
+        """
+        BEGIN
+        CREATE TABLE [schema].[table] (
+        [id] BIGINT IDENTITY,
+        [embedding] VECTOR(10),
+        PRIMARY KEY ([id])
+        );
+        END;
+        """, commands[0].CommandText, ignoreLineEndingDifferences: true);
+        Assert.Equal("ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;", commands[1].CommandText);
+        Assert.Equal(
+        """
+        CREATE VECTOR INDEX index_table_embedding ON [schema].[table]([embedding]) WITH (METRIC = 'EUCLIDEAN', TYPE = 'DISKANN');
+
+        """, commands[2].CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void CreateTable_WithUnsupportedIndexKind_Throws()
+    {
+        Assert.Throws<NotSupportedException>(() =>
+            BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+                {
+                    IndexKind = IndexKind.Hnsw
+                }
+            ]));
+    }
+
+    [Fact]
+    public void SelectVector_WithDiskAnnIndex()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new VectorSearchOptions<Dictionary<string, object?>> { IncludeVectors = true };
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            connection, "schema", "table",
+            model.VectorProperties[0], model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }));
+
+        Assert.Equal(
+        """
+        SELECT t.[id],t.[name],t.[embedding],
+        s.[distance] AS [score]
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 5) AS s
+        ORDER BY [score] ASC
+        OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY;
+        """, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void SelectVector_WithDiskAnnIndex_WithSkip()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new VectorSearchOptions<Dictionary<string, object?>> { IncludeVectors = false, Skip = 3 };
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            connection, "schema", "table",
+            model.VectorProperties[0], model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }));
+
+        Assert.Equal(
+        """
+        SELECT t.[id],t.[name],
+        s.[distance] AS [score]
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 8) AS s
+        ORDER BY [score] ASC
+        OFFSET 3 ROWS FETCH NEXT 5 ROWS ONLY;
+        """, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void SelectVector_WithDiskAnnIndex_WithFilter_Throws()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new VectorSearchOptions<Dictionary<string, object?>>
+        {
+            Filter = d => (string)d["name"]! == "test"
+        };
+
+        Assert.Throws<NotSupportedException>(() =>
+            SqlServerCommandBuilder.SelectVector(
+                connection, "schema", "table",
+                model.VectorProperties[0], model,
+                top: 5, options,
+                new SqlVector<float>(new float[] { 1f, 2f, 3f })));
+    }
+
+    [Fact]
+    public void SelectVector_WithDiskAnnIndex_WithScoreThreshold()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new VectorSearchOptions<Dictionary<string, object?>>
+        {
+            IncludeVectors = true,
+            ScoreThreshold = 0.5f
+        };
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            connection, "schema", "table",
+            model.VectorProperties[0], model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }));
+
+        Assert.Equal(
+        """
+        SELECT t.[id],t.[name],t.[embedding],
+        s.[distance] AS [score]
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 5) AS s
+        WHERE s.[distance] <= @scoreThreshold
+        ORDER BY [score] ASC
+        OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY;
+        """, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]

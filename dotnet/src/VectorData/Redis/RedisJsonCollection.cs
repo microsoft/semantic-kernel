@@ -39,7 +39,6 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
