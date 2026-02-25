@@ -25,7 +25,7 @@ class DaprStepInfo(KernelBaseModel):
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
 
     def to_kernel_process_step_info(
-        self, allowed_module_prefixes: Sequence[str] | None = None
+        self, allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",)
     ) -> KernelProcessStepInfo:
         """Converts the Dapr step info to a kernel process step info.
 

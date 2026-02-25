@@ -20,7 +20,7 @@ class DaprProcessInfo(DaprStepInfo):
     type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
-    def to_kernel_process(self, allowed_module_prefixes: Sequence[str] | None = None) -> KernelProcess:
+    def to_kernel_process(self, allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",)) -> KernelProcess:
         """Converts the Dapr process info to a kernel process.
 
         Args:

@@ -57,7 +57,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         actor_id: ActorId,
         kernel: Kernel,
         factories: dict[str, Callable],
-        allowed_module_prefixes: Sequence[str] | None = None,
+        allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",),
     ):
         """Initializes a new instance of StepActor.
 
@@ -66,9 +66,10 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
             factories: The factory dictionary to use for creating the step.
-            allowed_module_prefixes: Optional sequence of module prefixes that are allowed
-                for step class loading. If provided, step classes must come from modules
-                starting with one of these prefixes.
+            allowed_module_prefixes: Sequence of module prefixes that are allowed
+                for step class loading. Step classes must come from modules starting
+                with one of these prefixes. Defaults to ("semantic_kernel.",). Pass
+                None to allow any module (not recommended for production).
         """
         super().__init__(ctx, actor_id)
         self.kernel = kernel
