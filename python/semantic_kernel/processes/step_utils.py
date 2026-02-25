@@ -12,6 +12,8 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+DEFAULT_ALLOWED_MODULE_PREFIXES: tuple[str, ...] = ("semantic_kernel.",)
+
 
 @experimental
 def find_input_channels(
@@ -47,7 +49,7 @@ def get_fully_qualified_name(cls) -> str:
 @experimental
 def get_step_class_from_qualified_name(
     full_class_name: str,
-    allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",),
+    allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES,
 ) -> type[KernelProcessStep]:
     """Loads and validates a KernelProcessStep class from a fully qualified name.
 

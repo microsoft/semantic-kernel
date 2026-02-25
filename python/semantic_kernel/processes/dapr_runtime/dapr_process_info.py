@@ -10,6 +10,7 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.step_utils import DEFAULT_ALLOWED_MODULE_PREFIXES
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
@@ -20,7 +21,9 @@ class DaprProcessInfo(DaprStepInfo):
     type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
-    def to_kernel_process(self, allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",)) -> KernelProcess:
+    def to_kernel_process(
+        self, allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES
+    ) -> KernelProcess:
         """Converts the Dapr process info to a kernel process.
 
         Args:

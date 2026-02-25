@@ -38,6 +38,7 @@ from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.processes.step_utils import (
+    DEFAULT_ALLOWED_MODULE_PREFIXES,
     find_input_channels,
     get_fully_qualified_name,
     get_step_class_from_qualified_name,
@@ -57,7 +58,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         actor_id: ActorId,
         kernel: Kernel,
         factories: dict[str, Callable],
-        allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",),
+        allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES,
     ):
         """Initializes a new instance of StepActor.
 

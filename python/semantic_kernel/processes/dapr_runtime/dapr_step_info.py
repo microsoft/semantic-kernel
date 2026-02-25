@@ -11,7 +11,11 @@ from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.step_utils import get_fully_qualified_name, get_step_class_from_qualified_name
+from semantic_kernel.processes.step_utils import (
+    DEFAULT_ALLOWED_MODULE_PREFIXES,
+    get_fully_qualified_name,
+    get_step_class_from_qualified_name,
+)
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
@@ -25,7 +29,7 @@ class DaprStepInfo(KernelBaseModel):
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
 
     def to_kernel_process_step_info(
-        self, allowed_module_prefixes: Sequence[str] | None = ("semantic_kernel.",)
+        self, allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES
     ) -> KernelProcessStepInfo:
         """Converts the Dapr step info to a kernel process step info.
 
