@@ -18,7 +18,6 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 

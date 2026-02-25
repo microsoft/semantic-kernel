@@ -12,11 +12,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class OpenAIResponseExtensions
 {
     /// <summary>
-    /// Converts a <see cref="OpenAIResponse"/> instance to a <see cref="ChatMessageContent"/>.
+    /// Converts a <see cref="ResponseResult"/> instance to a <see cref="ChatMessageContent"/>.
     /// </summary>
     /// <param name="response">The response to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this OpenAIResponse response)
+    public static ChatMessageContent ToChatMessageContent(this ResponseResult response)
     {
         var messageItem = response.OutputItems
             .FirstOrDefault(item => item is MessageResponseItem);
