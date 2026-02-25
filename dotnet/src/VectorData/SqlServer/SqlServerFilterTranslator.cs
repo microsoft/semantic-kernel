@@ -15,16 +15,19 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = [];
+    private readonly string? _tableAlias;
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
         CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
-        int startParamIndex)
+        int startParamIndex,
+        string? tableAlias = null)
         : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
+        this._tableAlias = tableAlias;
     }
 
     internal List<object> ParameterValues => this._parameterValues;
@@ -65,6 +68,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
         // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        if (this._tableAlias is not null)
+        {
+            this._sql.Append(this._tableAlias).Append('.');
+        }
         this._sql.Append('[').Append(property.StorageName.Replace("]", "]]")).Append(']');
 
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.

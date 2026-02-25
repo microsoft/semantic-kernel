@@ -375,7 +375,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = connection.CreateCommand();
-        PostgresSqlBuilder.BuildDeleteBatchCommand(command, this._schema, this.Name, this._model.KeyProperty.StorageName, listOfKeys);
+        PostgresSqlBuilder.BuildDeleteBatchCommand(command, this._schema, this.Name, this._model.KeyProperty, listOfKeys);
 
         await this.RunOperationAsync("DeleteBatch", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
     }
