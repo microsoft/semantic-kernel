@@ -10,6 +10,7 @@ from collections.abc import Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from datetime import timedelta
 from functools import partial
+from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 from mcp import types
@@ -42,6 +43,9 @@ from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+from ..contents.function_call_content import FunctionCallContent
+from ..contents.function_result_content import FunctionResultContent
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -72,9 +76,14 @@ def _mcp_prompt_message_to_kernel_content(
     mcp_type: types.PromptMessage | types.SamplingMessage,
 ) -> ChatMessageContent:
     """Convert a MCP container type to a Semantic Kernel type."""
+    items = list(
+        chain(
+            *[_mcp_content_types_to_kernel_content(mcp_type.content)],
+        )
+    )
     return ChatMessageContent(
         role=AuthorRole(mcp_type.role),
-        items=[_mcp_content_types_to_kernel_content(mcp_type.content)],
+        items=items,  # type: ignore
         inner_content=mcp_type,
     )
 
@@ -82,40 +91,63 @@ def _mcp_prompt_message_to_kernel_content(
 @experimental
 def _mcp_call_tool_result_to_kernel_contents(
     mcp_type: types.CallToolResult,
-) -> list[TextContent | ImageContent | BinaryContent | AudioContent]:
+) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionResultContent | FunctionCallContent]:
     """Convert a MCP container type to a Semantic Kernel type."""
-    return [_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]
+    return list(chain(*[_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]))
 
 
 @experimental
 def _mcp_content_types_to_kernel_content(
-    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource | types.ResourceLink,
-) -> TextContent | ImageContent | BinaryContent | AudioContent:
+    mcp_type: types.SamplingMessageContentBlock
+    | types.ContentBlock
+    | Sequence[types.SamplingMessageContentBlock | types.ContentBlock],
+) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionCallContent | FunctionResultContent]:
     """Convert a MCP type to a Semantic Kernel type."""
+    if isinstance(mcp_type, Sequence):
+        return list(chain(*[_mcp_content_types_to_kernel_content(item) for item in mcp_type]))
     if isinstance(mcp_type, types.TextContent):
-        return TextContent(text=mcp_type.text, inner_content=mcp_type)
+        return [TextContent(text=mcp_type.text, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ImageContent):
-        return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        return [ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
     if isinstance(mcp_type, types.AudioContent):
-        return AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        return [AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ResourceLink):
-        return BinaryContent(
-            uri=mcp_type.uri,  # type: ignore
-            mime_type=mcp_type.mimeType,
-            inner_content=mcp_type,
-        )
+        return [
+            BinaryContent(
+                uri=mcp_type.uri,  # type: ignore
+                mime_type=mcp_type.mimeType,
+                inner_content=mcp_type,
+            )
+        ]
+    if isinstance(mcp_type, types.ToolUseContent):
+        return [
+            FunctionCallContent(inner_content=mcp_type, name=mcp_type.name, arguments=mcp_type.input, id=mcp_type.id)
+        ]
+    if isinstance(mcp_type, types.ToolResultContent):
+        return [
+            FunctionResultContent(
+                inner_content=mcp_type,
+                name=mcp_type.type,
+                result=list(chain(*[_mcp_content_types_to_kernel_content(mcp_type.content)])),
+                call_id=mcp_type.toolUseId,
+            )
+        ]
     # subtypes of EmbeddedResource
     if isinstance(mcp_type.resource, types.TextResourceContents):
-        return TextContent(
-            text=mcp_type.resource.text,
+        return [
+            TextContent(
+                text=mcp_type.resource.text,
+                inner_content=mcp_type,
+                metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
+            )
+        ]
+    return [
+        BinaryContent(
+            data=mcp_type.resource.blob,
             inner_content=mcp_type,
             metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
         )
-    return BinaryContent(
-        data=mcp_type.resource.blob,
-        inner_content=mcp_type,
-        metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
-    )
+    ]
 
 
 @experimental
@@ -470,7 +502,9 @@ class MCPPluginBase:
         """Get an MCP client."""
         pass
 
-    async def call_tool(self, tool_name: str, **kwargs: Any) -> list[TextContent | ImageContent | BinaryContent]:
+    async def call_tool(
+        self, tool_name: str, **kwargs: Any
+    ) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionResultContent | FunctionCallContent]:
         """Call a tool with the given arguments."""
         if not self.session:
             raise KernelPluginInvalidConfigurationError(

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -17,16 +18,17 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         return new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors
         };
     }
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "Guid";
-
-        return type == typeof(Guid);
+        if (keyProperty.Type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{keyProperty.Type.Name}'. Key properties must be of type Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
@@ -70,5 +72,45 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
             || type == typeof(ReadOnlyMemory<float>?)
             || type == typeof(Embedding<float>)
             || type == typeof(float[]);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        // GraphQL identifiers cannot be escaped; storage names are validated during model building.
+        // See https://spec.graphql.org/October2021/#sec-Names
+        if (!IsValidIdentifier(propertyModel.StorageName))
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid GraphQL identifier. " +
+                "GraphQL identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
+        }
+    }
+
+    private static bool IsValidIdentifier(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return false;
+        }
+
+        var first = name[0];
+        if (!char.IsLetter(first) && first != '_')
+        {
+            return false;
+        }
+
+        for (var i = 1; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (!char.IsLetterOrDigit(c) && c != '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

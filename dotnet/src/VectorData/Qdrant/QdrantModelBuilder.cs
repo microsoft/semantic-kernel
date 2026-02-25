@@ -16,15 +16,18 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
         => new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors,
         };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "ulong, Guid";
+        var type = keyProperty.Type;
 
-        return type == typeof(ulong) || type == typeof(Guid);
+        if (type != typeof(ulong) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be either ulong or Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
