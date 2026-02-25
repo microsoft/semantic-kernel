@@ -322,7 +322,8 @@ public sealed class TavilyTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of topic,time_range,days,include_domain,exclude_domain (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'fooBar'", e.Message);
+        Assert.Contains("topic,time_range,days,include_domain,exclude_domain", e.Message);
     }
 
     [Fact]

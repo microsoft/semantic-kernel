@@ -607,7 +607,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         {
             foreach (var clause in filter.FilterClauses)
             {
-                if (clause is EqualToFilterClause eq && eq.Value is not null)
+                if (clause is EqualToFilterClause eq)
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
@@ -662,7 +662,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
             }
             else
             {
-                throw new ArgumentException($"Unknown filter field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(filters));
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", "searchOptions");
             }
         }
 

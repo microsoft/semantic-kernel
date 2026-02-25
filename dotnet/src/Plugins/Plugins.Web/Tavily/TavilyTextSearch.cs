@@ -661,7 +661,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         {
             foreach (var clause in filter.FilterClauses)
             {
-                if (clause is EqualToFilterClause eq && eq.Value is not null)
+                if (clause is EqualToFilterClause eq)
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
@@ -716,7 +716,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             }
             else
             {
-                throw new ArgumentException($"Unknown filter field name '{fieldName}', must be one of {string.Join(",", s_validFieldNames)}", nameof(filters));
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_validFieldNames)}", "searchOptions");
             }
         }
 

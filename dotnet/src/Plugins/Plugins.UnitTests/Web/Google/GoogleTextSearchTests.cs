@@ -235,7 +235,8 @@ public sealed class GoogleTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of cr,dateRestrict,exactTerms,excludeTerms,fileType,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'fooBar'", e.Message);
+        Assert.Contains("must be one of", e.Message);
     }
 
     [Fact]

@@ -505,7 +505,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         {
             foreach (var clause in filter.FilterClauses)
             {
-                if (clause is EqualToFilterClause eq && eq.Value is not null)
+                if (clause is EqualToFilterClause eq)
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
@@ -539,7 +539,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
             }
             else
             {
-                throw new ArgumentException($"Unknown filter field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(filters));
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", "searchOptions");
             }
         }
 

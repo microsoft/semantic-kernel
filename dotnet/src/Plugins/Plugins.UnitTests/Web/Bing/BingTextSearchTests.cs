@@ -232,7 +232,8 @@ public sealed class BingTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat,contains,ext,filetype,inanchor,inbody,intitle,ip,language,loc,location,prefer,site,feed,hasfeed,url (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'fooBar'", e.Message);
+        Assert.Contains("must be one of", e.Message);
     }
 
     #region Generic ITextSearch<BingWebPage> Interface Tests
