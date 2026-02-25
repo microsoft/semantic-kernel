@@ -41,7 +41,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     private readonly string _databaseName;
 
     /// <summary>The database schema.</summary>
-    private readonly string _schema;
+    private readonly string? _schema;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
