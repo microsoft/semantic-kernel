@@ -40,6 +40,12 @@ internal static class ResponseThreadActions
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
 
         var inputItems = overrideHistory.Select(c => c.ToResponseItem()).ToList();
+
+        if (inputItems.Count == 0 && string.IsNullOrEmpty(creationOptions.PreviousResponseId))
+        {
+            throw new ArgumentException("At least one message or a previous response ID must be provided.");
+        }
+
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
         for (int requestIndex = 0; ; requestIndex++)
@@ -135,6 +141,11 @@ internal static class ResponseThreadActions
 
         var inputItems = overrideHistory.Select(m => m.ToResponseItem()).ToList();
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
+
+        if (inputItems.Count == 0 && string.IsNullOrEmpty(creationOptions.PreviousResponseId))
+        {
+            throw new ArgumentException("At least one message or a previous response ID must be provided.");
+        }
 
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
