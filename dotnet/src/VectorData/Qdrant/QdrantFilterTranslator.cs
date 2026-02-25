@@ -81,7 +81,11 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                         int v => new Match { Integer = v },
                         long v => new Match { Integer = v },
                         bool v => new Match { Boolean = v },
+                        DateTime v => new Match { Keyword = v.ToString("o") },
                         DateTimeOffset v => new Match { Keyword = v.ToString("o") },
+#if NET
+                        DateOnly v => new Match { Keyword = v.ToString("O") },
+#endif
 
                         _ => throw new NotSupportedException($"Unsupported filter value type '{value.GetType().Name}'.")
                     }
@@ -134,6 +138,32 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                                 Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(v) : null
                             }
                         },
+
+                        DateTime v => new FieldCondition
+                        {
+                            Key = property.StorageName,
+                            DatetimeRange = new DatetimeRange
+                            {
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc)) : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc)) : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc)) : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc)) : null
+                            }
+                        },
+
+#if NET
+                        DateOnly v => new FieldCondition
+                        {
+                            Key = property.StorageName,
+                            DatetimeRange = new DatetimeRange
+                            {
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null
+                            }
+                        },
+#endif
 
                         _ => throw new NotSupportedException($"Can't perform comparison on type '{constantValue?.GetType().Name}'")
                     }

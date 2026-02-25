@@ -119,9 +119,17 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 this._filter.Append('\'').Append(g.ToString()).Append('\'');
                 return;
 
+            case DateTime d:
+                this._filter.Append(new DateTimeOffset(d, TimeSpan.Zero).ToString("o"));
+                return;
             case DateTimeOffset d:
                 this._filter.Append(d.ToString("o"));
                 return;
+#if NET
+            case DateOnly d:
+                this._filter.Append(new DateTimeOffset(d.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToString("o"));
+                return;
+#endif
 
             case Array:
                 throw new NotImplementedException();

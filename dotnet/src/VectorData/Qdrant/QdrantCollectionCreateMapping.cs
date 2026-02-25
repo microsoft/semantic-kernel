@@ -41,11 +41,18 @@ internal static class QdrantCollectionCreateMapping
         { typeof(decimal?), PayloadSchemaType.Float },
 
         { typeof(string), PayloadSchemaType.Keyword },
-        { typeof(DateTimeOffset), PayloadSchemaType.Datetime },
         { typeof(bool), PayloadSchemaType.Bool },
-
-        { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
         { typeof(bool?), PayloadSchemaType.Bool },
+
+        { typeof(DateTime), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset), PayloadSchemaType.Datetime },
+        { typeof(DateTime?), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
+
+#if NET
+        { typeof(DateOnly), PayloadSchemaType.Datetime },
+        { typeof(DateOnly?), PayloadSchemaType.Datetime },
+#endif
     };
 
     /// <summary>
