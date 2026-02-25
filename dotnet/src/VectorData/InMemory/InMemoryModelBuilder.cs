@@ -14,7 +14,6 @@ internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions
     internal static readonly CollectionModelBuildingOptions ValidationOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true
     };
 

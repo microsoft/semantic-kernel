@@ -18,7 +18,6 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         return new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors
         };
     }

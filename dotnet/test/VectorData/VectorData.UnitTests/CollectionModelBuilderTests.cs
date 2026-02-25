@@ -368,7 +368,6 @@ public class CollectionModelBuilderTests
     {
         private static readonly CollectionModelBuildingOptions s_defaultOptions = new()
         {
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = true,
             RequiresAtLeastOneVector = false
         };
