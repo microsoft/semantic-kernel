@@ -48,12 +48,36 @@ public sealed class CosmosNoSqlVectorStoreTests
         using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act
-        var collectionWithStringKey = sut.GetCollection<string, CosmosNoSqlHotel>("collection1");
-        var collectionWithCompositeKey = sut.GetCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel>("collection1");
+        var collection = sut.GetCollection<CosmosNoSqlKey, CosmosNoSqlHotel>("collection1");
 
         // Assert
-        Assert.NotNull(collectionWithStringKey);
-        Assert.NotNull(collectionWithCompositeKey);
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void GetCollectionWithStringKeyReturnsCollection()
+    {
+        // Arrange
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+
+        // Act
+        var collection = sut.GetCollection<string, CosmosNoSqlHotel>("collection1");
+
+        // Assert
+        Assert.NotNull(collection);
+    }
+
+    [Fact]
+    public void GetCollectionWithGuidKeyReturnsCollection()
+    {
+        // Arrange
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+
+        // Act
+        var collection = sut.GetCollection<Guid, GuidKeyHotel>("collection1");
+
+        // Assert
+        Assert.NotNull(collection);
     }
 
     [Fact]
@@ -63,7 +87,7 @@ public sealed class CosmosNoSqlVectorStoreTests
         using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act
-        var collection = sut.GetCollection<string, CosmosNoSqlHotel>("collection");
+        var collection = sut.GetCollection<CosmosNoSqlKey, CosmosNoSqlHotel>("collection");
 
         // Assert
         Assert.NotNull(collection);
@@ -105,4 +129,15 @@ public sealed class CosmosNoSqlVectorStoreTests
         // Assert
         Assert.Equal(expectedCollectionNames, actualCollectionNames);
     }
+
+#pragma warning disable CA1812
+    private sealed class GuidKeyHotel
+    {
+        [Microsoft.Extensions.VectorData.VectorStoreKey]
+        public Guid Id { get; set; }
+
+        [Microsoft.Extensions.VectorData.VectorStoreData]
+        public string? Name { get; set; }
+    }
+#pragma warning restore CA1812
 }

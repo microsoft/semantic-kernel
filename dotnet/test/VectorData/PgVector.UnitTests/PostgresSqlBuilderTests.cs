@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Npgsql;
 using Xunit;
@@ -51,10 +52,10 @@ public class PostgresSqlBuilderTests
 
         var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
-        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, ifNotExists: ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, pgVersion: new Version(18, 0), ifNotExists: ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("public.\"testcollection\" (", sql);
+        Assert.Contains("\"public\".\"testcollection\" (", sql);
         Assert.Contains("\"name\" TEXT", sql);
         Assert.Contains("\"code\" INTEGER NOT NULL", sql);
         Assert.Contains("\"rating\" REAL", sql);
@@ -75,6 +76,35 @@ public class PostgresSqlBuilderTests
         this._output.WriteLine(sql);
     }
 
+    [Fact]
+    public void TestBuildCreateTableCommand_WithTimestampStoreType()
+    {
+        var recordDefinition = new VectorStoreCollectionDefinition()
+        {
+            Properties = [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("created_utc", typeof(DateTime)),
+                new VectorStoreDataProperty("created_local", typeof(DateTime)).WithStoreType("timestamp"),
+                new VectorStoreDataProperty("created_nullable", typeof(DateTime?)).WithStoreType("timestamp without time zone"),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]
+        };
+
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
+
+        var sql = PostgresSqlBuilder.BuildCreateTableSql("public", "testcollection", model, pgVersion: new Version(18, 0));
+
+        Assert.Contains("\"created_utc\" TIMESTAMPTZ NOT NULL", sql);
+        Assert.Contains("\"created_local\" TIMESTAMP NOT NULL", sql);
+        Assert.Contains("\"created_nullable\" TIMESTAMP", sql);
+        // Make sure it's TIMESTAMP (not TIMESTAMPTZ) for the nullable one
+        var idx = sql.IndexOf("\"created_nullable\"", StringComparison.Ordinal);
+        var fragment = sql.Substring(idx, sql.IndexOf('\n', idx) - idx);
+        Assert.DoesNotContain("TIMESTAMPTZ", fragment);
+
+        this._output.WriteLine(sql);
+    }
+
     [Theory]
     [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, true)]
     [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, false)]
@@ -88,12 +118,12 @@ public class PostgresSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
-            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexSql("public", "testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists));
             return;
         }
 
-        var sql = PostgresSqlBuilder.BuildCreateIndexSql("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("public", "1testcollection", vectorColumn, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", sql);
@@ -109,7 +139,7 @@ public class PostgresSqlBuilderTests
         // Make sure the name is escaped, so names starting with a digit are OK.
         Assert.Contains($"\"1testcollection_{vectorColumn}_index\"", sql);
 
-        Assert.Contains("ON public.\"1testcollection\" USING hnsw (\"embedding1\" ", sql);
+        Assert.Contains("ON \"public\".\"1testcollection\" USING hnsw (\"embedding1\" ", sql);
         if (distanceFunction == null)
         {
             // Check for distance function defaults to cosine distance
@@ -136,11 +166,35 @@ public class PostgresSqlBuilderTests
     [InlineData(false)]
     public void TestBuildCreateNonVectorIndexCommand(bool ifNotExists)
     {
-        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, isFullText: false, fullTextLanguage: null, ifNotExists);
 
         var expectedCommandText = ifNotExists
-            ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\")"
-            : "CREATE INDEX \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\")";
+            ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON \"schema\".\"tableName\" (\"columnName\")"
+            : "CREATE INDEX \"tableName_columnName_index\" ON \"schema\".\"tableName\" (\"columnName\")";
+
+        Assert.Equal(expectedCommandText, sql);
+    }
+
+    [Theory]
+    [InlineData(null, "english")]  // Default language
+    [InlineData("spanish", "spanish")]
+    [InlineData("german", "german")]
+    public void TestBuildCreateFullTextIndexCommand(string? configuredLanguage, string expectedLanguage)
+    {
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "content", indexKind: "", distanceFunction: "", isVector: false, isFullText: true, fullTextLanguage: configuredLanguage, ifNotExists: true);
+
+        var expectedCommandText = $"CREATE INDEX IF NOT EXISTS \"tableName_content_index\" ON \"schema\".\"tableName\" USING GIN (to_tsvector('{expectedLanguage}', \"content\"))";
+
+        Assert.Equal(expectedCommandText, sql);
+    }
+
+    [Fact]
+    public void TestBuildCreateFullTextIndexCommand_EscapesSingleQuotes()
+    {
+        // Verify that single quotes in the language name are properly escaped to prevent SQL injection
+        var sql = PostgresSqlBuilder.BuildCreateIndexSql("schema", "tableName", "content", indexKind: "", distanceFunction: "", isVector: false, isFullText: true, fullTextLanguage: "test'injection", ifNotExists: true);
+
+        var expectedCommandText = "CREATE INDEX IF NOT EXISTS \"tableName_content_index\" ON \"schema\".\"tableName\" USING GIN (to_tsvector('test''injection', \"content\"))";
 
         Assert.Equal(expectedCommandText, sql);
     }
@@ -152,7 +206,7 @@ public class PostgresSqlBuilderTests
         PostgresSqlBuilder.BuildDropTableCommand(command, "public", "testcollection");
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("DROP TABLE IF EXISTS public.\"testcollection\"", command.CommandText);
+        Assert.Contains("DROP TABLE IF EXISTS \"public\".\"testcollection\"", command.CommandText);
 
         // Output
         this._output.WriteLine(command.CommandText);
@@ -198,11 +252,13 @@ public class PostgresSqlBuilderTests
             ["embedding1"] = new ReadOnlyMemory<float>(s_vector),
         };
 
-        using var command = new NpgsqlCommand();
-        var cmdInfo = PostgresSqlBuilder.BuildUpsertCommand(command, "public", "testcollection", model, [record], generatedEmbeddings: null);
+        using var batch = new NpgsqlBatch();
+        _ = PostgresSqlBuilder.BuildUpsertCommand<int>(batch, "public", "testcollection", model, [record], generatedEmbeddings: null);
 
         // Check for expected properties; integration tests will validate the actual SQL.
-        Assert.Contains("INSERT INTO public.\"testcollection\" (", command.CommandText);
+        Assert.Single(batch.BatchCommands);
+        var command = batch.BatchCommands[0];
+        Assert.Contains("INSERT INTO \"public\".\"testcollection\" (", command.CommandText);
         Assert.Contains("ON CONFLICT (\"id\")", command.CommandText);
         Assert.Contains("DO UPDATE SET", command.CommandText);
         Assert.NotNull(command.Parameters);
@@ -266,7 +322,7 @@ public class PostgresSqlBuilderTests
         Assert.Contains("SELECT", command.CommandText);
         Assert.Contains("\"free_parking\"", command.CommandText);
         Assert.Contains("\"embedding1\"", command.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("FROM \"public\".\"testcollection\"", command.CommandText);
         Assert.Contains("WHERE \"id\" = $1", command.CommandText);
 
         // Output
@@ -310,7 +366,7 @@ public class PostgresSqlBuilderTests
         Assert.Contains("SELECT", command.CommandText);
         Assert.Contains("\"code\"", command.CommandText);
         Assert.Contains("\"free_parking\"", command.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("FROM \"public\".\"testcollection\"", command.CommandText);
         Assert.Contains("WHERE \"id\" = ANY($1)", command.CommandText);
         Assert.NotNull(command.Parameters);
         Assert.Single(command.Parameters);
@@ -332,7 +388,7 @@ public class PostgresSqlBuilderTests
 
         // Assert
         Assert.Contains("DELETE", command.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("FROM \"public\".\"testcollection\"", command.CommandText);
         Assert.Contains("WHERE \"id\" = $1", command.CommandText);
 
         // Output
@@ -347,11 +403,12 @@ public class PostgresSqlBuilderTests
 
         // Act
         using var command = new NpgsqlCommand();
-        PostgresSqlBuilder.BuildDeleteBatchCommand(command, "public", "testcollection", "id", keys);
+        var keyProperty = new KeyPropertyModel("id", typeof(long));
+        PostgresSqlBuilder.BuildDeleteBatchCommand(command, "public", "testcollection", keyProperty, keys);
 
         // Assert
         Assert.Contains("DELETE", command.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", command.CommandText);
+        Assert.Contains("FROM \"public\".\"testcollection\"", command.CommandText);
         Assert.Contains("WHERE \"id\" = ANY($1)", command.CommandText);
         Assert.NotNull(command.Parameters);
         Assert.Single(command.Parameters);

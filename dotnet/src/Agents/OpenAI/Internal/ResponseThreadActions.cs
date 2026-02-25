@@ -45,7 +45,9 @@ internal static class ResponseThreadActions
         for (int requestIndex = 0; ; requestIndex++)
         {
             // Create a response using the OpenAI Responses API
-            var clientResult = await agent.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            var clientResult = await agent.Client.CreateResponseAsync(creationOptions, cancellationToken).ConfigureAwait(false);
             var response = clientResult.Value;
             ThrowIfIncompleteOrFailed(agent, response);
 
@@ -139,7 +141,7 @@ internal static class ResponseThreadActions
         ChatMessageContent? message = null;
         for (int requestIndex = 0; ; requestIndex++)
         {
-            // Make the call to the OpenAIResponseClient and process the streaming results.
+            // Make the call to the ResponsesClient and process the streaming results.
             DateTimeOffset? createdAt = null;
             string? responseId = null;
             string? modelId = null;
@@ -147,8 +149,11 @@ internal static class ResponseThreadActions
             Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
             Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
             StreamingFunctionCallUpdateContent? functionCallUpdateContent = null;
-            OpenAIResponse? response = null;
-            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
+            ResponseResult? response = null;
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            creationOptions.StreamingEnabled = true;
+            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)
                 {
@@ -304,7 +309,7 @@ internal static class ResponseThreadActions
         throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
     }
 
-    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, OpenAIResponse response)
+    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, ResponseResult response)
     {
         if (response.Status is ResponseStatus.Incomplete or ResponseStatus.Failed)
         {

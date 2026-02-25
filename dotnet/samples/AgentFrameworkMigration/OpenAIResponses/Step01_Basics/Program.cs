@@ -21,7 +21,7 @@ async Task SKAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetOpenAIResponseClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
     OpenAIResponseAgent agent = new(responseClient)
     {
         Name = "Joker",
@@ -51,7 +51,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetOpenAIResponseClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
 
     OpenAIResponseAgent skAgent = new(responseClient)
     {
@@ -79,7 +79,7 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var agent = new OpenAIClient(apiKey).GetOpenAIResponseClient(model)
+    var agent = new OpenAIClient(apiKey).GetResponsesClient(model)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
     var thread = agent.GetNewThread();

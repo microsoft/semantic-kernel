@@ -59,7 +59,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         };
 
         // ResponseCreationOptions allows you to specify tools for the agent.
-        ResponseCreationOptions creationOptions = new();
+        CreateResponseOptions creationOptions = new();
         creationOptions.Tools.Add(ResponseTool.CreateWebSearchTool());
         OpenAIResponseAgentInvokeOptions invokeOptions = new()
         {
@@ -95,7 +95,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         };
 
         // ResponseCreationOptions allows you to specify tools for the agent.
-        ResponseCreationOptions creationOptions = new();
+        CreateResponseOptions creationOptions = new();
         creationOptions.Tools.Add(ResponseTool.CreateFileSearchTool([createStoreOp.Value.Id], null));
         OpenAIResponseAgentInvokeOptions invokeOptions = new()
         {
@@ -151,7 +151,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
         }
 
         // ResponseCreationOptions allows you to specify tools for the agent.
-        ResponseCreationOptions creationOptions = new();
+        CreateResponseOptions creationOptions = new();
         creationOptions.Tools.Add(ResponseTool.CreateWebSearchTool());
         OpenAIResponseAgentInvokeOptions invokeOptions = new()
         {
