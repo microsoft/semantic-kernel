@@ -7,6 +7,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.history_reducer.chat_history_double_buffer_reducer import ChatHistoryDoubleBufferReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_summarization_reducer import ChatHistorySummarizationReducer
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
@@ -35,6 +36,7 @@ __all__ = [
     "AudioContent",
     "AuthorRole",
     "ChatHistory",
+    "ChatHistoryDoubleBufferReducer",
     "ChatHistoryReducer",
     "ChatHistorySummarizationReducer",
     "ChatHistoryTruncationReducer",
