@@ -24,7 +24,7 @@ async Task SKAgentAsync()
     Console.WriteLine("\n=== SK Agent ===\n");
 
     var responseClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName);
+        .GetResponsesClient(deploymentName);
     OpenAIResponseAgent agent = new(responseClient)
     {
         Name = "Joker",
@@ -54,7 +54,7 @@ async Task SKAgent_As_AFAgentAsync()
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
     var responseClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName);
+        .GetResponsesClient(deploymentName);
 
     OpenAIResponseAgent skAgent = new(responseClient)
     {
@@ -83,7 +83,7 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName)
+        .GetResponsesClient(deploymentName)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
     var thread = agent.GetNewThread();

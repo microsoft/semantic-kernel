@@ -28,7 +28,7 @@ async Task SKAgentAsync()
 {
     var builder = Kernel.CreateBuilder().AddOpenAIChatClient(model, apiKey);
 
-    OpenAIResponseAgent agent = new(new OpenAIClient(apiKey).GetOpenAIResponseClient(model)) { StoreEnabled = true };
+    OpenAIResponseAgent agent = new(new OpenAIClient(apiKey).GetResponsesClient(model)) { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
     agent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("KernelPluginName", [KernelFunctionFactory.CreateFromMethod(GetWeather)]));
@@ -48,7 +48,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     var builder = Kernel.CreateBuilder().AddOpenAIChatClient(model, apiKey);
 
-    OpenAIResponseAgent skAgent = new(new OpenAIClient(apiKey).GetOpenAIResponseClient(model)) { StoreEnabled = true };
+    OpenAIResponseAgent skAgent = new(new OpenAIClient(apiKey).GetResponsesClient(model)) { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
     skAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("KernelPluginName", [KernelFunctionFactory.CreateFromMethod(GetWeather)]));
@@ -63,7 +63,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 async Task AFAgentAsync()
 {
-    var agent = new OpenAIClient(apiKey).GetOpenAIResponseClient(model).CreateAIAgent(
+    var agent = new OpenAIClient(apiKey).GetResponsesClient(model).CreateAIAgent(
         instructions: "You are a helpful assistant",
         tools: [AIFunctionFactory.Create(GetWeather)]);
 
