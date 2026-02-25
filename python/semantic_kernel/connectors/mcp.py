@@ -317,6 +317,7 @@ class MCPPluginBase:
                 )
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
@@ -324,6 +325,7 @@ class MCPPluginBase:
                 await session.initialize()
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to initialize session. Please check your configuration."
                 ) from ex
