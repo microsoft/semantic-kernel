@@ -716,7 +716,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             }
             else
             {
-                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_validFieldNames)}", "searchOptions");
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_validFieldNames)}", nameof(filters));
             }
         }
 

@@ -691,7 +691,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
             }
             else
             {
-                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", "searchOptions");
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(filters));
             }
         }
 
