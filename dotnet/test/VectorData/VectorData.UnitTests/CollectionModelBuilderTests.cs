@@ -21,7 +21,7 @@ public class CollectionModelBuilderTests
     public void Default_embedding_generator_without_record_definition()
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
-        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator);
+        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), definition: null, embeddingGenerator);
 
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
@@ -48,7 +48,7 @@ public class CollectionModelBuilderTests
             ]
         };
 
-        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), recordDefinition, embeddingGenerator);
+        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), recordDefinition, embeddingGenerator);
 
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
@@ -147,7 +147,7 @@ public class CollectionModelBuilderTests
                     ]
                 },
                 embeddingGenerator)
-            : new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), definition: null, embeddingGenerator);
+            : new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), typeof(int), definition: null, embeddingGenerator);
 
         var vectorProperty = model.VectorProperty;
         Assert.Same(embeddingGenerator, vectorProperty.EmbeddingGenerator);
@@ -161,6 +161,7 @@ public class CollectionModelBuilderTests
 
         var model = new CustomModelBuilder().Build(
             typeof(RecordWithEmbeddingVectorProperty),
+            typeof(int),
             new VectorStoreCollectionDefinition
             {
                 Properties =
@@ -200,7 +201,7 @@ public class CollectionModelBuilderTests
 
         var model = dynamic
             ? new CustomModelBuilder().BuildDynamic(recordDefinition, embeddingGenerator)
-            : new CustomModelBuilder().Build(typeof(RecordWithCustomerVectorProperty), recordDefinition, embeddingGenerator);
+            : new CustomModelBuilder().Build(typeof(RecordWithCustomerVectorProperty), typeof(int), recordDefinition, embeddingGenerator);
 
         var vectorProperty = model.VectorProperty;
 
@@ -216,7 +217,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<long>>();
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), definition: null, embeddingGenerator));
 
         Assert.Equal($"Embedding generator 'FakeEmbeddingGenerator<string, Embedding<long>>' on vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' cannot convert the input type 'string' to a supported vector type (one of: ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[]).", exception.Message);
     }
@@ -228,7 +229,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<int, Embedding<float>>();
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), definition: null, embeddingGenerator));
 
         Assert.Equal($"Embedding generator 'FakeEmbeddingGenerator<int, Embedding<float>>' on vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' cannot convert the input type 'string' to a supported vector type (one of: ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[]).", exception.Message);
     }
@@ -237,7 +238,7 @@ public class CollectionModelBuilderTests
     public void Non_embedding_vector_property_without_embedding_generator_throws()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, defaultEmbeddingGenerator: null));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), definition: null, defaultEmbeddingGenerator: null));
 
         Assert.Equal($"Vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' has type 'string' which isn't supported by your provider, and no embedding generator is configured. Configure a generator that supports converting 'string' to vector type supported by your provider.", exception.Message);
     }
@@ -261,7 +262,7 @@ public class CollectionModelBuilderTests
         };
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), recordDefinition, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), recordDefinition, embeddingGenerator));
 
         Assert.Equal("Vector property 'Embedding' has embedding type 'Embedding<Byte>' configured, but that type isn't supported by your provider. Supported types are ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[].", exception.Message);
     }
@@ -285,7 +286,7 @@ public class CollectionModelBuilderTests
         };
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), recordDefinition, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), typeof(int), recordDefinition, embeddingGenerator));
 
         Assert.Equal("Vector property 'Embedding' has embedding type 'Embedding<Half>' configured, but that type isn't supported by your embedding generator.", exception.Message);
     }

@@ -24,6 +24,8 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         if (keyProperty.Type != typeof(Guid))
         {
             throw new NotSupportedException(

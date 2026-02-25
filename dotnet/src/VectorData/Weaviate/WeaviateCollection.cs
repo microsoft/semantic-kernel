@@ -84,7 +84,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(WeaviateDynamicCollection)))
                 : new WeaviateModelBuilder(options.HasNamedVectors)
-                    .Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
+                    .Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
             options)
     {
     }

@@ -92,7 +92,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PostgresDynamicCollection)))
-                : new PostgresModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new PostgresModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
