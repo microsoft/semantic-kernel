@@ -54,38 +54,50 @@ public abstract class CollectionModelBuilder
     protected IEmbeddingGenerator? DefaultEmbeddingGenerator { get; private set; }
 
     /// <summary>
+    /// Gets the collection's generic key type parameter (<c>TKey</c>), if provided.
+    /// Used by <see cref="ValidateKeyProperty"/> to validate that <c>TKey</c> corresponds to the key property type on the model.
+    /// </summary>
+    protected Type? KeyType { get; private set; }
+
+    /// <summary>
     /// Constructs a new <see cref="CollectionModelBuilder"/>.
     /// </summary>
     protected CollectionModelBuilder(CollectionModelBuildingOptions options)
         => this.Options = options;
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="recordType"/> and <paramref name="definition"/>.
     /// </summary>
+    /// <param name="recordType">The CLR type of the record.</param>
+    /// <param name="keyType">The collection's generic key type parameter (<c>TKey</c>), used to validate correspondence with the key property type.</param>
+    /// <param name="definition">An optional record definition that overrides attribute-based configuration.</param>
+    /// <param name="defaultEmbeddingGenerator">An optional default embedding generator for vector properties.</param>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
-    public virtual CollectionModel Build(Type type, VectorStoreCollectionDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel Build(Type recordType, Type keyType, VectorStoreCollectionDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
-        if (type == typeof(Dictionary<string, object?>))
+        this.KeyType = keyType;
+
+        if (recordType == typeof(Dictionary<string, object?>))
         {
             throw new ArgumentException("Dynamic mapping with Dictionary<string, object?> requires calling BuildDynamic().");
         }
 
         this.DefaultEmbeddingGenerator = definition?.EmbeddingGenerator ?? defaultEmbeddingGenerator;
 
-        this.ProcessTypeProperties(type, definition);
+        this.ProcessTypeProperties(recordType, definition);
 
         if (definition is not null)
         {
-            this.ProcessRecordDefinition(definition, type);
+            this.ProcessRecordDefinition(definition, recordType);
         }
 
         // Go over the properties, set the PropertyInfos to point to the .NET type's properties and validate type compatibility.
         foreach (var property in this.Properties)
         {
             // When we have a CLR type (POCO, not dynamic mapping), get the .NET property's type and make sure it matches the definition.
-            property.PropertyInfo = type.GetProperty(property.ModelName)
-                ?? throw new InvalidOperationException($"Property '{property.ModelName}' not found on CLR type '{type.FullName}'.");
+            property.PropertyInfo = recordType.GetProperty(property.ModelName)
+                ?? throw new InvalidOperationException($"Property '{property.ModelName}' not found on CLR type '{recordType.FullName}'.");
 
             var clrPropertyType = property.PropertyInfo.PropertyType;
             if ((Nullable.GetUnderlyingType(clrPropertyType) ?? clrPropertyType) != (Nullable.GetUnderlyingType(property.Type) ?? property.Type))
@@ -96,20 +108,22 @@ public abstract class CollectionModelBuilder
         }
 
         this.Customize();
-        this.Validate(type, definition);
+        this.Validate(recordType, definition);
 
         // Extra validation for non-dynamic mapping scenarios: ensure the type has a parameterless constructor.
-        if (!this.Options.UsesExternalSerializer && type.GetConstructor(Type.EmptyTypes) is null)
+        if (!this.Options.UsesExternalSerializer && recordType.GetConstructor(Type.EmptyTypes) is null)
         {
-            throw new NotSupportedException($"Type '{type.Name}' must have a parameterless constructor.");
+            throw new NotSupportedException($"Type '{recordType.Name}' must have a parameterless constructor.");
         }
 
-        return new(type, new ActivatorBasedRecordCreator(), this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
+        return new(recordType, new ActivatorBasedRecordCreator(), this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
     }
 
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
+    /// <param name="definition">The record definition describing the collection's schema.</param>
+    /// <param name="defaultEmbeddingGenerator">An optional default embedding generator for vector properties.</param>
     public virtual CollectionModel BuildDynamic(VectorStoreCollectionDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (definition is null)
@@ -531,10 +545,18 @@ public abstract class CollectionModelBuilder
         => keyPropertyType == typeof(Guid);
 
     /// <summary>
-    /// Validates that the .NET type for a key property is supported by the provider.
+    /// Validates the key property. The default implementation validates that the collection's generic key type (<see cref="KeyType"/>)
+    /// corresponds to the key property type on the model, if <see cref="KeyType"/> was provided.
+    /// Provider overrides should call the base implementation.
     /// </summary>
-    /// <returns><c>true</c> if the provider supports auto-generating keys of the specified type; otherwise, <c>false</c>.</returns>
-    protected abstract void ValidateKeyProperty(KeyPropertyModel keyProperty);
+    protected virtual void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        if (this.KeyType is not null && this.KeyType != typeof(object) && this.KeyType != keyProperty.Type)
+        {
+            throw new InvalidOperationException(
+                $"The collection's generic key type is '{this.KeyType.Name}', but the key property '{keyProperty.ModelName}' has type '{keyProperty.Type.Name}'. The generic key type must match the key property type.");
+        }
+    }
 
     /// <summary>
     /// Validates that the .NET type for a data property is supported by the provider.

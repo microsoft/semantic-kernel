@@ -90,7 +90,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(QdrantDynamicCollection)))
-                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }

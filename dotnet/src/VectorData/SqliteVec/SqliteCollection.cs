@@ -74,7 +74,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqliteDynamicCollection)))
-                : new SqliteModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new SqliteModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }

@@ -72,7 +72,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(AzureAISearchDynamicCollection)))
                 : new AzureAISearchModelBuilder()
-                    .Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+                    .Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }

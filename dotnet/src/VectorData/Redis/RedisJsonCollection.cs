@@ -83,6 +83,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
                 : new RedisJsonModelBuilder(ModelBuildingOptions)
                     .Build(
                         typeof(TRecord),
+                        typeof(TKey),
                         options.Definition,
                         options.EmbeddingGenerator,
                         options.JsonSerializerOptions ?? JsonSerializerOptions.Default),

@@ -22,6 +22,13 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        // CosmosNoSqlKey is a composite key type (document ID + partition key) that doesn't correspond to any single key property type;
+        // skip the base TKey-to-key-property validation when it's used.
+        if (this.KeyType != typeof(CosmosNoSqlKey))
+        {
+            base.ValidateKeyProperty(keyProperty);
+        }
+
         // Note that the key property in Cosmos NoSQL refers to the document ID, not to the CosmosNoSqlKey structure which includes both
         // the document ID and the partition key (and which is the generic TKey type parameter of the collection).
         var type = keyProperty.Type;
