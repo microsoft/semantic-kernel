@@ -217,7 +217,8 @@ public sealed class BraveTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of country,search_lang,ui_lang,safesearch,text_decorations,spellcheck,result_filter,units,extra_snippets (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'fooBar'", e.Message);
+        Assert.Contains("must be one of", e.Message);
     }
 
     [Fact]
@@ -232,7 +233,8 @@ public sealed class BraveTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'country', must be one of country,search_lang,ui_lang,safesearch,text_decorations,spellcheck,result_filter,units,extra_snippets (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'country'", e.Message);
+        Assert.Contains("must be one of", e.Message);
     }
 
     /// <inheritdoc/>

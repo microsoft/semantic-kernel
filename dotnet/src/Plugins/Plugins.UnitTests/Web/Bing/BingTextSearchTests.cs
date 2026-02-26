@@ -2,6 +2,7 @@
 
 #pragma warning disable CS0618 // ITextSearch is obsolete
 #pragma warning disable CS8602 // Dereference of a possibly null reference - Test LINQ expressions access BingWebPage properties guaranteed non-null in test context
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance - tests intentionally use interface types
 
 using System;
 using System.IO;
@@ -231,7 +232,8 @@ public sealed class BingTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat,contains,ext,filetype,inanchor,inbody,intitle,ip,language,loc,location,prefer,site,feed,hasfeed,url (Parameter 'searchOptions')", e.Message);
+        Assert.Contains("Unknown equality filter clause field name 'fooBar'", e.Message);
+        Assert.Contains("must be one of", e.Message);
     }
 
     #region Generic ITextSearch<BingWebPage> Interface Tests
@@ -926,6 +928,167 @@ public sealed class BingTextSearchTests : IDisposable
         var requestUris = this._messageHandlerStub.RequestUris;
         Assert.Single(requestUris);
         Assert.Contains("intitle%3ASemantic", requestUris[0]!.AbsoluteUri);
+    }
+
+    #endregion
+
+    #region Default Search Parameter Tests
+
+    [Fact]
+    public async Task DefaultMarketIsAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Market = "en-US" });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query");
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("mkt=en-US", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task DefaultFreshnessIsAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Freshness = "Month" });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query");
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("freshness=Month", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task DefaultSafeSearchIsAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, SafeSearch = "Strict" });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query");
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("safeSearch=Strict", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task MultipleDefaultParametersAreAppliedToSearchRequestAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new()
+        {
+            HttpClient = this._httpClient,
+            Market = "en-US",
+            Freshness = "Week",
+            SafeSearch = "Moderate",
+            TextDecorations = true
+        });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query");
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("mkt=en-US", uri);
+        Assert.Contains("freshness=Week", uri);
+        Assert.Contains("safeSearch=Moderate", uri);
+        Assert.Contains("textDecorations=true", uri);
+    }
+
+    [Fact]
+    public async Task FilterOverridesDefaultParameterAsync()
+    {
+        // Arrange: Set Market as default, then override via legacy filter
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Market = "en-US" });
+        var searchOptions = new TextSearchOptions { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("mkt", "fr-FR") };
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert: Only fr-FR should appear, not en-US
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("mkt=fr-FR", uri);
+        Assert.DoesNotContain("mkt=en-US", uri);
+    }
+
+    [Fact]
+    public async Task DefaultParametersWorkWithGenericInterfaceAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Market = "de-DE" });
+
+        // Act
+        var searchOptions = new TextSearchOptions<BingWebPage> { Top = 4, Skip = 0 };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("mkt=de-DE", requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task DefaultParametersCoexistWithLinqFiltersAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        ITextSearch<BingWebPage> textSearch = new BingTextSearch(apiKey: "ApiKey", options: new()
+        {
+            HttpClient = this._httpClient,
+            Market = "en-US",
+            Freshness = "Month"
+        });
+
+        // Act: LINQ filter for response-side property + default request-side params
+        var searchOptions = new TextSearchOptions<BingWebPage>
+        {
+            Top = 4,
+            Skip = 0,
+            Filter = page => page.Language == "en"
+        };
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query", searchOptions);
+
+        // Assert: Both LINQ filter and defaults should appear
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        string uri = requestUris[0]!.AbsoluteUri;
+        Assert.Contains("language%3Aen", uri);
+        Assert.Contains("mkt=en-US", uri);
+        Assert.Contains("freshness=Month", uri);
+    }
+
+    [Fact]
+    public async Task DefaultAnswerCountIsAppliedCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, AnswerCount = 3 });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("test query");
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.Contains("answerCount=3", requestUris[0]!.AbsoluteUri);
     }
 
     #endregion

@@ -44,13 +44,15 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearch)));
         this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
         this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        this._options = options;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
@@ -61,7 +63,8 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
@@ -72,7 +75,8 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
@@ -80,27 +84,34 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     }
 
     /// <inheritdoc/>
-    Task<KernelSearchResults<string>> ITextSearch<BingWebPage>.SearchAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    async Task<KernelSearchResults<string>> ITextSearch<BingWebPage>.SearchAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
-        return this.SearchAsync(query, legacyOptions, cancellationToken);
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = includeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
+
+        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
-    Task<KernelSearchResults<TextSearchResult>> ITextSearch<BingWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearch<BingWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
-        return this.GetTextSearchResultsAsync(query, legacyOptions, cancellationToken);
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = includeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
+
+        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     async Task<KernelSearchResults<BingWebPage>> ITextSearch<BingWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<BingWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var legacyOptions = searchOptions != null ? ConvertToLegacyOptions(searchOptions) : new TextSearchOptions();
+        var (top, skip, includeTotalCount, filters) = ExtractSearchParameters(searchOptions);
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, legacyOptions, cancellationToken).ConfigureAwait(false);
-
-        long? totalCount = legacyOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
+        long? totalCount = includeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
         return new KernelSearchResults<BingWebPage>(
             this.GetResultsAsBingWebPageAsync(searchResponse, cancellationToken),
@@ -116,6 +127,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     private readonly Uri? _uri = null;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
+    private readonly BingTextSearchOptions? _options;
 
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
@@ -127,47 +139,43 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
 
     /// <summary>
-    /// Converts generic TextSearchOptions with LINQ filtering to legacy TextSearchOptions.
-    /// Attempts to translate simple LINQ expressions to Bing API filters where possible.
+    /// Extracts search parameters from generic <see cref="TextSearchOptions{TRecord}"/>.
+    /// This is the primary entry point for the LINQ-based filtering path.
     /// </summary>
-    /// <param name="genericOptions">The generic search options with LINQ filtering.</param>
-    /// <returns>Legacy TextSearchOptions with equivalent filtering, or null if no conversion possible.</returns>
-    private static TextSearchOptions ConvertToLegacyOptions(TextSearchOptions<BingWebPage> genericOptions)
+    private static (int Top, int Skip, bool IncludeTotalCount, List<(string FieldName, object Value)> Filters) ExtractSearchParameters<TRecord>(TextSearchOptions<TRecord>? searchOptions)
     {
-        return new TextSearchOptions
-        {
-            Top = genericOptions.Top,
-            Skip = genericOptions.Skip,
-            Filter = genericOptions.Filter != null ? ConvertLinqExpressionToBingFilter(genericOptions.Filter) : null,
-            IncludeTotalCount = genericOptions.IncludeTotalCount
-        };
+        var top = searchOptions?.Top ?? 3;
+        var skip = searchOptions?.Skip ?? 0;
+        var includeTotalCount = searchOptions?.IncludeTotalCount ?? false;
+        var filters = searchOptions?.Filter != null ? ExtractFiltersFromExpression(searchOptions.Filter) : [];
+        return (top, skip, includeTotalCount, filters);
     }
 
     /// <summary>
-    /// Converts a LINQ expression to a TextSearchFilter compatible with Bing API.
+    /// Walks a LINQ expression tree and extracts Bing API filter key-value pairs directly.
     /// Supports equality, inequality, Contains() method calls, and logical AND operator.
     /// </summary>
-    /// <param name="linqExpression">The LINQ expression to convert.</param>
-    /// <returns>A TextSearchFilter with equivalent filtering.</returns>
+    /// <param name="linqExpression">The LINQ expression to walk.</param>
+    /// <returns>A list of (FieldName, Value) pairs for Bing API filters.</returns>
     /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Bing filters.</exception>
-    private static TextSearchFilter ConvertLinqExpressionToBingFilter<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
+    private static List<(string FieldName, object Value)> ExtractFiltersFromExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
     {
-        var filter = new TextSearchFilter();
-        ProcessExpression(linqExpression.Body, filter);
-        return filter;
+        var filters = new List<(string FieldName, object Value)>();
+        ProcessExpression(linqExpression.Body, filters);
+        return filters;
     }
 
     /// <summary>
     /// Recursively processes LINQ expression nodes and builds Bing API filters.
     /// </summary>
-    private static void ProcessExpression(Expression expression, TextSearchFilter filter)
+    private static void ProcessExpression(Expression expression, List<(string FieldName, object Value)> filters)
     {
         switch (expression)
         {
             case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.AndAlso:
                 // Handle AND: page => page.Language == "en" && page.Name.Contains("AI")
-                ProcessExpression(binaryExpr.Left, filter);
-                ProcessExpression(binaryExpr.Right, filter);
+                ProcessExpression(binaryExpr.Left, filters);
+                ProcessExpression(binaryExpr.Right, filters);
                 break;
 
             case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.OrElse:
@@ -185,13 +193,13 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 
             case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.Equal:
                 // Handle equality: page => page.Language == "en"
-                ProcessEqualityExpression(binaryExpr, filter, isNegated: false);
+                ProcessEqualityExpression(binaryExpr, filters, isNegated: false);
                 break;
 
             case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.NotEqual:
                 // Handle inequality: page => page.Language != "en"
                 // Implemented via Bing's negation syntax (e.g., -language:en)
-                ProcessEqualityExpression(binaryExpr, filter, isNegated: true);
+                ProcessEqualityExpression(binaryExpr, filters, isNegated: true);
                 break;
 
             case MethodCallExpression methodExpr when methodExpr.Method.Name == "Contains":
@@ -199,7 +207,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                 if (methodExpr.Object is MemberExpression)
                 {
                     // Instance method: page.Name.Contains("value") - SUPPORTED
-                    ProcessContainsExpression(methodExpr, filter);
+                    ProcessContainsExpression(methodExpr, filters);
                 }
                 else if (methodExpr.Object == null)
                 {
@@ -237,9 +245,9 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// Processes equality and inequality expressions (property == value or property != value).
     /// </summary>
     /// <param name="binaryExpr">The binary expression to process.</param>
-    /// <param name="filter">The filter to update.</param>
+    /// <param name="filters">The list to add filter key-value pairs to.</param>
     /// <param name="isNegated">True if this is an inequality (!=) expression.</param>
-    private static void ProcessEqualityExpression(BinaryExpression binaryExpr, TextSearchFilter filter, bool isNegated)
+    private static void ProcessEqualityExpression(BinaryExpression binaryExpr, List<(string FieldName, object Value)> filters, bool isNegated)
     {
         // Handle nullable properties with conversions (e.g., bool? == bool becomes Convert(property) == value)
         MemberExpression? memberExpr = binaryExpr.Left as MemberExpression;
@@ -274,11 +282,11 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                     // For inequality, wrap the value with a negation marker
                     // This will be processed in BuildQuery to prepend '-' to the advanced search operator
                     // Example: language:en becomes -language:en (excludes pages in English)
-                    filter.Equality(bingFilterName, $"-{stringValue}");
+                    filters.Add((bingFilterName, $"-{stringValue}"));
                 }
                 else
                 {
-                    filter.Equality(bingFilterName, stringValue);
+                    filters.Add((bingFilterName, stringValue));
                 }
             }
             else if (value == null)
@@ -305,7 +313,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// Processes Contains() method calls on string properties.
     /// Maps to Bing's advanced search operators like intitle:, inbody:, url:.
     /// </summary>
-    private static void ProcessContainsExpression(MethodCallExpression methodExpr, TextSearchFilter filter)
+    private static void ProcessContainsExpression(MethodCallExpression methodExpr, List<(string FieldName, object Value)> filters)
     {
         // Contains can be called on a property: page.Name.Contains("value")
         // or on a collection: page.Tags.Contains("value")
@@ -328,7 +336,7 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                 if (bingFilterOperator != null)
                 {
                     // Use Bing's advanced search syntax: intitle:"value", inbody:"value", etc.
-                    filter.Equality(bingFilterOperator, value);
+                    filters.Add((bingFilterOperator, value));
                 }
                 else
                 {
@@ -418,11 +426,13 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// Execute a Bing search query and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
+    private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -438,17 +448,19 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     /// Sends a GET request to the specified URI.
     /// </summary>
     /// <param name="query">The query string.</param>
-    /// <param name="searchOptions">The search options.</param>
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken = default)
     {
-        if (searchOptions.Top is <= 0 or > 50)
+        if (top is <= 0 or > 50)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
+            throw new ArgumentOutOfRangeException(nameof(top), top, "count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{this._uri}?q={this.BuildQuery(query, top, skip, filters)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -582,63 +594,121 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         }
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete
+#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
-    /// Build a query string from the <see cref="TextSearchOptions"/>
+    /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
+    /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
+    /// It will be removed when the legacy ITextSearch interface is retired.
+    /// </summary>
+    private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
+    {
+        var filters = new List<(string FieldName, object Value)>();
+        if (filter is not null)
+        {
+            foreach (var clause in filter.FilterClauses)
+            {
+                if (clause is EqualToFilterClause eq)
+                {
+                    filters.Add((eq.FieldName, eq.Value));
+                }
+            }
+        }
+        return filters;
+    }
+#pragma warning restore CS0618
+
+    /// <summary>
+    /// Build a Bing API query string from pre-extracted filter key-value pairs.
+    /// Both LINQ and legacy paths converge here after producing the same (FieldName, Value) list.
     /// </summary>
     /// <param name="query">The query.</param>
-    /// <param name="searchOptions">The search options.</param>
-    private static string BuildQuery(string query, TextSearchOptions searchOptions)
+    /// <param name="top">Number of results to return.</param>
+    /// <param name="skip">Number of results to skip.</param>
+    /// <param name="filters">Pre-extracted filter key-value pairs.</param>
+    private string BuildQuery(string query, int top, int skip, List<(string FieldName, object Value)> filters)
     {
         StringBuilder fullQuery = new();
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
         StringBuilder queryParams = new();
-        if (searchOptions.Filter is not null)
+        HashSet<string> processedQueryParams = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (fieldName, value) in filters)
         {
-            var filterClauses = searchOptions.Filter.FilterClauses;
+            // Check if value starts with '-' indicating negation (for inequality != operator)
+            string? valueStr = value?.ToString();
+            bool isNegated = valueStr?.StartsWith("-", StringComparison.Ordinal) == true;
+            string actualValue = isNegated && valueStr != null ? valueStr.Substring(1) : valueStr ?? string.Empty;
 
-            foreach (var filterClause in filterClauses)
+            if (s_advancedSearchKeywords.Contains(fieldName, StringComparer.OrdinalIgnoreCase) && value is not null)
             {
-                if (filterClause is EqualToFilterClause equalityFilterClause)
+                // For advanced search keywords, prepend '-' if negated to exclude results
+                string prefix = isNegated ? "-" : "";
+                fullQuery.Append($"+{prefix}{fieldName}%3A").Append(Uri.EscapeDataString(actualValue));
+            }
+            else if (s_queryParameters.Contains(fieldName, StringComparer.OrdinalIgnoreCase) && value is not null)
+            {
+                // Query parameters do not support negation (!=) - throw if attempted
+                if (isNegated)
                 {
-                    // Check if value starts with '-' indicating negation (for inequality != operator)
-                    string? valueStr = equalityFilterClause.Value?.ToString();
-                    bool isNegated = valueStr?.StartsWith("-", StringComparison.Ordinal) == true;
-                    string actualValue = isNegated && valueStr != null ? valueStr.Substring(1) : valueStr ?? string.Empty;
-
-                    if (s_advancedSearchKeywords.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
-                    {
-                        // For advanced search keywords, prepend '-' if negated to exclude results
-                        string prefix = isNegated ? "-" : "";
-                        fullQuery.Append($"+{prefix}{equalityFilterClause.FieldName}%3A").Append(Uri.EscapeDataString(actualValue));
-                    }
-                    else if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
-                    {
-                        // Query parameters do not support negation (!=) - throw if attempted
-                        if (isNegated)
-                        {
-                            throw new ArgumentException(
-                                $"Negation (!= operator) is not supported for query parameter '{equalityFilterClause.FieldName}'. " +
-                                $"Negation only works with advanced search operators: {string.Join(", ", s_advancedSearchKeywords)}.",
-                                nameof(searchOptions));
-                        }
-
-                        string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase));
-                        queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(actualValue));
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(searchOptions));
-                    }
+                    throw new ArgumentException(
+                        $"Negation (!= operator) is not supported for query parameter '{fieldName}'. " +
+                        $"Negation only works with advanced search operators: {string.Join(", ", s_advancedSearchKeywords)}.",
+                        nameof(filters));
                 }
+
+                string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(fieldName, StringComparison.OrdinalIgnoreCase));
+                queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(actualValue));
+                processedQueryParams.Add(queryParam!);
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown equality filter clause field name '{fieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(filters));
             }
         }
 
-        fullQuery.Append($"&count={searchOptions.Top}&offset={searchOptions.Skip}{queryParams}");
+        // Apply default search parameters from constructor options (only for params not already set by filter)
+        this.AppendDefaultSearchParameters(queryParams, processedQueryParams);
+
+        fullQuery.Append($"&count={top}&offset={skip}{queryParams}");
 
         return fullQuery.ToString();
     }
-#pragma warning restore CS0618 // FilterClause is obsolete
+
+    /// <summary>
+    /// Appends default Bing search parameters from <see cref="BingTextSearchOptions"/> to the query.
+    /// Parameters already set by filter clauses are not overridden.
+    /// </summary>
+    private void AppendDefaultSearchParameters(StringBuilder queryParams, HashSet<string> processedQueryParams)
+    {
+        AppendIfNotSet(queryParams, processedQueryParams, "mkt", this._options?.Market);
+        AppendIfNotSet(queryParams, processedQueryParams, "freshness", this._options?.Freshness);
+        AppendIfNotSet(queryParams, processedQueryParams, "safeSearch", this._options?.SafeSearch);
+        AppendIfNotSet(queryParams, processedQueryParams, "cc", this._options?.CountryCode);
+        AppendIfNotSet(queryParams, processedQueryParams, "setLang", this._options?.SetLanguage);
+        AppendIfNotSet(queryParams, processedQueryParams, "responseFilter", this._options?.ResponseFilter);
+        AppendIfNotSet(queryParams, processedQueryParams, "promote", this._options?.Promote);
+        AppendIfNotSet(queryParams, processedQueryParams, "textFormat", this._options?.TextFormat);
+
+        if (this._options?.AnswerCount is int answerCount && !processedQueryParams.Contains("answerCount"))
+        {
+            queryParams.Append("&answerCount=").Append(answerCount);
+        }
+
+        if (this._options?.TextDecorations is bool textDecorations && !processedQueryParams.Contains("textDecorations"))
+        {
+#pragma warning disable CA1308 // Bing API requires lowercase boolean values
+            queryParams.Append("&textDecorations=").Append(textDecorations.ToString().ToLowerInvariant());
+#pragma warning restore CA1308
+        }
+    }
+
+    private static void AppendIfNotSet(StringBuilder queryParams, HashSet<string> processedQueryParams, string paramName, string? value)
+    {
+        if (value is not null && !processedQueryParams.Contains(paramName))
+        {
+            queryParams.Append('&').Append(paramName).Append('=').Append(Uri.EscapeDataString(value));
+        }
+    }
 
     #endregion
 }
