@@ -522,6 +522,35 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // Prepare the SQL commands.
             using var batch = connection.CreateBatch();
 
+            // First, check if the pgvector extension is already installed in PostgreSQL, and then install it if not.
+            // Note that we do a separate check before doing CREATE EXTENSION IF EXISTS in order to know if it was actually created,
+            // since in that case we must also must call ReloadTypesAsync() at the Npgsql level
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("SELECT EXISTS(SELECT * FROM pg_extension WHERE extname='vector')"));
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("CREATE EXTENSION IF NOT EXISTS vector"));
+
+            bool extensionAlreadyExisted;
+
+            try
+            {
+                extensionAlreadyExisted = (bool)(await batch.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
+            }
+            catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                // CREATE EXTENSION IF NOT EXISTS is not atomic in PG, so concurrent sessions doing this at the same time
+                // may trigger a unique constraint violation. We ignore it and interpret it to mean that the extension
+                // already exists.
+                extensionAlreadyExisted = true;
+            }
+
+            if (!extensionAlreadyExisted)
+            {
+                await connection.ReloadTypesAsync().ConfigureAwait(false);
+            }
+
+            batch.BatchCommands.Clear();
+
+            // Now create the table and any indexes.
+            // Note that this must be done in a separate batch/transaction as the creation of the extension above.
             batch.BatchCommands.Add(
                 new NpgsqlBatchCommand(PostgresSqlBuilder.BuildCreateTableSql(this._schema, this.Name, this._model, pgVersion, ifNotExists)));
 
