@@ -356,6 +356,211 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
 
 # endregion
 
+# region Vector Search with Filter tests
+
+
+@vectorstoremodel
+@dataclass
+class FilterDataModel:
+    id: Annotated[int, VectorStoreField("key")]
+    embedding: Annotated[
+        list[float] | str | None,
+        VectorStoreField(
+            "vector",
+            index_kind=IndexKind.HNSW,
+            dimensions=1536,
+            distance_function=DistanceFunction.COSINE_DISTANCE,
+            type="float",
+        ),
+    ]
+    content_type: Annotated[str, VectorStoreField("data")]
+    age: Annotated[int, VectorStoreField("data")]
+    is_active: Annotated[bool, VectorStoreField("data")]
+
+
+async def test_vector_search_with_equality_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that a single equality filter produces correct SQL (not a string literal)."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: x.content_type == "course",
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert " WHERE " in statement_str
+    assert "\"content_type\" = 'course'" in statement_str
+    # Ensure the clause is NOT wrapped as a string literal (the original bug)
+    assert "'''course'''" not in statement_str
+
+
+async def test_vector_search_with_numeric_comparison_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that numeric comparison operators produce correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: x.age > 18,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert '"age" > 18' in statement_str
+
+
+async def test_vector_search_with_and_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that AND-combined filters produce correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: x.age >= 21 and x.content_type == "course",
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert '"age" >= 21' in statement_str
+    assert "\"content_type\" = 'course'" in statement_str
+    assert " AND " in statement_str
+
+
+async def test_vector_search_with_or_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that OR-combined filters produce correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: x.content_type == "course" or x.content_type == "lesson",
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert " OR " in statement_str
+    assert "\"content_type\" = 'course'" in statement_str
+    assert "\"content_type\" = 'lesson'" in statement_str
+
+
+async def test_vector_search_with_in_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that IN operator produces correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: x.content_type in ["course", "lesson"],
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert "\"content_type\" IN ('course', 'lesson')" in statement_str
+
+
+async def test_vector_search_with_not_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that NOT operator produces correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: not x.is_active,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert 'NOT ("is_active")' in statement_str
+
+
+async def test_vector_search_with_multiple_filters(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that multiple separate filters are combined with AND."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=[
+            lambda x: x.content_type == "course",
+            lambda x: x.age > 18,
+        ],
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert "\"content_type\" = 'course'" in statement_str
+    assert '"age" > 18' in statement_str
+    assert " AND " in statement_str
+
+
+async def test_vector_search_with_chain_comparison_filter(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    """Test that chain comparison (e.g. 10 < x < 30) produces correct SQL."""
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=10,
+        filter=lambda x: 10 < x.age < 30,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert '"age" > 10' in statement_str or '10 < "age"' in statement_str
+    assert " AND " in statement_str
+
+
+# endregion
+
 # region Settings tests
 
 
