@@ -67,10 +67,15 @@ class KernelArguments(dict):
                 f"TypeError: unsupported operand type(s) for |: '{type(self).__name__}' and '{type(value).__name__}'"
             )
 
-        # Merge execution settings
-        new_execution_settings = (self.execution_settings or {}).copy()
+        # Merge execution settings - only copy when needed
+        if self.execution_settings:
+            new_execution_settings = self.execution_settings  # Reuse reference if immutable
+        else:
+            new_execution_settings = {}
+        
         if isinstance(value, KernelArguments) and value.execution_settings:
-            new_execution_settings |= value.execution_settings
+            # Only copy when we need to merge (mutation)
+            new_execution_settings = {**new_execution_settings, **value.execution_settings}
         # Create a new KernelArguments with merged dict values
         return KernelArguments(settings=new_execution_settings, **(dict(self) | dict(value)))
 
@@ -84,12 +89,13 @@ class KernelArguments(dict):
                 f"TypeError: unsupported operand type(s) for |: '{type(value).__name__}' and '{type(self).__name__}'"
             )
 
-        # Merge execution settings
+        # Merge execution settings - only copy when needed
         new_execution_settings = {}
         if isinstance(value, KernelArguments) and value.execution_settings:
-            new_execution_settings = value.execution_settings.copy()
+            new_execution_settings = value.execution_settings  # Reuse reference if immutable
         if self.execution_settings:
-            new_execution_settings |= self.execution_settings
+            # Only copy when we need to merge (mutation)
+            new_execution_settings = {**new_execution_settings, **self.execution_settings}
 
         # Create a new KernelArguments with merged dict values
         return KernelArguments(settings=new_execution_settings, **(dict(value) | dict(self)))
@@ -98,12 +104,13 @@ class KernelArguments(dict):
         """Merges into this KernelArguments with another KernelArguments or dict (in-place)."""
         self.update(value)
 
-        # In-place merge execution settings
+        # In-place merge execution settings - only copy when needed
         if isinstance(value, KernelArguments) and value.execution_settings:
             if self.execution_settings:
                 self.execution_settings.update(value.execution_settings)
             else:
-                self.execution_settings = value.execution_settings.copy()
+                # Only copy when we actually need a different instance
+                self.execution_settings = {**value.execution_settings}
 
         return self
 
