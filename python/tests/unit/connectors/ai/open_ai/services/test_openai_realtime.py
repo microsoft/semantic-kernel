@@ -120,6 +120,7 @@ events = [
         arguments="{}",
         call_id="call_id",
         item_id="item_id",
+        name="function_name",
         output_index=0,
         response_id="response_id",
     ),
@@ -383,6 +384,7 @@ def test_create_openai_realtime_event(
                 event_id="event_id",
                 output_index=0,
                 item_id="item_id",
+                name="function_name",
                 response_id="response_id",
                 type="response.function_call_arguments.done",
             ),
@@ -494,6 +496,7 @@ async def test_parse_function_call_arguments_done(OpenAIWebsocket, kernel):
         event_id="event_id",
         output_index=0,
         item_id="item_id",
+        name="plugin_name-function_name",
         response_id="response_id",
         type="response.function_call_arguments.done",
     )
@@ -533,6 +536,7 @@ async def test_parse_function_call_arguments_done_fail(OpenAIWebsocket, kernel):
         event_id="event_id",
         output_index=0,
         item_id="item_id",
+        name="function_name",
         response_id="response_id",
         type="response.function_call_arguments.done",
     )

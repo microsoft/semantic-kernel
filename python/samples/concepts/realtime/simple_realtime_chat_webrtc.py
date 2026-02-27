@@ -5,10 +5,10 @@ import logging
 
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeExecutionSettings,
     ListenEvents,
-    OpenAIRealtimeExecutionSettings,
-    OpenAIRealtimeWebRTC,
 )
+from semantic_kernel.connectors.ai.open_ai.services.azure_realtime import AzureRealtimeWebRTC
 from semantic_kernel.contents import RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
@@ -43,7 +43,7 @@ async def main() -> None:
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    settings = OpenAIRealtimeExecutionSettings(
+    settings = AzureRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.
@@ -59,7 +59,12 @@ async def main() -> None:
         # Enable both text and audio output to get transcripts
         output_modalities=["text", "audio"],
     )
-    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC(), settings=settings)
+    # Note: api_version (either through settings or directly in the client) must be set to "2025-08-28"
+    # for Azure OpenAI deployments realtime deployments.
+    realtime_client = AzureRealtimeWebRTC(
+        audio_track=AudioRecorderWebRTC(),
+        settings=settings,
+    )
     # Create the settings for the session
     audio_player = AudioPlayerWebRTC()
     # the context manager calls the create_session method on the client and starts listening to the audio stream
@@ -84,7 +89,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: start speaking. "
+        "Instructions: start speaking when you see 'Session updated.' "
         "The model will detect when you stop and automatically start responding. "
         "Press ctrl + c to stop the program."
     )

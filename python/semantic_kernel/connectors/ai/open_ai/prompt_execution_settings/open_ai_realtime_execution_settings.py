@@ -54,7 +54,6 @@ class TurnDetection(KernelBaseModel):
 class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI realtime services."""
 
-    modalities: Sequence[Literal["audio", "text"]] | None = None
     output_modalities: Sequence[Literal["audio", "text"]] | None = None
     ai_model_id: Annotated[str | None, Field(None, serialization_alias="model")] = None
     instructions: str | None = None
@@ -77,8 +76,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
             "on the function choice configuration.",
         ),
     ] = None
-    temperature: Annotated[float | None, Field(ge=0.6, le=1.2)] = None
-    max_response_output_tokens: Annotated[int | Literal["inf"] | None, Field(gt=0)] = None
+    max_output_tokens: Annotated[int | Literal["inf"] | None, Field(gt=0)] = None
     input_audio_noise_reduction: dict[Literal["type"], Literal["near_field", "far_field"]] | None = None
 
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:

@@ -255,8 +255,8 @@ class ListenEvents(str, Enum):
     RESPONSE_OUTPUT_ITEM_DONE = "response.output_item.done"
     RESPONSE_CONTENT_PART_ADDED = "response.content_part.added"
     RESPONSE_CONTENT_PART_DONE = "response.content_part.done"
-    RESPONSE_TEXT_DELTA = "response.text.delta"
-    RESPONSE_TEXT_DONE = "response.text.done"
+    RESPONSE_TEXT_DELTA = "response.output_text.delta"
+    RESPONSE_TEXT_DONE = "response.output_text.done"
     RESPONSE_AUDIO_TRANSCRIPT_DELTA = "response.output_audio_transcript.delta"
     RESPONSE_AUDIO_TRANSCRIPT_DONE = "response.output_audio_transcript.done"
     RESPONSE_AUDIO_DELTA = "response.output_audio.delta"
@@ -302,7 +302,12 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         might be of different types.
         """
         match event.type:
-            case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value | "response.audio_transcript.delta":
+            case (
+                ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value
+                | "response.audio_transcript.delta"
+                | ListenEvents.RESPONSE_TEXT_DELTA.value
+                | "response.text.delta"
+            ):
                 yield RealtimeTextEvent(
                     service_type=event.type,
                     service_event=event,
@@ -312,15 +317,16 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         choice_index=0,
                     ),
                 )
-            case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DONE.value | "response.audio_transcript.done":
-                yield RealtimeTextEvent(
-                    service_type=event.type,
-                    service_event=event,
-                    text=TextContent(
-                        inner_content=event,
-                        text=event.transcript,  # type: ignore
-                    ),
-                )
+            case (
+                ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DONE.value
+                | "response.audio_transcript.done"
+                | ListenEvents.RESPONSE_TEXT_DONE.value
+                | "response.text.done"
+            ):
+                # Don't yield RealtimeTextEvent here — the deltas already streamed all
+                # the text.  Emitting the full text again would cause duplicate output
+                # for any consumer that prints every RealtimeTextEvent.
+                yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED.value:
                 if event.item.type == "function_call" and event.item.call_id and event.item.name:  # type: ignore
                     self._call_id_to_function_map[event.item.call_id] = event.item.name  # type: ignore
@@ -723,24 +729,19 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                     # Only keep fields that are allowed in session updates
                     # Note: output_modalities is not allowed in WebRTC session updates
                     allowed_fields = {
+                        "type",
                         "instructions",
                         "model",
                         "max_output_tokens",
                         "tools",
                         "tool_choice",
-                        "temperature",
                         "prompt",
                         "tracing",
                         "truncation",
                     }
                     event_dict["session"] = {k: v for k, v in session_dict.items() if k in allowed_fields}
 
-                # Debug: Log what we're sending to see the structure
-                import json
-
-                json_data = json.dumps(event_dict)
-                logger.debug(f"Sending WebRTC session.update: {json_data}")
-                self.data_channel.send(json_data)
+                self.data_channel.send(json.dumps(event_dict))
             else:
                 self.data_channel.send(event.model_dump_json(exclude_none=True))
         except Exception as e:
@@ -860,8 +861,18 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
             await self._receive_buffer.put(parsed_event)
 
     async def _get_ephemeral_token(self) -> str:
-        """Get an ephemeral token from OpenAI."""
-        data = {"model": self.ai_model_id}
+        """Get an ephemeral token from OpenAI.
+
+        GA endpoint: POST /v1/realtime/client_secrets
+        Request body: {"session": {"type": "realtime", "model": "<model>"}}
+        Response: {"value": "<token>", "expires_at": ..., "session": {...}}
+        """
+        data = {
+            "session": {
+                "type": "realtime",
+                "model": self.ai_model_id,
+            }
+        }
         headers, url = self._get_ephemeral_token_headers_and_url()
         headers = prepend_semantic_kernel_to_user_agent(headers)
         try:
@@ -874,22 +885,25 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                     raise Exception(f"Failed to get ephemeral token: {error_text}")
 
                 result = await response.json()
-                return result["client_secret"]["value"]
+                return result["value"]
 
         except Exception as e:
             logger.error(f"Failed to get ephemeral token: {e!s}")
             raise
 
     def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
-        """Get the headers for the ephemeral token."""
+        """Get the headers and URL for the ephemeral token."""
         return {
             "Authorization": f"Bearer {self.client.api_key}",
             "Content-Type": "application/json",
-        }, f"{self.client.realtime._client.base_url}/realtime/sessions"
+        }, f"{self.client.realtime._client.base_url}/realtime/client_secrets"
 
     def _get_webrtc_url(self) -> str:
-        """Get the WebRTC URL."""
-        return f"{self.client.realtime._client.base_url}/realtime?model={self.ai_model_id}"
+        """Get the WebRTC URL.
+
+        GA endpoint: POST /v1/realtime/calls?model=<model>
+        """
+        return f"{self.client.realtime._client.base_url}/realtime/calls?model={self.ai_model_id}"
 
 
 # region Websocket
@@ -933,9 +947,6 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
         if not self.connection:
             raise ValueError("Connection is not established.")
         try:
-            # Debug logging to see what we're actually sending
-            if hasattr(event, "type") and event.type == "session.update":
-                logger.debug(f"Sending session.update event: {event.model_dump()}")
             await self.connection.send(event)
         except Exception as e:
             logger.error(f"Error sending response: {e!s}")

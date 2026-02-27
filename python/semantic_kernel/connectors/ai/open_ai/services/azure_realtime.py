@@ -2,12 +2,15 @@
 
 import logging
 import sys
+import warnings
 from collections.abc import Callable, Coroutine, Mapping
 from typing import TYPE_CHECKING, Any
 
+from aiohttp import ClientSession
 from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from openai.resources.realtime.realtime import AsyncRealtimeConnection
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
@@ -21,12 +24,17 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import Azu
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
     from numpy import ndarray
+
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents.chat_history import ChatHistory
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -139,6 +147,50 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
     def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
         return AzureRealtimeExecutionSettings
 
+    @override
+    async def create_session(
+        self,
+        chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        """Create a session in the service.
+
+        The Azure GA Realtime endpoint (/openai/v1/realtime) does not accept
+        the api-version query parameter. The openai SDK always adds it, so we
+        bypass the SDK's _configure_realtime and build the connection directly.
+        """
+        from websockets.asyncio.client import connect as ws_connect
+
+        # Build the GA WebSocket URL: wss://<resource>.openai.azure.com/openai/v1/realtime?model=<deployment-name>
+        # Note: GA uses ?model= (not ?deployment= which was preview)
+        # See: https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/realtime-audio-websockets
+        endpoint = str(self.client._base_url).rstrip("/")  # type: ignore[attr-defined]
+        if "/openai" in endpoint:
+            endpoint = endpoint[: endpoint.index("/openai")]
+        url = f"wss://{endpoint.split('://')[-1]}/openai/v1/realtime?model={self.ai_model_id}"
+
+        # Build auth headers
+        auth_headers: dict[str, str] = {}
+        if self.client.api_key and self.client.api_key != "<missing API key>":
+            auth_headers["api-key"] = self.client.api_key
+        else:
+            token = await self.client._get_azure_ad_token()  # type: ignore[attr-defined]
+            if token:
+                auth_headers["Authorization"] = f"Bearer {token}"
+
+        ws = await ws_connect(
+            url,
+            additional_headers={
+                **auth_headers,
+                USER_AGENT: SEMANTIC_KERNEL_USER_AGENT,
+            },
+        )
+
+        self.connection = AsyncRealtimeConnection(ws)
+        self.connected.set()
+        await self.update_session(settings=settings, chat_history=chat_history, **kwargs)
+
 
 @experimental
 class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
@@ -147,7 +199,7 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
     def __init__(
         self,
         audio_track: "MediaStreamTrack",
-        region: str,
+        region: str | None = None,
         audio_output_callback: Callable[["ndarray"], Coroutine[Any, Any, None]] | None = None,
         service_id: str | None = None,
         api_key: str | None = None,
@@ -165,14 +217,13 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
         credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
-        """Initialize an AzureRealtimeWebsocket service.
+        """Initialize an AzureRealtimeWebRTC service.
 
         Args:
             audio_track: The audio track to use for the service, only used by WebRTC.
                 It can be any class that implements the AudioStreamTrack interface.
-            region: The region to use for the service.
-                This is required for WebRTC, and should be the same as the region of the Azure deployment.
-                Currently this can be "eastus2" or "swedencentral".
+            region: Deprecated. No longer needed for GA Realtime API.
+                Previously required for the preview WebRTC endpoint.
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
@@ -224,9 +275,15 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not azure_openai_settings.realtime_deployment_name:
             raise ServiceInitializationError("The OpenAI realtime model ID is required.")
+        if region is not None:
+            warnings.warn(
+                "The 'region' parameter is deprecated and no longer needed for the GA Realtime API. "
+                "The WebRTC endpoint is now derived from the resource endpoint.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         if audio_track:
             kwargs["audio_track"] = audio_track
-        kwargs["region"] = region
         super().__init__(
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             audio_output_callback=audio_output_callback,
@@ -251,11 +308,27 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
 
     @override
     def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
-        """Get the headers and URL for the ephemeral token."""
-        url = (
-            f"{self.client.realtime._client.base_url}/realtimeapi/sessions?api-version="
-            f"{self.client._api_version}"  # type: ignore[attr-defined]
-        )
+        """Get the headers and URL for the ephemeral token.
+
+        Uses the GA endpoint format: POST /openai/v1/realtime/client_secrets
+        See: https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/realtime-audio-webrtc
+        """
+        endpoint = str(self.client._base_url).rstrip("/")  # type: ignore[attr-defined]
+        # Strip any trailing path segments to get the base Azure resource URL
+        # base_url typically looks like https://<resource>.openai.azure.com/openai/...
+        # We need: https://<resource>.openai.azure.com/openai/v1/realtime/client_secrets
+        if "/openai" in endpoint:
+            endpoint = endpoint[: endpoint.index("/openai")]
+        url = f"{endpoint}/openai/v1/realtime/client_secrets"
+
+        if self.client.api_key and self.client.api_key != "<missing API key>":
+            return (
+                {
+                    "api-key": self.client.api_key,
+                    "Content-Type": "application/json",
+                },
+                url,
+            )
         if self.client._azure_ad_token is not None:  # type: ignore[attr-defined]
             return (
                 {
@@ -264,20 +337,51 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
                 },
                 url,
             )
-        return (
-            {
-                "Authorization": f"Bearer {self.client.api_key}",
-                "Content-Type": "application/json",
-            },
-            url,
-        )
+        raise ServiceInitializationError("No API key or Azure AD token available for ephemeral token request.")
+
+    @override
+    async def _get_ephemeral_token(self) -> str:
+        """Get an ephemeral token from Azure OpenAI.
+
+        Azure GA requires a nested session object:
+            {"session": {"type": "realtime", "model": "<deployment>"}}
+        And returns the token directly as {"value": "..."} rather than
+        OpenAI's {"client_secret": {"value": "..."}}.
+        See: https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/realtime-audio-webrtc
+        """
+        data = {
+            "session": {
+                "type": "realtime",
+                "model": self.ai_model_id,
+            }
+        }
+        headers, url = self._get_ephemeral_token_headers_and_url()
+        headers = prepend_semantic_kernel_to_user_agent(headers)
+        try:
+            async with (
+                ClientSession() as session,
+                session.post(url, headers=headers, json=data) as response,
+            ):
+                if response.status not in [200, 201]:
+                    error_text = await response.text()
+                    raise Exception(f"Failed to get ephemeral token: {error_text}")
+
+                result = await response.json()
+                # Azure GA format returns {"value": "token"} directly
+                return result["value"]
+
+        except Exception as e:
+            logger.error(f"Failed to get ephemeral token: {e!s}")
+            raise
 
     @override
     def _get_webrtc_url(self) -> str:
-        """Get the webrtc URL."""
-        if not self.model_extra:
-            raise ServiceInitializationError("The region is required for WebRTC.")
-        region = self.model_extra.get("region")
-        if not region:
-            raise ServiceInitializationError("The region is required for WebRTC.")
-        return f"https://{region}.realtimeapi-preview.ai.azure.com/v1/realtimertc"
+        """Get the WebRTC URL.
+
+        Uses the GA endpoint format: /openai/v1/realtime/calls
+        See: https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/realtime-audio-webrtc
+        """
+        endpoint = str(self.client._base_url).rstrip("/")  # type: ignore[attr-defined]
+        if "/openai" in endpoint:
+            endpoint = endpoint[: endpoint.index("/openai")]
+        return f"{endpoint}/openai/v1/realtime/calls"
