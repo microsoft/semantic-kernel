@@ -12,7 +12,6 @@ This sample uses the following component:
 
 # You can select from the following text embedding services:
 # - Services.OPENAI
-# - Services.AZURE_OPENAI
 # - Services.BEDROCK
 # - Services.GOOGLE_AI
 # - Services.HUGGING_FACE

@@ -107,8 +107,19 @@ internal static class SqlitePropertyMapping
             // String type
             Type t when t == typeof(string) => "TEXT",
 
-            // Boolean types - SQLite doesn't have a boolean type, represent it as 0/1
+            // Boolean type - represent it as INTEGER (0/1 (this is standard SQLite)
             Type t when t == typeof(bool) || t == typeof(bool?) => "INTEGER",
+
+            // Guid type - represent as TEXT
+            Type t when t == typeof(Guid) || t == typeof(Guid?) => "TEXT",
+
+            // Date/time types - represent as TEXT (ISO 8601)
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => "TEXT",
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "TEXT",
+#if NET
+            Type t when t == typeof(DateOnly) || t == typeof(DateOnly?) => "TEXT",
+            Type t when t == typeof(TimeOnly) || t == typeof(TimeOnly?) => "TEXT",
+#endif
 
             // Byte array (BLOB)
             Type t when t == typeof(byte[]) => "BLOB",

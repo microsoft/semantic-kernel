@@ -23,7 +23,6 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true,
     };
@@ -42,16 +41,27 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
     }
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "string, Guid, ObjectId";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(ObjectId);
 
-        return type == typeof(string) || type == typeof(Guid) || type == typeof(ObjectId);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(int) && type != typeof(long) && type != typeof(Guid) && type != typeof(ObjectId))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, int, long, Guid, ObjectId.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -70,7 +80,12 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
                 type == typeof(float) ||
                 type == typeof(double) ||
                 type == typeof(decimal) ||
-                type == typeof(DateTime);
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+#endif
+                false;
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

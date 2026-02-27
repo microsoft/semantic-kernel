@@ -16,20 +16,27 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
         => new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors,
         };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "ulong, Guid";
+        var type = keyProperty.Type;
 
-        return type == typeof(ulong) || type == typeof(Guid);
+        if (type != typeof(ulong) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be either ulong or Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -47,6 +54,10 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
                 type == typeof(double) ||
                 type == typeof(float) ||
                 type == typeof(bool) ||
+                type == typeof(DateTime) ||
+#if NET
+                type == typeof(DateOnly) ||
+#endif
                 type == typeof(DateTimeOffset);
     }
 

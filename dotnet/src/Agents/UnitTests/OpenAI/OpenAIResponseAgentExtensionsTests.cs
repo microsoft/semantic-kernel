@@ -16,7 +16,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_WithValidOpenAIResponseAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient);
 
         // Act
@@ -41,7 +41,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_CreatesWorkingThreadFactoryStoreTrue()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -62,7 +62,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_CreatesWorkingThreadFactoryStoreFalse()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = false
@@ -83,7 +83,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -105,7 +105,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -129,7 +129,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -152,7 +152,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullJson_CreatesThreadWithEmptyChatHistory()
     {
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var jsonElement = JsonSerializer.SerializeToElement((string?)null);
 
@@ -171,7 +171,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithChatHistory_CreatesThreadWithChatHistory()
     {
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var expectedChatHistory = new ChatHistory("mock message", AuthorRole.User);
         var jsonElement = JsonSerializer.SerializeToElement(expectedChatHistory);
@@ -195,7 +195,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_ThreadSerializer_SerializesChatHistory()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient("model", "apikey");
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var expectedChatHistory = new ChatHistory("mock message", AuthorRole.User);
         var jsonElement = JsonSerializer.SerializeToElement(expectedChatHistory);

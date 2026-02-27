@@ -3,7 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if NET8_0_OR_GREATER
+#if NET
 using System.Globalization;
 #endif
 using System.Linq.Expressions;
@@ -14,27 +14,33 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
-    private readonly List<object> _parameterValues = new();
+    private readonly List<object> _parameterValues = [];
+    private readonly string? _tableAlias;
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
         CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
-        int startParamIndex)
+        int startParamIndex,
+        string? tableAlias = null)
         : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
+        this._tableAlias = tableAlias;
     }
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
+            case bool boolValue when isSearchCondition:
+                this._sql.Append(boolValue ? "1 = 1" : "1 = 0");
+                return;
             case bool boolValue:
-                this._sql.Append(boolValue ? "1" : "0");
+                this._sql.Append(boolValue ? "CAST(1 AS BIT)" : "CAST(0 AS BIT)");
                 return;
             case DateTime dateTime:
                 this._sql.Append('\'').Append(dateTime.ToString("o")).Append('\'');
@@ -42,7 +48,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
             case DateTimeOffset dateTimeOffset:
                 this._sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
-#if NET8_0_OR_GREATER
+#if NET
             case DateOnly dateOnly:
                 this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
                 return;
@@ -54,7 +60,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 #endif
 
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
@@ -62,6 +68,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
         // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        if (this._tableAlias is not null)
+        {
+            this._sql.Append(this._tableAlias).Append('.');
+        }
         this._sql.Append('[').Append(property.StorageName.Replace("]", "]]")).Append(']');
 
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
@@ -108,10 +118,41 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.TranslateConstant(element);
+            this.TranslateConstant(element, isSearchCondition: false);
         }
 
         this._sql.Append(')');
+    }
+
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    {
+        // Translate r.Strings.Any(s => array.Contains(s)) to:
+        // EXISTS(SELECT 1 FROM OPENJSON(column) WHERE value IN ('a', 'b', 'c'))
+        if (values is not IEnumerable elements)
+        {
+            throw new NotSupportedException("Unsupported Any expression");
+        }
+
+        this._sql.Append("EXISTS(SELECT 1 FROM OPENJSON(");
+        this.GenerateColumn(property);
+        this._sql.Append(") WHERE value IN (");
+
+        var isFirst = true;
+        foreach (var element in elements)
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                this._sql.Append(", ");
+            }
+
+            this.TranslateConstant(element, isSearchCondition: false);
+        }
+
+        this._sql.Append("))");
     }
 
     protected override void TranslateQueryParameter(object? value)

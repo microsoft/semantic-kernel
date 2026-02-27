@@ -57,14 +57,14 @@ jobs:
       matrix:
         include:
           - {
-              dotnet: "8.0",
+              dotnet: "10.0",
               os: "ubuntu-latest",
               configuration: Release,
               integration-tests: true,
               environment: "integration",
             }
-          - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
-          - { dotnet: "8.0", os: "windows-latest", configuration: Release }
+          - { dotnet: "10.0", os: "windows-latest", configuration: Debug }
+          - { dotnet: "9.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
@@ -74,7 +74,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4.3.1
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: ${{ github.workspace }}/dotnet/global.json
 
@@ -138,7 +138,7 @@ jobs:
         run: |
           export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | grep -v "VectorDataIntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
-            dotnet test -f net8.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -f net10.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done
         env:
           # Azure OpenAI Deployments

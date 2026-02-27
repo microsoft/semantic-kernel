@@ -48,7 +48,7 @@ async Task SKAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetOpenAIResponseClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
     OpenAIResponseAgent agent = new(responseClient)
     {
         Name = "Thinker",
@@ -116,7 +116,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetOpenAIResponseClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -135,15 +135,10 @@ async Task SKAgent_As_AFAgentAsync()
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
-        // Microsoft.Extensions.AI currently does not have an abstraction for reasoning-effort,
-        // we need to break glass using the RawRepresentationFactory.
-        RawRepresentationFactory = (_) => new OpenAI.Responses.ResponseCreationOptions()
+        Reasoning = new()
         {
-            ReasoningOptions = new()
-            {
-                ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-                ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-            }
+            Effort = ReasoningEffort.High,
+            Output = ReasoningOutput.Full
         }
     });
 
@@ -181,22 +176,17 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var agent = new OpenAIClient(apiKey).GetOpenAIResponseClient(model)
+    var agent = new OpenAIClient(apiKey).GetResponsesClient(model)
         .CreateAIAgent(name: "Thinker", instructions: "You are at thinking hard before answering.");
 
     var thread = agent.GetNewThread();
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
-        // Microsoft.Extensions.AI currently does not have an abstraction for reasoning-effort,
-        // we need to break glass using the RawRepresentationFactory.
-        RawRepresentationFactory = (_) => new OpenAI.Responses.ResponseCreationOptions()
+        Reasoning = new()
         {
-            ReasoningOptions = new()
-            {
-                ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-                ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-            }
+            Effort = ReasoningEffort.High,
+            Output = ReasoningOutput.Full
         }
     });
 

@@ -22,16 +22,19 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
     {
         Verify.NotNull(dataModel);
 
-        var jsonObject = new JsonObject();
-
-        jsonObject[CosmosNoSqlConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var jsonObject = new JsonObject
+        {
+            [CosmosNoSqlConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,
+                Guid g => g.ToString(),
+
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
                 _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+            }
+        };
 
         foreach (var dataProperty in model.DataProperties)
         {
@@ -121,9 +124,16 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
             switch (property)
             {
                 case KeyPropertyModel keyProperty:
-                    result[keyProperty.ModelName] = storageModel.TryGetPropertyValue(CosmosNoSqlConstants.ReservedKeyPropertyName, out var keyValue)
-                        ? keyValue?.GetValue<string>()
-                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
+                    var key = (string?)storageModel[CosmosNoSqlConstants.ReservedKeyPropertyName]
+                        ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+
+                    result[keyProperty.ModelName] = keyProperty.Type switch
+                    {
+                        var t when t == typeof(string) => key,
+                        var t when t == typeof(Guid) => Guid.Parse(key),
+                        _ => throw new UnreachableException()
+                    };
+
                     continue;
 
                 case DataPropertyModel dataProperty:

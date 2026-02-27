@@ -9,11 +9,16 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from pydantic import Field
+from typing_extensions import deprecated
 from vertexai.generative_models import Tool, ToolConfig
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+@deprecated(
+    "VertexAIPromptExecutionSettings is deprecated and will be removed after 01/01/2026. "
+    "Use google_ai connectors instead."
+)
 class VertexAIPromptExecutionSettings(PromptExecutionSettings):
     """Vertex AI Prompt Execution Settings."""
 
@@ -27,12 +32,20 @@ class VertexAIPromptExecutionSettings(PromptExecutionSettings):
     top_k: int | None = None
 
 
+@deprecated(
+    "VertexAITextPromptExecutionSettings is deprecated and will be removed after 01/01/2026. "
+    "Use google_ai connectors instead."
+)
 class VertexAITextPromptExecutionSettings(VertexAIPromptExecutionSettings):
     """Vertex AI Text Prompt Execution Settings."""
 
     pass
 
 
+@deprecated(
+    "VertexAIChatPromptExecutionSettings is deprecated and will be removed after 01/01/2026. "
+    "Use google_ai connectors instead."
+)
 class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
     """Vertex AI Chat Prompt Execution Settings."""
 
@@ -65,6 +78,10 @@ class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
         return settings_dict
 
 
+@deprecated(
+    "VertexAIEmbeddingPromptExecutionSettings is deprecated and will be removed after 01/01/2026. "
+    "Use google_ai connectors instead."
+)
 class VertexAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Google AI Embedding Prompt Execution Settings."""
 

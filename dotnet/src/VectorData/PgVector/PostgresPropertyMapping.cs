@@ -23,13 +23,14 @@ internal static class PostgresPropertyMapping
             Embedding<float> e => new Pgvector.Vector(e.Vector),
             float[] a => new Pgvector.Vector(a),
 
-#if NET8_0_OR_GREATER
+#if NET
             ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
             Embedding<Half> e => new Pgvector.HalfVector(e.Vector),
             Half[] a => new Pgvector.HalfVector(a),
 #endif
 
             BitArray bitArray => bitArray,
+            BinaryEmbedding binaryEmbedding => binaryEmbedding.Vector,
             SparseVector sparseVector => sparseVector,
 
             null => null,
@@ -37,8 +38,11 @@ internal static class PostgresPropertyMapping
             var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
         };
 
-    public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
-        (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
+    /// <summary>
+    /// Gets the NpgsqlDbType for a property, taking into account any store type annotation.
+    /// </summary>
+    internal static NpgsqlDbType? GetNpgsqlDbType(PropertyModel property)
+        => (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
         {
             Type t when t == typeof(bool) => NpgsqlDbType.Boolean,
             Type t when t == typeof(short) => NpgsqlDbType.Smallint,
@@ -49,19 +53,26 @@ internal static class PostgresPropertyMapping
             Type t when t == typeof(decimal) => NpgsqlDbType.Numeric,
             Type t when t == typeof(string) => NpgsqlDbType.Text,
             Type t when t == typeof(byte[]) => NpgsqlDbType.Bytea,
-            Type t when t == typeof(DateTime) => NpgsqlDbType.Timestamp,
-            Type t when t == typeof(DateTimeOffset) => NpgsqlDbType.TimestampTz,
             Type t when t == typeof(Guid) => NpgsqlDbType.Uuid,
+            Type t when t == typeof(DateTimeOffset) => NpgsqlDbType.TimestampTz,
+
+            // DateTime properties map to PG's "timestamp with time zone" (UTC timestamps) by default, aligning with Npgsql/EF/etc.
+            // Users can explicitly opt into "timestamp without time zone".
+            Type t when t == typeof(DateTime) && property.IsTimestampWithoutTimezone() => NpgsqlDbType.Timestamp,
+            Type t when t == typeof(DateTime) => NpgsqlDbType.TimestampTz,
+
+#if NET
+            Type t when t == typeof(DateOnly) => NpgsqlDbType.Date,
+            Type t when t == typeof(TimeOnly) => NpgsqlDbType.Time,
+#endif
 
             _ => null
         };
 
     /// <summary>
-    /// Maps a .NET type to a PostgreSQL type name.
+    /// Maps a .NET type to a PostgreSQL type name, taking into account any store type annotation on the property.
     /// </summary>
-    /// <param name="propertyType">The .NET type.</param>
-    /// <returns>Tuple of the the PostgreSQL type name and whether it can be NULL</returns>
-    public static (string PgType, bool IsNullable) GetPostgresTypeName(Type propertyType)
+    internal static (string PgType, bool IsNullable) GetPostgresTypeName(PropertyModel property)
     {
         static bool TryGetBaseType(Type type, [NotNullWhen(true)] out string? typeName)
         {
@@ -76,8 +87,12 @@ internal static class PostgresPropertyMapping
                 Type t when t == typeof(decimal) => "NUMERIC",
                 Type t when t == typeof(string) => "TEXT",
                 Type t when t == typeof(byte[]) => "BYTEA",
-                Type t when t == typeof(DateTime) => "TIMESTAMP",
+                Type t when t == typeof(DateTime) => "TIMESTAMPTZ",
                 Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
+#if NET
+                Type t when t == typeof(DateOnly) => "DATE",
+                Type t when t == typeof(TimeOnly) => "TIME",
+#endif
                 Type t when t == typeof(Guid) => "UUID",
                 _ => null
             };
@@ -85,30 +100,43 @@ internal static class PostgresPropertyMapping
             return typeName is not null;
         }
 
+        var propertyType = property.Type;
+
         // TODO: Handle NRTs properly via NullabilityInfoContext
+
+        (string PgType, bool IsNullable) result;
 
         if (TryGetBaseType(propertyType, out string? pgType))
         {
-            return (pgType, !propertyType.IsValueType);
+            result = (pgType, !propertyType.IsValueType);
         }
-
         // Handle nullable types (e.g. Nullable<int>)
-        if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
+        else if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
             && TryGetBaseType(unwrappedType, out string? underlyingPgType))
         {
-            return (underlyingPgType, true);
+            result = (underlyingPgType, true);
         }
-
         // Handle collections
-        if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
+        else if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
             || (propertyType.IsGenericType
                 && propertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
         {
-            return (elementPgType + "[]", true);
+            result = (elementPgType + "[]", true);
+        }
+        else
+        {
+            throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
         }
 
-        throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
+        if (property.IsTimestampWithoutTimezone())
+        {
+            // Replace TIMESTAMPTZ with TIMESTAMP in the PG type name.
+            // This handles both "TIMESTAMPTZ" and "TIMESTAMPTZ[]" cases.
+            result = ("TIMESTAMP", result.IsNullable);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -127,7 +155,7 @@ internal static class PostgresPropertyMapping
                 || t == typeof(float[])
                 => "VECTOR",
 
-#if NET8_0_OR_GREATER
+#if NET
             Type t when t == typeof(ReadOnlyMemory<Half>)
                 || t == typeof(Embedding<Half>)
                 || t == typeof(Half[])
@@ -136,6 +164,7 @@ internal static class PostgresPropertyMapping
 
             Type t when t == typeof(SparseVector) => "SPARSEVEC",
             Type t when t == typeof(BitArray) => "BIT",
+            Type t when t == typeof(BinaryEmbedding) => "BIT",
 
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };
@@ -150,13 +179,13 @@ internal static class PostgresPropertyMapping
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
     /// </summary>
     /// <param name="properties">The properties of the vector store record.</param>
-    /// <returns>A list of tuples containing the column name, index kind, and distance function for each property.</returns>
+    /// <returns>A list of tuples containing the column name, index kind, distance function, and full-text language for each property.</returns>
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
+    public static List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
     {
-        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
+        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)>();
         foreach (var property in properties)
         {
             switch (property)
@@ -183,7 +212,7 @@ internal static class PostgresPropertyMapping
                             );
                         }
 
-                        vectorIndexesToCreate.Add((vectorProperty.StorageName, indexKind, distanceFunction, isVector: true));
+                        vectorIndexesToCreate.Add((vectorProperty.StorageName, indexKind, distanceFunction, isVector: true, isFullText: false, fullTextLanguage: null));
                     }
 
                     break;
@@ -191,7 +220,13 @@ internal static class PostgresPropertyMapping
                 case DataPropertyModel dataProperty:
                     if (dataProperty.IsIndexed)
                     {
-                        vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
+                        vectorIndexesToCreate.Add((dataProperty.StorageName, kind: "", function: "", isVector: false, isFullText: false, fullTextLanguage: null));
+                    }
+
+                    if (dataProperty.IsFullTextIndexed)
+                    {
+                        var language = dataProperty.GetFullTextSearchLanguageOrDefault();
+                        vectorIndexesToCreate.Add((dataProperty.StorageName, kind: "", function: "", isVector: false, isFullText: true, fullTextLanguage: language));
                     }
                     break;
 

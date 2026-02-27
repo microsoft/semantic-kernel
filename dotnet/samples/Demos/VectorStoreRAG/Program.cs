@@ -83,7 +83,7 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.CosmosMongoConfig.DatabaseName);
         break;
     case "CosmosNoSql":
-        kernelBuilder.Services.AddCosmosNoSqlCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddCosmosNoSqlCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.CosmosNoSqlConfig.ConnectionString,
             appConfig.CosmosNoSqlConfig.DatabaseName);
