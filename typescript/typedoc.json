@@ -1,0 +1,18 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "theme": "default",
+  "readme": "../README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "excludeNotDocumented": false,
+  "sort": ["source-order"],
+  "plugin": ["typedoc-plugin-markdown"],
+  "gitRevision": "main",
+  "hideGenerator": true,
+  "searchInComments": true,
+  "categorizeByGroup": true,
+  "defaultCategory": "API"
+}
