@@ -1,0 +1,19 @@
+{
+  "id": "msg_01FinalResponse",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "The weather in Seattle is sunny and 72°F."
+    }
+  ],
+  "model": "claude-sonnet-4-20250514",
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 150,
+    "output_tokens": 30
+  }
+}
+
