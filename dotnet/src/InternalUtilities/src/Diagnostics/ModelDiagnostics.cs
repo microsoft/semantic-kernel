@@ -365,12 +365,16 @@ internal static class ModelDiagnostics
     /// </summary>
     private static object ToGenAIConventionsFormat(ChatMessageContent chatMessage)
     {
+        // Check for FunctionResultContent to extract tool_call_id for correlation
+        var functionResult = chatMessage.Items.OfType<FunctionResultContent>().FirstOrDefault();
+
         return new
         {
             role = chatMessage.Role.ToString(),
-            name = chatMessage.AuthorName,
+            name = functionResult?.FunctionName ?? chatMessage.AuthorName,
             content = chatMessage.Content,
             tool_calls = ToGenAIConventionsFormat(chatMessage.Items),
+            tool_call_id = functionResult?.CallId,
         };
     }
 
