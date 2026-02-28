@@ -220,5 +220,12 @@ def extract_range(
 
 @experimental
 def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
-    """Return True if the message has any function call or function result."""
+    """Return True if the message has any function call or function result.
+
+    Also returns True for TOOL role messages, which are always responses to
+    a preceding assistant message with tool_calls and must not be separated
+    from it.
+    """
+    if msg.role == AuthorRole.TOOL:
+        return True
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)

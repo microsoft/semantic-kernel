@@ -194,3 +194,41 @@ def test_locate_safe_reduction_index_high_offset(chat_messages_with_pairs):
     else:
         # It's fine if it returns None, meaning no valid safe reduction was found.
         pass
+
+
+def test_locate_safe_reduction_index_tool_role_without_function_result_content():
+    """Regression test: TOOL role messages without FunctionResultContent in items
+    must still be recognized as part of a tool call/result pair.
+
+    This prevents orphaning tool results when the TOOL message only contains
+    text content (no FunctionResultContent item).
+    """
+    msgs = [
+        ChatMessageContent(role=AuthorRole.USER, content="Hello"),
+    ]
+    # Assistant with tool call
+    msg_call = ChatMessageContent(role=AuthorRole.ASSISTANT, content="")
+    msg_call.items.append(FunctionCallContent(id="call1", function_name="myTool", arguments={"x": 1}))
+    msgs.append(msg_call)
+
+    # Tool result as role=TOOL but with plain text content only
+    msgs.append(ChatMessageContent(role=AuthorRole.TOOL, content="Tool result here"))
+
+    msgs.append(ChatMessageContent(role=AuthorRole.USER, content="Thanks"))
+    msgs.append(ChatMessageContent(role=AuthorRole.ASSISTANT, content="You are welcome"))
+
+    idx = locate_safe_reduction_index(msgs, target_count=3, threshold_count=0)
+    assert idx is not None
+
+    # The tool call (index 1) must be included if tool result (index 2) is included
+    kept_indices = list(range(idx, len(msgs)))
+    has_tool_role = any(msgs[i].role == AuthorRole.TOOL for i in kept_indices)
+    has_tool_call = any(
+        any(isinstance(it, FunctionCallContent) for it in msgs[i].items) for i in kept_indices
+    )
+
+    if has_tool_role:
+        assert has_tool_call, (
+            f"Tool result at index 2 was kept but tool call at index 1 was dropped. "
+            f"Kept indices: {kept_indices}, reduction index: {idx}"
+        )
