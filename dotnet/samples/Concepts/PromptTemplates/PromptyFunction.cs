@@ -57,6 +57,17 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
               - ????
             model:
               api: chat
+              parameters:
+                temperature: 0.0
+                max_tokens: 3000
+                response_format: json_object
+            inputs:
+              customer:
+                description: Customer details
+                strict: false
+              history:
+                description: Chat history
+                strict: false
             ---
             system:
             You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 
@@ -74,6 +85,19 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
 
             Make sure to reference the customer by name response.
 
+            # Response Format
+            Return your response in the following JSON schema:
+
+            ```
+            {
+              "FullName": "The full name of the customer.",
+              "Membership": "The membership status of the customer.",
+              "Issue Problem Description": "Extracted value",
+              "Repro Steps": "Extracted value"
+            }
+            ```
+            
+
             {% for item in history %}
             {{item.role}}:
             {{item.content}}
@@ -90,7 +114,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
 
         var chatHistory = new[]
         {
-            new { role = "user", content = "What is my current membership level?" },
+            new { role = "user", content = "Hello" },
         };
 
         var arguments = new KernelArguments()
