@@ -1,0 +1,166 @@
+SIGNATURE_TYPE_PEHSTR (0x61)
+Location: Signature\Source\mavsigs\hstr
+Extraction tool: Manual
+Compiler: hstr.exe
+Online view: http://avreports/engine/signaturetype.aspx?id=97 
+
+Summary:
+
+An hstr signature is a heuristic string signature.  It looks through the emulator's memory (after emulation has finished) for specific strings and causes detection based on which strings are found.
+
+Hstr signatures are also run on memory, which is why they are useful for detecting things after they have unpacked themselves (or in MBA, for example, so that signature automation can handle the rest).
+
+Performance and Quality concerns:
+
+There is a high memory overhead for using this signature type. Using common API names and common strings do not help this. Consider that if the fragment is likely to hit on a clean file, then it should not be used.
+
+Small, common fragments or strings proceeded by complex BM escape sequences should be avoided as they affect performance:
+
+Using the same strings, or subsets of the same strings will cause multiple hits and can cause false positives.
+e.g. {1, s'Explorer'}, {1, s'Internet Explorer'},
+Ensure code fragments are unique and likely to appear in future variants. As a good rule of thumb, if you can't explain what it does in your comments, then probably don't use it. There is a high likelihood of library code.
+
+Smaller, precise fragments are preferred over slabs of code
+
+Signature format:
+Name '<DetectionName>'
+Index <IndexValue> (OPTIONAL)
+
+InfW <InfectedThreshold>
+SuspW <SuspiciousThreshold>
+LowfiW <LowfiThreshold> (OPTIONAL)
+
+Tags <comma-separated list, no spaces> (OPTIONAL)
+
+{<Weight>, <Modifier>'<string>'},
+.
+.
+.
+{<Weight>, <Modifier>'<string>'},
+END
+
+Name - Can be 'Name', 'Elf_Name', 'Java_Name', 'Dex_Name', 'Macho_Name', 'DMG_Name' or 'Macro_Name'
+Name - PE files only
+Elf_Name - Linux executables. Searches top and bottom 64KB of each section or less if section is smaller than 64K - update Jul 2022
+If no section, search 2Mb at the beginning of each segment (see current value here)
+Java_Name - Java Class files. Searches header (first 4KB), footer (last 4KB), 'fop-like' stream for the methods. Basically, for each code method inside the binary we'll extract the opcode (the same thing we use for Java KCRCs) - and run an HSTR match (you can see the exact stream in the mptrace.log if you don't have a Java disassembler). Feb 2012
+Dex_Name - Android Dex files. Searches first 384KB, and last 64KB of each CODE/STRINGS sections​ (since Sep 2019 probably). (TODO: will update the updated date)
+Macho_Name - Mac OS Mach-O executables. Searches first 8KB or 64KB (since Jul 2019) of each section Jul 2011
+Edit: It seems it actually scans 1M now: see here
+Additional support for Mach-O entry point added as follows
+​Searches 64KB from string table offset given by Symbol table Jul 2019
+Searches 64KB from data offset given by LC_CODE_SIGNATURE segment Jul 2019
+​​​EP -> actual entry point Sept 2019
+if (EP != start_of_section)
+a. HSTR buffer from start of section. (64 KB of EP section)
+
+b. HSTR 32 kb forward buffer from EP.
+
+if entry point lies within first 32 kb forward buffer will not be generated as it will duplicate content.
+
+c. HSTR 32 KB backward/reverse buffer from EP
+
+reverse buffer will not be generated if EP lies within first 64 KB. to avoid redundant data
+
+if (EP == start_of_section && EP_section_size > 128kb )
+a. HSTR buffer from start of section (64 KB)
+
+b. HSTR buffer from end of section (64 KB)
+
+if (EP == start_of_section && EP_section_size < 128kb )
+a. HSTR buffer from start of section.(64 KB)​​​
+
+Macro_Name - Runs against the macro source and pCode. May 2011 starting April 2020, engine will also write srcbrute file (which is normalized source) one can write macro hstr on it.
+Autoit_Name - Runs against the AutoIt script, in an AutoIt script compiled sample. Added Mid-2015​
+DMG_Name - Mac OS DMG files.
+​​HSTR search for header - searches header data with the scan size being min(65536,<dmg_header_size>)
+HSTR search for koly- searches dmg koly block data with the scan size being min(65536,<koly_block_size​​>)​
+HSTR search for plist - searches dmg plist data with the scan size being min(65536, <plist_size>)
+HSTR search for cert - searches the certificate blob with the scan size being min(65536​,<certificate_blob_size>)
+HSTR search for parsed cert strings - searches on parsed certificate data​
+DetectionName - The name given by the engine when the signature is matched
+
+IndexValue - If not specified, the signature's index is 0. If multiple HSTR signatures are found that are otherwise the same priority level (e.g. 2 'normal' HSTRs or 3 .gen HSTRs), the one with the lowest IndexValue is given reporting priority. A family generic might be Index 0 (the default), but a generic for code used by multiple families might be given Index 1 in order for the family generic to be reported if both sigs are found.
+
+InfectedThreshold - If the sum of the weights for the strings found is >= to this integer, then an 'infected' detection is reported.
+
+SuspiciousThreshold - If the sum of the weights for the strings found is >= to this integer and < InfectedThreshold, then an 'suspicious' detection is reported.
+
+LowfiThreshold - This is an optional field that was introduced in engine Apr (2011) to improve lowfi signature authoring. 
+If none of the infected/suspicious thresholds are being reached - the engine will automatically turn this into a lowfi (synchronous) hit if the threshold is being hit. The signature sequence of the lowfi will be the same with the HSTR, with the exception of the MSB which will be set (0x8....). This is required in order to distinguish between cases in which the signature is reported as both a infected/suspicious match and a lowfi hit. Please note the signature compiler doesn't make any effort to validate the threshold (no rule is being enforced wrt Suspicious/Infected thresholds). LowFi Signature
+
+Tags - any tag that starts w/ SMSwill cause the compiler to output an associated NID (for the sigseq) - the name of the NID will be whatever is after SMS: (and before ,)
+
+Weight - An integer weight to associate with this string for this detection.  Weights can be negative.
+
+Modifier - Optional - Modifier(s) to change the type of string.  Possible modifiers:
+
+L - this is a unicode string (The 0x00 bytes are inserted between characters)
+b - treat this as both UNICODE and ASCII.  Essentially this string is duplicated twice with the same weight
+B - treat this as both UNICODE and ASCII, but this string is not duplicated twice (contrary to 'b'), so no additional weight added except what you specified
+s - case sensitive.  Without this modifier, the string is treated as case insensitive
+w - support wildcards for this string.  For information about these, see Brute Pattern Escape Sequences.  Important:  The string MUST end with the terminating wildcard \x90\x00 if using the 'w' modifier.
+e - 'encrypted'. That is, the string must come from the file image and must be different form the original (there's a heuristic to prevent 'data'-movement (eg: copying a string from say the text section into the data section)).
+d - 'dynamic'. That is, the attribute/string must be matched in 'dynamically' allocated memory (eg: VirtualAlloc).
+r - 'RPF'. That is, when the attribute/string is matched, we'll invoke all the routines in the database matching the routine type __RPF_ROUTINEID_HSTR_LOGIC__. a RPF routine gets the ID of the string matched and can do extra checks to 'validate' the match (freedom is the middle name 😃)
+c - 'code': this modifier is matched on fragments found in pages allocated specifically with PAGE_EXECUTE during emulation. This should help for short fragments where you explicitly want to match them in the code.
+o - collect the match offsets for each escape. See Lua hstr for more details.
+m - save the macro source to make it available in Lua. Macro only. See Lua hstr.
+G - force include the fragment. The compiler checks the fragment to not be too weak (e.g. 'exe') or perf killer. With this modifier the compiler check is bypassed. Use with care.
+string - The string to match.  By default, this is matched case-insensitively.  These string may contain binary data (using the '\x<hex value>' escape sequence and other C-like escape sequences.
+
+Example:
+Name 'HackTool:Win32/Mikatz!dha'
+Tags SMS:HackTool:Win32/Mikatz,FooBar
+InfW 2
+SuspW 2
+
+When to use:
+This is useful for detecting a group of samples or family that all share the same or similar strings.  These strings must be present in the emulation memory to be used for detection. 
+They are also run on process memory in a typical client AV scenario.
+
+How to use:
+
+Extract the emulation memory using: mp -4 M
+Look through the emulation memory for appropriate strings and create a signature.
+Get signature reviewed
+Scan the FP collection with the new signature.
+Suspicious Detection:
+A suspicious detection is supported if the sum of the weight of the detected strings is >= the suspicious threshold, but < the infected threshold.
+
+
+Paranoid Mode Differences:
+
+Paranoid mode will search the entire file for the strings, not just the emulator buffer. (Mpscan -4 I does this too.)
+Things to watch out for:
+
+Engine generated strings - During emulation, the engine has a number of standard strings it uses that show in the emulation memory.  Do not use these strings .
+Use emulation memory, not a memory dump or the original file - The engine loads a small subset of the file into emulation memory when it is scanning.  It is possible that large parts of the file, which may contain very useful strings, will not be in the emulation memory and thus can't be used in the signature.  Using the emulation memory will give the best, most accurate representation of what the engine is using for detection.
+Using the same string contents as string in other hstr sigs, but specifying different flags - Doing this will result in a 'conflicting string flags' error from hstr.exe when the '--check' option is specified (this is the default in the AV do.cmd).  Reusing a string with different flags causes unnecessary signature database bloat and inefficiency during scanning.
+The compiler will detect 'large' 16 bit offsets in BM escapes that supports them. The reason is to warn if by mistake a literal is used as HI byte for the offset. If the offset value is legit, add a “#pragmawarning(disable:offset)” just before the line using such offsets.
+Notes:
+
+Negative weights can be used to prevent detection when certain strings are found.  This could be useful in tweaking a hstr signature that is causing a false positive on a particular class of files.
+
+To find out what strings are found when scanning a file, scan the file with the engine option '-4 g'.  This will make the engine create a log file containing what strings were found during the scan.
+
+The script compiler will reject signatures that have the same string in them multiple times.  Be careful not to use the same string more than once in a single signature.
+
+If you receive a 'conflicting string flags' error, you have added a string which already existed in another hstr signature, but are using different flags for it (for example, specifying case-sensitivity for your string, but the original was case-insensitive).  To solve this problem, use the same set of flags as the original string.  If it is required that the strings not match each other, then the '--check' argument to hstr.exe can be removed from the do.cmd, but this is not recommended.
+
+The engine will scan the whole file for hstr matches (rather than just the loaded part) if the pea_hstr_exhaustive RPF attribute is set.  For example, packed Delphi and VB files should be exhaustively scanned with hstr sigs due to RPF code in generic.cpp.
+
+
+Documentation, guides:
+
+HSTR Brownbag  (mattmcco) - Lists a number of good practices and tips.
+String Signature Training for Spyware Analysts (yhuang)
+Macro HSTR Signatures for Excel 4.0 Macros (a.k.a. XLM)​
+Examples:
+
+Related topics:
+
+HSTR
+Signatures
+hstr.exe
+SMS    
