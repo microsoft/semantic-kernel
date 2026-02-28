@@ -1,0 +1,23 @@
+{
+  "id": "response-id-2",
+  "object": "chat.completion",
+  "created": 1699896920,
+  "model": "gpt-4",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Based on my research, the answer is 42."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 200,
+    "completion_tokens": 25,
+    "total_tokens": 225
+  }
+}
+
