@@ -717,6 +717,22 @@ wheels = [
 ]
 
 [[package]]
+name = "camb-sdk"
+version = "1.5.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "websocket-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "websockets", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/f9/4d3f62909f62f98556e09958f40934abf226289f55a43e149dfc426dc1cf/camb_sdk-1.5.8.tar.gz", hash = "sha256:4ace563accb6aab35d2a4dce53789c98d8809a8c48806a69d0873fc8b0361300", size = 83508, upload-time = "2026-01-27T14:55:49.16Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1d/2d/e7aeef5d5f48205020d153f4a6ffb39d8971fca78b2cc64fdf0a36ceeb12/camb_sdk-1.5.8-py3-none-any.whl", hash = "sha256:7e1a4764376791ab7cccc27014cdfb691b8c73eecdcaeb01457f506ffd3425be", size = 152371, upload-time = "2026-01-27T14:55:45.637Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.2.25"
 source = { registry = "https://pypi.org/simple" }
@@ -6356,6 +6372,9 @@ azure = [
     { name = "azure-cosmos", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-search-documents", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+camb = [
+    { name = "camb-sdk", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
 chroma = [
     { name = "chromadb", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
@@ -6470,6 +6489,7 @@ requires-dist = [
     { name = "azure-identity", specifier = ">=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
     { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.41.0" },
+    { name = "camb-sdk", marker = "extra == 'camb'", specifier = ">=0.0.2" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<1.1" },
     { name = "cloudevents", specifier = "~=1.0" },
     { name = "dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
@@ -6525,7 +6545,7 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
 ]
-provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "copilotstudio", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "oracledb", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "sql", "usearch", "weaviate"]
+provides-extras = ["anthropic", "autogen", "aws", "azure", "camb", "chroma", "copilotstudio", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "oracledb", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "sql", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [
