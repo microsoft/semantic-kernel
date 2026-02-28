@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +19,9 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
+#pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
@@ -194,6 +199,30 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
     }
 
+    /// <inheritdoc/>
+    Task<KernelSearchResults<string>> ITextSearch<TRecord>.SearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+
+        return Task.FromResult(new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken)));
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<TextSearchResult>> ITextSearch<TRecord>.GetTextSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+
+        return Task.FromResult(new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<TRecord>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+
+        return Task.FromResult(new KernelSearchResults<TRecord>(this.GetResultsAsTRecordAsync(searchResponse, cancellationToken)));
+    }
+
     #region private
     [Obsolete("This property is obsolete.")]
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
@@ -244,28 +273,67 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <summary>
-    /// Execute a vector search and return the results.
+    /// Execute a vector search and return the results using legacy filtering for backward compatibility.
+    /// Converts legacy <see cref="FilterClause"/> values to a LINQ expression tree for the modern
+    /// <see cref="VectorSearchOptions{TRecord}.Filter"/> property.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchOptions">Search options.</param>
+    /// <param name="searchOptions">Search options with legacy TextSearchFilter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
+
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+            Filter = searchOptions.Filter?.FilterClauses is not null
+                ? BuildFilterExpression(searchOptions.Filter.FilterClauses)
+                : null,
             Skip = searchOptions.Skip,
         };
 
+        await foreach (var result in this.ExecuteVectorSearchCoreAsync(query, vectorSearchOptions, searchOptions.Top, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <summary>
+    /// Execute a vector search and return the results using modern LINQ filtering.
+    /// </summary>
+    /// <param name="query">What to search for.</param>
+    /// <param name="searchOptions">Search options with LINQ filtering.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        searchOptions ??= new TextSearchOptions<TRecord>();
+        var vectorSearchOptions = new VectorSearchOptions<TRecord>
+        {
+            Filter = searchOptions.Filter, // Use modern LINQ filtering directly
+            Skip = searchOptions.Skip,
+        };
+
+        await foreach (var result in this.ExecuteVectorSearchCoreAsync(query, vectorSearchOptions, searchOptions.Top, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <summary>
+    /// Core vector search execution logic.
+    /// </summary>
+    /// <param name="query">What to search for.</param>
+    /// <param name="vectorSearchOptions">Vector search options.</param>
+    /// <param name="top">Maximum number of results to return.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchCoreAsync(string query, VectorSearchOptions<TRecord> vectorSearchOptions, int top, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
 #pragma warning disable CS0618 // Type or member is obsolete
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await foreach (var result in this._vectorSearchable!.SearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+            await foreach (var result in this._vectorSearchable!.SearchAsync(vectorizedQuery, top, vectorSearchOptions, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 yield return result;
             }
@@ -274,7 +342,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        await foreach (var result in this._vectorSearchable!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this._vectorSearchable!.SearchAsync(query, top, vectorSearchOptions, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             yield return result;
         }
@@ -286,6 +354,28 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<object> GetResultsAsRecordAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (searchResponse is null)
+        {
+            yield break;
+        }
+
+        await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (result.Record is not null)
+            {
+                yield return result.Record;
+                await Task.Yield();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return the search results as strongly-typed <typeparamref name="TRecord"/> instances.
+    /// </summary>
+    /// <param name="searchResponse">Response containing the records matching the query.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<TRecord> GetResultsAsTRecordAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null)
         {
@@ -344,6 +434,63 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 await Task.Yield();
             }
         }
+    }
+
+    /// <summary>
+    /// Converts a collection of legacy <see cref="FilterClause"/> instances to a LINQ expression tree.
+    /// </summary>
+    /// <remarks>
+    /// Building expression trees via <see cref="Expression"/> factory methods is pure data-structure
+    /// construction and is fully AOT-compatible. The resulting expression is analyzed (not compiled)
+    /// by the vector store provider.
+    /// </remarks>
+    /// <param name="filterClauses">The filter clauses to convert.</param>
+    /// <returns>A LINQ expression representing all clauses combined with AND, or <c>null</c> if no clauses are provided.</returns>
+    private static Expression<Func<TRecord, bool>>? BuildFilterExpression(IEnumerable<FilterClause> filterClauses)
+    {
+        var clauses = filterClauses.ToList();
+        if (clauses.Count == 0)
+        {
+            return null;
+        }
+
+        var parameter = Expression.Parameter(typeof(TRecord), "record");
+        Expression? combined = null;
+
+        foreach (var clause in clauses)
+        {
+            Expression condition;
+
+            if (clause is EqualToFilterClause equalTo)
+            {
+                // Use PropertyInfo overload to avoid IL2026 trimming warning.
+                // TRecord is annotated with [DynamicallyAccessedMembers(PublicProperties)]
+                // so reflection access to public properties is trim-safe.
+                var propertyInfo = typeof(TRecord).GetProperty(equalTo.FieldName, BindingFlags.Public | BindingFlags.Instance)
+                    ?? throw new InvalidOperationException($"Property '{equalTo.FieldName}' not found on type '{typeof(TRecord).FullName}'.");
+                var property = Expression.Property(parameter, propertyInfo);
+
+                // Create a typed constant matching the property type.
+                // This produces the same expression tree shape as a user-written
+                // LINQ expression (e.g., record.Tag == "Even"), which all MEVD
+                // filter translators handle correctly. Avoid boxing to object,
+                // which breaks analyzing connectors (NotSupportedException on
+                // Convert-to-object nodes) and InMemory (reference equality
+                // instead of value equality).
+                var value = Expression.Constant(equalTo.Value, propertyInfo.PropertyType);
+                condition = Expression.Equal(property, value);
+            }
+            else
+            {
+                throw new NotSupportedException($"Filter clause type '{clause.GetType().Name}' is not supported for conversion to LINQ expression.");
+            }
+
+            combined = combined is null
+                ? condition
+                : Expression.AndAlso(combined, condition);
+        }
+
+        return Expression.Lambda<Func<TRecord, bool>>(combined!, parameter);
     }
 
     #endregion

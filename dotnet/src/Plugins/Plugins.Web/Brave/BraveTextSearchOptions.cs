@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Brave;
 public sealed class BraveTextSearchOptions
 {
     /// <summary>
-    /// The URI endpoint of the Bing search service. The URI must use HTTPS.
+    /// The URI endpoint of the Brave search service. The URI must use HTTPS.
     /// </summary>
     public Uri? Endpoint { get; init; } = null;
 

@@ -4,7 +4,9 @@ using Microsoft.SemanticKernel.Data;
 
 namespace SemanticKernel.AotTests.UnitTests.Search;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 internal sealed class MockTextSearch : ITextSearch
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly KernelSearchResults<object>? _objectResults;
     private readonly KernelSearchResults<TextSearchResult>? _textSearchResults;
