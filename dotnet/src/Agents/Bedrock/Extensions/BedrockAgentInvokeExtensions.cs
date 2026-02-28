@@ -214,12 +214,28 @@ internal static class BedrockAgentInvokeExtensions
                                 Function = functionResult.FunctionName,
                                 ResponseBody = new Dictionary<string, ContentBody>
                                 {
-                                    { "TEXT", new ContentBody() { Body = FunctionCallsProcessor.ProcessFunctionResult(functionResult.Result ?? string.Empty) } }
+                                    { "TEXT", new ContentBody() { Body = GetFunctionResultAsString(functionResult.Result) } }
                                 }
                             }
                         };
                     }
                 )],
             };
+    }
+
+    /// <summary>
+    /// Processes a function result and returns a string representation.
+    /// Bedrock does not support multimodal tool results, so ImageContent returns an error message.
+    /// </summary>
+    private static string GetFunctionResultAsString(object? result)
+    {
+        var processed = FunctionCallsProcessor.ProcessFunctionResult(result ?? string.Empty);
+
+        if (processed is ImageContent)
+        {
+            return FunctionCallsProcessor.ImageContentNotSupportedErrorMessage;
+        }
+
+        return (string?)processed ?? string.Empty;
     }
 }

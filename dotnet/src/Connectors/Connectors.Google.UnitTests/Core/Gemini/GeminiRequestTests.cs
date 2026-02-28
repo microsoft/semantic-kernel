@@ -782,6 +782,71 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void FromChatHistoryImageContentInToolResultCreatesInlineDataPart()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG magic bytes
+        var imageContent = new ImageContent(imageBytes, "image/png");
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var part = request.Contents[0].Parts![0];
+        Assert.NotNull(part.FunctionResponse);
+        Assert.Equal("capture-screenshot", part.FunctionResponse.FunctionName);
+        Assert.NotNull(part.FunctionResponse.Parts);
+        Assert.Single(part.FunctionResponse.Parts);
+        Assert.NotNull(part.FunctionResponse.Parts[0].InlineData);
+        Assert.Equal("image/png", part.FunctionResponse.Parts[0].InlineData!.MimeType);
+        Assert.Equal(Convert.ToBase64String(imageBytes), part.FunctionResponse.Parts[0].InlineData.InlineData);
+    }
+
+    [Fact]
+    public void FromChatHistoryImageContentWithoutDataThrowsInvalidOperationException()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var imageContent = new ImageContent(new Uri("https://example.com/image.png")) { MimeType = "image/png" };
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings));
+        Assert.Equal("ImageContent in function result must contain binary data.", exception.Message);
+    }
+
+    [Fact]
+    public void FromChatHistoryImageContentWithoutMimeTypeThrowsInvalidOperationException()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        ReadOnlyMemory<byte> imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var imageContent = new ImageContent(imageBytes, mimeType: null); // No MimeType
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings));
+        Assert.Equal("Image content MimeType is empty.", exception.Message);
+    }
+
+    [Fact]
     public void FromChatHistoryToolCallsWithThoughtSignatureIncludesSignatureInRequest()
     {
         // Arrange
