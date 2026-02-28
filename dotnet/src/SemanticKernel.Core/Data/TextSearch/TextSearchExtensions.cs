@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // ITextSearch is obsolete - these extension methods provide backward compatibility
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
