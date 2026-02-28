@@ -5,7 +5,6 @@ from abc import ABC
 from typing import Any, Union
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError, _legacy_response
-from openai._types import FileTypes, Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
@@ -21,6 +20,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextToAudioExecutionSettings,
     OpenAITextToImageExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai._types_compat import FileTypes, Omit, omit
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
