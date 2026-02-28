@@ -568,10 +568,11 @@ internal partial class ClientCore
         {
             return textEffortLevel.ToUpperInvariant() switch
             {
+                "NONE" => new("none"),
+                "MINIMAL" => ChatReasoningEffortLevel.Minimal,
                 "LOW" => ChatReasoningEffortLevel.Low,
                 "MEDIUM" => ChatReasoningEffortLevel.Medium,
                 "HIGH" => ChatReasoningEffortLevel.High,
-                "MINIMAL" => new("minimal"),
                 _ => throw new NotSupportedException($"The provided reasoning effort '{textEffortLevel}' is not supported.")
             };
         }
