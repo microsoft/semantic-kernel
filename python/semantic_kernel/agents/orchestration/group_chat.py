@@ -6,7 +6,7 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
@@ -150,7 +150,12 @@ class GroupChatManager(KernelBaseModel, ABC):
     current_round: int = 0
     max_rounds: int | None = None
 
-    human_response_function: Callable[[ChatHistory], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None
+    human_response_function: (
+        Callable[[ChatHistory], Awaitable[ChatMessageContent] | ChatMessageContent]
+        | Callable[[ChatHistory, dict[str, Any] | None], Awaitable[ChatMessageContent] | ChatMessageContent]
+        | None
+    ) = None
+    kwargs: dict[str, Any] | None = None
 
     @abstractmethod
     async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
@@ -352,9 +357,23 @@ class GroupChatManagerActor(ActorBase):
     async def _call_human_response_function(self) -> ChatMessageContent:
         """Call the human response function if it is set."""
         assert self._manager.human_response_function  # nosec B101
+
+        # Check if the function accepts kwargs parameter by inspecting its signature
+        sig = inspect.signature(self._manager.human_response_function)
+        param_count = len(sig.parameters)
+
+        chat_history_copy = self._chat_history.model_copy(deep=True)
+
         if inspect.iscoroutinefunction(self._manager.human_response_function):
-            return await self._manager.human_response_function(self._chat_history.model_copy(deep=True))
-        return self._manager.human_response_function(self._chat_history.model_copy(deep=True))  # type: ignore[return-value]
+            if param_count >= 2:  # Function accepts kwargs parameter
+                return await self._manager.human_response_function(chat_history_copy, self._manager.kwargs)  # type: ignore[misc]
+            else:  # Legacy function signature
+                return await self._manager.human_response_function(chat_history_copy)  # type: ignore[misc]
+        else:
+            if param_count >= 2:  # Function accepts kwargs parameter
+                return self._manager.human_response_function(chat_history_copy, self._manager.kwargs)  # type: ignore[misc]
+            else:  # Legacy function signature
+                return self._manager.human_response_function(chat_history_copy)  # type: ignore[misc]
 
 
 # endregion GroupChatManagerActor
