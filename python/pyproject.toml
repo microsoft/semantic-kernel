@@ -116,7 +116,7 @@ mongo = [
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
-    "ipykernel ~= 6.29"
+    "ipykernel >= 6.29,< 8.0"
 ]
 ollama = [
     "ollama ~= 0.4"
@@ -164,7 +164,7 @@ weaviate = [
 [dependency-groups]
 dev = [
     "pre-commit ~= 3.7",
-    "ipykernel ~= 6.29",
+    "ipykernel >= 6.29,< 8.0",
     "nbconvert ~= 7.16",
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
