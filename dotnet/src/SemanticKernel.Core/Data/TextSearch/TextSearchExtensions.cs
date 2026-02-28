@@ -314,7 +314,15 @@ public static class TextSearchExtensions
                 return [];
             }
 
-            var parameters = function.Metadata.Parameters;
+            if (arguments.TryGetValue("count", out var countObj) && countObj is int countVal and > 0)
+            {
+                count = countVal;
+            }
+
+            if (arguments.TryGetValue("skip", out var skipObj) && skipObj is int skipVal and >= 0)
+            {
+                skip = skipVal;
+            }
 
             searchOptions ??= new()
             {
@@ -351,7 +359,15 @@ public static class TextSearchExtensions
                 return [];
             }
 
-            var parameters = function.Metadata.Parameters;
+            if (arguments.TryGetValue("count", out var countObj) && countObj is int countVal and > 0)
+            {
+                count = countVal;
+            }
+
+            if (arguments.TryGetValue("skip", out var skipObj) && skipObj is int skipVal and >= 0)
+            {
+                skip = skipVal;
+            }
 
             searchOptions ??= new()
             {
