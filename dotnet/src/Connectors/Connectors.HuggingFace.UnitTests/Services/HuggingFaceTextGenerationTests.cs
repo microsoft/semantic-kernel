@@ -129,7 +129,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith("https://router.huggingface.co/hf-inference/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
