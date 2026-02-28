@@ -50,12 +50,11 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(result.Results);
-        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(results);
+        var resultList = await results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
         foreach (var stringResult in resultList)
@@ -74,12 +73,11 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(result.Results);
-        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(results);
+        var resultList = await results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
         foreach (var textSearchResult in resultList)
@@ -100,12 +98,11 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(result.Results);
-        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(results);
+        var resultList = await results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
         foreach (BingWebPage webPage in resultList)
@@ -128,12 +125,11 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, StringMapper = new TestTextSearchStringMapper() });
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(result.Results);
-        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(results);
+        var resultList = await results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
         foreach (var stringResult in resultList)
@@ -154,12 +150,11 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, ResultMapper = new TestTextSearchResultMapper() });
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(result.Results);
-        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(results);
+        var resultList = await results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(10, resultList.Count);
         foreach (var textSearchResult in resultList)
@@ -206,8 +201,8 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
+        var results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync();
 
         // Assert
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -221,13 +216,13 @@ public sealed class BingTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act && Assert
-        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
+        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync());
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat,contains,ext,filetype,inanchor,inbody,intitle,ip,language,loc,location,prefer,site,feed,hasfeed,url (Parameter 'searchOptions')", e.Message);
     }
 

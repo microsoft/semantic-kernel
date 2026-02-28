@@ -64,7 +64,7 @@ foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 
 // Add a plugin to search the database with.
 var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection);
-kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch("SearchPlugin"));
+kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch(top: 5, "SearchPlugin"));
 
 // Start the conversation
 while (true)

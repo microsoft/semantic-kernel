@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.SemanticKernel;
@@ -37,7 +38,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
                 apiKey: TestConfiguration.Google.ApiKey);
 
         // Build a text search plugin with web search and add to the kernel
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -65,7 +66,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -112,7 +113,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -166,7 +167,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         // Build a text search plugin with Bing search and add to the kernel
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
-            [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
+            [textSearch.CreateGetTextSearchResults(5, searchOptions: searchOptions)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -224,9 +225,9 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
                 new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
-        var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", "Search specified site", [textSearch.CreateGetTextSearchResults(options)]);
+        var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", "Search specified site", [textSearch.CreateGetTextSearchResults(5, options)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -280,7 +281,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         // Build a text search plugin with Bing search and add to the kernel
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
-            [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
+            [textSearch.CreateGetTextSearchResults(5, searchOptions: searchOptions)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -316,12 +317,52 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
 public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITextSearch
 {
     /// <inheritdoc/>
+    public IAsyncEnumerable<object> GetSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.GetSearchResultsAsync(query, top, searchOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var results = searchDelegate.GetTextSearchResultsAsync(query, top, searchOptions, cancellationToken);
+
+        using HttpClient client = new();
+        await foreach (var item in results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            string? value = item.Value;
+            try
+            {
+                if (item.Link is not null)
+                {
+                    value = await client.GetStringAsync(new Uri(item.Link), cancellationToken);
+                    value = ConvertHtmlToPlainText(value);
+                }
+            }
+            catch (HttpRequestException)
+            {
+            }
+
+            yield return new TextSearchResult(value) { Name = item.Name, Link = item.Link };
+        }
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> SearchAsync(string query, int top, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.SearchAsync(query, top, searchOptions, cancellationToken);
+    }
+
+    #region obsolete
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         return searchDelegate.GetSearchResultsAsync(query, searchOptions, cancellationToken);
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var results = await searchDelegate.GetTextSearchResultsAsync(query, searchOptions, cancellationToken);
@@ -351,10 +392,12 @@ public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITex
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         return searchDelegate.SearchAsync(query, searchOptions, cancellationToken);
     }
+    #endregion
 
     /// <summary>
     /// Convert HTML to plain text.
