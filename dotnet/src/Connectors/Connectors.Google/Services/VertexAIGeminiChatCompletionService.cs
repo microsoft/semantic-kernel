@@ -29,6 +29,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="apiVersion">Version of the Vertex API</param>
+    /// <param name="isFineTunedModel">Whether this is a tuned model or not</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public VertexAIGeminiChatCompletionService(
@@ -37,9 +38,10 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
+        bool isFineTunedModel = false,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory)
+        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, isFineTunedModel, httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(bearerKey);
     }
@@ -52,6 +54,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="apiVersion">Version of the Vertex API</param>
+    /// <param name="isFineTunedModel">Whether this is a tuned model or not</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     /// <remarks>
@@ -65,6 +68,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
+        bool isFineTunedModel = false,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -82,6 +86,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
             location: location,
             projectId: projectId,
             apiVersion: apiVersion,
+            isFineTunedModel: isFineTunedModel,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
