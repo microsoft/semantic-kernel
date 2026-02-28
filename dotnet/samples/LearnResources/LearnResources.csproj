@@ -57,8 +57,6 @@
     <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
-    <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
-    <ProjectReference Include="..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

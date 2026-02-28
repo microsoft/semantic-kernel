@@ -14,7 +14,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Moq" />
     <PackageReference Include="OllamaSharp">
       <ExcludeAssets>analyzers</ExcludeAssets>
     </PackageReference>
@@ -38,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors.Ollama\Connectors.Ollama.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

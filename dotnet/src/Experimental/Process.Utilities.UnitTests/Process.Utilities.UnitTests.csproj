@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,12 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
-    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
   </ItemGroup>
 
 </Project>
