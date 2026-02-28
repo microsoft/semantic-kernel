@@ -56,6 +56,22 @@ public abstract class MistralAIToolCallBehavior
     /// </remarks>
     public static MistralAIToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
 
+    /// <summary>
+    /// Creates an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
+    /// to the model and attempt to automatically handle any function call requests with the specified maximum number of attempts.
+    /// </summary>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <remarks>
+    /// When successful, tool call requests from the model become an implementation detail, with the service
+    /// handling invoking any requested functions and supplying the results back to the model.
+    /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
+    /// </remarks>
+    /// <returns>A <see cref="MistralAIToolCallBehavior"/> instance configured with the specified maximum auto-invoke attempts.</returns>
+    public static MistralAIToolCallBehavior CreateAutoInvokeKernelFunctions(int maximumAutoInvokeAttempts)
+    {
+        return new KernelFunctions(autoInvoke: true, maximumAutoInvokeAttempts);
+    }
+
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
@@ -68,6 +84,21 @@ public abstract class MistralAIToolCallBehavior
     {
         Verify.NotNull(functions);
         return new AnyFunction(functions, autoInvoke);
+    }
+
+    /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
+    /// <param name="functions">The functions that should be made available to the model.</param>
+    /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
+    /// <param name="maximumAutoInvokeAttempts">The maximum number of auto-invoke attempts allowed.</param>
+    /// <returns>
+    /// The <see cref="MistralAIToolCallBehavior"/> that may be set into <see cref="MistralAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// to indicate that the specified functions should be made available to the model.
+    /// The model is forced to call a function from the list of functions provided.
+    /// </returns>
+    public static MistralAIToolCallBehavior RequiredFunctions(IEnumerable<KernelFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        Verify.NotNull(functions);
+        return new AnyFunction(functions, autoInvoke, maximumAutoInvokeAttempts);
     }
 
     /// <summary>
@@ -85,6 +116,12 @@ public abstract class MistralAIToolCallBehavior
     private MistralAIToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+    }
+
+    /// <summary>Initializes the instance; prevents external instantiation.</summary>
+    private MistralAIToolCallBehavior(bool autoInvoke, int maximumAutoInvokeAttempts)
+    {
+        this.MaximumAutoInvokeAttempts = autoInvoke ? maximumAutoInvokeAttempts : 0;
     }
 
     /// <summary>
@@ -125,6 +162,8 @@ public abstract class MistralAIToolCallBehavior
     internal sealed class KernelFunctions : MistralAIToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
+
+        internal KernelFunctions(bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts) { }
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
@@ -167,9 +206,19 @@ public abstract class MistralAIToolCallBehavior
     /// <summary>
     /// Represents a <see cref="MistralAIToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class AnyFunction(IEnumerable<KernelFunction> functions, bool autoInvoke) : MistralAIToolCallBehavior(autoInvoke)
+    internal sealed class AnyFunction : MistralAIToolCallBehavior
     {
-        private readonly IEnumerable<KernelFunctionMetadata>? _kernelFunctionMetadata = functions.Select(f => f.Metadata);
+        private readonly IEnumerable<KernelFunctionMetadata>? _kernelFunctionMetadata;
+
+        internal AnyFunction(IEnumerable<KernelFunction> functions, bool autoInvoke) : base(autoInvoke)
+        {
+            this._kernelFunctionMetadata = functions.Select(f => f.Metadata);
+        }
+
+        internal AnyFunction(IEnumerable<KernelFunction> functions, bool autoInvoke, int maximumAutoInvokeAttempts) : base(autoInvoke, maximumAutoInvokeAttempts)
+        {
+            this._kernelFunctionMetadata = functions.Select(f => f.Metadata);
+        }
 
         public override string ToString() => $"{nameof(AnyFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._kernelFunctionMetadata!.Select(f => f.Name))}";
 

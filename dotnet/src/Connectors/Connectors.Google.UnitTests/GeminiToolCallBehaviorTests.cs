@@ -39,6 +39,18 @@ public sealed class GeminiToolCallBehaviorTests
     }
 
     [Fact]
+    public void CreateAutoInvokeKernelFunctionsWithCustomMaximumReturnsCorrectInstance()
+    {
+        // Arrange & Act
+        const int CustomMaximumAutoInvokeAttempts = 15;
+        var behavior = GeminiToolCallBehavior.CreateAutoInvokeKernelFunctions(CustomMaximumAutoInvokeAttempts);
+
+        // Assert
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(behavior);
+        Assert.Equal(CustomMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
     public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
@@ -48,6 +60,20 @@ public sealed class GeminiToolCallBehaviorTests
 
         // Assert
         Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(behavior);
+    }
+
+    [Fact]
+    public void EnableFunctionsWithCustomMaximumReturnsCorrectInstance()
+    {
+        // Arrange & Act
+        const int CustomMaximumAutoInvokeAttempts = 7;
+        List<GeminiFunction> functions =
+            [new GeminiFunction("Plugin", "Function", "description", [], null)];
+        var behavior = GeminiToolCallBehavior.EnableFunctions(functions, autoInvoke: true, CustomMaximumAutoInvokeAttempts);
+
+        // Assert
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(behavior);
+        Assert.Equal(CustomMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
