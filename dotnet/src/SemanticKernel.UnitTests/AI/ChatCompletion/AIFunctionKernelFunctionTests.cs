@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -118,6 +120,41 @@ public class AIFunctionKernelFunctionTests
     }
 
     [Fact]
+    public void ShouldPreserveRootLevelSchemaDefinitionsFromAIFunction()
+    {
+        // Arrange
+        var aiFunction = new TestAIFunctionWithSchema("TestFunction", """
+            {
+              "type": "object",
+              "properties": {
+                "node": {
+                  "$ref": "#/$defs/Node"
+                }
+              },
+              "$defs": {
+                "Node": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+            """);
+
+        // Act
+        AIFunctionKernelFunction sut = new(aiFunction);
+        var schema = sut.JsonSchema;
+
+        // Assert
+        Assert.True(schema.TryGetProperty("$defs", out var defs));
+        Assert.True(defs.TryGetProperty("Node", out _));
+        Assert.Equal("#/$defs/Node", schema.GetProperty("properties").GetProperty("node").GetProperty("$ref").GetString());
+    }
+
+    [Fact]
     public async Task ShouldInvokeUnderlyingAIFunctionWhenInvoked()
     {
         // Arrange
@@ -131,6 +168,27 @@ public class AIFunctionKernelFunctionTests
 
         // Assert
         Assert.True(testAIFunction.WasInvoked);
+    }
+
+    [Fact]
+    public async Task ShouldInvokeUnderlyingAIFunctionWhenInvokedAsStreaming()
+    {
+        // Arrange
+        var testAIFunction = new TestAIFunction("TestFunction");
+        AIFunctionKernelFunction sut = new(testAIFunction);
+        var kernel = new Kernel();
+        var streamed = new List<string>();
+
+        // Act
+        await foreach (var chunk in sut.InvokeStreamingAsync<string>(kernel, []))
+        {
+            streamed.Add(chunk);
+        }
+
+        // Assert
+        Assert.True(testAIFunction.WasInvoked);
+        Assert.Single(streamed);
+        Assert.Equal("Test result", streamed[0]);
     }
 
     [Fact]
@@ -224,6 +282,26 @@ public class AIFunctionKernelFunctionTests
         protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             this.WasInvoked = true;
+            return ValueTask.FromResult<object?>("Test result");
+        }
+    }
+
+    private sealed class TestAIFunctionWithSchema : AIFunction
+    {
+        private readonly JsonElement _schema;
+
+        public TestAIFunctionWithSchema(string name, string jsonSchema)
+        {
+            this.Name = name;
+            this._schema = JsonDocument.Parse(jsonSchema).RootElement.Clone();
+        }
+
+        public override string Name { get; }
+
+        public override JsonElement JsonSchema => this._schema;
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
+        {
             return ValueTask.FromResult<object?>("Test result");
         }
     }
