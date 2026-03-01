@@ -15,9 +15,9 @@ else:
 
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (
-    extract_range,
     locate_safe_reduction_index,
 )
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,19 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
 
         logger.info("Performing chat history truncation check...")
 
-        truncation_index = locate_safe_reduction_index(history, self.target_count, self.threshold_count)
+        # Preserve system/developer messages so they are not lost during truncation.
+        # This matches the .NET SDK behavior where system messages are always retained.
+        system_message = next(
+            (msg for msg in history if msg.role in (AuthorRole.SYSTEM, AuthorRole.DEVELOPER)),
+            None,
+        )
+
+        truncation_index = locate_safe_reduction_index(
+            history,
+            self.target_count,
+            self.threshold_count,
+            has_system_message=system_message is not None,
+        )
         if truncation_index is None:
             logger.info(
                 f"No truncation index found. Target count: {self.target_count}, Threshold: {self.threshold_count}"
@@ -53,7 +65,12 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
             return None
 
         logger.info(f"Truncating history to {truncation_index} messages.")
-        truncated_list = extract_range(history, start=truncation_index)
+        truncated_list = history[truncation_index:]
+
+        # Prepend the system/developer message if it was truncated away
+        if system_message is not None and system_message not in truncated_list:
+            truncated_list = [system_message, *truncated_list]
+
         self.messages = truncated_list
         return self
 
