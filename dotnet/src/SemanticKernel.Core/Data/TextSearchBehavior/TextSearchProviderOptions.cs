@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete TextSearchFilter - backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

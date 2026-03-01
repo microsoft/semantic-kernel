@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +23,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Brave;
 /// <summary>
 /// A Brave Text Search implementation that can be used to perform searches using the Brave Web Search API.
 /// </summary>
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
-#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="BraveTextSearch"/> with API key authentication.
@@ -163,28 +163,24 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     {
         switch (expression)
         {
-            case BinaryExpression binaryExpr:
-                if (binaryExpr.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse)
-                {
-                    // Handle AND/OR expressions by recursively analyzing both sides
-                    ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
-                    ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
-                }
-                else if (binaryExpr.NodeType == ExpressionType.Equal)
-                {
-                    ProcessEqualityClause(binaryExpr, filters);
-                }
-                else if (binaryExpr.NodeType == ExpressionType.NotEqual)
-                {
-                    ProcessInequalityClause(binaryExpr);
-                }
-                else
-                {
-                    throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
-                }
+            case BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse } binaryExpr:
+                // Handle AND/OR expressions by recursively analyzing both sides
+                ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
+                ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
                 break;
 
-            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+            case BinaryExpression { NodeType: ExpressionType.Equal } binaryExpr:
+                ProcessEqualityClause(binaryExpr, filters);
+                break;
+
+            case BinaryExpression { NodeType: ExpressionType.NotEqual } binaryExpr:
+                ProcessInequalityClause(binaryExpr);
+                break;
+
+            case BinaryExpression binaryExpr:
+                throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
+
+            case UnaryExpression { NodeType: ExpressionType.Not } unaryExpr:
                 ProcessNotExpression(unaryExpr);
                 break;
 
@@ -308,29 +304,12 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                     }
                 }
             }
-            else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
-            {
-                // Static method: array.Contains(property) - NOT supported
-                string errorMessage = "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Brave Search API. " +
-                    "Brave's API does not support OR logic across multiple values. ";
-
-                if (IsMemoryExtensionsContains(methodCall))
-                {
-                    errorMessage += "Note: This occurs when using C# 14+ language features with span-based Contains methods (MemoryExtensions.Contains). ";
-                }
-                else
-                {
-                    errorMessage += "Note: This occurs with standard LINQ extension methods (Enumerable.Contains). ";
-                }
-
-                errorMessage += "Consider either: (1) performing multiple separate searches for each value, or " +
-                    "(2) retrieving broader results and filtering on the client side.";
-
-                throw new NotSupportedException(errorMessage);
-            }
             else
             {
-                throw new NotSupportedException("Unsupported Contains expression format.");
+                throw new NotSupportedException(
+                    "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Brave Search API. " +
+                    "Consider either: (1) performing multiple separate searches for each value, or " +
+                    "(2) retrieving broader results and filtering on the client side.");
             }
         }
         else
@@ -642,7 +621,6 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         }
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
     /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
@@ -659,11 +637,15 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Filter clause type '{clause.GetType().Name}' is not supported by Brave Text Search. Only EqualToFilterClause is supported.");
+                }
             }
         }
         return filters;
     }
-#pragma warning restore CS0618
 
     /// <summary>
     /// Build a Brave API query string from pre-extracted filter key-value pairs.
@@ -760,41 +742,5 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         }
     }
 
-    /// <summary>
-    /// Determines if a method call expression is a MemoryExtensions.Contains call (C# 14+ compatibility).
-    /// In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains.
-    /// </summary>
-    /// <param name="methodCall">The method call expression to check.</param>
-    /// <returns>True if this is a MemoryExtensions.Contains call, false otherwise.</returns>
-    private static bool IsMemoryExtensionsContains(MethodCallExpression methodCall)
-    {
-        // Check if this is a static method call (Object is null)
-        if (methodCall.Object != null)
-        {
-            return false;
-        }
-
-        // Check if it's MemoryExtensions.Contains
-        if (methodCall.Method.DeclaringType?.Name != "MemoryExtensions")
-        {
-            return false;
-        }
-
-        // MemoryExtensions.Contains has 2-3 parameters: (ReadOnlySpan<T>, T) or (ReadOnlySpan<T>, T, IEqualityComparer<T>)
-        if (methodCall.Arguments.Count < 2 || methodCall.Arguments.Count > 3)
-        {
-            return false;
-        }
-
-        // For our text search scenarios, we don't support span comparers
-        if (methodCall.Arguments.Count == 3)
-        {
-            throw new NotSupportedException(
-                "MemoryExtensions.Contains with custom IEqualityComparer is not supported. " +
-                "Use simple array.Contains(property) expressions without custom comparers.");
-        }
-
-        return true;
-    }
     #endregion
 }

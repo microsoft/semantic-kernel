@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +21,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// <summary>
 /// A Google Text Search implementation that can be used to perform searches using the Google Web Search API.
 /// </summary>
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, IDisposable
-#pragma warning restore CS0618
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleTextSearch"/> class.
@@ -153,214 +153,120 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
     private static List<(string FieldName, object Value)> ExtractFiltersFromExpression<TRecord>(Expression<Func<TRecord, bool>> linqExpression)
     {
-        // Handle compound AND expressions: expr1 && expr2
-        if (linqExpression.Body is BinaryExpression andExpr && andExpr.NodeType == ExpressionType.AndAlso)
-        {
-            var filters = new List<(string FieldName, object Value)>();
-            CollectAndCombineFilters(andExpr, filters);
-            return filters;
-        }
-
-        // Handle simple expressions using the shared processing logic
-        var result = new List<(string FieldName, object Value)>();
-        if (TryProcessSingleExpression(linqExpression.Body, result))
-        {
-            return result;
-        }
-
-        // Generate helpful error message with supported patterns
-        var supportedProperties = s_queryParameters.Select(p =>
-            MapGoogleFilterToProperty(p)).Where(p => p != null).Distinct();
-
-        throw new NotSupportedException(
-            $"LINQ expression '{linqExpression}' cannot be converted to Google API filters. " +
-            $"Supported patterns: {string.Join(", ", s_supportedPatterns)}. " +
-            $"Supported properties: {string.Join(", ", supportedProperties)}.");
+        var filters = new List<(string FieldName, object Value)>();
+        ProcessFilterNode(linqExpression.Body, filters);
+        return filters;
     }
 
     /// <summary>
-    /// Recursively collects and combines filters from compound AND expressions.
+    /// Recursively processes a LINQ expression tree node and builds Google API filters.
+    /// Handles AND combinations, equality, inequality, string Contains, and negation patterns.
     /// </summary>
-    /// <param name="expression">The expression to process.</param>
+    /// <param name="expression">The expression node to process.</param>
     /// <param name="filters">The filter list to accumulate results into.</param>
-    private static void CollectAndCombineFilters(Expression expression, List<(string FieldName, object Value)> filters)
+    /// <exception cref="NotSupportedException">Thrown when the expression cannot be converted to Google filters.</exception>
+    private static void ProcessFilterNode(Expression expression, List<(string FieldName, object Value)> filters)
     {
-        if (expression is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.AndAlso)
+        switch (expression)
         {
-            // Recursively process both sides of the AND
-            CollectAndCombineFilters(binaryExpr.Left, filters);
-            CollectAndCombineFilters(binaryExpr.Right, filters);
-        }
-        else
-        {
-            // Process individual expression using shared logic
-            TryProcessSingleExpression(expression, filters);
+            case BinaryExpression { NodeType: ExpressionType.AndAlso } andExpr:
+                ProcessFilterNode(andExpr.Left, filters);
+                ProcessFilterNode(andExpr.Right, filters);
+                break;
+
+            case BinaryExpression { NodeType: ExpressionType.Equal, Left: MemberExpression member, Right: ConstantExpression constant }
+                when constant.Value is not null:
+            {
+                var filterName = MapPropertyToGoogleFilter(member.Member.Name)
+                    ?? throw new NotSupportedException(
+                        $"Property '{member.Member.Name}' is not supported for Google API equality filters. " +
+                        $"Supported patterns: {string.Join(", ", s_supportedPatterns)}.");
+                filters.Add((filterName, constant.Value));
+                break;
+            }
+
+            case BinaryExpression { NodeType: ExpressionType.NotEqual, Left: MemberExpression member, Right: ConstantExpression constant }
+                when constant.Value is not null:
+            {
+                _ = MapPropertyToGoogleFilter(member.Member.Name)
+                    ?? throw new NotSupportedException(
+                        $"Property '{member.Member.Name}' is not supported for Google API inequality filters. " +
+                        $"Supported patterns: {string.Join(", ", s_supportedPatterns)}.");
+                filters.Add(("excludeTerms", constant.Value));
+                break;
+            }
+
+            case MethodCallExpression { Method.Name: "Contains", Method.DeclaringType: Type dt, Object: MemberExpression member } methodCall
+                when dt == typeof(string)
+                    && methodCall.Arguments is [ConstantExpression { Value: not null } argExpr]:
+            {
+                var filterName = MapPropertyToGoogleFilter(member.Member.Name)
+                    ?? throw new NotSupportedException(
+                        $"Property '{member.Member.Name}' is not supported for Google API Contains filters. " +
+                        $"Supported patterns: {string.Join(", ", s_supportedPatterns)}.");
+                // For Contains operations on text fields, use orTerms (more flexible than exactTerms)
+                filters.Add((filterName == "exactTerms" ? "orTerms" : filterName, argExpr.Value));
+                break;
+            }
+
+            // Null-guard patterns (page.Property != null, page.Property == null) — silently skip
+            case BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual, Right: ConstantExpression { Value: null } }:
+                break;
+
+            case MethodCallExpression { Method.Name: "Contains", Object: null }:
+                throw new NotSupportedException(
+                    "Collection Contains filters (e.g., collection.Contains(page.Property)) are not supported by Google Custom Search API. " +
+                    "Google API doesn't support OR logic across multiple values for a single field. " +
+                    "Consider using multiple separate queries instead.");
+
+            case UnaryExpression { NodeType: ExpressionType.Not } unaryExpr:
+                ProcessNegatedFilterNode(unaryExpr.Operand, filters);
+                break;
+
+            default:
+                throw new NotSupportedException(
+                    $"Expression type '{expression.NodeType}' is not supported for Google API filters. " +
+                    $"Supported patterns: {string.Join(", ", s_supportedPatterns)}.");
         }
     }
 
     /// <summary>
-    /// Shared logic to process a single LINQ expression and add appropriate filters.
-    /// Consolidates duplicate code between ExtractFiltersFromExpression and CollectAndCombineFilters.
+    /// Processes negated expressions (! operator), mapping them to Google's excludeTerms parameter.
+    /// Handles both !(property == value) and !property.Contains(value) patterns.
     /// </summary>
-    /// <param name="expression">The expression to process.</param>
-    /// <param name="filters">The filter list to add results to.</param>
-    /// <returns>True if the expression was successfully processed, false otherwise.</returns>
-    private static bool TryProcessSingleExpression(Expression expression, List<(string FieldName, object Value)> filters)
+    /// <param name="expression">The inner expression of the NOT operation.</param>
+    /// <param name="filters">The filter list to accumulate results into.</param>
+    /// <exception cref="NotSupportedException">Thrown when the negated expression cannot be converted to Google filters.</exception>
+    private static void ProcessNegatedFilterNode(Expression expression, List<(string FieldName, object Value)> filters)
     {
-        // Handle equality: record.PropertyName == "value"
-        if (expression is BinaryExpression equalExpr && equalExpr.NodeType == ExpressionType.Equal)
+        switch (expression)
         {
-            return TryProcessEqualityExpression(equalExpr, filters);
-        }
-
-        // Handle inequality (NOT): record.PropertyName != "value"
-        if (expression is BinaryExpression notEqualExpr && notEqualExpr.NodeType == ExpressionType.NotEqual)
-        {
-            return TryProcessInequalityExpression(notEqualExpr, filters);
-        }
-
-        // Handle Contains method calls
-        if (expression is MethodCallExpression methodCall && methodCall.Method.Name == "Contains")
-        {
-            // String.Contains (instance method) - supported for substring search
-            if (methodCall.Method.DeclaringType == typeof(string))
+            case BinaryExpression { NodeType: ExpressionType.Equal, Left: MemberExpression member, Right: ConstantExpression constant }
+                when constant.Value is not null:
             {
-                return TryProcessContainsExpression(methodCall, filters);
+                _ = MapPropertyToGoogleFilter(member.Member.Name)
+                    ?? throw new NotSupportedException(
+                        $"Property '{member.Member.Name}' is not supported for Google API negated equality filters.");
+                filters.Add(("excludeTerms", constant.Value));
+                break;
             }
 
-            // Collection Contains (static methods) - NOT supported due to Google API limitations
-            // This handles both Enumerable.Contains (C# 13-) and MemoryExtensions.Contains (C# 14+)
-            // User's C# language version determines which method is resolved, but both are unsupported
-            if (methodCall.Object == null) // Static method
+            case MethodCallExpression { Method.Name: "Contains", Method.DeclaringType: Type dt, Object: MemberExpression member } methodCall
+                when dt == typeof(string)
+                    && methodCall.Arguments is [ConstantExpression { Value: not null } argExpr]:
             {
-                // Enumerable.Contains or MemoryExtensions.Contains
-                if (methodCall.Method.DeclaringType == typeof(Enumerable) ||
-                    (methodCall.Method.DeclaringType == typeof(MemoryExtensions) && IsMemoryExtensionsContains(methodCall)))
-                {
-                    throw new NotSupportedException(
-                        "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Google Custom Search API. " +
-                        "Google's search operators do not support OR logic across multiple values. " +
-                        "Consider either: (1) performing multiple separate searches for each value, or " +
-                        "(2) retrieving broader results and filtering on the client side.");
-                }
+                _ = MapPropertyToGoogleFilter(member.Member.Name)
+                    ?? throw new NotSupportedException(
+                        $"Property '{member.Member.Name}' is not supported for Google API negated Contains filters.");
+                filters.Add(("excludeTerms", argExpr.Value));
+                break;
             }
+
+            default:
+                throw new NotSupportedException(
+                    $"Negated expression type '{expression.NodeType}' is not supported for Google API filters. " +
+                    $"Supported patterns: {string.Join(", ", s_supportedPatterns)}.");
         }
-
-        // Handle NOT expressions: !record.PropertyName.Contains("value")
-        if (expression is UnaryExpression unaryExpr && unaryExpr.NodeType == ExpressionType.Not)
-        {
-            return TryProcessNotExpression(unaryExpr, filters);
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if a method call expression is MemoryExtensions.Contains.
-    /// This handles C# 14's "first-class spans" feature where collection.Contains(item) resolves to
-    /// MemoryExtensions.Contains instead of Enumerable.Contains.
-    /// </summary>
-    private static bool IsMemoryExtensionsContains(MethodCallExpression methodExpr)
-    {
-        // MemoryExtensions.Contains has 2-3 parameters (source, value, optional comparer)
-        // We only support the case without a comparer (or with null comparer)
-        return methodExpr.Method.Name == nameof(MemoryExtensions.Contains) &&
-               methodExpr.Arguments.Count >= 2 &&
-               methodExpr.Arguments.Count <= 3 &&
-               (methodExpr.Arguments.Count == 2 ||
-                (methodExpr.Arguments.Count == 3 && methodExpr.Arguments[2] is ConstantExpression { Value: null }));
-    }
-
-    /// <summary>
-    /// Processes equality expressions: record.PropertyName == "value"
-    /// </summary>
-    private static bool TryProcessEqualityExpression(BinaryExpression equalExpr, List<(string FieldName, object Value)> filters)
-    {
-        if (equalExpr.Left is MemberExpression memberExpr && equalExpr.Right is ConstantExpression constExpr)
-        {
-            string propertyName = memberExpr.Member.Name;
-            object? value = constExpr.Value;
-            string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-            if (googleFilterName != null && value != null)
-            {
-                filters.Add((googleFilterName, value));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Processes inequality expressions: record.PropertyName != "value"
-    /// </summary>
-    private static bool TryProcessInequalityExpression(BinaryExpression notEqualExpr, List<(string FieldName, object Value)> filters)
-    {
-        if (notEqualExpr.Left is MemberExpression memberExpr && notEqualExpr.Right is ConstantExpression constExpr)
-        {
-            string propertyName = memberExpr.Member.Name;
-            object? value = constExpr.Value;
-            // Map to excludeTerms for text fields
-            if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
-            {
-                filters.Add(("excludeTerms", value));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Processes Contains expressions: record.PropertyName.Contains("value")
-    /// </summary>
-    private static bool TryProcessContainsExpression(MethodCallExpression methodCall, List<(string FieldName, object Value)> filters)
-    {
-        if (methodCall.Object is MemberExpression memberExpr &&
-            methodCall.Arguments.Count == 1 &&
-            methodCall.Arguments[0] is ConstantExpression constExpr)
-        {
-            string propertyName = memberExpr.Member.Name;
-            object? value = constExpr.Value;
-            string? googleFilterName = MapPropertyToGoogleFilter(propertyName);
-            if (googleFilterName != null && value != null)
-            {
-                // For Contains operations on text fields, use exactTerms or orTerms
-                if (googleFilterName == "exactTerms")
-                {
-                    filters.Add(("orTerms", value)); // More flexible than exactTerms
-                }
-                else
-                {
-                    filters.Add((googleFilterName, value));
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Processes NOT expressions: !record.PropertyName.Contains("value")
-    /// </summary>
-    private static bool TryProcessNotExpression(UnaryExpression unaryExpr, List<(string FieldName, object Value)> filters)
-    {
-        if (unaryExpr.Operand is MethodCallExpression notMethodCall &&
-            notMethodCall.Method.Name == "Contains" &&
-            notMethodCall.Method.DeclaringType == typeof(string))
-        {
-            if (notMethodCall.Object is MemberExpression memberExpr &&
-                notMethodCall.Arguments.Count == 1 &&
-                notMethodCall.Arguments[0] is ConstantExpression constExpr)
-            {
-                string propertyName = memberExpr.Member.Name;
-                object? value = constExpr.Value;
-                if (propertyName.ToUpperInvariant() is "TITLE" or "SNIPPET" && value != null)
-                {
-                    filters.Add(("excludeTerms", value));
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /// <summary>
@@ -368,9 +274,8 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// </summary>
     /// <param name="propertyName">The GoogleWebPage property name.</param>
     /// <returns>The corresponding Google API filter name, or null if not mappable.</returns>
-    private static string? MapPropertyToGoogleFilter(string propertyName)
-    {
-        return propertyName.ToUpperInvariant() switch
+    private static string? MapPropertyToGoogleFilter(string propertyName) =>
+        propertyName.ToUpperInvariant() switch
         {
             // Map GoogleWebPage properties to Google API equivalents
             "LINK" => "siteSearch",           // Maps to site search
@@ -388,26 +293,6 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
             _ => null // Property not mappable to Google filters
         };
-    }
-
-    /// <summary>
-    /// Maps Google Custom Search API filter field names back to example GoogleWebPage property names.
-    /// Used for generating helpful error messages.
-    /// </summary>
-    /// <param name="googleFilterName">The Google API filter name.</param>
-    /// <returns>An example property name, or null if not mappable.</returns>
-    private static string? MapGoogleFilterToProperty(string googleFilterName)
-    {
-        return googleFilterName switch
-        {
-            "siteSearch" => "DisplayLink",
-            "exactTerms" => "Title",
-            "orTerms" => "Title",
-            "excludeTerms" => "Title",
-            "fileType" => "FileFormat",
-            _ => null
-        };
-    }
 
     #endregion
 
@@ -492,7 +377,6 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         return await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
     /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
@@ -509,11 +393,15 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Filter clause type '{clause.GetType().Name}' is not supported by Google Text Search. Only EqualToFilterClause is supported.");
+                }
             }
         }
         return filters;
     }
-#pragma warning restore CS0618
 
     /// <summary>
     /// Apply pre-extracted filter key-value pairs to the Google search request.

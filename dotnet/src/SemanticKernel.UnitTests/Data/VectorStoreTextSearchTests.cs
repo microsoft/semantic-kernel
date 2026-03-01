@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Testing obsolete TextSearchFilter backward compatibility
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +14,6 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
-#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
     [Fact]
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
@@ -29,7 +30,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         // Assert.
         Assert.NotNull(sut);
     }
-#pragma warning restore CS0618
 
     [Fact]
     public void CanCreateVectorStoreTextSearchWithIVectorSearch()
@@ -129,7 +129,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         Assert.All(results, result => Assert.IsType<DataModelWithRawEmbedding>(result));
     }
 
-#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
     [Fact]
     public async Task CanSearchWithEmbeddingGenerationServiceAsync()
     {
@@ -168,7 +167,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         Assert.Equal(2, results.Count);
     }
-#pragma warning restore CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
 
     [Fact]
     public async Task CanFilterGetSearchResultsWithVectorizedSearchAsync()

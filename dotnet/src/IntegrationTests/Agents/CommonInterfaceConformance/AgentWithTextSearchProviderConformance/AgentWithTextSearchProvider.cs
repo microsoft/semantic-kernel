@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -43,7 +45,6 @@ public abstract class AgentWithTextSearchProvider<TFixture>(Func<TFixture> creat
         // Arrange
 #pragma warning disable CS0618 // ITextSearch is obsolete - Testing legacy interface
         var mockTextSearch = new Mock<ITextSearch>();
-#pragma warning restore CS0618
         mockTextSearch.Setup(x => x.GetTextSearchResultsAsync(
             It.IsAny<string>(),
             It.IsAny<TextSearchOptions>(),

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Non-generic ITextSearch is obsolete - provides backward compatibility during Phase 2 LINQ migration
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
 
 using System;
 using System.Collections.Generic;
@@ -23,9 +23,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Text Search implementation that can be used to perform searches using the Bing Web Search API.
 /// </summary>
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
-#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="BingTextSearch"/> with API key authentication.
@@ -172,66 +170,47 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     {
         switch (expression)
         {
-            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.AndAlso:
+            case BinaryExpression { NodeType: ExpressionType.AndAlso } andExpr:
                 // Handle AND: page => page.Language == "en" && page.Name.Contains("AI")
-                ProcessExpression(binaryExpr.Left, filters);
-                ProcessExpression(binaryExpr.Right, filters);
+                ProcessExpression(andExpr.Left, filters);
+                ProcessExpression(andExpr.Right, filters);
                 break;
 
-            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.OrElse:
+            case BinaryExpression { NodeType: ExpressionType.OrElse }:
                 // Handle OR: Currently not directly supported by TextSearchFilter
                 // Bing API supports OR via multiple queries, but TextSearchFilter doesn't expose this
                 throw new NotSupportedException(
                     "Logical OR (||) is not supported by Bing Text Search filters. " +
                     "Consider splitting into multiple search queries.");
 
-            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+            case UnaryExpression { NodeType: ExpressionType.Not }:
                 // Handle NOT: page => !page.Language.Equals("en")
                 throw new NotSupportedException(
                     "Logical NOT (!) is not directly supported by Bing Text Search advanced operators. " +
                     "Consider restructuring your filter to use positive conditions.");
 
-            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.Equal:
+            case BinaryExpression { NodeType: ExpressionType.Equal } binaryExpr:
                 // Handle equality: page => page.Language == "en"
                 ProcessEqualityExpression(binaryExpr, filters, isNegated: false);
                 break;
 
-            case BinaryExpression binaryExpr when binaryExpr.NodeType == ExpressionType.NotEqual:
+            case BinaryExpression { NodeType: ExpressionType.NotEqual } binaryExpr:
                 // Handle inequality: page => page.Language != "en"
                 // Implemented via Bing's negation syntax (e.g., -language:en)
                 ProcessEqualityExpression(binaryExpr, filters, isNegated: true);
                 break;
 
-            case MethodCallExpression methodExpr when methodExpr.Method.Name == "Contains":
-                // Distinguish between instance method (String.Contains) and static method (Enumerable/MemoryExtensions.Contains)
-                if (methodExpr.Object is MemberExpression)
-                {
-                    // Instance method: page.Name.Contains("value") - SUPPORTED
-                    ProcessContainsExpression(methodExpr, filters);
-                }
-                else if (methodExpr.Object == null)
-                {
-                    // Static method: could be Enumerable.Contains (C# 13-) or MemoryExtensions.Contains (C# 14+)
-                    // Bing API doesn't support OR logic, so collection Contains patterns are not supported
-                    if (methodExpr.Method.DeclaringType == typeof(Enumerable) ||
-                        (methodExpr.Method.DeclaringType == typeof(MemoryExtensions) && IsMemoryExtensionsContains(methodExpr)))
-                    {
-                        throw new NotSupportedException(
-                            "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Bing Search API. " +
-                            "Bing's advanced search operators do not support OR logic across multiple values. " +
-                            "Supported pattern: Property.Contains(\"value\") for string properties like Name, Snippet, or Url. " +
-                            "For multiple value matching, consider alternative approaches or use a different search provider.");
-                    }
-
-                    throw new NotSupportedException(
-                        $"Contains() method from {methodExpr.Method.DeclaringType?.Name} is not supported.");
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        "Contains() must be called on a property (e.g., page.Name.Contains(\"value\")).");
-                }
+            case MethodCallExpression { Method.Name: "Contains", Object: MemberExpression } methodExpr:
+                // Instance method: page.Name.Contains("value") - SUPPORTED
+                ProcessContainsExpression(methodExpr, filters);
                 break;
+
+            case MethodCallExpression { Method.Name: "Contains", Object: null }:
+                // Static method: collection.Contains(page.Property) - NOT SUPPORTED
+                throw new NotSupportedException(
+                    "Collection Contains filters (e.g., collection.Contains(page.Property)) are not supported by Bing Search API. " +
+                    "Bing API doesn't support OR logic across multiple values for a single field. " +
+                    "Consider using multiple separate queries instead.");
 
             default:
                 throw new NotSupportedException(
@@ -361,31 +340,12 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
     }
 
     /// <summary>
-    /// Determines if a MethodCallExpression is a MemoryExtensions.Contains call (C# 14 "first-class spans" feature).
-    /// </summary>
-    /// <param name="methodExpr">The method call expression to check.</param>
-    /// <returns>True if this is a MemoryExtensions.Contains call with supported parameters; otherwise false.</returns>
-    private static bool IsMemoryExtensionsContains(MethodCallExpression methodExpr)
-    {
-        // MemoryExtensions.Contains has 2-3 parameters:
-        // - Contains<T>(ReadOnlySpan<T> span, T value)
-        // - Contains<T>(ReadOnlySpan<T> span, T value, IEqualityComparer<T>? comparer)
-        // We only support when comparer is null or omitted
-        return methodExpr.Method.Name == nameof(MemoryExtensions.Contains) &&
-               methodExpr.Arguments.Count >= 2 &&
-               methodExpr.Arguments.Count <= 3 &&
-               (methodExpr.Arguments.Count == 2 ||
-                (methodExpr.Arguments.Count == 3 && methodExpr.Arguments[2] is ConstantExpression { Value: null }));
-    }
-
-    /// <summary>
     /// Maps BingWebPage property names to Bing API filter field names for equality operations.
     /// </summary>
     /// <param name="propertyName">The BingWebPage property name.</param>
     /// <returns>The corresponding Bing API filter name, or null if not mappable.</returns>
-    private static string? MapPropertyToBingFilter(string propertyName)
-    {
-        return propertyName.ToUpperInvariant() switch
+    private static string? MapPropertyToBingFilter(string propertyName) =>
+        propertyName.ToUpperInvariant() switch
         {
             // Map BingWebPage properties to Bing API equivalents
             "LANGUAGE" => "language",           // Maps to advanced search
@@ -401,16 +361,14 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 
             _ => null // Property not mappable to Bing filters
         };
-    }
 
     /// <summary>
     /// Maps BingWebPage property names to Bing API advanced search operators for Contains operations.
     /// </summary>
     /// <param name="propertyName">The BingWebPage property name.</param>
     /// <returns>The corresponding Bing advanced search operator, or null if not mappable.</returns>
-    private static string? MapPropertyToContainsFilter(string propertyName)
-    {
-        return propertyName.ToUpperInvariant() switch
+    private static string? MapPropertyToContainsFilter(string propertyName) =>
+        propertyName.ToUpperInvariant() switch
         {
             // Map properties to Bing's contains-style operators
             "NAME" => "intitle",        // intitle:"search term" - title contains
@@ -420,7 +378,6 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
 
             _ => null // Property not mappable to Contains-style filters
         };
-    }
 
     /// <summary>
     /// Execute a Bing search query and return the results.
@@ -594,7 +551,6 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
         }
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
     /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
@@ -611,11 +567,15 @@ public sealed class BingTextSearch : ITextSearch, ITextSearch<BingWebPage>
                 {
                     filters.Add((eq.FieldName, eq.Value));
                 }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Filter clause type '{clause.GetType().Name}' is not supported by Bing Text Search. Only EqualToFilterClause is supported.");
+                }
             }
         }
         return filters;
     }
-#pragma warning restore CS0618
 
     /// <summary>
     /// Build a Bing API query string from pre-extracted filter key-value pairs.

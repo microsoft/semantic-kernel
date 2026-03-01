@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Represents a filter clause that filters using equality of a field value.
 /// </summary>
+[Obsolete("Use LINQ expressions via TextSearchOptions<TRecord>.Filter instead. This type will be removed in a future version.")]
 public sealed class EqualToFilterClause : FilterClause
 {
     /// <summary>

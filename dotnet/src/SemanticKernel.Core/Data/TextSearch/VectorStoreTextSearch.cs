@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,9 +21,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
-#pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
@@ -64,7 +64,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
-#pragma warning disable CS0618 // Type or member is obsolete
         VectorStoreTextSearchOptions? options = null) :
         this(
             vectorSearchable,
@@ -72,7 +71,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             stringMapper,
             resultMapper,
             options)
-#pragma warning restore CS0618 // Type or member is obsolete
     {
     }
 
@@ -328,7 +326,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchCoreAsync(string query, VectorSearchOptions<TRecord> vectorSearchOptions, int top, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -340,7 +337,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
             yield break;
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         await foreach (var result in this._vectorSearchable!.SearchAsync(query, top, vectorSearchOptions, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
