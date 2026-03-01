@@ -96,7 +96,7 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
                 parts.append(
                     Part(
                         function_call={
-                            "name": item.name,
+                            "name": item.name,  # type: ignore[arg-type]
                             "args": json.loads(item.arguments)
                             if isinstance(item.arguments, str)
                             else item.arguments,

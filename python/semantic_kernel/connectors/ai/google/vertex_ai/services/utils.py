@@ -98,9 +98,7 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             thought_signature = item.metadata.get("thought_signature") if item.metadata else None
             if thought_signature:
                 part_dict["thought_signature"] = thought_signature
-            parts.append(
-                Part.from_dict(part_dict)
-            )
+            parts.append(Part.from_dict(part_dict))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
