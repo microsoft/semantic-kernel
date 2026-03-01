@@ -91,12 +91,26 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             if item.text:
                 parts.append(Part.from_text(text=item.text))
         elif isinstance(item, FunctionCallContent):
-            parts.append(
-                Part.from_function_call(
-                    name=item.name,  # type: ignore[arg-type]
-                    args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,  # type: ignore[arg-type]
+            thought_signature = item.metadata.get("thought_signature") if item.metadata else None
+            if thought_signature:
+                parts.append(
+                    Part(
+                        function_call={
+                            "name": item.name,
+                            "args": json.loads(item.arguments)
+                            if isinstance(item.arguments, str)
+                            else item.arguments,
+                        },
+                        thought_signature=thought_signature,
+                    )
                 )
-            )
+            else:
+                parts.append(
+                    Part.from_function_call(
+                        name=item.name,  # type: ignore[arg-type]
+                        args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,  # type: ignore[arg-type]
+                    )
+                )
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:

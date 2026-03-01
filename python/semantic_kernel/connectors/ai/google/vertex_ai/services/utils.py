@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from google.cloud.aiplatform_v1beta1.types.content import Candidate
 from vertexai.generative_models import FunctionDeclaration, Part, Tool, ToolConfig
@@ -89,13 +89,17 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             if item.text:
                 parts.append(Part.from_text(item.text))
         elif isinstance(item, FunctionCallContent):
+            part_dict: dict[str, Any] = {
+                "function_call": {
+                    "name": item.name,
+                    "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                }
+            }
+            thought_signature = item.metadata.get("thought_signature") if item.metadata else None
+            if thought_signature:
+                part_dict["thought_signature"] = thought_signature
             parts.append(
-                Part.from_dict({
-                    "function_call": {
-                        "name": item.name,
-                        "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
-                    }
-                })
+                Part.from_dict(part_dict)
             )
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
