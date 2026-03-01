@@ -74,14 +74,13 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
         => IsVectorPropertyTypeValidCore(type, out supportedTypes);
 
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        // Resolve embedding type for float, byte, and sbyte embedding generators.
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-           ?? vectorProperty.ResolveEmbeddingType<Embedding<byte>>(embeddingGenerator, userRequestedEmbeddingType)
-           ?? vectorProperty.ResolveEmbeddingType<Embedding<sbyte>>(embeddingGenerator, userRequestedEmbeddingType);
+    /// <inheritdoc />
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<byte>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<sbyte>>()
+    ];
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
