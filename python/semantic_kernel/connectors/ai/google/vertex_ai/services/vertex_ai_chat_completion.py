@@ -252,6 +252,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             if "text" in part_dict:
                 items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
             elif "function_call" in part_dict:
+                fc_metadata: dict[str, Any] = {}
+                thought_sig = part_dict.get("thought_signature")
+                if thought_sig:
+                    fc_metadata["thought_signature"] = thought_sig
                 items.append(
                     FunctionCallContent(
                         id=f"{part.function_call.name}_{idx!s}",
@@ -259,6 +263,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                             part.function_call.name
                         ),
                         arguments={k: v for k, v in part.function_call.args.items()},
+                        metadata=fc_metadata if fc_metadata else None,
                     )
                 )
 
@@ -309,6 +314,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                     )
                 )
             elif "function_call" in part_dict:
+                fc_metadata_s: dict[str, Any] = {}
+                thought_sig_s = part_dict.get("thought_signature")
+                if thought_sig_s:
+                    fc_metadata_s["thought_signature"] = thought_sig_s
                 items.append(
                     FunctionCallContent(
                         id=f"{part.function_call.name}_{idx!s}",
@@ -316,6 +325,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                             part.function_call.name
                         ),
                         arguments={k: v for k, v in part.function_call.args.items()},
+                        metadata=fc_metadata_s if fc_metadata_s else None,
                     )
                 )
 
