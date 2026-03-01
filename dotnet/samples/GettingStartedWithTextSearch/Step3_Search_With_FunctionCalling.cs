@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
+
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
