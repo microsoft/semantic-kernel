@@ -59,6 +59,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+#pragma warning disable CS0618 // Chains to obsolete ITextEmbeddingGenerationService constructor
     public VectorStoreTextSearch(
         IVectorSearchable<TRecord> vectorSearchable,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
@@ -73,6 +74,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             options)
     {
     }
+#pragma warning restore CS0618
 
 #pragma warning disable CS0618 // Obsolete ITextEmbeddingGenerationService constructors
 
@@ -342,6 +344,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchCoreAsync(string query, VectorSearchOptions<TRecord> vectorSearchOptions, int top, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+#pragma warning disable CS0618 // Obsolete _textEmbeddingGeneration backward compatibility
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -353,6 +356,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
             yield break;
         }
+#pragma warning restore CS0618
 
         await foreach (var result in this._vectorSearchable!.SearchAsync(query, top, vectorSearchOptions, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
