@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
-
 using System.Text.Json;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Tavily;
@@ -13,6 +11,7 @@ namespace Search;
 /// </summary>
 public class Tavily_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
+#pragma warning disable CS0618 // Suppress obsolete warnings for legacy TextSearchOptions/TextSearchFilter usage
     /// <summary>
     /// Show how to create a <see cref="TavilyTextSearch"/> and use it to perform a text search.
     /// </summary>
@@ -183,6 +182,7 @@ public class Tavily_TextSearch(ITestOutputHelper output) : BaseTest(output)
             WriteHorizontalRule();
         }
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Show how to use enhanced LINQ filtering with TavilyTextSearch for type-safe searches with Title.Contains() support.

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
-
 using System.Text.Json;
 using Google.Apis.Http;
 using Microsoft.SemanticKernel.Data;
@@ -14,6 +12,7 @@ namespace Search;
 /// </summary>
 public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
+#pragma warning disable CS0618 // Suppress obsolete warnings for legacy TextSearchOptions/TextSearchFilter usage
     /// <summary>
     /// Show how to create a <see cref="GoogleTextSearch"/> and use it to perform a text search.
     /// </summary>
@@ -108,6 +107,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Show how to use enhanced LINQ filtering with GoogleTextSearch including Contains, NOT, FileType, and compound AND expressions.

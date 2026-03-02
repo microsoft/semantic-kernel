@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -136,6 +134,7 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         ));
     }
 
+#pragma warning disable CS0618 // Suppress obsolete warnings for legacy TextSearchOptions/TextSearchFilter usage
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch"/> and use it to
     /// add grounding context to a Handlebars prompt that include full web pages.
@@ -186,4 +185,5 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
             promptTemplateFactory: promptTemplateFactory
         ));
     }
+#pragma warning restore CS0618
 }
