@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +21,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Brave;
 /// <summary>
 /// A Brave Text Search implementation that can be used to perform searches using the Brave Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete
 public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Create an instance of the <see cref="BraveTextSearch"/> with API key authentication.
@@ -46,6 +46,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
         this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
+
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause
+
+    #region Legacy ITextSearch Implementation
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = new CancellationToken())
@@ -83,6 +87,10 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
 
         return new KernelSearchResults<object>(this.GetResultsAsObjectAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
+
+    #endregion
+
+#pragma warning restore CS0618
 
     #region Generic ITextSearch<BraveWebPage> Implementation
 
@@ -626,6 +634,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
     /// It will be removed when the legacy ITextSearch interface is retired.
     /// </summary>
+#pragma warning disable CS0618 // Obsolete TextSearchFilter, FilterClause
     private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
     {
         var filters = new List<(string FieldName, object Value)>();
@@ -646,6 +655,7 @@ public sealed class BraveTextSearch : ITextSearch, ITextSearch<BraveWebPage>
         }
         return filters;
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Build a Brave API query string from pre-extracted filter key-value pairs.

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Testing obsolete TextSearchFilter backward compatibility
-
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +12,7 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
+#pragma warning disable CS0618 // Testing obsolete TextSearchFilter backward compatibility
     [Fact]
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
@@ -206,6 +205,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         result2 = oddResults[1] as DataModel;
         Assert.Equal("Odd", result2?.Tag);
     }
+
+#pragma warning restore CS0618
 
     #region Generic Interface Tests (ITextSearch<TRecord>)
 

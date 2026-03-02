@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +19,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// <summary>
 /// A Google Text Search implementation that can be used to perform searches using the Google Web Search API.
 /// </summary>
+#pragma warning disable CS0618 // ITextSearch is obsolete
 public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, IDisposable
+#pragma warning restore CS0618
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleTextSearch"/> class.
@@ -59,6 +59,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         this._options = options;
     }
 
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause
+
+    #region Legacy ITextSearch Implementation
+
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
@@ -94,6 +98,10 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
+
+    #endregion
+
+#pragma warning restore CS0618
 
     #region ITextSearch<GoogleWebPage> Implementation
 
@@ -382,6 +390,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
     /// It will be removed when the legacy ITextSearch interface is retired.
     /// </summary>
+#pragma warning disable CS0618 // Obsolete TextSearchFilter, FilterClause
     private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
     {
         var filters = new List<(string FieldName, object Value)>();
@@ -402,6 +411,7 @@ public sealed class GoogleTextSearch : ITextSearch, ITextSearch<GoogleWebPage>, 
         }
         return filters;
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Apply pre-extracted filter key-value pairs to the Google search request.
