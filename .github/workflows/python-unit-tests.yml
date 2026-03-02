@@ -20,10 +20,12 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
+        test-suite: ["unit-all-except-dapr", "dapr"]
         include:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: true
+            test-suite: "unit-all-except-dapr"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
@@ -41,16 +43,18 @@ jobs:
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
       - name: Install the project (all extras)
-        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit || true
-      - name: Install base project and non-dapr extras (due to protobuf conflicts with dapr)
-        run: uv sync anthropic autogen aws azure chroma copilotstudio faiss google hugging_face mcp milvus mistralai mongo notebooks ollama onnx oracledb pandas pinecone postgres qdrant redis realtime sql usearch weaviate --dev -U --prerelease=if-necessary-or-explicit
+        if: matrix.test-suite == 'unit-all-except-dapr'
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+      - name: Install the project (dapr tests)
+        if: matrix.test-suite == 'dapr'
+        run: uv sync --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
       - name: Test with pytest (all except dapr)
+        if: matrix.test-suite == 'unit-all-except-dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
-      - name: Install dapr dependencies separately
-        run: uv sync --extras dapr --dev -U --prerelease=if-necessary-or-explicit
       - name: Test dapr with pytest
+        if: matrix.test-suite == 'dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime

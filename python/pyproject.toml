@@ -83,11 +83,6 @@ copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
     "microsoft-agents-activity >= 0.3.1"
 ]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0",
-]
 faiss = [
     "faiss-cpu>=1.10.0"
 ]
