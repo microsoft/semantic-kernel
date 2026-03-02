@@ -54,7 +54,6 @@ dependencies = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # Protobuf
-    "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
     "mcp>=1.26.0",

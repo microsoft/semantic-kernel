@@ -40,12 +40,20 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
-      - name: Install the project
-        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
-      - name: Test with pytest
+      - name: Install the project (all extras)
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit || true
+      - name: Install base project and non-dapr extras (due to protobuf conflicts with dapr)
+        run: uv sync anthropic autogen aws azure chroma copilotstudio faiss google hugging_face mcp milvus mistralai mongo notebooks ollama onnx oracledb pandas pinecone postgres qdrant redis realtime sql usearch weaviate --dev -U --prerelease=if-necessary-or-explicit
+      - name: Test with pytest (all except dapr)
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+      - name: Install dapr dependencies separately
+        run: uv sync --extras dapr --dev -U --prerelease=if-necessary-or-explicit
+      - name: Test dapr with pytest
+        env:
+          PYTHON_GIL: ${{ matrix.gil }}
+        run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
         if: ${{ !matrix.experimental }}
         uses: pmeier/pytest-results-action@v0.7.2
