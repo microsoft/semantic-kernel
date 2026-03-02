@@ -64,6 +64,7 @@ public sealed class WeaviateQueryBuilderTests
               nearVector: {
                 {{(hasNamedVectors ? "targetVectors: [\"descriptionEmbedding\"]" : string.Empty)}}
                 vector: [31,32,33,34]
+                {{string.Empty}}
               }
             ) {
               HotelName HotelCode Tags

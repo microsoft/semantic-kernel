@@ -16,10 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 /// </summary>
 internal static class CosmosNoSqlCollectionQueryBuilder
 {
-    private const string SelectClauseDelimiter = ",";
-    private const string AndConditionDelimiter = " AND ";
-    private const string OrConditionDelimiter = " OR ";
-
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL using vector search.
     /// </summary>
@@ -28,12 +24,14 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         ICollection<string>? keywords,
         CollectionModel model,
         string vectorPropertyName,
+        string? distanceFunction,
         string? textPropertyName,
         string scorePropertyName,
 #pragma warning disable CS0618 // Type or member is obsolete
         VectorSearchFilter? oldFilter,
 #pragma warning restore CS0618 // Type or member is obsolete
         Expression<Func<TRecord, bool>>? filter,
+        double? scoreThreshold,
         int top,
         int skip,
         bool includeVectors)
@@ -51,22 +49,24 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         {
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
-        var fieldsArgument = projectionProperties.Select(p => $"{tableVariableName}.{p.StorageName}");
-        var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
+        var fieldsArgument = projectionProperties.Select(p => GeneratePropertyAccess(tableVariableName, p.StorageName));
+        var vectorDistanceArgument = $"VectorDistance({GeneratePropertyAccess(tableVariableName, vectorPropertyName)}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
 
         // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
         var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
         var formattedKeywords = sanitizedKeywords is not null ? $"\"{string.Join("\", \"", sanitizedKeywords)}\"" : null;
-        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {formattedKeywords})" : null;
+        var fullTextScoreArgument = textPropertyName is not null && keywords is not null
+            ? $"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}, {formattedKeywords})"
+            : null;
 
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
+        var selectClauseArguments = string.Join(",", [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var (whereClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
+        var (filterClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => BuildSearchFilter(legacyFilter, model),
@@ -77,8 +77,32 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var queryParameters = new Dictionary<string, object?>
         {
-            [VectorVariableName] = vector
+            // byte[] and ReadOnlyMemory<byte> are serialized as base64 by System.Text.Json, which causes problems for the VectorDistance function.
+            // Convert to int[] which serializes as a JSON array of numbers.
+            [VectorVariableName] = vector switch
+            {
+                ReadOnlyMemory<byte> byteMemory => ConvertToIntArray(byteMemory.Span),
+                _ => vector
+            }
         };
+
+        // Add score threshold filter if specified.
+        // For similarity functions (CosineSimilarity, DotProductSimilarity), higher scores are better, so filter with >=.
+        // For distance functions (EuclideanDistance), lower scores are better, so filter with <=.
+        const string ScoreThresholdVariableName = "@scoreThreshold";
+        string? scoreThresholdClause = null;
+        if (scoreThreshold.HasValue)
+        {
+            var comparisonOperator = distanceFunction switch
+            {
+                Microsoft.Extensions.VectorData.DistanceFunction.CosineSimilarity => ">=",
+                Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity => ">=",
+                Microsoft.Extensions.VectorData.DistanceFunction.EuclideanDistance => "<=",
+                _ => throw new NotSupportedException($"Score threshold is not supported for distance function '{distanceFunction}'.")
+            };
+            scoreThresholdClause = $"{vectorDistanceArgument} {comparisonOperator} {ScoreThresholdVariableName}";
+            queryParameters[ScoreThresholdVariableName] = scoreThreshold.Value;
+        }
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
         // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
@@ -90,9 +114,25 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         builder.AppendLine($"SELECT {topArgument}{selectClauseArguments}");
         builder.AppendLine($"FROM {tableVariableName}");
 
-        if (whereClause is not null)
+        if (filterClause is not null || scoreThresholdClause is not null)
         {
-            builder.Append("WHERE ").AppendLine(whereClause);
+            builder.Append("WHERE ");
+
+            if (filterClause is not null)
+            {
+                builder.Append(filterClause);
+                if (scoreThresholdClause is not null)
+                {
+                    builder.Append(" AND ");
+                }
+            }
+
+            if (scoreThresholdClause is not null)
+            {
+                builder.Append(scoreThresholdClause);
+            }
+
+            builder.AppendLine();
         }
 
         builder.AppendLine($"ORDER BY {rankingArgument}");
@@ -139,9 +179,9 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
 
-        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field.StorageName}");
+        var fieldsArgument = projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName));
 
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
+        var selectClauseArguments = string.Join(",", [.. fieldsArgument]);
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
         // since it's more optimized.
@@ -160,9 +200,9 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
             foreach (var sortInfo in orderBy)
             {
-                builder.AppendFormat("{0}.{1} {2},", tableVariableName,
-                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
-                    sortInfo.Ascending ? "ASC" : "DESC");
+                builder
+                    .Append(GeneratePropertyAccess(tableVariableName, model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName))
+                    .Append(sortInfo.Ascending ? " ASC," : " DESC,");
             }
 
             builder.Length--; // remove the last comma
@@ -184,60 +224,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         return queryDefinition;
     }
 
-    /// <summary>
-    /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL.
-    /// </summary>
-    public static QueryDefinition BuildSelectQuery(
-        CollectionModel model,
-        string keyStoragePropertyName,
-        string partitionKeyStoragePropertyName,
-        List<CosmosNoSqlCompositeKey> keys,
-        bool includeVectors)
-    {
-        Verify.True(keys.Count > 0, "At least one key should be provided.", nameof(keys));
-
-        const string RecordKeyVariableName = "@rk";
-        const string PartitionKeyVariableName = "@pk";
-
-        var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
-
-        IEnumerable<PropertyModel> projectionProperties = model.Properties;
-        if (!includeVectors)
-        {
-            projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
-        }
-        var fields = projectionProperties.Select(field => field.StorageName);
-
-        var selectClauseArguments = string.Join(SelectClauseDelimiter, fields.Select(field => $"{tableVariableName}.{field}"));
-
-        var whereClauseArguments = string.Join(OrConditionDelimiter,
-            keys.Select((key, index) =>
-                $"({tableVariableName}.{keyStoragePropertyName} = {RecordKeyVariableName}{index} {AndConditionDelimiter} " +
-                $"{tableVariableName}.{partitionKeyStoragePropertyName} = {PartitionKeyVariableName}{index})"));
-
-        var query = $"""
-                     SELECT {selectClauseArguments}
-                     FROM {tableVariableName}
-                     WHERE {whereClauseArguments}
-                     """;
-
-        var queryDefinition = new QueryDefinition(query);
-
-        for (var i = 0; i < keys.Count; i++)
-        {
-            var recordKey = keys[i].RecordKey;
-            var partitionKey = keys[i].PartitionKey;
-
-            Verify.NotNullOrWhiteSpace(recordKey);
-            Verify.NotNullOrWhiteSpace(partitionKey);
-
-            queryDefinition.WithParameter($"{RecordKeyVariableName}{i}", recordKey);
-            queryDefinition.WithParameter($"{PartitionKeyVariableName}{i}", partitionKey);
-        }
-
-        return queryDefinition;
-    }
-
     #region private
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -245,7 +231,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         VectorSearchFilter filter,
         CollectionModel model)
     {
-        const string EqualOperator = "=";
         const string ArrayContainsOperator = "ARRAY_CONTAINS";
         const string ConditionValueVariableName = "@cv";
 
@@ -270,13 +255,21 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             if (filterClause is EqualToFilterClause equalToFilterClause)
             {
                 var propertyName = GetStoragePropertyName(equalToFilterClause.FieldName, model);
-                whereClauseBuilder.Append($"{tableVariableName}.{propertyName} {EqualOperator} {queryParameterName}");
+                whereClauseBuilder
+                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
+                    .Append(" = ")
+                    .Append(queryParameterName);
                 queryParameterValue = equalToFilterClause.Value;
             }
             else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
             {
                 var propertyName = GetStoragePropertyName(anyTagEqualToFilterClause.FieldName, model);
-                whereClauseBuilder.Append($"{ArrayContainsOperator}({tableVariableName}.{propertyName}, {queryParameterName})");
+                whereClauseBuilder.Append(ArrayContainsOperator)
+                    .Append('(')
+                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
+                    .Append(", ")
+                    .Append(queryParameterName)
+                    .Append(')');
                 queryParameterValue = anyTagEqualToFilterClause.Value;
             }
             else
@@ -303,6 +296,34 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         }
 
         return property.StorageName;
+    }
+
+    /// <summary>
+    /// Escapes a JSON property name for use in Cosmos NoSQL SQL queries.
+    /// JSON property names within bracket notation need backslash and double-quote escaping.
+    /// </summary>
+    private static string EscapeJsonPropertyName(string propertyName)
+        => propertyName.Replace(@"\", @"\\").Replace("\"", "\\\"");
+
+    /// <summary>
+    /// Generates a property access expression using bracket notation with proper escaping.
+    /// </summary>
+    private static string GeneratePropertyAccess(char alias, string propertyName)
+        => $"{alias}[\"{EscapeJsonPropertyName(propertyName)}\"]";
+
+    /// <summary>
+    /// Converts a byte span to an int array.
+    /// This is needed because byte[] and ReadOnlyMemory&lt;byte&gt; are serialized as base64 by System.Text.Json,
+    /// which causes problems for the VectorDistance function.
+    /// </summary>
+    private static int[] ConvertToIntArray(ReadOnlySpan<byte> bytes)
+    {
+        var result = new int[bytes.Length];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            result[i] = bytes[i];
+        }
+        return result;
     }
 
     #endregion

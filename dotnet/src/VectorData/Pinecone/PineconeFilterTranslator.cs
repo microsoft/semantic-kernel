@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -13,23 +12,17 @@ using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
+#pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 // This class is a modification of MongoDBFilterTranslator that uses the same query language
 // (https://docs.pinecone.io/guides/data/understanding-metadata#metadata-query-language),
 // with the difference of representing everything as Metadata rather than BsonDocument.
 // For representing collections of any kinds, we use List<MetadataValue>,
 // as we sometimes need to extend the collection (with for example another condition).
-internal class PineconeFilterTranslator
+internal class PineconeFilterTranslator : FilterTranslatorBase
 {
-    private Extensions.VectorData.ProviderServices.CollectionModel _model = null!;
-    private ParameterExpression _recordParameter = null!;
-
     internal Metadata? Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
     {
-        this._model = model;
-
-        Debug.Assert(lambdaExpression.Parameters.Count == 1);
-        this._recordParameter = lambdaExpression.Parameters[0];
-
         // Pinecone doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
         // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
         // nor is 'x && true'.
@@ -38,8 +31,7 @@ internal class PineconeFilterTranslator
             return null;
         }
 
-        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
-        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
+        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return this.Translate(preprocessedExpression);
     }
@@ -169,83 +161,12 @@ internal class PineconeFilterTranslator
     {
         return methodCall switch
         {
-            // Enumerable.Contains()
-            { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
-                when contains.Method.DeclaringType == typeof(Enumerable)
-                => this.TranslateContains(source, item),
-
-            // List.Contains()
-            {
-                Method:
-                {
-                    Name: nameof(Enumerable.Contains),
-                    DeclaringType: { IsGenericType: true } declaringType
-                },
-                Object: Expression source,
-                Arguments: [var item]
-            } when declaringType.GetGenericTypeDefinition() == typeof(List<>) => this.TranslateContains(source, item),
-
-            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
-            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
-            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
-            // See https://github.com/dotnet/runtime/issues/109757 for more context.
-            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
-            // it's null.
-            { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
-                when contains.Method.DeclaringType == typeof(MemoryExtensions)
-                    && (contains.Arguments.Count is 2
-                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
-                    && TryUnwrapSpanImplicitCast(spanArg, out var source)
+            // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
+            _ when TryMatchContains(methodCall, out var source, out var item)
                 => this.TranslateContains(source, item),
 
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
-
-        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
-        {
-            // Different versions of the compiler seem to generate slightly different expression tree representations for this
-            // implicit cast:
-            var (unwrapped, castDeclaringType) = expression switch
-            {
-                UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Operand: var operand
-                } => (operand, implicitCastDeclaringType),
-
-                MethodCallExpression
-                {
-                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
-                    Arguments: [var firstArgument]
-                } => (firstArgument, implicitCastDeclaringType),
-
-                _ => (null, null)
-            };
-
-            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
-            if (unwrapped is UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: null
-                } convert
-                && convert.Type == typeof(object[]))
-            {
-                result = convert.Operand;
-                return true;
-            }
-
-            if (unwrapped is not null
-                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
-                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
-            {
-                result = unwrapped;
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
     }
 
     private Metadata TranslateContains(Expression source, Expression item)
@@ -294,59 +215,6 @@ internal class PineconeFilterTranslator
                 }
             };
         }
-    }
-
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
-    {
-        var unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            unwrappedExpression = convert.Operand;
-        }
-
-        var modelName = unwrappedExpression switch
-        {
-            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
-                => memberExpression.Member.Name,
-
-            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
-            MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
-                => keyName,
-
-            _ => null
-        };
-
-        if (modelName is null)
-        {
-            property = null;
-            return false;
-        }
-
-        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
-        {
-            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
-        var unwrappedPropertyType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
-        unwrappedExpression = expression;
-        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
-        {
-            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
-            if (convertType != unwrappedPropertyType && convertType != typeof(object))
-            {
-                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
-            }
-
-            unwrappedExpression = convert.Operand;
-        }
-
-        return true;
     }
 
     private static MetadataValue? ToMetadata(object? value)

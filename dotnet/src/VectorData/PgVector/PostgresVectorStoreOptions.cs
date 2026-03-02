@@ -20,14 +20,14 @@ public sealed class PostgresVectorStoreOptions
 
     internal PostgresVectorStoreOptions(PostgresVectorStoreOptions? source)
     {
-        this.Schema = source?.Schema ?? Default.Schema;
+        this.Schema = source?.Schema;
         this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; set; } = "public";
+    public string? Schema { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.

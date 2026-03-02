@@ -113,6 +113,18 @@ public static class PromptExecutionSettingsExtensions
                         options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
                     }
                 }
+                else if (entry.Key.Equals("reasoning_effort", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out string? reasoningEffort))
+                {
+                    (options.Reasoning ??= new()).Effort = reasoningEffort.ToUpperInvariant() switch
+                    {
+                        "LOW" => ReasoningEffort.Low,
+                        "MEDIUM" => ReasoningEffort.Medium,
+                        "HIGH" => ReasoningEffort.High,
+                        "XHIGH" => ReasoningEffort.ExtraHigh,
+                        _ => null,
+                    };
+                }
                 else
                 {
                     // Roundtripping a derived PromptExecutionSettings through the base type will have put all the

@@ -166,4 +166,20 @@ internal static class CosmosMongoCollectionSearchMapping
             }
         };
     }
+
+    /// <summary>Returns a $match stage to filter results by score threshold.</summary>
+    /// <remarks>
+    /// Cosmos MongoDB returns a similarity score where higher values mean more similar,
+    /// so we filter with $gte to keep results at or above the threshold.
+    /// </remarks>
+    public static BsonDocument GetScoreThresholdMatchQuery(string scorePropertyName, double scoreThreshold)
+        => new()
+        {
+            {
+                "$match", new BsonDocument
+                {
+                    { scorePropertyName, new BsonDocument { { "$gte", scoreThreshold } } }
+                }
+            }
+        };
 }

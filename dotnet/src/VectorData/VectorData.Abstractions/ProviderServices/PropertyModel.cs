@@ -55,6 +55,14 @@ public abstract class PropertyModel(string modelName, Type type)
     public PropertyInfo? PropertyInfo { get; set; }
 
     /// <summary>
+    /// Gets or sets a dictionary of provider-specific annotations for this property.
+    /// </summary>
+    /// <remarks>
+    /// This allows setting database-specific configuration options that aren't universal across all vector stores.
+    /// </remarks>
+    public Dictionary<string, object?>? ProviderAnnotations { get; set; }
+
+    /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
     /// </summary>
     public virtual object? GetValueAsObject(object record)

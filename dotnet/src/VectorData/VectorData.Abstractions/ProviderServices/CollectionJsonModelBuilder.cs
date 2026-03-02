@@ -27,19 +27,20 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
+    /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="recordType"/> and <paramref name="definition"/>.
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     public virtual CollectionModel Build(
-        Type type,
+        Type recordType,
+        Type keyType,
         VectorStoreCollectionDefinition? definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
 
-        return this.Build(type, definition, defaultEmbeddingGenerator);
+        return this.Build(recordType, keyType, definition, defaultEmbeddingGenerator);
     }
 
     /// <summary>

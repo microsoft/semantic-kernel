@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +44,11 @@ public sealed class SessionsPythonPluginTests : IDisposable
         this._settings = new(sessionId: Guid.NewGuid().ToString(), endpoint: new Uri(_spConfiguration.Endpoint))
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            // Enable file operations for integration tests
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = new[] { Path.GetFullPath("TestData") },
+            AllowedDownloadDirectories = new[] { Path.GetFullPath("TestData") }
         };
 
         this._httpClientFactory = new HttpClientFactory();

@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.98.0,<2",
+    "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -57,6 +57,7 @@ dependencies = [
     "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
+    "mcp>=1.26.0",
 ]
 
 ### Optional dependencies
@@ -160,9 +161,8 @@ weaviate = [
     "weaviate-client>=4.17.0,<5.0",
 ]
 
-[tool.uv]
-prerelease = "if-necessary-or-explicit"
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pre-commit ~= 3.7",
     "ipykernel ~= 6.29",
     "nbconvert ~= 7.16",
@@ -176,6 +176,9 @@ dev-dependencies = [
     "types-PyYAML ~= 6.0.12.20240311",
     "ruff ~= 0.9"
 ]
+
+[tool.uv]
+prerelease = "if-necessary-or-explicit"
 environments = [
     "sys_platform == 'darwin'",
     "sys_platform == 'linux'",

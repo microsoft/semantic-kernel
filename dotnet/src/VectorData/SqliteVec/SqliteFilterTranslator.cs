@@ -27,6 +27,20 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 // Microsoft.Data.Sqlite writes GUIDs as upper-case strings, align our constant formatting with that.
                 this._sql.Append('\'').Append(g.ToString().ToUpperInvariant()).Append('\'');
                 break;
+            case DateTime dateTime:
+                this._sql.Append('\'').Append(dateTime.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                break;
+            case DateTimeOffset dateTimeOffset:
+                this._sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFFzzz", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                break;
+#if NET
+            case DateOnly dateOnly:
+                this._sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                break;
+            case TimeOnly timeOnly:
+                this._sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                break;
+#endif
             default:
                 base.TranslateConstant(value, isSearchCondition);
                 break;
@@ -36,6 +50,10 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     // TODO: support Contains over array fields (#10343)
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
+
+    // TODO: support Any over array fields (#10343)
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+        => throw new NotSupportedException("Unsupported method call: Enumerable.Any");
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {

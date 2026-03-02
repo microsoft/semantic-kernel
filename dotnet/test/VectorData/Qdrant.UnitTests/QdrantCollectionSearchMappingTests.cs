@@ -119,6 +119,7 @@ public class QdrantCollectionSearchMappingTests
         var model = new QdrantModelBuilder(hasNamedVectors: false)
             .Build(
                 typeof(DataModel),
+                typeof(ulong),
                 new()
                 {
                     Properties =

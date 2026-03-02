@@ -92,6 +92,7 @@ internal static class MongoCollectionSearchMapping
         int numCandidates,
         BsonDocument? filter)
     {
+        // Docs: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage
         var searchQuery = new BsonDocument
         {
             { "index", indexName },
@@ -126,6 +127,22 @@ internal static class MongoCollectionSearchMapping
             }
         };
     }
+
+    /// <summary>Returns a $match stage to filter results by score threshold.</summary>
+    /// <remarks>
+    /// MongoDB Atlas Vector Search returns a similarity score where higher values mean more similar,
+    /// so we filter with $gte to keep results at or above the threshold.
+    /// </remarks>
+    public static BsonDocument GetScoreThresholdMatchQuery(string scorePropertyName, double scoreThreshold)
+        => new()
+        {
+            {
+                "$match", new BsonDocument
+                {
+                    { scorePropertyName, new BsonDocument { { "$gte", scoreThreshold } } }
+                }
+            }
+        };
 
     /// <summary>Returns a pipeline for hybrid search using vector search and full text search.</summary>
     public static BsonDocument[] GetHybridSearchPipeline<TVector>(

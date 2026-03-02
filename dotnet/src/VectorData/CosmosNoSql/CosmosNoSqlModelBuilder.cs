@@ -15,22 +15,38 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true,
         ReservedKeyStorageName = CosmosNoSqlConstants.ReservedKeyPropertyName
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "string, Guid";
+        // CosmosNoSqlKey is a composite key type (document ID + partition key) that doesn't correspond to any single key property type;
+        // skip the base TKey-to-key-property validation when it's used.
+        if (this.KeyType != typeof(CosmosNoSqlKey))
+        {
+            base.ValidateKeyProperty(keyProperty);
+        }
 
-        return type == typeof(string) || type == typeof(Guid);
+        // Note that the key property in Cosmos NoSQL refers to the document ID, not to the CosmosNoSqlKey structure which includes both
+        // the document ID and the partition key (and which is the generic TKey type parameter of the collection).
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid, int, long.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -48,11 +64,23 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
                type == typeof(long) ||
                type == typeof(float) ||
                type == typeof(double) ||
+               type == typeof(DateTime) ||
+#if NET
+               type == typeof(DateOnly) ||
+#endif
                type == typeof(DateTimeOffset);
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
         => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<byte>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<sbyte>>()
+    ];
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
