@@ -54,7 +54,6 @@ dependencies = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # Protobuf
-    "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
     "mcp>=1.26.0",
@@ -83,11 +82,6 @@ chroma = [
 copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
     "microsoft-agents-activity >= 0.3.1"
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
