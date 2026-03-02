@@ -47,7 +47,7 @@ jobs:
         run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Install the project (dapr tests)
         if: matrix.test-suite == 'dapr'
-        run: uv sync --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
+        run: uv sync --extras pandas --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
       - name: Test with pytest (all except dapr)
         if: matrix.test-suite == 'unit-all-except-dapr'
         env:
