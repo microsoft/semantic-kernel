@@ -43,7 +43,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     [InlineData("What is the capital of France?", "Paris", false, false)]
     public async Task OpenAIResponseAgentInvokeAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
 
         await this.ExecuteAgentAsync(
             client,
@@ -63,7 +63,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     public async Task OpenAIResponseAgentInvokeWithThreadAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
         OpenAIResponseAgent agent = new(client)
         {
             StoreEnabled = storeEnabled,
@@ -112,7 +112,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     public async Task OpenAIResponseAgentInvokeWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         OpenAIResponseAgent agent = new(client)
         {
@@ -161,7 +161,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     [InlineData("What is the capital of France?", "Paris", false, false)]
     public async Task OpenAIResponseAgentInvokeStreamingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
 
         await this.ExecuteStreamingAgentAsync(
             client,
@@ -181,7 +181,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     public async Task OpenAIResponseAgentInvokeStreamingWithThreadAsync(bool isOpenAI, bool storeEnabled)
     {
         // Arrange
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
         OpenAIResponseAgent agent = new(client)
         {
             StoreEnabled = storeEnabled,
@@ -229,7 +229,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     public async Task OpenAIResponseAgentInvokeStreamingWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
     {
         // Arrange
-        OpenAIResponseClient client = this.CreateClient(isOpenAI);
+        ResponsesClient client = this.CreateClient(isOpenAI);
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         OpenAIResponseAgent agent = new(client)
         {
@@ -273,7 +273,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     private bool EnableLogging { get; set; } = true;
 
     private async Task ExecuteAgentAsync(
-        OpenAIResponseClient client,
+        ResponsesClient client,
         bool storeEnabled,
         string input,
         string expected)
@@ -305,7 +305,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     }
 
     private async Task ExecuteStreamingAgentAsync(
-        OpenAIResponseClient client,
+        ResponsesClient client,
         bool storeEnabled,
         string input,
         string expected)
@@ -355,9 +355,9 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         return configuration;
     }
 
-    private OpenAIResponseClient CreateClient(bool isOpenAI)
+    private ResponsesClient CreateClient(bool isOpenAI)
     {
-        OpenAIResponseClient client;
+        ResponsesClient client;
         if (isOpenAI)
         {
             client = this.CreateClient(this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>());
@@ -370,7 +370,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         return client;
     }
 
-    private OpenAIResponseClient CreateClient(OpenAIConfiguration? configuration)
+    private ResponsesClient CreateClient(OpenAIConfiguration? configuration)
     {
         Assert.NotNull(configuration);
 
@@ -387,10 +387,10 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
             };
         }
 
-        return new OpenAIResponseClient(configuration.ChatModelId, new ApiKeyCredential(configuration.ApiKey), options);
+        return new ResponsesClient(configuration.ChatModelId, new ApiKeyCredential(configuration.ApiKey), options);
     }
 
-    private OpenAIResponseClient CreateClient(AzureOpenAIConfiguration? configuration)
+    private ResponsesClient CreateClient(AzureOpenAIConfiguration? configuration)
     {
         Assert.NotNull(configuration);
 
@@ -408,7 +408,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         }
 
         var azureClient = new AzureOpenAIClient(new Uri(configuration.Endpoint), new AzureCliCredential(), options);
-        return azureClient.GetOpenAIResponseClient(configuration.ChatDeploymentName);
+        return azureClient.GetResponsesClient(configuration.ChatDeploymentName);
     }
 
     public sealed class MenuPlugin

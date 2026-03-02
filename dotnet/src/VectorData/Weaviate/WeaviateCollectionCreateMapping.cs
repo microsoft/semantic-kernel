@@ -155,6 +155,9 @@ internal static class WeaviateCollectionCreateMapping
                 Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => "int",
                 Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "number",
                 Type t when t == typeof(DateTime) || t == typeof(DateTimeOffset) => "date",
+#if NET
+                Type t when t == typeof(DateOnly) => "date",
+#endif
                 Type t when t == typeof(Guid) => "uuid",
                 Type t when t == typeof(bool) => "boolean",
 

@@ -36,7 +36,6 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true
     };
 
@@ -77,7 +76,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisHashSetDynamicCollection)))
-                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }

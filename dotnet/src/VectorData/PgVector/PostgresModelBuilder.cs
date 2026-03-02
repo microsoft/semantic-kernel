@@ -18,7 +18,6 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 
@@ -27,6 +26,8 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(short)
@@ -65,6 +66,10 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
                 type == typeof(byte[]) ||
                 type == typeof(DateTime) ||
                 type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+                type == typeof(TimeOnly) ||
+#endif
                 type == typeof(Guid);
     }
 

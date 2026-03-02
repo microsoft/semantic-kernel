@@ -66,7 +66,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PineconeDynamicCollection)))
-                : new PineconeModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new PineconeModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
