@@ -59,7 +59,7 @@ jobs:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
-        if: ${{ !matrix.experimental }}
+        if: ${{ !matrix.experimental && matrix.test-suite == 'unit-all-except-dapr' }}
         uses: pmeier/pytest-results-action@v0.7.2
         with:
           path: python/pytest.xml
