@@ -755,6 +755,42 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(expected, actual);
     }
 
+    [Theory]
+    [InlineData("\"Sunday\"", DayOfWeek.Sunday)]
+    [InlineData("\"Monday\"", DayOfWeek.Monday)]
+    [InlineData("\"Thursday\"", DayOfWeek.Thursday)]
+    [InlineData("\"Saturday\"", DayOfWeek.Saturday)]
+    public async Task ItSupportsConvertingStringJsonElementToEnumAsync(string json, DayOfWeek expected)
+    {
+        // Arrange
+        object? actual = null;
+        var function = KernelFunctionFactory.CreateFromMethod((DayOfWeek dow) => actual = dow);
+
+        // Act — simulate LLM returning a string enum value as a JsonElement
+        var result = await function.InvokeAsync(this._kernel, new() { ["dow"] = JsonDocument.Parse(json).RootElement });
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public async Task ItSupportsConvertingStringEnumNestedInObjectFromJsonElementAsync()
+    {
+        // Arrange — matches the issue scenario: enum nested in an object, then in an array
+        TaskReminder[]? actual = null;
+        var function = KernelFunctionFactory.CreateFromMethod((TaskReminder[] reminders) => actual = reminders);
+        var json = """[{"unit":"Days","value":3}]""";
+
+        // Act — simulate LLM returning a JSON array with string enum values
+        var result = await function.InvokeAsync(this._kernel, new() { ["reminders"] = JsonDocument.Parse(json).RootElement });
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Single(actual);
+        Assert.Equal(ReminderUnit.Days, actual[0].Unit);
+        Assert.Equal(3, actual[0].Value);
+    }
+
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
@@ -1589,5 +1625,23 @@ public sealed class KernelFunctionFromMethodTests1
     private sealed class ThirdPartyJsonPrimitive(string jsonToReturn)
     {
         public override string ToString() => jsonToReturn;
+    }
+
+    private enum ReminderUnit
+    {
+        Minutes,
+        Hours,
+        Days,
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TaskReminder
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [JsonPropertyName("unit")]
+        public ReminderUnit Unit { get; set; }
+
+        [JsonPropertyName("value")]
+        public int Value { get; set; }
     }
 }

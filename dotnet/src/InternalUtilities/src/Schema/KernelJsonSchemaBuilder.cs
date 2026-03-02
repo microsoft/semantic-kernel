@@ -61,7 +61,7 @@ internal static class KernelJsonSchemaBuilder
 
     [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
-    private static JsonSerializerOptions GetDefaultOptions()
+    internal static JsonSerializerOptions GetDefaultOptions()
     {
         if (s_options is null)
         {
