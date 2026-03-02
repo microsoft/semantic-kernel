@@ -11,6 +11,7 @@ namespace Search;
 /// </summary>
 public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
+#pragma warning disable CS0618 // Suppress obsolete warnings for legacy TextSearchOptions/TextSearchFilter usage
     /// <summary>
     /// Show how to create a <see cref="BingTextSearch"/> and use it to perform a text search.
     /// </summary>
@@ -118,6 +119,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
             WriteHorizontalRule();
         }
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Show how to use enhanced LINQ filtering with BingTextSearch for type-safe searches.

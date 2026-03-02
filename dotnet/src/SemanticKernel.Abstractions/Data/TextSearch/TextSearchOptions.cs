@@ -50,6 +50,8 @@ public sealed class TextSearchOptions<TRecord>
 /// <summary>
 /// Options which can be applied when using <see cref="ITextSearch"/>.
 /// </summary>
+#pragma warning disable CS0618 // TextSearchFilter is obsolete - TextSearchOptions itself is obsolete
+[Obsolete("Use TextSearchOptions<TRecord> with ITextSearch<TRecord> instead. This type will be removed in a future version.")]
 public sealed class TextSearchOptions
 {
     /// <summary>

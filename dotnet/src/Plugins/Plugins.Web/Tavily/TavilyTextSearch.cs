@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// <summary>
 /// A Tavily Text Search implementation that can be used to perform searches using the Tavily Web Search API.
 /// </summary>
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+#pragma warning disable CS0618 // ITextSearch is obsolete
 public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
 #pragma warning restore CS0618
 {
@@ -44,6 +44,10 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
         this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
+
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause
+
+    #region Legacy ITextSearch Implementation
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
@@ -80,6 +84,10 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
 
         return new KernelSearchResults<object>(this.GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
+
+    #endregion
+
+#pragma warning restore CS0618
 
     #region Generic ITextSearch<TavilyWebPage> Implementation
 
@@ -160,28 +168,24 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     {
         switch (expression)
         {
-            case BinaryExpression binaryExpr:
-                if (binaryExpr.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse)
-                {
-                    // Handle AND/OR expressions by recursively analyzing both sides
-                    ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
-                    ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
-                }
-                else if (binaryExpr.NodeType == ExpressionType.Equal)
-                {
-                    ProcessEqualityClause(binaryExpr, filters);
-                }
-                else if (binaryExpr.NodeType == ExpressionType.NotEqual)
-                {
-                    ProcessInequalityClause(binaryExpr);
-                }
-                else
-                {
-                    throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
-                }
+            case BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse } binaryExpr:
+                // Handle AND/OR expressions by recursively analyzing both sides
+                ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
+                ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
                 break;
 
-            case UnaryExpression unaryExpr when unaryExpr.NodeType == ExpressionType.Not:
+            case BinaryExpression { NodeType: ExpressionType.Equal } binaryExpr:
+                ProcessEqualityClause(binaryExpr, filters);
+                break;
+
+            case BinaryExpression { NodeType: ExpressionType.NotEqual } binaryExpr:
+                ProcessInequalityClause(binaryExpr);
+                break;
+
+            case BinaryExpression binaryExpr:
+                throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
+
+            case UnaryExpression { NodeType: ExpressionType.Not } unaryExpr:
                 ProcessNotExpression(unaryExpr);
                 break;
 
@@ -306,29 +310,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
                     }
                 }
             }
-            else if (methodCall.Object == null && methodCall.Arguments.Count == 2)
-            {
-                // Static method: array.Contains(property) - NOT supported
-                string errorMessage = "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Tavily Search API. " +
-                    "Tavily's API does not support OR logic across multiple values. ";
-
-                if (IsMemoryExtensionsContains(methodCall))
-                {
-                    errorMessage += "Note: This occurs when using C# 14+ language features with span-based Contains methods (MemoryExtensions.Contains). ";
-                }
-                else
-                {
-                    errorMessage += "Note: This occurs with standard LINQ extension methods (Enumerable.Contains). ";
-                }
-
-                errorMessage += "Consider either: (1) performing multiple separate searches for each value, or " +
-                    "(2) retrieving broader results and filtering on the client side.";
-
-                throw new NotSupportedException(errorMessage);
-            }
             else
             {
-                throw new NotSupportedException("Unsupported Contains expression format.");
+                throw new NotSupportedException(
+                    "Collection Contains filters (e.g., array.Contains(page.Property)) are not supported by Tavily Search API. " +
+                    "Consider either: (1) performing multiple separate searches for each value, or " +
+                    "(2) retrieving broader results and filtering on the client side.");
             }
         }
         else
@@ -648,12 +635,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         }
     }
 
-#pragma warning disable CS0618 // FilterClause is obsolete - backward compatibility shim for legacy ITextSearch
     /// <summary>
     /// Extracts filter key-value pairs from a legacy <see cref="TextSearchFilter"/>.
     /// This shim converts the obsolete FilterClause-based format to the internal (FieldName, Value) list.
     /// It will be removed when the legacy ITextSearch interface is retired.
     /// </summary>
+#pragma warning disable CS0618 // Obsolete TextSearchFilter, FilterClause
     private static List<(string FieldName, object Value)> ExtractFiltersFromLegacy(TextSearchFilter? filter)
     {
         var filters = new List<(string FieldName, object Value)>();
@@ -664,6 +651,11 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
                 if (clause is EqualToFilterClause eq)
                 {
                     filters.Add((eq.FieldName, eq.Value));
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Filter clause type '{clause.GetType().Name}' is not supported by Tavily Text Search. Only EqualToFilterClause is supported.");
                 }
             }
         }
@@ -755,39 +747,5 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         return new(strPayload, Encoding.UTF8, "application/json");
     }
 
-    /// <summary>
-    /// Determines if a method call expression is a MemoryExtensions.Contains call (C# 14+ compatibility).
-    /// In C# 14+, array.Contains(property) may resolve to MemoryExtensions.Contains instead of Enumerable.Contains.
-    /// </summary>
-    /// <param name="methodCall">The method call expression to check.</param>
-    /// <returns>True if this is a MemoryExtensions.Contains call, false otherwise.</returns>
-    private static bool IsMemoryExtensionsContains(MethodCallExpression methodCall)
-    {
-        // Check if this is a static method call (Object is null)
-        if (methodCall.Object != null)
-        {
-            return false;
-        }
-
-        // Check if it's MemoryExtensions.Contains
-        if (methodCall.Method.DeclaringType?.Name != "MemoryExtensions")
-        {
-            return false;
-        }
-
-        // MemoryExtensions.Contains has 2-3 parameters: (ReadOnlySpan<T>, T) or (ReadOnlySpan<T>, T, IEqualityComparer<T>)
-        if (methodCall.Arguments.Count < 2 || methodCall.Arguments.Count > 3)
-        {
-            return false;
-        }        // For our text search scenarios, we don't support span comparers
-        if (methodCall.Arguments.Count == 3)
-        {
-            throw new NotSupportedException(
-                "MemoryExtensions.Contains with custom IEqualityComparer is not supported. " +
-                "Use simple array.Contains(property) expressions without custom comparers.");
-        }
-
-        return true;
-    }
     #endregion
 }

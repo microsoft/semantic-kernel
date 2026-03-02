@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
-#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+#pragma warning disable CS0618 // ITextSearch is obsolete
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
 #pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -59,12 +59,12 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+#pragma warning disable CS0618 // Chains to obsolete ITextEmbeddingGenerationService constructor
     public VectorStoreTextSearch(
         IVectorSearchable<TRecord> vectorSearchable,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
-#pragma warning disable CS0618 // Type or member is obsolete
         VectorStoreTextSearchOptions? options = null) :
         this(
             vectorSearchable,
@@ -72,9 +72,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             stringMapper,
             resultMapper,
             options)
-#pragma warning restore CS0618 // Type or member is obsolete
     {
     }
+#pragma warning restore CS0618
+
+#pragma warning disable CS0618 // Obsolete ITextEmbeddingGenerationService constructors
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
@@ -130,6 +132,8 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
 
+#pragma warning restore CS0618
+
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
@@ -175,6 +179,10 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
 
+#pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions
+
+    #region Legacy ITextSearch Implementation
+
     /// <inheritdoc/>
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
@@ -198,6 +206,10 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
     }
+
+    #endregion
+
+#pragma warning restore CS0618
 
     /// <inheritdoc/>
     Task<KernelSearchResults<string>> ITextSearch<TRecord>.SearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
@@ -224,8 +236,10 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     #region private
+#pragma warning disable CS0618 // Obsolete ITextEmbeddingGenerationService
     [Obsolete("This property is obsolete.")]
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
+#pragma warning restore CS0618
     private readonly IVectorSearchable<TRecord>? _vectorSearchable;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
@@ -272,6 +286,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         });
     }
 
+#pragma warning disable CS0618 // Obsolete TextSearchOptions, FilterClause
     /// <summary>
     /// Execute a vector search and return the results using legacy filtering for backward compatibility.
     /// Converts legacy <see cref="FilterClause"/> values to a LINQ expression tree for the modern
@@ -297,6 +312,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             yield return result;
         }
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Execute a vector search and return the results using modern LINQ filtering.
@@ -328,7 +344,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchCoreAsync(string query, VectorSearchOptions<TRecord> vectorSearchOptions, int top, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Obsolete _textEmbeddingGeneration backward compatibility
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -340,7 +356,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
             yield break;
         }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618
 
         await foreach (var result in this._vectorSearchable!.SearchAsync(query, top, vectorSearchOptions, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -436,6 +452,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
+#pragma warning disable CS0618 // Obsolete FilterClause, EqualToFilterClause
     /// <summary>
     /// Converts a collection of legacy <see cref="FilterClause"/> instances to a LINQ expression tree.
     /// </summary>
@@ -492,6 +509,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         return Expression.Lambda<Func<TRecord, bool>>(combined!, parameter);
     }
+#pragma warning restore CS0618
 
     #endregion
 }

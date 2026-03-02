@@ -12,7 +12,7 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
-#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
+#pragma warning disable CS0618 // Testing obsolete TextSearchFilter backward compatibility
     [Fact]
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
@@ -29,7 +29,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         // Assert.
         Assert.NotNull(sut);
     }
-#pragma warning restore CS0618
 
     [Fact]
     public void CanCreateVectorStoreTextSearchWithIVectorSearch()
@@ -129,7 +128,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         Assert.All(results, result => Assert.IsType<DataModelWithRawEmbedding>(result));
     }
 
-#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
     [Fact]
     public async Task CanSearchWithEmbeddingGenerationServiceAsync()
     {
@@ -168,7 +166,6 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         Assert.Equal(2, results.Count);
     }
-#pragma warning restore CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
 
     [Fact]
     public async Task CanFilterGetSearchResultsWithVectorizedSearchAsync()
@@ -208,6 +205,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         result2 = oddResults[1] as DataModel;
         Assert.Equal("Odd", result2?.Tag);
     }
+
+#pragma warning restore CS0618
 
     #region Generic Interface Tests (ITextSearch<TRecord>)
 
