@@ -221,17 +221,20 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"TestProperty1\"], @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
         Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
-        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], \"hybrid\"))", queryText);
+        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], @keyword0))", queryText);
         Assert.Contains("OFFSET 5 LIMIT 10", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
 
-        Assert.Equal("@cv0", queryParameters[1].Name);
-        Assert.Equal("test-value-2", queryParameters[1].Value);
+        Assert.Equal("@keyword0", queryParameters[1].Name);
+        Assert.Equal("hybrid", queryParameters[1].Value);
 
-        Assert.Equal("@cv1", queryParameters[2].Name);
-        Assert.Equal("test-value-3", queryParameters[2].Value);
+        Assert.Equal("@cv0", queryParameters[2].Name);
+        Assert.Equal("test-value-2", queryParameters[2].Value);
+
+        Assert.Equal("@cv1", queryParameters[3].Name);
+        Assert.Equal("test-value-3", queryParameters[3].Value);
     }
 
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
