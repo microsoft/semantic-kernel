@@ -90,7 +90,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         if not client:
             if google_ai_settings.use_vertexai and not google_ai_settings.cloud_project_id:
                 raise ServiceInitializationError("Project ID must be provided when use_vertexai is True.")
-            if not google_ai_settings.api_key:
+            if not google_ai_settings.use_vertexai and not google_ai_settings.api_key:
                 raise ServiceInitializationError("The API key is required when use_vertexai is False.")
 
         super().__init__(
