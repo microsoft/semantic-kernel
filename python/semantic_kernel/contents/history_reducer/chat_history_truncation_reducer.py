@@ -67,8 +67,9 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
         logger.info(f"Truncating history to {truncation_index} messages.")
         truncated_list = history[truncation_index:]
 
-        # Prepend the system/developer message if it was truncated away
-        if system_message is not None and system_message not in truncated_list:
+        # Prepend the system/developer message if it was truncated away.
+        # Use identity comparison (is) to avoid false matches from value-equal messages.
+        if system_message is not None and all(msg is not system_message for msg in truncated_list):
             truncated_list = [system_message, *truncated_list]
 
         self.messages = truncated_list

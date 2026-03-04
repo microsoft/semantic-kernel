@@ -154,19 +154,20 @@ async def test_truncation_preserves_developer_message():
 
 
 async def test_truncation_target_count_1_with_system_message():
-    """Verify target_count=1 with system message does not crash (edge case from review)."""
+    """With target_count=1 and a system message, reduce to just the system message."""
     reducer = ChatHistoryTruncationReducer(target_count=1, system_message="System prompt")
     reducer.add_message(ChatMessageContent(role=AuthorRole.USER, content="Hello"))
     reducer.add_message(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Hi"))
     reducer.add_message(ChatMessageContent(role=AuthorRole.USER, content="How are you?"))
     reducer.add_message(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Good"))
 
-    # Should not crash. Either returns None (no reduction possible)
-    # or returns just the system message.
     result = await reducer.reduce()
-    if result is not None:
-        # System message must be preserved
-        assert any(m.role == AuthorRole.SYSTEM for m in result.messages)
+    # Must reduce — history has 5 messages but target is 1
+    assert result is not None
+    # Should contain only the system message
+    assert len(result.messages) == 1
+    assert result.messages[0].role == AuthorRole.SYSTEM
+    assert result.messages[0].content == "System prompt"
 
 
 async def test_truncation_without_system_message():

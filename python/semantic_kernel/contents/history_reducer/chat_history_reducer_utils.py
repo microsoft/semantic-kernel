@@ -97,7 +97,9 @@ def locate_safe_reduction_index(
     if has_system_message:
         target_count -= 1
         if target_count <= 0:
-            return None  # Cannot reduce further; only system message would remain
+            # Reduce to just the system message — return index past all non-system messages.
+            # The caller will prepend the system message to the empty/minimal tail.
+            return len(history)
 
     total_count = len(history)
     threshold_index = total_count - (threshold_count or 0) - target_count
