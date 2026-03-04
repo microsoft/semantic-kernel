@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// When configured, these options help prevent Server-Side Request Forgery (SSRF) attacks
 /// by restricting which URLs the plugin is allowed to call.
 /// </summary>
+[Experimental("SKEXP0040")]
 public class RestApiOperationServerUrlValidationOptions
 {
     /// <summary>
