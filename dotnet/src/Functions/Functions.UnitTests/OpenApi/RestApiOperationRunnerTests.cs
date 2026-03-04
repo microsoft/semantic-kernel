@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections;
@@ -1906,6 +1906,183 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Assert
         Assert.Same(httpResponseStream, response.Content);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestWhenNoValidationOptionsConfiguredAsync()
+    {
+        // Arrange - no validation options (default behavior)
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("http://internal-service:8080")],
+            path: "/api/data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act & Assert - should not throw
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockRequestWithDisallowedSchemeAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("http://api.example.com")],
+            path: "/api/data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions();
+        // Default AllowedSchemes is ["https"], so "http" should be blocked.
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("http", exception.Message);
+        Assert.Contains("not allowed", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestWithAllowedSchemeAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com")],
+            path: "/api/data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions();
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockRequestNotMatchingAllowedBaseUrlsAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://evil.com")],
+            path: "/steal-data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("not allowed", exception.Message);
+        Assert.Contains("does not match", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestMatchingAllowedBaseUrlsAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com")],
+            path: "/users",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockCloudMetadataEndpointAsync()
+    {
+        // Arrange - simulate SSRF targeting cloud metadata
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://169.254.169.254")],
+            path: "/latest/meta-data/",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+    }
+
+    [Fact]
+    public async Task ItShouldAllowCustomSchemesWhenConfiguredAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("http://api.example.com")],
+            path: "/api/data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedSchemes = ["http", "https"],
+            AllowedBaseUrls = [new Uri("http://api.example.com")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw
+        await sut.RunAsync(operation, []);
     }
 
     /// <summary>
