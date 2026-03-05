@@ -39,8 +39,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
-        //const string KeywordsVariableName = "@keywords";
+        const string KeywordVariablePrefix = "@keyword";
 
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
 
@@ -52,15 +51,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         var fieldsArgument = projectionProperties.Select(p => GeneratePropertyAccess(tableVariableName, p.StorageName));
         var vectorDistanceArgument = $"VectorDistance({GeneratePropertyAccess(tableVariableName, vectorPropertyName)}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
-
-        // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
-        var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
-        var formattedKeywords = sanitizedKeywords is not null ? $"\"{string.Join("\", \"", sanitizedKeywords)}\"" : null;
-        var fullTextScoreArgument = textPropertyName is not null && keywords is not null
-            ? $"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}, {formattedKeywords})"
-            : null;
-
-        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         var selectClauseArguments = string.Join(",", [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
@@ -85,6 +75,25 @@ internal static class CosmosNoSqlCollectionQueryBuilder
                 _ => vector
             }
         };
+
+        string? fullTextScoreArgument = null;
+        if (textPropertyName is not null && keywords is not null)
+        {
+            var fullTextScoreBuilder = new StringBuilder();
+            fullTextScoreBuilder.Append($"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}");
+            var i = 0;
+            foreach (var keyword in keywords)
+            {
+                var paramName = $"{KeywordVariablePrefix}{i}";
+                fullTextScoreBuilder.Append(", ").Append(paramName);
+                queryParameters[paramName] = keyword;
+                i++;
+            }
+            fullTextScoreBuilder.Append(')');
+            fullTextScoreArgument = fullTextScoreBuilder.ToString();
+        }
+
+        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         // Add score threshold filter if specified.
         // For similarity functions (CosineSimilarity, DotProductSimilarity), higher scores are better, so filter with >=.
@@ -143,12 +152,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             // so directly add it to the query here.
             builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
-
-        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
-        //if (fullTextScoreArgument is not null)
-        //{
-        //    queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
-        //}
 
         var queryDefinition = new QueryDefinition(builder.ToString());
 
