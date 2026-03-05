@@ -79,8 +79,8 @@ def _sanitize_node(node: dict[str, Any]) -> dict[str, Any]:
             node["nullable"] = True
         node["type"] = non_null[0] if non_null else "string"
 
-    # --- handle ``anyOf`` / ``oneOf`` ---
-    for key in ("anyOf", "oneOf"):
+    # --- handle ``anyOf`` / ``oneOf`` / ``allOf`` ---
+    for key in ("anyOf", "oneOf", "allOf"):
         variants = node.get(key)
         if not variants:
             continue
