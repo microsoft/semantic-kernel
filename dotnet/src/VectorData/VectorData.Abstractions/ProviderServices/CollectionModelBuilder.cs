@@ -57,14 +57,7 @@ public abstract class CollectionModelBuilder
     /// Constructs a new <see cref="CollectionModelBuilder"/>.
     /// </summary>
     protected CollectionModelBuilder(CollectionModelBuildingOptions options)
-    {
-        if (options.SupportsMultipleKeys && options.ReservedKeyStorageName is not null)
-        {
-            throw new ArgumentException($"{nameof(CollectionModelBuildingOptions.ReservedKeyStorageName)} cannot be set when {nameof(CollectionModelBuildingOptions.SupportsMultipleKeys)} is set.");
-        }
-
-        this.Options = options;
-    }
+        => this.Options = options;
 
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
@@ -419,7 +412,7 @@ public abstract class CollectionModelBuilder
     /// </summary>
     protected virtual void Validate(Type? type, VectorStoreCollectionDefinition? definition)
     {
-        if (!this.Options.SupportsMultipleKeys && this.KeyProperties.Count > 1)
+        if (this.KeyProperties.Count > 1)
         {
             throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while only one is supported.");
         }

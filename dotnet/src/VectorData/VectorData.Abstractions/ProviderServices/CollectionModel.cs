@@ -77,7 +77,6 @@ public sealed class CollectionModel
 
     /// <summary>
     /// Returns the single key property in the model, and throws if there are multiple key properties.
-    /// Suitable for connectors where validation is in place for single keys only (<see cref="CollectionModelBuildingOptions.SupportsMultipleKeys"/>).
     /// </summary>
     public KeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
 

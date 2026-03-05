@@ -209,11 +209,11 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
 
         public virtual VectorStoreCollection<TKey, Record<TKey>> CreateCollection<TKey>(bool? withAutoGeneration)
             where TKey : notnull
-            => this.TestStore.DefaultVectorStore.GetCollection<TKey, Record<TKey>>(this.CollectionName, this.CreateRecordDefinition<TKey>(withAutoGeneration));
+            => this.TestStore.CreateCollection<TKey, Record<TKey>>(this.CollectionName, this.CreateRecordDefinition<TKey>(withAutoGeneration));
 
         public virtual VectorStoreCollection<object, Dictionary<string, object?>> CreateDynamicCollection<TKey>(bool withAutoGeneration)
             where TKey : notnull
-            => this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition<TKey>(withAutoGeneration));
+            => this.TestStore.CreateDynamicCollection(this.CollectionName, this.CreateRecordDefinition<TKey>(withAutoGeneration));
 
         public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TKey>(bool? withAutoGeneration)
             where TKey : notnull

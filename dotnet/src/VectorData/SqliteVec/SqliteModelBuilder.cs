@@ -14,7 +14,6 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 

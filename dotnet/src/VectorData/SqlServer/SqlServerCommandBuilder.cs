@@ -18,13 +18,15 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class SqlServerCommandBuilder
 {
-    internal static SqlCommand CreateTable(
+    internal static List<SqlCommand> CreateTable(
         SqlConnection connection,
         string? schema,
         string tableName,
         bool ifNotExists,
         CollectionModel model)
     {
+        List<SqlCommand> commands = [];
+
         StringBuilder sb = new(200);
         if (ifNotExists)
         {
@@ -90,17 +92,6 @@ internal static class SqlServerCommandBuilder
             }
         }
 
-        foreach (var vectorProperty in model.VectorProperties)
-        {
-            switch (vectorProperty.IndexKind)
-            {
-                case IndexKind.Flat or null or "": // TODO: Move to early validation
-                    break;
-                default:
-                    throw new NotSupportedException($"Index kind {vectorProperty.IndexKind} is not supported.");
-            }
-        }
-
         // Create full-text catalog and index for properties marked as IsFullTextIndexed
         var fullTextProperties = new List<DataPropertyModel>();
         foreach (var dataProperty in model.DataProperties)
@@ -145,7 +136,45 @@ internal static class SqlServerCommandBuilder
 
         sb.Append("END;");
 
-        return connection.CreateCommand(sb);
+        commands.Add(connection.CreateCommand(sb));
+
+        // CREATE VECTOR INDEX must be in a separate batch from CREATE TABLE.
+        // It is also a preview feature in SQL Server 2025, requiring PREVIEW_FEATURES to be enabled.
+        bool hasVectorIndex = false;
+        foreach (var vectorProperty in model.VectorProperties)
+        {
+            switch (vectorProperty.IndexKind)
+            {
+                case IndexKind.Flat or null or "":
+                    continue;
+
+                case IndexKind.DiskAnn:
+                    if (!hasVectorIndex)
+                    {
+                        SqlCommand enablePreview = connection.CreateCommand();
+                        enablePreview.CommandText = "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;";
+                        commands.Add(enablePreview);
+                        hasVectorIndex = true;
+                    }
+
+                    string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
+                    (string distanceMetric, _) = MapDistanceFunction(distanceFunction);
+
+                    StringBuilder vectorIndexSb = new(200);
+                    vectorIndexSb.Append("CREATE VECTOR INDEX ");
+                    vectorIndexSb.AppendIndexName(tableName, vectorProperty.StorageName);
+                    vectorIndexSb.Append(" ON ").AppendTableName(schema, tableName);
+                    vectorIndexSb.Append('(').AppendIdentifier(vectorProperty.StorageName).Append(')');
+                    vectorIndexSb.Append(" WITH (METRIC = '").Append(distanceMetric).AppendLine("', TYPE = 'DISKANN');");
+                    commands.Add(connection.CreateCommand(vectorIndexSb));
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Index kind '{vectorProperty.IndexKind}' is not supported by the SQL Server connector.");
+            }
+        }
+
+        return commands;
     }
 
     internal static SqlCommand DropTableIfExists(SqlConnection connection, string? schema, string tableName)
@@ -414,6 +443,21 @@ internal static class SqlServerCommandBuilder
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         (string distanceMetric, string sorting) = MapDistanceFunction(distanceFunction);
 
+        return UseVectorSearch(vectorProperty)
+            ? SelectVectorWithVectorSearch(connection, schema, tableName, vectorProperty, model, top, options, vector, distanceMetric, sorting)
+            : SelectVectorWithVectorDistance(connection, schema, tableName, vectorProperty, model, top, options, vector, distanceMetric, sorting);
+    }
+
+    private static SqlCommand SelectVectorWithVectorDistance<TRecord>(
+        SqlConnection connection, string? schema, string tableName,
+        VectorPropertyModel vectorProperty,
+        CollectionModel model,
+        int top,
+        VectorSearchOptions<TRecord> options,
+        SqlVector<float> vector,
+        string distanceMetric,
+        string sorting)
+    {
         SqlCommand command = connection.CreateCommand();
         command.Parameters.AddWithValue("@vector", vector);
 
@@ -467,6 +511,60 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
+    /// <summary>
+    /// Generates a SELECT query using the VECTOR_SEARCH() function for approximate nearest neighbor search
+    /// when the vector property has a vector index (e.g. DiskANN).
+    /// </summary>
+    private static SqlCommand SelectVectorWithVectorSearch<TRecord>(
+        SqlConnection connection, string? schema, string tableName,
+        VectorPropertyModel vectorProperty,
+        CollectionModel model,
+        int top,
+        VectorSearchOptions<TRecord> options,
+        SqlVector<float> vector,
+        string distanceMetric,
+        string sorting)
+    {
+        // VECTOR_SEARCH() currently only supports post-filtering (TOP_N candidates are returned first,
+        // then predicates are applied). Pre-filtering is not supported.
+        if (options.Filter is not null)
+        {
+            throw new NotSupportedException(
+                "Filtering is not supported with approximate vector search (VECTOR_SEARCH). " +
+                "Remove the filter or use IndexKind.Flat for exact search with VECTOR_DISTANCE.");
+        }
+
+        SqlCommand command = connection.CreateCommand();
+        command.Parameters.AddWithValue("@vector", vector);
+
+        StringBuilder sb = new(300);
+
+        // VECTOR_SEARCH returns all columns from the table plus a 'distance' column.
+        // We select the needed columns from the table alias and alias 'distance' as 'score'.
+        sb.Append("SELECT ");
+        sb.AppendIdentifiers(model.Properties, prefix: "t.", includeVectors: options.IncludeVectors);
+        sb.AppendLine(",");
+        sb.AppendLine("s.[distance] AS [score]");
+        sb.Append("FROM VECTOR_SEARCH(TABLE = ");
+        sb.AppendTableName(schema, tableName);
+        sb.Append(" AS t, COLUMN = ").AppendIdentifier(vectorProperty.StorageName);
+        sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).Append('\'');
+        sb.Append(", TOP_N = ").Append(top + options.Skip).AppendLine(") AS s");
+
+        if (options.ScoreThreshold is not null)
+        {
+            command.Parameters.AddWithValue("@scoreThreshold", options.ScoreThreshold!.Value);
+            sb.AppendLine("WHERE s.[distance] <= @scoreThreshold");
+        }
+
+        sb.AppendFormat("ORDER BY [score] {0}", sorting);
+        sb.AppendLine();
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
     internal static SqlCommand SelectHybrid<TRecord>(
         SqlConnection connection, string? schema, string tableName,
         VectorPropertyModel vectorProperty,
@@ -477,6 +575,17 @@ internal static class SqlServerCommandBuilder
         SqlVector<float> vector,
         string keywords)
     {
+        bool useVectorSearch = UseVectorSearch(vectorProperty);
+
+        // VECTOR_SEARCH() currently only supports post-filtering (TOP_N candidates are returned first,
+        // then predicates are applied). Pre-filtering is not supported.
+        if (useVectorSearch && options.Filter is not null)
+        {
+            throw new NotSupportedException(
+                "Filtering is not supported with approximate vector search (VECTOR_SEARCH). " +
+                "Remove the filter or use IndexKind.Flat for exact search with VECTOR_DISTANCE.");
+        }
+
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         (string distanceMetric, _) = MapDistanceFunction(distanceFunction);
 
@@ -531,36 +640,54 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine("),");
 
         // CTE 2: Semantic/vector search
-        sb.AppendLine("semantic_search AS (");
-        sb.AppendLine("    SELECT TOP(@candidateCount)");
-        sb.Append("        ").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
-        sb.AppendLine("        RANK() OVER (ORDER BY cosine_distance) AS [rank]");
-        sb.AppendLine("    FROM (");
-        sb.AppendLine("        SELECT TOP(@candidateCount)");
-        sb.Append("            w.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
-        sb.Append("            VECTOR_DISTANCE('").Append(distanceMetric).Append("', ")
-            .AppendIdentifier(vectorProperty.StorageName)
-            .Append(", CAST(@vector AS VECTOR(").Append(vector.Length).AppendLine("))) AS cosine_distance");
-        sb.Append("        FROM ").AppendTableName(schema, tableName).AppendLine(" w");
-
-        // Apply filter to semantic search if specified
-        if (options.Filter is not null)
+        if (useVectorSearch)
         {
-            // We need to re-translate the filter for the semantic search CTE
-            // The parameters are already added from keyword search, so we start fresh for this CTE
-            int filterParamStart = command.Parameters.Count;
-            SqlServerFilterTranslator translator = new(model, options.Filter, sb, startParamIndex: filterParamStart, tableAlias: "w");
-            translator.Translate(appendWhere: true);
-            foreach (object parameter in translator.ParameterValues)
-            {
-                command.AddParameter(property: null, $"@_{filterParamStart++}", parameter);
-            }
-            sb.AppendLine();
+            // Use VECTOR_SEARCH() for approximate nearest neighbor search with a vector index
+            sb.AppendLine("semantic_search AS (");
+            sb.AppendLine("    SELECT TOP(@candidateCount)");
+            sb.Append("        t.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
+            sb.AppendLine("        RANK() OVER (ORDER BY s.[distance]) AS [rank]");
+            sb.AppendLine("    FROM VECTOR_SEARCH(TABLE = ");
+            sb.Append("        ").AppendTableName(schema, tableName);
+            sb.Append(" AS t, COLUMN = ").AppendIdentifier(vectorProperty.StorageName);
+            sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).Append('\'');
+            sb.Append(", TOP_N = @candidateCount").AppendLine(") AS s");
+            sb.AppendLine("),");
         }
+        else
+        {
+            // Use VECTOR_DISTANCE() for exact brute-force search (flat index / no index)
+            sb.AppendLine("semantic_search AS (");
+            sb.AppendLine("    SELECT TOP(@candidateCount)");
+            sb.Append("        ").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
+            sb.AppendLine("        RANK() OVER (ORDER BY cosine_distance) AS [rank]");
+            sb.AppendLine("    FROM (");
+            sb.AppendLine("        SELECT TOP(@candidateCount)");
+            sb.Append("            w.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
+            sb.Append("            VECTOR_DISTANCE('").Append(distanceMetric).Append("', ")
+                .AppendIdentifier(vectorProperty.StorageName)
+                .Append(", CAST(@vector AS VECTOR(").Append(vector.Length).AppendLine("))) AS cosine_distance");
+            sb.Append("        FROM ").AppendTableName(schema, tableName).AppendLine(" w");
 
-        sb.AppendLine("        ORDER BY cosine_distance");
-        sb.AppendLine("    ) AS similar_documents");
-        sb.AppendLine("),");
+            // Apply filter to semantic search if specified
+            if (options.Filter is not null)
+            {
+                // We need to re-translate the filter for the semantic search CTE
+                // The parameters are already added from keyword search, so we start fresh for this CTE
+                int filterParamStart = command.Parameters.Count;
+                SqlServerFilterTranslator translator = new(model, options.Filter, sb, startParamIndex: filterParamStart, tableAlias: "w");
+                translator.Translate(appendWhere: true);
+                foreach (object parameter in translator.ParameterValues)
+                {
+                    command.AddParameter(property: null, $"@_{filterParamStart++}", parameter);
+                }
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("        ORDER BY cosine_distance");
+            sb.AppendLine("    ) AS similar_documents");
+            sb.AppendLine("),");
+        }
 
         // CTE 3: Combined results with RRF scoring
         sb.AppendLine("hybrid_result AS (");
@@ -901,4 +1028,11 @@ internal static class SqlServerCommandBuilder
         DistanceFunction.NegativeDotProductSimilarity => ("DOT", "ASC"),
         _ => throw new NotSupportedException($"Distance function {name} is not supported.")
     };
+
+    /// <summary>
+    /// Returns whether VECTOR_SEARCH() (approximate/indexed search) should be used for the given vector property,
+    /// as opposed to VECTOR_DISTANCE() (exact/brute-force search).
+    /// </summary>
+    private static bool UseVectorSearch(VectorPropertyModel vectorProperty)
+        => vectorProperty.IndexKind is not (null or "" or IndexKind.Flat);
 }

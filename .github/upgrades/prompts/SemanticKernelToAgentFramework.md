@@ -870,20 +870,16 @@ var agentOptions = new ChatClientAgentRunOptions(new ChatOptions
 {
     MaxOutputTokens = 8000,
     // Breaking glass to access provider-specific options
-    RawRepresentationFactory = (_) => new OpenAI.Responses.ResponseCreationOptions()
+    RawRepresentationFactory = (_) => new OpenAI.Responses.CreateResponseOptions()
     {
-        ReasoningOptions = new()
-        {
-            ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-            ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-        }
+        TruncationMode = OpenAI.Responses.ResponseTruncationMode.Auto,
     }
 });
 ```
 
 **Use this pattern when:**
 1. Standard `ChatOptions` properties don't cover required model settings
-2. Provider-specific configuration is needed (e.g., reasoning effort level)
+2. Provider-specific configuration is needed (e.g., truncation mode)
 3. Advanced SDK features need to be accessed
 </configuration_changes>
 

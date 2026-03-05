@@ -20,11 +20,11 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         var store = (CosmosNoSqlTestStore)fixture.TestStore;
         var collectionName = fixture.TestStore.AdjustCollectionName("PartitionKeyCompositeKey");
 
-        using VectorStoreCollection<CosmosNoSqlCompositeKey, PartitionedHotel> collection =
-            new CosmosNoSqlCollection<CosmosNoSqlCompositeKey, PartitionedHotel>(
-                store.Database,
-                collectionName,
-                new() { PartitionKeyPropertyName = nameof(PartitionedHotel.HotelName) });
+        // The key type for operations is CosmosNoSqlKey (containing both document ID and partition key).
+        using var collection = new CosmosNoSqlCollection<CosmosNoSqlKey, PartitionedHotel>(
+            store.Database,
+            collectionName,
+            new() { PartitionKeyProperties = [nameof(PartitionedHotel.HotelName)] });
 
         await collection.EnsureCollectionExistsAsync();
 
@@ -39,7 +39,7 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
             };
 
             await collection.UpsertAsync(record);
-            var key = new CosmosNoSqlCompositeKey(record.HotelId, record.HotelName);
+            var key = new CosmosNoSqlKey(record.HotelId, record.HotelName);
 
             var fetched = await collection.GetAsync(key, new() { IncludeVectors = true });
             Assert.NotNull(fetched);

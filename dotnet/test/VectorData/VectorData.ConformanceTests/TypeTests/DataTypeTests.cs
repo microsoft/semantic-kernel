@@ -192,7 +192,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
             await fixture.TestStore.WaitForDataAsync(fixture.Collection, recordCount: 0);
         }
 
-        var dynamicCollection = fixture.VectorStore.GetDynamicCollection(fixture.CollectionName, fixture.CreateRecordDefinition());
+        var dynamicCollection = fixture.CreateDynamicCollection(fixture.CollectionName, fixture.CreateRecordDefinition());
 
         if (fixture.RecreateCollection)
         {

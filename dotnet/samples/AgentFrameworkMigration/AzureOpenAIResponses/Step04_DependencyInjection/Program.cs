@@ -28,7 +28,7 @@ async Task SKAgentAsync()
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<Microsoft.SemanticKernel.Agents.Agent>((sp)
         => new OpenAIResponseAgent(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName))
+        .GetResponsesClient(deploymentName))
         {
             Name = "Joker",
             Instructions = "You are good at telling jokes.",
@@ -49,7 +49,7 @@ async Task SKAgent_As_AFAgentAsync()
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<Microsoft.SemanticKernel.Agents.Agent>((sp)
         => new OpenAIResponseAgent(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName))
+        .GetResponsesClient(deploymentName))
         {
             Name = "Joker",
             Instructions = "You are good at telling jokes.",
@@ -71,7 +71,7 @@ async Task AFAgentAsync()
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<AIAgent>((sp) => new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName)
+        .GetResponsesClient(deploymentName)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();

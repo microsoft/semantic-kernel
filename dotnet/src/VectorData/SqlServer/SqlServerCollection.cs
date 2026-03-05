@@ -116,18 +116,24 @@ public class SqlServerCollection<TKey, TRecord>
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand command = SqlServerCommandBuilder.CreateTable(
+        List<SqlCommand> commands = SqlServerCommandBuilder.CreateTable(
             connection,
             this._schema,
             this.Name,
             ifNotExists,
             this._model);
 
-        await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "CreateCollection",
-            () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+        foreach (SqlCommand command in commands)
+        {
+            using (command)
+            {
+                await connection.ExecuteWithErrorHandlingAsync(
+                    this._collectionMetadata,
+                    "CreateCollection",
+                    () => command.ExecuteNonQueryAsync(cancellationToken),
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc/>

@@ -16,7 +16,6 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };

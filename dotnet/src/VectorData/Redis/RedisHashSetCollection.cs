@@ -36,7 +36,6 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true
     };
 

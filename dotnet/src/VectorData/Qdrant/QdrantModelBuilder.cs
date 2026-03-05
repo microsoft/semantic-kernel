@@ -16,7 +16,6 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
         => new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors,
         };
 

@@ -29,7 +29,7 @@ await AFAgentAsync();
 async Task SKAgentAsync()
 {
     OpenAIResponseAgent agent = new(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName))
+        .GetResponsesClient(deploymentName))
     { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -49,7 +49,7 @@ async Task SKAgentAsync()
 async Task SKAgent_As_AFAgentAsync()
 {
     OpenAIResponseAgent skAgent = new(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName))
+        .GetResponsesClient(deploymentName))
     { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -66,7 +66,7 @@ async Task SKAgent_As_AFAgentAsync()
 async Task AFAgentAsync()
 {
     var agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetOpenAIResponseClient(deploymentName)
+        .GetResponsesClient(deploymentName)
         .CreateAIAgent(instructions: "You are a helpful assistant", tools: [AIFunctionFactory.Create(GetWeather)]);
 
     Console.WriteLine("\n=== AF Agent Response ===\n");

@@ -23,7 +23,6 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true,
     };
