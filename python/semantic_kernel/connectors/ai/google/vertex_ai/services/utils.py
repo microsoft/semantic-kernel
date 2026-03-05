@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from google.cloud.aiplatform_v1beta1.types.content import Candidate
 from vertexai.generative_models import FunctionDeclaration, Part, Tool, ToolConfig
@@ -136,10 +136,11 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 
 def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> FunctionDeclaration:
     """Convert the kernel function metadata to function calling format."""
-    properties = {}
-    for param in metadata.parameters:
-        prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
-        properties[param.name] = prop_schema
+    properties: dict[str, Any] = {}
+    if metadata.parameters:
+        for param in metadata.parameters:
+            prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
+            properties[param.name] = prop_schema
     return FunctionDeclaration(
         name=metadata.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR),
         description=metadata.description or "",

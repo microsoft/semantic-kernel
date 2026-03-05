@@ -7,6 +7,7 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
+    kernel_function_metadata_to_google_ai_function_call_format,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -16,6 +17,8 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
 def test_finish_reason_from_google_ai_to_semantic_kernel():
@@ -113,3 +116,42 @@ def test_format_assistant_message_with_unsupported_items() -> None:
 
     with pytest.raises(ServiceInvalidRequestError):
         format_assistant_message(assistant_message)
+
+
+def test_google_ai_function_call_format_sanitizes_anyof_schema() -> None:
+    """Integration test: anyOf in param schema_data is sanitized in the output dict."""
+    metadata = KernelFunctionMetadata(
+        name="test_func",
+        description="A test function",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="messages",
+                description="The user messages",
+                is_required=True,
+                schema_data={
+                    "anyOf": [
+                        {"type": "string"},
+                        {"type": "array", "items": {"type": "string"}},
+                    ],
+                    "description": "The user messages",
+                },
+            ),
+        ],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    param_schema = result["parameters"]["properties"]["messages"]
+    assert "anyOf" not in param_schema
+    assert param_schema["type"] == "string"
+
+
+def test_google_ai_function_call_format_empty_parameters() -> None:
+    """Integration test: metadata with no parameters produces parameters=None."""
+    metadata = KernelFunctionMetadata(
+        name="no_params_func",
+        description="No parameters",
+        is_prompt=False,
+        parameters=[],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    assert result["parameters"] is None

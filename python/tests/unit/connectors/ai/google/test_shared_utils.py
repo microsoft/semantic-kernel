@@ -211,3 +211,56 @@ def test_sanitize_schema_agent_messages_param():
     assert "anyOf" not in result
     assert result["type"] == "string"
     assert result["description"] == "The user messages for the agent."
+
+
+def test_sanitize_schema_allof():
+    """allOf should be handled like anyOf/oneOf, picking the first variant."""
+    schema = {
+        "allOf": [
+            {"type": "object", "properties": {"name": {"type": "string"}}},
+            {"type": "object", "properties": {"age": {"type": "integer"}}},
+        ],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert "allOf" not in result
+    assert result["type"] == "object"
+    assert "name" in result["properties"]
+
+
+def test_sanitize_schema_allof_with_null():
+    """allOf with a null variant should produce nullable: true."""
+    schema = {
+        "allOf": [{"type": "string"}, {"type": "null"}],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert "allOf" not in result
+    assert result["type"] == "string"
+    assert result["nullable"] is True
+
+
+def test_sanitize_schema_all_null_type_list():
+    """type: ["null"] should fall back to type: "string" + nullable: true."""
+    schema = {"type": ["null"]}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True}
+
+
+def test_sanitize_schema_all_null_anyof():
+    """anyOf where all variants are null should fall back to type: "string"."""
+    schema = {"anyOf": [{"type": "null"}]}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True}
+
+
+def test_sanitize_schema_chosen_variant_keeps_own_description():
+    """When the chosen anyOf variant has its own description, do not overwrite it."""
+    schema = {
+        "anyOf": [
+            {"type": "string", "description": "inner desc"},
+            {"type": "null"},
+        ],
+        "description": "outer desc",
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result["description"] == "inner desc"
+    assert result["nullable"] is True
