@@ -103,15 +103,15 @@ public class KernelJsonSchemaTests
         var jsonSchemaString = schema?.ToString();
 
         Assert.NotNull(jsonSchemaString);
-        Assert.Contains("Status", jsonSchemaString); 
-        Assert.DoesNotContain("Derived", jsonSchemaString); 
+        Assert.Contains("Status", jsonSchemaString);
+        Assert.DoesNotContain("Derived", jsonSchemaString);
     }
 
     /// <summary>
     /// A helper class specific to this test case.
     /// Used to verify that read-only properties are ignored by the schema generator.
     /// </summary>
-    private class MyComplexType
+    private sealed class MyComplexType
     {
         [Description("The current status of the user account")]
         public MyStatus Status { get; set; }
