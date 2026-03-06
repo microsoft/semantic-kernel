@@ -94,6 +94,7 @@ async def test_trace_chat_completion(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    mock_span = mock_start_span.return_value
 
     with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
@@ -174,6 +175,7 @@ async def test_trace_chat_completion_exception(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    mock_span = mock_start_span.return_value
 
     with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied

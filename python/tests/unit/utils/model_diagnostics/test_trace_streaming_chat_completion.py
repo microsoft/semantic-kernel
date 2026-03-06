@@ -100,6 +100,7 @@ async def test_trace_streaming_chat_completion(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    mock_span = mock_start_span.return_value
     iterable = MagicMock(spec=AsyncGenerator)
     iterable.__aiter__.return_value = [mock_response]
 
@@ -189,6 +190,7 @@ async def test_trace_streaming_chat_completion_exception(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    mock_span = mock_start_span.return_value
 
     with patch.object(
         MockChatCompletion, "_inner_get_streaming_chat_message_contents", side_effect=ServiceResponseException()
