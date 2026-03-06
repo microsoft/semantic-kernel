@@ -44,8 +44,10 @@ public static class ChatContentMessageExtensions
     public static ResponseItem ToResponseItem(this ChatMessageContent message)
     {
         var items = message.Items;
-        IEnumerable<ResponseContentPart> contentParts = items.Select(item => item.ToResponseContentPart());
-        return message.Role.Label.ToUpperInvariant() switch
+        var roleLabel = message.Role.Label.ToUpperInvariant();
+
+        IEnumerable<ResponseContentPart> contentParts = items.Select(item => item.ToResponseContentPart(roleLabel == "ASSISTANT"));
+        return roleLabel switch
         {
             "SYSTEM" => ResponseItem.CreateSystemMessageItem(contentParts),
             "USER" => ResponseItem.CreateUserMessageItem(contentParts),
