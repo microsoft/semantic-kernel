@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     collapse_function_call_results_in_chat_history,
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
+    sanitize_schema_for_google_ai,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -94,3 +95,172 @@ def test_collapse_function_call_results_in_chat_history() -> None:
     collapse_function_call_results_in_chat_history(chat_history)
     assert len(chat_history.messages) == 7
     assert len(chat_history.messages[1].items) == 2
+
+
+# --- sanitize_schema_for_google_ai tests ---
+
+
+def test_sanitize_schema_none():
+    assert sanitize_schema_for_google_ai(None) is None
+
+
+def test_sanitize_schema_simple_passthrough():
+    schema = {"type": "string", "description": "A name"}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "description": "A name"}
+
+
+def test_sanitize_schema_type_as_list_with_null():
+    """type: ["string", "null"] should become type: "string" + nullable: true."""
+    schema = {"type": ["string", "null"], "description": "Optional field"}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True, "description": "Optional field"}
+
+
+def test_sanitize_schema_type_as_list_without_null():
+    """type: ["string", "integer"] should pick the first type."""
+    schema = {"type": ["string", "integer"]}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string"}
+
+
+def test_sanitize_schema_anyof_with_null():
+    """anyOf with null variant should become the non-null type + nullable."""
+    schema = {
+        "anyOf": [{"type": "string"}, {"type": "null"}],
+        "description": "Optional param",
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True, "description": "Optional param"}
+
+
+def test_sanitize_schema_anyof_without_null():
+    """anyOf without null should pick the first variant."""
+    schema = {
+        "anyOf": [
+            {"type": "string"},
+            {"type": "array", "items": {"type": "string"}},
+        ],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string"}
+
+
+def test_sanitize_schema_oneof():
+    """oneOf should be handled the same as anyOf."""
+    schema = {
+        "oneOf": [{"type": "integer"}, {"type": "null"}],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "integer", "nullable": True}
+
+
+def test_sanitize_schema_nested_properties():
+    """anyOf inside nested properties should be sanitized recursively."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "value": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+        },
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "value": {"type": "number", "nullable": True},
+        },
+    }
+
+
+def test_sanitize_schema_nested_items():
+    """anyOf inside array items should be sanitized recursively."""
+    schema = {
+        "type": "array",
+        "items": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {
+        "type": "array",
+        "items": {"type": "string"},
+    }
+
+
+def test_sanitize_schema_does_not_mutate_original():
+    """The original schema dict should not be modified."""
+    schema = {
+        "anyOf": [{"type": "string"}, {"type": "null"}],
+        "description": "test",
+    }
+    original = {"anyOf": [{"type": "string"}, {"type": "null"}], "description": "test"}
+    sanitize_schema_for_google_ai(schema)
+    assert schema == original
+
+
+def test_sanitize_schema_agent_messages_param():
+    """Reproducer for issue #12442: str | list[str] parameter schema."""
+    schema = {
+        "anyOf": [
+            {"type": "string"},
+            {"type": "array", "items": {"type": "string"}},
+        ],
+        "description": "The user messages for the agent.",
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert "anyOf" not in result
+    assert result["type"] == "string"
+    assert result["description"] == "The user messages for the agent."
+
+
+def test_sanitize_schema_allof():
+    """allOf should be handled like anyOf/oneOf, picking the first variant."""
+    schema = {
+        "allOf": [
+            {"type": "object", "properties": {"name": {"type": "string"}}},
+            {"type": "object", "properties": {"age": {"type": "integer"}}},
+        ],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert "allOf" not in result
+    assert result["type"] == "object"
+    assert "name" in result["properties"]
+
+
+def test_sanitize_schema_allof_with_null():
+    """allOf with a null variant should produce nullable: true."""
+    schema = {
+        "allOf": [{"type": "string"}, {"type": "null"}],
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert "allOf" not in result
+    assert result["type"] == "string"
+    assert result["nullable"] is True
+
+
+def test_sanitize_schema_all_null_type_list():
+    """type: ["null"] should fall back to type: "string" + nullable: true."""
+    schema = {"type": ["null"]}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True}
+
+
+def test_sanitize_schema_all_null_anyof():
+    """anyOf where all variants are null should fall back to type: "string"."""
+    schema = {"anyOf": [{"type": "null"}]}
+    result = sanitize_schema_for_google_ai(schema)
+    assert result == {"type": "string", "nullable": True}
+
+
+def test_sanitize_schema_chosen_variant_keeps_own_description():
+    """When the chosen anyOf variant has its own description, do not overwrite it."""
+    schema = {
+        "anyOf": [
+            {"type": "string", "description": "inner desc"},
+            {"type": "null"},
+        ],
+        "description": "outer desc",
+    }
+    result = sanitize_schema_for_google_ai(schema)
+    assert result["description"] == "inner desc"
+    assert result["nullable"] is True
