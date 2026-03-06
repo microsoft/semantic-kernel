@@ -27,6 +27,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
     /// <remarks>
     /// This <paramref name="bearerTokenProvider"/> will be called on every request,
@@ -41,7 +42,8 @@ public static class VertexAIServiceCollectionExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(modelId);
@@ -57,7 +59,8 @@ public static class VertexAIServiceCollectionExtensions
                 projectId: projectId,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
     }
 
     /// <summary>
@@ -71,6 +74,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddVertexAIEmbeddingGenerator(
         this IServiceCollection services,
@@ -80,7 +84,8 @@ public static class VertexAIServiceCollectionExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(modelId);
@@ -96,6 +101,7 @@ public static class VertexAIServiceCollectionExtensions
                 projectId: projectId,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
     }
 }

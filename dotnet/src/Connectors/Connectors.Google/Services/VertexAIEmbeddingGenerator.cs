@@ -28,6 +28,7 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     public VertexAIEmbeddingGenerator(
         string modelId,
         string bearerKey,
@@ -35,8 +36,9 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
+        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory, dimensions)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         this._generator = new VertexAITextEmbeddingGenerationService(
@@ -46,7 +48,8 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             projectId: projectId,
             apiVersion: apiVersion,
             httpClient: httpClient,
-            loggerFactory: loggerFactory)
+            loggerFactory: loggerFactory,
+            dimensions: dimensions)
             .AsEmbeddingGenerator();
 #pragma warning restore CS0618 // Type or member is obsolete
     }
@@ -61,6 +64,7 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <remarks>
     /// This <paramref name="bearerTokenProvider"/> will be called on every request,
     /// when providing the token consider using caching strategy and refresh token logic
@@ -73,7 +77,8 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         this._generator = new VertexAITextEmbeddingGenerationService(
@@ -83,7 +88,8 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             projectId: projectId,
             apiVersion: apiVersion,
             httpClient: httpClient,
-            loggerFactory: loggerFactory)
+            loggerFactory: loggerFactory,
+            dimensions: dimensions)
             .AsEmbeddingGenerator();
 #pragma warning restore CS0618 // Type or member is obsolete
     }
