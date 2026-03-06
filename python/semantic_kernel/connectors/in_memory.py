@@ -2,8 +2,8 @@
 
 import ast
 import sys
-from collections.abc import AsyncIterable, Callable, Sequence
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from collections.abc import AsyncIterable, Callable, Mapping, Sequence
+from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
 from pydantic import Field
@@ -77,6 +77,33 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
         """Allow deleting dict keys via attribute access."""
         try:
             del self[name]
+        except KeyError:
+            raise AttributeError(name)
+
+
+class ReadOnlyAttributeDict(Mapping[TAKey, TAValue], Generic[TAKey, TAValue]):
+    """A read-only mapping that allows attribute access to keys."""
+
+    def __init__(self, data: Mapping[TAKey, TAValue]):
+        """Initialize the read-only mapping wrapper."""
+        self._data = data
+
+    def __getitem__(self, key: TAKey) -> TAValue:
+        """Get a value by key."""
+        return self._data[key]
+
+    def __iter__(self):
+        """Iterate over keys."""
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        """Return the number of keys."""
+        return len(self._data)
+
+    def __getattr__(self, name: str) -> TAValue:
+        """Allow attribute-style access to mapping keys."""
+        try:
+            return self._data[cast(TAKey, name)]
         except KeyError:
             raise AttributeError(name)
 
@@ -187,6 +214,8 @@ class InMemoryCollection(
         "__getattribute__",
         "__setattr__",
         "__delattr__",
+        "__setitem__",
+        "__delitem__",
         # Import and builtins
         "__builtins__",
         "__import__",
@@ -431,13 +460,18 @@ class InMemoryCollection(
 
             # For Call nodes, validate that only allowed functions are called
             if isinstance(node, ast.Call):
-                func_name = None
+                func_name: str
                 if isinstance(node.func, ast.Name):
                     func_name = node.func.id
                 elif isinstance(node.func, ast.Attribute):
                     func_name = node.func.attr
+                else:
+                    raise VectorStoreOperationException(
+                        f"Call target node type '{type(node.func).__name__}' is not allowed in filter expressions. "
+                        "Only direct function and method calls are supported."
+                    )
 
-                if func_name and func_name not in self.allowed_filter_functions:
+                if func_name not in self.allowed_filter_functions:
                     raise VectorStoreOperationException(
                         f"Function '{func_name}' is not allowed in filter expressions. "
                         f"Allowed functions: {', '.join(sorted(self.allowed_filter_functions))}"
@@ -457,7 +491,7 @@ class InMemoryCollection(
     def _run_filter(self, filter: Callable, record: AttributeDict[TAKey, TAValue]) -> bool:
         """Run the filter on the record, supporting attribute access."""
         try:
-            return filter(record)
+            return filter(ReadOnlyAttributeDict(record))
         except Exception as e:
             raise VectorStoreOperationException(f"Error running filter: {e}") from e
 
