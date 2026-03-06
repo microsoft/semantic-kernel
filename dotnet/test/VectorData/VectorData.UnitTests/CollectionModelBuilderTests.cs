@@ -416,12 +416,11 @@ public class CollectionModelBuilderTests
                 || type == typeof(Half[]);
         }
 
-        protected override Type? ResolveEmbeddingType(
-            VectorPropertyModel vectorProperty,
-            IEmbeddingGenerator embeddingGenerator,
-            Type? userRequestedEmbeddingType)
-            => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-                ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType);
+        protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+        [
+            EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+            EmbeddingGenerationDispatcher.Create<Embedding<Half>>()
+        ];
     }
 
     private sealed class FakeEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>
