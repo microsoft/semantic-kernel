@@ -207,33 +207,16 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         string? extraWhereFilter = null;
         Dictionary<string, object>? extraParameters = null;
 
-        if (options.OldFilter is not null)
-        {
-            if (options.Filter is not null)
-            {
-                throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
-            }
-
-            // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(options.OldFilter, this._dataTableName);
-
-            if (filterConditions is { Count: > 0 })
-            {
-                conditions.AddRange(filterConditions);
-            }
-        }
-        else if (options.Filter is not null)
+        if (options.Filter is not null)
         {
             SqliteFilterTranslator translator = new(this._model, options.Filter);
             translator.Translate(appendWhere: false);
             extraWhereFilter = translator.Clause.ToString();
             extraParameters = translator.Parameters;
         }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
         await foreach (var record in this.EnumerateAndMapSearchResultsAsync(
             conditions,
@@ -695,45 +678,6 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         return Task.WhenAll(tasks);
     }
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    private List<SqliteWhereCondition>? GetFilterConditions(VectorSearchFilter? filter, string? tableName = null)
-    {
-        var filterClauses = filter?.FilterClauses.ToList();
-
-        if (filterClauses is not { Count: > 0 })
-        {
-            return null;
-        }
-
-        var conditions = new List<SqliteWhereCondition>();
-
-        foreach (var filterClause in filterClauses)
-        {
-            if (filterClause is EqualToFilterClause equalToFilterClause)
-            {
-                if (!this._model.PropertyMap.TryGetValue(equalToFilterClause.FieldName, out var property))
-                {
-                    throw new InvalidOperationException($"Property name '{equalToFilterClause.FieldName}' provided as part of the filter clause is not a valid property name.");
-                }
-
-                conditions.Add(new SqliteWhereEqualsCondition(property.StorageName, equalToFilterClause.Value)
-                {
-                    TableName = tableName
-                });
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
-                        nameof(EqualToFilterClause)])}");
-            }
-        }
-
-        return conditions;
-    }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Gets vector table name.

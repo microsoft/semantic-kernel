@@ -541,7 +541,6 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
         object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery(
             vector,
             null,
@@ -550,13 +549,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             vectorProperty.DistanceFunction,
             textPropertyName: null,
             ScorePropertyName,
-            options.OldFilter,
             options.Filter,
             options.ScoreThreshold,
             top,
             options.Skip,
             options.IncludeVectors);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
 
@@ -645,7 +642,6 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<TRecord>(
             vector,
             keywords,
@@ -654,13 +650,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             vectorProperty.DistanceFunction,
             textProperty.StorageName,
             ScorePropertyName,
-            options.OldFilter,
             options.Filter,
             options.ScoreThreshold,
             top,
             options.Skip,
             options.IncludeVectors);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
 

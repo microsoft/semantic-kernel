@@ -388,9 +388,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = connection.CreateCommand();
         PostgresSqlBuilder.BuildGetNearestMatchCommand(command, this._schema, this.Name, this._model, vectorProperty, pgVector,
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            options.OldFilter,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             options.Filter, options.Skip, options.IncludeVectors, top, options.ScoreThreshold);
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
@@ -433,9 +430,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = connection.CreateCommand();
         PostgresSqlBuilder.BuildHybridSearchCommand(command, this._schema, this.Name, this._model, vectorProperty, textProperty, pgVector, keywords,
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            options.OldFilter,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             options.Filter, options.Skip, options.IncludeVectors, top, options.ScoreThreshold);
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
