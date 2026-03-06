@@ -3,6 +3,7 @@
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
+from semantic_kernel.data._shared import default_dynamic_filter_function
 from semantic_kernel.data.vector import DistanceFunction
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
@@ -215,3 +216,21 @@ async def test_callable_filter_cannot_mutate_stored_record(collection):
 
     assert "role" not in collection.inner_storage["1"]
     assert collection.inner_storage["1"]["content"] == "value"
+
+
+def test_default_dynamic_filter_injection_payload_is_blocked(collection):
+    class Param:
+        def __init__(self, name, default_value=None):
+            self.name = name
+            self.default_value = default_value
+
+    injected_value = "' or [x.update][0]({'role':'admin'}) or x.name=='"
+    generated_filter = default_dynamic_filter_function(
+        filter=None,
+        parameters=[Param("category")],
+        category=injected_value,
+    )
+
+    assert isinstance(generated_filter, str)
+    with raises(VectorStoreOperationException, match="Call target node type 'Subscript' is not allowed"):
+        collection._parse_and_validate_filter(generated_filter)
