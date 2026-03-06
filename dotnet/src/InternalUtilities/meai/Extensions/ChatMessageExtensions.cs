@@ -35,14 +35,8 @@ internal static class ChatMessageExtensions
                 Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(uc.Uri),
                 Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
                 Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
-                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(
-                    functionName: fcc.Name,
-                    id: fcc.CallId,
-                    arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
-                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(
-                    functionName: GetFunctionCallContent(frc.CallId)?.Name,
-                    callId: frc.CallId,
-                    result: frc.Result),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => CreateFunctionCallContent(fcc),
+                Microsoft.Extensions.AI.FunctionResultContent frc => CreateFunctionResultContent(frc),
                 _ => null
             };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -57,6 +51,33 @@ internal static class ChatMessageExtensions
         }
 
         return result;
+
+        Microsoft.SemanticKernel.FunctionCallContent CreateFunctionCallContent(Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+        {
+            var parsedName = FunctionName.Parse(functionCallContent.Name ?? string.Empty);
+
+            return new Microsoft.SemanticKernel.FunctionCallContent(
+                functionName: parsedName.Name,
+                pluginName: parsedName.PluginName,
+                id: functionCallContent.CallId,
+                arguments: functionCallContent.Arguments is not null ? new(functionCallContent.Arguments) : null);
+        }
+
+        Microsoft.SemanticKernel.FunctionResultContent CreateFunctionResultContent(Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+        {
+            FunctionName? parsedName = null;
+
+            if (GetFunctionCallContent(functionResultContent.CallId) is { } functionCallContent)
+            {
+                parsedName = FunctionName.Parse(functionCallContent.Name ?? string.Empty);
+            }
+
+            return new Microsoft.SemanticKernel.FunctionResultContent(
+                functionName: parsedName?.Name,
+                pluginName: parsedName?.PluginName,
+                callId: functionResultContent.CallId,
+                result: functionResultContent.Result);
+        }
 
         Microsoft.Extensions.AI.FunctionCallContent? GetFunctionCallContent(string callId)
             => response?.Messages
