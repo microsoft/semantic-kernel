@@ -304,8 +304,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                     items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
                 elif part.function_call:
                     fc_metadata: dict[str, Any] = {}
-                    if part.thought_signature:
-                        fc_metadata["thought_signature"] = part.thought_signature
+                    thought_sig = getattr(part, "thought_signature", None)
+                    if thought_sig:
+                        fc_metadata["thought_signature"] = thought_sig
                     items.append(
                         FunctionCallContent(
                             id=f"{part.function_call.name}_{idx!s}",
@@ -365,8 +366,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                     )
                 elif part.function_call:
                     fc_metadata: dict[str, Any] = {}
-                    if part.thought_signature:
-                        fc_metadata["thought_signature"] = part.thought_signature
+                    thought_sig = getattr(part, "thought_signature", None)
+                    if thought_sig:
+                        fc_metadata["thought_signature"] = thought_sig
                     items.append(
                         FunctionCallContent(
                             id=f"{part.function_call.name}_{idx!s}",

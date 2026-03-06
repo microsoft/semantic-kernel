@@ -156,4 +156,4 @@ def test_format_assistant_message_without_thought_signature() -> None:
     assert isinstance(formatted[0], Part)
     assert formatted[0].function_call.name == "test_function"
     assert formatted[0].function_call.args == {"arg1": "value1"}
-    assert not formatted[0].thought_signature
+    assert not getattr(formatted[0], "thought_signature", None)
