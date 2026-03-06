@@ -54,67 +54,29 @@ internal static class ChatMessageExtensions
 
         Microsoft.SemanticKernel.FunctionCallContent CreateFunctionCallContent(Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
         {
-            var (functionName, pluginName) = ParseFunctionName(functionCallContent.Name);
+            var parsedName = FunctionName.Parse(functionCallContent.Name ?? string.Empty);
 
             return new Microsoft.SemanticKernel.FunctionCallContent(
-                functionName: functionName,
-                pluginName: pluginName,
+                functionName: parsedName.Name,
+                pluginName: parsedName.PluginName,
                 id: functionCallContent.CallId,
                 arguments: functionCallContent.Arguments is not null ? new(functionCallContent.Arguments) : null);
         }
 
         Microsoft.SemanticKernel.FunctionResultContent CreateFunctionResultContent(Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
         {
-            string? functionName = null;
-            string? pluginName = null;
+            FunctionName? parsedName = null;
 
             if (GetFunctionCallContent(functionResultContent.CallId) is { } functionCallContent)
             {
-                (functionName, pluginName) = ParseFunctionName(functionCallContent.Name);
+                parsedName = FunctionName.Parse(functionCallContent.Name ?? string.Empty);
             }
 
             return new Microsoft.SemanticKernel.FunctionResultContent(
-                functionName: functionName,
-                pluginName: pluginName,
+                functionName: parsedName?.Name,
+                pluginName: parsedName?.PluginName,
                 callId: functionResultContent.CallId,
                 result: functionResultContent.Result);
-        }
-
-        static (string FunctionName, string? PluginName) ParseFunctionName(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return (string.Empty, null);
-            }
-
-            // Most connectors use "." or "-" as the fully-qualified separator.
-            var parsed = FunctionName.Parse(name, ".");
-            if (!string.IsNullOrEmpty(parsed.PluginName))
-            {
-                return (parsed.Name, parsed.PluginName);
-            }
-
-            parsed = FunctionName.Parse(name, "-");
-            if (!string.IsNullOrEmpty(parsed.PluginName))
-            {
-                return (parsed.Name, parsed.PluginName);
-            }
-
-            // Some Ollama models return tool names as "<plugin>_<FunctionName>".
-            int underscore = name.IndexOf('_');
-            if (underscore > 0 &&
-                underscore == name.LastIndexOf('_') &&
-                underscore + 1 < name.Length &&
-                char.IsUpper(name[underscore + 1]))
-            {
-                parsed = FunctionName.Parse(name, "_");
-                if (!string.IsNullOrEmpty(parsed.PluginName))
-                {
-                    return (parsed.Name, parsed.PluginName);
-                }
-            }
-
-            return (name, null);
         }
 
         Microsoft.Extensions.AI.FunctionCallContent? GetFunctionCallContent(string callId)
