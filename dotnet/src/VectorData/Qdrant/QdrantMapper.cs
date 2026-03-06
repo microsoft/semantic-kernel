@@ -134,9 +134,9 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                     record,
                     (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
                     {
-                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(value.Data.ToArray()),
-                        var t when t == typeof(Embedding<float>) => new Embedding<float>(value.Data.ToArray()),
-                        var t when t == typeof(float[]) => value.Data.ToArray(),
+                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(value.Dense.Data.ToArray()),
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(value.Dense.Data.ToArray()),
+                        var t when t == typeof(float[]) => value.Dense.Data.ToArray(),
 
                         _ => throw new UnreachableException()
                     });
