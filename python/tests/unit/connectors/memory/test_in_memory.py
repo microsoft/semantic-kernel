@@ -172,3 +172,46 @@ async def test_multiple_filters(collection):
     results = collection._get_filtered_records(type("opt", (), {"filter": filters})())
     assert len(results) == 1
     assert "1" in results
+
+
+@mark.parametrize(
+    "filter_str",
+    [
+        "lambda x: [x.clear][0]() or True",
+        "lambda x: [x.update][0]({'role': 'admin'}) or True",
+        "lambda x: [x.pop][0]('secret', '') or True",
+        "lambda x: [x.__setitem__][0]('leaked', ['{0.__class__.__mro__}'.format][0](x)) or True",
+    ],
+)
+def test_malicious_subscript_call_patterns_blocked(collection, filter_str):
+    with raises(VectorStoreOperationException, match="Call target node type 'Subscript' is not allowed"):
+        collection._parse_and_validate_filter(filter_str)
+
+
+def test_direct_mutating_method_call_remains_blocked(collection):
+    with raises(VectorStoreOperationException, match="Function 'clear' is not allowed"):
+        collection._parse_and_validate_filter("lambda x: x.clear() or True")
+
+
+async def test_valid_lambda_filter_with_get_method(collection):
+    record1 = {"id": "1", "vector": [1, 2, 3, 4, 5]}
+    record2 = {"id": "2", "vector": [5, 4, 3, 2, 1]}
+    await collection.upsert([record1, record2])
+    results = collection._get_filtered_records(type("opt", (), {"filter": "lambda x: x.get('id') == '1'"})())
+    assert len(results) == 1
+    assert "1" in results
+
+
+async def test_callable_filter_cannot_mutate_stored_record(collection):
+    record = {"id": "1", "content": "value", "vector": [1, 2, 3, 4, 5]}
+    await collection.upsert(record)
+
+    def mutating_filter(x):
+        x["role"] = "admin"
+        return True
+
+    with raises(VectorStoreOperationException, match="Error running filter"):
+        collection._get_filtered_records(type("opt", (), {"filter": mutating_filter})())
+
+    assert "role" not in collection.inner_storage["1"]
+    assert collection.inner_storage["1"]["content"] == "value"
