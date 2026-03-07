@@ -738,7 +738,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                     return jsonStringParser(element.GetString()!);
                 }
 
-                if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
+                if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions ?? KernelJsonSchemaBuilder.GetDefaultOptions(), out var deserializedValue))
                 {
                     return deserializedValue;
                 }
