@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import concurrent.futures
 import logging
 from collections.abc import Callable
 from html import escape
 from typing import TYPE_CHECKING, Any
-
-import nest_asyncio
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import (
@@ -78,9 +77,6 @@ def _create_sync_template_helper_from_function(
     if template_format not in [JINJA2_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME]:
         raise ValueError(f"Invalid template format: {template_format}")
 
-    if not getattr(asyncio, "_nest_patched", False):
-        nest_asyncio.apply()
-
     def func(*args, **kwargs):
         arguments = KernelArguments()
         if base_arguments and base_arguments.execution_settings:
@@ -105,7 +101,15 @@ def _create_sync_template_helper_from_function(
             f"with args: {actual_args} and kwargs: {kwargs} and this: {this}."
         )
 
-        result = asyncio.run(function.invoke(kernel=kernel, arguments=arguments))
+        coro = function.invoke(kernel=kernel, arguments=arguments)
+        try:
+            asyncio.get_running_loop()
+            # Already in an event loop - run in a separate thread to avoid nested loop issues
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                result = executor.submit(asyncio.run, coro).result()
+        except RuntimeError:
+            # No event loop running - safe to use asyncio.run()
+            result = asyncio.run(coro)
         if allow_dangerously_set_content:
             return result
         return escape(str(result))
