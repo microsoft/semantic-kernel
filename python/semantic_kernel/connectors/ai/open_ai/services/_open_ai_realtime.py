@@ -23,8 +23,8 @@ from aiortc import (
 from av.audio.frame import AudioFrame
 from numpy import ndarray
 from openai._models import construct_type_unchecked
-from openai.resources.beta.realtime.realtime import AsyncRealtimeConnection
-from openai.types.beta.realtime import (
+from openai.resources.realtime.realtime import AsyncRealtimeConnection
+from openai.types.realtime import (
     ConversationItemCreateEvent,
     ConversationItemDeleteEvent,
     ConversationItemTruncateEvent,
@@ -32,13 +32,16 @@ from openai.types.beta.realtime import (
     InputAudioBufferClearEvent,
     InputAudioBufferCommitEvent,
     RealtimeClientEvent,
+    RealtimeConversationItemFunctionCall,
+    RealtimeConversationItemFunctionCallOutput,
+    RealtimeConversationItemUserMessage,
+    RealtimeResponseCreateParams,
     RealtimeServerEvent,
     ResponseCancelEvent,
     ResponseCreateEvent,
     ResponseFunctionCallArgumentsDoneEvent,
     SessionUpdateEvent,
 )
-from openai.types.beta.realtime.response_create_event import Response
 from pydantic import Field, PrivateAttr
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -163,9 +166,15 @@ def _create_openai_realtime_client_event(event_type: SendEvents | str, **kwargs:
         case SendEvents.SESSION_UPDATE:
             if "session" not in kwargs:
                 raise ContentException("Session is required for SessionUpdateEvent")
+            session_dict = kwargs.pop("session")
+            # Create proper RealtimeSessionCreateRequest with required type field for SDK validation
+            # The OpenAI SDK will handle the proper serialization for the API
+            from openai.types.realtime import RealtimeSessionCreateRequest
+
+            session_request = RealtimeSessionCreateRequest(type="realtime", **session_dict)
             return SessionUpdateEvent(
                 type=event_type.value,
-                session=kwargs.pop("session"),
+                session=session_request,
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_APPEND:
@@ -206,7 +215,9 @@ def _create_openai_realtime_client_event(event_type: SendEvents | str, **kwargs:
             )
         case SendEvents.RESPONSE_CREATE:
             if "response" in kwargs:
-                response: Response | None = Response.model_validate(kwargs.pop("response"))
+                response: RealtimeResponseCreateParams | None = RealtimeResponseCreateParams.model_validate(
+                    kwargs.pop("response")
+                )
             else:
                 response = None
             return ResponseCreateEvent(
@@ -244,12 +255,12 @@ class ListenEvents(str, Enum):
     RESPONSE_OUTPUT_ITEM_DONE = "response.output_item.done"
     RESPONSE_CONTENT_PART_ADDED = "response.content_part.added"
     RESPONSE_CONTENT_PART_DONE = "response.content_part.done"
-    RESPONSE_TEXT_DELTA = "response.text.delta"
-    RESPONSE_TEXT_DONE = "response.text.done"
-    RESPONSE_AUDIO_TRANSCRIPT_DELTA = "response.audio_transcript.delta"
-    RESPONSE_AUDIO_TRANSCRIPT_DONE = "response.audio_transcript.done"
-    RESPONSE_AUDIO_DELTA = "response.audio.delta"
-    RESPONSE_AUDIO_DONE = "response.audio.done"
+    RESPONSE_TEXT_DELTA = "response.output_text.delta"
+    RESPONSE_TEXT_DONE = "response.output_text.done"
+    RESPONSE_AUDIO_TRANSCRIPT_DELTA = "response.output_audio_transcript.delta"
+    RESPONSE_AUDIO_TRANSCRIPT_DONE = "response.output_audio_transcript.done"
+    RESPONSE_AUDIO_DELTA = "response.output_audio.delta"
+    RESPONSE_AUDIO_DONE = "response.output_audio.done"
     RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA = "response.function_call_arguments.delta"
     RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE = "response.function_call_arguments.done"
     RATE_LIMITS_UPDATED = "rate_limits.updated"
@@ -291,7 +302,12 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         might be of different types.
         """
         match event.type:
-            case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
+            case (
+                ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value
+                | "response.audio_transcript.delta"
+                | ListenEvents.RESPONSE_TEXT_DELTA.value
+                | "response.text.delta"
+            ):
                 yield RealtimeTextEvent(
                     service_type=event.type,
                     service_event=event,
@@ -301,6 +317,16 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         choice_index=0,
                     ),
                 )
+            case (
+                ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DONE.value
+                | "response.audio_transcript.done"
+                | ListenEvents.RESPONSE_TEXT_DONE.value
+                | "response.text.done"
+            ):
+                # Don't yield RealtimeTextEvent here — the deltas already streamed all
+                # the text.  Emitting the full text again would cause duplicate output
+                # for any consumer that prints every RealtimeTextEvent.
+                yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED.value:
                 if event.item.type == "function_call" and event.item.call_id and event.item.name:  # type: ignore
                     self._call_id_to_function_map[event.item.call_id] = event.item.name  # type: ignore
@@ -323,7 +349,9 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                     if parsed_event:
                         yield parsed_event
             case ListenEvents.ERROR.value:
-                logger.error("Error received: %s", event.error.model_dump_json())  # type: ignore
+                # In GA API, event.error is a dict instead of an object
+                error_info = event.error if isinstance(event.error, dict) else event.error.model_dump()  # type: ignore
+                logger.error("Error received: %s", error_info)  # type: ignore
                 yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.SESSION_CREATED.value | ListenEvents.SESSION_UPDATED.value:
                 logger.info("Session created or updated, session: %s", event.session.model_dump_json())  # type: ignore
@@ -483,43 +511,43 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        item={
-                            "type": "message",
-                            "content": [
+                        item=RealtimeConversationItemUserMessage(
+                            type="message",
+                            content=[
                                 {
                                     "type": "input_text",
                                     "text": event.text.text,
                                 }
                             ],
-                            "role": "user",
-                        },
+                            role="user",
+                        ),
                     )
                 )
             case RealtimeFunctionCallEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        item={
-                            "type": "function_call",
-                            "name": event.function_call.name or event.function_call.function_name,
-                            "arguments": ""
+                        item=RealtimeConversationItemFunctionCall(
+                            type="function_call",
+                            name=event.function_call.name or event.function_call.function_name,
+                            arguments=""
                             if not event.function_call.arguments
                             else event.function_call.arguments
                             if isinstance(event.function_call.arguments, str)
                             else json.dumps(event.function_call.arguments),
-                            "call_id": event.function_call.metadata.get("call_id"),
-                        },
+                            call_id=event.function_call.metadata.get("call_id"),
+                        ),
                     )
                 )
             case RealtimeFunctionResultEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        item={
-                            "type": "function_call_output",
-                            "output": event.function_result.result,
-                            "call_id": event.function_result.metadata.get("call_id"),
-                        },
+                        item=RealtimeConversationItemFunctionCallOutput(
+                            type="function_call_output",
+                            output=event.function_result.result,
+                            call_id=event.function_result.metadata.get("call_id"),
+                        ),
                     )
                 )
             case _:
@@ -575,32 +603,32 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            item={
-                                                "type": "message",
-                                                "content": [
+                                            item=RealtimeConversationItemUserMessage(
+                                                type="message",
+                                                content=[
                                                     {
                                                         "type": "input_text",
                                                         "text": item.text,
                                                     }
                                                 ],
-                                                "role": "user",
-                                            },
+                                                role="user",
+                                            ),
                                         )
                                     )
                                 case FunctionCallContent():
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            item={
-                                                "type": "function_call",
-                                                "name": item.name or item.function_name,
-                                                "arguments": ""
+                                            item=RealtimeConversationItemFunctionCall(
+                                                type="function_call",
+                                                name=item.name or item.function_name,
+                                                arguments=""
                                                 if not item.arguments
                                                 else item.arguments
                                                 if isinstance(item.arguments, str)
                                                 else json.dumps(item.arguments),
-                                                "call_id": item.metadata.get("call_id"),
-                                            },
+                                                call_id=item.metadata.get("call_id"),
+                                            ),
                                         )
                                     )
 
@@ -608,11 +636,11 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            item={
-                                                "type": "function_call_output",
-                                                "output": item.result,
-                                                "call_id": item.metadata.get("call_id"),
-                                            },
+                                            item=RealtimeConversationItemFunctionCallOutput(
+                                                type="function_call_output",
+                                                output=item.result,
+                                                call_id=item.metadata.get("call_id"),
+                                            ),
                                         )
                                     )
                     case SendEvents.CONVERSATION_ITEM_TRUNCATE:
@@ -691,7 +719,31 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         while self.data_channel.readyState != "open":
             await asyncio.sleep(0.1)
         try:
-            self.data_channel.send(event.model_dump_json(exclude_none=True))
+            # Handle session update specially to exclude type field for WebRTC
+            if hasattr(event, "type") and event.type == "session.update":
+                event_dict = event.model_dump(exclude_none=True)
+                # Remove fields that aren't allowed in session updates for WebRTC compatibility
+                # Audio configuration should be set during session creation, not updates
+                session_dict = event_dict.get("session")
+                if session_dict and isinstance(session_dict, dict):
+                    # Only keep fields that are allowed in session updates
+                    # Note: output_modalities is not allowed in WebRTC session updates
+                    allowed_fields = {
+                        "type",
+                        "instructions",
+                        "model",
+                        "max_output_tokens",
+                        "tools",
+                        "tool_choice",
+                        "prompt",
+                        "tracing",
+                        "truncation",
+                    }
+                    event_dict["session"] = {k: v for k, v in session_dict.items() if k in allowed_fields}
+
+                self.data_channel.send(json.dumps(event_dict))
+            else:
+                self.data_channel.send(event.model_dump_json(exclude_none=True))
         except Exception as e:
             logger.error(f"Failed to send event {event} with error: {e!s}")
 
@@ -809,8 +861,18 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
             await self._receive_buffer.put(parsed_event)
 
     async def _get_ephemeral_token(self) -> str:
-        """Get an ephemeral token from OpenAI."""
-        data = {"model": self.ai_model_id}
+        """Get an ephemeral token from OpenAI.
+
+        GA endpoint: POST /v1/realtime/client_secrets
+        Request body: {"session": {"type": "realtime", "model": "<model>"}}
+        Response: {"value": "<token>", "expires_at": ..., "session": {...}}
+        """
+        data = {
+            "session": {
+                "type": "realtime",
+                "model": self.ai_model_id,
+            }
+        }
         headers, url = self._get_ephemeral_token_headers_and_url()
         headers = prepend_semantic_kernel_to_user_agent(headers)
         try:
@@ -823,22 +885,25 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                     raise Exception(f"Failed to get ephemeral token: {error_text}")
 
                 result = await response.json()
-                return result["client_secret"]["value"]
+                return result["value"]
 
         except Exception as e:
             logger.error(f"Failed to get ephemeral token: {e!s}")
             raise
 
     def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
-        """Get the headers for the ephemeral token."""
+        """Get the headers and URL for the ephemeral token."""
         return {
             "Authorization": f"Bearer {self.client.api_key}",
             "Content-Type": "application/json",
-        }, f"{self.client.beta.realtime._client.base_url}/realtime/sessions"
+        }, f"{self.client.realtime._client.base_url}/realtime/client_secrets"
 
     def _get_webrtc_url(self) -> str:
-        """Get the WebRTC URL."""
-        return f"{self.client.beta.realtime._client.base_url}/realtime?model={self.ai_model_id}"
+        """Get the WebRTC URL.
+
+        GA endpoint: POST /v1/realtime/calls?model=<model>
+        """
+        return f"{self.client.realtime._client.base_url}/realtime/calls?model={self.ai_model_id}"
 
 
 # region Websocket
@@ -894,7 +959,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
         **kwargs: Any,
     ) -> None:
         """Create a session in the service."""
-        self.connection = await self.client.beta.realtime.connect(
+        self.connection = await self.client.realtime.connect(
             model=self.ai_model_id, extra_headers={USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}
         ).enter()
         self.connected.set()

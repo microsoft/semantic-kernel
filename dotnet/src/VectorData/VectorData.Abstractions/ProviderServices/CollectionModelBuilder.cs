@@ -218,6 +218,16 @@ public abstract class CollectionModelBuilder
                 if (this.IsVectorPropertyTypeValid(clrProperty.PropertyType, out _))
                 {
                     vectorProperty.EmbeddingType = clrProperty.PropertyType;
+
+                    // Even for native types, if an embedding generator is configured, resolve the handler
+                    // so that search can convert arbitrary inputs (e.g. string) to embeddings.
+                    // Since the property type is a native vector type (not the input type for the generator),
+                    // we use CanGenerateEmbedding which checks if the generator can produce the embedding output type
+                    // regardless of input type.
+                    if (this.DefaultEmbeddingGenerator is not null)
+                    {
+                        vectorProperty.EmbeddingGenerationDispatcher = this.ResolveSearchOnlyEmbeddingHandler(vectorProperty, this.DefaultEmbeddingGenerator);
+                    }
                 }
                 else if (this.DefaultEmbeddingGenerator is not null)
                 {
@@ -226,7 +236,9 @@ public abstract class CollectionModelBuilder
                     // an output type supported by the provider, we set that as the embedding type.
                     // Note that this can fail (if the configured generator doesn't support the required translation). In that case, EmbeddingType
                     // remains null, and we may succeed configuring it later (e.g. from the record definition). If that fails, we throw in validation at the end.
-                    vectorProperty.EmbeddingType = this.ResolveEmbeddingType(vectorProperty, this.DefaultEmbeddingGenerator, userRequestedEmbeddingType: null);
+                    var (embeddingType, handler) = this.ResolveEmbeddingType(vectorProperty, this.DefaultEmbeddingGenerator, userRequestedEmbeddingType: null);
+                    vectorProperty.EmbeddingType = embeddingType;
+                    vectorProperty.EmbeddingGenerationDispatcher = handler;
                 }
                 else
                 {
@@ -354,6 +366,16 @@ public abstract class CollectionModelBuilder
                         }
 
                         vectorProperty.EmbeddingType = definitionVectorProperty.Type;
+
+                        // Even for native types, if an embedding generator is configured, resolve the handler
+                        // so that search can convert arbitrary inputs (e.g. string) to embeddings.
+                        // Since the property type is a native vector type (not the input type for the generator),
+                        // we use CanGenerateEmbedding which checks if the generator can produce the embedding output type
+                        // regardless of input type.
+                        if (vectorProperty.EmbeddingGenerator is not null)
+                        {
+                            vectorProperty.EmbeddingGenerationDispatcher = this.ResolveSearchOnlyEmbeddingHandler(vectorProperty, vectorProperty.EmbeddingGenerator);
+                        }
                     }
                     else if (vectorProperty.EmbeddingGenerator is not null)
                     {
@@ -362,7 +384,9 @@ public abstract class CollectionModelBuilder
                         // an output type supported by the provider, we set that as the embedding type.
                         // Note that this can fail (if the configured generator doesn't support the required translation). In that case, EmbeddingType
                         // remains null - we defer throwing to the validation phase at the end, to allow for possible later provider customization later.
-                        vectorProperty.EmbeddingType = this.ResolveEmbeddingType(vectorProperty, vectorProperty.EmbeddingGenerator, definitionVectorProperty.EmbeddingType);
+                        var (embeddingType, handler) = this.ResolveEmbeddingType(vectorProperty, vectorProperty.EmbeddingGenerator, definitionVectorProperty.EmbeddingType);
+                        vectorProperty.EmbeddingType = embeddingType;
+                        vectorProperty.EmbeddingGenerationDispatcher = handler;
                     }
                     else
                     {
@@ -405,14 +429,51 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// Attempts to setup embedding generation on the given vector property, with the given embedding generator and user-configured embedding type.
-    /// Can be overridden by connectors to provide support for other embedding types.
+    /// Gets the embedding types supported by this provider, in priority order.
+    /// The first type whose embedding generator is compatible with the input type will be used.
     /// </summary>
-    protected virtual Type? ResolveEmbeddingType(
+    /// <remarks>
+    /// Override this property in connectors that support additional embedding types beyond <see cref="Embedding{T}"/> of <see langword="float"/>.
+    /// </remarks>
+    protected virtual IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; }
+        = [EmbeddingGenerationDispatcher.Create<Embedding<float>>()];
+
+    /// <summary>
+    /// Attempts to resolve the embedding type for the given vector property, iterating over <see cref="EmbeddingGenerationDispatchers"/> in priority order.
+    /// </summary>
+    private (Type? EmbeddingType, EmbeddingGenerationDispatcher? Handler) ResolveEmbeddingType(
         VectorPropertyModel vectorProperty,
         IEmbeddingGenerator embeddingGenerator,
         Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType);
+    {
+        foreach (var supported in this.EmbeddingGenerationDispatchers)
+        {
+            if (supported.ResolveEmbeddingType(vectorProperty, embeddingGenerator, userRequestedEmbeddingType) is { } resolved)
+            {
+                return (resolved, supported);
+            }
+        }
+
+        return (null, null);
+    }
+
+    /// <summary>
+    /// Resolves the embedding handler for a native vector property type, where embedding generation is only needed for search.
+    /// Since the property type is already a valid native type, we only check if the generator can produce the
+    /// embedding output type (regardless of input type, which is only known at search time).
+    /// </summary>
+    private EmbeddingGenerationDispatcher? ResolveSearchOnlyEmbeddingHandler(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator)
+    {
+        foreach (var supported in this.EmbeddingGenerationDispatchers)
+        {
+            if (supported.CanGenerateEmbedding(vectorProperty, embeddingGenerator))
+            {
+                return supported;
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Extension hook for connectors to be able to customize the model.
