@@ -43,6 +43,11 @@ internal sealed class FunctionCallsProcessor
     private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>
+    /// Error message returned when a connector does not support ImageContent in tool results.
+    /// </summary>
+    public const string ImageContentNotSupportedErrorMessage = "Error: This model does not support image content in tool results.";
+
+    /// <summary>
     /// The maximum number of function auto-invokes that can be made in a single user request.
     /// </summary>
     /// <remarks>
@@ -340,7 +345,7 @@ internal sealed class FunctionCallsProcessor
         return false;
     }
 
-    private record struct FunctionResultContext(AutoFunctionInvocationContext Context, FunctionCallContent FunctionCall, string? Result, string? ErrorMessage);
+    private record struct FunctionResultContext(AutoFunctionInvocationContext Context, FunctionCallContent FunctionCall, object? Result, string? ErrorMessage);
 
     private async Task<FunctionResultContext> ExecuteFunctionCallAsync(
             AutoFunctionInvocationContext invocationContext,
@@ -377,8 +382,8 @@ internal sealed class FunctionCallsProcessor
         }
 
         // Apply any changes from the auto function invocation filters context to final result.
-        string stringResult = ProcessFunctionResult(invocationContext.Result.GetValue<object>() ?? string.Empty);
-        return new FunctionResultContext(invocationContext, functionCall, stringResult, null);
+        object result = ProcessFunctionResult(invocationContext.Result.GetValue<object>() ?? string.Empty);
+        return new FunctionResultContext(invocationContext, functionCall, result, null);
     }
 
     /// <summary>
@@ -388,7 +393,8 @@ internal sealed class FunctionCallsProcessor
     /// <param name="resultContext">The function result context.</param>
     private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionResultContext resultContext)
     {
-        var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result);
+        // When Result is ImageContent, Content will be null - the actual result is in FunctionResultContent.Result
+        var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result as string);
         message.Items.Add(this.GenerateResultContent(resultContext));
         chatHistory.Add(message);
     }
@@ -419,9 +425,9 @@ internal sealed class FunctionCallsProcessor
     /// Creates a <see cref="FunctionResultContent"/> instance.
     /// </summary>
     /// <param name="functionCall">The function call content.</param>
-    /// <param name="result">The function result, if available</param>
+    /// <param name="result">The function result, if available. Can be string or ImageContent.</param>
     /// <param name="errorMessage">An error message.</param>
-    private FunctionResultContent GenerateResultContent(FunctionCallContent functionCall, string? result, string? errorMessage)
+    private FunctionResultContent GenerateResultContent(FunctionCallContent functionCall, object? result, string? errorMessage)
     {
         // Log any error
         if (errorMessage is not null)
@@ -429,6 +435,7 @@ internal sealed class FunctionCallsProcessor
             this._logger.LogFunctionCallRequestFailure(functionCall, errorMessage);
         }
 
+        // FunctionResultContent.Result is object? - pass through string or ImageContent directly
         return new FunctionResultContent(functionCall.FunctionName, functionCall.PluginName, functionCall.Id, result ?? errorMessage ?? string.Empty);
     }
 
@@ -481,12 +488,19 @@ internal sealed class FunctionCallsProcessor
     /// Processes the function result.
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
-    /// <returns>A string representation of the function result.</returns>
-    public static string ProcessFunctionResult(object functionResult)
+    /// <returns>A string representation of the function result, or the original ImageContent for multimodal-capable connectors.</returns>
+    public static object ProcessFunctionResult(object functionResult)
     {
         if (functionResult is string stringResult)
         {
             return stringResult;
+        }
+
+        // Preserve ImageContent for connectors that support multimodal tool results (e.g., Gemini 3+, Anthropic)
+        // Connectors that don't support this should check for ImageContent and return an appropriate error message.
+        if (functionResult is ImageContent)
+        {
+            return functionResult;
         }
 
         // This is an optimization to use ChatMessageContent content directly
