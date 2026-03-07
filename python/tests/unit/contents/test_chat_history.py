@@ -612,6 +612,49 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     assert chat_history_2.messages[4] == chat_history.messages[4]
 
 
+def test_from_rendered_prompt_preserves_html_p_tag():
+    """HTML <p> tags in prompts should be preserved as text, not treated as template tags.
+
+    Regression test for https://github.com/microsoft/semantic-kernel/issues/13632
+    """
+    rendered = (
+        'Translate following message from English language into the Spanish language'
+        ' - "<p>What is your name?</p>"'
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
+    assert "<p>What is your name?</p>" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_preserves_multiple_html_tags():
+    """Multiple HTML tags in prompts should be preserved as text."""
+    rendered = "<p>First paragraph</p><div>A div</div>"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert "<p>First paragraph</p>" in chat_history.messages[0].content
+    assert "<div>A div</div>" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_preserves_html_with_text_around():
+    """HTML tags surrounded by plain text should preserve all content."""
+    rendered = "Hello <b>world</b> today"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert "Hello" in chat_history.messages[0].content
+    assert "<b>world</b>" in chat_history.messages[0].content
+    assert "today" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_sk_tags_still_work_with_html():
+    """SK template tags should still be parsed correctly even when HTML tags are present."""
+    rendered = '<message role="user">Tell me about <b>bold</b> text</message>'
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    # The <b> tag inside a <message> is handled by ChatMessageContent.from_element
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
+
+
 def test_chat_history_serialize(chat_history: ChatHistory):
     class CustomResultClass:
         def __init__(self, result):
