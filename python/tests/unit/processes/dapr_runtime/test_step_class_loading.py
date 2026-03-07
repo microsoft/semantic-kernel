@@ -22,7 +22,10 @@ class NotAStep:
 def test_valid_step_class_loads_successfully():
     """Test that a valid KernelProcessStep subclass loads correctly."""
     full_name = f"{MockValidStep.__module__}.{MockValidStep.__name__}"
-    result = get_step_class_from_qualified_name(full_name)
+    result = get_step_class_from_qualified_name(
+        full_name,
+        allowed_module_prefixes=[MockValidStep.__module__],
+    )
     assert result is MockValidStep
     assert issubclass(result, KernelProcessStep)
 
@@ -60,7 +63,7 @@ def test_none_like_empty_raises_exception():
 def test_nonexistent_module_raises_exception():
     """Test that a non-existent module raises ProcessInvalidConfigurationException."""
     with pytest.raises(ProcessInvalidConfigurationException, match="Unable to import module"):
-        get_step_class_from_qualified_name("nonexistent_module_xyz123.SomeClass")
+        get_step_class_from_qualified_name("nonexistent_module_xyz123.SomeClass", allowed_module_prefixes=None)
 
 
 def test_nonexistent_class_in_valid_module_raises_exception():
@@ -79,25 +82,25 @@ def test_non_step_class_raises_exception():
     """Test that a class not inheriting from KernelProcessStep raises exception."""
     full_name = f"{NotAStep.__module__}.{NotAStep.__name__}"
     with pytest.raises(ProcessInvalidConfigurationException, match="must be a subclass of KernelProcessStep"):
-        get_step_class_from_qualified_name(full_name)
+        get_step_class_from_qualified_name(full_name, allowed_module_prefixes=[NotAStep.__module__])
 
 
 def test_builtin_class_raises_exception():
-    """Test that built-in classes like str raise exception."""
+    """Test that built-in classes like str raise exception (bypassing prefix check to test subclass validation)."""
     with pytest.raises(ProcessInvalidConfigurationException, match="must be a subclass of KernelProcessStep"):
-        get_step_class_from_qualified_name("builtins.str")
+        get_step_class_from_qualified_name("builtins.str", allowed_module_prefixes=None)
 
 
 def test_os_system_prevented():
-    """Test that os.system (a dangerous function, not a class) is prevented."""
+    """Test that os.system is prevented (bypassing prefix check to test type validation)."""
     with pytest.raises(ProcessInvalidConfigurationException, match="is not a class type"):
-        get_step_class_from_qualified_name("os.system")
+        get_step_class_from_qualified_name("os.system", allowed_module_prefixes=None)
 
 
 def test_arbitrary_class_prevented():
-    """Test that arbitrary classes like subprocess.Popen are prevented."""
+    """Test that arbitrary classes like subprocess.Popen are prevented (bypassing prefix check)."""
     with pytest.raises(ProcessInvalidConfigurationException, match="must be a subclass of KernelProcessStep"):
-        get_step_class_from_qualified_name("subprocess.Popen")
+        get_step_class_from_qualified_name("subprocess.Popen", allowed_module_prefixes=None)
 
 
 def test_kernel_class_prevented():
@@ -140,17 +143,30 @@ def test_allowlist_blocks_dangerous_module():
 
 
 def test_empty_allowlist_allows_all():
-    """Test that an empty allowlist allows any module (current behavior)."""
+    """Test that an empty allowlist allows any module."""
     full_name = f"{MockValidStep.__module__}.{MockValidStep.__name__}"
     result = get_step_class_from_qualified_name(full_name, allowed_module_prefixes=[])
     assert result is MockValidStep
 
 
 def test_none_allowlist_allows_all():
-    """Test that None allowlist allows any module (default behavior)."""
+    """Test that None allowlist allows any module (explicit opt-out)."""
     full_name = f"{MockValidStep.__module__}.{MockValidStep.__name__}"
     result = get_step_class_from_qualified_name(full_name, allowed_module_prefixes=None)
     assert result is MockValidStep
+
+
+def test_default_allowlist_blocks_non_sk_modules():
+    """Test that the default allowlist only permits semantic_kernel modules."""
+    with pytest.raises(ProcessInvalidConfigurationException, match="is not in the allowed module prefixes"):
+        get_step_class_from_qualified_name("subprocess.Popen")
+
+
+def test_default_allowlist_permits_sk_modules():
+    """Test that the default allowlist permits semantic_kernel modules."""
+    full_name = "semantic_kernel.processes.kernel_process.kernel_process_step.KernelProcessStep"
+    result = get_step_class_from_qualified_name(full_name)
+    assert result is KernelProcessStep
 
 
 def test_allowlist_prefix_matching():
