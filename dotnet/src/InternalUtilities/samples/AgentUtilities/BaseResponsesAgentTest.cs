@@ -11,7 +11,7 @@ using OpenAI.VectorStores;
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="OpenAIResponseAgent"/>.
 /// </summary>
-public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClient>
+public abstract class BaseResponsesAgentTest : BaseAgentsTest<ResponsesClient>
 {
     protected BaseResponsesAgentTest(ITestOutputHelper output, string? model = null) : base(output)
     {
@@ -39,5 +39,5 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
     protected bool EnableLogging { get; set; } = false;
 
     /// <inheritdoc/>
-    protected override OpenAIResponseClient Client { get; }
+    protected override ResponsesClient Client { get; }
 }

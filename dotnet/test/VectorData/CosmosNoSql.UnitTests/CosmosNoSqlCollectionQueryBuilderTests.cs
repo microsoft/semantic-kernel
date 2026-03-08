@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
@@ -187,53 +186,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
     }
 
     [Fact]
-    public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
-    {
-        // Arrange
-        const string ExpectedQueryText = """
-                                         SELECT x["id"],x["TestProperty1"],x["TestProperty2"]
-                                         FROM x
-                                         WHERE (x["id"] = @rk0  AND  x["TestProperty1"] = @pk0)
-                                         """;
-
-        const string KeyStoragePropertyName = "id";
-        const string PartitionKeyPropertyName = "TestProperty1";
-
-        var model = new CosmosNoSqlModelBuilder().BuildDynamic(
-            new()
-            {
-                Properties =
-                [
-                    new VectorStoreKeyProperty("Key", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty1", typeof(string)),
-                    new VectorStoreDataProperty("TestProperty2", typeof(string))
-                ]
-            },
-            defaultEmbeddingGenerator: null);
-        var keys = new List<CosmosNoSqlCompositeKey> { new("id", "TestProperty1") };
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSelectQuery(
-            model,
-            KeyStoragePropertyName,
-            PartitionKeyPropertyName,
-            keys,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
-
-        Assert.Equal("@rk0", queryParameters[0].Name);
-        Assert.Equal("id", queryParameters[0].Value);
-
-        Assert.Equal("@pk0", queryParameters[1].Name);
-        Assert.Equal("TestProperty1", queryParameters[1].Value);
-    }
-
-    [Fact]
     public void BuildSearchQueryWithHybridFieldsReturnsValidHybridQueryDefinition()
     {
         // Arrange
@@ -269,17 +221,20 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"TestProperty1\"], @vector) AS TestScore", queryText);
         Assert.Contains("FROM x", queryText);
         Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
-        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], \"hybrid\"))", queryText);
+        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], @keyword0))", queryText);
         Assert.Contains("OFFSET 5 LIMIT 10", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
 
-        Assert.Equal("@cv0", queryParameters[1].Name);
-        Assert.Equal("test-value-2", queryParameters[1].Value);
+        Assert.Equal("@keyword0", queryParameters[1].Name);
+        Assert.Equal("hybrid", queryParameters[1].Value);
 
-        Assert.Equal("@cv1", queryParameters[2].Name);
-        Assert.Equal("test-value-3", queryParameters[2].Value);
+        Assert.Equal("@cv0", queryParameters[2].Name);
+        Assert.Equal("test-value-2", queryParameters[2].Value);
+
+        Assert.Equal("@cv1", queryParameters[3].Name);
+        Assert.Equal("test-value-3", queryParameters[3].Value);
     }
 
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.

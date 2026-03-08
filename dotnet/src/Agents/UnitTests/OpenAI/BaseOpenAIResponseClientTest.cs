@@ -10,13 +10,13 @@ using OpenAI.Responses;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Base tests which use <see cref="OpenAIResponseClient"/>
+/// Base tests which use <see cref="ResponsesClient"/>
 /// </summary>
 public class BaseOpenAIResponseClientTest : IDisposable
 {
     internal MultipleHttpMessageHandlerStub MessageHandlerStub { get; }
     internal HttpClient HttpClient { get; }
-    internal OpenAIResponseClient Client { get; }
+    internal ResponsesClient Client { get; }
 
     internal BaseOpenAIResponseClientTest()
     {
@@ -27,7 +27,7 @@ public class BaseOpenAIResponseClientTest : IDisposable
         {
             Transport = new HttpClientPipelineTransport(this.HttpClient)
         };
-        this.Client = new OpenAIResponseClient("model", new ApiKeyCredential("apiKey"), clientOptions);
+        this.Client = new ResponsesClient("model", new ApiKeyCredential("apiKey"), clientOptions);
     }
 
     /// <inheritdoc />

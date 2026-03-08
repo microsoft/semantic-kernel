@@ -16,13 +16,13 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 public class OpenAIResponseExtensionsTests
 {
     /// <summary>
-    /// Verify conversion from <see cref="OpenAIResponse"/> to <see cref="ChatMessageContent"/>.
+    /// Verify conversion from <see cref="ResponseResult"/> to <see cref="ChatMessageContent"/>.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithOpenAIResponse()
     {
         // Arrange
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
+        ResponseResult mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
             [
                 ResponseItem.CreateUserMessageItem("This is a user message."),
             ]);
@@ -197,7 +197,7 @@ public class OpenAIResponseExtensionsTests
     }
 
     /// <summary>
-    /// Verify that OpenAIResponse with both ReasoningResponseItem and MessageResponseItem generates correct content types.
+    /// Verify that ResponseResult with both ReasoningResponseItem and MessageResponseItem generates correct content types.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithMixedResponseItems()
@@ -206,7 +206,7 @@ public class OpenAIResponseExtensionsTests
         var reasoningResponseItem = this.CreateReasoningResponseItem("Thinking about the answer...");
         var messageResponseItem = ResponseItem.CreateAssistantMessageItem("Here is my response.");
 
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
+        ResponseResult mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
             [
                 reasoningResponseItem,
                 messageResponseItem
@@ -231,30 +231,37 @@ public class OpenAIResponseExtensionsTests
     }
 
     #region private
-    private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
-            model: model,
-            outputItems: outputItems);
+    private ResponseResult CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems)
+    {
+        var result = new ResponseResult { Model = model };
+        foreach (var item in outputItems) { result.OutputItems.Add(item); }
+        return result;
+    }
 
-    private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
-            id: id,
-            createdAt: createdAt,
-            error: error,
-            instructions: instructions,
-            model: model,
-            previousResponseId: previousResponseId,
-            temperature: temperature,
-            tools: tools,
-            topP: topP,
-            metadata: metadata,
-            incompleteStatusDetails: incompleteStatusDetails,
-            outputItems: outputItems,
-            parallelToolCallsEnabled: parallelToolCallsEnabled,
-            toolChoice: toolChoice);
+    private ResponseResult CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
+    {
+        var result = new ResponseResult
+        {
+            Id = id,
+            CreatedAt = createdAt,
+            Error = error,
+            Instructions = instructions,
+            Model = model,
+            PreviousResponseId = previousResponseId,
+            Temperature = temperature,
+            TopP = topP,
+            IncompleteStatusDetails = incompleteStatusDetails,
+            ParallelToolCallsEnabled = parallelToolCallsEnabled,
+            ToolChoice = toolChoice,
+        };
+        foreach (var tool in tools) { result.Tools.Add(tool); }
+        foreach (var kvp in metadata) { result.Metadata[kvp.Key] = kvp.Value; }
+        foreach (var item in outputItems) { result.OutputItems.Add(item); }
+        return result;
+    }
 
     private ReasoningResponseItem CreateReasoningResponseItem(string? reasoningText = null) =>
-        OpenAIResponsesModelFactory.ReasoningResponseItem(summaryText: reasoningText);
+        new(summaryText: reasoningText);
 
     #endregion
 }

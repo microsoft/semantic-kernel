@@ -70,6 +70,7 @@ internal static class SqlitePropertyMapping
 
             var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
             {
+                IsNullable = property.IsNullable,
                 Configuration = configuration,
                 HasIndex = property is DataPropertyModel { IsIndexed: true }
             };
@@ -112,6 +113,14 @@ internal static class SqlitePropertyMapping
 
             // Guid type - represent as TEXT
             Type t when t == typeof(Guid) || t == typeof(Guid?) => "TEXT",
+
+            // Date/time types - represent as TEXT (ISO 8601)
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => "TEXT",
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "TEXT",
+#if NET
+            Type t when t == typeof(DateOnly) || t == typeof(DateOnly?) => "TEXT",
+            Type t when t == typeof(TimeOnly) || t == typeof(TimeOnly?) => "TEXT",
+#endif
 
             // Byte array (BLOB)
             Type t when t == typeof(byte[]) => "BLOB",
