@@ -293,7 +293,7 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
         arguments=KernelArguments(),
     )
 
-    # The function should be called twice:
+    # Completion should be called twice:
     # One for the tool call and one for the last completion
     # after the maximum_auto_invoke_attempts is reached
     assert mock_complete.call_count == 2
