@@ -101,10 +101,12 @@ def test_collapse_function_call_results_in_chat_history() -> None:
 
 
 def test_sanitize_schema_none():
+    """Test that None input returns None."""
     assert sanitize_schema_for_google_ai(None) is None
 
 
 def test_sanitize_schema_simple_passthrough():
+    """Test that a simple schema passes through unchanged."""
     schema = {"type": "string", "description": "A name"}
     result = sanitize_schema_for_google_ai(schema)
     assert result == {"type": "string", "description": "A name"}
@@ -125,7 +127,7 @@ def test_sanitize_schema_type_as_list_without_null():
 
 
 def test_sanitize_schema_anyof_with_null():
-    """anyOf with null variant should become the non-null type + nullable."""
+    """AnyOf with null variant should become the non-null type + nullable."""
     schema = {
         "anyOf": [{"type": "string"}, {"type": "null"}],
         "description": "Optional param",
@@ -135,7 +137,7 @@ def test_sanitize_schema_anyof_with_null():
 
 
 def test_sanitize_schema_anyof_without_null():
-    """anyOf without null should pick the first variant."""
+    """AnyOf without null should pick the first variant."""
     schema = {
         "anyOf": [
             {"type": "string"},
@@ -147,7 +149,7 @@ def test_sanitize_schema_anyof_without_null():
 
 
 def test_sanitize_schema_oneof():
-    """oneOf should be handled the same as anyOf."""
+    """OneOf should be handled the same as anyOf."""
     schema = {
         "oneOf": [{"type": "integer"}, {"type": "null"}],
     }
@@ -156,7 +158,7 @@ def test_sanitize_schema_oneof():
 
 
 def test_sanitize_schema_nested_properties():
-    """anyOf inside nested properties should be sanitized recursively."""
+    """AnyOf inside nested properties should be sanitized recursively."""
     schema = {
         "type": "object",
         "properties": {
@@ -175,7 +177,7 @@ def test_sanitize_schema_nested_properties():
 
 
 def test_sanitize_schema_nested_items():
-    """anyOf inside array items should be sanitized recursively."""
+    """AnyOf inside array items should be sanitized recursively."""
     schema = {
         "type": "array",
         "items": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
@@ -214,7 +216,7 @@ def test_sanitize_schema_agent_messages_param():
 
 
 def test_sanitize_schema_allof():
-    """allOf should be handled like anyOf/oneOf, picking the first variant."""
+    """AllOf should be handled like anyOf/oneOf, picking the first variant."""
     schema = {
         "allOf": [
             {"type": "object", "properties": {"name": {"type": "string"}}},
@@ -228,7 +230,7 @@ def test_sanitize_schema_allof():
 
 
 def test_sanitize_schema_allof_with_null():
-    """allOf with a null variant should produce nullable: true."""
+    """AllOf with a null variant should produce nullable: true."""
     schema = {
         "allOf": [{"type": "string"}, {"type": "null"}],
     }
@@ -246,7 +248,7 @@ def test_sanitize_schema_all_null_type_list():
 
 
 def test_sanitize_schema_all_null_anyof():
-    """anyOf where all variants are null should fall back to type: "string"."""
+    """AnyOf where all variants are null should fall back to type: "string"."""
     schema = {"anyOf": [{"type": "null"}]}
     result = sanitize_schema_for_google_ai(schema)
     assert result == {"type": "string", "nullable": True}
