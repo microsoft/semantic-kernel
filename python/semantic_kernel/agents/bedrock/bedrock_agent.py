@@ -3,6 +3,7 @@
 
 import asyncio
 import logging
+import os
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable
 from functools import partial, reduce
@@ -590,7 +591,7 @@ class BedrockAgent(BedrockAgentBase):
                 data=file["bytes"],
                 data_format="base64",
                 mime_type=file["type"],
-                metadata={"name": file["name"]},
+                metadata={"name": self._sanitize_filename(file["name"])},
             )
             for file in files_event["files"]
         ]
@@ -639,7 +640,7 @@ class BedrockAgent(BedrockAgentBase):
                 data=file["bytes"],
                 data_format="base64",
                 mime_type=file["type"],
-                metadata={"name": file["name"]},
+                metadata={"name": self._sanitize_filename(file["name"])},
             )
             for file in files_event["files"]
         ]
@@ -720,3 +721,25 @@ class BedrockAgent(BedrockAgentBase):
         The new message is passed to the agent when invoking the agent.
         """
         pass
+
+    @staticmethod
+    def _sanitize_filename(filename: str) -> str:
+        """Sanitize filename to prevent directory traversal attacks.
+
+        Args:
+            filename: The filename to sanitize.
+
+        Returns:
+            The sanitized filename with directory components removed.
+        """
+        # Extract basename to remove any directory traversal attempts
+        # Handle both Unix and Windows path separators
+        sanitized = os.path.basename(filename.replace("\\", "/"))
+        # Remove any remaining path separators or null bytes
+        result = sanitized.replace("/", "").replace("\\", "").replace("\x00", "")
+        if result != filename:
+            logger.warning(
+                f"Filename contained potentially malicious path components and was sanitized: "
+                f"'{filename}' -> '{result}'"
+            )
+        return result
