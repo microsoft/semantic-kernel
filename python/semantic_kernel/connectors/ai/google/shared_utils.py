@@ -86,10 +86,7 @@ def _sanitize_node(node: dict[str, Any]) -> dict[str, Any]:
             continue
         non_null = [v for v in variants if v.get("type") != "null"]
         has_null = len(variants) != len(non_null)
-        if non_null:
-            chosen = _sanitize_node(non_null[0])
-        else:
-            chosen = {"type": "string"}
+        chosen = _sanitize_node(non_null[0]) if non_null else {"type": "string"}
         # Preserve description from the outer node
         desc = node.get("description")
         node.clear()
