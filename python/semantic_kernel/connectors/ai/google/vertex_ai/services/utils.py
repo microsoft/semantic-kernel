@@ -139,6 +139,8 @@ def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelF
     properties: dict[str, Any] = {}
     if metadata.parameters:
         for param in metadata.parameters:
+            if param.name is None:
+                continue
             prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
             properties[param.name] = prop_schema
     return FunctionDeclaration(
@@ -147,7 +149,7 @@ def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelF
         parameters={
             "type": "object",
             "properties": properties,
-            "required": [p.name for p in metadata.parameters if p.is_required],
+            "required": [p.name for p in metadata.parameters if p.is_required and p.name is not None],
         },
     )
 
