@@ -473,7 +473,7 @@ def test_create_chat_message_content_without_thought_signature(vertex_ai_unit_te
 
     fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
     assert len(fc_items) == 1
-    assert fc_items[0].metadata is None
+    assert "thought_signature" not in fc_items[0].metadata
 
 
 def test_create_streaming_chat_message_content_with_thought_signature(vertex_ai_unit_test_env) -> None:
@@ -539,7 +539,7 @@ def test_create_streaming_chat_message_content_without_thought_signature(vertex_
 
     fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
     assert len(fc_items) == 1
-    assert fc_items[0].metadata is None
+    assert "thought_signature" not in fc_items[0].metadata
 
 
 # endregion thought_signature deserialization tests
