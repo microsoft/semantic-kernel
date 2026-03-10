@@ -77,13 +77,46 @@ public sealed class WebFileDownloadPluginTests : IDisposable
     }
 
     [Fact]
-    public void ValidatePluginProperties()
+    public async Task DownloadToFileDeniesAllWithDefaultConfigAsync()
     {
         // Arrange
+        this._messageHandlerStub.AddImageResponse(File.ReadAllBytes(SKLogoPng));
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
         var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var filePath = Path.Combine(Path.GetTempPath(), "sk_logo.png");
+        var filePath = Path.Combine(folderPath, "sk_logo.png");
+        Directory.CreateDirectory(folderPath);
 
-        // Act
+        var webFileDownload = new WebFileDownloadPlugin();
+
+        try
+        {
+            // Act & Assert - default config denies all domains
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(uri, filePath));
+        }
+        finally
+        {
+            if (Path.Exists(folderPath))
+            {
+                Directory.Delete(folderPath, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ValidatePluginProperties()
+    {
+        // Arrange & Act - verify secure defaults
+        var defaultPlugin = new WebFileDownloadPlugin();
+
+        // Assert - defaults are deny-all
+        Assert.Empty(defaultPlugin.AllowedDomains!);
+        Assert.Empty(defaultPlugin.AllowedFolders!);
+        Assert.True(defaultPlugin.DisableFileOverwrite);
+        Assert.Equal(10 * 1024 * 1024, defaultPlugin.MaximumDownloadSize);
+
+        // Arrange & Act - verify explicit configuration
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
         var webFileDownload = new WebFileDownloadPlugin()
         {
             AllowedDomains = ["raw.githubusercontent.com"],
@@ -92,7 +125,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
             DisableFileOverwrite = true
         };
 
-        // Act & Assert
+        // Assert
         Assert.Equal(["raw.githubusercontent.com"], webFileDownload.AllowedDomains);
         Assert.Equal([folderPath], webFileDownload.AllowedFolders);
         Assert.Equal(100, webFileDownload.MaximumDownloadSize);
@@ -124,7 +157,9 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, invalidFilePath));
         await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "\\\\UNC\\server\\folder\\myfile.txt"));
         await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, ""));
-        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
+        // Relative paths are now canonicalized to absolute paths via Path.GetFullPath,
+        // so they are caught by the AllowedFolders check rather than the "fully qualified" check.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
     }
 
     /// <inheritdoc/>
