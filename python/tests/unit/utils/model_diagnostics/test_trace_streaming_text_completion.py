@@ -69,15 +69,16 @@ pytestmark = pytest.mark.parametrize(
 
 
 @patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
-@patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
 async def test_trace_streaming_text_completion(
-    mock_span,
+    mock_tracer,
     mock_logger,
     execution_settings,
     mock_response,
     prompt,
     model_diagnostics_unit_test_env,
 ):
+    mock_span = mock_tracer.start_span.return_value
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
     iterable = MagicMock(spec=AsyncGenerator)
@@ -142,15 +143,16 @@ async def test_trace_streaming_text_completion(
 
 
 @patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
-@patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
 async def test_trace_streaming_text_completion_exception(
-    mock_span,
+    mock_tracer,
     mock_logger,
     execution_settings,
     mock_response,
     prompt,
     model_diagnostics_unit_test_env,
 ):
+    mock_span = mock_tracer.start_span.return_value
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
