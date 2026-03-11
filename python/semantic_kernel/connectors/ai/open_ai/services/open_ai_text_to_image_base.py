@@ -68,7 +68,7 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         response = await self._send_request(settings)
 
         assert isinstance(response, ImagesResponse)  # nosec
-        if not response.data or not response.data[0].url:
+        if not response.data or not (response.data[0].url or response.data[0].b64_json):
             raise ServiceResponseException("Failed to generate image.")
 
         return response.data[0].url
