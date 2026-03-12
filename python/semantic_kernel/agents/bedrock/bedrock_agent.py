@@ -216,7 +216,7 @@ class BedrockAgent(BedrockAgentBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
+            raise AgentInitializationException(f"Failed to initialize the Amazon Bedrock Agent settings: {e}") from e
 
         import boto3
         from botocore.exceptions import ClientError
@@ -237,7 +237,7 @@ class BedrockAgent(BedrockAgentBase):
             )
         except ClientError as e:
             logger.error(f"Failed to create agent {name}.")
-            raise AgentInitializationException("Failed to create the Amazon Bedrock Agent.") from e
+            raise AgentInitializationException(f"Failed to create the Amazon Bedrock Agent: {e}") from e
 
         bedrock_agent = cls(
             response["agent"],
