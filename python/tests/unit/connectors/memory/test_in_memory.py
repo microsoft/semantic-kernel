@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
+
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
@@ -203,6 +205,32 @@ async def test_valid_lambda_filter_with_get_method(collection):
     assert "1" in results
 
 
+async def test_valid_lambda_filter_with_bounded_sequence_repeat(collection):
+    record = {"id": "1", "vector": [1, 2, 3, 4, 5]}
+    await collection.upsert(record)
+
+    results = collection._get_filtered_records(type("opt", (), {"filter": "lambda x: ([0] * 2)[1] == 0"})())
+
+    assert len(results) == 1
+    assert "1" in results
+
+
+async def test_sequence_repeat_limit_can_be_overridden(collection):
+    record = {"id": "1", "vector": [1, 2, 3, 4, 5]}
+    await collection.upsert(record)
+    filter_options = type("opt", (), {"filter": "lambda x: ([0] * 2)[1] == 0"})()
+
+    collection.max_filter_sequence_repeat_size = 1
+    with raises(VectorStoreOperationException, match="Sequence repetition in filter expressions exceeds the maximum"):
+        collection._get_filtered_records(filter_options)
+
+    collection.max_filter_sequence_repeat_size = 2
+    results = collection._get_filtered_records(filter_options)
+
+    assert len(results) == 1
+    assert "1" in results
+
+
 async def test_callable_filter_cannot_mutate_stored_record(collection):
     record = {"id": "1", "content": "value", "vector": [1, 2, 3, 4, 5]}
     await collection.upsert(record)
@@ -218,7 +246,7 @@ async def test_callable_filter_cannot_mutate_stored_record(collection):
     assert collection.inner_storage["1"]["content"] == "value"
 
 
-def test_default_dynamic_filter_injection_payload_is_blocked(collection):
+def test_default_dynamic_filter_injection_payload_remains_string_literal(collection):
     class Param:
         def __init__(self, name, default_value=None):
             self.name = name
@@ -232,5 +260,19 @@ def test_default_dynamic_filter_injection_payload_is_blocked(collection):
     )
 
     assert isinstance(generated_filter, str)
-    with raises(VectorStoreOperationException, match="Call target node type 'Subscript' is not allowed"):
-        collection._parse_and_validate_filter(generated_filter)
+    tree = ast.parse(generated_filter, mode="eval")
+    assert isinstance(tree.body, ast.Lambda)
+    assert isinstance(tree.body.body, ast.Compare)
+    assert isinstance(tree.body.body.comparators[0], ast.Constant)
+    assert tree.body.body.comparators[0].value == injected_value
+
+    filter_func = collection._parse_and_validate_filter(generated_filter)
+    assert filter_func({"category": "finance", "name": "alice", "vector": [0.1] * 5}) is False
+
+
+async def test_large_sequence_repeat_filter_is_blocked(collection):
+    record = {"id": "1", "content": "value", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await collection.upsert(record)
+
+    with raises(VectorStoreOperationException, match="Sequence repetition in filter expressions exceeds the maximum"):
+        collection._get_filtered_records(type("opt", (), {"filter": "lambda x: [0] * 2000000000"})())
