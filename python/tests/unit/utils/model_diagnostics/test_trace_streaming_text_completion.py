@@ -81,7 +81,6 @@ async def test_trace_streaming_text_completion(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
-    mock_span = mock_start_span.return_value
     iterable = MagicMock(spec=AsyncGenerator)
     iterable.__aiter__.return_value = [mock_response]
 
@@ -156,7 +155,6 @@ async def test_trace_streaming_text_completion_exception(
     mock_span = mock_tracer.start_span.return_value
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
-    mock_span = mock_start_span.return_value
 
     with patch.object(MockTextCompletion, "_inner_get_streaming_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
