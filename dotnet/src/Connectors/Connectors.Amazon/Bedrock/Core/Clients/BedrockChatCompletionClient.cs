@@ -144,9 +144,95 @@ internal sealed class BedrockChatCompletionClient
         var itemCollection = new ChatMessageContentItemCollection();
         foreach (var contentBlock in contentBlocks)
         {
-            itemCollection.Add(new TextContent(contentBlock.Text));
+            if (contentBlock.ToolUse != null)
+            {
+                var toolUse = contentBlock.ToolUse;
+                KernelArguments? arguments = null;
+                if (toolUse.Input.IsDictionary())
+                {
+                    arguments = ParseDocumentToArguments(toolUse.Input);
+                }
+
+                // Parse plugin name and function name from the tool name.
+                // The Bedrock connector uses "PluginName-FunctionName" format.
+                string? pluginName = null;
+                string functionName = toolUse.Name ?? string.Empty;
+                var separatorIndex = functionName.IndexOf('-');
+                if (separatorIndex > 0)
+                {
+                    pluginName = functionName.Substring(0, separatorIndex);
+                    functionName = functionName.Substring(separatorIndex + 1);
+                }
+
+                itemCollection.Add(new FunctionCallContent(
+                    functionName: functionName,
+                    pluginName: pluginName,
+                    id: toolUse.ToolUseId,
+                    arguments: arguments));
+            }
+            else if (!string.IsNullOrEmpty(contentBlock.Text))
+            {
+                itemCollection.Add(new TextContent(contentBlock.Text));
+            }
         }
         return itemCollection;
+    }
+
+    /// <summary>
+    /// Parses an Amazon.Runtime.Documents.Document to KernelArguments.
+    /// </summary>
+    private static KernelArguments? ParseDocumentToArguments(global::Amazon.Runtime.Documents.Document document)
+    {
+        if (!document.IsDictionary())
+        {
+            return null;
+        }
+
+        var arguments = new KernelArguments();
+        foreach (var kvp in document.AsDictionary())
+        {
+            arguments[kvp.Key] = DocumentToObject(kvp.Value);
+        }
+
+        return arguments;
+    }
+
+    /// <summary>
+    /// Converts a Document to a plain object for use in KernelArguments.
+    /// </summary>
+    private static object? DocumentToObject(global::Amazon.Runtime.Documents.Document doc)
+    {
+        if (doc.IsNull())
+        {
+            return null;
+        }
+
+        if (doc.IsString())
+        {
+            return doc.AsString();
+        }
+
+        if (doc.IsBool())
+        {
+            return doc.AsBool();
+        }
+
+        if (doc.IsInt())
+        {
+            return doc.AsInt();
+        }
+
+        if (doc.IsLong())
+        {
+            return doc.AsLong();
+        }
+
+        if (doc.IsDouble())
+        {
+            return doc.AsDouble();
+        }
+
+        return doc.ToString();
     }
 
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageAsync(
