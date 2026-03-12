@@ -2,8 +2,8 @@
 
 import ast
 import sys
-from collections.abc import AsyncIterable, Callable, Sequence
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from collections.abc import AsyncIterable, Callable, Mapping, Sequence
+from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
 from pydantic import Field
@@ -81,6 +81,334 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
             raise AttributeError(name)
 
 
+class ReadOnlyAttributeDict(Mapping[TAKey, TAValue], Generic[TAKey, TAValue]):
+    """A read-only mapping that allows attribute access to keys."""
+
+    def __init__(self, data: Mapping[TAKey, TAValue]):
+        """Initialize the read-only mapping wrapper."""
+        self._data = data
+
+    def __getitem__(self, key: TAKey) -> TAValue:
+        """Get a value by key."""
+        return self._wrap_value(self._data[key])
+
+    def __iter__(self):
+        """Iterate over keys."""
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        """Return the number of keys."""
+        return len(self._data)
+
+    def __getattr__(self, name: str) -> TAValue:
+        """Allow attribute-style access to mapping keys."""
+        try:
+            return self._wrap_value(self._data[cast(TAKey, name)])
+        except KeyError:
+            raise AttributeError(name)
+
+    @staticmethod
+    def _wrap_value(value: Any) -> Any:
+        """Wrap nested mappings to preserve read-only attribute access."""
+        if isinstance(value, Mapping) and not isinstance(value, ReadOnlyAttributeDict):
+            return ReadOnlyAttributeDict(value)
+        return value
+
+
+class _SafeFilterEvaluator:
+    """Evaluate a restricted filter AST without using eval()."""
+
+    def __init__(
+        self,
+        *,
+        direct_call_functions: dict[str, Callable[..., Any]],
+        blocked_attributes: set[str],
+        max_literal_collection_size: int,
+        max_sequence_repeat_size: int,
+    ):
+        self._direct_call_functions = direct_call_functions
+        self._blocked_attributes = blocked_attributes
+        self._max_literal_collection_size = max_literal_collection_size
+        self._max_sequence_repeat_size = max_sequence_repeat_size
+
+    def evaluate(self, node: ast.AST, context: Mapping[str, Any]) -> Any:
+        """Evaluate a supported AST node."""
+        evaluator = getattr(self, f"_eval_{type(node).__name__}", None)
+        if evaluator is None:
+            raise VectorStoreOperationException(
+                f"AST node type '{type(node).__name__}' is not supported during filter evaluation."
+            )
+        return evaluator(node, context)
+
+    def _eval_Constant(self, node: ast.Constant, context: Mapping[str, Any]) -> Any:
+        """Evaluate a constant literal."""
+        del context
+        if isinstance(node.value, str) and len(node.value) > self._max_literal_collection_size:
+            raise VectorStoreOperationException(
+                "String literals in filter expressions exceed the maximum allowed size."
+            )
+        return node.value
+
+    def _eval_Name(self, node: ast.Name, context: Mapping[str, Any]) -> Any:
+        """Evaluate a variable reference."""
+        if node.id not in context:
+            raise VectorStoreOperationException(f"Use of name '{node.id}' is not allowed in filter expressions.")
+        return context[node.id]
+
+    def _eval_Attribute(self, node: ast.Attribute, context: Mapping[str, Any]) -> Any:
+        """Evaluate an attribute access."""
+        if node.attr in self._blocked_attributes:
+            raise VectorStoreOperationException(
+                f"Access to attribute '{node.attr}' is not allowed in filter expressions."
+            )
+        value = self.evaluate(node.value, context)
+        try:
+            return ReadOnlyAttributeDict._wrap_value(getattr(value, node.attr))
+        except AttributeError as e:
+            raise VectorStoreOperationException(
+                f"Attribute '{node.attr}' is not available in filter expressions."
+            ) from e
+
+    def _eval_Subscript(self, node: ast.Subscript, context: Mapping[str, Any]) -> Any:
+        """Evaluate an index or slice operation."""
+        value = self.evaluate(node.value, context)
+        slice_value = self.evaluate(node.slice, context)
+        try:
+            return ReadOnlyAttributeDict._wrap_value(value[slice_value])
+        except Exception as e:
+            raise VectorStoreOperationException(f"Error evaluating subscript access: {e}") from e
+
+    def _eval_Slice(self, node: ast.Slice, context: Mapping[str, Any]) -> slice:
+        """Evaluate a slice node."""
+        lower = self._evaluate_optional(node.lower, context)
+        upper = self._evaluate_optional(node.upper, context)
+        step = self._evaluate_optional(node.step, context)
+        return slice(lower, upper, step)
+
+    def _eval_List(self, node: ast.List, context: Mapping[str, Any]) -> list[Any]:
+        """Evaluate a list literal."""
+        self._ensure_literal_collection_size(len(node.elts))
+        return [self.evaluate(element, context) for element in node.elts]
+
+    def _eval_Tuple(self, node: ast.Tuple, context: Mapping[str, Any]) -> tuple[Any, ...]:
+        """Evaluate a tuple literal."""
+        self._ensure_literal_collection_size(len(node.elts))
+        return tuple(self.evaluate(element, context) for element in node.elts)
+
+    def _eval_Set(self, node: ast.Set, context: Mapping[str, Any]) -> set[Any]:
+        """Evaluate a set literal."""
+        self._ensure_literal_collection_size(len(node.elts))
+        return {self.evaluate(element, context) for element in node.elts}
+
+    def _eval_Dict(self, node: ast.Dict, context: Mapping[str, Any]) -> dict[Any, Any]:
+        """Evaluate a dict literal."""
+        self._ensure_literal_collection_size(len(node.keys))
+        result: dict[Any, Any] = {}
+        for key, value in zip(node.keys, node.values, strict=True):
+            if key is None:
+                raise VectorStoreOperationException("Dictionary unpacking is not allowed in filter expressions.")
+            result[self.evaluate(key, context)] = self.evaluate(value, context)
+        return result
+
+    def _eval_BoolOp(self, node: ast.BoolOp, context: Mapping[str, Any]) -> Any:
+        """Evaluate boolean operators with Python short-circuit semantics."""
+        if isinstance(node.op, ast.And):
+            result = self.evaluate(node.values[0], context)
+            for value in node.values[1:]:
+                if not result:
+                    return result
+                result = self.evaluate(value, context)
+            return result
+        if isinstance(node.op, ast.Or):
+            result = self.evaluate(node.values[0], context)
+            for value in node.values[1:]:
+                if result:
+                    return result
+                result = self.evaluate(value, context)
+            return result
+        raise VectorStoreOperationException(
+            f"Boolean operator '{type(node.op).__name__}' is not allowed in filter expressions."
+        )
+
+    def _eval_UnaryOp(self, node: ast.UnaryOp, context: Mapping[str, Any]) -> Any:
+        """Evaluate a unary operator."""
+        operand = self.evaluate(node.operand, context)
+        if isinstance(node.op, ast.Not):
+            return not operand
+        raise VectorStoreOperationException(
+            f"Unary operator '{type(node.op).__name__}' is not allowed in filter expressions."
+        )
+
+    def _eval_Compare(self, node: ast.Compare, context: Mapping[str, Any]) -> bool:
+        """Evaluate a comparison expression."""
+        left = self.evaluate(node.left, context)
+        for operator_node, comparator in zip(node.ops, node.comparators, strict=True):
+            right = self.evaluate(comparator, context)
+            if not self._compare(operator_node, left, right):
+                return False
+            left = right
+        return True
+
+    def _eval_BinOp(self, node: ast.BinOp, context: Mapping[str, Any]) -> Any:
+        """Evaluate a binary operator."""
+        left = self.evaluate(node.left, context)
+        right = self.evaluate(node.right, context)
+
+        if isinstance(node.op, ast.Add):
+            return self._safe_add(left, right)
+        if isinstance(node.op, ast.Sub):
+            return self._safe_numeric_operation(node.op, left, right, lambda a, b: a - b)
+        if isinstance(node.op, ast.Mult):
+            return self._safe_mult(left, right)
+        if isinstance(node.op, ast.Div):
+            return self._safe_numeric_operation(node.op, left, right, lambda a, b: a / b)
+        if isinstance(node.op, ast.Mod):
+            return self._safe_numeric_operation(node.op, left, right, lambda a, b: a % b)
+        if isinstance(node.op, ast.FloorDiv):
+            return self._safe_numeric_operation(node.op, left, right, lambda a, b: a // b)
+
+        raise VectorStoreOperationException(
+            f"Binary operator '{type(node.op).__name__}' is not allowed in filter expressions."
+        )
+
+    def _eval_Call(self, node: ast.Call, context: Mapping[str, Any]) -> Any:
+        """Evaluate a function or method call."""
+        args = [self.evaluate(arg, context) for arg in node.args]
+
+        if isinstance(node.func, ast.Name):
+            try:
+                func = self._direct_call_functions[node.func.id]
+            except KeyError as e:
+                raise VectorStoreOperationException(
+                    f"Function '{node.func.id}' is only supported as a method call in filter expressions."
+                ) from e
+            return func(*args)
+
+        if isinstance(node.func, ast.Attribute):
+            target = self.evaluate(node.func.value, context)
+            if node.func.attr == "contains":
+                if len(args) != 1:
+                    raise VectorStoreOperationException("Method 'contains' expects exactly one argument.")
+                return args[0] in target
+
+            try:
+                func = getattr(target, node.func.attr)
+            except AttributeError as e:
+                raise VectorStoreOperationException(
+                    f"Method '{node.func.attr}' is not available in filter expressions."
+                ) from e
+
+            if not callable(func):
+                raise VectorStoreOperationException(
+                    f"Attribute '{node.func.attr}' is not callable in filter expressions."
+                )
+            return func(*args)
+
+        raise VectorStoreOperationException(
+            f"Call target node type '{type(node.func).__name__}' is not allowed in filter expressions."
+        )
+
+    def _compare(self, operator_node: ast.AST, left: Any, right: Any) -> bool:
+        """Evaluate a comparison operator."""
+        if isinstance(operator_node, ast.Eq):
+            return left == right
+        if isinstance(operator_node, ast.NotEq):
+            return left != right
+        if isinstance(operator_node, ast.Lt):
+            return left < right
+        if isinstance(operator_node, ast.LtE):
+            return left <= right
+        if isinstance(operator_node, ast.Gt):
+            return left > right
+        if isinstance(operator_node, ast.GtE):
+            return left >= right
+        if isinstance(operator_node, ast.In):
+            return left in right
+        if isinstance(operator_node, ast.NotIn):
+            return left not in right
+        if isinstance(operator_node, ast.Is):
+            return left is right
+        if isinstance(operator_node, ast.IsNot):
+            return left is not right
+        raise VectorStoreOperationException(
+            f"Comparison operator '{type(operator_node).__name__}' is not allowed in filter expressions."
+        )
+
+    def _safe_add(self, left: Any, right: Any) -> Any:
+        """Safely evaluate addition."""
+        if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+            return left + right
+        if isinstance(left, str) and isinstance(right, str):
+            return self._ensure_sequence_result_size(left, right, lambda a, b: a + b)
+        if isinstance(left, list) and isinstance(right, list):
+            return self._ensure_sequence_result_size(left, right, lambda a, b: a + b)
+        if isinstance(left, tuple) and isinstance(right, tuple):
+            return self._ensure_sequence_result_size(left, right, lambda a, b: a + b)
+        raise VectorStoreOperationException(
+            "Addition in filter expressions is only allowed for numeric values and same-type sequences."
+        )
+
+    def _safe_mult(self, left: Any, right: Any) -> Any:
+        """Safely evaluate multiplication."""
+        if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+            return left * right
+        if isinstance(left, int) and isinstance(right, (str, list, tuple)):
+            return self._safe_repeat(right, left)
+        if isinstance(right, int) and isinstance(left, (str, list, tuple)):
+            return self._safe_repeat(left, right)
+        raise VectorStoreOperationException(
+            "Multiplication in filter expressions is only allowed for numeric values and bounded sequence repetition."
+        )
+
+    def _safe_repeat(self, value: str | list[Any] | tuple[Any, ...], repeat_count: int) -> Any:
+        """Safely repeat a sequence."""
+        if repeat_count <= 0 or len(value) == 0:
+            return value * repeat_count
+        if len(value) > self._max_sequence_repeat_size // repeat_count:
+            raise VectorStoreOperationException(
+                "Sequence repetition in filter expressions exceeds the maximum allowed size."
+            )
+        return value * repeat_count
+
+    def _safe_numeric_operation(
+        self,
+        operator_node: ast.AST,
+        left: Any,
+        right: Any,
+        operation: Callable[[float | int, float | int], Any],
+    ) -> Any:
+        """Safely evaluate a numeric binary operation."""
+        if not isinstance(left, (int, float)) or not isinstance(right, (int, float)):
+            raise VectorStoreOperationException(
+                f"Operator '{type(operator_node).__name__}' is only allowed for numeric values in filter expressions."
+            )
+        return operation(left, right)
+
+    def _ensure_literal_collection_size(self, size: int) -> None:
+        """Reject excessively large literal collections."""
+        if size > self._max_literal_collection_size:
+            raise VectorStoreOperationException(
+                "Collection literals in filter expressions exceed the maximum allowed size."
+            )
+
+    def _ensure_sequence_result_size(
+        self,
+        left: str | list[Any] | tuple[Any, ...],
+        right: str | list[Any] | tuple[Any, ...],
+        operation: Callable[[Any, Any], Any],
+    ) -> Any:
+        """Reject oversized sequence concatenation results."""
+        if len(left) + len(right) > self._max_sequence_repeat_size:
+            raise VectorStoreOperationException(
+                "Sequence operations in filter expressions exceed the maximum allowed size."
+            )
+        return operation(left, right)
+
+    def _evaluate_optional(self, node: ast.AST | None, context: Mapping[str, Any]) -> Any:
+        """Evaluate an optional AST node."""
+        return self.evaluate(node, context) if node is not None else None
+
+
 class InMemoryCollection(
     VectorStoreCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -91,6 +419,11 @@ class InMemoryCollection(
     inner_storage: dict[TKey, AttributeDict] = Field(default_factory=dict)
     supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
+    # Conservative defaults: callers can raise these per collection instance or subclass if needed.
+    max_filter_source_length: int = Field(default=2_048, exclude=True)
+    max_filter_ast_node_count: int = Field(default=128, exclude=True)
+    max_filter_literal_collection_size: int = Field(default=256, exclude=True)
+    max_filter_sequence_repeat_size: int = Field(default=1_024, exclude=True)
 
     # Allowlist of AST node types permitted in filter expressions.
     # This can be overridden in subclasses to extend or restrict allowed operations.
@@ -121,7 +454,6 @@ class InMemoryCollection(
         ast.Load,
         ast.Attribute,
         ast.Subscript,
-        ast.Index,  # For Python 3.8 compatibility
         ast.Slice,
         # Literals
         ast.Constant,
@@ -165,6 +497,19 @@ class InMemoryCollection(
         "values",
         "items",
     }
+    direct_filter_functions: ClassVar[dict[str, Callable[..., Any]]] = {
+        "len": len,
+        "str": str,
+        "int": int,
+        "float": float,
+        "bool": bool,
+        "abs": abs,
+        "min": min,
+        "max": max,
+        "sum": sum,
+        "any": any,
+        "all": all,
+    }
 
     # Blocklist of dangerous attribute names that cannot be accessed in filter expressions.
     # These attributes can be used to escape the sandbox and execute arbitrary code.
@@ -187,6 +532,8 @@ class InMemoryCollection(
         "__getattribute__",
         "__setattr__",
         "__delattr__",
+        "__setitem__",
+        "__delitem__",
         # Import and builtins
         "__builtins__",
         "__import__",
@@ -238,8 +585,17 @@ class InMemoryCollection(
 
         > [Important]
         > Filters are powerful things, so make sure to not allow untrusted input here.
-        > Filters for this collection are parsed and evaluated using Python's `ast` module, so code might be executed.
-        > We only allow certain AST nodes and functions to be used in the filter expressions to mitigate security risks.
+        > Filters for this collection are parsed into Python's `ast` module and evaluated by a restricted interpreter.
+        > We only allow certain AST nodes and functions to be used in filter expressions, and we reject expressions
+        > that exceed reasonable size and complexity limits.
+        >
+        > The default filter limits are:
+        > - `max_filter_source_length=2048`
+        > - `max_filter_ast_node_count=128`
+        > - `max_filter_literal_collection_size=256`
+        > - `max_filter_sequence_repeat_size=1024`
+        > You can override these limits by passing them through `kwargs` or by setting them on the collection
+        > instance after initialization.
 
         """
         super().__init__(
@@ -390,6 +746,9 @@ class InMemoryCollection(
         are allowed. This can be customized by overriding `allowed_filter_ast_nodes` and
         `allowed_filter_functions` class attributes.
         """
+        if len(filter_str) > self.max_filter_source_length:
+            raise VectorStoreOperationException("Filter string exceeds the maximum allowed length.")
+
         try:
             tree = ast.parse(filter_str, mode="eval")
         except SyntaxError as e:
@@ -404,9 +763,12 @@ class InMemoryCollection(
         # Get the lambda parameter name(s) to allow them as valid Name nodes
         lambda_node = tree.body
         lambda_param_names = {arg.arg for arg in lambda_node.args.args}
-
+        lambda_param_order = [arg.arg for arg in lambda_node.args.args]
         # Walk the AST to validate all nodes against the allowlist
-        for node in ast.walk(tree):
+        for node_count, node in enumerate(ast.walk(tree), start=1):
+            if node_count > self.max_filter_ast_node_count:
+                raise VectorStoreOperationException("Filter expression exceeds the maximum allowed complexity.")
+
             node_type = type(node)
 
             # Check if the node type is allowed
@@ -431,33 +793,69 @@ class InMemoryCollection(
 
             # For Call nodes, validate that only allowed functions are called
             if isinstance(node, ast.Call):
-                func_name = None
+                func_name: str
                 if isinstance(node.func, ast.Name):
                     func_name = node.func.id
                 elif isinstance(node.func, ast.Attribute):
                     func_name = node.func.attr
+                else:
+                    raise VectorStoreOperationException(
+                        f"Call target node type '{type(node.func).__name__}' is not allowed in filter expressions. "
+                        "Only direct function and method calls are supported."
+                    )
 
-                if func_name and func_name not in self.allowed_filter_functions:
+                if func_name not in self.allowed_filter_functions:
                     raise VectorStoreOperationException(
                         f"Function '{func_name}' is not allowed in filter expressions. "
                         f"Allowed functions: {', '.join(sorted(self.allowed_filter_functions))}"
                     )
 
-        try:
-            code = compile(tree, filename="<filter>", mode="eval")
-            func = eval(code, {"__builtins__": {}}, {})  # nosec
-        except Exception as e:
-            raise VectorStoreOperationException(f"Error compiling filter: {e}") from e
+            if (
+                isinstance(node, (ast.List, ast.Tuple, ast.Set))
+                and len(node.elts) > self.max_filter_literal_collection_size
+            ):
+                raise VectorStoreOperationException(
+                    "Collection literals in filter expressions exceed the maximum allowed size."
+                )
 
-        if not callable(func):
-            raise VectorStoreOperationException("Compiled filter is not callable.")
+            if isinstance(node, ast.Dict) and len(node.keys) > self.max_filter_literal_collection_size:
+                raise VectorStoreOperationException(
+                    "Collection literals in filter expressions exceed the maximum allowed size."
+                )
 
-        return func
+            if (
+                isinstance(node, ast.Constant)
+                and isinstance(node.value, str)
+                and len(node.value) > self.max_filter_literal_collection_size
+            ):
+                raise VectorStoreOperationException(
+                    "String literals in filter expressions exceed the maximum allowed size."
+                )
+
+        evaluator = _SafeFilterEvaluator(
+            direct_call_functions=self.direct_filter_functions,
+            blocked_attributes=self.blocked_filter_attributes,
+            max_literal_collection_size=self.max_filter_literal_collection_size,
+            max_sequence_repeat_size=self.max_filter_sequence_repeat_size,
+        )
+
+        def filter_callable(*args: Any) -> Any:
+            if len(args) != len(lambda_param_order):
+                raise VectorStoreOperationException(
+                    f"Filter expected {len(lambda_param_order)} argument(s), but received {len(args)}."
+                )
+            context = {
+                name: ReadOnlyAttributeDict._wrap_value(value)
+                for name, value in zip(lambda_param_order, args, strict=True)
+            }
+            return evaluator.evaluate(lambda_node.body, context)
+
+        return filter_callable
 
     def _run_filter(self, filter: Callable, record: AttributeDict[TAKey, TAValue]) -> bool:
         """Run the filter on the record, supporting attribute access."""
         try:
-            return filter(record)
+            return filter(ReadOnlyAttributeDict(record))
         except Exception as e:
             raise VectorStoreOperationException(f"Error running filter: {e}") from e
 
