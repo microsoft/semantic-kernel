@@ -18,7 +18,7 @@ internal sealed class QdrantTestStore : TestStore
     // Qdrant doesn't support the default Flat index kind
     public override string DefaultIndexKind => IndexKind.Hnsw;
 
-    private readonly QdrantContainer _container = new QdrantBuilder().Build();
+    private readonly QdrantContainer _container = new QdrantBuilder("qdrant/qdrant:v1.17.0").Build();
     private readonly bool _hasNamedVectors;
     private QdrantClient? _client;
 
