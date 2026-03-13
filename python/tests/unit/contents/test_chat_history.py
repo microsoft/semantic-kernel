@@ -618,8 +618,7 @@ def test_from_rendered_prompt_preserves_html_p_tag():
     Regression test for https://github.com/microsoft/semantic-kernel/issues/13632
     """
     rendered = (
-        'Translate following message from English language into the Spanish language'
-        ' - "<p>What is your name?</p>"'
+        'Translate following message from English language into the Spanish language - "<p>What is your name?</p>"'
     )
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert len(chat_history.messages) == 1
