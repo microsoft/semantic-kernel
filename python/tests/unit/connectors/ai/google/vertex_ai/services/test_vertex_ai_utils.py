@@ -110,3 +110,50 @@ def test_format_assistant_message_with_unsupported_items() -> None:
 
     with pytest.raises(ServiceInvalidRequestError):
         format_assistant_message(assistant_message)
+
+
+def test_format_assistant_message_with_thought_signature() -> None:
+    """Test that thought_signature is preserved in function call parts for Vertex AI."""
+    import base64
+
+    thought_sig = base64.b64encode(b"test_thought_signature_data").decode("utf-8")
+    assistant_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(
+                name="test_function",
+                arguments={"arg1": "value1"},
+                metadata={"thought_signature": thought_sig},
+            ),
+        ],
+    )
+
+    formatted = format_assistant_message(assistant_message)
+    assert len(formatted) == 1
+    assert isinstance(formatted[0], Part)
+    assert formatted[0].function_call.name == "test_function"
+    assert formatted[0].function_call.args == {"arg1": "value1"}
+    part_dict = formatted[0].to_dict()
+    assert "thought_signature" in part_dict
+    assert part_dict["thought_signature"] == thought_sig
+
+
+def test_format_assistant_message_without_thought_signature() -> None:
+    """Test that function calls without thought_signature still work for Vertex AI."""
+    assistant_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(
+                name="test_function",
+                arguments={"arg1": "value1"},
+            ),
+        ],
+    )
+
+    formatted = format_assistant_message(assistant_message)
+    assert len(formatted) == 1
+    assert isinstance(formatted[0], Part)
+    assert formatted[0].function_call.name == "test_function"
+    assert formatted[0].function_call.args == {"arg1": "value1"}
+    part_dict = formatted[0].to_dict()
+    assert "thought_signature" not in part_dict
