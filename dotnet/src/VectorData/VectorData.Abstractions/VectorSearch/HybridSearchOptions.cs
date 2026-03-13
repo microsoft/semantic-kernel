@@ -15,14 +15,6 @@ public class HybridSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a search filter to use before doing the hybrid search.
     /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
-    [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; set; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-    /// <summary>
-    /// Gets or sets a search filter to use before doing the vector search.
-    /// </summary>
     public Expression<Func<TRecord, bool>>? Filter { get; set; }
 
     /// <summary>

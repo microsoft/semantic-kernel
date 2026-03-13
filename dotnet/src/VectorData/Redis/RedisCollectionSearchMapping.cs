@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
@@ -53,15 +52,9 @@ internal static class RedisCollectionSearchMapping
         // Build search query.
         var redisLimit = top + options.Skip;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new RedisFilterTranslator().Translate(newFilter, model),
-            _ => "*"
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        var filter = options.Filter is not null
+            ? new RedisFilterTranslator().Translate(options.Filter, model)
+            : "*";
 
         var query = new Query($"{filter}=>[KNN {redisLimit} @{vectorProperty.StorageName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
@@ -103,47 +96,6 @@ internal static class RedisCollectionSearchMapping
     }
 
     /// <summary>
-    /// Build a redis filter string from the provided <see cref="VectorSearchFilter"/>.
-    /// </summary>
-    /// <param name="basicVectorSearchFilter">The <see cref="VectorSearchFilter"/> to build the Redis filter string from.</param>
-    /// <param name="model">The model.</param>
-    /// <returns>The Redis filter string.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-#pragma warning disable CS0618 // Type or member is obsolete
-    public static string BuildLegacyFilter(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
-    {
-        var filterClauses = basicVectorSearchFilter.FilterClauses.Select(clause =>
-        {
-            if (clause is EqualToFilterClause equalityFilterClause)
-            {
-                var storagePropertyName = GetStoragePropertyName(model, equalityFilterClause.FieldName);
-
-                return equalityFilterClause.Value switch
-                {
-                    string stringValue => $"@{storagePropertyName}:{{{stringValue}}}",
-                    int intValue => $"@{storagePropertyName}:[{intValue} {intValue}]",
-                    long longValue => $"@{storagePropertyName}:[{longValue} {longValue}]",
-                    float floatValue => $"@{storagePropertyName}:[{floatValue} {floatValue}]",
-                    double doubleValue => $"@{storagePropertyName}:[{doubleValue} {doubleValue}]",
-                    _ => throw new InvalidOperationException($"Unsupported filter value type '{equalityFilterClause.Value.GetType().Name}'.")
-                };
-            }
-            else if (clause is AnyTagEqualToFilterClause tagListContainsClause)
-            {
-                var storagePropertyName = GetStoragePropertyName(model, tagListContainsClause.FieldName);
-                return $"@{storagePropertyName}:{{{tagListContainsClause.Value}}}";
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unsupported filter clause type '{clause.GetType().Name}'.");
-            }
-        });
-
-        return $"({string.Join(" ", filterClauses)})";
-    }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-    /// <summary>
     /// Resolve the distance function to use for a search by checking the distance function of the vector property specified in options
     /// or by falling back to the distance function of the first vector property, or by falling back to the default distance function.
     /// </summary>
@@ -175,22 +127,5 @@ internal static class RedisCollectionSearchMapping
             DistanceFunction.EuclideanSquaredDistance => redisScore,
             _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported."),
         };
-    }
-
-    /// <summary>
-    /// Gets the name of the name under which the property with the given name is stored.
-    /// </summary>
-    /// <param name="model">The model.</param>
-    /// <param name="fieldName">The name of the property in the data model.</param>
-    /// <returns>The name that the property os stored under.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the property name is not found.</exception>
-    private static string GetStoragePropertyName(CollectionModel model, string fieldName)
-    {
-        if (!model.PropertyMap.TryGetValue(fieldName, out var property))
-        {
-            throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        return property.StorageName;
     }
 }

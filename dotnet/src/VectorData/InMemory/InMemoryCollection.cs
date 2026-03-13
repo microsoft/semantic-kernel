@@ -282,17 +282,11 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
         var allValues = this.GetCollectionDictionary().Values.Cast<InMemoryRecordWrapper<TRecord>>();
-        var filteredRecords = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => InMemoryCollectionSearchMapping.FilterRecords(legacyFilter, allValues),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(this.ConvertFilter(newFilter)),
-            _ => allValues
-        };
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        var filteredRecords = options.Filter is not null
+            ? allValues.AsQueryable().Where(this.ConvertFilter(options.Filter))
+            : allValues;
 
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<InMemoryRecordWrapper<TRecord>, (TRecord record, float score)?>(wrapper =>
