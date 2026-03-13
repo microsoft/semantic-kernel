@@ -75,6 +75,20 @@ def test_google_ai_chat_completion_init_with_use_vertexai_missing_project_id(goo
         GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_REGION"]], indirect=True)
+def test_google_ai_chat_completion_init_with_use_vertexai_missing_region(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with use_vertexai true but missing region"""
+    with pytest.raises(ServiceInitializationError, match="Region must be provided when use_vertexai is True."):
+        GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
+def test_google_ai_chat_completion_init_with_use_vertexai_no_api_key(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion succeeds with use_vertexai=True and no api_key"""
+    chat_completion = GoogleAIChatCompletion(use_vertexai=True)
+    assert chat_completion.service_settings.use_vertexai is True
+
+
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
     google_ai_chat_completion = GoogleAIChatCompletion()
     assert google_ai_chat_completion.get_prompt_execution_settings_class() == GoogleAIChatPromptExecutionSettings
