@@ -350,11 +350,23 @@ class ChatHistory(KernelBaseModel):
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
+                if item.tail and item.tail.strip():
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
             elif item.tag == CHAT_HISTORY_TAG:
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
-            if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+                if item.tail and item.tail.strip():
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+            else:
+                # Unrecognized XML element (e.g. HTML tags like <p>, <div>, etc.)
+                # Serialize it back to string and append to the last message's content
+                # or create a new user message, so that HTML tags in prompts are preserved.
+                raw = tostring(item, encoding="unicode", short_empty_elements=False)
+                tail = item.tail or ""
+                if messages:
+                    messages[-1].content = (messages[-1].content or "") + raw + tail
+                else:
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=raw + tail))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)
