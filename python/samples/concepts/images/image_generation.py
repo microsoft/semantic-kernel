@@ -24,9 +24,7 @@ async def main():
     kernel.add_service(dalle3)
     kernel.add_service(OpenAIChatCompletion(service_id="default"))
 
-    image = await dalle3.generate_image(
-        description="a painting of a flower vase", width=1024, height=1024, quality="hd", style="vivid"
-    )
+    image = await dalle3.generate_image(description="a painting of a flower vase", width=1024, height=1024)
     print(image)
     if pil_available:
         img = Image.open(urlopen(image))  # nosec
