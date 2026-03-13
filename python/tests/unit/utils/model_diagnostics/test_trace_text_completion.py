@@ -76,6 +76,7 @@ async def test_trace_text_completion(
 ):
     mock_span = mock_tracer.start_span.return_value
     # Setup
+    mock_span = mock_tracer.start_span.return_value
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
     with patch.object(MockTextCompletion, "_inner_get_text_contents", return_value=mock_response):
@@ -147,6 +148,7 @@ async def test_trace_text_completion_exception(
 ):
     mock_span = mock_tracer.start_span.return_value
     # Setup
+    mock_span = mock_tracer.start_span.return_value
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
     with patch.object(MockTextCompletion, "_inner_get_text_contents", side_effect=ServiceResponseException()):
