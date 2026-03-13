@@ -388,9 +388,13 @@ class KernelFunction(KernelBaseModel):
             KernelFunction: The copied function.
         """
         cop: KernelFunction = copy(self)
-        cop.metadata = deepcopy(self.metadata)
-        if plugin_name:
+        # Only copy metadata if we need to modify plugin_name
+        if plugin_name and plugin_name != self.metadata.plugin_name:
+            cop.metadata = self.metadata.model_copy()  # Shallow copy via Pydantic
             cop.metadata.plugin_name = plugin_name
+        else:
+            # Reuse reference when no modification needed (safe as metadata is immutable in practice)
+            cop.metadata = self.metadata
         return cop
 
     def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:
