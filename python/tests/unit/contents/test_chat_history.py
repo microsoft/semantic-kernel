@@ -628,3 +628,42 @@ def test_chat_history_serialize(chat_history: ChatHistory):
     ])
     chat_history.add_tool_message([FunctionResultContent(id="test1", result=custom_result)])
     assert "CustomResultTestValue" in chat_history.serialize()
+
+
+def test_chat_history_from_rendered_prompt_with_html_tags():
+    """Test that HTML tags like <p> in prompts are preserved and not silently dropped.
+
+    Regression test for https://github.com/microsoft/semantic-kernel/issues/13632
+    """
+    rendered = 'Translate following message from English language into the Spanish language - "<p>What is your name?</p>"'
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
+    assert "<p>" in chat_history.messages[0].content
+    assert "What is your name?" in chat_history.messages[0].content
+    assert "</p>" in chat_history.messages[0].content
+
+
+def test_chat_history_from_rendered_prompt_with_multiple_html_tags():
+    """Test that multiple HTML tags in prompts are preserved."""
+    rendered = "Here is <b>bold</b> and <i>italic</i> text"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
+    assert "<b>bold</b>" in chat_history.messages[0].content
+    assert "<i>italic</i>" in chat_history.messages[0].content
+
+
+def test_chat_history_from_rendered_prompt_html_with_message_tags():
+    """Test that HTML tags work alongside recognized message tags."""
+    rendered = '<message role="system">You are helpful</message>Translate: <p>Hello</p> please'
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].role == AuthorRole.SYSTEM
+    assert chat_history.messages[0].content == "You are helpful"
+    # The HTML content and surrounding text should be preserved
+    found_html = False
+    for msg in chat_history.messages[1:]:
+        if "<p>" in (msg.content or "") and "Hello" in (msg.content or ""):
+            found_html = True
+            break
+    assert found_html, f"HTML tag <p>Hello</p> not found in messages: {[m.content for m in chat_history.messages]}"
