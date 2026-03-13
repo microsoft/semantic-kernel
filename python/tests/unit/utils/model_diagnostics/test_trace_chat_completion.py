@@ -91,7 +91,6 @@ async def test_trace_chat_completion(
     chat_history,
     model_diagnostics_unit_test_env,
 ):
-    mock_span = mock_tracer.start_span.return_value
     # Setup
     mock_span = mock_tracer.start_span.return_value
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
@@ -172,7 +171,6 @@ async def test_trace_chat_completion_exception(
     chat_history,
     model_diagnostics_unit_test_env,
 ):
-    mock_span = mock_tracer.start_span.return_value
     # Setup
     mock_span = mock_tracer.start_span.return_value
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
