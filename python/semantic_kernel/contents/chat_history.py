@@ -345,16 +345,45 @@ class ChatHistory(KernelBaseModel):
         except ParseError as exc:
             logger.info(f"Could not parse prompt {prompt} as xml, treating as text, error was: {exc}")
             return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
-        if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
+        # Accumulate text content that should be combined into a single message.
+        # This handles HTML-like tags (e.g., <p>, <div>) that are valid XML but not
+        # recognized as chat message tags — their content should be preserved as text.
+        pending_text_parts: list[str] = []
+        if xml_prompt.text:
+            pending_text_parts.append(xml_prompt.text)
+
+        def flush_pending_text(role: AuthorRole = AuthorRole.SYSTEM) -> None:
+            """Flush accumulated text as a chat message if non-empty."""
+            if pending_text_parts:
+                combined = "".join(pending_text_parts).strip()
+                if combined:
+                    messages.append(ChatMessageContent(role=role, content=unescape(combined)))
+                pending_text_parts.clear()
+
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
+                # Flush any pending text before a structured message
+                flush_pending_text()
                 messages.append(ChatMessageContent.from_element(item))
+                # Tail text after a recognized message element is treated as USER content
+                if item.tail and item.tail.strip():
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
             elif item.tag == CHAT_HISTORY_TAG:
+                flush_pending_text()
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
-            if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+                # Tail text after a recognized history element is treated as USER content
+                if item.tail and item.tail.strip():
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+            else:
+                # Unrecognized element (e.g., <p>, <b>, <div>) — serialize it back
+                # to XML so the original content is preserved in the prompt text.
+                # This fixes #13632 where HTML tags caused content to be silently dropped.
+                # Note: tostring() includes the element's tail, so we don't add it separately.
+                pending_text_parts.append(tostring(item, encoding="unicode"))
+
+        # Flush any remaining text (as USER if messages exist, SYSTEM otherwise)
+        flush_pending_text(role=AuthorRole.USER if messages else AuthorRole.SYSTEM)
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)
