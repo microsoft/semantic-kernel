@@ -592,6 +592,48 @@ async def test_template_empty_history(chat_history: ChatHistory):
     assert chat_history_2.messages[1].role == AuthorRole.USER
 
 
+def test_chat_history_from_rendered_prompt_with_html_tags():
+    """Regression test for #13632: HTML tags in prompts caused content to be dropped.
+
+    When the prompt contains valid XML tags like <p>, <div>, etc., the XML parser
+    was treating them as elements and silently discarding their content because
+    they weren't recognized as chat message tags. The fix serializes unrecognized
+    elements back to their string representation.
+    """
+    # Prompt with HTML-like tags
+    prompt_with_html = 'Translate this: "<p>What is your name?</p>"'
+    # Same prompt without HTML tags
+    prompt_without_html = 'Translate this: "What is your name?"'
+
+    history_with_html = ChatHistory.from_rendered_prompt(prompt_with_html)
+    history_without_html = ChatHistory.from_rendered_prompt(prompt_without_html)
+
+    # Both should produce a single user message
+    assert len(history_with_html.messages) == 1
+    assert len(history_without_html.messages) == 1
+
+    # Both should contain the question text
+    assert "What is your name?" in history_with_html.messages[0].content
+    assert "What is your name?" in history_without_html.messages[0].content
+
+    # The HTML version should preserve the <p> tags
+    assert "<p>" in history_with_html.messages[0].content
+    assert "</p>" in history_with_html.messages[0].content
+
+
+def test_chat_history_from_rendered_prompt_with_nested_html():
+    """Test that nested HTML-like tags are preserved."""
+    prompt = "Format this: <div><p>Hello</p><p>World</p></div>"
+
+    history = ChatHistory.from_rendered_prompt(prompt)
+
+    assert len(history.messages) == 1
+    assert "Hello" in history.messages[0].content
+    assert "World" in history.messages[0].content
+    assert "<div>" in history.messages[0].content
+    assert "<p>" in history.messages[0].content
+
+
 def test_to_from_file(chat_history: ChatHistory, tmp_path):
     chat_history.add_system_message("You are an AI assistant")
     chat_history.add_user_message("What is the weather in Seattle?")
