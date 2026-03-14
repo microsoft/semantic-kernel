@@ -97,6 +97,10 @@ def locate_safe_reduction_index(
     if has_system_message:
         target_count -= 1
         if target_count <= 0:
+            logger.warning(
+                "target_count after accounting for system message is %d; reduction will keep only the system message.",
+                target_count,
+            )
             # Reduce to just the system message — return index past all non-system messages.
             # The caller will prepend the system message to the empty/minimal tail.
             return len(history)

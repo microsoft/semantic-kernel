@@ -47,16 +47,25 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
 
         # Preserve system/developer messages so they are not lost during truncation.
         # This matches the .NET SDK behavior where system messages are always retained.
-        system_message = next(
-            (msg for msg in history if msg.role in (AuthorRole.SYSTEM, AuthorRole.DEVELOPER)),
-            None,
+        # Only the first system/developer message is preserved; this mirrors .NET semantics.
+        system_message_index = next(
+            (i for i, msg in enumerate(history) if msg.role in (AuthorRole.SYSTEM, AuthorRole.DEVELOPER)),
+            -1,
+        )
+        system_message = history[system_message_index] if system_message_index >= 0 else None
+
+        # Only adjust target_count if the system message would be truncated away
+        # (i.e., it falls before the naive tail). If the system message is already in the
+        # retained portion, no adjustment is needed — it naturally occupies a slot.
+        system_would_be_truncated = (
+            system_message is not None and system_message_index < len(history) - self.target_count
         )
 
         truncation_index = locate_safe_reduction_index(
             history,
             self.target_count,
             self.threshold_count,
-            has_system_message=system_message is not None,
+            has_system_message=system_would_be_truncated,
         )
         if truncation_index is None:
             logger.info(
