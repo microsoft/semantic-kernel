@@ -168,9 +168,9 @@ def default_dynamic_filter_function(
             continue
         new_filter = None
         if param.name in kwargs:
-            new_filter = f"lambda x: x.{param.name} == '{kwargs[param.name]}'"
+            new_filter = f"lambda x: x.{param.name} == {_format_filter_literal(kwargs[param.name])}"
         elif param.default_value:
-            new_filter = f"lambda x: x.{param.name} == '{param.default_value}'"
+            new_filter = f"lambda x: x.{param.name} == {_format_filter_literal(param.default_value)}"
         if not new_filter:
             continue
         if filter is None:
@@ -181,3 +181,8 @@ def default_dynamic_filter_function(
             filter = [filter, new_filter]
 
     return filter
+
+
+def _format_filter_literal(value: Any) -> str:
+    """Format a value as a safe Python literal for filter strings."""
+    return repr(value)
