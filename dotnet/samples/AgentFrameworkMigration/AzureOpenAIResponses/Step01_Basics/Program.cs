@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.AI;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -24,8 +25,8 @@ async Task SKAgentAsync()
     Console.WriteLine("\n=== SK Agent ===\n");
 
     var responseClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient(deploymentName);
-    OpenAIResponseAgent agent = new(responseClient)
+        .GetResponsesClient();
+    OpenAIResponseAgent agent = new(responseClient, deploymentName)
     {
         Name = "Joker",
         Instructions = "You are good at telling jokes.",
@@ -54,9 +55,9 @@ async Task SKAgent_As_AFAgentAsync()
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
     var responseClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient(deploymentName);
+        .GetResponsesClient();
 
-    OpenAIResponseAgent skAgent = new(responseClient)
+    OpenAIResponseAgent skAgent = new(responseClient, deploymentName)
     {
         Name = "Joker",
         Instructions = "You are good at telling jokes.",
@@ -83,7 +84,7 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient(deploymentName)
+        .GetResponsesClient().AsIChatClient(deploymentName)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
     var thread = agent.GetNewThread();
