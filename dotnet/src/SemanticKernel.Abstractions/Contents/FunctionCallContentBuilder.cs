@@ -77,7 +77,7 @@ public sealed class FunctionCallContentBuilder
 
                 if (this._functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string? fqn) ?? false)
                 {
-                    var functionFullyQualifiedName = Microsoft.SemanticKernel.FunctionName.Parse(fqn);
+                    var functionFullyQualifiedName = ParseFullyQualifiedFunctionName(fqn);
                     pluginName = functionFullyQualifiedName.PluginName;
                     functionName = functionFullyQualifiedName.Name;
                 }
@@ -170,6 +170,28 @@ public sealed class FunctionCallContentBuilder
     /// <param name="functionCallIdsByIndex">The dictionary of function call IDs by function call index.</param>
     /// <param name="functionNamesByIndex">The dictionary of function names by function call index.</param>
     /// <param name="functionArgumentBuildersByIndex">The dictionary of function argument builders by function call index.</param>
+
+    /// <summary>
+    /// Parses a fully-qualified function name into plugin and function parts.
+    /// Tries multiple separators (".", "_", "-") since different AI connectors use different formats.
+    /// </summary>
+    private static FunctionName ParseFullyQualifiedFunctionName(string fullyQualifiedName)
+    {
+        foreach (var separator in new[] { ".", "_", "-" })
+        {
+            if (fullyQualifiedName.Contains(separator, StringComparison.Ordinal))
+            {
+                var parsed = FunctionName.Parse(fullyQualifiedName, separator);
+                if (parsed.PluginName is not null)
+                {
+                    return parsed;
+                }
+            }
+        }
+
+        return FunctionName.Parse(fullyQualifiedName);
+    }
+
     private static void TrackStreamingFunctionCallUpdate(StreamingFunctionCallUpdateContent update, ref Dictionary<string, string>? functionCallIdsByIndex, ref Dictionary<string, string>? functionNamesByIndex, ref Dictionary<string, StringBuilder>? functionArgumentBuildersByIndex)
     {
         if (update is null)
