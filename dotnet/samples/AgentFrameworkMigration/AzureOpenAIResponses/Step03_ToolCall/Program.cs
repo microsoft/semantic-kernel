@@ -29,7 +29,7 @@ await AFAgentAsync();
 async Task SKAgentAsync()
 {
     OpenAIResponseAgent agent = new(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient())
+        .GetResponsesClient(), deploymentName)
     { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -49,7 +49,7 @@ async Task SKAgentAsync()
 async Task SKAgent_As_AFAgentAsync()
 {
     OpenAIResponseAgent skAgent = new(new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient())
+        .GetResponsesClient(), deploymentName)
     { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

@@ -25,7 +25,7 @@ async Task SKAgentAsync()
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<Microsoft.SemanticKernel.Agents.Agent>((sp)
-        => new OpenAIResponseAgent(new OpenAIClient(apiKey).GetResponsesClient())
+        => new OpenAIResponseAgent(new OpenAIClient(apiKey).GetResponsesClient(), model)
         {
             Name = "Joker",
             Instructions = "You are good at telling jokes."
@@ -44,7 +44,7 @@ async Task SKAgent_As_AFAgentAsync()
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<Microsoft.SemanticKernel.Agents.Agent>((sp)
-        => new OpenAIResponseAgent(new OpenAIClient(apiKey).GetResponsesClient())
+        => new OpenAIResponseAgent(new OpenAIClient(apiKey).GetResponsesClient(), model)
         {
             Name = "Joker",
             Instructions = "You are good at telling jokes."
