@@ -19,12 +19,12 @@ class TestMiniMaxSettings:
         settings = MiniMaxSettings(
             api_key="test-api-key",
             base_url="https://custom.minimax.io/v1",
-            chat_model_id="MiniMax-M2.5",
+            chat_model_id="MiniMax-M2.7",
         )
 
         assert settings.api_key.get_secret_value() == "test-api-key"
         assert settings.base_url == "https://custom.minimax.io/v1"
-        assert settings.chat_model_id == "MiniMax-M2.5"
+        assert settings.chat_model_id == "MiniMax-M2.7"
 
     def test_env_prefix(self):
         """Test environment variable prefix."""
@@ -43,9 +43,9 @@ class TestMiniMaxSettings:
     def test_environment_variables(self, monkeypatch):
         """Test that environment variables override defaults."""
         monkeypatch.setenv("MINIMAX_API_KEY", "env-key")
-        monkeypatch.setenv("MINIMAX_CHAT_MODEL_ID", "MiniMax-M2.5")
+        monkeypatch.setenv("MINIMAX_CHAT_MODEL_ID", "MiniMax-M2.7")
 
         settings = MiniMaxSettings()
 
         assert settings.api_key.get_secret_value() == "env-key"
-        assert settings.chat_model_id == "MiniMax-M2.5"
+        assert settings.chat_model_id == "MiniMax-M2.7"

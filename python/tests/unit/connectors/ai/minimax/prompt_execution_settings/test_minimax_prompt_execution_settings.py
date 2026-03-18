@@ -43,7 +43,7 @@ class TestMiniMaxChatPromptExecutionSettings:
 
     def test_model_alias(self):
         """Test that ai_model_id serializes as 'model'."""
-        settings = MiniMaxChatPromptExecutionSettings(ai_model_id="MiniMax-M2.5")
+        settings = MiniMaxChatPromptExecutionSettings(ai_model_id="MiniMax-M2.7")
         result = settings.prepare_settings_dict()
         assert "model" in result
-        assert result["model"] == "MiniMax-M2.5"
+        assert result["model"] == "MiniMax-M2.7"

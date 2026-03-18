@@ -18,7 +18,7 @@ You can provide your API key directly or through environment variables.
 from semantic_kernel.connectors.ai.minimax import MiniMaxChatCompletion
 
 chat_service = MiniMaxChatCompletion(
-    ai_model_id="MiniMax-M2.5",  # Default model if not specified
+    ai_model_id="MiniMax-M2.7",  # Default model if not specified
     api_key="your-minimax-api-key",  # Can also use MINIMAX_API_KEY env variable
     service_id="minimax-chat"  # Optional service identifier
 )
@@ -46,6 +46,8 @@ print(response.content)
 
 ## Available Models
 
+- `MiniMax-M2.7` - Latest flagship model with enhanced reasoning and coding (default)
+- `MiniMax-M2.7-highspeed` - High-speed version of M2.7 for low-latency scenarios
 - `MiniMax-M2.5` - Standard model with 204K context window
 - `MiniMax-M2.5-highspeed` - High-speed variant with 204K context window
 
@@ -59,4 +61,4 @@ print(response.content)
 
 ## Notes
 
-- MiniMax API requires temperature to be in the range (0.0, 1.0]. A value of exactly 0.0 is not accepted.
+- MiniMax API accepts temperature in the range [0.0, 1.0].

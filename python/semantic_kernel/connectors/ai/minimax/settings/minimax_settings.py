@@ -20,7 +20,7 @@ class MiniMaxSettings(KernelBaseSettings):
         (Env var MINIMAX_API_KEY)
     - base_url: str - The url of the MiniMax API endpoint. Defaults to https://api.minimax.io/v1.
         (Env var MINIMAX_BASE_URL)
-    - chat_model_id: str | None - The MiniMax chat model ID to use, for example, MiniMax-M2.5.
+    - chat_model_id: str | None - The MiniMax chat model ID to use, for example, MiniMax-M2.7.
         (Env var MINIMAX_CHAT_MODEL_ID)
     - env_file_path: if provided, the .env settings are read from this file path location
     """

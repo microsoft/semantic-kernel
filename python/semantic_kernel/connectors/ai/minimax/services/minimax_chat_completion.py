@@ -45,7 +45,7 @@ else:
 logger: logging.Logger = logging.getLogger(__name__)
 
 # Default MiniMax chat model when none is specified
-DEFAULT_MINIMAX_CHAT_MODEL = "MiniMax-M2.5"
+DEFAULT_MINIMAX_CHAT_MODEL = "MiniMax-M2.7"
 
 
 @experimental
@@ -66,7 +66,7 @@ class MiniMaxChatCompletion(MiniMaxHandler, ChatCompletionClientBase):
         """Initialize a MiniMaxChatCompletion service.
 
         Args:
-            ai_model_id (str): MiniMax model name, for example, MiniMax-M2.5.
+            ai_model_id (str): MiniMax model name, for example, MiniMax-M2.7.
                 If not provided, defaults to DEFAULT_MINIMAX_CHAT_MODEL.
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override
