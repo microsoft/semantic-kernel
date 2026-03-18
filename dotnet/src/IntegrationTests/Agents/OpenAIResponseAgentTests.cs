@@ -365,10 +365,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         {
             return this.CreateClient(this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>());
         }
-        else
-        {
-            return this.CreateClient(this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>());
-        }
+
+        return this.CreateClient(this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>());
     }
 
     private (ResponsesClient, string) CreateClient(OpenAIConfiguration? configuration)
@@ -388,7 +386,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
             };
         }
 
-        return (new ResponsesClient(new ApiKeyCredential(configuration.ApiKey), options), configuration.ChatModelId);
+        return (new ResponsesClient(new ApiKeyCredential(configuration.ApiKey), options), configuration.ChatModelId!);
     }
 
     private (ResponsesClient, string) CreateClient(AzureOpenAIConfiguration? configuration)
@@ -409,7 +407,7 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
         }
 
         var azureClient = new AzureOpenAIClient(new Uri(configuration.Endpoint), new AzureCliCredential(), options);
-        return (azureClient.GetResponsesClient(), configuration.ChatDeploymentName);
+        return (azureClient.GetResponsesClient(), configuration.ChatDeploymentName!);
     }
 
     public sealed class MenuPlugin
