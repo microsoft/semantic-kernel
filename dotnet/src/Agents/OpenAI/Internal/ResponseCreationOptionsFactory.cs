@@ -23,6 +23,7 @@ internal static class ResponseCreationOptionsFactory
         {
             creationOptions = new CreateResponseOptions
             {
+                Model = responseAgentInvokeOptions.ResponseCreationOptions.Model ?? agent.ModelId,
                 EndUserId = responseAgentInvokeOptions.ResponseCreationOptions.EndUserId ?? agent.GetDisplayName(),
                 Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? instructions,
                 StoredOutputEnabled = responseAgentInvokeOptions.ResponseCreationOptions.StoredOutputEnabled ?? agent.StoreEnabled,
@@ -44,6 +45,7 @@ internal static class ResponseCreationOptionsFactory
         {
             creationOptions = new CreateResponseOptions
             {
+                Model = agent.ModelId,
                 EndUserId = agent.GetDisplayName(),
                 Instructions = instructions,
                 StoredOutputEnabled = agent.StoreEnabled,

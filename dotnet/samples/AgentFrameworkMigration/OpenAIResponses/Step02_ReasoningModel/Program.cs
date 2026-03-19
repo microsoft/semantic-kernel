@@ -48,7 +48,7 @@ async Task SKAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient();
     OpenAIResponseAgent agent = new(responseClient)
     {
         Name = "Thinker",
@@ -116,7 +116,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient();
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -176,7 +176,7 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var agent = new OpenAIClient(apiKey).GetResponsesClient(model)
+    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsIChatClient(model)
         .CreateAIAgent(name: "Thinker", instructions: "You are at thinking hard before answering.");
 
     var thread = agent.GetNewThread();
