@@ -70,6 +70,7 @@ internal static class SqlitePropertyMapping
 
             var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
             {
+                IsNullable = property.IsNullable,
                 Configuration = configuration,
                 HasIndex = property is DataPropertyModel { IsIndexed: true }
             };

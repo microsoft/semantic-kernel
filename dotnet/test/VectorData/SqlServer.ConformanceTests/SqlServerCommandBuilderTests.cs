@@ -114,7 +114,10 @@ public class SqlServerCommandBuilderTests
                 new VectorStoreKeyProperty("id", typeof(long)),
                 new VectorStoreDataProperty("simpleName", typeof(string)),
                 new VectorStoreDataProperty("with space", typeof(int)) { IsIndexed = true },
-                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreDataProperty("nullableInt", typeof(int?)),
+                new VectorStoreDataProperty("flag", typeof(bool)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10),
+                new VectorStoreVectorProperty("nullableEmbedding", typeof(ReadOnlyMemory<float>?), 10)
             ]);
 
         using SqlConnection connection = CreateConnection();
@@ -128,8 +131,11 @@ public class SqlServerCommandBuilderTests
         CREATE TABLE [schema].[table] (
         [id] BIGINT IDENTITY,
         [simpleName] NVARCHAR(MAX),
-        [with space] INT,
-        [embedding] VECTOR(10),
+        [with space] INT NOT NULL,
+        [nullableInt] INT,
+        [flag] BIT NOT NULL,
+        [embedding] VECTOR(10) NOT NULL,
+        [nullableEmbedding] VECTOR(10),
         PRIMARY KEY ([id])
         );
         CREATE INDEX index_table_withspace ON [schema].[table]([with space]);
@@ -168,7 +174,7 @@ public class SqlServerCommandBuilderTests
         CREATE TABLE [schema].[table] (
         [id] BIGINT IDENTITY,
         [name] NVARCHAR(MAX),
-        [embedding] VECTOR(10),
+        [embedding] VECTOR(10) NOT NULL,
         PRIMARY KEY ([id])
         );
         END;
@@ -204,7 +210,7 @@ public class SqlServerCommandBuilderTests
         BEGIN
         CREATE TABLE [schema].[table] (
         [id] BIGINT IDENTITY,
-        [embedding] VECTOR(10),
+        [embedding] VECTOR(10) NOT NULL,
         PRIMARY KEY ([id])
         );
         END;
@@ -534,4 +540,66 @@ public class SqlServerCommandBuilderTests
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
         => new SqlServerModelBuilder()
             .BuildDynamic(new() { Properties = properties }, defaultEmbeddingGenerator: null);
+
+#if NET // NRT detection via NullabilityInfoContext is only available on .NET 6+
+    [Fact]
+    public void CreateTable_WithNrtAnnotations()
+    {
+        var model = new SqlServerModelBuilder().Build(
+            typeof(NrtTestRecord),
+            typeof(long),
+            definition: null,
+            defaultEmbeddingGenerator: null);
+
+        using SqlConnection connection = CreateConnection();
+
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists: false, model);
+
+        var command = Assert.Single(commands);
+
+        Assert.Equal(
+        """
+        BEGIN
+        CREATE TABLE [schema].[table] (
+        [Id] BIGINT IDENTITY,
+        [NonNullableString] NVARCHAR(MAX) NOT NULL,
+        [NullableString] NVARCHAR(MAX),
+        [NonNullableInt] INT NOT NULL,
+        [NullableInt] INT,
+        [NonNullableBool] BIT NOT NULL,
+        [Embedding] VECTOR(10) NOT NULL,
+        PRIMARY KEY ([Id])
+        );
+        END;
+        """, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
+#pragma warning disable CA1812 // Class is used via reflection
+    private sealed class NrtTestRecord
+    {
+        [VectorStoreKey]
+        public long Id { get; set; }
+
+        [VectorStoreData]
+        public string NonNullableString { get; set; }
+
+        [VectorStoreData]
+        public string? NullableString { get; set; }
+
+        [VectorStoreData]
+        public int NonNullableInt { get; set; }
+
+        [VectorStoreData]
+        public int? NullableInt { get; set; }
+
+        [VectorStoreData]
+        public bool NonNullableBool { get; set; }
+
+        [VectorStoreVector(10)]
+        public ReadOnlyMemory<float> Embedding { get; set; }
+    }
+#pragma warning restore CA1812
+#pragma warning restore CS8618
+#endif
 }

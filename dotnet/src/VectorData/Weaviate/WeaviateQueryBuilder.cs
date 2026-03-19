@@ -149,6 +149,7 @@ internal static class WeaviateQueryBuilder
 #pragma warning restore CS0618
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
+        var sanitizedKeywords = keywords.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
         return $$"""
         {
@@ -158,7 +159,7 @@ internal static class WeaviateQueryBuilder
               offset: {{searchOptions.Skip}}
               {{(filter is null ? "" : "where: " + filter)}}
               hybrid: {
-                query: "{{keywords}}"
+                query: "{{sanitizedKeywords}}"
                 properties: ["{{textProperty.StorageName}}"]
                 {{GetTargetVectorsQuery(hasNamedVectors, vectorProperty.StorageName)}}
                 vector: {{vectorArray}}
