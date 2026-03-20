@@ -38,30 +38,33 @@ jobs:
       - name: Resolve PR metadata
         id: pr
         shell: bash
+        env:
+          PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL_INPUT: ${{ inputs.pr_url }}
         run: |
           set -euo pipefail
 
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
-            echo "pr_url=${{ github.event.pull_request.html_url }}" >> "$GITHUB_OUTPUT"
-            echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-            echo "repo=${{ github.repository }}" >> "$GITHUB_OUTPUT"
+            echo "pr_url=${PR_HTML_URL}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          pr_url="${{ inputs.pr_url }}"
-          if [[ -z "$pr_url" ]]; then
+          if [[ -z "$PR_URL_INPUT" ]]; then
             echo "workflow_dispatch requires pr_url" >&2
             exit 1
           fi
 
-          if [[ ! "$pr_url" =~ /pull/([0-9]+)$ ]]; then
-            echo "Could not parse pull request number from: $pr_url" >&2
+          if [[ ! "$PR_URL_INPUT" =~ /pull/([0-9]+)$ ]]; then
+            echo "Could not parse pull request number from: $PR_URL_INPUT" >&2
             exit 1
           fi
 
-          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "pr_url=${PR_URL_INPUT}" >> "$GITHUB_OUTPUT"
           echo "pr_number=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-          echo "repo=${{ github.repository }}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
 
       # Safe checkout: base repo only, not the untrusted PR head.
       - name: Checkout target repo base
@@ -105,18 +108,22 @@ jobs:
           GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
           SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          PR_REPO: ${{ steps.pr.outputs.repo }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
         run: |
           uv run python scripts/classify_pr_spam.py \
-            --repo "${{ steps.pr.outputs.repo }}" \
-            --pr-number "${{ steps.pr.outputs.pr_number }}" \
+            --repo "$PR_REPO" \
+            --pr-number "$PR_NUMBER" \
             --repo-path "${TARGET_REPO_PATH}" \
             --apply-labels
 
       - name: Stop after spam gate
         if: ${{ steps.spam.outputs.decision != 'allow' }}
         shell: bash
+        env:
+          SPAM_DECISION: ${{ steps.spam.outputs.decision }}
         run: |
-          echo "Skipping review because spam gate decided: ${{ steps.spam.outputs.decision }}"
+          echo "Skipping review because spam gate decided: ${SPAM_DECISION}"
 
       - name: Run PR review
         if: ${{ steps.spam.outputs.decision == 'allow' }}
@@ -127,8 +134,9 @@ jobs:
           GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
           SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
         run: |
           uv run python scripts/trigger_pr_review.py \
-            --pr-url "${{ steps.pr.outputs.pr_url }}" \
-            --github-username "${{ github.actor }}" \
+            --pr-url "$PR_URL" \
+            --github-username "$GITHUB_ACTOR" \
             --no-require-comment-selection
