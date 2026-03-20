@@ -53,7 +53,7 @@ jobs:
             pr_url="https://github.com/${GITHUB_REPOSITORY}/pull/${pr_number}"
           fi
 
-          if [[ -z "$pr_number" ]]; then
+          if [[ ! "$pr_number" =~ ^[1-9][0-9]*$ ]]; then
             echo "Could not determine PR number" >&2
             exit 1
           fi
