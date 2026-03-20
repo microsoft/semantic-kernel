@@ -238,14 +238,13 @@ public class OpenAIResponseExtensionsTests
         return result;
     }
 
-    private ResponseResult CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
+    private ResponseResult CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice)
     {
         var result = new ResponseResult
         {
             Id = id,
             CreatedAt = createdAt,
             Error = error,
-            Instructions = instructions,
             Model = model,
             PreviousResponseId = previousResponseId,
             Temperature = temperature,
