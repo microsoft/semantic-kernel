@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
@@ -16,7 +16,11 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// </summary>
 public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    private readonly VertexAITextEmbeddingGenerationService _service;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VertexAITextEmbeddingGenerationService"/> class.
@@ -38,10 +42,9 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
-        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory, dimensions)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        this._generator = new VertexAITextEmbeddingGenerationService(
+        this._service = new VertexAITextEmbeddingGenerationService(
             modelId: modelId,
             bearerKey: bearerKey,
             location: location,
@@ -49,9 +52,9 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             apiVersion: apiVersion,
             httpClient: httpClient,
             loggerFactory: loggerFactory,
-            dimensions: dimensions)
-            .AsEmbeddingGenerator();
+            dimensions: dimensions);
 #pragma warning restore CS0618 // Type or member is obsolete
+        this._metadata = new EmbeddingGeneratorMetadata(nameof(VertexAIEmbeddingGenerator), providerUri: null, modelId, dimensions);
     }
 
     /// <summary>
@@ -81,7 +84,7 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         int? dimensions = null)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        this._generator = new VertexAITextEmbeddingGenerationService(
+        this._service = new VertexAITextEmbeddingGenerationService(
             modelId: modelId,
             bearerTokenProvider: bearerTokenProvider,
             location: location,
@@ -89,20 +92,33 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             apiVersion: apiVersion,
             httpClient: httpClient,
             loggerFactory: loggerFactory,
-            dimensions: dimensions)
-            .AsEmbeddingGenerator();
+            dimensions: dimensions);
 #pragma warning restore CS0618 // Type or member is obsolete
+        this._metadata = new EmbeddingGeneratorMetadata(nameof(VertexAIEmbeddingGenerator), providerUri: null, modelId, dimensions);
     }
 
     /// <inheritdoc />
     public void Dispose()
-        => this._generator.Dispose();
+    {
+    }
 
     /// <inheritdoc />
-    public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
-        => this._generator.GenerateAsync(values, options, cancellationToken);
+    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await this._service.GenerateEmbeddingsAsync(values.ToList(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return new(result.Select(e => new Embedding<float>(e)));
+    }
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => this._generator.GetService(serviceType, serviceKey);
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            serviceType.IsInstanceOfType(this._service) ? this._service :
+            serviceType.IsInstanceOfType(this._metadata) ? this._metadata :
+            null;
+    }
 }

@@ -158,6 +158,30 @@ public sealed class VertexAIEmbeddingGeneratorTests : IDisposable
         Assert.Contains($"\"outputDimensionality\":{dimensions}", requestBody);
     }
 
+    [Fact]
+    public async Task OptionsDimensionsShouldOverrideConstructorDefaultAsync()
+    {
+        // Arrange
+        const int OptionsDimensions = Dimensions * 2;
+        using var service = new VertexAIEmbeddingGenerator(
+            modelId: Model,
+            bearerKey: BearerKey,
+            location: "location",
+            projectId: "project",
+            dimensions: Dimensions,
+            httpClient: this._httpClient);
+        var dataToEmbed = new List<string> { "Text to embed" };
+        var options = new EmbeddingGenerationOptions { Dimensions = OptionsDimensions };
+
+        // Act
+        await service.GenerateAsync(dataToEmbed, options);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        Assert.Contains($"\"outputDimensionality\":{OptionsDimensions}", requestBody);
+    }
+
     public void Dispose()
     {
         this._messageHandlerStub.Dispose();
