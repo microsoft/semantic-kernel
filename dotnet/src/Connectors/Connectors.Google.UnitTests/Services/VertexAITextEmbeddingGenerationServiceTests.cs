@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
@@ -172,6 +173,34 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests : IDisposable
             Assert.True(parametersElement.TryGetProperty("outputDimensionality", out var outputDimensionalityElement));
             Assert.Equal(dimensions!.Value, outputDimensionalityElement.GetInt32());
         }
+    }
+
+    [Fact]
+    public async Task OptionsDimensionsShouldOverrideConstructorDefaultAsync()
+    {
+        // Arrange
+        const int OptionsDimensions = Dimensions * 2;
+        var service = new VertexAITextEmbeddingGenerationService(
+            modelId: Model,
+            bearerKey: BearerKey,
+            location: "location",
+            projectId: "project",
+            dimensions: Dimensions,
+            httpClient: this._httpClient);
+        var dataToEmbed = new List<string> { "Text to embed" };
+        var options = new EmbeddingGenerationOptions { Dimensions = OptionsDimensions };
+
+        // Act
+        await service.GenerateEmbeddingsAsync(dataToEmbed, options);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+        using var document = JsonDocument.Parse(requestBody);
+        var root = document.RootElement;
+        Assert.True(root.TryGetProperty("parameters", out var parametersElement));
+        Assert.True(parametersElement.TryGetProperty("outputDimensionality", out var outputDimensionalityElement));
+        Assert.Equal(OptionsDimensions, outputDimensionalityElement.GetInt32());
     }
 
     public void Dispose()
