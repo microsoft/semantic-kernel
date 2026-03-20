@@ -54,7 +54,7 @@ jobs:
           fi
 
           if [[ ! "$pr_number" =~ ^[1-9][0-9]*$ ]]; then
-            echo "Could not determine PR number" >&2
+            echo "Could not determine PR number; for workflow_dispatch runs, the 'pr_number' input is required when not running on pull_request_target." >&2
             exit 1
           fi
 
