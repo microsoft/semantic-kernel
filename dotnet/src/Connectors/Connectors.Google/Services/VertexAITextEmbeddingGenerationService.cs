@@ -119,7 +119,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     /// <remarks>
-    /// The <paramref name="options"/> parameter can be used to override default settings such as <see cref="EmbeddingGenerationOptions.ModelId"/> and <see cref="EmbeddingGenerationOptions.Dimensions"/>
+    /// The <paramref name="options"/> parameter can be used to override default settings such as <see cref="EmbeddingGenerationOptions.Dimensions"/>.
     /// </remarks>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
