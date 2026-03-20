@@ -471,7 +471,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -525,7 +525,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._multiMessageHandlerStub.RequestContents[0]!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -741,7 +741,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());

@@ -384,6 +384,73 @@ AIAgent agent = chatClient.CreateAIAgent(
 7. Pass tools directly to agent creation method
 </configuration_changes>
 
+### Runtime Tool Registration Transformation
+
+<configuration_changes>
+In Semantic Kernel, plugins/tools could be added to the kernel after it was already built using `kernel.Plugins.Add()`. Agent Framework provides a similar capability using the builder middleware API.
+
+**Replace this Semantic Kernel post-creation tool registration pattern:**
+```csharp
+// Define the tool function
+[Description("Get the weather for a location")]
+static string GetWeather(string location) => $"Weather in {location}";
+
+// Semantic Kernel - Tools added after kernel is already built
+Kernel kernel = kernelBuilder.Build();
+ChatCompletionAgent agent = new() { Kernel = kernel };
+
+// Later: Add tools to the existing kernel instance
+KernelFunction function = KernelFunctionFactory.CreateFromMethod(GetWeather);
+KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]);
+kernel.Plugins.Add(plugin);
+
+// Tools are now available on subsequent invocations
+await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
+```
+
+**With this Agent Framework pattern using builder middleware:**
+```csharp
+// Define the tool function
+[Description("Get the weather for a location")]
+static string GetWeather(string location) => $"Weather in {location}";
+
+// Start with an existing agent
+AIAgent existingAgent = chatClient.CreateAIAgent(
+    instructions: "You are a helpful assistant");
+
+// Create an augmented agent with additional tools using builder middleware
+var augmentedAgent = existingAgent.AsBuilder()
+    .Use(async (chatMessages, agentThread, agentRunOptions, next, cancellationToken) =>
+    {
+        if (agentRunOptions is ChatClientAgentRunOptions chatClientAgentRunOptions)
+        {
+            chatClientAgentRunOptions.ChatOptions ??= new ChatOptions();
+            chatClientAgentRunOptions.ChatOptions.Tools ??= [];
+            chatClientAgentRunOptions.ChatOptions.Tools.Add(AIFunctionFactory.Create(GetWeather));
+        }
+
+        return await next(chatMessages, agentThread, agentRunOptions, cancellationToken);
+    })
+    .Build();
+
+// Use the augmented agent with the additional tools
+AgentRunResponse result = await augmentedAgent.RunAsync(userInput, thread);
+```
+
+**Required changes:**
+1. Call `AsBuilder()` on the existing agent to get a builder
+2. Use the `Use()` middleware method to intercept and modify run options
+3. Add tools to `ChatClientAgentRunOptions.ChatOptions.Tools` in the middleware
+4. Call `Build()` to create the augmented agent instance
+5. Use the new augmented agent for invocations that need the additional tools
+
+**Note:** This pattern is the preferred approach as it provides:
+- A controlled environment with a dedicated agent instance
+- No disruption to existing agent usages
+- Dynamic tool composition per user, tenant, or feature flags
+- Modular system composition without recreating agents
+</configuration_changes>
+
 ### Invocation Method Transformation
 
 <api_changes>
@@ -803,20 +870,16 @@ var agentOptions = new ChatClientAgentRunOptions(new ChatOptions
 {
     MaxOutputTokens = 8000,
     // Breaking glass to access provider-specific options
-    RawRepresentationFactory = (_) => new OpenAI.Responses.ResponseCreationOptions()
+    RawRepresentationFactory = (_) => new OpenAI.Responses.CreateResponseOptions()
     {
-        ReasoningOptions = new()
-        {
-            ReasoningEffortLevel = OpenAI.Responses.ResponseReasoningEffortLevel.High,
-            ReasoningSummaryVerbosity = OpenAI.Responses.ResponseReasoningSummaryVerbosity.Detailed
-        }
+        TruncationMode = OpenAI.Responses.ResponseTruncationMode.Auto,
     }
 });
 ```
 
 **Use this pattern when:**
 1. Standard `ChatOptions` properties don't cover required model settings
-2. Provider-specific configuration is needed (e.g., reasoning effort level)
+2. Provider-specific configuration is needed (e.g., truncation mode)
 3. Advanced SDK features need to be accessed
 </configuration_changes>
 

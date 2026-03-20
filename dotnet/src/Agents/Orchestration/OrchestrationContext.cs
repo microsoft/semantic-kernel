@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Runtime;
@@ -16,11 +17,13 @@ public sealed class OrchestrationContext
         TopicId topic,
         OrchestrationResponseCallback? responseCallback,
         OrchestrationStreamingCallback? streamingCallback,
+        Action<Exception> failureCallback,
         ILoggerFactory loggerFactory,
         CancellationToken cancellation)
     {
         this.Orchestration = orchestration;
         this.Topic = topic;
+        this.FailureCallback = failureCallback;
         this.ResponseCallback = responseCallback;
         this.StreamingResponseCallback = streamingCallback;
         this.LoggerFactory = loggerFactory;
@@ -59,4 +62,9 @@ public sealed class OrchestrationContext
     /// Optional callback that is invoked for every agent response.
     /// </summary>
     public OrchestrationStreamingCallback? StreamingResponseCallback { get; }
+
+    /// <summary>
+    /// Gets the callback that is invoked when an operation fails due to an exception.
+    /// </summary>
+    public Action<Exception> FailureCallback { get; }
 }

@@ -15,6 +15,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
@@ -67,6 +68,9 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <summary>The size of the dynamic candidate list for search.</summary>
     private readonly int _efSearch;
 
+    /// <summary><see cref="BsonSerializationInfo"/> to use for serializing key values.</summary>
+    private readonly BsonSerializationInfo? _keySerializationInfo;
+
     private static readonly Type[] s_validKeyTypes = [typeof(string), typeof(Guid), typeof(ObjectId), typeof(int), typeof(long)];
 
     /// <summary>
@@ -86,7 +90,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosMongoDynamicCollection)))
-                : new MongoModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new MongoModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -123,6 +127,11 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
             CollectionName = name
         };
+
+        // Cache the key serialization info if possible
+        this._keySerializationInfo = typeof(TKey) == typeof(object)
+            ? null
+            : this.GetKeySerializationInfo();
     }
 
     /// <inheritdoc />
@@ -142,9 +151,9 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        Verify.NotNull(key);
 
-        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(stringKey), cancellationToken))
+        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(key), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -153,9 +162,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(keys);
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
-
-        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(stringKeys), cancellationToken))
+        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(keys), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -166,7 +173,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        Verify.NotNull(key);
 
         var includeVectors = options?.IncludeVectors ?? false;
         if (includeVectors && this._model.EmbeddingGenerationRequired)
@@ -175,7 +182,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         }
 
         using var cursor = await this
-            .FindAsync(this.GetFilterById(stringKey), top: 1, skip: null, includeVectors, sortDefinition: null, cancellationToken)
+            .FindAsync(this.GetFilterById(key), top: 1, skip: null, includeVectors, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         var record = await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -202,10 +209,8 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
-
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(stringKeys), top: null, skip: null, includeVectors, sortDefinition: null, cancellationToken)
+            .FindAsync(this.GetFilterByIds(keys), top: null, skip: null, includeVectors, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -249,16 +254,44 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         const string OperationName = "ReplaceOne";
 
+        // Handle auto-generated keys
+        var keyProperty = this._model.KeyProperty;
+        if (keyProperty.IsAutoGenerated)
+        {
+            switch (keyProperty.Type)
+            {
+                case var t when t == typeof(Guid):
+                    if (keyProperty.GetValue<Guid>(record) == Guid.Empty)
+                    {
+                        keyProperty.SetValue(record, Guid.NewGuid());
+                    }
+                    break;
+
+                case var t when t == typeof(ObjectId):
+                    if (keyProperty.GetValue<ObjectId>(record) == ObjectId.Empty)
+                    {
+                        keyProperty.SetValue(record, ObjectId.GenerateNewId());
+                    }
+                    break;
+
+                default:
+                    throw new UnreachableException();
+            }
+        }
+
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
-        var key = storageModel[MongoConstants.MongoReservedKeyPropertyName].AsString;
+        var key = GetStorageKey(storageModel);
 
         await this.RunOperationAsync(OperationName, async () =>
             await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false)).ConfigureAwait(false);
     }
+
+    private static TKey GetStorageKey(BsonDocument document)
+        => (TKey)BsonTypeMapper.MapToDotNetValue(document[MongoConstants.MongoReservedKeyPropertyName]);
 
     private static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<Embedding>?[]?)> ProcessEmbeddingsAsync(
         CollectionModel model,
@@ -299,16 +332,8 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         return (records, generatedEmbeddings);
@@ -340,8 +365,8 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             float[] f => f,
             Embedding<float> e => Unwrap(e.Vector),
 
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => Unwrap(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => Unwrap(((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
@@ -386,7 +411,13 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             ScorePropertyName,
             DocumentPropertyName);
 
-        BsonDocument[] pipeline = [searchQuery, projectionQuery];
+        List<BsonDocument> pipeline = [searchQuery, projectionQuery];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(CosmosMongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         const string OperationName = "Aggregate";
         var cursor = await this.RunOperationAsync(
@@ -562,11 +593,40 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         }
     }
 
-    private FilterDefinition<BsonDocument> GetFilterById(string id)
-        => Builders<BsonDocument>.Filter.Eq(document => document[MongoConstants.MongoReservedKeyPropertyName], id);
+    private FilterDefinition<BsonDocument> GetFilterById(TKey id)
+    {
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValue = this._keySerializationInfo?.SerializeValue(id) ?? BsonValueFactory.Create(id);
+        return Builders<BsonDocument>.Filter.Eq(MongoConstants.MongoReservedKeyPropertyName, bsonValue);
+    }
 
-    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<string> ids)
-        => Builders<BsonDocument>.Filter.In(document => document[MongoConstants.MongoReservedKeyPropertyName].AsString, ids);
+    private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<TKey> ids)
+    {
+        // Use cached key serialization info but fall back to BsonValueFactory for dynamic mapper.
+        var bsonValues = this._keySerializationInfo?.SerializeValues(ids) ?? (BsonArray)BsonValueFactory.Create(ids);
+        return Builders<BsonDocument>.Filter.In(MongoConstants.MongoReservedKeyPropertyName, bsonValues);
+    }
+
+    private BsonSerializationInfo GetKeySerializationInfo()
+    {
+        var documentSerializer = BsonSerializer.LookupSerializer<TRecord>();
+        if (documentSerializer is null)
+        {
+            throw new InvalidOperationException($"BsonSerializer not found for type '{typeof(TRecord)}'");
+        }
+
+        if (documentSerializer is not IBsonDocumentSerializer bsonDocumentSerializer)
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not implement IBsonDocumentSerializer");
+        }
+
+        if (!bsonDocumentSerializer.TryGetMemberSerializationInfo(this._model.KeyProperty.ModelName, out var keySerializationInfo))
+        {
+            throw new InvalidOperationException($"BsonSerializer for type '{typeof(TRecord)}' does not recognize key property {this._model.KeyProperty.ModelName}");
+        }
+
+        return keySerializationInfo;
+    }
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {

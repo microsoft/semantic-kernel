@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public sealed class WhiteboardProvider : AIContextProvider
 {
-    private readonly static JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
+    private static readonly JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
     private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
     private const string DefaultWhiteboardEmptyPrompt = "## Whiteboard\nThe whiteboard is currently empty.";
     private const int MaxQueueSize = 3;

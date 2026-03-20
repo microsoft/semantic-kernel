@@ -138,7 +138,7 @@ internal static class FoundryWorkflowHelperExtensions
 
     private static bool Contains(this string source, string value, StringComparison comparison)
     {
-#if NETCOREAPP3_0_OR_GREATER
+#if NET
         return source.Contains(value, comparison);
 #else
         return source.IndexOf(value, comparison) >= 0;

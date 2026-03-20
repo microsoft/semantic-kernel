@@ -38,14 +38,14 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         // E.g. it can be read from a configuration or retrieved from a service.
         var recordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("Category", typeof(string)),
                 new VectorStoreDataProperty("Term", typeof(string)),
                 new VectorStoreDataProperty("Definition", typeof(string)),
                 new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
-            }
+            ]
         };
 
         // Now, let's create a collection that uses a dynamic data model.

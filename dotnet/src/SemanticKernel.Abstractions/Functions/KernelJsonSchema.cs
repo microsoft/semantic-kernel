@@ -18,7 +18,7 @@ public sealed class KernelJsonSchema
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>, or null if <paramref name="jsonSchema"/> is null or empty.</returns>
     internal static KernelJsonSchema? ParseOrNull(string? jsonSchema) =>
-        !string.IsNullOrEmpty(jsonSchema) ? new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement)) :
+        !string.IsNullOrEmpty(jsonSchema) ? new(JsonElement.Parse(jsonSchema)) :
         null;
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -27,21 +27,21 @@ public sealed class KernelJsonSchema
     /// <exception cref="ArgumentException"><paramref name="jsonSchema"/> is null.</exception>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(string jsonSchema) =>
-        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+        new(JsonElement.Parse(jsonSchema));
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a sequence of UTF16 chars.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<char> jsonSchema) =>
-        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+        new(JsonElement.Parse(jsonSchema));
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="utf8JsonSchema">The JSON Schema as a sequence of UTF8 bytes.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<byte> utf8JsonSchema) =>
-        new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+        new(JsonElement.Parse(utf8JsonSchema));
 
     /// <summary>Initializes a new instance from the specified <see cref="JsonElement"/>.</summary>
     /// <param name="jsonSchema">The schema to be stored.</param>

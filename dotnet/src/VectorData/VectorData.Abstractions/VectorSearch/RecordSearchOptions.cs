@@ -56,4 +56,22 @@ public class VectorSearchOptions<TRecord>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
     public bool IncludeVectors { get; set; }
+
+    /// <summary>
+    /// Gets or sets the score threshold to filter results.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The meaning of the score depends on the distance function configured for the vector property.
+    /// For similarity functions (e.g. <see cref="DistanceFunction.CosineSimilarity" />, <see cref="DistanceFunction.DotProductSimilarity" />),
+    /// higher scores indicate more similar results, and results with scores lower than the threshold will be filtered out.
+    /// For distance functions (e.g. <see cref="DistanceFunction.CosineDistance" />, <see cref="DistanceFunction.EuclideanDistance" />),
+    /// lower scores indicate more similar results, and results with scores higher than the threshold will be filtered out.
+    /// </para>
+    /// <para>
+    /// The range of scores also depends on the distance function; for example, cosine similarity/distance scores
+    /// fall within 0 to 1, while Euclidean distance is unbounded. Scores can also differ between vector databases.
+    /// </para>
+    /// </remarks>
+    public double? ScoreThreshold { get; set; }
 }

@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Pgvector;
 
@@ -17,19 +18,27 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "short, int, long, string, Guid";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
 
-        return type == typeof(short)
-            || type == typeof(int)
-            || type == typeof(long)
-            || type == typeof(string)
-            || type == typeof(Guid);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        base.ValidateKeyProperty(keyProperty);
+
+        var type = keyProperty.Type;
+
+        if (type != typeof(short)
+            && type != typeof(int)
+            && type != typeof(long)
+            && type != typeof(string)
+            && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: short, int, long, string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
@@ -57,6 +66,10 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
                 type == typeof(byte[]) ||
                 type == typeof(DateTime) ||
                 type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+                type == typeof(TimeOnly) ||
+#endif
                 type == typeof(Guid);
     }
 
@@ -75,7 +88,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         return type == typeof(ReadOnlyMemory<float>) ||
             type == typeof(Embedding<float>) ||
             type == typeof(float[]) ||
-#if NET8_0_OR_GREATER
+#if NET
             type == typeof(ReadOnlyMemory<Half>) ||
             type == typeof(Embedding<Half>) ||
             type == typeof(Half[]) ||
@@ -86,13 +99,28 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     }
 
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-#if NET8_0_OR_GREATER
-        ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        if (propertyModel.IsTimestampWithoutTimezone())
+        {
+            var type = Nullable.GetUnderlyingType(propertyModel.Type) ?? propertyModel.Type;
+            if (type != typeof(DateTime))
+            {
+                throw new NotSupportedException(
+                    $"Property '{propertyModel.ModelName}' has store type 'timestamp' configured, but this is only supported for DateTime properties. The property type is '{propertyModel.Type.Name}'.");
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+#if NET
+        EmbeddingGenerationDispatcher.Create<Embedding<Half>>(),
 #endif
-        ?? vectorProperty.ResolveEmbeddingType<BinaryEmbedding>(embeddingGenerator, userRequestedEmbeddingType);
+        EmbeddingGenerationDispatcher.Create<BinaryEmbedding>()
+    ];
 }

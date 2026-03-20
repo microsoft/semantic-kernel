@@ -64,6 +64,7 @@ public sealed class WeaviateQueryBuilderTests
               nearVector: {
                 {{(hasNamedVectors ? "targetVectors: [\"descriptionEmbedding\"]" : string.Empty)}}
                 vector: [31,32,33,34]
+                {{string.Empty}}
               }
             ) {
               HotelName HotelCode Tags
@@ -202,6 +203,81 @@ public sealed class WeaviateQueryBuilderTests
             searchOptions,
             this._model,
             hasNamedVectors: true));
+    }
+
+    [Fact]
+    public void BuildHybridSearchQueryEscapesDoubleQuotesInKeywords()
+    {
+        // Arrange
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
+
+        // Act
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
+            this._vector,
+            top: 3,
+            keywords: "test \"injection\"",
+            CollectionName,
+            this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
+            hasNamedVectors: true);
+
+        // Assert - the double quote must be escaped in the GraphQL string
+        Assert.Contains("query: \"test \\\"injection\\\"\"", query);
+    }
+
+    [Fact]
+    public void BuildHybridSearchQueryEscapesBackslashInKeywords()
+    {
+        // Arrange
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
+
+        // Act
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
+            this._vector,
+            top: 3,
+            keywords: @"test\path",
+            CollectionName,
+            this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
+            hasNamedVectors: true);
+
+        // Assert - backslash must be escaped
+        Assert.Contains(@"query: ""test\\path""", query);
+    }
+
+    [Fact]
+    public void BuildHybridSearchQueryWithPlainKeywordsWorks()
+    {
+        // Arrange
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
+
+        // Act
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
+            this._vector,
+            top: 3,
+            keywords: "hello world",
+            CollectionName,
+            this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
+            hasNamedVectors: true);
+
+        // Assert
+        Assert.Contains("query: \"hello world\"", query);
     }
 
     #region private

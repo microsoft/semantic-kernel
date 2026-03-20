@@ -20,13 +20,21 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
+        test-suite: ["unit-all-except-dapr", "dapr"]
+        exclude:
+          - python-version: "3.10"
+            os: macos-latest
+          - python-version: "3.11"
+            os: macos-latest
         include:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: true
+            test-suite: "unit-all-except-dapr"
           - python-version: "3.14"
             os: "ubuntu-latest"
             experimental: true
+            test-suite: "unit-all-except-dapr"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
@@ -43,14 +51,24 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
-      - name: Install the project
+      - name: Install the project (all extras)
+        if: matrix.test-suite == 'unit-all-except-dapr'
         run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
-      - name: Test with pytest
+      - name: Install the project (dapr tests)
+        if: matrix.test-suite == 'dapr'
+        run: uv sync --extra pandas --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
+      - name: Test with pytest (all except dapr)
+        if: matrix.test-suite == 'unit-all-except-dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+      - name: Test dapr with pytest
+        if: matrix.test-suite == 'dapr'
+        env:
+          PYTHON_GIL: ${{ matrix.gil }}
+        run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
-        if: ${{ !matrix.experimental }}
+        if: ${{ !matrix.experimental && matrix.test-suite == 'unit-all-except-dapr' }}
         uses: pmeier/pytest-results-action@v0.7.2
         with:
           path: python/pytest.xml

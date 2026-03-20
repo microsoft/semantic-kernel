@@ -15,7 +15,7 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 ## System Requirements
 
 - **Python**: 3.10+
-- **.NET**: .NET 8.0+ 
+- **.NET**: .NET 10.0+ 
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux
 
@@ -25,7 +25,7 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 - **Agent Framework**: Build modular AI agents with access to tools/plugins, memory, and planning capabilities
 - **Multi-Agent Systems**: Orchestrate complex workflows with collaborating specialist agents
 - **Plugin Ecosystem**: Extend with native code functions, prompt templates, OpenAPI specs, or Model Context Protocol (MCP)
-- **Vector DB Support**: Seamless integration with [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search), [Elasticsearch](https://www.elastic.co/), [Chroma](https://docs.trychroma.com/getting-started), and more
+- **Vector DB Support**: Seamless integration with [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search), [Elasticsearch](https://www.elastic.co/), [Chroma](https://docs.trychroma.com/docs/overview/getting-started), and more
 - **Multimodal Support**: Process text, vision, and audio inputs
 - **Local Deployment**: Run with [Ollama](https://ollama.com/), [LMStudio](https://lmstudio.ai/), or [ONNX](https://onnx.ai/)
 - **Process Framework**: Model complex business processes with a structured workflow approach

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Agents.Runtime.Abstractions.UnitTests</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Runtime.Abstractions.UnitTests</RootNamespace>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IsTestProject>True</IsTestProject>
     <NoWarn>$(NoWarn);CA1707;CA2007;CA1812;CA1861;CA1063;CS0618;CS1591;IDE1006;VSTHRD111;SKEXP0001;SKEXP0050;SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>

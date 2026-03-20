@@ -391,7 +391,7 @@ public class AutoFunctionInvocationContextTests
             chatHistory,
             chatMessageContent);
 
-        ((Microsoft.Extensions.AI.FunctionInvocationContext)context).Arguments = new AIFunctionArguments();
+        ((Microsoft.Extensions.AI.FunctionInvocationContext)context).Arguments = [];
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => context.Arguments);

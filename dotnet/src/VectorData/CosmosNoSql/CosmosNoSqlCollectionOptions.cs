@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
@@ -23,7 +24,7 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source) : base(source)
     {
         this.JsonSerializerOptions = source?.JsonSerializerOptions;
-        this.PartitionKeyPropertyName = source?.PartitionKeyPropertyName;
+        this.PartitionKeyProperties = source?.PartitionKeyProperties is null ? null : [.. source.PartitionKeyProperties];
         this.IndexingMode = source?.IndexingMode ?? Default.IndexingMode;
         this.Automatic = source?.Automatic ?? Default.Automatic;
     }
@@ -34,9 +35,21 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 
     /// <summary>
-    /// The property name to use as partition key.
+    /// Gets or sets the property names to use as partition key components.
     /// </summary>
-    public string? PartitionKeyPropertyName { get; set; }
+    /// <remarks>
+    /// <para>
+    /// Selecting a partition key is critical for performance and scalability. Choose properties with high cardinality
+    /// that evenly distribute requests. See <see href="https://learn.microsoft.com/azure/cosmos-db/partitioning-overview"/> for guidance.
+    /// </para>
+    /// <para>
+    /// When <see langword="null" /> (the default), the key property (document ID) is automatically used as the partition key - a common
+    /// Cosmos DB strategy; in this mode, the collection key type must be <see cref="string"/> or <see cref="System.Guid"/>.
+    /// To use a different partition key (or hierarchical partition keys), specify the key properties here and use
+    /// <see cref="CosmosNoSqlKey"/> as the key type.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<string>? PartitionKeyProperties { get; set; }
 
     /// <summary>
     /// Specifies the indexing mode in the Azure Cosmos DB service.

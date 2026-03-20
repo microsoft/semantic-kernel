@@ -39,9 +39,7 @@ public class QdrantDataTypeTests(QdrantDataTypeTests.Fixture fixture)
             typeof(short),
             typeof(decimal),
             typeof(Guid),
-            typeof(DateTime),
-#if NET8_0_OR_GREATER
-            typeof(DateOnly),
+#if NET
             typeof(TimeOnly)
 #endif
         ];

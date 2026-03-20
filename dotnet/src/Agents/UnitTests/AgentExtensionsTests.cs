@@ -124,7 +124,7 @@ public sealed class AgentExtensionsTests
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
-        var json = JsonDocument.Parse("{}").RootElement;
+        var json = JsonElement.Parse("{}");
         var thread = result.DeserializeThread(json);
 
         // Assert

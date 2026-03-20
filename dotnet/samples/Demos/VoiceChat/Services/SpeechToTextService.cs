@@ -29,7 +29,7 @@ public class SpeechToTextService
     }
 
     public async Task<TranscriptionEvent> TransformAsync(AudioEvent evt) =>
-        new TranscriptionEvent(evt.TurnId, evt.CancellationToken, await this.TranscribeAsync(evt.Payload, evt.CancellationToken));
+        new(evt.TurnId, evt.CancellationToken, await this.TranscribeAsync(evt.Payload, evt.CancellationToken));
 
     private async Task<string?> TranscribeAsync(AudioData audioData, CancellationToken cancellationToken = default)
     {

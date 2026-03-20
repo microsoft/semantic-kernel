@@ -157,20 +157,23 @@ pytestmark = pytest.mark.parametrize(
         # region Google AI
         pytest.param(
             "google_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            marks=[
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            ],
             id="google_ai_text_input",
         ),
         # endregion
         # region Vertex AI
         pytest.param(
             "vertex_ai",
-            {},
+            {"top_p": 0.9, "temperature": 0.7},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),

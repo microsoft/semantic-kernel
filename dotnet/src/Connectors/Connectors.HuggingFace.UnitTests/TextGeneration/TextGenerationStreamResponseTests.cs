@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextGeneration;
+
 public class TextGenerationStreamResponseTests
 {
     [Fact]

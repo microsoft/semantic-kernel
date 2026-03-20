@@ -103,8 +103,7 @@ public sealed class CosmosMongoCollectionSearchMappingTests
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
     => new MongoModelBuilder()
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new() { Properties = properties },
             defaultEmbeddingGenerator: null);
 }

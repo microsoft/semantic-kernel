@@ -78,7 +78,7 @@ public sealed class WeaviateVectorStore : VectorStore
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
@@ -101,7 +101,7 @@ public sealed class WeaviateVectorStore : VectorStore
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override WeaviateDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
