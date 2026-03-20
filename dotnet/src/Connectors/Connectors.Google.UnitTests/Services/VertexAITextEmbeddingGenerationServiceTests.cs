@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
@@ -133,7 +134,14 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests : IDisposable
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
         var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        Assert.DoesNotContain("outputDimensionality", requestBody);
+        using (var document = JsonDocument.Parse(requestBody))
+        {
+            var root = document.RootElement;
+            if (root.TryGetProperty("parameters", out var parametersElement))
+            {
+                Assert.False(parametersElement.TryGetProperty("outputDimensionality", out _));
+            }
+        }
     }
 
     [Theory]
@@ -157,7 +165,13 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests : IDisposable
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
         var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        Assert.Contains($"\"outputDimensionality\":{dimensions}", requestBody);
+        using (var document = JsonDocument.Parse(requestBody))
+        {
+            var root = document.RootElement;
+            Assert.True(root.TryGetProperty("parameters", out var parametersElement));
+            Assert.True(parametersElement.TryGetProperty("outputDimensionality", out var outputDimensionalityElement));
+            Assert.Equal(dimensions!.Value, outputDimensionalityElement.GetInt32());
+        }
     }
 
     public void Dispose()
