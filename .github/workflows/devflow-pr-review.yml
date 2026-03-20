@@ -57,18 +57,26 @@ jobs:
             exit 1
           fi
 
-          if [[ ! "$PR_URL_INPUT" =~ /pull/([0-9]+)$ ]]; then
-            echo "Could not parse pull request number from: $PR_URL_INPUT" >&2
+          if [[ ! "$PR_URL_INPUT" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+)([/?].*)?$ ]]; then
+            echo "Could not parse pull request URL (expected https://github.com/<owner>/<repo>/pull/<number>): $PR_URL_INPUT" >&2
+            exit 1
+          fi
+
+          pr_repo="${BASH_REMATCH[1]}"
+          pr_number="${BASH_REMATCH[2]}"
+
+          if [[ "$pr_repo" != "$GITHUB_REPOSITORY" ]]; then
+            echo "PR URL repository ($pr_repo) does not match current repository ($GITHUB_REPOSITORY)" >&2
             exit 1
           fi
 
           echo "pr_url=${PR_URL_INPUT}" >> "$GITHUB_OUTPUT"
-          echo "pr_number=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-          echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "repo=${pr_repo}" >> "$GITHUB_OUTPUT"
 
       # Safe checkout: base repo only, not the untrusted PR head.
       - name: Checkout target repo base
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
@@ -77,7 +85,7 @@ jobs:
 
       # Private DevFlow checkout: the PAT/token grants access to this repo's code.
       - name: Checkout DevFlow
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ env.DEVFLOW_REPOSITORY }}
           ref: ${{ env.DEVFLOW_REF }}
@@ -92,8 +100,9 @@ jobs:
           python-version: "3.13"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
+          version: "0.5.x"
           enable-cache: true
 
       - name: Install DevFlow dependencies
