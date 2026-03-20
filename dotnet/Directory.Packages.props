@@ -102,6 +102,7 @@
     <PackageVersion Include="PdfPig" Version="0.1.13" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="0.2.3-beta" />
+    <PackageVersion Include="Scriban" Version="6.6.0" />
     <PackageVersion Include="PuppeteerSharp" Version="20.2.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
