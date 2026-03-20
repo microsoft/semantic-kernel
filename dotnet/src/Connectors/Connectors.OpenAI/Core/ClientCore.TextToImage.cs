@@ -122,8 +122,8 @@ internal partial class ClientCore
         {
             "STANDARD" => GeneratedImageQuality.Standard,
             "HIGH" or "HD" => GeneratedImageQuality.High,
-            "MEDIUM" => GeneratedImageQuality.Medium,
-            "LOW" => GeneratedImageQuality.Low,
+            "MEDIUM" => GeneratedImageQuality.MediumQuality,
+            "LOW" => GeneratedImageQuality.LowQuality,
             "AUTO" => GeneratedImageQuality.Auto,
             _ => throw new NotSupportedException($"The provided quality '{quality}' is not supported.")
         };

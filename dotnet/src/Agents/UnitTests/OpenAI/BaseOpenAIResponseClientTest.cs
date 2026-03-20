@@ -27,7 +27,7 @@ public class BaseOpenAIResponseClientTest : IDisposable
         {
             Transport = new HttpClientPipelineTransport(this.HttpClient)
         };
-        this.Client = new ResponsesClient("model", new ApiKeyCredential("apiKey"), clientOptions);
+        this.Client = new ResponsesClient(new ApiKeyCredential("apiKey"), clientOptions);
     }
 
     /// <inheritdoc />
