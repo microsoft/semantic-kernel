@@ -100,6 +100,7 @@ public sealed class VertexAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     /// <inheritdoc />
     public void Dispose()
     {
+        ((object)this._service as IDisposable)?.Dispose();
     }
 
     /// <inheritdoc />
