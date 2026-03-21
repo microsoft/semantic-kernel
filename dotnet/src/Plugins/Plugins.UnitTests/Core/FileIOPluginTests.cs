@@ -29,7 +29,7 @@ public class FileIOPluginTests
     public async Task ItCanReadAsync()
     {
         // Arrange
-        var plugin = new FileIOPlugin();
+        var plugin = new FileIOPlugin() { AllowedFolders = [Path.GetTempPath()] };
         var path = Path.GetTempFileName();
         await File.WriteAllTextAsync(path, "hello world");
 
@@ -44,7 +44,7 @@ public class FileIOPluginTests
     public async Task ItCannotReadAsync()
     {
         // Arrange
-        var plugin = new FileIOPlugin();
+        var plugin = new FileIOPlugin() { AllowedFolders = [Path.GetTempPath()] };
         var path = Path.GetTempFileName();
         File.Delete(path);
 
@@ -62,7 +62,11 @@ public class FileIOPluginTests
     public async Task ItCanWriteAsync()
     {
         // Arrange
-        var plugin = new FileIOPlugin();
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
+        };
         var path = Path.GetTempFileName();
 
         // Act
@@ -76,7 +80,11 @@ public class FileIOPluginTests
     public async Task ItCannotWriteAsync()
     {
         // Arrange
-        var plugin = new FileIOPlugin();
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
+        };
         var path = Path.GetTempFileName();
         File.SetAttributes(path, FileAttributes.ReadOnly);
 
@@ -91,12 +99,25 @@ public class FileIOPluginTests
     }
 
     [Fact]
+    public async Task ItDeniesAllPathsWithDefaultConfigAsync()
+    {
+        // Arrange
+        var plugin = new FileIOPlugin();
+        var path = Path.GetTempFileName();
+
+        // Act & Assert - default config denies all paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.ReadAsync(path));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.WriteAsync(path, "hello world"));
+    }
+
+    [Fact]
     public async Task ItCannotWriteToDisallowedFoldersAsync()
     {
         // Arrange
         var plugin = new FileIOPlugin()
         {
-            AllowedFolders = [Path.GetTempPath()]
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
         };
 
         // Act & Assert

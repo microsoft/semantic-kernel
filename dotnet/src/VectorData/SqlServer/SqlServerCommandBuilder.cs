@@ -62,12 +62,22 @@ internal static class SqlServerCommandBuilder
 
         foreach (var property in model.DataProperties)
         {
-            sb.AppendIdentifier(property.StorageName).Append(' ').Append(Map(property)).AppendLine(",");
+            sb.AppendIdentifier(property.StorageName).Append(' ').Append(Map(property));
+            if (!property.IsNullable)
+            {
+                sb.Append(" NOT NULL");
+            }
+            sb.AppendLine(",");
         }
 
         foreach (var property in model.VectorProperties)
         {
-            sb.AppendIdentifier(property.StorageName).Append(" VECTOR(").Append(property.Dimensions).AppendLine("),");
+            sb.AppendIdentifier(property.StorageName).Append(" VECTOR(").Append(property.Dimensions).Append(')');
+            if (!property.IsNullable)
+            {
+                sb.Append(" NOT NULL");
+            }
+            sb.AppendLine(",");
         }
 
         sb.Append("PRIMARY KEY (").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(")");
