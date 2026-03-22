@@ -582,12 +582,6 @@ public class SqlServerCollection<TKey, TRecord>
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (options.OldFilter is not null)
-        {
-            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
@@ -645,12 +639,6 @@ public class SqlServerCollection<TKey, TRecord>
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (options.OldFilter is not null)
-        {
-            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use Filter instead.");
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(new VectorSearchOptions<TRecord> { VectorProperty = options.VectorProperty });
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);

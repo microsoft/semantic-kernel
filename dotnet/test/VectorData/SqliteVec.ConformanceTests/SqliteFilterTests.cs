@@ -72,15 +72,6 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
     public override Task Any_over_List_with_Contains_over_captured_string_array()
         => Assert.ThrowsAsync<InvalidOperationException>(base.Any_over_List_with_Contains_over_captured_string_array);
 
-    // AnyTagEqualTo not (currently) supported on SQLite
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_array()
-        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_array);
-
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_List()
-        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_List);
-
     public new class Fixture : FilterTests<long>.Fixture
     {
         public override TestStore TestStore => SqliteTestStore.Instance;

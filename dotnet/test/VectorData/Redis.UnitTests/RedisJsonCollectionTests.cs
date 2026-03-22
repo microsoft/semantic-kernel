@@ -15,8 +15,6 @@ using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-
 /// <summary>
 /// Contains tests for the <see cref="RedisJsonCollection{TKey, TRecord}"/> class.
 /// </summary>
@@ -380,8 +378,6 @@ public class RedisJsonCollectionTests
         });
         using var sut = this.CreateRecordCollection(useDefinition);
 
-        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
-
         // Act.
         var results = await sut.SearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
@@ -389,7 +385,7 @@ public class RedisJsonCollectionTests
             new()
             {
                 IncludeVectors = true,
-                OldFilter = filter,
+                Filter = r => r.Data1 == "data 1",
                 VectorProperty = r => r.Vector1,
                 Skip = 2
             }).ToListAsync();
@@ -398,7 +394,7 @@ public class RedisJsonCollectionTests
         var expectedArgs = new object[]
         {
             "testcollection",
-            "(@data1_json_name:{data 1})=>[KNN 7 @vector1_json_name $embedding AS vector_score]",
+            "@data1_json_name:{\"data 1\"}=>[KNN 7 @vector1_json_name $embedding AS vector_score]",
             "WITHSCORES",
             "SORTBY",
             "vector_score",
