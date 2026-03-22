@@ -26,6 +26,8 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(short)
@@ -113,13 +115,12 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     }
 
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
 #if NET
-        ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
+        EmbeddingGenerationDispatcher.Create<Embedding<Half>>(),
 #endif
-        ?? vectorProperty.ResolveEmbeddingType<BinaryEmbedding>(embeddingGenerator, userRequestedEmbeddingType);
+        EmbeddingGenerationDispatcher.Create<BinaryEmbedding>()
+    ];
 }

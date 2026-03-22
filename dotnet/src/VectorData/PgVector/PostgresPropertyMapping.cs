@@ -102,19 +102,17 @@ internal static class PostgresPropertyMapping
 
         var propertyType = property.Type;
 
-        // TODO: Handle NRTs properly via NullabilityInfoContext
-
         (string PgType, bool IsNullable) result;
 
         if (TryGetBaseType(propertyType, out string? pgType))
         {
-            result = (pgType, !propertyType.IsValueType);
+            result = (pgType, property.IsNullable);
         }
         // Handle nullable types (e.g. Nullable<int>)
         else if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
             && TryGetBaseType(unwrappedType, out string? underlyingPgType))
         {
-            result = (underlyingPgType, true);
+            result = (underlyingPgType, property.IsNullable);
         }
         // Handle collections
         else if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
@@ -122,7 +120,7 @@ internal static class PostgresPropertyMapping
                 && propertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
         {
-            result = (elementPgType + "[]", true);
+            result = (elementPgType + "[]", property.IsNullable);
         }
         else
         {
@@ -169,7 +167,7 @@ internal static class PostgresPropertyMapping
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };
 
-        return ($"{pgType}({vectorProperty.Dimensions})", unwrappedEmbeddingType != vectorProperty.EmbeddingType);
+        return ($"{pgType}({vectorProperty.Dimensions})", vectorProperty.IsNullable);
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)

@@ -22,6 +22,8 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))

@@ -24,7 +24,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
         var model = new QdrantModelBuilder(hasNamedVectors)
-            .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(SinglePropsModel<ulong>), typeof(ulong), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
@@ -54,7 +54,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
         var model = new QdrantModelBuilder(hasNamedVectors)
-            .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(SinglePropsModel<Guid>), typeof(Guid), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
@@ -77,7 +77,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
         var model = new QdrantModelBuilder(hasNamedVectors)
-            .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(SinglePropsModel<ulong>), typeof(ulong), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
@@ -109,7 +109,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
         var model = new QdrantModelBuilder(hasNamedVectors)
-            .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(SinglePropsModel<Guid>), typeof(Guid), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
@@ -137,7 +137,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
         var model = new QdrantModelBuilder(hasNamedVectors: true)
-            .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(MultiPropsModel<ulong>), typeof(ulong), definition, defaultEmbeddingGenerator: null);
 
         var sut = new QdrantMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
@@ -166,7 +166,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
         var model = new QdrantModelBuilder(hasNamedVectors: true)
-            .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(MultiPropsModel<Guid>), typeof(Guid), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.
@@ -196,7 +196,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
         var model = new QdrantModelBuilder(hasNamedVectors: true)
-            .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(MultiPropsModel<ulong>), typeof(ulong), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
         // Act.
@@ -235,7 +235,7 @@ public class QdrantMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
         var model = new QdrantModelBuilder(hasNamedVectors: true)
-            .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(MultiPropsModel<Guid>), typeof(Guid), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.

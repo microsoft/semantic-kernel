@@ -124,7 +124,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosNoSqlDynamicCollection)))
                 : new CosmosNoSqlModelBuilder()
-                    .Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+                    .Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }
@@ -510,26 +510,8 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<byte>>(records, cancellationToken, out var byteTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await byteTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<sbyte>>(records, cancellationToken, out var sbyteTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await sbyteTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         return (records, generatedEmbeddings);
@@ -559,7 +541,6 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
         object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery(
             vector,
             null,
@@ -568,13 +549,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             vectorProperty.DistanceFunction,
             textPropertyName: null,
             ScorePropertyName,
-            options.OldFilter,
             options.Filter,
             options.ScoreThreshold,
             top,
             options.Skip,
             options.IncludeVectors);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
 
@@ -592,22 +571,19 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             ReadOnlyMemory<float> m => m,
             float[] a => new ReadOnlyMemory<float>(a),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // int8
             ReadOnlyMemory<sbyte> m => m,
             sbyte[] a => new ReadOnlyMemory<sbyte>(a),
             Embedding<sbyte> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<sbyte>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // uint8
             ReadOnlyMemory<byte> m => m,
             byte[] a => new ReadOnlyMemory<byte>(a),
             Embedding<byte> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<byte>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), CosmosNoSqlModelBuilder.SupportedVectorTypes))
@@ -666,7 +642,6 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<TRecord>(
             vector,
             keywords,
@@ -675,13 +650,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             vectorProperty.DistanceFunction,
             textProperty.StorageName,
             ScorePropertyName,
-            options.OldFilter,
             options.Filter,
             options.ScoreThreshold,
             top,
             options.Skip,
             options.IncludeVectors);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
 

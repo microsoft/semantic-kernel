@@ -115,11 +115,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
                     {
                         ExpressionType.Equal when constantValue is byte or short or int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
-#if NET
-                            => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
-#else
-                            => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
-#endif
+                            => $$""":{"{{SanitizeStringConstant(stringValue)}}"}""",
                         ExpressionType.Equal when constantValue is null => throw new NotSupportedException("Null value type not supported"), // TODO
 
                         ExpressionType.NotEqual when constantValue is int or long or float or double => $" != {constantValue}",
@@ -177,9 +173,9 @@ internal class RedisFilterTranslator : FilterTranslatorBase
             this._filter
                 .Append('@')
                 .Append(property.StorageName)
-                .Append(":{")
-                .Append(stringConstant)
-                .Append('}');
+                .Append(":{\"")
+                .Append(SanitizeStringConstant(stringConstant))
+                .Append("\"}");
             return;
         }
 
@@ -238,7 +234,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
                 this._filter.Append(" | ");
             }
 
-            this._filter.Append(stringElement);
+            this._filter.Append('"').Append(SanitizeStringConstant(stringElement)).Append('"');
         }
 
         this._filter.Append('}');
@@ -259,4 +255,11 @@ internal class RedisFilterTranslator : FilterTranslatorBase
             return result;
         }
     }
+
+    private static string SanitizeStringConstant(string value)
+#if NET
+        => value.Replace("\"", "\\\"", StringComparison.Ordinal);
+#else
+        => value.Replace("\"", "\\\"");
+#endif
 }

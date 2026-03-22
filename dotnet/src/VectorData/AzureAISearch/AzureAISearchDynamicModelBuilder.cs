@@ -18,6 +18,8 @@ internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_mod
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))
