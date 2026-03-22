@@ -27,10 +27,13 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<ResponsesClient>
             });
         }
 
-        this.Client = new(model: model ?? TestConfiguration.OpenAI.ChatModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.ModelId = model ?? TestConfiguration.OpenAI.ChatModelId;
+        this.Client = new(credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
         this.FileClient = new OpenAIFileClient(TestConfiguration.OpenAI.ApiKey);
         this.VectorStoreClient = new VectorStoreClient(TestConfiguration.OpenAI.ApiKey);
     }
+
+    protected string ModelId { get; set; }
 
     protected OpenAIFileClient FileClient { get; set; }
 
