@@ -12,6 +12,8 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+DEFAULT_ALLOWED_MODULE_PREFIXES: tuple[str, ...] = ("semantic_kernel.",)
+
 
 @experimental
 def find_input_channels(
@@ -47,7 +49,7 @@ def get_fully_qualified_name(cls) -> str:
 @experimental
 def get_step_class_from_qualified_name(
     full_class_name: str,
-    allowed_module_prefixes: Sequence[str] | None = None,
+    allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES,
 ) -> type[KernelProcessStep]:
     """Loads and validates a KernelProcessStep class from a fully qualified name.
 
@@ -58,11 +60,12 @@ def get_step_class_from_qualified_name(
         full_class_name: The fully qualified class name in Python import notation
             (e.g., 'mypackage.mymodule.MyStep'). The module must be importable
             from the current Python environment.
-        allowed_module_prefixes: Optional list of module prefixes that are allowed
-            to be imported. If provided, the module must start with one of these
-            prefixes. This check is performed BEFORE import to prevent execution
-            of module-level code in unauthorized modules. If None or empty, any
-            module is allowed.
+        allowed_module_prefixes: Sequence of module prefixes that are allowed
+            to be imported. The module must start with one of these prefixes.
+            This check is performed BEFORE import to prevent execution of
+            module-level code in unauthorized modules. Defaults to
+            ("semantic_kernel.",). Pass None to allow any module (not
+            recommended for production).
 
     Returns:
         The validated class type that is a subclass of KernelProcessStep
