@@ -69,6 +69,7 @@ class OpenAIConfigBase(OpenAIHandler):
                 api_key=api_key,
                 organization=org_id,
                 default_headers=merged_headers,
+                timeout=60.0,
             )
         args = {
             "ai_model_id": ai_model_id,
