@@ -142,11 +142,11 @@ def test_allowlist_blocks_dangerous_module():
         )
 
 
-def test_empty_allowlist_allows_all():
-    """Test that an empty allowlist allows any module."""
+def test_empty_allowlist_blocks_all():
+    """Test that an empty allowlist blocks all modules."""
     full_name = f"{MockValidStep.__module__}.{MockValidStep.__name__}"
-    result = get_step_class_from_qualified_name(full_name, allowed_module_prefixes=[])
-    assert result is MockValidStep
+    with pytest.raises(ProcessInvalidConfigurationException, match="is not in the allowed module prefixes"):
+        get_step_class_from_qualified_name(full_name, allowed_module_prefixes=[])
 
 
 def test_none_allowlist_allows_all():
@@ -170,15 +170,22 @@ def test_default_allowlist_permits_sk_modules():
 
 
 def test_allowlist_prefix_matching():
-    """Test that allowlist uses prefix matching correctly."""
+    """Test that allowlist uses boundary-aware prefix matching correctly."""
     full_name = f"{MockValidStep.__module__}.{MockValidStep.__name__}"
-    # Use a prefix of the actual module name
-    module_prefix = MockValidStep.__module__[:4]  # First 4 chars as prefix
+    # Exact module name match works
     result = get_step_class_from_qualified_name(
         full_name,
-        allowed_module_prefixes=[module_prefix],
+        allowed_module_prefixes=[MockValidStep.__module__],
     )
     assert result is MockValidStep
+
+    # Arbitrary substring prefix without dot boundary does not match
+    short_prefix = MockValidStep.__module__[:4]  # e.g. "test"
+    with pytest.raises(ProcessInvalidConfigurationException, match="is not in the allowed module prefixes"):
+        get_step_class_from_qualified_name(
+            full_name,
+            allowed_module_prefixes=[short_prefix],
+        )
 
 
 def test_allowlist_multiple_prefixes():
