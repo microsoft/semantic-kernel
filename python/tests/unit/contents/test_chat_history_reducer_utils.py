@@ -223,9 +223,7 @@ def test_locate_safe_reduction_index_tool_role_without_function_result_content()
     # The tool call (index 1) must be included if tool result (index 2) is included
     kept_indices = list(range(idx, len(msgs)))
     has_tool_role = any(msgs[i].role == AuthorRole.TOOL for i in kept_indices)
-    has_tool_call = any(
-        any(isinstance(it, FunctionCallContent) for it in msgs[i].items) for i in kept_indices
-    )
+    has_tool_call = any(any(isinstance(it, FunctionCallContent) for it in msgs[i].items) for i in kept_indices)
 
     if has_tool_role:
         assert has_tool_call, (
