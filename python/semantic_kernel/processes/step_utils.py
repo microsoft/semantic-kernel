@@ -65,7 +65,7 @@ def get_step_class_from_qualified_name(
             This check is performed BEFORE import to prevent execution of
             module-level code in unauthorized modules. Defaults to
             ("semantic_kernel.",). Pass None to allow any module (not
-            recommended for production).
+            recommended for production). An empty sequence blocks all modules.
 
     Returns:
         The validated class type that is a subclass of KernelProcessStep
@@ -93,7 +93,11 @@ def get_step_class_from_qualified_name(
         )
 
     # Check module allowlist BEFORE import to prevent module-level code execution
-    if allowed_module_prefixes and not any(module_name.startswith(prefix) for prefix in allowed_module_prefixes):
+    if allowed_module_prefixes is not None and not any(
+        module_name.startswith(prefix) if prefix.endswith(".")
+        else (module_name == prefix or module_name.startswith(prefix + "."))
+        for prefix in allowed_module_prefixes
+    ):
         raise ProcessInvalidConfigurationException(
             f"Module '{module_name}' is not in the allowed module prefixes: {allowed_module_prefixes}. "
             f"Step class '{full_class_name}' cannot be loaded."

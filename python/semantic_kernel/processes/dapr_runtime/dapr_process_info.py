@@ -27,9 +27,11 @@ class DaprProcessInfo(DaprStepInfo):
         """Converts the Dapr process info to a kernel process.
 
         Args:
-            allowed_module_prefixes: Optional list of module prefixes that are allowed
-                for step class loading. If provided, step classes must come from modules
-                starting with one of these prefixes.
+            allowed_module_prefixes: Sequence of module prefixes that are allowed
+                for step class loading. Defaults to DEFAULT_ALLOWED_MODULE_PREFIXES
+                ("semantic_kernel.",). Pass None to disable the allowlist and allow
+                any module (not recommended for production). An empty sequence blocks
+                all modules.
         """
         if not isinstance(self.state, KernelProcessState):
             raise ValueError("State must be a kernel process state")

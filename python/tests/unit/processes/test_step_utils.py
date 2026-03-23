@@ -131,3 +131,72 @@ def test_get_fully_qualified_name_nested_class():
     result = get_fully_qualified_name(OuterClass.InnerClass)
     expected = f"{OuterClass.__module__}.InnerClass"
     assert result == expected
+
+
+# --- Tests for get_step_class_from_qualified_name ---
+
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
+from semantic_kernel.processes.step_utils import get_step_class_from_qualified_name
+
+
+def test_get_step_class_empty_allowlist_blocks_all():
+    """An empty allowlist sequence should block all modules."""
+    with pytest.raises(ProcessInvalidConfigurationException, match="not in the allowed module prefixes"):
+        get_step_class_from_qualified_name(
+            "semantic_kernel.processes.kernel_process.kernel_process_step.KernelProcessStep",
+            allowed_module_prefixes=[],
+        )
+
+
+def test_get_step_class_none_allowlist_allows_any():
+    """Passing None should disable the allowlist check entirely."""
+    from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
+
+    cls = get_step_class_from_qualified_name(
+        "semantic_kernel.processes.kernel_process.kernel_process_step.KernelProcessStep",
+        allowed_module_prefixes=None,
+    )
+    assert cls is KernelProcessStep
+
+
+def test_get_step_class_prefix_without_dot_exact_match():
+    """A prefix without a trailing dot should match the exact module name."""
+    from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
+
+    cls = get_step_class_from_qualified_name(
+        "semantic_kernel.processes.kernel_process.kernel_process_step.KernelProcessStep",
+        allowed_module_prefixes=["semantic_kernel.processes.kernel_process.kernel_process_step"],
+    )
+    assert cls is KernelProcessStep
+
+
+def test_get_step_class_prefix_without_dot_segment_boundary():
+    """A prefix without a trailing dot must not match partial segment names."""
+    with pytest.raises(ProcessInvalidConfigurationException, match="not in the allowed module prefixes"):
+        get_step_class_from_qualified_name(
+            "semantic_kernel_evil.some_module.SomeClass",
+            allowed_module_prefixes=["semantic_kernel"],
+        )
+
+
+def test_get_step_class_prefix_with_dot_matches_submodule():
+    """A prefix with a trailing dot should match submodules."""
+    from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
+
+    cls = get_step_class_from_qualified_name(
+        "semantic_kernel.processes.kernel_process.kernel_process_step.KernelProcessStep",
+        allowed_module_prefixes=["semantic_kernel."],
+    )
+    assert cls is KernelProcessStep
+
+
+def test_get_step_class_default_allowlist_blocks_non_sk_module():
+    """Default allowlist should block modules outside semantic_kernel."""
+    with pytest.raises(ProcessInvalidConfigurationException, match="not in the allowed module prefixes"):
+        get_step_class_from_qualified_name("os.path.SomeClass")
+
+
+def test_get_step_class_invalid_format():
+    """Invalid class name format should raise an exception."""
+    with pytest.raises(ProcessInvalidConfigurationException, match="Invalid step class name format"):
+        get_step_class_from_qualified_name("NoModule")
