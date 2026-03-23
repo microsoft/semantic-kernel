@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -15,7 +16,11 @@ from semantic_kernel.processes.kernel_process.kernel_process_message_channel imp
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import (
     KernelProcessStepContext,
 )
-from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
+from semantic_kernel.processes.step_utils import (
+    find_input_channels,
+    get_fully_qualified_name,
+    get_step_class_from_qualified_name,
+)
 
 
 @pytest.fixture
@@ -134,9 +139,6 @@ def test_get_fully_qualified_name_nested_class():
 
 
 # --- Tests for get_step_class_from_qualified_name ---
-
-from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
-from semantic_kernel.processes.step_utils import get_step_class_from_qualified_name
 
 
 def test_get_step_class_empty_allowlist_blocks_all():
