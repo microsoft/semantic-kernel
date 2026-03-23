@@ -61,9 +61,11 @@ ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
 ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
 ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
-vertex_ai_setup: bool = is_service_setup_for_testing(
-    ["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID", "GOOGLE_AI_CLOUD_REGION"]
-)
+vertex_ai_setup: bool = is_service_setup_for_testing([
+    "GOOGLE_AI_CLOUD_PROJECT_ID",
+    "GOOGLE_AI_GEMINI_MODEL_ID",
+    "GOOGLE_AI_CLOUD_REGION",
+])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX

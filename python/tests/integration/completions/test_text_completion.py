@@ -32,9 +32,11 @@ ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and 
     "Linux"
 ])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
-vertex_ai_setup: bool = is_service_setup_for_testing(
-    ["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID", "GOOGLE_AI_CLOUD_REGION"]
-)
+vertex_ai_setup: bool = is_service_setup_for_testing([
+    "GOOGLE_AI_CLOUD_PROJECT_ID",
+    "GOOGLE_AI_GEMINI_MODEL_ID",
+    "GOOGLE_AI_CLOUD_REGION",
+])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
