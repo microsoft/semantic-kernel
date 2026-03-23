@@ -123,7 +123,7 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
         {
             switch (property)
             {
-                case KeyPropertyModel keyProperty:
+                case IKeyPropertyModel keyProperty:
                     var key = (string?)storageModel[CosmosNoSqlConstants.ReservedKeyPropertyName]
                         ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
@@ -136,14 +136,14 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
 
                     continue;
 
-                case DataPropertyModel dataProperty:
+                case IDataPropertyModel dataProperty:
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var dataValue))
                     {
                         result.Add(property.ModelName, dataValue.Deserialize(property.Type, jsonSerializerOptions));
                     }
                     continue;
 
-                case VectorPropertyModel vectorProperty:
+                case IVectorPropertyModel vectorProperty:
                     if (includeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         if (vectorValue is not null)

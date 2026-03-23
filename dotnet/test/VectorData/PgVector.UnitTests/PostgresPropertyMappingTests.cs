@@ -93,7 +93,7 @@ public sealed class PostgresPropertyMappingTests
     public void GetIndexInfoReturnsCorrectValues()
     {
         // Arrange
-        List<PropertyModel> vectorProperties =
+        List<IPropertyModel> vectorProperties =
         [
             new VectorPropertyModel("vector1", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 1000 },
             new VectorPropertyModel("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Flat, Dimensions = 3000 },

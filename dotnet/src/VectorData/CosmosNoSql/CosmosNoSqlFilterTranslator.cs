@@ -300,7 +300,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-    private void GenerateAnyContains(PropertyModel property, object? values)
+    private void GenerateAnyContains(IPropertyModel property, object? values)
     {
         this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
         this.GeneratePropertyAccess(property);
@@ -309,7 +309,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         this._sql.Append(", t))");
     }
 
-    private void GenerateAnyContains(PropertyModel property, QueryParameterExpression queryParameter)
+    private void GenerateAnyContains(IPropertyModel property, QueryParameterExpression queryParameter)
     {
         this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
         this.GeneratePropertyAccess(property);
@@ -361,7 +361,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         this._sql.Append(name);
     }
 
-    protected virtual void GeneratePropertyAccess(PropertyModel property)
+    protected virtual void GeneratePropertyAccess(IPropertyModel property)
         => this._sql
             .Append(CosmosNoSqlConstants.ContainerAlias)
             .Append("[\"")

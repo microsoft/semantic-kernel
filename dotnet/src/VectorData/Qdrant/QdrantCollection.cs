@@ -580,7 +580,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
     }
 
-    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, IVectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
     {
         if (searchValue is float[] array)

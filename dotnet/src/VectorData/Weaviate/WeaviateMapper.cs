@@ -175,7 +175,7 @@ internal sealed class WeaviateMapper<TRecord>
 
         return record;
 
-        static void PopulateVectorProperty(TRecord record, object? value, VectorPropertyModel property)
+        static void PopulateVectorProperty(TRecord record, object? value, IVectorPropertyModel property)
         {
             switch (value)
             {

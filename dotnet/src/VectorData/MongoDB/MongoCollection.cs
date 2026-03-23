@@ -426,7 +426,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         }
     }
 
-    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, IVectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
     {
         if (searchValue is float[] array)

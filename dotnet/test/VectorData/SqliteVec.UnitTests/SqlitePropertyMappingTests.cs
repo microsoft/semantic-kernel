@@ -34,7 +34,7 @@ public sealed class SqlitePropertyMappingTests
     public void GetColumnsReturnsCollectionOfColumns(bool data)
     {
         // Arrange
-        var properties = new List<PropertyModel>()
+        var properties = new List<IPropertyModel>()
         {
             new KeyPropertyModel("Key", typeof(string)) { StorageName = "Key" },
             new DataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsIndexed = true },

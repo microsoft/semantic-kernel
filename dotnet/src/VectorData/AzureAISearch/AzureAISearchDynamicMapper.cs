@@ -99,7 +99,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         {
             switch (property)
             {
-                case KeyPropertyModel keyProperty:
+                case IKeyPropertyModel keyProperty:
                     var key = (string?)storageModel[keyProperty.StorageName]
                         ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
@@ -112,7 +112,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
 
                     continue;
 
-                case DataPropertyModel dataProperty:
+                case IDataPropertyModel dataProperty:
                 {
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var value))
                     {
@@ -121,7 +121,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                     continue;
                 }
 
-                case VectorPropertyModel vectorProperty when includeVectors:
+                case IVectorPropertyModel vectorProperty when includeVectors:
                 {
                     if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
                     {
@@ -147,7 +147,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                     continue;
                 }
 
-                case VectorPropertyModel vectorProperty when !includeVectors:
+                case IVectorPropertyModel vectorProperty when !includeVectors:
                     break;
 
                 default:

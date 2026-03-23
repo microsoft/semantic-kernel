@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public abstract class PropertyModel(string modelName, Type type)
+public abstract class PropertyModel(string modelName, Type type) : IPropertyModel
 {
     private string? _storageName;
     private Func<object, object?>? _getter;

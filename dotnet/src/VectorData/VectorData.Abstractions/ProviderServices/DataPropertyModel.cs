@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class DataPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
+public class DataPropertyModel(string modelName, Type type) : PropertyModel(modelName, type), IDataPropertyModel
 {
     /// <summary>
     /// Gets or sets a value indicating whether this data property is indexed.

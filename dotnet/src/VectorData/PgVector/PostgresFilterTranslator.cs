@@ -105,7 +105,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
+    protected override void TranslateAnyContainsOverArrayColumn(IPropertyModel property, object? values)
     {
         // Translate r.Strings.Any(s => array.Contains(s)) to: column && ARRAY[values]
         // The && operator checks if the two arrays have any elements in common

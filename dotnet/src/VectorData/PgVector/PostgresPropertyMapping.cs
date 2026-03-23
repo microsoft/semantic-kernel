@@ -41,7 +41,7 @@ internal static class PostgresPropertyMapping
     /// <summary>
     /// Gets the NpgsqlDbType for a property, taking into account any store type annotation.
     /// </summary>
-    internal static NpgsqlDbType? GetNpgsqlDbType(PropertyModel property)
+    internal static NpgsqlDbType? GetNpgsqlDbType(IPropertyModel property)
         => (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
         {
             Type t when t == typeof(bool) => NpgsqlDbType.Boolean,
@@ -72,7 +72,7 @@ internal static class PostgresPropertyMapping
     /// <summary>
     /// Maps a .NET type to a PostgreSQL type name, taking into account any store type annotation on the property.
     /// </summary>
-    internal static (string PgType, bool IsNullable) GetPostgresTypeName(PropertyModel property)
+    internal static (string PgType, bool IsNullable) GetPostgresTypeName(IPropertyModel property)
     {
         static bool TryGetBaseType(Type type, [NotNullWhen(true)] out string? typeName)
         {
@@ -142,7 +142,7 @@ internal static class PostgresPropertyMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property.</param>
     /// <returns>The PostgreSQL vector type name.</returns>
-    public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorPropertyModel vectorProperty)
+    public static (string PgType, bool IsNullable) GetPgVectorTypeName(IVectorPropertyModel vectorProperty)
     {
         var unwrappedEmbeddingType = Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType;
 
@@ -181,18 +181,18 @@ internal static class PostgresPropertyMapping
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
+    public static List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)> GetIndexInfo(IReadOnlyList<IPropertyModel> properties)
     {
         var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector, bool isFullText, string? fullTextLanguage)>();
         foreach (var property in properties)
         {
             switch (property)
             {
-                case KeyPropertyModel:
+                case IKeyPropertyModel:
                     // There is no need to create a separate index for the key property.
                     break;
 
-                case VectorPropertyModel vectorProperty:
+                case IVectorPropertyModel vectorProperty:
                     var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                     var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
 
@@ -215,7 +215,7 @@ internal static class PostgresPropertyMapping
 
                     break;
 
-                case DataPropertyModel dataProperty:
+                case IDataPropertyModel dataProperty:
                     if (dataProperty.IsIndexed)
                     {
                         vectorIndexesToCreate.Add((dataProperty.StorageName, kind: "", function: "", isVector: false, isFullText: false, fullTextLanguage: null));

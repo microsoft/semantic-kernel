@@ -56,7 +56,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
     // TODO: Refactor this into the model
     /// <summary>The properties to use as partition key (supports hierarchical partition keys up to 3 levels).</summary>
-    private readonly List<PropertyModel> _partitionKeyProperties;
+    private readonly List<IPropertyModel> _partitionKeyProperties;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
     private readonly ICosmosNoSqlMapper<TRecord> _mapper;
@@ -181,7 +181,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                     throw new ArgumentException("Cosmos DB supports at most 3 levels of hierarchical partition keys.");
                 }
 
-                this._partitionKeyProperties = new List<PropertyModel>(options.PartitionKeyProperties.Count);
+                this._partitionKeyProperties = new List<IPropertyModel>(options.PartitionKeyProperties.Count);
 
                 foreach (var propertyName in options.PartitionKeyProperties)
                 {
@@ -563,7 +563,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         }
     }
 
-    private static async ValueTask<object> GetSearchVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+    private static async ValueTask<object> GetSearchVectorAsync<TInput>(TInput searchValue, IVectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
         => searchValue switch
         {

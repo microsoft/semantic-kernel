@@ -154,15 +154,15 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         {
             switch (property)
             {
-                case KeyPropertyModel p:
+                case IKeyPropertyModel p:
                     searchFields.Add(AzureAISearchCollectionCreateMapping.MapKeyField(p));
                     break;
 
-                case DataPropertyModel p:
+                case IDataPropertyModel p:
                     searchFields.Add(AzureAISearchCollectionCreateMapping.MapDataField(p));
                     break;
 
-                case VectorPropertyModel p:
+                case IVectorPropertyModel p:
                     (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchCollectionCreateMapping.MapVectorField(p);
 
                     // Add the search field, plus its profile and algorithm configuration to the search config.
@@ -361,7 +361,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         {
             foreach (var pair in options.OrderBy(new()).Values)
             {
-                PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+                IPropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
                 string name = property.StorageName;
                 // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
                 // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
@@ -466,7 +466,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         }
     }
 
-    private static async ValueTask<ReadOnlyMemory<float>?> GetSearchVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+    private static async ValueTask<ReadOnlyMemory<float>?> GetSearchVectorAsync<TInput>(TInput searchValue, IVectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
         => searchValue switch
         {

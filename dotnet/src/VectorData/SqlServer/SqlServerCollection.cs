@@ -352,7 +352,7 @@ public class SqlServerCollection<TKey, TRecord>
     {
         Verify.NotNull(record);
 
-        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
+        Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -369,7 +369,7 @@ public class SqlServerCollection<TKey, TRecord>
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings ??= new Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
             generatedEmbeddings[vectorProperty] = [await vectorProperty.GenerateEmbeddingAsync(vectorProperty.GetValueAsObject(record), cancellationToken).ConfigureAwait(false)];
         }
 
@@ -414,7 +414,7 @@ public class SqlServerCollection<TKey, TRecord>
         IReadOnlyList<TRecord>? recordsList = null;
 
         // If an embedding generator is defined, invoke it once per property for all records.
-        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
+        Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -445,7 +445,7 @@ public class SqlServerCollection<TKey, TRecord>
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings ??= new Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
             generatedEmbeddings[vectorProperty] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 

@@ -51,7 +51,7 @@ internal static class RedisCollectionCreateMapping
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<PropertyModel> properties, bool useDollarPrefix)
+    public static Schema MapToSchema(IEnumerable<IPropertyModel> properties, bool useDollarPrefix)
     {
         var schema = new Schema();
         var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
@@ -63,11 +63,11 @@ internal static class RedisCollectionCreateMapping
 
             switch (property)
             {
-                case KeyPropertyModel keyProperty:
+                case IKeyPropertyModel keyProperty:
                     // Do nothing, since key is not stored as part of the payload and therefore doesn't have to be added to the index.
                     continue;
 
-                case DataPropertyModel dataProperty when dataProperty.IsIndexed || dataProperty.IsFullTextIndexed:
+                case IDataPropertyModel dataProperty when dataProperty.IsIndexed || dataProperty.IsFullTextIndexed:
                     if (dataProperty.IsIndexed && dataProperty.IsFullTextIndexed)
                     {
                         throw new InvalidOperationException($"Property '{dataProperty.ModelName}' has both {nameof(VectorStoreDataProperty.IsIndexed)} and {nameof(VectorStoreDataProperty.IsFullTextIndexed)} set to true, and this is not supported by the Redis VectorStore.");
@@ -109,7 +109,7 @@ internal static class RedisCollectionCreateMapping
 
                     continue;
 
-                case VectorPropertyModel vectorProperty:
+                case IVectorPropertyModel vectorProperty:
                     var indexKind = GetSDKIndexKind(vectorProperty);
                     var vectorType = GetSDKVectorType(vectorProperty);
                     var dimensions = vectorProperty.Dimensions.ToString(CultureInfo.InvariantCulture);
@@ -139,7 +139,7 @@ internal static class RedisCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="Schema.VectorField.VectorAlgo"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a index type was chosen that isn't supported by Redis.</exception>
-    public static Schema.VectorField.VectorAlgo GetSDKIndexKind(VectorPropertyModel vectorProperty)
+    public static Schema.VectorField.VectorAlgo GetSDKIndexKind(IVectorPropertyModel vectorProperty)
         => vectorProperty.IndexKind switch
         {
             IndexKind.Hnsw or null => Schema.VectorField.VectorAlgo.HNSW,
@@ -154,7 +154,7 @@ internal static class RedisCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen distance metric.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Redis.</exception>
-    public static string GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
+    public static string GetSDKDistanceAlgorithm(IVectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => "COSINE",
@@ -171,7 +171,7 @@ internal static class RedisCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The SDK required vector type.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
-    public static string GetSDKVectorType(VectorPropertyModel vectorProperty)
+    public static string GetSDKVectorType(IVectorPropertyModel vectorProperty)
         => (Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType) switch
         {
             Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",

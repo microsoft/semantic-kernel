@@ -47,7 +47,7 @@ internal static class RedisCollectionSearchMapping
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, IVectorPropertyModel vectorProperty, string[]? selectFields)
     {
         // Build search query.
         var redisLimit = top + options.Skip;
@@ -101,7 +101,7 @@ internal static class RedisCollectionSearchMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property to be used.</param>
     /// <returns>The distance function for the vector we want to search.</returns>
-    public static string ResolveDistanceFunction(VectorPropertyModel vectorProperty)
+    public static string ResolveDistanceFunction(IVectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
 
     /// <summary>
