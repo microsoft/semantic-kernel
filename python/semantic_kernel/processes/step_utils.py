@@ -94,7 +94,8 @@ def get_step_class_from_qualified_name(
 
     # Check module allowlist BEFORE import to prevent module-level code execution
     if allowed_module_prefixes is not None and not any(
-        module_name.startswith(prefix) if prefix.endswith(".")
+        module_name.startswith(prefix)
+        if prefix.endswith(".")
         else (module_name == prefix or module_name.startswith(prefix + "."))
         for prefix in allowed_module_prefixes
     ):
