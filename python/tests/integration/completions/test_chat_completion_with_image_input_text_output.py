@@ -26,6 +26,12 @@ from tests.integration.completions.chat_completion_test_base import (
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.utils import retry
 
+# Use the repo's own sample image via raw GitHub URL for URI-based tests.
+# Previously this pointed to a 17.5 MB Wikimedia image that got blocked by
+# Wikimedia's User-Agent policy (Phabricator T400119), causing Azure's
+# server-side image fetcher to fail with HTTP 403.
+IMAGE_TEST_URL = "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/python/tests/assets/sample_image.jpg"
+
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
@@ -37,15 +43,12 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER,
                     items=[
                         TextContent(text="What is in this image?"),
-                        ImageContent(
-                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
-                        ),
+                        ImageContent(uri=IMAGE_TEST_URL),
                     ],
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
-            marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
             id="openai_image_input_uri",
         ),
         pytest.param(
@@ -74,9 +77,7 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER,
                     items=[
                         TextContent(text="What is in this image?"),
-                        ImageContent(
-                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
-                        ),
+                        ImageContent(uri=IMAGE_TEST_URL),
                     ],
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
@@ -134,9 +135,7 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER,
                     items=[
                         TextContent(text="What is in this image?"),
-                        ImageContent(
-                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
-                        ),
+                        ImageContent(uri=IMAGE_TEST_URL),
                     ],
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),

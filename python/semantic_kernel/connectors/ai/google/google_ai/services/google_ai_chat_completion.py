@@ -119,7 +119,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         if not client:
             if google_ai_settings.use_vertexai and not google_ai_settings.cloud_project_id:
                 raise ServiceInitializationError("Project ID must be provided when use_vertexai is True.")
-            if not google_ai_settings.api_key:
+            if google_ai_settings.use_vertexai and not google_ai_settings.cloud_region:
+                raise ServiceInitializationError("Region must be provided when use_vertexai is True.")
+            if not google_ai_settings.use_vertexai and not google_ai_settings.api_key:
                 raise ServiceInitializationError("The API key is required when use_vertexai is False.")
 
         super().__init__(
@@ -303,6 +305,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 if part.text:
                     items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
                 elif part.function_call:
+                    fc_metadata: dict[str, Any] = {}
+                    thought_sig = getattr(part, "thought_signature", None)
+                    if thought_sig:
+                        fc_metadata["thought_signature"] = thought_sig
                     items.append(
                         FunctionCallContent(
                             id=f"{part.function_call.name}_{idx!s}",
@@ -310,6 +316,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                                 part.function_call.name  # type: ignore[arg-type]
                             ),
                             arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                            metadata=fc_metadata if fc_metadata else None,
                         )
                     )
 
@@ -360,6 +367,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                         )
                     )
                 elif part.function_call:
+                    fc_metadata: dict[str, Any] = {}
+                    thought_sig = getattr(part, "thought_signature", None)
+                    if thought_sig:
+                        fc_metadata["thought_signature"] = thought_sig
                     items.append(
                         FunctionCallContent(
                             id=f"{part.function_call.name}_{idx!s}",
@@ -367,6 +378,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                                 part.function_call.name  # type: ignore[arg-type]
                             ),
                             arguments={k: v for k, v in part.function_call.args.items()},  # type: ignore
+                            metadata=fc_metadata if fc_metadata else None,
                         )
                     )
 

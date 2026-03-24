@@ -140,6 +140,7 @@ public class VectorStoreTextSearchTestBase
             {
                 DataModel dataModel => dataModel.Text,
                 DataModelWithRawEmbedding dataModelWithRawEmbedding => dataModelWithRawEmbedding.Text,
+                DataModelWithTags dataModelWithTags => dataModelWithTags.Text,
                 _ => throw new ArgumentException("Invalid result type.")
             };
     }
@@ -155,6 +156,7 @@ public class VectorStoreTextSearchTestBase
             {
                 DataModel dataModel => new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() },
                 DataModelWithRawEmbedding dataModelWithRawEmbedding => new TextSearchResult(value: dataModelWithRawEmbedding.Text) { Name = dataModelWithRawEmbedding.Key.ToString() },
+                DataModelWithTags dataModelWithTags => new TextSearchResult(value: dataModelWithTags.Text) { Name = dataModelWithTags.Key.ToString() },
                 _ => throw new ArgumentException("Invalid result type.")
             };
     }
@@ -230,5 +232,28 @@ public class VectorStoreTextSearchTestBase
 
         [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
+    }
+
+    /// <summary>
+    /// Sample model class for testing collection-based filtering (AnyTagEqualTo).
+    /// </summary>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    public sealed class DataModelWithTags
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreKey]
+        public Guid Key { get; init; }
+
+        [VectorStoreData]
+        public required string Text { get; init; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public required string Tag { get; init; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public required IReadOnlyList<string> Tags { get; init; }
+
+        [VectorStoreVector(1536)]
+        public string? Embedding { get; init; }
     }
 }

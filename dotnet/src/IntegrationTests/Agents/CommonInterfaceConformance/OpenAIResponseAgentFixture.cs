@@ -25,14 +25,14 @@ public class OpenAIResponseAgentFixture : AgentFixture
         .AddUserSecrets<OpenAIResponseAgentFixture>()
         .Build();
 
-    private OpenAIResponseClient? _responseClient;
+    private ResponsesClient? _responseClient;
     private OpenAIResponseAgent? _agent;
     private OpenAIResponseAgentThread? _thread;
     private OpenAIResponseAgentThread? _createdThread;
     private OpenAIResponseAgentThread? _serviceFailingAgentThread;
     private OpenAIResponseAgentThread? _createdServiceFailingAgentThread;
 
-    public OpenAIResponseClient ResponseClient => this._responseClient!;
+    public ResponsesClient ResponseClient => this._responseClient!;
 
     public override Agent Agent => this._agent!;
 
@@ -95,12 +95,12 @@ public class OpenAIResponseAgentFixture : AgentFixture
     {
         OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
         var options = new OpenAIClientOptions();
-        this._responseClient = new(model: configuration.ChatModelId, credential: new ApiKeyCredential(configuration.ApiKey), options: options);
+        this._responseClient = new(credential: new ApiKeyCredential(configuration.ApiKey), options: options);
 
         var kernelBuilder = Kernel.CreateBuilder();
         Kernel kernel = kernelBuilder.Build();
 
-        this._agent = new OpenAIResponseAgent(this._responseClient)
+        this._agent = new OpenAIResponseAgent(this._responseClient, configuration.ChatModelId)
         {
             Name = "HelpfulAssistant",
             Instructions = "You are a helpful assistant.",
@@ -109,10 +109,10 @@ public class OpenAIResponseAgentFixture : AgentFixture
         };
         this._thread = new OpenAIResponseAgentThread(this._responseClient);
 
-        var response = await this._responseClient.CreateResponseAsync([ResponseItem.CreateUserMessageItem("Hello")]);
+        var response = await this._responseClient.CreateResponseAsync(new CreateResponseOptions(configuration.ChatModelId, [ResponseItem.CreateUserMessageItem("Hello")]));
         this._createdThread = new OpenAIResponseAgentThread(this._responseClient, response.Value.Id);
 
-        var serviceFailingClient = new OpenAIResponseClient(configuration.ModelId, credential: new ApiKeyCredential("FakeApiKey"), options: options);
+        var serviceFailingClient = new ResponsesClient(credential: new ApiKeyCredential("FakeApiKey"), options: options);
         this._serviceFailingAgentThread = new OpenAIResponseAgentThread(serviceFailingClient);
 
         this._createdServiceFailingAgentThread = new OpenAIResponseAgentThread(this._responseClient, "FakeId");

@@ -31,11 +31,18 @@ internal static class KernelContentExtensions
 
     internal static ResponseContentPart ToResponseContentPart(this ImageContent content)
     {
-        return content.Uri is not null
-            ? ResponseContentPart.CreateInputImagePart(content.Uri)
-            : content.Data is not null
-            ? ResponseContentPart.CreateInputImagePart(new BinaryData(content.Data), content.MimeType)
-            : throw new NotSupportedException("ImageContent cannot be converted to ResponseContentPart. Only ImageContent with a uri or binary data is supported.");
+        if (content.Uri is not null)
+        {
+            return ResponseContentPart.CreateInputImagePart(content.Uri);
+        }
+
+        if (content.Data is not null)
+        {
+            var dataUri = new Uri($"data:{content.MimeType};base64,{Convert.ToBase64String(content.Data.Value.ToArray())}");
+            return ResponseContentPart.CreateInputImagePart(dataUri);
+        }
+
+        throw new NotSupportedException("ImageContent cannot be converted to ResponseContentPart. Only ImageContent with a uri or binary data is supported.");
     }
 
     internal static ResponseContentPart ToResponseContentPart(this BinaryContent content)

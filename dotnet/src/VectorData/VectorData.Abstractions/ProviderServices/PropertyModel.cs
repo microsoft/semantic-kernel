@@ -63,6 +63,36 @@ public abstract class PropertyModel(string modelName, Type type)
     public Dictionary<string, object?>? ProviderAnnotations { get; set; }
 
     /// <summary>
+    /// Gets whether the property type is nullable. For value types, this is <see langword="true"/> when the type is
+    /// <see cref="Nullable{T}"/>. For reference types on .NET 6+, this uses NRT annotations via
+    /// <c>NullabilityInfoContext</c> when a <see cref="PropertyInfo"/> is available
+    /// (i.e., POCO mapping); otherwise, reference types are assumed nullable.
+    /// </summary>
+    public bool IsNullable
+    {
+        get
+        {
+            // Value types: nullable only if Nullable<T>
+            if (this.Type.IsValueType)
+            {
+                return Nullable.GetUnderlyingType(this.Type) is not null;
+            }
+
+            // Reference types: check NRT annotation via NullabilityInfoContext when available
+#if NET
+            if (this.PropertyInfo is { } propertyInfo)
+            {
+                var nullabilityInfo = new NullabilityInfoContext().Create(propertyInfo);
+                return nullabilityInfo.ReadState != NullabilityState.NotNull;
+            }
+#endif
+
+            // Dynamic mapping or old framework: assume nullable for reference types
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
     /// </summary>
     public virtual object? GetValueAsObject(object record)
