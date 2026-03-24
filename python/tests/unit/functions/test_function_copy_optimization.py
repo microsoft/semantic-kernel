@@ -5,7 +5,6 @@
 import pytest
 from unittest.mock import patch
 
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions import kernel_function
 
 
