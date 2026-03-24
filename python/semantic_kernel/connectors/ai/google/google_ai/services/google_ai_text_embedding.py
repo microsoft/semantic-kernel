@@ -15,7 +15,9 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -131,10 +133,14 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
             ) as client:
                 response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
+            ) as client:  # type: ignore[union-attr]
                 response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
 
         return [embedding.values for embedding in response.embeddings]  # type: ignore

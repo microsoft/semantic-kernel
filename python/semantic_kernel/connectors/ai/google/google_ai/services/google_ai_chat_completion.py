@@ -29,6 +29,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -46,6 +47,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -169,10 +171,14 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
+            ) as client:  # type: ignore[union-attr]
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
@@ -216,6 +222,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
             ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [
@@ -223,7 +230,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                         for candidate in chunk.candidates  # type: ignore
                     ]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
+            ) as client:  # type: ignore[union-attr]
                 async for chunk in _generate_content_stream(client):
                     yield [
                         self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)

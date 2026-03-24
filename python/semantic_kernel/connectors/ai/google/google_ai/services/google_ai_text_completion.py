@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents import TextContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -22,6 +23,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_text_completion,
     trace_text_completion,
 )
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -135,10 +137,14 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
+            ) as client:  # type: ignore[union-attr]
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]  # type: ignore
@@ -173,11 +179,15 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
             ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),
+                http_options={"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}},
+            ) as client:  # type: ignore[union-attr]
                 async for chunk in _generate_content_stream(client):
                     yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
 
