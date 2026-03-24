@@ -388,11 +388,12 @@ class KernelFunction(KernelBaseModel):
             KernelFunction: The copied function.
         """
         cop: KernelFunction = copy(self)
-            cop.metadata = self.metadata.model_copy(update={"plugin_name": plugin_name}, deep=True)
-            cop.metadata.plugin_name = plugin_name
-        else:
-            # Reuse reference when no modification needed (safe as metadata is immutable in practice)
-            cop.metadata = self.metadata
+        # Always deep-copy metadata to avoid shared mutable state between function copies.
+        new_plugin_name = plugin_name if plugin_name is not None else self.metadata.plugin_name
+        cop.metadata = self.metadata.model_copy(
+            update={"plugin_name": new_plugin_name},
+            deep=True,
+        )
         return cop
 
     def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:
