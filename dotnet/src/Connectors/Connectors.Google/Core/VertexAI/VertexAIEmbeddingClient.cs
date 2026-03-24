@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -17,6 +18,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
     private readonly Uri _embeddingEndpoint;
+    private readonly int? _dimensions;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Vertex AI.
@@ -28,6 +30,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
         string modelId,
@@ -35,7 +38,8 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         string location,
         string projectId,
         VertexAIVersion apiVersion,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        int? dimensions = null)
         : base(
             httpClient: httpClient,
             logger: logger,
@@ -50,21 +54,24 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
 
         this._embeddingModelId = modelId;
         this._embeddingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
+        this._dimensions = dimensions;
     }
 
     /// <summary>
     /// Generates embeddings for the given data asynchronously.
     /// </summary>
     /// <param name="data">The list of strings to generate embeddings for.</param>
+    /// <param name="options">The embedding generation options.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
     /// <returns>Result contains a list of read-only memories of floats representing the generated embeddings.</returns>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
+        EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(data);
 
-        var geminiRequest = GetEmbeddingRequest(data);
+        var geminiRequest = this.GetEmbeddingRequest(data, options);
         using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -73,8 +80,8 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    private static VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
-        => VertexAIEmbeddingRequest.FromData(data);
+    private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
+        => VertexAIEmbeddingRequest.FromData(data, options?.Dimensions ?? this._dimensions);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<VertexAIEmbeddingResponse>(body));

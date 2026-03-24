@@ -130,13 +130,22 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
 
             static void PopulateVectorProperty(TRecord record, VectorOutput value, VectorPropertyModel property)
             {
+                RepeatedField<float> data = value switch
+                {
+                    // qdrant 1.16 and newer, return the new union type
+                    { Dense: not null } => value.Dense.Data,
+                    // Required for qdrant < 1.16.0, but deprecated in client >=1.16.0 and is empty with qdrant server 1.17.0
+                    { Data: not null } => value.Data,
+                    _ => throw new UnreachableException()
+
+                };
                 property.SetValueAsObject(
                     record,
                     (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
                     {
-                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(value.Data.ToArray()),
-                        var t when t == typeof(Embedding<float>) => new Embedding<float>(value.Data.ToArray()),
-                        var t when t == typeof(float[]) => value.Data.ToArray(),
+                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(data.ToArray()),
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(data.ToArray()),
+                        var t when t == typeof(float[]) => data.ToArray(),
 
                         _ => throw new UnreachableException()
                     });
