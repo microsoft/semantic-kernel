@@ -99,6 +99,15 @@ public class OpenApiFunctionExecutionParameters
     public RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
+    /// Options for validating server URLs before making HTTP requests.
+    /// When set, the plugin will validate each resolved URL against the configured allowed base URLs and schemes
+    /// before sending the HTTP request. This helps prevent Server-Side Request Forgery (SSRF) attacks.
+    /// If null (default), no URL validation is performed.
+    /// </summary>
+    [Experimental("SKEXP0040")]
+    public RestApiOperationServerUrlValidationOptions? ServerUrlValidationOptions { get; set; }
+
+    /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
     /// </summary>
     public ILoggerFactory? LoggerFactory { get; set; }
