@@ -3,11 +3,6 @@
 """Tests for KernelArguments merge optimization (Issue #2: Lazy dict copy)."""
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from unittest.mock import patch, MagicMock
-
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-
-
 class TestKernelArgumentsMergeOptimization:
     """Test suite for KernelArguments merge operator optimization."""
     
