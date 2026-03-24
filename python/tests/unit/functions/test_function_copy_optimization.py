@@ -11,12 +11,12 @@ from semantic_kernel.functions import kernel_function
 
 @pytest.fixture
 def sample_function():
-    """Create a sample kernel function for testing."""
     @kernel_function
     def test_func(input: str) -> str:
         return f"Result: {input}"
-    
-    return test_func
+
+    from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+    return KernelFunctionFromMethod(method=test_func, plugin_name="test_plugin")
 
 
 class TestFunctionCopyOptimization:
