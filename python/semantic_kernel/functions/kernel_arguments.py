@@ -110,7 +110,7 @@ class KernelArguments(dict):
                 self.execution_settings.update(value.execution_settings)
             else:
                 # Only copy when we actually need a different instance
-                self.execution_settings = {**value.execution_settings}
+                self.execution_settings = value.execution_settings.copy()
 
         return self
 
