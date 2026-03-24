@@ -55,6 +55,8 @@ public abstract class PropertyModel(string modelName, Type type) : IPropertyMode
     /// </remarks>
     public Dictionary<string, object?>? ProviderAnnotations { get; set; }
 
+    IReadOnlyDictionary<string, object?>? IPropertyModel.ProviderAnnotations => this.ProviderAnnotations;
+
     /// <summary>
     /// Gets whether the property type is nullable. For value types, this is <see langword="true"/> when the type is
     /// <see cref="Nullable{T}"/>. For reference types on .NET 6+, this uses NRT annotations via

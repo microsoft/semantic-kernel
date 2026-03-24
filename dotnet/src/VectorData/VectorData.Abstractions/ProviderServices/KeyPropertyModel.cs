@@ -23,7 +23,6 @@ public class KeyPropertyModel(string modelName, Type type) : PropertyModel(model
     /// (e.g. CosmosDB NoSQL uses "id"): the serializer produces a JSON object with the policy-transformed name, and
     /// the connector needs to find and replace it with the reserved storage name.
     /// </summary>
-    [Experimental("MEVD9001")]
     public string? SerializedKeyName { get; set; }
 
     /// <inheritdoc/>

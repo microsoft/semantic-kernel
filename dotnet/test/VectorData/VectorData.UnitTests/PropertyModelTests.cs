@@ -6,7 +6,7 @@ using Xunit;
 
 namespace VectorData.UnitTests;
 
-public class IPropertyModelTests
+public class PropertyModelTests
 {
     #region Value type nullability
 

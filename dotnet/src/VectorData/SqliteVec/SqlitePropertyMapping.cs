@@ -62,7 +62,7 @@ internal static class SqlitePropertyMapping
             else
             {
                 // The Key column in included in both Vector and Data tables.
-                Debug.Assert(property is IKeyPropertyModel, "property is VectorStoreRecordIKeyPropertyModel");
+                Debug.Assert(property is IKeyPropertyModel, "property is not an IKeyPropertyModel");
 
                 propertyType = GetStorageDataPropertyType(property);
                 isPrimary = true;

@@ -46,7 +46,7 @@ public interface IPropertyModel
     /// <summary>
     /// Gets a dictionary of provider-specific annotations for this property.
     /// </summary>
-    Dictionary<string, object?>? ProviderAnnotations { get; }
+    IReadOnlyDictionary<string, object?>? ProviderAnnotations { get; }
 
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
