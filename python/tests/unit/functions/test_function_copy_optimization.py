@@ -71,10 +71,11 @@ class TestFunctionCopyOptimization:
         deepcopy is not being called anymore.
         """
         # When plugin_name is None or same, deepcopy should not be called
+        original_metadata = sample_function.metadata
         try:
-            sample_function.function_copy()
-            # If we get here, deepcopy was not called (good!)
-            assert True
+            copy = sample_function.function_copy()
+            # If we get here, deepcopy was not called and metadata reference was reused
+            assert copy.metadata is original_metadata
         except AssertionError as e:
             if "deepcopy should not be called" in str(e):
                 pytest.fail("function_copy still calls deepcopy unnecessarily")
