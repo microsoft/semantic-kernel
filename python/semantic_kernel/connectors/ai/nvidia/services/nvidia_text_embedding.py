@@ -77,6 +77,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
                 api_key=nvidia_settings.api_key.get_secret_value() if nvidia_settings.api_key else None,
                 base_url=nvidia_settings.base_url,
                 timeout=60.0,
+                max_retries=3,
             )
         super().__init__(
             ai_model_id=nvidia_settings.embedding_model_id,

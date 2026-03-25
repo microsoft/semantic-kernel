@@ -70,6 +70,7 @@ class OpenAIConfigBase(OpenAIHandler):
                 organization=org_id,
                 default_headers=merged_headers,
                 timeout=60.0,
+                max_retries=3,
             )
         args = {
             "ai_model_id": ai_model_id,
