@@ -51,7 +51,7 @@ internal static class SqliteCommandBuilder
         }
         builder.AppendIdentifier(tableName).AppendLine(" (");
 
-        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: true))));
+        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: true, includeNullability: true))));
         builder.AppendLine(");");
 
         foreach (var column in columns)
@@ -91,7 +91,7 @@ internal static class SqliteCommandBuilder
         builder.AppendIdentifier(tableName).AppendLine(" USING vec0(");
 
         // The vector extension is currently uncapable of handling quoted identifiers.
-        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: false))));
+        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: false, includeNullability: false))));
         builder.Append(");");
 
         var command = connection.CreateCommand();
@@ -299,7 +299,8 @@ internal static class SqliteCommandBuilder
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
-        int skip = 0)
+        int skip = 0,
+        double? scoreThreshold = null)
     {
         const string SubqueryName = "subquery";
 
@@ -339,6 +340,19 @@ internal static class SqliteCommandBuilder
         builder.Append("INNER JOIN ").AppendIdentifier(dataTableName).Append(" ON ")
             .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(keyColumnName).Append(" = ")
             .AppendIdentifier(dataTableName).Append('.').AppendIdentifier(keyColumnName).AppendLine();
+
+        // SQLite vec only supports distance metrics (lower = more similar), so filter with <=
+        if (scoreThreshold.HasValue)
+        {
+            var scoreThresholdClause = new StringBuilder()
+                .AppendIdentifier(vectorTableName).Append('.').AppendIdentifier(DistancePropertyName).Append(" <= @scoreThreshold")
+                .ToString();
+            whereClause = string.IsNullOrEmpty(whereClause)
+                ? scoreThresholdClause
+                : $"{whereClause} AND {scoreThresholdClause}";
+            command.Parameters.Add(new SqliteParameter("@scoreThreshold", scoreThreshold.Value));
+        }
+
         builder.AppendWhereClause(whereClause);
 
         if (filterOptions is not null)
@@ -465,7 +479,7 @@ internal static class SqliteCommandBuilder
         return builder;
     }
 
-    private static string GetColumnDefinition(SqliteColumn column, bool quote)
+    private static string GetColumnDefinition(SqliteColumn column, bool quote, bool includeNullability)
     {
         const string PrimaryKeyIdentifier = "PRIMARY KEY";
 
@@ -474,6 +488,11 @@ internal static class SqliteCommandBuilder
         if (column.IsPrimary)
         {
             columnDefinitionParts.Add(PrimaryKeyIdentifier);
+        }
+
+        if (includeNullability && !column.IsPrimary && !column.IsNullable)
+        {
+            columnDefinitionParts.Add("NOT NULL");
         }
 
         if (column.Configuration is { Count: > 0 })

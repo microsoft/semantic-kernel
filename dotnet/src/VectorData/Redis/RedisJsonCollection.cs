@@ -39,7 +39,6 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
@@ -84,6 +83,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
                 : new RedisJsonModelBuilder(ModelBuildingOptions)
                     .Build(
                         typeof(TRecord),
+                        typeof(TKey),
                         options.Definition,
                         options.EmbeddingGenerator,
                         options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
@@ -439,6 +439,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
+
         if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
@@ -452,15 +453,14 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // float64
             ReadOnlyMemory<double> r => r,
             double[] f => new ReadOnlyMemory<double>(f),
             Embedding<double> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<double>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), RedisModelBuilder.SupportedVectorTypes))
@@ -501,6 +501,25 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
         foreach (var result in mappedResults)
         {
+            // Apply score threshold filtering. The score semantics depend on the distance function:
+            // - For similarity functions (CosineSimilarity, DotProductSimilarity): higher = more similar, filter out below threshold
+            // - For distance functions (CosineDistance, EuclideanSquaredDistance): lower = more similar, filter out above threshold
+            if (options.ScoreThreshold.HasValue && result.Score.HasValue)
+            {
+                var distanceFunction = RedisCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
+                var passesThreshold = distanceFunction switch
+                {
+                    DistanceFunction.CosineSimilarity or DistanceFunction.DotProductSimilarity => result.Score.Value >= options.ScoreThreshold.Value,
+                    DistanceFunction.CosineDistance or DistanceFunction.EuclideanSquaredDistance => result.Score.Value <= options.ScoreThreshold.Value,
+                    _ => throw new InvalidOperationException($"Unexpected distance function: {distanceFunction}")
+                };
+
+                if (!passesThreshold)
+                {
+                    continue;
+                }
+            }
+
             yield return result;
         }
     }

@@ -99,7 +99,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(MongoDynamicCollection)))
-                : new MongoModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new MongoModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -351,16 +351,8 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         return (records, generatedEmbeddings);
@@ -387,15 +379,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new MongoFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
@@ -415,7 +401,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             ScorePropertyName,
             DocumentPropertyName);
 
-        BsonDocument[] pipeline = [searchQuery, projectionQuery];
+        List<BsonDocument> pipeline = [searchQuery, projectionQuery];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(MongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         const string OperationName = "Aggregate";
         using var cursor = await this.RunOperationWithRetryAsync(
@@ -446,8 +438,8 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         {
             ReadOnlyMemory<float> r => r,
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
@@ -520,15 +512,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new MongoFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
@@ -536,7 +522,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
         var numCandidates = this._numCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
 
-        BsonDocument[] pipeline = MongoCollectionSearchMapping.GetHybridSearchPipeline(
+        List<BsonDocument> pipeline = [.. MongoCollectionSearchMapping.GetHybridSearchPipeline(
             vectorArray,
             keywords,
             this.Name,
@@ -548,7 +534,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             DocumentPropertyName,
             itemsAmount,
             numCandidates,
-            filter);
+            filter)];
+
+        // Add score threshold filter as a $match stage if specified
+        if (options.ScoreThreshold.HasValue)
+        {
+            pipeline.Add(MongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
+        }
 
         var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",

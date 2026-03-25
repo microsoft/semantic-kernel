@@ -2,22 +2,15 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/>.
+/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}"/>.
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
     private int _skip = 0;
-
-    /// <summary>
-    /// Gets or sets a search filter to use before doing the vector search.
-    /// </summary>
-    [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; set; }
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
@@ -29,7 +22,7 @@ public class VectorSearchOptions<TRecord>
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
     /// <remarks>
-    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/> checks if there is a vector property to use by default, and
+    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}"/> checks if there is a vector property to use by default, and
     /// throws an exception if either none or multiple exist.
     /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
@@ -56,4 +49,22 @@ public class VectorSearchOptions<TRecord>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
     public bool IncludeVectors { get; set; }
+
+    /// <summary>
+    /// Gets or sets the score threshold to filter results.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The meaning of the score depends on the distance function configured for the vector property.
+    /// For similarity functions (e.g. <see cref="DistanceFunction.CosineSimilarity" />, <see cref="DistanceFunction.DotProductSimilarity" />),
+    /// higher scores indicate more similar results, and results with scores lower than the threshold will be filtered out.
+    /// For distance functions (e.g. <see cref="DistanceFunction.CosineDistance" />, <see cref="DistanceFunction.EuclideanDistance" />),
+    /// lower scores indicate more similar results, and results with scores higher than the threshold will be filtered out.
+    /// </para>
+    /// <para>
+    /// The range of scores also depends on the distance function; for example, cosine similarity/distance scores
+    /// fall within 0 to 1, while Euclidean distance is unbounded. Scores can also differ between vector databases.
+    /// </para>
+    /// </remarks>
+    public double? ScoreThreshold { get; set; }
 }

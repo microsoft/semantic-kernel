@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.98.0,<2",
+    "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -54,9 +54,9 @@ dependencies = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # Protobuf
-    "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
+    "mcp>=1.26.0",
 ]
 
 ### Optional dependencies
@@ -82,11 +82,6 @@ chroma = [
 copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
     "microsoft-agents-activity >= 0.3.1"
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"

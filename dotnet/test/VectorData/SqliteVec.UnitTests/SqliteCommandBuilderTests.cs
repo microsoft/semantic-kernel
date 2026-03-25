@@ -50,7 +50,9 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         var columns = new List<SqliteColumn>
         {
             new("Column1", "Type1", isPrimary: true),
-            new("Column2", "Type2", isPrimary: false) { Configuration = new() { ["distance_metric"] = "l2" } },
+            new("Column2", "Type2", isPrimary: false) { IsNullable = true, Configuration = new() { ["distance_metric"] = "l2" } },
+            new("Column3", "Type3", isPrimary: false) { IsNullable = false },
+            new("Column4", "Type4", isPrimary: false) { IsNullable = true },
         };
 
         // Act
@@ -64,6 +66,9 @@ public sealed class SqliteCommandBuilderTests : IDisposable
 
         Assert.Contains("\"Column1\" Type1 PRIMARY KEY", command.CommandText);
         Assert.Contains("\"Column2\" Type2 distance_metric=l2", command.CommandText);
+        Assert.Contains("\"Column3\" Type3 NOT NULL", command.CommandText);
+        Assert.Contains("\"Column4\" Type4", command.CommandText);
+        Assert.DoesNotContain("\"Column4\" Type4 NOT NULL", command.CommandText);
     }
 
     [Theory]
@@ -77,7 +82,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         var columns = new List<SqliteColumn>
         {
             new("Column1", "Type1", isPrimary: true),
-            new("Column2", "Type2", isPrimary: false) { Configuration = new() { ["distance_metric"] = "l2" } },
+            new("Column2", "Type2", isPrimary: false) { IsNullable = true, Configuration = new() { ["distance_metric"] = "l2" } },
         };
 
         // Act
