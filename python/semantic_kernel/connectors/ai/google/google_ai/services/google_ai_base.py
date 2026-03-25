@@ -8,7 +8,7 @@ from google.genai import Client
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
+from semantic_kernel.utils.telemetry.user_agent import IS_TELEMETRY_ENABLED, SEMANTIC_KERNEL_USER_AGENT
 
 
 class GoogleAIBase(KernelBaseModel, ABC):
@@ -26,8 +26,7 @@ class GoogleAIBase(KernelBaseModel, ABC):
         Returns:
             The HTTP options dictionary, or None if telemetry is disabled.
         """
-        # APP_INFO's presence indicates telemetry is enabled.
-        if not APP_INFO:
-            return
+        if not IS_TELEMETRY_ENABLED:
+            return None
 
         return {"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}}

@@ -45,7 +45,7 @@ async def test_google_ai_chat_completion_no_telemetry(google_ai_unit_test_env):
     chat_history.add_user_message("hi")
 
     with (
-        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.APP_INFO", None),
+        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.IS_TELEMETRY_ENABLED", False),
         patch(
             "semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion.Client"
         ) as mock_client,
@@ -87,7 +87,7 @@ async def test_google_ai_text_completion_user_agent(google_ai_unit_test_env):
 async def test_google_ai_text_completion_no_telemetry(google_ai_unit_test_env):
     """Test that GoogleAITextCompletion does not send the User-Agent header when telemetry is disabled."""
     with (
-        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.APP_INFO", None),
+        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.IS_TELEMETRY_ENABLED", False),
         patch(
             "semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion.Client"
         ) as mock_client,
@@ -127,7 +127,7 @@ async def test_google_ai_text_embedding_user_agent(google_ai_unit_test_env):
 async def test_google_ai_text_embedding_no_telemetry(google_ai_unit_test_env):
     """Test that GoogleAITextEmbedding does not send the User-Agent header when telemetry is disabled."""
     with (
-        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.APP_INFO", None),
+        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.IS_TELEMETRY_ENABLED", False),
         patch(
             "semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_embedding.Client"
         ) as mock_client,
