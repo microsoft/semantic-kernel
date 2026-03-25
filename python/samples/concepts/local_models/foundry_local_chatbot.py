@@ -33,6 +33,8 @@ service = OpenAIChatCompletion(
     async_client=AsyncOpenAI(
         base_url=manager.endpoint,
         api_key=manager.api_key,
+        timeout=60.0,
+        max_retries=3,
     ),
 )
 # if needed, set the other parameters for the execution

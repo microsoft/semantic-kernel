@@ -111,6 +111,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             if "websocket_base_url" in kwargs:
                 args["websocket_base_url"] = kwargs.pop("websocket_base_url")
 
+            args["timeout"] = 60.0
+            args["max_retries"] = 3
             client = AsyncAzureOpenAI(**args)
         args = {
             "ai_model_id": deployment_name,
