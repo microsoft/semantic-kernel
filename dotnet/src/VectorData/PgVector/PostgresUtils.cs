@@ -80,13 +80,6 @@ internal static class PostgresUtils
         return sourceBuilder.Build();
     }
 
-    /// <summary>
-    /// Reloads PostgreSQL type mappings in a way that remains compatible across Npgsql major versions.
-    /// </summary>
-    /// <remarks>
-    /// Npgsql 8 exposes <c>ReloadTypesAsync()</c>, while newer versions expose <c>ReloadTypesAsync(CancellationToken)</c>.
-    /// SK currently compiles against Npgsql 8, so direct calls to one signature may fail at runtime when another version is loaded.
-    /// </remarks>
     internal static Task ReloadTypesAsyncCompat(object connection, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(connection);
