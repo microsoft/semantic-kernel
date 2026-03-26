@@ -518,7 +518,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             if (!extensionAlreadyExisted)
             {
-                await connection.ReloadTypesAsync().ConfigureAwait(false);
+                await PostgresUtils.ReloadTypesAsyncCompat(connection, cancellationToken).ConfigureAwait(false);
             }
 
             batch.BatchCommands.Clear();
