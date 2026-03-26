@@ -109,7 +109,7 @@ public abstract class FilterTranslatorBase
     /// <param name="expression">The expression to bind.</param>
     /// <param name="propertyModel">When successful, the property model that was bound.</param>
     /// <returns><see langword="true"/> if the expression was successfully bound to a property; otherwise, <see langword="false"/>.</returns>
-    protected virtual bool TryBindProperty(Expression expression, [NotNullWhen(true)] out IPropertyModel? propertyModel)
+    protected virtual bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? propertyModel)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

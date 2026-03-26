@@ -24,7 +24,7 @@ internal static class SqlitePropertyMapping
         return byteArray;
     }
 
-    public static List<SqliteColumn> GetColumns(IReadOnlyList<IPropertyModel> properties, bool data)
+    public static List<SqliteColumn> GetColumns(IReadOnlyList<PropertyModel> properties, bool data)
     {
         const string DistanceMetricConfigurationName = "distance_metric";
 
@@ -37,7 +37,7 @@ internal static class SqlitePropertyMapping
             string propertyType;
             Dictionary<string, object>? configuration = null;
 
-            if (property is IVectorPropertyModel vectorProperty)
+            if (property is VectorPropertyModel vectorProperty)
             {
                 if (data)
                 {
@@ -50,7 +50,7 @@ internal static class SqlitePropertyMapping
                     [DistanceMetricConfigurationName] = GetDistanceMetric(vectorProperty)
                 };
             }
-            else if (property is IDataPropertyModel dataProperty)
+            else if (property is DataPropertyModel dataProperty)
             {
                 if (!data)
                 {
@@ -62,7 +62,7 @@ internal static class SqlitePropertyMapping
             else
             {
                 // The Key column in included in both Vector and Data tables.
-                Debug.Assert(property is IKeyPropertyModel, "property is not an IKeyPropertyModel");
+                Debug.Assert(property is KeyPropertyModel, "property is not a KeyPropertyModel");
 
                 propertyType = GetStorageDataPropertyType(property);
                 isPrimary = true;
@@ -72,7 +72,7 @@ internal static class SqlitePropertyMapping
             {
                 IsNullable = property.IsNullable,
                 Configuration = configuration,
-                HasIndex = property is IDataPropertyModel { IsIndexed: true }
+                HasIndex = property is DataPropertyModel { IsIndexed: true }
             };
 
             columns.Add(column);
@@ -93,7 +93,7 @@ internal static class SqlitePropertyMapping
 
     #region private
 
-    private static string GetStorageDataPropertyType(IPropertyModel property)
+    private static string GetStorageDataPropertyType(PropertyModel property)
         => property.Type switch
         {
             // Integer types
@@ -129,7 +129,7 @@ internal static class SqlitePropertyMapping
             _ => throw new NotSupportedException($"Property '{property.ModelName}' has type '{property.Type.Name}', which is not supported by SQLite connector.")
         };
 
-    private static string GetDistanceMetric(IVectorPropertyModel vectorProperty)
+    private static string GetDistanceMetric(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineDistance or null => "cosine",
@@ -138,7 +138,7 @@ internal static class SqlitePropertyMapping
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the SQLite connector.")
         };
 
-    private static string GetStorageVectorPropertyType(IVectorPropertyModel vectorProperty)
+    private static string GetStorageVectorPropertyType(VectorPropertyModel vectorProperty)
         => $"FLOAT[{vectorProperty.Dimensions}]";
 
     #endregion

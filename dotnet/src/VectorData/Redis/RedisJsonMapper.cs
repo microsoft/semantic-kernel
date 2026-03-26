@@ -114,7 +114,7 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
             JsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
             JsonValue when model.DataProperties.Count + (includeVectors ? model.VectorProperties.Count : 0) == 1 => new JsonObject
             {
-                [model.DataProperties.Concat<IPropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
+                [model.DataProperties.Concat<PropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
             },
             _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'")
         };

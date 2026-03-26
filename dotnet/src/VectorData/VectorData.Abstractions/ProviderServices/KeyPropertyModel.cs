@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class KeyPropertyModel(string modelName, Type type) : PropertyModel(modelName, type), IKeyPropertyModel
+public class KeyPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <summary>
     /// Gets or sets whether this key property's value is auto-generated or not.

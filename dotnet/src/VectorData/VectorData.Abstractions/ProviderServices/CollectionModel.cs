@@ -21,34 +21,34 @@ public sealed class CollectionModel
     private readonly Type _recordType;
     private readonly Func<object> _recordFactory;
 
-    private IKeyPropertyModel? _singleKeyProperty;
-    private IVectorPropertyModel? _singleVectorProperty;
-    private IDataPropertyModel? _singleFullTextSearchProperty;
+    private KeyPropertyModel? _singleKeyProperty;
+    private VectorPropertyModel? _singleVectorProperty;
+    private DataPropertyModel? _singleFullTextSearchProperty;
 
     /// <summary>
     /// Gets the key properties of the record.
     /// </summary>
-    public IReadOnlyList<IKeyPropertyModel> KeyProperties { get; }
+    public IReadOnlyList<KeyPropertyModel> KeyProperties { get; }
 
     /// <summary>
     /// Gets the data properties of the record.
     /// </summary>
-    public IReadOnlyList<IDataPropertyModel> DataProperties { get; }
+    public IReadOnlyList<DataPropertyModel> DataProperties { get; }
 
     /// <summary>
     /// Gets the vector properties of the record.
     /// </summary>
-    public IReadOnlyList<IVectorPropertyModel> VectorProperties { get; }
+    public IReadOnlyList<VectorPropertyModel> VectorProperties { get; }
 
     /// <summary>
     /// Gets all properties of the record, of all types.
     /// </summary>
-    public IReadOnlyList<IPropertyModel> Properties { get; }
+    public IReadOnlyList<PropertyModel> Properties { get; }
 
     /// <summary>
     /// Gets all properties of the record, of all types, indexed by their model name.
     /// </summary>
-    public IReadOnlyDictionary<string, IPropertyModel> PropertyMap { get; }
+    public IReadOnlyDictionary<string, PropertyModel> PropertyMap { get; }
 
     /// <summary>
     /// Gets a value that indicates whether any of the vector properties in the model require embedding generation.
@@ -69,8 +69,8 @@ public sealed class CollectionModel
         this.KeyProperties = keyProperties;
         this.DataProperties = dataProperties;
         this.VectorProperties = vectorProperties;
-        this.PropertyMap = propertyMap.ToDictionary(kvp => kvp.Key, kvp => (IPropertyModel)kvp.Value);
-        this.Properties = this.PropertyMap.Values.ToList();
+        this.PropertyMap = propertyMap;
+        this.Properties = propertyMap.Values.ToList();
 
         this.EmbeddingGenerationRequired = vectorProperties.Any(p => p.EmbeddingType != p.Type);
     }
@@ -78,13 +78,13 @@ public sealed class CollectionModel
     /// <summary>
     /// Returns the single key property in the model, and throws if there are multiple key properties.
     /// </summary>
-    public IKeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
+    public KeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
 
     /// <summary>
     /// Returns the single vector property in the model, and throws if there are multiple vector properties.
     /// Suitable for connectors where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
     /// </summary>
-    public IVectorPropertyModel VectorProperty => this._singleVectorProperty ??= this.VectorProperties.Single();
+    public VectorPropertyModel VectorProperty => this._singleVectorProperty ??= this.VectorProperties.Single();
 
     /// <summary>
     /// Instantiates a new record of the specified type.
@@ -106,11 +106,11 @@ public sealed class CollectionModel
     /// </summary>
     /// <param name="searchOptions">The search options, which defines the vector property name.</param>
     /// <exception cref="InvalidOperationException"><para>The provided property name is not a valid text data property name.</para><para>OR</para><para>No name was provided and there's more than one vector property.</para></exception>
-    public IVectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
+    public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
     {
         if (searchOptions.VectorProperty is not null)
         {
-            return this.GetMatchingProperty<TRecord, IVectorPropertyModel>(searchOptions.VectorProperty, data: false);
+            return this.GetMatchingProperty<TRecord, VectorPropertyModel>(searchOptions.VectorProperty, data: false);
         }
 
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
@@ -140,11 +140,11 @@ public sealed class CollectionModel
     /// </summary>
     /// <param name="expression">The full text search property selector.</param>
     /// <exception cref="InvalidOperationException"><para>The provided property name is not a valid text data property name.</para><para>OR</para><para>No name was provided and there's more than one text data property with full text search indexing enabled.</para></exception>
-    public IDataPropertyModel GetFullTextDataPropertyOrSingle<TRecord>(Expression<Func<TRecord, object?>>? expression)
+    public DataPropertyModel GetFullTextDataPropertyOrSingle<TRecord>(Expression<Func<TRecord, object?>>? expression)
     {
         if (expression is not null)
         {
-            var property = this.GetMatchingProperty<TRecord, IDataPropertyModel>(expression, data: true);
+            var property = this.GetMatchingProperty<TRecord, DataPropertyModel>(expression, data: true);
 
             return property.IsFullTextIndexed
                 ? property
@@ -184,11 +184,11 @@ public sealed class CollectionModel
     /// </summary>
     /// <param name="expression">The property selector.</param>
     /// <exception cref="InvalidOperationException">The provided property name is not a valid data or key property name.</exception>
-    public IPropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
-        => this.GetMatchingProperty<TRecord, IPropertyModel>(expression, data: true);
+    public PropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
+        => this.GetMatchingProperty<TRecord, PropertyModel>(expression, data: true);
 
     private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
-        where TProperty : IPropertyModel
+        where TProperty : PropertyModel
     {
         var node = expression.Body;
 

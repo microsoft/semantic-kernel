@@ -21,7 +21,7 @@ public class RedisCollectionCreateMappingTests
     public void MapToSchemaCreatesSchema(bool useDollarPrefix)
     {
         // Arrange.
-        IPropertyModel[] properties =
+        PropertyModel[] properties =
         [
             new KeyPropertyModel("Key", typeof(string)),
 

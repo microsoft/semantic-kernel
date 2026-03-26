@@ -103,7 +103,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
         return record;
     }
 
-    private static void PopulateProperty(IPropertyModel property, NpgsqlDataReader reader, TRecord record)
+    private static void PopulateProperty(PropertyModel property, NpgsqlDataReader reader, TRecord record)
     {
         int ordinal = reader.GetOrdinal(property.StorageName);
 

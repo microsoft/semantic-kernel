@@ -90,7 +90,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         {
             switch (property)
             {
-                case IKeyPropertyModel keyProperty:
+                case KeyPropertyModel keyProperty:
                     if (!storageModel.TryGetValue(MongoConstants.MongoReservedKeyPropertyName, out var keyValue))
                     {
                         throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
@@ -109,14 +109,14 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
 
                     continue;
 
-                case IDataPropertyModel dataProperty:
+                case DataPropertyModel dataProperty:
                     if (storageModel.TryGetValue(dataProperty.StorageName, out var dataValue))
                     {
                         result.Add(dataProperty.ModelName, GetDataPropertyValue(property.ModelName, property.Type, dataValue));
                     }
                     continue;
 
-                case IVectorPropertyModel vectorProperty:
+                case VectorPropertyModel vectorProperty:
                     if (includeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(

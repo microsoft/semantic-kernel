@@ -21,7 +21,7 @@ internal static class CosmosMongoCollectionCreateMapping
     /// <param name="numLists">Number of clusters that the inverted file (IVF) index uses to group the vector data.</param>
     /// <param name="efConstruction">The size of the dynamic candidate list for constructing the graph.</param>
     public static BsonArray GetVectorIndexes(
-        IReadOnlyList<IVectorPropertyModel> vectorProperties,
+        IReadOnlyList<VectorPropertyModel> vectorProperties,
         HashSet<string?> uniqueIndexes,
         int numLists,
         int efConstruction)
@@ -71,7 +71,7 @@ internal static class CosmosMongoCollectionCreateMapping
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
     /// <param name="uniqueIndexes">Collection of unique existing indexes to avoid creating duplicates.</param>
     public static BsonArray GetFilterableDataIndexes(
-        IReadOnlyList<IDataPropertyModel> dataProperties,
+        IReadOnlyList<DataPropertyModel> dataProperties,
         HashSet<string?> uniqueIndexes)
     {
         var indexArray = new BsonArray();

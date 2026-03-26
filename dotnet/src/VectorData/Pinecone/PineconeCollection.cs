@@ -596,7 +596,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             _ => throw new ArgumentException($"Invalid serverless index cloud: {serverlessIndexCloud}.", nameof(serverlessIndexCloud))
         };
 
-    private static CreateIndexRequestMetric MapDistanceFunction(IVectorPropertyModel vectorProperty)
+    private static CreateIndexRequestMetric MapDistanceFunction(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => CreateIndexRequestMetric.Cosine,

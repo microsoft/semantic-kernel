@@ -179,7 +179,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         IReadOnlyList<TRecord>? recordsList = null;
 
         // If an embedding generator is defined, invoke it once per property for all records.
-        Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -209,7 +209,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            generatedEmbeddings ??= new Dictionary<IVectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
             generatedEmbeddings[vectorProperty] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
@@ -554,7 +554,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>
     /// Converts a search input value to a PostgreSQL vector representation, generating embeddings if necessary.
     /// </summary>
-    private async Task<object> ConvertSearchInputToVectorAsync<TInput>(TInput searchValue, IVectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+    private async Task<object> ConvertSearchInputToVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
     {
         object vector = searchValue switch

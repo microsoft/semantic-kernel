@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type), IVectorPropertyModel
+public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     private int _dimensions;
 

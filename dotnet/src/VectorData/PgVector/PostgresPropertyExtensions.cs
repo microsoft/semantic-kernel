@@ -50,7 +50,7 @@ public static class PostgresPropertyExtensions
     /// </summary>
     /// <param name="property">The data property model to read from.</param>
     /// <returns>The configured language, or the default language ("english") if not set.</returns>
-    internal static string GetFullTextSearchLanguageOrDefault(this IDataPropertyModel property)
+    internal static string GetFullTextSearchLanguageOrDefault(this DataPropertyModel property)
         => property.ProviderAnnotations?.TryGetValue(FullTextSearchLanguageKey, out var value) == true && value is string language
             ? language
             : PostgresConstants.DefaultFullTextSearchLanguage;
@@ -109,7 +109,7 @@ public static class PostgresPropertyExtensions
     /// <summary>
     /// Gets whether the property model has been configured with a <c>timestamp</c> (without time zone) store type.
     /// </summary>
-    internal static bool IsTimestampWithoutTimezone(this IPropertyModel property)
+    internal static bool IsTimestampWithoutTimezone(this PropertyModel property)
         => property.ProviderAnnotations?.TryGetValue(StoreTypeKey, out var value) == true
             && value is string storeType
             && IsTimestampStoreType(storeType);

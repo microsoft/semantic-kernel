@@ -196,7 +196,7 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
-    protected virtual void GenerateColumn(IPropertyModel property, bool isSearchCondition = false)
+    protected virtual void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
         // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
         => this._sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
 
@@ -332,7 +332,7 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-    protected abstract void TranslateAnyContainsOverArrayColumn(IPropertyModel property, object? values);
+    protected abstract void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values);
 
     private void TranslateUnary(UnaryExpression unary, bool isSearchCondition)
     {

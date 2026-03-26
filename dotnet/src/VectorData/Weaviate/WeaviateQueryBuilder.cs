@@ -122,8 +122,8 @@ internal static class WeaviateQueryBuilder
         string keywords,
         string collectionName,
         CollectionModel model,
-        IVectorPropertyModel vectorProperty,
-        IDataPropertyModel textProperty,
+        VectorPropertyModel vectorProperty,
+        DataPropertyModel textProperty,
         JsonSerializerOptions jsonSerializerOptions,
         HybridSearchOptions<TRecord> searchOptions,
         bool hasNamedVectors)

@@ -71,7 +71,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
                 ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
-    private Metadata GenerateEqualityComparison(IPropertyModel property, object? value, ExpressionType nodeType)
+    private Metadata GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
         {

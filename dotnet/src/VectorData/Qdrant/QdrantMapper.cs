@@ -86,7 +86,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
 
         return pointStruct;
 
-        Vector GetVector(IPropertyModel property, object? embedding)
+        Vector GetVector(PropertyModel property, object? embedding)
             => embedding switch
             {
                 ReadOnlyMemory<float> m => m.ToArray(),
@@ -128,7 +128,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                 PopulateVectorProperty(outputRecord, vectorsOutput.Vector, model.VectorProperty);
             }
 
-            static void PopulateVectorProperty(TRecord record, VectorOutput value, IVectorPropertyModel property)
+            static void PopulateVectorProperty(TRecord record, VectorOutput value, VectorPropertyModel property)
             {
                 RepeatedField<float> data = value switch
                 {

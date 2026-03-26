@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public abstract class PropertyModel(string modelName, Type type) : IPropertyModel
+public abstract class PropertyModel(string modelName, Type type)
 {
     private string? _storageName;
     private Func<object, object?>? _getter;
@@ -54,8 +54,6 @@ public abstract class PropertyModel(string modelName, Type type) : IPropertyMode
     /// This allows setting database-specific configuration options that aren't universal across all vector stores.
     /// </remarks>
     public Dictionary<string, object?>? ProviderAnnotations { get; set; }
-
-    IReadOnlyDictionary<string, object?>? IPropertyModel.ProviderAnnotations => this.ProviderAnnotations;
 
     /// <summary>
     /// Gets whether the property type is nullable. For value types, this is <see langword="true"/> when the type is

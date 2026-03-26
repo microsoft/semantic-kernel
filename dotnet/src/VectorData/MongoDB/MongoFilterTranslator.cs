@@ -62,7 +62,7 @@ internal class MongoFilterTranslator : FilterTranslatorBase
                 ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
-    private BsonDocument GenerateEqualityComparison(IPropertyModel property, object? value, ExpressionType nodeType)
+    private BsonDocument GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
         {

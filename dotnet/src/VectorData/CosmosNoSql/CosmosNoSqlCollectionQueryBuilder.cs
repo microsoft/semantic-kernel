@@ -40,10 +40,10 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
 
-        IEnumerable<IPropertyModel> projectionProperties = model.Properties;
+        IEnumerable<PropertyModel> projectionProperties = model.Properties;
         if (!includeVectors)
         {
-            projectionProperties = projectionProperties.Where(p => p is not IVectorPropertyModel);
+            projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
         var fieldsArgument = projectionProperties.Select(p => GeneratePropertyAccess(tableVariableName, p.StorageName));
         var vectorDistanceArgument = $"VectorDistance({GeneratePropertyAccess(tableVariableName, vectorPropertyName)}, {VectorVariableName})";
@@ -167,10 +167,10 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     {
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
 
-        IEnumerable<IPropertyModel> projectionProperties = model.Properties;
+        IEnumerable<PropertyModel> projectionProperties = model.Properties;
         if (!filterOptions.IncludeVectors)
         {
-            projectionProperties = projectionProperties.Where(p => p is not IVectorPropertyModel);
+            projectionProperties = projectionProperties.Where(p => p is not VectorPropertyModel);
         }
 
         var fieldsArgument = projectionProperties.Select(field => GeneratePropertyAccess(tableVariableName, field.StorageName));

@@ -65,7 +65,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void GenerateColumn(IPropertyModel property, bool isSearchCondition = false)
+    protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
         // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
         if (this._tableAlias is not null)
@@ -124,7 +124,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateAnyContainsOverArrayColumn(IPropertyModel property, object? values)
+    protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
     {
         // Translate r.Strings.Any(s => array.Contains(s)) to:
         // EXISTS(SELECT 1 FROM OPENJSON(column) WHERE value IN ('a', 'b', 'c'))

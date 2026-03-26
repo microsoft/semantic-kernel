@@ -61,7 +61,7 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
 
         return record;
 
-        static void PopulateValue(SqlDataReader reader, IPropertyModel property, object record)
+        static void PopulateValue(SqlDataReader reader, PropertyModel property, object record)
         {
             try
             {

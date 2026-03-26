@@ -19,7 +19,7 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
     where TRecord : class
 {
     private readonly CollectionModel _model;
-    private readonly IKeyPropertyModel _keyProperty;
+    private readonly KeyPropertyModel _keyProperty;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public CosmosNoSqlMapper(CollectionModel model, JsonSerializerOptions? jsonSerializerOptions)
