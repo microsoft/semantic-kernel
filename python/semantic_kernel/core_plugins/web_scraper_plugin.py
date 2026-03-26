@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-import logging
+import urllib.parse
 from typing import Annotated, Any
 
 import aiohttp
@@ -10,7 +10,8 @@ from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-logger = logging.getLogger(__name__)
+SUPPORTED_FORMATS = {"markdown", "html", "links", "plainText"}
+DEFAULT_TIMEOUT = 30
 
 
 class WebScraperPlugin(KernelBaseModel):
@@ -49,6 +50,9 @@ class WebScraperPlugin(KernelBaseModel):
     api_key: str | None = None
     """Optional Bearer token for authenticating with the CRW server."""
 
+    max_markdown_preview: int = 500
+    """Maximum number of characters to include in markdown previews for crawl results."""
+
     def _headers(self) -> dict[str, str]:
         """Build request headers including auth if configured."""
         headers: dict[str, str] = {"Content-Type": "application/json"}
@@ -59,28 +63,36 @@ class WebScraperPlugin(KernelBaseModel):
     async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         """Send a POST request to the CRW server and return the JSON response."""
         url = f"{self.base_url.rstrip('/')}{path}"
+        timeout = aiohttp.ClientTimeout(total=DEFAULT_TIMEOUT)
         async with (
-            aiohttp.ClientSession() as session,
+            aiohttp.ClientSession(timeout=timeout) as session,
             session.post(url, headers=self._headers(), data=json.dumps(body)) as response,
         ):
-            result = await response.json()
             if response.status >= 400:
-                error_msg = result.get("error", f"HTTP {response.status}")
+                try:
+                    result = await response.json()
+                    error_msg = result.get("error", f"HTTP {response.status}")
+                except (json.JSONDecodeError, aiohttp.ContentTypeError):
+                    error_msg = f"HTTP {response.status}"
                 raise FunctionExecutionException(f"CRW request failed: {error_msg}")
-            return result
+            return await response.json()
 
     async def _get(self, path: str) -> dict[str, Any]:
         """Send a GET request to the CRW server and return the JSON response."""
         url = f"{self.base_url.rstrip('/')}{path}"
+        timeout = aiohttp.ClientTimeout(total=DEFAULT_TIMEOUT)
         async with (
-            aiohttp.ClientSession() as session,
+            aiohttp.ClientSession(timeout=timeout) as session,
             session.get(url, headers=self._headers()) as response,
         ):
-            result = await response.json()
             if response.status >= 400:
-                error_msg = result.get("error", f"HTTP {response.status}")
+                try:
+                    result = await response.json()
+                    error_msg = result.get("error", f"HTTP {response.status}")
+                except (json.JSONDecodeError, aiohttp.ContentTypeError):
+                    error_msg = f"HTTP {response.status}"
                 raise FunctionExecutionException(f"CRW request failed: {error_msg}")
-            return result
+            return await response.json()
 
     @kernel_function(
         name="scrape_url",
@@ -98,14 +110,22 @@ class WebScraperPlugin(KernelBaseModel):
         Args:
             url: The URL to scrape (must be http or https).
             formats: Comma-separated output formats. Defaults to "markdown".
+                Supported formats: markdown, html, links, plainText.
             only_main_content: If True, strips navigation, footer, sidebar.
             css_selector: Optional CSS selector to extract specific elements.
 
         Returns:
             The scraped content as a string.
+
+        Raises:
+            FunctionExecutionException: If url is empty, has unsupported scheme,
+                or the request fails.
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
+
+        if not url.startswith(("http://", "https://")):
+            raise FunctionExecutionException("url must use http or https scheme")
 
         body: dict[str, Any] = {
             "url": url,
@@ -113,7 +133,16 @@ class WebScraperPlugin(KernelBaseModel):
         }
 
         if formats:
-            body["formats"] = [f.strip() for f in formats.split(",")]
+            fmt_list = [f.strip() for f in formats.split(",") if f.strip()]
+            unsupported = [f for f in fmt_list if f not in SUPPORTED_FORMATS]
+            if unsupported:
+                raise FunctionExecutionException(
+                    f"Unsupported format(s): {', '.join(unsupported)}. "
+                    f"Supported: {', '.join(sorted(SUPPORTED_FORMATS))}"
+                )
+            if not fmt_list:
+                fmt_list = ["markdown"]
+            body["formats"] = fmt_list
         else:
             body["formats"] = ["markdown"]
 
@@ -138,7 +167,7 @@ class WebScraperPlugin(KernelBaseModel):
 
     @kernel_function(
         name="crawl_website",
-        description="Crawl a website starting from a URL, following links up to a specified depth",
+        description="Start an async crawl job and return a job ID. Call check_crawl_status with the returned ID to retrieve results.",
     )
     async def crawl_website(
         self,
@@ -194,7 +223,8 @@ class WebScraperPlugin(KernelBaseModel):
         if not crawl_id:
             raise FunctionExecutionException("crawl_id cannot be `None` or empty")
 
-        result = await self._get(f"/v1/crawl/{crawl_id}")
+        safe_crawl_id = urllib.parse.quote(crawl_id, safe="")
+        result = await self._get(f"/v1/crawl/{safe_crawl_id}")
 
         status = result.get("status", "unknown")
         pages = result.get("data", [])
@@ -210,7 +240,7 @@ class WebScraperPlugin(KernelBaseModel):
                 {
                     "url": page.get("metadata", {}).get("sourceURL", ""),
                     "title": page.get("metadata", {}).get("title", ""),
-                    "markdown": page.get("markdown", "")[:500],
+                    "markdown": page.get("markdown", "")[: self.max_markdown_preview],
                 }
                 for page in pages
             ]
@@ -247,5 +277,5 @@ class WebScraperPlugin(KernelBaseModel):
         }
 
         result = await self._post("/v1/map", body)
-        links = result.get("data", {}).get("links", [])
+        links = result.get("links", [])
         return json.dumps(links)
