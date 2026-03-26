@@ -11,6 +11,7 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin im
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.core_plugins.text_plugin import TextPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.web_scraper_plugin import WebScraperPlugin
 from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "TextMemoryPlugin",
     "TextPlugin",
     "TimePlugin",
+    "WebScraperPlugin",
     "WebSearchEnginePlugin",
 ]
