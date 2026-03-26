@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public abstract class PropertyModel(string modelName, Type type)
 {
     private string? _storageName;
+    private Func<object, object?>? _getter;
+    private Action<object, object?>? _setter;
 
     /// <summary>
     /// Gets or sets the model name of the property. If the property corresponds to a .NET property, this name is the name of that property.
@@ -30,15 +32,6 @@ public abstract class PropertyModel(string modelName, Type type)
         get => this._storageName ?? this.ModelName;
         set => this._storageName = value;
     }
-
-    // See comment in VectorStoreJsonModelBuilder
-    // TODO: Spend more time thinking about this, there may be a less hacky way to handle it.
-
-    /// <summary>
-    /// Gets or sets the temporary storage name for the property, for use during the serialization process by certain connectors.
-    /// </summary>
-    [Experimental("MEVD9001")]
-    public string? TemporaryStorageName { get; set; }
 
     /// <summary>
     /// Gets or sets the CLR type of the property.
@@ -93,79 +86,77 @@ public abstract class PropertyModel(string modelName, Type type)
     }
 
     /// <summary>
-    /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
+    /// Configures the property accessors using a CLR <see cref="System.Reflection.PropertyInfo"/> for POCO mapping.
     /// </summary>
-    public virtual object? GetValueAsObject(object record)
+    // TODO: Implement compiled delegates for better performance, #11122
+    // TODO: Implement source-generated accessors for NativeAOT, #10256
+    internal void ConfigurePocoAccessors(PropertyInfo propertyInfo)
     {
-        if (this.PropertyInfo is null)
+        this.PropertyInfo = propertyInfo;
+        this._getter = propertyInfo.GetValue;
+        this._setter = (record, value) =>
         {
-            if (record is Dictionary<string, object?> dictionary)
+            // If the value is null, no need to set the property (it's the CLR default)
+            if (value is not null)
             {
-                var value = dictionary.TryGetValue(this.ModelName, out var tempValue)
-                    ? tempValue
-                    : null;
+                propertyInfo.SetValue(record, value);
+            }
+        };
+    }
 
-                if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(this.Type) ?? this.Type))
-                {
-                    throw new InvalidCastException($"Property '{this.ModelName}' has a value of type '{value.GetType().Name}', but its configured type is '{this.Type.Name}'.");
-                }
+    /// <summary>
+    /// Configures the property accessors for dynamic mapping using <see cref="Dictionary{TKey, TValue}"/>.
+    /// </summary>
+    internal void ConfigureDynamicAccessors()
+    {
+        var modelName = this.ModelName;
+        var propertyType = this.Type;
 
-                return value;
+        this._getter = record =>
+        {
+            var dictionary = (Dictionary<string, object?>)record;
+            var value = dictionary.TryGetValue(modelName, out var tempValue) ? tempValue : null;
+
+            if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(propertyType) ?? propertyType))
+            {
+                throw new InvalidCastException($"Property '{modelName}' has a value of type '{value.GetType().Name}', but its configured type is '{propertyType.Name}'.");
             }
 
-            throw new UnreachableException("Non-dynamic mapping but PropertyInfo is null.");
-        }
+            return value;
+        };
 
-        // We have a CLR property (non-dynamic POCO mapping)
+        this._setter = (record, value) => ((Dictionary<string, object?>)record)[modelName] = value;
+    }
 
-        // TODO: Implement compiled delegates for better performance, #11122
-        // TODO: Implement source-generated accessors for NativeAOT, #10256
-
-        return this.PropertyInfo.GetValue(record);
+    /// <summary>
+    /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
+    /// </summary>
+    public object? GetValueAsObject(object record)
+    {
+        Debug.Assert(this._getter is not null, "Property accessors have not been configured.");
+        return this._getter!(record);
     }
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>, accepting the value to write as an <see cref="object"/>.
-    /// </summary>s
-    public virtual void SetValueAsObject(object record, object? value)
+    /// </summary>
+    public void SetValueAsObject(object record, object? value)
     {
-        if (this.PropertyInfo is null)
-        {
-            if (record.GetType() == typeof(Dictionary<string, object?>))
-            {
-                var dictionary = (Dictionary<string, object?>)record;
-                dictionary[this.ModelName] = value;
-                return;
-            }
-
-            throw new UnreachableException("Non-dynamic mapping but ClrProperty is null.");
-        }
-
-        // We have a CLR property (non-dynamic POCO mapping)
-
-        // TODO: Implement compiled delegates for better performance, #11122
-        // TODO: Implement source-generated accessors for NativeAOT, #10256
-
-        // If the value is null, no need to set the property (it's the CLR default)
-        if (value is not null)
-        {
-            this.PropertyInfo.SetValue(record, value);
-        }
+        Debug.Assert(this._setter is not null, "Property accessors have not been configured.");
+        this._setter!(record, value);
     }
 
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>.
     /// </summary>
     // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
-    public virtual T GetValue<T>(object record)
+    public T GetValue<T>(object record)
         => (T)(object)this.GetValueAsObject(record)!;
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>.
-    /// </summary>s
+    /// </summary>
     // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
-    public virtual void SetValue<T>(object record, T value)
-    {
-        this.SetValueAsObject(record, value);
-    }
+    public void SetValue<T>(object record, T value)
+        => this.SetValueAsObject(record, value);
 }
