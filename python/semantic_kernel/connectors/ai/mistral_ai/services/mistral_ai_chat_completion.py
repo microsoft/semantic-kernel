@@ -251,11 +251,9 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         }
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
-            metadata["usage"] = (
-                CompletionUsage(
-                    prompt_tokens=response.usage.prompt_tokens,
-                    completion_tokens=response.usage.completion_tokens,
-                ),
+            metadata["usage"] = CompletionUsage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
             )
 
         return metadata
