@@ -4,6 +4,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -156,6 +157,14 @@ internal partial class ClientCore
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
+        // Aggregation state for multi-iteration function calling loops.
+        // Text content from intermediate iterations (before tool calls) would otherwise be lost.
+        // Token usage must be summed across all API calls to report accurate totals.
+        StringBuilder? aggregatedContent = null;
+        int totalInputTokens = 0;
+        int totalOutputTokens = 0;
+        bool hadMultipleIterations = false;
+
         for (int requestIndex = 0; ; requestIndex++)
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
@@ -194,10 +203,31 @@ internal partial class ClientCore
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
+            // Aggregate usage across all iterations.
+            totalInputTokens += chatCompletion.Usage.InputTokenCount;
+            totalOutputTokens += chatCompletion.Usage.OutputTokenCount;
+
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
             if (!functionCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
             {
+                // Apply aggregated content and usage to the final message.
+                this.ApplyAggregatedState(chatMessageContent, aggregatedContent, totalInputTokens, totalOutputTokens, hadMultipleIterations);
                 return [chatMessageContent];
+            }
+
+            // We're about to process tool calls and continue the loop - mark that we have multiple iterations.
+            hadMultipleIterations = true;
+
+            // Accumulate text content from this iteration before processing tool calls.
+            // The LLM may generate text (e.g., "Let me check that for you...") before tool calls.
+            if (!string.IsNullOrEmpty(chatMessageContent.Content))
+            {
+                aggregatedContent ??= new StringBuilder();
+                if (aggregatedContent.Length > 0)
+                {
+                    aggregatedContent.Append("\n\n");
+                }
+                aggregatedContent.Append(chatMessageContent.Content);
             }
 
             // Process function calls by invoking the functions and adding the results to the chat history.
@@ -216,6 +246,8 @@ internal partial class ClientCore
 
             if (lastMessage != null)
             {
+                // Apply aggregated content and usage to the filter-terminated message.
+                this.ApplyAggregatedState(lastMessage, aggregatedContent, totalInputTokens, totalOutputTokens, hadMultipleIterations);
                 return [lastMessage];
             }
 
@@ -1028,6 +1060,45 @@ internal partial class ClientCore
         }
 
         return message;
+    }
+
+    /// <summary>
+    /// Applies aggregated text content and token usage from multi-iteration function calling loops to the final message.
+    /// </summary>
+    /// <param name="message">The final message to update.</param>
+    /// <param name="aggregatedContent">Accumulated text content from previous iterations, or null if none.</param>
+    /// <param name="totalInputTokens">Total input tokens across all iterations.</param>
+    /// <param name="totalOutputTokens">Total output tokens across all iterations.</param>
+    /// <param name="hadMultipleIterations">Whether the function calling loop had multiple iterations.</param>
+    private void ApplyAggregatedState(ChatMessageContent message, StringBuilder? aggregatedContent, int totalInputTokens, int totalOutputTokens, bool hadMultipleIterations)
+    {
+        // Prepend aggregated content from previous iterations if any.
+        if (aggregatedContent is { Length: > 0 })
+        {
+            if (!string.IsNullOrEmpty(message.Content))
+            {
+                aggregatedContent.Append("\n\n");
+                aggregatedContent.Append(message.Content);
+            }
+            message.Content = aggregatedContent.ToString();
+        }
+
+        // Update metadata with aggregated usage if we had multiple iterations.
+        // This ensures token counts are accurate even when intermediate iterations had no text content.
+        if (hadMultipleIterations)
+        {
+            var updatedMetadata = message.Metadata is not null
+                ? new Dictionary<string, object?>(message.Metadata)
+                : new Dictionary<string, object?>();
+
+            updatedMetadata["AggregatedUsage"] = new Dictionary<string, int>
+            {
+                ["InputTokens"] = totalInputTokens,
+                ["OutputTokens"] = totalOutputTokens,
+                ["TotalTokens"] = totalInputTokens + totalOutputTokens
+            };
+            message.Metadata = new ReadOnlyDictionary<string, object?>(updatedMetadata);
+        }
     }
 
     private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls, bool retainArgumentTypes)
