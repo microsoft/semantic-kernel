@@ -1,0 +1,27 @@
+{
+  "id": "msg_01AutoInvoke",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "I'll check the weather for you."
+    },
+    {
+      "type": "tool_use",
+      "id": "toolu_auto_invoke_test",
+      "name": "WeatherPlugin_GetWeather",
+      "input": {
+        "location": "Seattle, WA"
+      }
+    }
+  ],
+  "model": "claude-sonnet-4-20250514",
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 50,
+    "output_tokens": 45
+  }
+}
+
