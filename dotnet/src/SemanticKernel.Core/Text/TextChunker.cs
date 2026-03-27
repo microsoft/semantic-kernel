@@ -190,9 +190,10 @@ public static class TextChunker
             var lastParagraph = paragraphs[paragraphs.Count - 1];
             var secondLastParagraph = paragraphs[paragraphs.Count - 2];
 
-            if (GetTokenCount(lastParagraph, tokenCounter) < adjustedMaxTokensPerParagraph / 4)
+            var lastParagraphTokenCount = GetTokenCount(lastParagraph, tokenCounter);
+
+            if (lastParagraphTokenCount < adjustedMaxTokensPerParagraph / 4)
             {
-                var lastParagraphTokenCount = GetTokenCount(lastParagraph, tokenCounter);
                 var secondLastParagraphTokenCount = GetTokenCount(secondLastParagraph, tokenCounter);
 
                 if (lastParagraphTokenCount + secondLastParagraphTokenCount <= adjustedMaxTokensPerParagraph)
