@@ -1,13 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
 def test_default_anthropic_chat_prompt_execution_settings():
@@ -115,15 +112,15 @@ def test_create_options():
 
 
 def test_tool_choice_none():
-    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
-        AnthropicChatPromptExecutionSettings(
-            service_id="test_service",
-            extension_data={
-                "temperature": 0.5,
-                "top_p": 0.5,
-                "max_tokens": 128,
-                "tool_choice": {"type": "none"},
-                "messages": [{"role": "system", "content": "Hello"}],
-            },
-            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
-        )
+    settings = AnthropicChatPromptExecutionSettings(
+        service_id="test_service",
+        extension_data={
+            "temperature": 0.5,
+            "top_p": 0.5,
+            "max_tokens": 128,
+            "tool_choice": {"type": "none"},
+            "messages": [{"role": "system", "content": "Hello"}],
+        },
+        function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
+    )
+    assert settings.tool_choice == {"type": "none"}

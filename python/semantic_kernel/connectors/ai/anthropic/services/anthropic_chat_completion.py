@@ -144,9 +144,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     @override
     def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
         if hasattr(settings, "tool_choice"):
-            settings.tool_choice = None
-        if hasattr(settings, "tools"):
-            settings.tools = None
+            settings.tool_choice = {"type": FunctionChoiceType.NONE.value}
 
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
@@ -386,7 +384,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         id=content_block.id,
                         index=idx,
                         name=content_block.name,
-                        arguments=getattr(content_block, "input", None),
+                        arguments=json.dumps(content_block.input) if content_block.input else None,
                     )
                 )
 

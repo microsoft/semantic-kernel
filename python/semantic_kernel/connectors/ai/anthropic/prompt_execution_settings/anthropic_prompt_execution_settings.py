@@ -5,9 +5,7 @@ from typing import Annotated, Any
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +44,5 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 
     @model_validator(mode="after")
     def validate_tool_choice(self) -> "AnthropicChatPromptExecutionSettings":
-        """Validate tool choice. Anthropic doesn't support NONE tool choice."""
-        tool_choice = self.tool_choice
-
-        if tool_choice and tool_choice.get("type") == FunctionChoiceType.NONE.value:
-            raise ServiceInvalidExecutionSettingsError("Tool choice 'none' is not supported by Anthropic.")
-
+        """Validate tool choice payload."""
         return self
