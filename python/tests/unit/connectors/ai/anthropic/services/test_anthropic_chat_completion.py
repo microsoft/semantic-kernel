@@ -645,3 +645,33 @@ def test_get_tool_calls_from_message_serializes_arguments(
 
     assert len(tool_calls) == 1
     assert tool_calls[0].arguments == '{"input": 3, "amount": 3}'
+
+
+def test_get_tool_calls_from_message_serializes_empty_arguments_dict(
+    mock_anthropic_client_completion: MagicMock,
+):
+    chat_completion = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_anthropic_client_completion
+    )
+    message = Message(
+        id="test_message_id",
+        content=[
+            ToolUseBlock(
+                id="test_tool_use_block_id",
+                input={},
+                name="math-Add",
+                type="tool_use",
+            ),
+        ],
+        model="claude-3-opus-20240229",
+        role="assistant",
+        stop_reason="tool_use",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=100, output_tokens=100),
+    )
+
+    tool_calls = chat_completion._get_tool_calls_from_message(message)
+
+    assert len(tool_calls) == 1
+    assert tool_calls[0].arguments == "{}"

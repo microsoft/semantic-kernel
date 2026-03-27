@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
 def test_default_anthropic_chat_prompt_execution_settings():
@@ -124,3 +127,14 @@ def test_tool_choice_none():
         function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
     )
     assert settings.tool_choice == {"type": "none"}
+
+
+def test_tool_choice_invalid_type_raises():
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Invalid Anthropic tool_choice type"):
+        AnthropicChatPromptExecutionSettings(
+            service_id="test_service",
+            extension_data={
+                "tool_choice": {"type": "invalid"},
+                "messages": [{"role": "system", "content": "Hello"}],
+            },
+        )

@@ -144,6 +144,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     @override
     def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
         if hasattr(settings, "tool_choice") and getattr(settings, "tools", None):
+            # Anthropic supports disabling tool calls while keeping tool definitions:
+            # https://docs.anthropic.com/en/api/messages#body-tool_choice
             settings.tool_choice = {"type": FunctionChoiceType.NONE.value}
 
     @override
@@ -302,7 +304,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     id=tool_use_block.id,
                     index=stream_event.index,
                     name=tool_use_block.name,
-                    arguments=json.dumps(tool_use_block.input) if tool_use_block.input else None,
+                    arguments=json.dumps(tool_use_block.input) if tool_use_block.input is not None else None,
                 )
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
