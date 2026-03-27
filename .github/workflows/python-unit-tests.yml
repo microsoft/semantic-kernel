@@ -31,6 +31,10 @@ jobs:
             os: "ubuntu-latest"
             experimental: true
             test-suite: "unit-all-except-dapr"
+          - python-version: "3.14"
+            os: "ubuntu-latest"
+            experimental: true
+            test-suite: "unit-all-except-dapr"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
