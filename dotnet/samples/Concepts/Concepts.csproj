@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Bcl.Memory" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Npgsql" VersionOverride="10.0.2" />
     <PackageReference Include="OpenAI" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
