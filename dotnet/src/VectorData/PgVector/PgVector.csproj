@@ -32,8 +32,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-    <PackageReference Include="Npgsql" VersionOverride="8.0.7" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
-    <PackageReference Include="Npgsql" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="Npgsql">
+      <VersionOverride Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">8.0.7</VersionOverride>
+    </PackageReference>
     <PackageReference Include="Pgvector" />
   </ItemGroup>
 
