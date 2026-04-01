@@ -212,6 +212,48 @@ public class FunctionCallContentBuilderTests
         Assert.NotNull(functionCall.Exception);
     }
 
+    [Fact]
+    public void ItShouldParseUnderscoreSeparatorForOllamaAndGeminiConnectors()
+    {
+        // Arrange - Ollama/Gemini use underscore (e.g. time_ReadFile) per FullyQualifiedAIFunction
+        var sut = new FunctionCallContentBuilder();
+
+        // Act
+        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 0, callId: "call_1", name: "time_ReadFile", arguments: null);
+        sut.Append(update1);
+
+        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 0, callId: null, name: null, arguments: "{\"filePath\":\"d:/test.txt\"}");
+        sut.Append(update2);
+
+        var functionCalls = sut.Build();
+
+        // Assert
+        var functionCall = Assert.Single(functionCalls);
+        Assert.Equal("call_1", functionCall.Id);
+        Assert.Equal("time", functionCall.PluginName);
+        Assert.Equal("ReadFile", functionCall.FunctionName);
+        Assert.NotNull(functionCall.Arguments);
+        Assert.Equal("d:/test.txt", functionCall.Arguments["filePath"]);
+    }
+
+    [Fact]
+    public void ItShouldParseDotSeparatorForFunctionChoiceBehavior()
+    {
+        // Arrange - FunctionChoiceBehavior uses dot (e.g. time.ReadFile)
+        var sut = new FunctionCallContentBuilder();
+
+        // Act
+        var update = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 0, callId: "call_1", name: "time.ReadFile", arguments: null);
+        sut.Append(update);
+
+        var functionCalls = sut.Build();
+
+        // Assert
+        var functionCall = Assert.Single(functionCalls);
+        Assert.Equal("time", functionCall.PluginName);
+        Assert.Equal("ReadFile", functionCall.FunctionName);
+    }
+
     private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? callId, string? name, string? arguments, int requestIndex = 0)
     {
         var content = new StreamingChatMessageContent(AuthorRole.Assistant, null);
