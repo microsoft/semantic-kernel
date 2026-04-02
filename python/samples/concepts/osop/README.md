@@ -1,6 +1,8 @@
 # OSOP Workflow Examples for Semantic Kernel
 
-[OSOP](https://github.com/osopcloud/osop-spec) (Open Standard for Orchestration Protocols) is a portable YAML format for describing AI workflows — think OpenAPI, but for agent orchestration.
+[OSOP](https://github.com/Archie0125/osop-spec) (Open Standard Operating Procedures) is a portable YAML format for describing AI workflows — think OpenAPI, but for agent orchestration.
+
+> **Note:** OSOP files are declarative workflow descriptions, not executable code. They document orchestration patterns in a framework-agnostic format.
 
 ## What's Here
 
@@ -15,18 +17,7 @@ Semantic Kernel provides powerful AI orchestration with plugins, planners, and a
 - **Documented** — readable YAML that non-developers can understand
 - **Validated** — check workflow structure before execution
 - **Ported** — same workflow definition works across Semantic Kernel, LangChain, AutoGen, etc.
-- **Visualized** — render the workflow as a graph in the [OSOP Editor](https://github.com/osopcloud/osop-editor)
-
-## Quick Start
-
-```bash
-# Validate the workflow
-pip install osop
-osop validate code-review-pipeline.osop.yaml
-
-# Or just read the YAML — it's self-documenting
-cat code-review-pipeline.osop.yaml
-```
+- **Visualized** — render the workflow as a graph in the [OSOP Editor](https://osop-editor.vercel.app)
 
 ## How It Maps to Semantic Kernel
 
@@ -40,6 +31,7 @@ cat code-review-pipeline.osop.yaml
 
 ## Learn More
 
-- [OSOP Spec](https://github.com/osopcloud/osop-spec) — full specification
-- [OSOP Examples](https://github.com/osopcloud/osop-examples) — 30+ workflow templates
-- [OSOP Editor](https://github.com/osopcloud/osop-editor) — visual workflow editor
+- [OSOP Spec](https://github.com/Archie0125/osop-spec) — full specification
+- [OSOP Examples](https://github.com/Archie0125/osop-examples) — 84+ workflow templates
+- [OSOP Visual Editor](https://osop-editor.vercel.app) — visual workflow editor
+- [OSOP Website](https://osop.ai) — documentation and guides

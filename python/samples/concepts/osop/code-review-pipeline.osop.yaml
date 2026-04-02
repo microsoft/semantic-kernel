@@ -4,7 +4,7 @@
 # in parallel, generate a structured review, post comments on GitHub,
 # and request changes if critical issues are found.
 #
-# Run with Semantic Kernel or validate: osop validate semantic-kernel-code-review.osop.yaml
+# Validate: osop validate code-review-pipeline.osop.yaml
 
 osop_version: "1.0"
 id: "semantic-kernel-code-review"
@@ -45,6 +45,8 @@ nodes:
     subtype: "llm"
     name: "Check Test Coverage"
     description: "Verify new code paths have corresponding test cases."
+    config:
+      model: "gpt-4o"
 
   - id: "generate_review"
     type: "agent"
@@ -52,6 +54,7 @@ nodes:
     name: "Generate Review"
     description: "Synthesize all analysis into a structured review with severity levels."
     config:
+      model: "gpt-4o"
       output_schema:
         summary: "string"
         issues: [{ file: "string", line: "int", severity: "string", message: "string" }]
