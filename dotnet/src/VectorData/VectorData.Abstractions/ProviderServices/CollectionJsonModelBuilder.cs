@@ -89,13 +89,11 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 
             if (keyPropertyWithReservedName)
             {
-                // Somewhat hacky:
                 // Some providers (Weaviate, Cosmos NoSQL) have a fixed, reserved storage name for keys (id), and at the same time use an external
                 // JSON serializer to serialize the entire user POCO. Since the serializer is unaware of the reserved storage name, it will produce
                 // a storage name as usual, based on the .NET property's name, possibly with a naming policy applied to it. The connector then needs
                 // to look that up and replace with the reserved name.
-                // So we store the policy-transformed name, as StorageName contains the reserved name.
-                property.TemporaryStorageName = storageName;
+                ((KeyPropertyModel)property).SerializedKeyName = storageName;
             }
             else
             {
