@@ -41,8 +41,8 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
 
         // The key property in Azure CosmosDB NoSQL is always named 'id'.
         // But the external JSON serializer used just above isn't aware of that, and will produce a JSON object with another name, taking into
-        // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
-        RenameJsonProperty(jsonObject, this._keyProperty.TemporaryStorageName!, CosmosNoSqlConstants.ReservedKeyPropertyName);
+        // account e.g. naming policies. SerializedKeyName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
+        RenameJsonProperty(jsonObject, this._keyProperty.SerializedKeyName!, CosmosNoSqlConstants.ReservedKeyPropertyName);
 
         // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
         // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
@@ -116,7 +116,7 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         // See above comment.
-        RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);
+        RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, this._keyProperty.SerializedKeyName!);
 
         foreach (var vectorProperty in this._model.VectorProperties)
         {

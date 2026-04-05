@@ -27,17 +27,14 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         UsesExternalSerializer = true,
     };
 
-    [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected override void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
+    protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty, Type? type)
     {
-        base.ProcessTypeProperties(type, definition);
+        base.ProcessProperty(clrProperty, definitionProperty, type);
 
-        foreach (var property in this.Properties)
+        if (clrProperty?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute
+            && this.PropertyMap.TryGetValue(clrProperty.Name, out var property))
         {
-            if (property.PropertyInfo?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute)
-            {
-                property.StorageName = bsonElementAttribute.ElementName;
-            }
+            property.StorageName = bsonElementAttribute.ElementName;
         }
     }
 
