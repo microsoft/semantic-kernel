@@ -2,8 +2,8 @@
 
 """Tests for function_copy optimization (Issue #1: Lazy deepcopy)."""
 
-import pytest
 from unittest.mock import patch
+import pytest
 
 from semantic_kernel.functions import kernel_function
 
@@ -63,7 +63,10 @@ class TestFunctionCopyOptimization:
         # Verify function is callable (indirectly through having same underlying function)
         assert hasattr(copy, 'invoke')
     
-    @patch('semantic_kernel.functions.kernel_function.deepcopy', side_effect=AssertionError("deepcopy should not be called"))
+    @patch(
+        'semantic_kernel.functions.kernel_function.deepcopy',
+        side_effect=AssertionError("deepcopy should not be called")
+    )
     def test_function_copy_no_unnecessary_deepcopy(self, mock_deepcopy, sample_function):
         """Test that deepcopy is NOT called when plugin_name doesn't change.
         
