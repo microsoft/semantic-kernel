@@ -69,8 +69,9 @@ class KernelArguments(dict):
 
         # Merge execution settings - only copy when needed
         if self.execution_settings:
-            new_execution_settings = self.execution_settings  # Reuse reference if immutable
+            new_execution_settings = self.execution_settings.copy()
         else:
+            new_execution_settings = {}
             new_execution_settings = {}
         
         if isinstance(value, KernelArguments) and value.execution_settings:
