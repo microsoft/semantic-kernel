@@ -35,6 +35,8 @@ service_id = "local-gpt"
 openAIClient: AsyncOpenAI = AsyncOpenAI(
     api_key="fake-key",  # This cannot be an empty string, use a fake key
     base_url="http://localhost:11434/v1",
+    timeout=60.0,
+    max_retries=3,
 )
 kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="phi3", async_client=openAIClient))
 

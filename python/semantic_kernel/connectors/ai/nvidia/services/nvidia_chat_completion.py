@@ -107,6 +107,8 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
             client = AsyncOpenAI(
                 api_key=nvidia_settings.api_key.get_secret_value() if nvidia_settings.api_key else None,
                 base_url=nvidia_settings.base_url,
+                timeout=60.0,
+                max_retries=3,
             )
 
         super().__init__(

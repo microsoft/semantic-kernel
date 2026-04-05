@@ -75,6 +75,8 @@ class EmbeddingServiceTestBase:
                     azure_ad_token=ad_token,
                     api_version=api_version,
                     default_headers={"Test-User-X-ID": "test"},
+                    timeout=60.0,
+                    max_retries=3,
                 ),
                 credential=credential,
             )

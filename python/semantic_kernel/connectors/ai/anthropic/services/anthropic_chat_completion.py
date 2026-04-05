@@ -115,6 +115,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if not async_client:
             async_client = AsyncAnthropic(
                 api_key=anthropic_settings.api_key.get_secret_value(),
+                timeout=60.0,
+                max_retries=3,
             )
 
         super().__init__(

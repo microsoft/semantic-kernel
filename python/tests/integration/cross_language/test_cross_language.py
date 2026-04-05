@@ -110,7 +110,8 @@ async def async_clients() -> AsyncGenerator[tuple[AsyncOpenAI, LoggingAsyncClien
     openai_settings = OpenAISettings()
     logging_async_client = LoggingAsyncClient()
     async with AsyncOpenAI(
-        api_key=openai_settings.api_key.get_secret_value(), http_client=logging_async_client
+        api_key=openai_settings.api_key.get_secret_value(), http_client=logging_async_client,
+        timeout=60.0, max_retries=3,
     ) as client:
         yield client, logging_async_client
 
