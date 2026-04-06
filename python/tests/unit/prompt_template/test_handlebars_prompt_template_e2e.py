@@ -3,7 +3,7 @@
 
 from semantic_kernel import Kernel
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate

@@ -2,7 +2,7 @@
 
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -101,7 +101,7 @@ async def test_chat_history_round_trip(kernel: Kernel):
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
     assert (
         rendered.strip()
-        == """<message role="user">User message</message><message role="assistant">Assistant message</message>"""
+        == """<message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message>"""
     )
     chat_history2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history2 == chat_history
