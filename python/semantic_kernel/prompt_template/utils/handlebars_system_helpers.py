@@ -5,6 +5,7 @@ import logging
 import re
 from collections.abc import Callable
 from enum import Enum
+from xml.etree.ElementTree import Element, tostring  # nosec B405
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -28,21 +29,20 @@ def _message_to_prompt(this, *args, **kwargs):
 def _message(this, options, *args, **kwargs):
     from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
 
-    # everything in kwargs, goes to <ROOT_KEY_MESSAGE kwargs_key="kwargs_value">
-    # everything in options, goes in between <ROOT_KEY_MESSAGE>options</ROOT_KEY_MESSAGE>
-    start = f"<{CHAT_MESSAGE_CONTENT_TAG}"
+    # Everything in kwargs becomes an attribute, and the block output is treated as message text.
+    message = Element(CHAT_MESSAGE_CONTENT_TAG)
     for key, value in kwargs.items():
         if isinstance(value, Enum):
             value = value.value
         if value is not None:
-            start += f' {key}="{value}"'
-    start += ">"
-    end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
+            message.set(key, str(value))
     try:
-        content = options["fn"](this)
+        content = str(options["fn"](this))
     except Exception:  # pragma: no cover
         content = ""
-    return f"{start}{content}{end}"
+    if content:
+        message.text = content
+    return tostring(message, encoding="unicode", short_empty_elements=False)
 
 
 def _set(this, *args, **kwargs):

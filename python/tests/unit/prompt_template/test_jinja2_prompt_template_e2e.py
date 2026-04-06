@@ -2,6 +2,7 @@
 
 
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -104,3 +105,37 @@ async def test_chat_history_round_trip(kernel: Kernel):
     )
     chat_history2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history2 == chat_history
+
+
+async def test_chat_history_round_trip_with_xml_metacharacters(kernel: Kernel):
+    template = """{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
+    target = create_jinja2_prompt_template(template)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("What does a < b mean in Python?")
+    chat_history.add_assistant_message('Use "&" carefully in XML and HTML.')
+
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+
+    assert "&lt;" in rendered
+    assert "&amp;" in rendered
+    assert '"&amp;"' in rendered
+    assert ChatHistory.from_rendered_prompt(rendered) == chat_history
+
+
+async def test_message_helper_preserves_system_role_with_xml_metacharacters(kernel: Kernel):
+    template = """{{system_message}}{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
+    target = create_jinja2_prompt_template(template)
+    system_message = "You are a helpful assistant."
+    chat_history = ChatHistory()
+    chat_history.add_user_message("What does a < b mean in Python?")
+
+    rendered = await target.render(
+        kernel,
+        KernelArguments(system_message=system_message, chat_history=chat_history),
+    )
+
+    parsed = ChatHistory.from_rendered_prompt(rendered)
+    assert parsed.messages[0].role == AuthorRole.SYSTEM
+    assert parsed.messages[0].content == system_message
+    assert parsed.messages[1].role == AuthorRole.USER
+    assert parsed.messages[1].content == "What does a < b mean in Python?"

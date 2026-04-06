@@ -264,6 +264,20 @@ async def test_helpers_message(kernel: Kernel):
     assert "Assistant message" in rendered
 
 
+async def test_helpers_message_escapes_xml_metacharacters(kernel: Kernel):
+    template = """{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
+    target = create_jinja2_prompt_template(template, allow_dangerously_set_content=True)
+    chat_history = ChatHistory()
+    chat_history.add_user_message('What does a < b & "c" mean?')
+
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+
+    assert "&lt;" in rendered
+    assert "&amp;" in rendered
+    assert '"c"' in rendered
+    assert ChatHistory.from_rendered_prompt(rendered) == chat_history
+
+
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """
     {% for chat in chat_history %}
