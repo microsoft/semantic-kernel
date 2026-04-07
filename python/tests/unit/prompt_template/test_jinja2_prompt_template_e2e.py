@@ -108,6 +108,17 @@ async def test_chat_history_round_trip(kernel: Kernel):
     assert chat_history2 == chat_history
 
 
+async def test_from_rendered_prompt_backward_compat_old_format(kernel: Kernel):
+    """from_rendered_prompt handles the old format without <text> wrapper for backward compatibility."""
+    old_format = '<message role="user">User message</message><message role="assistant">Assistant message</message>'
+    parsed = ChatHistory.from_rendered_prompt(old_format)
+    assert len(parsed) == 2
+    assert parsed[0].role == AuthorRole.USER
+    assert parsed[0].content == "User message"
+    assert parsed[1].role == AuthorRole.ASSISTANT
+    assert parsed[1].content == "Assistant message"
+
+
 async def test_chat_history_round_trip_with_xml_metacharacters(kernel: Kernel):
     template = """{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
     target = create_jinja2_prompt_template(template)

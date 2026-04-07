@@ -5,7 +5,7 @@ import logging
 import re
 from collections.abc import Callable
 from enum import Enum
-from xml.etree.ElementTree import Element, tostring  # nosec B405
+from xml.etree.ElementTree import Element, SubElement, tostring  # nosec B405
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -37,6 +37,8 @@ def _message(this, options, *args, **kwargs):
         return tostring(message, encoding="unicode", short_empty_elements=False)
 
     # Fallback: build the element manually from kwargs and block content.
+    from semantic_kernel.contents.const import TEXT_CONTENT_TAG
+
     message = Element(CHAT_MESSAGE_CONTENT_TAG)
     for key, value in kwargs.items():
         if isinstance(value, Enum):
@@ -48,7 +50,8 @@ def _message(this, options, *args, **kwargs):
     except Exception:  # pragma: no cover
         content = ""
     if content:
-        message.text = content
+        text_elem = SubElement(message, TEXT_CONTENT_TAG)
+        text_elem.text = content
     return tostring(message, encoding="unicode", short_empty_elements=False)
 
 

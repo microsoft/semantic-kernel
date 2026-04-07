@@ -271,13 +271,15 @@ async def test_helpers_message_escapes_xml_metacharacters(kernel: Kernel):
 """
     target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
     chat_history = ChatHistory()
-    chat_history.add_user_message('What does a < b & "c" mean?')
+    chat_history.add_user_message('What does a < b & a > c & "d" mean?')
 
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
     assert "&lt;" in rendered
     assert "&amp;" in rendered
-    assert '"c"' in rendered
+    # ElementTree does not escape > in text content (valid XML); verify round-trip works regardless.
+    assert "a > c" in rendered or "a &gt; c" in rendered
+    assert '"d"' in rendered
     assert ChatHistory.from_rendered_prompt(rendered) == chat_history
 
 
@@ -317,6 +319,31 @@ async def test_helpers_message_empty_content(kernel: Kernel):
     assert "<message" in rendered
     assert "/>" not in rendered
     assert ChatHistory.from_rendered_prompt(rendered) is not None
+
+
+async def test_helpers_message_fallback_empty_content(kernel: Kernel):
+    """Fallback path (non-ChatMessageContent context) with empty block content.
+
+    Should produce <message role="..."></message>, not self-closing.
+    """
+    template = '{{#message role="user"}}{{/message}}'
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    rendered = await target.render(kernel, KernelArguments())
+    assert '<message role="user"></message>' in rendered
+    assert "/>" not in rendered
+    assert ChatHistory.from_rendered_prompt(rendered) is not None
+
+
+async def test_helpers_message_fallback_with_content(kernel: Kernel):
+    """Fallback path wraps block content in a <text> child element."""
+    template = '{{#message role="user"}}Hello world{{/message}}'
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    rendered = await target.render(kernel, KernelArguments())
+    assert '<message role="user"><text>Hello world</text></message>' in rendered
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history is not None
+    assert len(chat_history) == 1
+    assert chat_history[0].content == "Hello world"
 
 
 async def test_helpers_message_escapes_greater_than(kernel: Kernel):
