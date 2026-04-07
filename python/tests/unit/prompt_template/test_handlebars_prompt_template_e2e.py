@@ -95,10 +95,11 @@ class TestHandlebarsPromptTemplateEngine:
         chat_history.add_user_message("User message")
         chat_history.add_assistant_message("Assistant message")
         rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-        assert (
-            rendered.strip()
-            == """<message role="user">User message</message> <message role="assistant">Assistant message</message>"""
+        expected = (
+            '<message role="user"><text>User message</text></message>'
+            ' <message role="assistant"><text>Assistant message</text></message>'
         )
+        assert rendered.strip() == expected
         chat_history2 = ChatHistory.from_rendered_prompt(rendered)
         assert chat_history2 == chat_history
 
