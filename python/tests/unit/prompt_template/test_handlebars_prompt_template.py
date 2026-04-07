@@ -281,6 +281,61 @@ async def test_helpers_message_escapes_xml_metacharacters(kernel: Kernel):
     assert ChatHistory.from_rendered_prompt(rendered) == chat_history
 
 
+async def test_helpers_message_uses_text_element(kernel: Kernel):
+    """Verify handlebars {{#message}} wraps content in <text> like the Jinja2 path."""
+    template = """
+{{#each chat_history}}
+    {{#message role=role}}
+    {{~content~}}
+    {{/message}}
+{{/each}}
+"""
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert '<message role="user"><text>User message</text></message>' in rendered
+    assert '<message role="assistant"><text>Assistant message</text></message>' in rendered
+    chat_history2 = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history2 == chat_history
+
+
+async def test_helpers_message_empty_content(kernel: Kernel):
+    """Empty message content should produce <message role="..."></message>, not self-closing."""
+    template = """
+{{#each chat_history}}
+    {{#message role=role}}
+    {{~content~}}
+    {{/message}}
+{{/each}}
+"""
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert "<message" in rendered
+    assert "/>" not in rendered
+    assert ChatHistory.from_rendered_prompt(rendered) is not None
+
+
+async def test_helpers_message_escapes_greater_than(kernel: Kernel):
+    """ElementTree does not escape > in text; verify round-trip still works."""
+    template = """
+{{#each chat_history}}
+    {{#message role=role}}
+    {{~content~}}
+    {{/message}}
+{{/each}}
+"""
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("Is a > b true?")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert "a > b" in rendered or "a &gt; b" in rendered
+    assert ChatHistory.from_rendered_prompt(rendered) == chat_history
+
+
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """{{#each chat_history}}{{message_to_prompt}} {{/each}}"""
     target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)

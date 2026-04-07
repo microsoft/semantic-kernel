@@ -139,4 +139,30 @@ async def test_message_helper_preserves_system_role_with_xml_metacharacters(kern
     assert parsed.messages[0].role == AuthorRole.SYSTEM
     assert parsed.messages[0].content == system_message
     assert parsed.messages[1].role == AuthorRole.USER
+
     assert parsed.messages[1].content == "What does a < b mean in Python?"
+
+
+def test_from_rendered_prompt_backward_compat_old_format():
+    """from_rendered_prompt must handle the old format without <text> wrapper."""
+    old_format = '<message role="user">User message</message><message role="assistant">Assistant message</message>'
+    parsed = ChatHistory.from_rendered_prompt(old_format)
+    assert len(parsed.messages) == 2
+    assert parsed.messages[0].role == AuthorRole.USER
+    assert parsed.messages[0].content == "User message"
+    assert parsed.messages[1].role == AuthorRole.ASSISTANT
+    assert parsed.messages[1].content == "Assistant message"
+
+
+def test_from_rendered_prompt_new_text_element_format():
+    """from_rendered_prompt must handle the new format with <text> wrapper."""
+    new_format = (
+        '<message role="user"><text>User message</text></message>'
+        '<message role="assistant"><text>Assistant message</text></message>'
+    )
+    parsed = ChatHistory.from_rendered_prompt(new_format)
+    assert len(parsed.messages) == 2
+    assert parsed.messages[0].role == AuthorRole.USER
+    assert parsed.messages[0].content == "User message"
+    assert parsed.messages[1].role == AuthorRole.ASSISTANT
+    assert parsed.messages[1].content == "Assistant message"

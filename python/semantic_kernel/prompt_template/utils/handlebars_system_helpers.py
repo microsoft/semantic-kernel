@@ -27,9 +27,16 @@ def _message_to_prompt(this, *args, **kwargs):
 
 
 def _message(this, options, *args, **kwargs):
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
 
-    # Everything in kwargs becomes an attribute, and the block output is treated as message text.
+    # When the context is a ChatMessageContent, delegate to to_element() so that
+    # the XML contract is consistent with the Jinja2 path.
+    if isinstance(this.context, ChatMessageContent):
+        message = this.context.to_element()
+        return tostring(message, encoding="unicode", short_empty_elements=False)
+
+    # Fallback: build the element manually from kwargs and block content.
     message = Element(CHAT_MESSAGE_CONTENT_TAG)
     for key, value in kwargs.items():
         if isinstance(value, Enum):
