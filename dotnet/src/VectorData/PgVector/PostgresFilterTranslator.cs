@@ -55,6 +55,16 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
                 this._sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFZ", CultureInfo.InvariantCulture)).Append('\'');
                 return;
 
+#if NET
+            case DateOnly dateOnly:
+                this._sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('\'');
+                return;
+
+            case TimeOnly timeOnly:
+                this._sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture)).Append('\'');
+                return;
+#endif
+
             // Array constants (ARRAY[1, 2, 3])
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
                 this._sql.Append("ARRAY[");

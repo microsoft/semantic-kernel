@@ -228,7 +228,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 
         List<TRecord> testData = [mainRecord, otherRecord];
 
-        if (default(TTestType) == null && fixture.IsNullSupported)
+        if (default(TTestType) == null && fixture.IsNullSupported && IsPropertyNullable(property))
         {
             var nullRecord = GenerateEmptyRecord();
             nullRecord.Key = fixture.NullRecordKey;
@@ -274,7 +274,8 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 
         List<Dictionary<string, object?>> testData = [mainRecord, otherRecord];
 
-        if (default(TTestType) == null && fixture.IsNullSupported)
+        var pocoProperty = typeof(TRecord).GetProperty(propertyName);
+        if (default(TTestType) == null && fixture.IsNullSupported && (pocoProperty is null || IsPropertyNullable(pocoProperty)))
         {
             var nullRecord = GenerateEmptyRecord();
             nullRecord[nameof(RecordBase.Key)] = fixture.NullRecordKey;
@@ -297,6 +298,23 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
 
             return record;
         }
+    }
+
+    /// <summary>
+    /// Checks whether a property is nullable, taking into account NRT annotations on .NET 6+.
+    /// </summary>
+    private static bool IsPropertyNullable(PropertyInfo property)
+    {
+        if (property.PropertyType.IsValueType)
+        {
+            return Nullable.GetUnderlyingType(property.PropertyType) is not null;
+        }
+
+#if NET
+        return new NullabilityInfoContext().Create(property).ReadState != NullabilityState.NotNull;
+#else
+        return true; // Without NRT support, assume reference types are nullable
+#endif
     }
 
     protected virtual object? GenerateEmptyProperty(VectorStoreProperty property)
@@ -339,7 +357,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
         comparisonAction(mainValue, (TTestType)property.GetValue(result)!);
 
         // Exercise filtering by a null value
-        if (default(TTestType) == null && fixture.IsNullFilteringSupported)
+        if (default(TTestType) == null && fixture.IsNullFilteringSupported && IsPropertyNullable(property))
         {
             lambdaParameter = Expression.Parameter(typeof(TRecord), "r");
             filter = Expression.Lambda<Func<TRecord, bool>>(
@@ -379,7 +397,8 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
         comparisonAction(mainValue, (TTestType)result[propertyName]!);
 
         // Exercise filtering by a null value
-        if (default(TTestType) == null && fixture.IsNullFilteringSupported)
+        var pocoProperty = typeof(TRecord).GetProperty(propertyName);
+        if (default(TTestType) == null && fixture.IsNullFilteringSupported && (pocoProperty is null || IsPropertyNullable(pocoProperty)))
         {
             lambdaParameter = Expression.Parameter(typeof(Dictionary<string, object?>), "r");
             filter = Expression.Lambda<Func<Dictionary<string, object?>, bool>>(

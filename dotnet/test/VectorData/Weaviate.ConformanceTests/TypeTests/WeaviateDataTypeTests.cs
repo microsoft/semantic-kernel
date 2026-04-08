@@ -26,9 +26,7 @@ public class WeaviateDataTypeTests(WeaviateDataTypeTests.Fixture fixture)
 
         public override Type[] UnsupportedDefaultTypes { get; } =
         [
-            typeof(DateTime),
 #if NET
-            typeof(DateOnly),
             typeof(TimeOnly)
 #endif
         ];
