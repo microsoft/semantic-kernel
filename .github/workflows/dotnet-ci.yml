@@ -19,8 +19,8 @@ jobs:
         fail-fast: false
         matrix:
           include:
-          - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
-          - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '10.0', configuration: Debug }
+          - { os: ubuntu-latest, dotnet: '10.0', configuration: Release }
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -67,7 +67,7 @@ jobs:
         matrix:
           os: [windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['8.0.x']
+          dotnet-version: ['10.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -78,7 +78,7 @@ jobs:
         persist-credentials: false
 
     - name: Setup .NET SDK ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
       env:

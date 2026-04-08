@@ -3,6 +3,8 @@
 from abc import ABC
 from typing import ClassVar
 
+from google.genai import Client
+
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -13,3 +15,5 @@ class GoogleAIBase(KernelBaseModel, ABC):
     MODEL_PROVIDER_NAME: ClassVar[str] = "googleai"
 
     service_settings: GoogleAISettings
+
+    client: Client | None = None

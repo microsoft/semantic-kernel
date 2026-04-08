@@ -7,6 +7,7 @@ from typing import Any
 
 import vertexai
 from pydantic import ValidationError
+from typing_extensions import deprecated
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -31,6 +32,10 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
+@deprecated(
+    "VertexAITextCompletion is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAITextCompletion` connectors instead."
+)
 class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     """Vertex AI Text Completion Client."""
 
@@ -96,6 +101,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: GenerationResponse = await model.generate_content_async(
@@ -117,6 +123,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: AsyncIterable[GenerationResponse] = await model.generate_content_async(

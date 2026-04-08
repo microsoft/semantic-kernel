@@ -6,13 +6,12 @@ using Microsoft.SemanticKernel.Connectors.Redis;
 using Redis.ConformanceTests.Support;
 using StackExchange.Redis;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace Redis.ConformanceTests;
 
 public class RedisJsonDependencyInjectionTests
-    : DependencyInjectionTests<RedisVectorStore, RedisJsonCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<RedisVectorStore, RedisJsonCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     private const string ConnectionConfiguration = "localhost:6379";
 
@@ -31,23 +30,23 @@ public class RedisJsonDependencyInjectionTests
         {
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
-                    .AddRedisJsonCollection<SimpleRecord<string>>(name,
+                    .AddRedisJsonCollection<Record>(name,
                         sp => new FakeDatabase(Provider(sp)), lifetime: lifetime)
                 : services
-                    .AddKeyedRedisJsonCollection<SimpleRecord<string>>(serviceKey, name,
+                    .AddKeyedRedisJsonCollection<Record>(serviceKey, name,
                         sp => new FakeDatabase(Provider(sp, serviceKey)), lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
                     .AddSingleton<IDatabase>(new FakeDatabase(ConnectionConfiguration))
-                    .AddRedisJsonCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddRedisJsonCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<IDatabase>(new FakeDatabase(ConnectionConfiguration))
-                    .AddKeyedRedisJsonCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedRedisJsonCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => services
                     .AddKeyedSingleton<IDatabase>(serviceKey, new FakeDatabase(ConnectionConfiguration))
-                    .AddKeyedRedisJsonCollection<SimpleRecord<string>>(serviceKey, name,
+                    .AddKeyedRedisJsonCollection<Record>(serviceKey, name,
                         sp => sp.GetRequiredKeyedService<IDatabase>(serviceKey), lifetime: lifetime);
         }
     }
@@ -77,9 +76,9 @@ public class RedisJsonDependencyInjectionTests
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedRedisVectorStore("serviceKey", connectionConfiguration: null!));
         Assert.Throws<ArgumentException>(() => services.AddKeyedRedisVectorStore("serviceKey", connectionConfiguration: ""));
 
-        Assert.Throws<ArgumentNullException>(() => services.AddRedisJsonCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddRedisJsonCollection<Record>(
             name: "notNull", connectionConfiguration: null!));
-        Assert.Throws<ArgumentException>(() => services.AddRedisJsonCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddRedisJsonCollection<Record>(
             name: "notNull", connectionConfiguration: ""));
     }
 }

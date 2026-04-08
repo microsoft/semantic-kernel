@@ -22,7 +22,13 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from typing_extensions import deprecated
 
+
+@deprecated(
+    "VertexAITextEmbedding is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAITextEmbedding` connectors instead."
+)
 class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
     """Vertex AI Text Embedding Service."""
 
@@ -93,9 +99,10 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
         assert isinstance(settings, VertexAIEmbeddingPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.embedding_model_id is not None  # nosec
         model = TextEmbeddingModel.from_pretrained(self.service_settings.embedding_model_id)
         response: list[TextEmbedding] = await model.get_embeddings_async(
-            texts,
+            texts,  # type: ignore[arg-type]
             **settings.prepare_settings_dict(),
         )
 

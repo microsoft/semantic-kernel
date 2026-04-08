@@ -21,9 +21,6 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "embedding-gen-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
-
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => AzureAISearchTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
@@ -45,9 +42,6 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
     public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
-
-        // Azure AI search only supports lowercase letters, digits or dashes.
-        public override string CollectionName => "search-only-embedding-gen-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
 
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => AzureAISearchTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });

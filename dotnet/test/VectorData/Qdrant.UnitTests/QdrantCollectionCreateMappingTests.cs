@@ -48,7 +48,7 @@ public class QdrantCollectionCreateMappingTests
         var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
 
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantCollectionCreateMapping.MapSingleVector(vectorProperty));
+        Assert.Throws<NotSupportedException>(() => QdrantCollectionCreateMapping.MapSingleVector(vectorProperty));
     }
 
     [Fact]

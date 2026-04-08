@@ -86,7 +86,15 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
             }
         }
 
-        return ((string)dataModel[model.KeyProperty.ModelName]!, jsonObject);
+        var storageKey = dataModel[model.KeyProperty.ModelName] switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new UnreachableException()
+        };
+
+        return (storageKey, jsonObject);
     }
 
     /// <inheritdoc />
@@ -94,14 +102,23 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
     {
         var dataModel = new Dictionary<string, object?>
         {
-            [model.KeyProperty.ModelName] = storageModel.Key,
+            [model.KeyProperty.ModelName] = model.KeyProperty.Type switch
+            {
+                Type t when t == typeof(string) => storageModel.Key,
+                Type t when t == typeof(Guid) => Guid.Parse(storageModel.Key),
+
+                _ => throw new UnreachableException()
+            },
         };
 
         // The redis result can be either a single object or an array with a single object in the case where we are doing an MGET.
+        // If there's a single data property, we get a simple value (no object wrapper).
         var jsonObject = storageModel.Node switch
         {
-            JsonObject topLevelJsonObject => topLevelJsonObject,
-            JsonArray jsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
+            JsonValue v when model.DataProperties is [var singleDataProperty] => new JsonObject([new(singleDataProperty.StorageName, v)]),
+            JsonObject o => o,
+            JsonArray a and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
+
             _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'"),
         };
 

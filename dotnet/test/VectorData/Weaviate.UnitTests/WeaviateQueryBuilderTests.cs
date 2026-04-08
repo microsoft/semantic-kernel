@@ -10,8 +10,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-
 /// <summary>
 /// Unit tests for <see cref="WeaviateQueryBuilder"/> class.
 /// </summary>
@@ -64,6 +62,7 @@ public sealed class WeaviateQueryBuilderTests
               nearVector: {
                 {{(hasNamedVectors ? "targetVectors: [\"descriptionEmbedding\"]" : string.Empty)}}
                 vector: [31,32,33,34]
+                {{string.Empty}}
               }
             ) {
               HotelName HotelCode Tags
@@ -130,78 +129,78 @@ public sealed class WeaviateQueryBuilderTests
     }
 
     [Fact]
-    public void BuildSearchQueryWithFilterReturnsValidQuery()
+    public void BuildHybridSearchQueryEscapesDoubleQuotesInKeywords()
     {
         // Arrange
-        const string ExpectedFirstSubquery = """{ path: ["HotelName"], operator: Equal, valueText: "Test Name" }""";
-        const string ExpectedSecondSubquery = """{ path: ["Tags"], operator: ContainsAny, valueText: ["t1"] }""";
-
-        var searchOptions = new VectorSearchOptions<DummyType>
-        {
-            Skip = 2,
-            OldFilter = new VectorSearchFilter()
-                .EqualTo("HotelName", "Test Name")
-                .AnyTagEqualTo("Tags", "t1")
-        };
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
 
         // Act
-        var query = WeaviateQueryBuilder.BuildSearchQuery(
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
             this._vector,
-            CollectionName,
-            VectorPropertyName,
-            s_jsonSerializerOptions,
             top: 3,
-            searchOptions,
+            keywords: "test \"injection\"",
+            CollectionName,
             this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
+            hasNamedVectors: true);
+
+        // Assert - the double quote must be escaped in the GraphQL string
+        Assert.Contains("query: \"test \\\"injection\\\"\"", query);
+    }
+
+    [Fact]
+    public void BuildHybridSearchQueryEscapesBackslashInKeywords()
+    {
+        // Arrange
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
+
+        // Act
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
+            this._vector,
+            top: 3,
+            keywords: @"test\path",
+            CollectionName,
+            this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
+            hasNamedVectors: true);
+
+        // Assert - backslash must be escaped
+        Assert.Contains(@"query: ""test\\path""", query);
+    }
+
+    [Fact]
+    public void BuildHybridSearchQueryWithPlainKeywordsWorks()
+    {
+        // Arrange
+        var searchOptions = new HybridSearchOptions<DummyType> { Skip = 0 };
+        var vectorProperty = this._model.VectorProperties[0];
+        var textProperty = this._model.DataProperties[0];
+
+        // Act
+        var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
+            this._vector,
+            top: 3,
+            keywords: "hello world",
+            CollectionName,
+            this._model,
+            vectorProperty,
+            textProperty,
+            s_jsonSerializerOptions,
+            searchOptions,
             hasNamedVectors: true);
 
         // Assert
-        Assert.Contains(ExpectedFirstSubquery, query);
-        Assert.Contains(ExpectedSecondSubquery, query);
-    }
-
-    [Fact]
-    public void BuildSearchQueryWithInvalidFilterValueThrowsException()
-    {
-        // Arrange
-        var searchOptions = new VectorSearchOptions<DummyType>
-        {
-            Skip = 2,
-            OldFilter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
-        };
-
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() => WeaviateQueryBuilder.BuildSearchQuery(
-            this._vector,
-            CollectionName,
-            VectorPropertyName,
-            s_jsonSerializerOptions,
-            top: 3,
-            searchOptions,
-            this._model,
-            hasNamedVectors: true));
-    }
-
-    [Fact]
-    public void BuildSearchQueryWithNonExistentPropertyInFilterThrowsException()
-    {
-        // Arrange
-        var searchOptions = new VectorSearchOptions<DummyType>
-        {
-            Skip = 2,
-            OldFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
-        };
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => WeaviateQueryBuilder.BuildSearchQuery(
-            this._vector,
-            CollectionName,
-            VectorPropertyName,
-            s_jsonSerializerOptions,
-            top: 3,
-            searchOptions,
-            this._model,
-            hasNamedVectors: true));
+        Assert.Contains("query: \"hello world\"", query);
     }
 
     #region private
@@ -209,7 +208,6 @@ public sealed class WeaviateQueryBuilderTests
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
     private sealed class DummyType;
 #pragma warning restore CA1812
-    private sealed class TestFilterValue;
 
     #endregion
 }

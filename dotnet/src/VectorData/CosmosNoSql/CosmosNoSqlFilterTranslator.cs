@@ -3,8 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,25 +12,16 @@ using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
-internal class CosmosNoSqlFilterTranslator
-{
-    private CollectionModel _model = null!;
-    private ParameterExpression _recordParameter = null!;
+#pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-    private readonly Dictionary<string, object?> _parameters = new();
+internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
+{
+    private readonly Dictionary<string, object?> _parameters = [];
     private readonly StringBuilder _sql = new();
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        Debug.Assert(this._sql.Length == 0);
-
-        this._model = model;
-
-        Debug.Assert(lambdaExpression.Parameters.Count == 1);
-        this._recordParameter = lambdaExpression.Parameters[0];
-
-        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
-        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
+        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
 
         this.Translate(preprocessedExpression);
 
@@ -147,6 +136,22 @@ internal class CosmosNoSqlFilterTranslator
                     .Append("Z\"");
                 return;
 
+            case DateTime v:
+                this._sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+
+#if NET
+            case DateOnly v:
+                this._sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+#endif
+
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
                 this._sql.Append('[');
 
@@ -203,31 +208,24 @@ internal class CosmosNoSqlFilterTranslator
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
+        // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
+        if (this.TryBindProperty(methodCall, out var property))
+        {
+            this.GeneratePropertyAccess(property);
+            return;
+        }
+
         switch (methodCall)
         {
-            // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
-            case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this.GeneratePropertyAccess(property);
-                return;
-
-            // Enumerable.Contains()
-            case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
-                when contains.Method.DeclaringType == typeof(Enumerable):
+            // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
+            case var _ when TryMatchContains(methodCall, out var source, out var item):
                 this.TranslateContains(source, item);
                 return;
 
-            // List.Contains()
-            case
-            {
-                Method:
-                {
-                    Name: nameof(Enumerable.Contains),
-                    DeclaringType: { IsGenericType: true } declaringType
-                },
-                Object: Expression source,
-                Arguments: [var item]
-            } when declaringType.GetGenericTypeDefinition() == typeof(List<>):
-                this.TranslateContains(source, item);
+            // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
+            case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
+                when any.Method.DeclaringType == typeof(Enumerable):
+                this.TranslateAny(anySource, lambda);
                 return;
 
             default:
@@ -242,6 +240,82 @@ internal class CosmosNoSqlFilterTranslator
         this._sql.Append(", ");
         this.Translate(item);
         this._sql.Append(')');
+    }
+
+    /// <summary>
+    /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
+    /// This checks whether any element in the array field is contained in the given values.
+    /// </summary>
+    private void TranslateAny(Expression source, LambdaExpression lambda)
+    {
+        // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
+        // Translates to: EXISTS(SELECT VALUE t FROM t IN c["Field"] WHERE ARRAY_CONTAINS(@values, t))
+        if (!this.TryBindProperty(source, out var property)
+            || lambda.Body is not MethodCallExpression containsCall
+            || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Verify that the item is the lambda parameter
+        if (itemExpression != lambda.Parameters[0])
+        {
+            throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+
+        // Now extract the values from valuesExpression
+        // Generate: EXISTS(SELECT VALUE t FROM t IN c["Field"] WHERE ARRAY_CONTAINS(@values, t))
+        switch (valuesExpression)
+        {
+            // Inline array: r.Strings.Any(s => new[] { "a", "b" }.Contains(s))
+            case NewArrayExpression newArray:
+            {
+                var values = new object?[newArray.Expressions.Count];
+                for (var i = 0; i < newArray.Expressions.Count; i++)
+                {
+                    values[i] = newArray.Expressions[i] switch
+                    {
+                        ConstantExpression { Value: var v } => v,
+                        QueryParameterExpression { Value: var v } => v,
+                        _ => throw new NotSupportedException("Unsupported method call: Enumerable.Any")
+                    };
+                }
+
+                this.GenerateAnyContains(property, values);
+                return;
+            }
+
+            // Captured/parameterized array or list: r.Strings.Any(s => capturedArray.Contains(s))
+            case QueryParameterExpression queryParameter:
+                this.GenerateAnyContains(property, queryParameter);
+                return;
+
+            // Constant array: shouldn't normally happen, but handle it
+            case ConstantExpression { Value: var value }:
+                this.GenerateAnyContains(property, value);
+                return;
+
+            default:
+                throw new NotSupportedException("Unsupported method call: Enumerable.Any");
+        }
+    }
+
+    private void GenerateAnyContains(PropertyModel property, object? values)
+    {
+        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        this.GeneratePropertyAccess(property);
+        this._sql.Append(" WHERE ARRAY_CONTAINS(");
+        this.TranslateConstant(values);
+        this._sql.Append(", t))");
+    }
+
+    private void GenerateAnyContains(PropertyModel property, QueryParameterExpression queryParameter)
+    {
+        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        this.GeneratePropertyAccess(property);
+        this._sql.Append(" WHERE ARRAY_CONTAINS(");
+        this.TranslateQueryParameter(queryParameter.Name, queryParameter.Value);
+        this._sql.Append(", t))");
     }
 
     private void TranslateUnary(UnaryExpression unary)
@@ -288,51 +362,9 @@ internal class CosmosNoSqlFilterTranslator
     }
 
     protected virtual void GeneratePropertyAccess(PropertyModel property)
-        => this._sql.Append(CosmosNoSqlConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
-
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
-    {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
-        {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
-        }
-
-        var modelName = expression switch
-        {
-            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
-                => memberExpression.Member.Name,
-
-            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
-            MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
-                => keyName,
-
-            _ => null
-        };
-
-        if (modelName is null)
-        {
-            property = null;
-            return false;
-        }
-
-        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
-        {
-            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
-        }
-
-        if (convertedClrType is not null && convertedClrType != property.Type)
-        {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
-        }
-
-        return true;
-    }
+        => this._sql
+            .Append(CosmosNoSqlConstants.ContainerAlias)
+            .Append("[\"")
+            .Append(property.StorageName.Replace(@"\", @"\\").Replace("\"", "\\\""))
+            .Append("\"]");
 }

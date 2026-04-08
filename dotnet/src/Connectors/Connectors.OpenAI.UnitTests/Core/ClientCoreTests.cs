@@ -273,7 +273,7 @@ public partial class ClientCoreTests
         await clientCore.GetChatMessageContentsAsync("gpt-4", chatHistory, new OpenAIPromptExecutionSettings(), new Kernel());
 
         // Assert
-        JsonElement jsonString = JsonSerializer.Deserialize<JsonElement>(handler.RequestContent);
+        JsonElement jsonString = JsonElement.Parse(handler.RequestContent);
 
         var function = jsonString.GetProperty("messages")[0].GetProperty("tool_calls")[0].GetProperty("function");
 
@@ -377,7 +377,7 @@ public partial class ClientCoreTests
             // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
             this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
             {
-                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithInvalidFunctionName.Id}}", "Name": "{{s_functionCallWithInvalidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithInvalidFunctionName.FunctionArguments}}"}]""")
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonElement.Parse($$"""[{"Id": "{{s_functionCallWithInvalidFunctionName.Id}}", "Name": "{{s_functionCallWithInvalidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithInvalidFunctionName.FunctionArguments}}"}]""")
             }), true);
         }
 
@@ -395,8 +395,82 @@ public partial class ClientCoreTests
             // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
             this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
             {
-                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithValidFunctionName.Id}}", "Name": "{{s_functionCallWithValidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithValidFunctionName.FunctionArguments}}"}]""")
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonElement.Parse($$"""[{"Id": "{{s_functionCallWithValidFunctionName.Id}}", "Name": "{{s_functionCallWithValidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithValidFunctionName.FunctionArguments}}"}]""")
             }), false);
         }
+    }
+
+    [Fact]
+    public void NonInvocableToolHasValidParametersSchema()
+    {
+        // Arrange & Act
+        // Access the NonInvocableTool through reflection since it's protected
+        var clientCoreType = typeof(ClientCore);
+        var nonInvocableToolField = clientCoreType.GetField("s_nonInvocableFunctionTool",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        Assert.NotNull(nonInvocableToolField);
+
+        var nonInvocableTool = (ChatTool)nonInvocableToolField.GetValue(null)!;
+
+        // Assert
+        Assert.NotNull(nonInvocableTool);
+        Assert.Equal("NonInvocableTool", nonInvocableTool.FunctionName);
+        Assert.Equal("A placeholder tool used when no real tools are available", nonInvocableTool.FunctionDescription);
+
+        // Verify that parameters are not null (this is the key fix for Mistral compatibility)
+        Assert.NotNull(nonInvocableTool.FunctionParameters);
+
+        // Verify the parameters contain a valid JSON schema
+        var parametersJson = nonInvocableTool.FunctionParameters.ToString();
+        Assert.Contains("\"type\":\"object\"", parametersJson);
+        Assert.Contains("\"required\":[]", parametersJson);
+        Assert.Contains("\"properties\":{}", parametersJson);
+
+        // Verify it's valid JSON
+        var parsedJson = JsonElement.Parse(parametersJson);
+        Assert.Equal(JsonValueKind.Object, parsedJson.ValueKind);
+        Assert.True(parsedJson.TryGetProperty("type", out var typeProperty));
+        Assert.Equal("object", typeProperty.GetString());
+        Assert.True(parsedJson.TryGetProperty("required", out var requiredProperty));
+        Assert.Equal(JsonValueKind.Array, requiredProperty.ValueKind);
+        Assert.Equal(0, requiredProperty.GetArrayLength());
+        Assert.True(parsedJson.TryGetProperty("properties", out var propertiesProperty));
+        Assert.Equal(JsonValueKind.Object, propertiesProperty.ValueKind);
+    }
+
+    [Fact]
+    public void NonInvocableToolSchemaIsCompatibleWithMistral()
+    {
+        // Arrange & Act
+        var clientCoreType = typeof(ClientCore);
+        var nonInvocableToolField = clientCoreType.GetField("s_nonInvocableFunctionTool",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        var nonInvocableTool = (ChatTool)nonInvocableToolField!.GetValue(null)!;
+
+        // Assert
+        // This test verifies that the tool schema meets Mistral's requirements:
+        // 1. Has a parameters field (not null)
+        // 2. Parameters field contains valid JSON schema
+        // 3. Schema has required type, properties, and required fields
+
+        Assert.NotNull(nonInvocableTool.FunctionParameters);
+
+        var parametersJson = nonInvocableTool.FunctionParameters.ToString();
+        var schema = JsonElement.Parse(parametersJson);
+
+        // Verify all required fields for Mistral compatibility
+        Assert.True(schema.TryGetProperty("type", out _), "Schema must have 'type' field");
+        Assert.True(schema.TryGetProperty("properties", out _), "Schema must have 'properties' field");
+        Assert.True(schema.TryGetProperty("required", out _), "Schema must have 'required' field");
+
+        // Verify the schema structure matches what Mistral expects
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.Equal(JsonValueKind.Object, schema.GetProperty("properties").ValueKind);
+        Assert.Equal(JsonValueKind.Array, schema.GetProperty("required").ValueKind);
+
+        // This ensures the tool won't cause 422 errors with Mistral APIs
+        // as described in GitHub issue #13232
     }
 }

@@ -3,7 +3,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Prompty</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>beta</VersionSuffix>
     <NoWarn>$(NoWarn);CA1812</NoWarn>
   </PropertyGroup>
@@ -19,6 +19,8 @@
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <PackageReference Include="Prompty.Core" />
+    <!-- Adding Scriban directly to use latest version number to avoid a vulnerability issue. Can be removed later once Prompty.Core references an updated version -->
+    <PackageReference Include="Scriban" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
   </ItemGroup>

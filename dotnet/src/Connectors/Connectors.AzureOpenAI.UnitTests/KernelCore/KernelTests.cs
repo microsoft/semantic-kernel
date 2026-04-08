@@ -71,8 +71,8 @@ public sealed class KernelTests : IDisposable
 
         listener.InstrumentPublished = (instrument, listener) =>
         {
-            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
-                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
+            if (instrument.Name is "semantic_kernel.function.invocation.token_usage.prompt" or
+                "semantic_kernel.function.invocation.token_usage.completion")
             {
                 isPublished = true;
                 listener.EnableMeasurementEvents(instrument);
@@ -81,8 +81,8 @@ public sealed class KernelTests : IDisposable
 
         listener.SetMeasurementEventCallback<long>((instrument, measurement, tags, state) =>
         {
-            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
-                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
+            if (instrument.Name is "semantic_kernel.function.invocation.token_usage.prompt" or
+                "semantic_kernel.function.invocation.token_usage.completion")
             {
                 measurements[instrument.Name].Add(measurement);
             }

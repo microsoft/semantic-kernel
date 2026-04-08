@@ -20,8 +20,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-
 /// <summary>
 /// Contains tests for the <see cref="AzureAISearchCollection{TKey, TRecord}"/> class.
 /// </summary>
@@ -321,8 +319,10 @@ public class AzureAISearchCollectionTests
         // Arrange upload result object.
 #pragma warning disable Moq1002 // Moq: No matching constructor
         var indexingResult = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey1, true, 200);
-        var indexingResults = new List<IndexingResult>();
-        indexingResults.Add(indexingResult.Object);
+        var indexingResults = new List<IndexingResult>
+        {
+            indexingResult.Object
+        };
         var indexDocumentsResultMock = new Mock<IndexDocumentsResult>(MockBehavior.Strict, indexingResults);
 #pragma warning restore Moq1002 // Moq: No matching constructor
 
@@ -363,9 +363,11 @@ public class AzureAISearchCollectionTests
         var indexingResult1 = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey1, true, 200);
         var indexingResult2 = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey2, true, 200);
 
-        var indexingResults = new List<IndexingResult>();
-        indexingResults.Add(indexingResult1.Object);
-        indexingResults.Add(indexingResult2.Object);
+        var indexingResults = new List<IndexingResult>
+        {
+            indexingResult1.Object,
+            indexingResult2.Object
+        };
         var indexDocumentsResultMock = new Mock<IndexDocumentsResult>(MockBehavior.Strict, indexingResults);
 #pragma warning restore Moq1002 // Moq: No matching constructor
 
@@ -408,12 +410,12 @@ public class AzureAISearchCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("Data1", typeof(string)),
                 new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
-            }
+            ]
         };
 
         // Act.
@@ -437,7 +439,6 @@ public class AzureAISearchCollectionTests
         using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
-        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
         var searchResults = await sut.SearchAsync(
@@ -446,7 +447,7 @@ public class AzureAISearchCollectionTests
             new()
             {
                 Skip = 3,
-                OldFilter = filter,
+                Filter = r => r.Data1 == "Data1FilterValue",
                 VectorProperty = record => record.Vector1
             },
             this._testCancellationToken).ToListAsync();
@@ -456,7 +457,7 @@ public class AzureAISearchCollectionTests
             x => x.SearchAsync<JsonObject>(
                 null,
                 It.Is<SearchOptions>(x =>
-                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Filter == "(storage_data1 eq 'Data1FilterValue')" &&
                     x.Size == 5 &&
                     x.Skip == 3 &&
                     x.VectorSearch.Queries.First().GetType() == typeof(VectorizedQuery) &&
@@ -479,7 +480,6 @@ public class AzureAISearchCollectionTests
         using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
-        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
         var searchResults = await sut.SearchAsync(
@@ -488,7 +488,7 @@ public class AzureAISearchCollectionTests
             new()
             {
                 Skip = 3,
-                OldFilter = filter,
+                Filter = r => r.Data1 == "Data1FilterValue",
                 VectorProperty = record => record.Vector1
             },
             this._testCancellationToken).ToListAsync();
@@ -498,7 +498,7 @@ public class AzureAISearchCollectionTests
             x => x.SearchAsync<JsonObject>(
                 null,
                 It.Is<SearchOptions>(x =>
-                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Filter == "(storage_data1 eq 'Data1FilterValue')" &&
                     x.Size == 5 &&
                     x.Skip == 3 &&
                     x.VectorSearch.Queries.First().GetType() == typeof(VectorizableTextQuery) &&

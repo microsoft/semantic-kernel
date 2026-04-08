@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Extensions;
+
 public sealed class AzureAIInferenceKernelBuilderExtensionsTests
 {
     private readonly Uri _endpoint = new("https://endpoint");

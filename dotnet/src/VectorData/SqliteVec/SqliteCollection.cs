@@ -74,7 +74,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqliteDynamicCollection)))
-                : new SqliteModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new SqliteModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -85,9 +85,13 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotNull(connectionString);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(int) && typeof(TKey) != typeof(long) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string)
+            && typeof(TKey) != typeof(int)
+            && typeof(TKey) != typeof(long)
+            && typeof(TKey) != typeof(Guid)
+            && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string, int and long keys are supported.");
+            throw new NotSupportedException("Only string, int, long and Guid keys are supported.");
         }
 
         options ??= SqliteCollectionOptions.Default;
@@ -97,9 +101,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         this.Name = name;
         this._model = modelFactory(options);
 
-        // Escape both table names before exposing them to anything that may build SQL commands.
-        this._dataTableName = name.EscapeIdentifier();
-        this._vectorTableName = GetVectorTableName(name, options).EscapeIdentifier();
+        this._dataTableName = name;
+        this._vectorTableName = GetVectorTableName(name, options);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
 
@@ -184,8 +187,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqliteModelBuilder.SupportedVectorTypes))
@@ -204,33 +207,16 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         string? extraWhereFilter = null;
         Dictionary<string, object>? extraParameters = null;
 
-        if (options.OldFilter is not null)
-        {
-            if (options.Filter is not null)
-            {
-                throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
-            }
-
-            // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(options.OldFilter, this._dataTableName);
-
-            if (filterConditions is { Count: > 0 })
-            {
-                conditions.AddRange(filterConditions);
-            }
-        }
-        else if (options.Filter is not null)
+        if (options.Filter is not null)
         {
             SqliteFilterTranslator translator = new(this._model, options.Filter);
             translator.Translate(appendWhere: false);
             extraWhereFilter = translator.Clause.ToString();
             extraParameters = translator.Parameters;
         }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
         await foreach (var record in this.EnumerateAndMapSearchResultsAsync(
             conditions,
@@ -346,98 +332,15 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     }
 
     /// <inheritdoc />
-    public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(record);
-
-        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings = null;
-
-        var vectorPropertyCount = this._model.VectorProperties.Count;
-        for (var i = 0; i < vectorPropertyCount; i++)
-        {
-            var vectorProperty = this._model.VectorProperties[i];
-
-            if (SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
-            {
-                continue;
-            }
-
-            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
-            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
-
-            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
-            // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
-        }
-
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        await this.InternalUpsertBatchAsync(connection, [record], generatedEmbeddings, cancellationToken).ConfigureAwait(false);
-    }
+    public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => this.DoUpsertAsync([record], cancellationToken);
 
     /// <inheritdoc />
-    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
-        IReadOnlyList<TRecord>? recordsList = null;
-
-        // If an embedding generator is defined, invoke it once per property for all records.
-        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings = null;
-
-        var vectorPropertyCount = this._model.VectorProperties.Count;
-        for (var i = 0; i < vectorPropertyCount; i++)
-        {
-            var vectorProperty = this._model.VectorProperties[i];
-
-            if (SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
-            {
-                continue;
-            }
-
-            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
-            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
-
-            // We have a property with embedding generation; materialize the records' enumerable if needed, to
-            // prevent multiple enumeration.
-            if (recordsList is null)
-            {
-                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
-
-                if (recordsList.Count == 0)
-                {
-                    return;
-                }
-
-                records = recordsList;
-            }
-
-            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
-            // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
-        }
-
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        await this.InternalUpsertBatchAsync(connection, records, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+        return this.DoUpsertAsync(records, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -512,7 +415,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             conditions,
             includeDistance: true,
             extraWhereFilter: extraWhereFilter,
-            extraParameters: extraParameters);
+            extraParameters: extraParameters,
+            scoreThreshold: searchOptions.ScoreThreshold);
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,
@@ -628,27 +532,90 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
     }
 
-    private async Task InternalUpsertBatchAsync(
-        SqliteConnection connection,
-        IEnumerable<TRecord> records,
-        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings,
-        CancellationToken cancellationToken)
+    private async Task DoUpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken)
     {
         Verify.NotNull(records);
 
-        if (this._vectorPropertiesExist)
+        // With SQLite, we'll need to enumerate the records multiple times in almost all cases (e.g. because of the existence
+        // of two separate tables for data and vectors). To avoid multiple enumerations, we materialize the records into a list here.
+        var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+        if (recordsList.Count == 0)
         {
-            // We're going to have to traverse the records multiple times, so materialize the enumerable if needed.
-            var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+            return;
+        }
+        records = recordsList;
 
-            if (recordsList.Count == 0)
+        // If an embedding generator is defined, invoke it once per property for all records.
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
-                return;
+                continue;
             }
 
-            records = recordsList;
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
-            var keyProperty = this._model.KeyProperty;
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding<float>>>(vectorPropertyCount);
+            generatedEmbeddings[vectorProperty] = (IReadOnlyList<Embedding<float>>)await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
+        }
+
+        var keyProperty = this._model.KeyProperty;
+
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        using var dataCommand = SqliteCommandBuilder.BuildInsertCommand(
+            connection,
+            this._dataTableName,
+            this._model,
+            recordsList,
+            generatedEmbeddings,
+            data: true,
+            replaceIfExists: true);
+
+        using (var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            "updateData",
+            () => dataCommand.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false))
+        {
+            // If the key property is auto-generated, we need to read the generated keys from the database and inject them into the records
+            // (except for GUIDs which are generated client-side and have already been injected).
+            if (keyProperty is KeyPropertyModel { IsAutoGenerated: true } && keyProperty.Type != typeof(Guid))
+            {
+                int? keyOrdinal = null;
+
+                foreach (var record in recordsList)
+                {
+                    switch (keyProperty.Type)
+                    {
+                        case var t when t == typeof(int) && keyProperty.GetValue<int>(record) == 0:
+                            keyOrdinal ??= reader.GetOrdinal(keyProperty.StorageName);
+                            await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                            keyProperty.SetValue<int>(record, reader.GetFieldValue<int>(keyOrdinal.Value));
+                            await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
+                            continue;
+                        case var t when t == typeof(long) && keyProperty.GetValue<long>(record) == 0L:
+                            keyOrdinal ??= reader.GetOrdinal(keyProperty.StorageName);
+                            await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                            keyProperty.SetValue<long>(record, reader.GetFieldValue<long>(keyOrdinal.Value));
+                            await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
+                            continue;
+                    }
+                }
+            }
+        }
+
+        // We've inserted the main data records, now insert the records into the vector virtual table as well.
+        if (this._vectorPropertiesExist)
+        {
             var keys = recordsList.Select(r => keyProperty.GetValueAsObject(r)!).ToList();
 
             // Deleting vector records first since current version of vector search extension
@@ -667,9 +634,8 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             using var vectorInsertCommand = SqliteCommandBuilder.BuildInsertCommand(
                 connection,
                 this._vectorTableName,
-                this._keyStorageName,
                 this._model,
-                records,
+                recordsList,
                 generatedEmbeddings,
                 data: false);
 
@@ -678,31 +644,6 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 "VectorInsert",
                 () => vectorInsertCommand.ExecuteNonQueryAsync(cancellationToken),
                 cancellationToken).ConfigureAwait(false);
-        }
-
-        using var dataCommand = SqliteCommandBuilder.BuildInsertCommand(
-            connection,
-            this._dataTableName,
-            this._keyStorageName,
-            this._model,
-            records,
-            generatedEmbeddings,
-            data: true,
-            replaceIfExists: true);
-
-        using var reader = await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "updateData",
-            () => dataCommand.ExecuteReaderAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
-
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            var key = reader.GetFieldValue<TKey>(0);
-
-            // TODO: Inject the generated keys into the record for autogenerated keys.
-
-            await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -737,45 +678,6 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         return Task.WhenAll(tasks);
     }
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    private List<SqliteWhereCondition>? GetFilterConditions(VectorSearchFilter? filter, string? tableName = null)
-    {
-        var filterClauses = filter?.FilterClauses.ToList();
-
-        if (filterClauses is not { Count: > 0 })
-        {
-            return null;
-        }
-
-        var conditions = new List<SqliteWhereCondition>();
-
-        foreach (var filterClause in filterClauses)
-        {
-            if (filterClause is EqualToFilterClause equalToFilterClause)
-            {
-                if (!this._model.PropertyMap.TryGetValue(equalToFilterClause.FieldName, out var property))
-                {
-                    throw new InvalidOperationException($"Property name '{equalToFilterClause.FieldName}' provided as part of the filter clause is not a valid property name.");
-                }
-
-                conditions.Add(new SqliteWhereEqualsCondition(property.StorageName, equalToFilterClause.Value)
-                {
-                    TableName = tableName
-                });
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
-                        nameof(EqualToFilterClause)])}");
-            }
-        }
-
-        return conditions;
-    }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Gets vector table name.

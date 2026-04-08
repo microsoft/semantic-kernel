@@ -21,5 +21,5 @@ internal readonly struct InMemoryRecordWrapper<TRecord>
     }
 
     public TRecord Record { get; }
-    public Dictionary<string, ReadOnlyMemory<float>> EmbeddingGeneratedVectors { get; } = new();
+    public Dictionary<string, ReadOnlyMemory<float>> EmbeddingGeneratedVectors { get; } = [];
 }

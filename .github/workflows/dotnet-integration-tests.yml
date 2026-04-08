@@ -29,10 +29,10 @@ jobs:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         if: ${{ github.event_name != 'pull_request' }}
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Find projects
         shell: bash

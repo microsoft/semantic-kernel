@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -32,15 +35,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
 
                     if (!reader.IsDBNull(ordinal))
                     {
-                        // TODO: For now, SQL Server provides access to vectors as JSON arrays, but the plan is to switch
-                        // to an efficient binary format in the future.
-                        var vectorArray = JsonSerializer.Deserialize<float[]>(reader.GetString(ordinal), SqlServerJsonSerializerContext.Default.SingleArray);
+                        var vector = reader.GetFieldValue<SqlVector<float>>(ordinal);
 
                         property.SetValueAsObject(record, property.Type switch
                         {
-                            var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorArray),
-                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vectorArray),
-                            var t when t == typeof(float[]) => vectorArray,
+                            var t when t == typeof(SqlVector<float>) => vector,
+                            var t when t == typeof(ReadOnlyMemory<float>) => vector.Memory,
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vector.Memory),
+                            var t when t == typeof(float[])
+                                => MemoryMarshal.TryGetArray(vector.Memory, out ArraySegment<float> segment)
+                                    && segment.Count == segment.Array!.Length
+                                    ? segment.Array
+                                    : vector.Memory.ToArray(),
 
                             _ => throw new UnreachableException()
                         });
@@ -108,7 +114,9 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTime):
                         property.SetValue(record, reader.GetDateTime(ordinal)); // DATETIME2
                         break;
-
+                    case var t when t == typeof(DateTimeOffset):
+                        property.SetValue(record, reader.GetDateTimeOffset(ordinal)); // DATETIMEOFFSET
+                        break;
 #if NET
                     case var t when t == typeof(DateOnly):
                         property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal)); // DATE
@@ -117,6 +125,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
                         break;
 #endif
+
+                    // We map string[] and List<string> properties to SQL Server JSON columns, so deserialize from JSON here.
+                    case var t when t == typeof(string[]):
+                        property.SetValue(record, JsonSerializer.Deserialize<string[]>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.StringArray));
+                        break;
+                    case var t when t == typeof(List<string>):
+                        property.SetValue(record, JsonSerializer.Deserialize<List<string>>(
+                            reader.GetString(ordinal),
+                            SqlServerJsonSerializerContext.Default.ListString));
+                        break;
 
                     default:
                         throw new NotSupportedException($"Unsupported type '{property.Type.Name}' for property '{property.ModelName}'.");

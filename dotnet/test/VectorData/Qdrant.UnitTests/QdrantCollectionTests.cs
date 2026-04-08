@@ -445,12 +445,12 @@ public class QdrantCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
                 new VectorStoreDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
                 new VectorStoreVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
-            }
+            ]
         };
 
         // Act.
@@ -460,7 +460,6 @@ public class QdrantCollectionTests
             new() { Definition = definition });
     }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
@@ -471,13 +470,12 @@ public class QdrantCollectionTests
         // Arrange.
         var scoredPoint = CreateScoredPoint(hasNamedVectors, testRecordKey);
         this.SetupQueryMock([scoredPoint]);
-        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
         var results = await sut.SearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
-            new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },
+            new() { IncludeVectors = true, Filter = r => r.Data == "data 1", Skip = 2 },
             this._testCancellationToken).ToListAsync();
 
         // Assert.
@@ -509,7 +507,6 @@ public class QdrantCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector!.Value.ToArray());
         Assert.Equal(0.5f, results.First().Score);
     }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {

@@ -12,7 +12,7 @@ namespace Agents;
 /// </summary>
 public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    private readonly static (string Input, string? Style)[] s_inputs =
+    private static readonly (string Input, string? Style)[] s_inputs =
         [
             (Input: "Home cooking is great.", Style: null),
             (Input: "Talk about world peace.", Style: "iambic pentameter"),

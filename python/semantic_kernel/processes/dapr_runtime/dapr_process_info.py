@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from collections.abc import MutableSequence
+from collections.abc import MutableSequence, Sequence
 from typing import Literal
 
 from pydantic import Field
@@ -10,6 +10,7 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.step_utils import DEFAULT_ALLOWED_MODULE_PREFIXES
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
@@ -20,17 +21,27 @@ class DaprProcessInfo(DaprStepInfo):
     type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
-    def to_kernel_process(self) -> KernelProcess:
-        """Converts the Dapr process info to a kernel process."""
+    def to_kernel_process(
+        self, allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES
+    ) -> KernelProcess:
+        """Converts the Dapr process info to a kernel process.
+
+        Args:
+            allowed_module_prefixes: Sequence of module prefixes that are allowed
+                for step class loading. Defaults to DEFAULT_ALLOWED_MODULE_PREFIXES
+                ("semantic_kernel.",). Pass None to disable the allowlist and allow
+                any module (not recommended for production). An empty sequence blocks
+                all modules.
+        """
         if not isinstance(self.state, KernelProcessState):
             raise ValueError("State must be a kernel process state")
 
         steps: list[KernelProcessStepInfo] = []
         for step in self.steps:
             if isinstance(step, DaprProcessInfo):
-                steps.append(step.to_kernel_process())
+                steps.append(step.to_kernel_process(allowed_module_prefixes=allowed_module_prefixes))
             else:
-                steps.append(step.to_kernel_process_step_info())
+                steps.append(step.to_kernel_process_step_info(allowed_module_prefixes=allowed_module_prefixes))
 
         return KernelProcess(state=self.state, steps=steps, edges=self.edges)
 

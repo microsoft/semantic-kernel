@@ -28,9 +28,9 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<PersistentAgentsClient
     protected async Task<string> GetConnectionId(string connectionName)
     {
         AIProjectClient client = CreateFoundryProjectClient();
-        Connections connectionClient = client.GetConnectionsClient();
-        Connection connection =
-            await connectionClient.GetConnectionsAsync().Where(connection => connection.Name == connectionName).FirstOrDefaultAsync() ??
+        AIProjectConnectionsOperations connectionOperations = client.Connections;
+        AIProjectConnection connection =
+            await connectionOperations.GetConnectionsAsync().Where(connection => connection.Name == connectionName).FirstOrDefaultAsync() ??
             throw new InvalidOperationException($"Connection '{connectionName}' not found in project '{TestConfiguration.AzureAI.Endpoint}'.");
         return connection.Id;
     }

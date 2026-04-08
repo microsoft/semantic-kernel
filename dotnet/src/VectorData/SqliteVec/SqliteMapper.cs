@@ -46,7 +46,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                 // In modern .NET, we allocate a float[] of the right size, reinterpret-cast it into byte[],
                 // and then read the data into that via Stream.
                 // In .NET Framework, which doesn't have Span APIs on Stream, we just create a copy (inefficient).
-#if NET8_0_OR_GREATER
+#if NET
                 using var stream = reader.GetStream(ordinal);
 
                 var length = stream.Length;
@@ -56,7 +56,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                 }
 
                 var floats = new float[length / 4];
-                var bytes = MemoryMarshal.Cast<float, byte>(floats);
+                var bytes = MemoryMarshal.Cast<float, byte>(floats.AsSpan());
                 stream.ReadExactly(bytes);
 #else
                 var floats = MemoryMarshal.Cast<byte, float>((byte[])reader[ordinal]).ToArray();
@@ -96,6 +96,13 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
             Type t when t == typeof(float) => reader.GetFloat(ordinal),
             Type t when t == typeof(double) => reader.GetDouble(ordinal),
             Type t when t == typeof(string) => reader.GetString(ordinal),
+            Type t when t == typeof(Guid) => reader.GetGuid(ordinal),
+            Type t when t == typeof(DateTime) => reader.GetDateTime(ordinal),
+            Type t when t == typeof(DateTimeOffset) => reader.GetFieldValue<DateTimeOffset>(ordinal),
+#if NET
+            Type t when t == typeof(DateOnly) => reader.GetFieldValue<DateOnly>(ordinal),
+            Type t when t == typeof(TimeOnly) => reader.GetFieldValue<TimeOnly>(ordinal),
+#endif
             Type t when t == typeof(byte[]) => (byte[])reader[ordinal],
             Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[ordinal],
             Type t when t == typeof(Embedding<float>) => (byte[])reader[ordinal],

@@ -161,7 +161,8 @@ internal static class RedisCollectionCreateMapping
             DistanceFunction.CosineDistance => "COSINE",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanSquaredDistance => "L2",
-            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
+
+            _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
 
     /// <summary>

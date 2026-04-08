@@ -2,16 +2,16 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from google.cloud.aiplatform_v1beta1.types.content import Blob, Candidate, Part
-from google.cloud.aiplatform_v1beta1.types.tool import FunctionCall, FunctionResponse
-from vertexai.generative_models import FunctionDeclaration, Tool, ToolConfig
+from google.cloud.aiplatform_v1beta1.types.content import Candidate
+from vertexai.generative_models import FunctionDeclaration, Part, Tool, ToolConfig
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
+    sanitize_schema_for_google_ai,
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
@@ -63,7 +63,7 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            parts.append(Part(text=message.content))
+            parts.append(Part.from_text(item.text))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
@@ -88,17 +88,18 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     for item in message.items:
         if isinstance(item, TextContent):
             if item.text:
-                parts.append(Part(text=item.text))
+                parts.append(Part.from_text(item.text))
         elif isinstance(item, FunctionCallContent):
-            parts.append(
-                Part(
-                    function_call=FunctionCall(
-                        name=item.name,
-                        # Convert the arguments to a dictionary if it is a string
-                        args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
-                    )
-                )
-            )
+            part_dict: dict[str, Any] = {
+                "function_call": {
+                    "name": item.name,  # type: ignore[arg-type]
+                    "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                }
+            }
+            thought_signature = item.metadata.get("thought_signature") if item.metadata else None
+            if thought_signature:
+                part_dict["thought_signature"] = thought_signature
+            parts.append(Part.from_dict(part_dict))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
@@ -124,14 +125,11 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
         if isinstance(item, FunctionResultContent):
             gemini_function_name = item.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR)
             parts.append(
-                Part(
-                    function_response=FunctionResponse(
-                        name=gemini_function_name,
-                        response={
-                            "name": gemini_function_name,
-                            "content": str(item.result),
-                        },
-                    )
+                Part.from_function_response(
+                    gemini_function_name,
+                    {
+                        "content": str(item.result),
+                    },
                 )
             )
 
@@ -140,13 +138,20 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 
 def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> FunctionDeclaration:
     """Convert the kernel function metadata to function calling format."""
+    properties: dict[str, Any] = {}
+    if metadata.parameters:
+        for param in metadata.parameters:
+            if param.name is None:
+                continue
+            prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
+            properties[param.name] = prop_schema
     return FunctionDeclaration(
         name=metadata.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR),
         description=metadata.description or "",
         parameters={
             "type": "object",
-            "properties": {param.name: param.schema_data for param in metadata.parameters},
-            "required": [p.name for p in metadata.parameters if p.is_required],
+            "properties": properties,
+            "required": [p.name for p in metadata.parameters if p.is_required and p.name is not None],
         },
     )
 
@@ -177,7 +182,7 @@ def update_settings_from_function_choice_configuration(
 
 def _create_image_part(image_content: ImageContent) -> Part:
     if image_content.data_uri:
-        return Part(inline_data=Blob(mime_type=image_content.mime_type, data=image_content.data))
+        return Part.from_data(image_content.data, image_content.mime_type)  # type: ignore[arg-type]
 
     # The Google AI API doesn't support images from arbitrary URIs:
     # https://github.com/google-gemini/generative-ai-python/issues/357

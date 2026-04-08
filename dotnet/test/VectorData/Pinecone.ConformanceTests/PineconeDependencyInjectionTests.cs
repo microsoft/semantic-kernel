@@ -4,13 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace Pinecone.ConformanceTests;
 
 public class PineconeDependencyInjectionTests
-    : DependencyInjectionTests<PineconeVectorStore, PineconeCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<PineconeVectorStore, PineconeCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     private const string ApiKey = "Fake API Key";
     private static readonly ClientOptions s_clientOptions = new() { MaxRetries = 1 };
@@ -35,21 +34,21 @@ public class PineconeDependencyInjectionTests
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services
                     .AddSingleton<PineconeClient>(sp => new PineconeClient(ApiKey))
-                    .AddPineconeCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddPineconeCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<PineconeClient>(sp => new PineconeClient(ApiKey))
-                    .AddKeyedPineconeCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedPineconeCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddPineconeCollection<SimpleRecord<string>>(
+                ? services.AddPineconeCollection<Record>(
                     name, ApiKey, lifetime: lifetime)
-                : services.AddKeyedPineconeCollection<SimpleRecord<string>>(
+                : services.AddKeyedPineconeCollection<Record>(
                     serviceKey, name, ApiKey, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddPineconeCollection<SimpleRecord<string>>(
+                ? services.AddPineconeCollection<Record>(
                     name, sp => new PineconeClient(ApiKeyProvider(sp), ClientOptionsProvider(sp)), lifetime: lifetime)
-                : services.AddKeyedPineconeCollection<SimpleRecord<string>>(
+                : services.AddKeyedPineconeCollection<Record>(
                     serviceKey, name, sp => new PineconeClient(ApiKeyProvider(sp, serviceKey), ClientOptionsProvider(sp, serviceKey)), lifetime: lifetime);
         }
     }
@@ -81,13 +80,13 @@ public class PineconeDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddPineconeVectorStore(apiKey: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedPineconeVectorStore(serviceKey: "notNull", apiKey: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddPineconeCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddPineconeCollection<Record>(
             name: "notNull", apiKey: null!));
-        Assert.Throws<ArgumentException>(() => services.AddPineconeCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddPineconeCollection<Record>(
             name: "notNull", apiKey: ""));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedPineconeCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedPineconeCollection<Record>(
             serviceKey: "notNull", name: "notNull", apiKey: null!));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedPineconeCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedPineconeCollection<Record>(
             serviceKey: "notNull", name: "notNull", apiKey: ""));
     }
 }

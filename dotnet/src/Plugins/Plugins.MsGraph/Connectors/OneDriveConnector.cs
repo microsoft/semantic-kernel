@@ -105,7 +105,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET8_0_OR_GREATER
+#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
 #else
             throw new HttpOperationException(null, responseContent: null, ex.Message, ex);
@@ -139,7 +139,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET8_0_OR_GREATER
+#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
 #else
             throw new HttpOperationException(null, responseContent: null, ex.Message, ex);

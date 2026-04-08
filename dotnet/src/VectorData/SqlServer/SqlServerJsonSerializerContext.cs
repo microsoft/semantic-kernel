@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-// Note: this is temporary - SQL Server will switch away from using JSON arrays to represent embeddings in the future.
-[JsonSerializable(typeof(float[]))]
-[JsonSerializable(typeof(ReadOnlyMemory<float>))]
+// For mapping string[] properties to SQL Server JSON columns
+[JsonSerializable(typeof(string[]))]
+[JsonSerializable(typeof(List<string>))]
 internal partial class SqlServerJsonSerializerContext : JsonSerializerContext;

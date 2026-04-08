@@ -5,11 +5,15 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
+using VectorData.ConformanceTests.Support;
 using Xunit;
 
 namespace VectorData.ConformanceTests;
 
-public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>
+// The type argument object? might not be serializable, which may cause Test Explorer to not enumerate individual data rows. Consider using a type that is known to be serializable.
+#pragma warning disable xUnit1045
+
+public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord> : DependencyInjectionTests<TKey>
     where TVectorStore : VectorStore
     where TCollection : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
@@ -55,20 +59,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         }
     }
 
-#pragma warning disable CA1000 // Do not declare static members on generic types
-    public static IEnumerable<object?[]> LifetimesAndServiceKeys()
-#pragma warning restore CA1000 // Do not declare static members on generic types
-    {
-        foreach (ServiceLifetime lifetime in new ServiceLifetime[] { ServiceLifetime.Scoped, ServiceLifetime.Singleton, ServiceLifetime.Transient })
-        {
-            yield return new object?[] { lifetime, null };
-            yield return new object?[] { lifetime, "key" };
-            yield return new object?[] { lifetime, 8 };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(LifetimesAndServiceKeys))]
+    [Theory, MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
     {
         foreach (var registrationDelegate in this.StoreDelegates)
@@ -85,8 +76,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         }
     }
 
-    [Theory]
-    [MemberData(nameof(LifetimesAndServiceKeys))]
+    [Theory, MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterCollections(ServiceLifetime lifetime, object? serviceKey)
     {
         foreach (var registrationDelegate in this.CollectionDelegates)
@@ -114,8 +104,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         }
     }
 
-    [Theory]
-    [MemberData(nameof(LifetimesAndServiceKeys))]
+    [Theory, MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
         foreach (var registrationDelegate in this.StoreDelegates)
@@ -133,8 +122,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         }
     }
 
-    [Theory]
-    [MemberData(nameof(LifetimesAndServiceKeys))]
+    [Theory, MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterConcreteTypeCollectionsAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
         foreach (var registrationDelegate in this.CollectionDelegates)
@@ -152,8 +140,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         }
     }
 
-    [Theory]
-    [MemberData(nameof(LifetimesAndServiceKeys))]
+    [Theory, MemberData(nameof(LifetimesAndServiceKeys))]
     public void EmbeddingGeneratorIsResolved(ServiceLifetime lifetime, object? serviceKey)
     {
         foreach (var registrationDelegate in this.CollectionDelegates)
@@ -178,6 +165,24 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
 
             Assert.True(wasResolved);
         }
+    }
+
+#pragma warning disable CA1000 // Do not declare static members on generic types
+    public static TheoryData<ServiceLifetime, object?> LifetimesAndServiceKeys { get; } = GetLifetimesAndServiceKeys();
+#pragma warning restore CA1000 // Do not declare static members on generic types
+
+    private static TheoryData<ServiceLifetime, object?> GetLifetimesAndServiceKeys()
+    {
+        TheoryData<ServiceLifetime, object?> result = [];
+
+        foreach (ServiceLifetime lifetime in new ServiceLifetime[] { ServiceLifetime.Scoped, ServiceLifetime.Singleton, ServiceLifetime.Transient })
+        {
+            result.Add(lifetime, null);
+            result.Add(lifetime, "key");
+            result.Add(lifetime, 8);
+        }
+
+        return result;
     }
 
     protected IServiceCollection CreateServices(object? serviceKey = null)
@@ -262,5 +267,17 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput searchValue, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    }
+}
+
+public abstract class DependencyInjectionTests<TKey>
+{
+    public sealed class Record : TestRecord<TKey>
+    {
+        [VectorStoreData(StorageName = "number")]
+        public int Number { get; set; }
+
+        [VectorStoreVector(Dimensions: 3, StorageName = "embedding")]
+        public ReadOnlyMemory<float> Floats { get; set; }
     }
 }

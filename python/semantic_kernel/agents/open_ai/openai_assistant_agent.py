@@ -7,7 +7,8 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
+from openai import AsyncOpenAI
+from openai._types import Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
@@ -138,9 +139,9 @@ class AssistantAgentThread(AgentThread):
         self,
         client: AsyncOpenAI,
         thread_id: str | None = None,
-        messages: Iterable["ThreadCreateMessage"] | NotGiven = NOT_GIVEN,
-        metadata: dict[str, Any] | NotGiven = NOT_GIVEN,
-        tool_resources: ToolResources | NotGiven = NOT_GIVEN,
+        messages: Iterable["ThreadCreateMessage"] | Omit = omit,
+        metadata: dict[str, Any] | Omit = omit,
+        tool_resources: ToolResources | Omit = omit,
     ) -> None:
         """Initialize the OpenAI Assistant Thread.
 

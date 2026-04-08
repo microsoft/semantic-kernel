@@ -6,7 +6,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-#if NET8_0_OR_GREATER
+#if NET
 using OData2Linq;
 #else
 using Community.OData.Linq;

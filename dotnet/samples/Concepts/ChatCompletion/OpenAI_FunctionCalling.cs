@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
+
 public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]

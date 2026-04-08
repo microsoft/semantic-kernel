@@ -16,7 +16,7 @@ public sealed class RedisHashSetMapperTests
 {
     private static readonly CollectionModel s_model
         = new RedisModelBuilder(RedisHashSetCollection<string, AllTypesModel>.ModelBuildingOptions)
-            .Build(typeof(AllTypesModel), RedisHashSetMappingTestHelpers.s_definition, defaultEmbeddingGenerator: null);
+            .Build(typeof(AllTypesModel), typeof(string), RedisHashSetMappingTestHelpers.s_definition, defaultEmbeddingGenerator: null);
 
     [Fact]
     public void MapsAllFieldsFromDataToStorageModel()

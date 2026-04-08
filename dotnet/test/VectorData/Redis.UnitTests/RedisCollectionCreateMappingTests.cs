@@ -64,29 +64,29 @@ public class RedisCollectionCreateMappingTests
 
         if (useDollarPrefix)
         {
-            VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "$.FilterableString", "AS", "FilterableString" });
-            VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "$.FullTextSearchableString", "AS", "FullTextSearchableString" });
-            VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "$.FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable" });
-            VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "$.FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
+            VerifyFieldName(schema.Fields[0].FieldName, ["$.FilterableString", "AS", "FilterableString"]);
+            VerifyFieldName(schema.Fields[1].FieldName, ["$.FullTextSearchableString", "AS", "FullTextSearchableString"]);
+            VerifyFieldName(schema.Fields[2].FieldName, ["$.FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable"]);
+            VerifyFieldName(schema.Fields[3].FieldName, ["$.FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable"]);
 
-            VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "$.FilterableInt", "AS", "FilterableInt" });
-            VerifyFieldName(schema.Fields[5].FieldName, new List<object> { "$.FilterableNullableInt", "AS", "FilterableNullableInt" });
+            VerifyFieldName(schema.Fields[4].FieldName, ["$.FilterableInt", "AS", "FilterableInt"]);
+            VerifyFieldName(schema.Fields[5].FieldName, ["$.FilterableNullableInt", "AS", "FilterableNullableInt"]);
 
-            VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
-            VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
+            VerifyFieldName(schema.Fields[6].FieldName, ["$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions"]);
+            VerifyFieldName(schema.Fields[7].FieldName, ["$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options"]);
         }
         else
         {
-            VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "FilterableString", "AS", "FilterableString" });
-            VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "FullTextSearchableString", "AS", "FullTextSearchableString" });
-            VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable" });
-            VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
+            VerifyFieldName(schema.Fields[0].FieldName, ["FilterableString", "AS", "FilterableString"]);
+            VerifyFieldName(schema.Fields[1].FieldName, ["FullTextSearchableString", "AS", "FullTextSearchableString"]);
+            VerifyFieldName(schema.Fields[2].FieldName, ["FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable"]);
+            VerifyFieldName(schema.Fields[3].FieldName, ["FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable"]);
 
-            VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "FilterableInt", "AS", "FilterableInt" });
-            VerifyFieldName(schema.Fields[5].FieldName, new List<object> { "FilterableNullableInt", "AS", "FilterableNullableInt" });
+            VerifyFieldName(schema.Fields[4].FieldName, ["FilterableInt", "AS", "FilterableInt"]);
+            VerifyFieldName(schema.Fields[5].FieldName, ["FilterableNullableInt", "AS", "FilterableNullableInt"]);
 
-            VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
-            VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
+            VerifyFieldName(schema.Fields[6].FieldName, ["VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions"]);
+            VerifyFieldName(schema.Fields[7].FieldName, ["vector_specific_indexing_options", "AS", "vector_specific_indexing_options"]);
         }
 
         Assert.Equal("10", ((VectorField)schema.Fields[6]).Attributes!["DIM"]);
@@ -115,7 +115,7 @@ public class RedisCollectionCreateMappingTests
         var vectorProperty = new VectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "Unsupported" };
 
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));
+        Assert.Throws<NotSupportedException>(() => RedisCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));
     }
 
     private static void VerifyFieldName(FieldName fieldName, List<object> expected)
