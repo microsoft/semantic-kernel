@@ -28,7 +28,7 @@ dependencies = [
     "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.13",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
