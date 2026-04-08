@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 using OpenAI.Assistants;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -85,7 +86,7 @@ async Task SKAgent_As_AFAgent()
 
     var agent = skAgent.AsAIAgent();
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -99,9 +100,9 @@ async Task SKAgent_As_AFAgent()
 
     // Clean up
     var assistantClient = serviceProvider.GetRequiredService<AssistantClient>();
-    if (thread is ChatClientAgentThread chatThread)
+    if (thread is ChatClientAgentSession chatSession)
     {
-        await assistantClient.DeleteThreadAsync(chatThread.ConversationId);
+        await assistantClient.DeleteThreadAsync(chatSession.ConversationId);
     }
     await assistantClient.DeleteAssistantAsync(agent.Id);
 }
@@ -111,34 +112,25 @@ async Task AFAgent()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddSingleton((sp) => new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential()).GetAssistantClient());
     serviceCollection.AddTransient<AIAgent>((sp) =>
     {
-        var assistantClient = sp.GetRequiredService<AssistantClient>();
-
-        return assistantClient.CreateAIAgent(deploymentName, name: "Joker", instructions: "You are good at telling jokes.");
+        return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
+            .GetResponsesClient()
+            .AsAIAgent(model: deploymentName, name: "Joker", instructions: "You are good at telling jokes.");
     });
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
     var agent = serviceProvider.GetRequiredService<AIAgent>();
 
-    var thread = agent.GetNewThread();
+    var session = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
-    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    var result = await agent.RunAsync(userInput, session, agentOptions);
     Console.WriteLine(result);
 
     Console.WriteLine("---");
-    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    await foreach (var update in agent.RunStreamingAsync(userInput, session, agentOptions))
     {
         Console.Write(update);
     }
-
-    // Clean up
-    var assistantClient = serviceProvider.GetRequiredService<AssistantClient>();
-    if (thread is ChatClientAgentThread chatThread)
-    {
-        await assistantClient.DeleteThreadAsync(chatThread.ConversationId);
-    }
-    await assistantClient.DeleteAssistantAsync(agent.Id);
 }

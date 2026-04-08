@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 using OpenAI.Assistants;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -94,7 +95,7 @@ async Task SKAgent_As_AFAgentAsync()
 
     var agent = skAgent.AsAIAgent();
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -107,9 +108,9 @@ async Task SKAgent_As_AFAgentAsync()
     }
 
     // Clean up
-    if (thread is ChatClientAgentThread chatThread)
+    if (thread is ChatClientAgentSession chatSession)
     {
-        await assistantsClient.DeleteThreadAsync(chatThread.ConversationId);
+        await assistantsClient.DeleteThreadAsync(chatSession.ConversationId);
     }
     await assistantsClient.DeleteAssistantAsync(agent.Id);
 }
@@ -118,28 +119,20 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var assistantClient = new AssistantClient(apiKey);
+    var agent = new OpenAIClient(apiKey).GetResponsesClient()
+        .AsAIAgent(model: model,
+            instructions: "You are a helpful assistant",
+            tools: [AIFunctionFactory.Create(GetWeather)]);
 
-    var agent = await assistantClient.CreateAIAgentAsync(model,
-        instructions: "You are a helpful assistant",
-        tools: [AIFunctionFactory.Create(GetWeather)]);
-
-    var thread = agent.GetNewThread();
+    var session = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
-    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    var result = await agent.RunAsync(userInput, session, agentOptions);
     Console.WriteLine(result);
 
     Console.WriteLine("---");
-    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    await foreach (var update in agent.RunStreamingAsync(userInput, session, agentOptions))
     {
         Console.Write(update);
     }
-
-    // Clean up
-    if (thread is ChatClientAgentThread chatThread)
-    {
-        await assistantClient.DeleteThreadAsync(chatThread.ConversationId);
-    }
-    await assistantClient.DeleteAssistantAsync(agent.Id);
 }
