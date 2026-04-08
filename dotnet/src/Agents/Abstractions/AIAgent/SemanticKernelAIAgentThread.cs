@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using MAAI = Microsoft.Agents.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -10,15 +9,10 @@ namespace Microsoft.SemanticKernel.Agents;
 [Experimental("SKEXP0110")]
 internal sealed class SemanticKernelAIAgentSession : MAAI.AgentSession
 {
-    private readonly Func<AgentThread, JsonSerializerOptions?, JsonElement> _threadSerializer;
-
-    internal SemanticKernelAIAgentSession(AgentThread thread, Func<AgentThread, JsonSerializerOptions?, JsonElement> threadSerializer)
+    internal SemanticKernelAIAgentSession(AgentThread thread)
     {
         Throw.IfNull(thread);
-        Throw.IfNull(threadSerializer);
-
         this.InnerThread = thread;
-        this._threadSerializer = threadSerializer;
     }
 
     /// <summary>

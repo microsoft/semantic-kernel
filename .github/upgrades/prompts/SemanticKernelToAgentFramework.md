@@ -789,10 +789,10 @@ await foreach (var content in agent.InvokeAsync(userInput, thread))
 
 **With this Agent Framework breaking glass pattern:**
 ```csharp
-var AgentResponse = await agent.RunAsync(userInput, session);
+var agentRunResponse = await agent.RunAsync(userInput, session);
 
 // If the agent uses a ChatClient the first breaking glass probably will be a Microsoft.Extensions.AI.ChatResponse
-ChatResponse? chatResponse = AgentResponse.RawRepresentation as ChatResponse;
+ChatResponse? chatResponse = agentRunResponse.RawRepresentation as ChatResponse;
 
 // If thats the case, to access the underlying SDK types you will need to break glass again.
 UnderlyingSdkType? underlyingChatMessage = chatResponse?.RawRepresentation as UnderlyingSdkType;
@@ -1285,7 +1285,7 @@ AgentSession session = await agent.CreateSessionAsync();
 
 var result = await agent.RunAsync(userInput, session);
 
-// The thread will be automatically updated with the new response id from this point
+// The session will be automatically updated with the new response id from this point
 ```
 </api_changes>
 
@@ -1354,7 +1354,7 @@ AgentSession session = await agent.CreateSessionAsync();
 
 var result = await agent.RunAsync(userInput, session);
 
-// The thread will be automatically updated with the new response id from this point
+// The session will be automatically updated with the new response id from this point
 ```
 </api_changes>
 
@@ -1569,7 +1569,7 @@ AIAgent agent = new OpenAIClient(apiKey)
     .AsAIAgent(instructions: renderedTemplate);
 
 // No template variables in invocation - use plain string
-var result = await agent.RunAsync("What's the weather?", thread);
+var result = await agent.RunAsync("What's the weather?");
 Console.WriteLine(result);
 ```
 </behavioral_changes>

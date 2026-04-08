@@ -60,7 +60,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 
     /// <inheritdoc />
     protected override ValueTask<MAAI.AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default)
-        => new(new SemanticKernelAIAgentSession(this._threadFactory(), this._threadSerializer));
+        => new(new SemanticKernelAIAgentSession(this._threadFactory()));
 
     /// <inheritdoc />
     protected override ValueTask<JsonElement> SerializeSessionCoreAsync(MAAI.AgentSession session, JsonSerializerOptions? jsonSerializerOptions = null, CancellationToken cancellationToken = default)
@@ -75,7 +75,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 
     /// <inheritdoc />
     protected override ValueTask<MAAI.AgentSession> DeserializeSessionCoreAsync(JsonElement serializedState, JsonSerializerOptions? jsonSerializerOptions = null, CancellationToken cancellationToken = default)
-        => new(new SemanticKernelAIAgentSession(this._threadDeserializationFactory(serializedState, jsonSerializerOptions), this._threadSerializer));
+        => new(new SemanticKernelAIAgentSession(this._threadDeserializationFactory(serializedState, jsonSerializerOptions)));
 
     /// <inheritdoc />
     protected override async Task<MAAI.AgentResponse> RunCoreAsync(IEnumerable<ChatMessage> messages, MAAI.AgentSession? session = null, MAAI.AgentRunOptions? options = null, CancellationToken cancellationToken = default)

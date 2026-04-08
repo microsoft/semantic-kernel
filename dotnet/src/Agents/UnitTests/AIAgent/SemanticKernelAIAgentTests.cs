@@ -211,7 +211,7 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(message, innerThread);
         }
 
-        var thread = new SemanticKernelAIAgentSession(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var result = await adapter.RunAsync("Input text", thread);
@@ -246,7 +246,7 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
         }
 
-        var thread = new SemanticKernelAIAgentSession(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var results = await adapter.RunStreamingAsync("Input text", thread).ToListAsync();
@@ -288,7 +288,7 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(final, thread);
         }
 
-        var threadWrapper = new SemanticKernelAIAgentSession(innerThread, (t, o) => default);
+        var threadWrapper = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var response = await adapter.RunAsync("input", threadWrapper);
@@ -327,7 +327,7 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(final, thread);
         }
 
-        var threadWrapper = new SemanticKernelAIAgentSession(innerThread, (t, o) => default);
+        var threadWrapper = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var response = await adapter.RunAsync("input", threadWrapper);

@@ -21,36 +21,14 @@ public sealed class SemanticKernelAIAgentSessionTests
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Assert
         Assert.Equal(threadMock.Object, adapter.InnerThread);
     }
 
-    [Fact]
-    public void Serialize_CallsThreadSerializer()
-    {
-        // Arrange
-        var threadMock = new Mock<AgentThread>();
-        var serializerCallCount = 0;
-        var expectedJsonElement = JsonElement.Parse("{\"test\": \"value\"}");
-
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
-        {
-            serializerCallCount++;
-            Assert.Same(threadMock.Object, t);
-            return expectedJsonElement;
-        }
-
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, ThreadSerializer);
-
-        // Act
-        var result = default(JsonElement) /* Serialize moved to agent.SerializeSessionCoreAsync() */;
-
-        // Assert
-        Assert.Equal(1, serializerCallCount);
-        Assert.Equal(expectedJsonElement.ToString(), result.ToString());
-    }
+    // AF 1.0: Serialize_CallsThreadSerializer test removed - serialization moved to agent.
+    // See SemanticKernelAIAgentTests for serialization coverage.
 
     // AF 1.0: Serialize() moved from AgentSession to AIAgent.SerializeSessionCoreAsync().
     // These tests are covered by SemanticKernelAIAgentTests instead.
@@ -60,7 +38,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Act
         var result = adapter.GetService(typeof(AgentThread));
@@ -74,7 +52,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
         var serviceKey = new object();
 
         // Act
@@ -89,7 +67,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Act
         var result = adapter.GetService(typeof(string));
@@ -103,7 +81,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
@@ -116,23 +94,17 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange & Act
         JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentSession(null!, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentSession(null!));
     }
 
-    [Fact]
-    public void Constructor_WithNullSerializer_ThrowsArgumentNullException()
-    {
-        // Arrange & Act
-        var threadMock = new Mock<AgentThread>();
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentSession(threadMock.Object, null!));
-    }
+    // Constructor_WithNullSerializer test removed: serializer is no longer stored on the session.
 
     [Fact]
     public void GetService_WithBaseClassType_ReturnsInnerThread()
     {
         // Arrange
         var concreteThread = new TestAgentThread();
-        var adapter = new SemanticKernelAIAgentSession(concreteThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(concreteThread);
 
         // Act
         var result = adapter.GetService(typeof(AgentThread));
@@ -146,7 +118,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var concreteThread = new TestAgentThread();
-        var adapter = new SemanticKernelAIAgentSession(concreteThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(concreteThread);
 
         // Act
         var result = adapter.GetService(typeof(TestAgentThread));
@@ -160,7 +132,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Act
         var result = adapter.GetService(typeof(TestAgentThread));
@@ -174,7 +146,7 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, (t, o) => default);
+        var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
 
         // Act
         var result = adapter.GetService(typeof(IServiceProvider));
