@@ -18,7 +18,6 @@ public sealed class SemanticKernelAIAgentSessionTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
 
         // Act
         var adapter = new SemanticKernelAIAgentSession(threadMock.Object);
@@ -93,7 +92,6 @@ public sealed class SemanticKernelAIAgentSessionTests
     public void Constructor_WithNullThread_ThrowsArgumentNullException()
     {
         // Arrange & Act
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
         Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentSession(null!));
     }
 
