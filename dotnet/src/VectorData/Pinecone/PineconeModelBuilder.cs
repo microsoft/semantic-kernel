@@ -15,12 +15,13 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = true,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = false,
     };
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))

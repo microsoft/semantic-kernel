@@ -14,7 +14,6 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 
@@ -23,6 +22,8 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))
@@ -33,7 +34,11 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid";
+        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid, DateTime, DateTimeOffset"
+#if NET
+            + ", DateOnly, TimeOnly"
+#endif
+            ;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -48,7 +53,14 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
             || type == typeof(float)
             || type == typeof(double)
             || type == typeof(byte[])
-            || type == typeof(Guid);
+            || type == typeof(Guid)
+            || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset)
+#if NET
+            || type == typeof(DateOnly)
+            || type == typeof(TimeOnly)
+#endif
+            ;
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

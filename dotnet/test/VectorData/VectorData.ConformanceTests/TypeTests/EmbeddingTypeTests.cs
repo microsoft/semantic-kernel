@@ -50,7 +50,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
         await fixture.VectorStore.EnsureCollectionDeletedAsync(fixture.CollectionName);
 
-        var collection = fixture.VectorStore.GetCollection<TKey, Record<TVector>>(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator: null, distanceFunction, dimensions));
+        var collection = fixture.CreateCollection<TKey, Record<TVector>>(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator: null, distanceFunction, dimensions));
         await collection.EnsureCollectionExistsAsync();
 
         var key = fixture.GenerateNextKey<TKey>();
@@ -93,7 +93,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
             await collection.DeleteAsync(key);
         }
 
-        var dynamicCollection = fixture.VectorStore.GetDynamicCollection(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator, distanceFunction, dimensions));
+        var dynamicCollection = fixture.CreateDynamicCollection(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator, distanceFunction, dimensions));
 
         if (fixture.RecreateCollection)
         {
@@ -142,14 +142,14 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
                 await collection.DeleteAsync(key);
             }
 
-            var collection2 = fixture.VectorStore.GetCollection<TKey, RecordWithString>(fixture.CollectionName, fixture.CreateRecordDefinition<string>(embeddingGenerator, distanceFunction, dimensions));
+            var collection2 = fixture.CreateCollection<TKey, RecordWithString>(fixture.CollectionName, fixture.CreateRecordDefinition<string>(embeddingGenerator, distanceFunction, dimensions));
 
             if (fixture.RecreateCollection)
             {
                 await collection2.EnsureCollectionExistsAsync();
             }
 
-            var key2 = fixture.GenerateNextKey<TKey>();
+            key = fixture.GenerateNextKey<TKey>();
             var record2 = new RecordWithString
             {
                 Key = key,
@@ -217,7 +217,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
     public abstract class Fixture : VectorStoreFixture
     {
-        protected virtual string CollectionNameBase => nameof(EmbeddingTypeTests<int>);
+        protected virtual string CollectionNameBase => nameof(EmbeddingTypeTests<>);
         public virtual string CollectionName => this.TestStore.AdjustCollectionName(this.CollectionNameBase);
 
         public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TVectorProperty>(IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions)

@@ -396,7 +396,7 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         protected override string KeyPropertyName => DynamicModelTests<TKey>.KeyPropertyName;
 
         protected override VectorStoreCollection<object, Dictionary<string, object?>> GetCollection()
-            => this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
+            => this.TestStore.CreateDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()

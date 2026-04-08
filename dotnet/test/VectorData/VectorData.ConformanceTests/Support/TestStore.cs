@@ -92,6 +92,26 @@ public abstract class TestStore
     public virtual string AdjustCollectionName(string baseName)
         => baseName;
 
+    /// <summary>
+    /// Creates a collection for the given name and definition.
+    /// Override this to provide provider-specific collection options (e.g., partition key configuration).
+    /// </summary>
+    public virtual VectorStoreCollection<TKey, TRecord> CreateCollection<TKey, TRecord>(
+        string name,
+        VectorStoreCollectionDefinition definition)
+        where TKey : notnull
+        where TRecord : class
+        => this.DefaultVectorStore.GetCollection<TKey, TRecord>(name, definition);
+
+    /// <summary>
+    /// Creates a dynamic collection for the given name and definition.
+    /// Override this to provide provider-specific collection options (e.g., partition key configuration).
+    /// </summary>
+    public virtual VectorStoreCollection<object, Dictionary<string, object?>> CreateDynamicCollection(
+        string name,
+        VectorStoreCollectionDefinition definition)
+        => this.DefaultVectorStore.GetDynamicCollection(name, definition);
+
     /// <summary>Loops until the expected number of records is visible in the given collection.</summary>
     /// <remarks>Some databases upsert asynchronously, meaning that our seed data may not be visible immediately to tests.</remarks>
     public virtual async Task WaitForDataAsync<TKey, TRecord>(

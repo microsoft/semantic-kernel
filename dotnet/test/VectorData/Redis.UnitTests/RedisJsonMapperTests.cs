@@ -20,7 +20,7 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
@@ -42,7 +42,7 @@ public sealed class RedisJsonMapperTests
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.
@@ -63,7 +63,7 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
@@ -91,7 +91,7 @@ public sealed class RedisJsonMapperTests
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.

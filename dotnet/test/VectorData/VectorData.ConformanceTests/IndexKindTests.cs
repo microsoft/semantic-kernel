@@ -75,7 +75,7 @@ public abstract class IndexKindTests<TKey>(IndexKindTests<TKey>.Fixture fixture)
                 ]
             };
 
-            return this.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(this.CollectionName, definition);
+            return this.TestStore.CreateCollection<TKey, SearchRecord>(this.CollectionName, definition);
         }
     }
 
