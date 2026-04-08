@@ -299,6 +299,72 @@ public sealed class OpenAIFunctionTests
         }
     }
 
+    [Fact]
+    public void ItDoesNotInsertDuplicateNullInTypeArrayForOptionalParameter()
+    {
+        // Arrange — schema with type array already containing "null" (as AIJsonUtilities produces for Nullable<T>)
+        var parameterSchema = KernelJsonSchema.Parse("""{"type":["string","null"],"description":"A nullable param"}""");
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: [new KernelParameterMetadata("param1") { Description = "A nullable param", IsRequired = false, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
+
+        // Act
+        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
+
+        // Assert
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        var expectedSchema = """{"type":["string","null"],"description":"A nullable param"}""";
+        Assert.Equal(
+            JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedSchema)),
+            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
+    [Fact]
+    public void ItDoesNotInsertDuplicateNullInTypeArrayForNullableKeyword()
+    {
+        // Arrange — schema with "nullable": true and type array already containing "null"
+        var parameterSchema = KernelJsonSchema.Parse("""{"type":["string","null"],"nullable":true,"description":"A nullable param"}""");
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: [new KernelParameterMetadata("param1") { Description = "A nullable param", IsRequired = true, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
+
+        // Act
+        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
+
+        // Assert — "nullable" keyword is removed in strict mode, type array should not gain duplicate "null"
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        var expectedSchema = """{"type":["string","null"],"description":"A nullable param"}""";
+        Assert.Equal(
+            JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedSchema)),
+            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
+    [Fact]
+    public void ItInsertsNullInTypeArrayWhenAbsent()
+    {
+        // Arrange — schema with type array that does NOT contain "null"
+        var parameterSchema = KernelJsonSchema.Parse("""{"type":["string"],"description":"An optional param"}""");
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: [new KernelParameterMetadata("param1") { Description = "An optional param", IsRequired = false, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
+
+        // Act
+        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
+
+        // Assert — "null" should be added to the type array
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        var expectedSchema = """{"type":["string","null"],"description":"An optional param"}""";
+        Assert.Equal(
+            JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedSchema)),
+            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
 #pragma warning disable CA1812 // uninstantiated internal class
     private sealed class ParametersData
     {
