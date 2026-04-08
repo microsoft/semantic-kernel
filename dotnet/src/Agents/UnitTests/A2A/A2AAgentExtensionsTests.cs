@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Xunit;
 
+using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.A2A;
 
 public sealed class A2AAgentExtensionsTests
@@ -40,7 +41,7 @@ public sealed class A2AAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -50,7 +51,7 @@ public sealed class A2AAgentExtensionsTests
 
         // Act
         var result = a2aAgent.AsAIAgent();
-        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
@@ -60,7 +61,7 @@ public sealed class A2AAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -71,7 +72,7 @@ public sealed class A2AAgentExtensionsTests
 
         // Act
         var result = a2aAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -81,7 +82,7 @@ public sealed class A2AAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -93,7 +94,7 @@ public sealed class A2AAgentExtensionsTests
 
         // Act
         var result = a2aAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -104,7 +105,7 @@ public sealed class A2AAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -116,10 +117,10 @@ public sealed class A2AAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = a2aAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);

@@ -110,11 +110,12 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         };
 
         AgentResponseItem<ChatMessageContent>? lastResponseItem = null;
-        ChatMessage? lastResponseMessage = null;
         await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedSession.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
         {
             lastResponseItem = responseItem;
         }
+
+        var lastResponseMessage = lastResponseItem?.Message.ToChatMessage();
 
         return new MAAI.AgentResponse(responseMessages)
         {

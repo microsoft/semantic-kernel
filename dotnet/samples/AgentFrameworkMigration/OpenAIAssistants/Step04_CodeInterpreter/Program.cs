@@ -138,8 +138,10 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    // AF 1.0: Code interpreter via hosted APIs is not directly available in the Responses API path.
-    // Use the Responses API for basic agent functionality.
+    // AF 1.0: Code interpreter via hosted Assistants API is not available in the Responses API path.
+    // This is a basic agent without code interpreter capabilities.
+    // For code interpreter support, use Azure AI Foundry versioned agents (FoundryAgent)
+    // which support hosted tool definitions including code interpreter.
     var agent = new OpenAIClient(apiKey).GetResponsesClient()
         .AsAIAgent(model: model, instructions: "You are a helpful assistant.");
 

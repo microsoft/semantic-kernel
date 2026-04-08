@@ -59,7 +59,7 @@ public class BedrockAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
@@ -67,7 +67,7 @@ public class BedrockAgentExtensionsTests
 
         // Act
         var result = bedrockAgent.AsAIAgent();
-        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
@@ -77,7 +77,7 @@ public class BedrockAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
@@ -86,7 +86,7 @@ public class BedrockAgentExtensionsTests
 
         // Act
         var result = bedrockAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -96,7 +96,7 @@ public class BedrockAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
@@ -106,7 +106,7 @@ public class BedrockAgentExtensionsTests
 
         // Act
         var result = bedrockAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -116,7 +116,7 @@ public class BedrockAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
@@ -126,10 +126,10 @@ public class BedrockAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = bedrockAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);

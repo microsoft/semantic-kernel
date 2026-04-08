@@ -84,7 +84,7 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
-    public void DeserializeThread_ReturnsSemanticKernelAIAgentSession()
+    public async Task DeserializeThread_ReturnsSemanticKernelAIAgentSession()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -95,14 +95,14 @@ public sealed class SemanticKernelAIAgentTests
         var json = JsonElement.Parse("{}");
 
         // Act
-        var result = adapter.DeserializeSessionAsync(json).GetAwaiter().GetResult();
+        var result = await adapter.DeserializeSessionAsync(json);
 
         // Assert
         Assert.IsType<SemanticKernelAIAgentSession>(result);
     }
 
     [Fact]
-    public void GetNewThread_ReturnsSemanticKernelAIAgentSession()
+    public async Task GetNewThread_ReturnsSemanticKernelAIAgentSession()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -111,7 +111,7 @@ public sealed class SemanticKernelAIAgentTests
         var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, (e, o) => expectedThread, ThreadSerializer);
 
         // Act
-        var result = adapter.CreateSessionAsync().GetAwaiter().GetResult();
+        var result = await adapter.CreateSessionAsync();
 
         // Assert
         Assert.IsType<SemanticKernelAIAgentSession>(result);
@@ -119,7 +119,7 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
-    public void DeserializeThread_CallsDeserializationFactory()
+    public async Task DeserializeThread_CallsDeserializationFactory()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -136,7 +136,7 @@ public sealed class SemanticKernelAIAgentTests
         var json = JsonElement.Parse("{}");
 
         // Act
-        var result = adapter.DeserializeSessionAsync(json).GetAwaiter().GetResult();
+        var result = await adapter.DeserializeSessionAsync(json);
 
         // Assert
         Assert.Equal(1, factoryCallCount);
@@ -144,7 +144,7 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
-    public void GetNewThread_CallsThreadFactory()
+    public async Task GetNewThread_CallsThreadFactory()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -160,7 +160,7 @@ public sealed class SemanticKernelAIAgentTests
         var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, (e, o) => expectedThread, (t, o) => default);
 
         // Act
-        var result = adapter.CreateSessionAsync().GetAwaiter().GetResult();
+        var result = await adapter.CreateSessionAsync();
 
         // Assert
         Assert.Equal(1, factoryCallCount);

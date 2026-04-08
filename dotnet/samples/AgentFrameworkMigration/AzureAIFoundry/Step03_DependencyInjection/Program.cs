@@ -119,14 +119,14 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddSingleton((sp) => new AzureOpenAIClient(new Uri(azureEndpoint), new AzureCliCredential()));
+    serviceCollection.AddSingleton((sp) => new AIProjectClient(new Uri(azureEndpoint), new AzureCliCredential()));
     serviceCollection.AddTransient<AIAgent>((sp) =>
     {
-        var client = sp.GetRequiredService<AzureOpenAIClient>();
-        return client.GetResponsesClient()
-            .AsAIAgent(model: deploymentName,
-                name: "GenerateStory",
-                instructions: "You are good at telling jokes.");
+        var client = sp.GetRequiredService<AIProjectClient>();
+        return client.AsAIAgent(
+                deploymentName,
+                instructions: "You are good at telling jokes.",
+                name: "GenerateStory");
     });
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();

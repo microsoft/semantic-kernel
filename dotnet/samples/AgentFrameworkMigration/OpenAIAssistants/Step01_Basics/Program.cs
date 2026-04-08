@@ -92,7 +92,9 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    // AF 1.0: OpenAI Assistants API is deprecated. Use Responses API instead.
+    // AF 1.0: OpenAI Assistants extensions (CreateAIAgentAsync/GetAIAgent) were removed.
+    // OpenAI is deprecating the Assistants API in favor of the Responses API.
+    // The recommended migration path is to use ResponsesClient.AsAIAgent() instead.
     var agent = new OpenAIClient(apiKey).GetResponsesClient()
         .AsAIAgent(model: model, name: "Joker", instructions: "You are good at telling jokes.");
 

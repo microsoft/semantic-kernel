@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
+using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.Core;
 
 public sealed class ChatCompletionAgentExtensionsTests
@@ -39,7 +40,7 @@ public sealed class ChatCompletionAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
         var chatCompletionAgent = new ChatCompletionAgent()
@@ -50,7 +51,7 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
@@ -60,7 +61,7 @@ public sealed class ChatCompletionAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullChatHistory_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullChatHistory_CreatesNewThread()
     {
         // Arrange
         var chatCompletionAgent = new ChatCompletionAgent()
@@ -72,7 +73,7 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -82,7 +83,7 @@ public sealed class ChatCompletionAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidChatHistory_CreatesThreadWithHistory()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidChatHistory_CreatesThreadWithHistory()
     {
         // Arrange
         var chatCompletionAgent = new ChatCompletionAgent()
@@ -98,7 +99,7 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -110,7 +111,7 @@ public sealed class ChatCompletionAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesChatHistory()
+    public async Task AsAIAgent_ThreadSerializer_SerializesChatHistory()
     {
         // Arrange
         var chatCompletionAgent = new ChatCompletionAgent()
@@ -126,10 +127,10 @@ public sealed class ChatCompletionAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(chatHistory);
 
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.Array, serializedElement.ValueKind);

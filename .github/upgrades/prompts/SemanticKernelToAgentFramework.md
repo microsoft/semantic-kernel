@@ -466,7 +466,7 @@ await foreach (AgentResponseItem<ChatMessageContent> item in agent.InvokeAsync(u
 
 **With this Agent Framework non-streaming pattern:**
 ```csharp
-AgentResponse result = await agent.RunAsync(userInput, thread, options);
+AgentResponse result = await agent.RunAsync(userInput, session, options);
 Console.WriteLine(result);
 ```
 
@@ -716,7 +716,7 @@ await foreach (var result in agent.InvokeAsync(input, thread, options))
 ```csharp
 ChatClientAgentRunOptions options = new(new ChatOptions { MaxOutputTokens = 1000 });
 
-AgentResponse result = await agent.RunAsync(input, thread, options);
+AgentResponse result = await agent.RunAsync(input, session, options);
 Console.WriteLine(result);
 
 // Access underlying content when needed:
@@ -744,7 +744,7 @@ await foreach (var result in agent.InvokeAsync(input, thread, options))
 
 **With this Agent Framework non-streaming usage pattern:**
 ```csharp
-AgentResponse result = await agent.RunAsync(input, thread, options);
+AgentResponse result = await agent.RunAsync(input, session, options);
 Console.WriteLine($"Tokens: {result.Usage.TotalTokenCount}");
 ```
 
@@ -789,7 +789,7 @@ await foreach (var content in agent.InvokeAsync(userInput, thread))
 
 **With this Agent Framework breaking glass pattern:**
 ```csharp
-var AgentResponse = await agent.RunAsync(userInput, thread);
+var AgentResponse = await agent.RunAsync(userInput, session);
 
 // If the agent uses a ChatClient the first breaking glass probably will be a Microsoft.Extensions.AI.ChatResponse
 ChatResponse? chatResponse = AgentResponse.RawRepresentation as ChatResponse;

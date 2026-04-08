@@ -18,14 +18,14 @@ public abstract class SemanticKernelAIAgentTests(Func<AgentFixture> createAgentF
     public virtual async Task ConvertAndRunAgentAsync()
     {
         var aiagent = this.Fixture.AIAgent;
-        var thread = aiagent.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = aiagent.CreateSessionAsync();
 
         var result = await aiagent.RunAsync("What is the capital of France?", thread);
         Assert.Contains("Paris", result.Text, StringComparison.OrdinalIgnoreCase);
 
         var serialisedTreadJsonElement = thread.Serialize();
 
-        var deserializedThread = aiagent.DeserializeSessionAsync(serialisedTreadJsonElement).GetAwaiter().GetResult();
+        var deserializedThread = aiagent.DeserializeSessionAsync(serialisedTreadJsonElement);
 
         var secondResult = await aiagent.RunAsync("And Austria?", deserializedThread);
         Assert.Contains("Vienna", secondResult.Text, StringComparison.OrdinalIgnoreCase);

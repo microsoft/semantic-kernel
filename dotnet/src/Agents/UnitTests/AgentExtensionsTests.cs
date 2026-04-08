@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Moq;
 using Xunit;
 
+using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests;
 
 public sealed class AgentExtensionsTests
@@ -77,7 +78,7 @@ public sealed class AgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
+    public async Task AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -95,7 +96,7 @@ public sealed class AgentExtensionsTests
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
-        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
@@ -105,7 +106,7 @@ public sealed class AgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_WithDeserializationFactory_CreatesWorkingAdapter()
+    public async Task AsAIAgent_WithDeserializationFactory_CreatesWorkingAdapter()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -125,7 +126,7 @@ public sealed class AgentExtensionsTests
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
         var json = JsonElement.Parse("{}");
-        var thread = result.DeserializeSessionAsync(json).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(json);
 
         // Assert
         Assert.NotNull(thread);

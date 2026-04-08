@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Moq;
 using Xunit;
 
+using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.AzureAI;
 
 public sealed class AzureAIAgentExtensionsTests
@@ -49,14 +50,14 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
         var azureAIAgent = new AzureAIAgent(s_agentMetadata, clientMock.Object);
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
@@ -66,7 +67,7 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -75,7 +76,7 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -85,7 +86,7 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -96,7 +97,7 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
@@ -107,7 +108,7 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -118,10 +119,10 @@ public sealed class AzureAIAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);

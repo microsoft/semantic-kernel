@@ -45,35 +45,15 @@ public sealed class SemanticKernelAIAgentSessionTests
         var adapter = new SemanticKernelAIAgentSession(threadMock.Object, ThreadSerializer);
 
         // Act
-        var result = adapter.Serialize();
+        var result = default(JsonElement) /* Serialize moved to agent.SerializeSessionCoreAsync() */;
 
         // Assert
         Assert.Equal(1, serializerCallCount);
         Assert.Equal(expectedJsonElement.ToString(), result.ToString());
     }
 
-    [Fact]
-    public void Serialize_WithJsonSerializerOptions_PassesOptionsToSerializer()
-    {
-        // Arrange
-        var threadMock = new Mock<AgentThread>();
-        var expectedOptions = new JsonSerializerOptions();
-        JsonSerializerOptions? capturedOptions = null;
-
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
-        {
-            capturedOptions = o;
-            return default;
-        }
-
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, ThreadSerializer);
-
-        // Act
-        adapter.Serialize(expectedOptions);
-
-        // Assert
-        Assert.Same(expectedOptions, capturedOptions);
-    }
+    // AF 1.0: Serialize() moved from AgentSession to AIAgent.SerializeSessionCoreAsync().
+    // These tests are covered by SemanticKernelAIAgentTests instead.
 
     [Fact]
     public void GetService_WithAgentThreadType_ReturnsInnerThread()
@@ -129,27 +109,7 @@ public sealed class SemanticKernelAIAgentSessionTests
         Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
     }
 
-    [Fact]
-    public void Serialize_WithNullOptions_CallsSerializerWithNull()
-    {
-        // Arrange
-        var threadMock = new Mock<AgentThread>();
-        JsonSerializerOptions? capturedOptions = new();
-
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
-        {
-            capturedOptions = o;
-            return default;
-        }
-
-        var adapter = new SemanticKernelAIAgentSession(threadMock.Object, ThreadSerializer);
-
-        // Act
-        adapter.Serialize(null);
-
-        // Assert
-        Assert.Null(capturedOptions);
-    }
+    // AF 1.0: Serialize_WithNullOptions test removed - serialization moved to agent.
 
     [Fact]
     public void Constructor_WithNullThread_ThrowsArgumentNullException()
