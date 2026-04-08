@@ -1,0 +1,139 @@
+name: DevFlow PR Review
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to review
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: devflow-pr-review-${{ github.repository }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  DEVFLOW_REPOSITORY: ${{ vars.DF_REPO }}
+  DEVFLOW_REF: main
+  TARGET_REPO_PATH: ${{ github.workspace }}/target-repo
+  DEVFLOW_PATH: ${{ github.workspace }}/devflow
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: ${{ github.event_name != 'pull_request_target' || !github.event.pull_request.draft }}
+
+    steps:
+      - name: Resolve PR metadata
+        id: pr
+        shell: bash
+        env:
+          PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER_EVENT: ${{ github.event.pull_request.number }}
+          PR_NUMBER_INPUT: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
+            pr_number="${PR_NUMBER_EVENT}"
+            pr_url="${PR_HTML_URL}"
+          else
+            pr_number="${PR_NUMBER_INPUT}"
+            pr_url="https://github.com/${GITHUB_REPOSITORY}/pull/${pr_number}"
+          fi
+
+          if [[ ! "$pr_number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Could not determine PR number; for workflow_dispatch runs, the 'pr_number' input is required when not running on pull_request_target." >&2
+            exit 1
+          fi
+
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
+
+      # Safe checkout: base repo only, not the untrusted PR head.
+      - name: Checkout target repo base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: target-repo
+
+      # Private DevFlow checkout: the PAT/token grants access to this repo's code.
+      - name: Checkout DevFlow
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.DEVFLOW_REPOSITORY }}
+          ref: ${{ env.DEVFLOW_REF }}
+          token: ${{ secrets.DEVFLOW_TOKEN }}
+          fetch-depth: 1
+          persist-credentials: false
+          path: devflow
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.5.x"
+          enable-cache: true
+
+      - name: Install DevFlow dependencies
+        working-directory: ${{ env.DEVFLOW_PATH }}
+        run: uv sync --frozen
+
+      - name: Classify PR relevance
+        id: spam
+        working-directory: ${{ env.DEVFLOW_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
+          SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          PR_REPO: ${{ steps.pr.outputs.repo }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          uv run python scripts/classify_pr_spam.py \
+            --repo "$PR_REPO" \
+            --pr-number "$PR_NUMBER" \
+            --repo-path "${TARGET_REPO_PATH}" \
+            --apply-labels
+
+      - name: Stop after spam gate
+        if: ${{ steps.spam.outputs.decision != 'allow' }}
+        shell: bash
+        env:
+          SPAM_DECISION: ${{ steps.spam.outputs.decision }}
+        run: |
+          echo "Skipping review because spam gate decided: ${SPAM_DECISION}"
+
+      - name: Run PR review
+        if: ${{ steps.spam.outputs.decision == 'allow' }}
+        id: review
+        working-directory: ${{ env.DEVFLOW_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
+          SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+        run: |
+          uv run python scripts/trigger_pr_review.py \
+            --pr-url "$PR_URL" \
+            --github-username "$GITHUB_ACTOR" \
+            --no-require-comment-selection

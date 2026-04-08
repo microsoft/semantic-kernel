@@ -28,7 +28,7 @@ dependencies = [
     "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.13",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.98.0,<2",
+    "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -54,9 +54,9 @@ dependencies = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # Protobuf
-    "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
+    "mcp>=1.26.0",
 ]
 
 ### Optional dependencies
@@ -77,16 +77,11 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,< 1.1"
+    "chromadb >= 0.5,< 1.4"
 ]
 copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
     "microsoft-agents-activity >= 0.3.1"
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
@@ -111,11 +106,11 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.15",
+    "pymongo >= 4.8.0, < 4.16",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
-    "ipykernel ~= 6.29"
+    "ipykernel >= 6.29,< 8.0"
 ]
 ollama = [
     "ollama ~= 0.4"
@@ -141,7 +136,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] ~= 6.0",
+    "redis[hiredis] >= 6,< 8",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -160,11 +155,10 @@ weaviate = [
     "weaviate-client>=4.17.0,<5.0",
 ]
 
-[tool.uv]
-prerelease = "if-necessary-or-explicit"
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pre-commit ~= 3.7",
-    "ipykernel ~= 6.29",
+    "ipykernel >= 6.29,< 8.0",
     "nbconvert ~= 7.16",
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
@@ -176,6 +170,9 @@ dev-dependencies = [
     "types-PyYAML ~= 6.0.12.20240311",
     "ruff ~= 0.9"
 ]
+
+[tool.uv]
+prerelease = "if-necessary-or-explicit"
 environments = [
     "sys_platform == 'darwin'",
     "sys_platform == 'linux'",

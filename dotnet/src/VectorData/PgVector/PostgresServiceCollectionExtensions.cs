@@ -286,8 +286,8 @@ public static class PostgresServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
             static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key), lifetime));
 
-        // Once HybridSearch supports get implemented by PostgresCollection,
-        // we need to add IKeywordHybridSearchable abstraction here as well.
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key), lifetime));
     }
 
     private static PostgresVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider)

@@ -58,6 +58,11 @@ var settings = new SessionsPythonSettings(
         sessionId: Guid.NewGuid().ToString(),
         endpoint: new Uri(endpoint));
 
+// Uncomment the following lines to enable file upload operations (disabled by default for security)
+// settings.EnableDangerousFileUploads = true;
+// settings.AllowedUploadDirectories = new[] { @"C:\allowed\upload\directory" };
+// settings.AllowedDownloadDirectories = new[] { @"C:\allowed\download\directory" };
+
 Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===\n");
 
 Console.WriteLine("Start your conversation with the assistant. Type enter or an empty message to quit.");

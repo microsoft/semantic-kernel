@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
@@ -57,7 +58,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
             new FakeTokenCredential(),
             new AIProjectClientOptions
             {
-                Transport = new HttpClientTransport(this._projectHttpClient)
+                Transport = new HttpClientPipelineTransport(this._projectHttpClient)
             });
         builder.Services.AddSingleton(projectClient);
 

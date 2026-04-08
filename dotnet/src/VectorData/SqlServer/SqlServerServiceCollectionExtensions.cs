@@ -116,8 +116,8 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
             static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
 
-        // Once HybridSearch supports get implemented (https://github.com/microsoft/semantic-kernel/issues/11080)
-        // we need to add IKeywordHybridSearchable abstraction here as well.
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
 
         return services;
     }

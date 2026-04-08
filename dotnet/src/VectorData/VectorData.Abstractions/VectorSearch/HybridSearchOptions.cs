@@ -15,14 +15,6 @@ public class HybridSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a search filter to use before doing the hybrid search.
     /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
-    [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; set; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-    /// <summary>
-    /// Gets or sets a search filter to use before doing the vector search.
-    /// </summary>
     public Expression<Func<TRecord, bool>>? Filter { get; set; }
 
     /// <summary>
@@ -67,4 +59,19 @@ public class HybridSearchOptions<TRecord>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
     public bool IncludeVectors { get; set; }
+
+    /// <summary>
+    /// Gets or sets the score threshold to filter results.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The meaning of the score is a combination of the distance function configured for <see cref="VectorProperty"/> and the text
+    /// relevance score for the full-text search on <see cref="AdditionalProperty"/>.
+    /// </para>
+    /// <para>
+    /// The range of scores also depends on the distance function; for example, cosine similarity/distance scores
+    /// fall within 0 to 1, while Euclidean distance is unbounded. Scores can also differ between vector databases.
+    /// </para>
+    /// </remarks>
+    public double? ScoreThreshold { get; set; }
 }
