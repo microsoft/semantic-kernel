@@ -3,12 +3,11 @@
 using System;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 using A2A;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.A2A;
 
 public sealed class A2AAgentExtensionsTests

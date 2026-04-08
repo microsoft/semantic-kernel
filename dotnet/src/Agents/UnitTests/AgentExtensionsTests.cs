@@ -2,11 +2,10 @@
 
 using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Moq;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests;
 
 public sealed class AgentExtensionsTests

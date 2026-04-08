@@ -3,13 +3,12 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Moq;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.AzureAI;
 
 public sealed class AzureAIAgentExtensionsTests

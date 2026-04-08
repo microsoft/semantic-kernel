@@ -3,13 +3,12 @@
 using System;
 using System.ClientModel;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 public sealed class OpenAIResponseAgentExtensionsTests

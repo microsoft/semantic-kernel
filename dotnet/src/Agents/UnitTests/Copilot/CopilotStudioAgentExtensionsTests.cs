@@ -2,13 +2,12 @@
 
 using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Copilot;
 using Moq;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.Copilot;
 
 public sealed class CopilotStudioAgentExtensionsTests

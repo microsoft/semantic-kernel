@@ -3,13 +3,12 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Moq;
 using OpenAI.Assistants;
 using Xunit;
-
-using System.Threading.Tasks;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 public sealed class OpenAIAssistantAgentExtensionsTests
