@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.Agents.Persistent;
+using Azure.AI.OpenAI;
 using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.Foundry;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
+using OpenAI.Responses;
 
+#pragma warning disable OPENAI001
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_FOUNDRY_PROJECT_ENDPOINT is not set.");
@@ -116,16 +118,15 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    // AF 1.0: Use AIProjectClient.AsAIAgent() instead of PersistentAgentsClient.CreateAIAgentAsync()
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddSingleton((sp) => new AIProjectClient(azureEndpoint, new AzureCliCredential()));
+    serviceCollection.AddSingleton((sp) => new AzureOpenAIClient(new Uri(azureEndpoint), new AzureCliCredential()));
     serviceCollection.AddTransient<AIAgent>((sp) =>
     {
-        var projectClient = sp.GetRequiredService<AIProjectClient>();
-        return projectClient.AsAIAgent(
-            deploymentName,
-            name: "GenerateStory",
-            instructions: "You are good at telling jokes.");
+        var client = sp.GetRequiredService<AzureOpenAIClient>();
+        return client.GetResponsesClient()
+            .AsAIAgent(model: deploymentName,
+                name: "GenerateStory",
+                instructions: "You are good at telling jokes.");
     });
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();

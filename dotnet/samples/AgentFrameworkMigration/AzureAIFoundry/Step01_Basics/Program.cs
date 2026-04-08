@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.AI.Agents.Persistent;
+using Azure.AI.OpenAI;
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.Foundry;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
+using OpenAI.Responses;
 
+#pragma warning disable OPENAI001 // ResponsesClient is experimental
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_FOUNDRY_PROJECT_ENDPOINT is not set.");
@@ -93,12 +95,13 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    // AF 1.0: Use AIProjectClient.AsAIAgent() instead of PersistentAgentsClient.CreateAIAgentAsync()
-    var projectClient = new AIProjectClient(azureEndpoint, new AzureCliCredential());
+    // AF 1.0: Use AIProjectClient.AsAIAgent() from Microsoft.Agents.AI.Foundry
+    var projectClient = new AIProjectClient(new Uri(azureEndpoint), new AzureCliCredential());
+
     var agent = projectClient.AsAIAgent(
         deploymentName,
-        name: "GenerateStory",
-        instructions: "You are good at telling jokes.");
+        instructions: "You are good at telling jokes.",
+        name: "GenerateStory");
 
     var session = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
@@ -111,6 +114,4 @@ async Task AFAgentAsync()
     {
         Console.Write(update);
     }
-
-    // No cleanup needed - non-hosted path doesn't create server-side resources.
 }

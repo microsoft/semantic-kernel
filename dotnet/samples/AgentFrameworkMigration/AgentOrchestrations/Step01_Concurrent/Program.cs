@@ -79,13 +79,13 @@ async Task AFConcurrentAgentWorkflow()
     var spanishAgent = GetAFTranslationAgent("Spanish", client);
     var concurrentAgentWorkflow = AgentWorkflowBuilder.BuildConcurrent([frenchAgent, spanishAgent]);
 
-    await using StreamingRun run = await InProcessExecution.StreamAsync(concurrentAgentWorkflow, "Hello, world!");
+    await using StreamingRun run = await InProcessExecution.RunStreamingAsync(concurrentAgentWorkflow, "Hello, world!");
     await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
     string? lastExecutorId = null;
     await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
     {
-        if (evt is AgentRunUpdateEvent e)
+        if (evt is AgentResponseUpdateEvent e)
         {
             if (string.IsNullOrEmpty(e.Update.Text))
             {

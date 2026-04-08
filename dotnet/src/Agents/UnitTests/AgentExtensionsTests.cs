@@ -95,13 +95,13 @@ public sealed class AgentExtensionsTests
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
-        var thread = result.GetNewThread();
+        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentSession)thread).InnerThread);
     }
 
     [Fact]
@@ -125,12 +125,12 @@ public sealed class AgentExtensionsTests
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
         var json = JsonElement.Parse("{}");
-        var thread = result.DeserializeThread(json);
+        var thread = result.DeserializeSessionAsync(json).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, deserializationCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentSession)thread).InnerThread);
     }
 }

@@ -55,7 +55,7 @@ public abstract class AgentWithTextSearchProvider<TFixture>(Func<TFixture> creat
 
         var agent = this.Fixture.Agent;
 
-        var agentThread = this.Fixture.GetNewThread();
+        var agentThread = this.Fixture.CreateSessionAsync().GetAwaiter().GetResult();
 
         try
         {

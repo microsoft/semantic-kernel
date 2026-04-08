@@ -50,12 +50,12 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -72,12 +72,12 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -98,12 +98,12 @@ public sealed class ChatCompletionAgentExtensionsTests
 
         // Act
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
         var chatHistoryThread = (ChatHistoryAgentThread)threadAdapter.InnerThread;
         Assert.Equal(2, chatHistoryThread.ChatHistory.Count);
@@ -126,7 +126,7 @@ public sealed class ChatCompletionAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(chatHistory);
 
         var result = chatCompletionAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Act
         var serializedElement = thread.Serialize();

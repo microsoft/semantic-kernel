@@ -56,12 +56,12 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -75,12 +75,12 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -96,12 +96,12 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
@@ -118,7 +118,7 @@ public sealed class AzureAIAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Act
         var serializedElement = thread.Serialize();

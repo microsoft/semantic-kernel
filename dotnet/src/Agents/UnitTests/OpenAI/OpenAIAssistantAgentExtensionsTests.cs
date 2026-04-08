@@ -62,12 +62,12 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Act
         var result = assistantAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = result.CreateSessionAsync().GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -81,12 +81,12 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Act
         var result = assistantAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
 
@@ -101,12 +101,12 @@ public sealed class OpenAIAssistantAgentExtensionsTests
 
         // Act
         var result = assistantAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
@@ -122,7 +122,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = assistantAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = result.DeserializeSessionAsync(jsonElement).GetAwaiter().GetResult();
 
         // Act
         var serializedElement = thread.Serialize();

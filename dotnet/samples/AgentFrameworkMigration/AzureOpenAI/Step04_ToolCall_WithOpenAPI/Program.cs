@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using OpenAI;
+using OpenAI.Chat;
 
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-4o-mini";
@@ -59,7 +60,7 @@ async Task AFAgent()
         new Uri(endpoint),
         new AzureCliCredential())
         .GetChatClient(deploymentName)
-        .CreateAIAgent(instructions: "You are a helpful assistant", tools: tools);
+        .AsAIAgent(instructions: "You are a helpful assistant", tools: tools);
 
     // Run the agent with the OpenAPI function tools.
     Console.WriteLine(await agent.RunAsync("Please list the names, colors and descriptions of all the labels available in the microsoft/agent-framework repository on github."));

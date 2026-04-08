@@ -31,7 +31,7 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
 
         var agent = this.Fixture.Agent;
 
-        var agentThread = this.Fixture.GetNewThread();
+        var agentThread = this.Fixture.CreateSessionAsync().GetAwaiter().GetResult();
 
         try
         {
@@ -65,7 +65,7 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
 
         var agent = this.Fixture.Agent;
 
-        var agentThread = this.Fixture.GetNewThread();
+        var agentThread = this.Fixture.CreateSessionAsync().GetAwaiter().GetResult();
 
         try
         {
@@ -100,7 +100,7 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
 
         var agent = this.Fixture.Agent;
 
-        var agentThread = this.Fixture.GetNewThread();
+        var agentThread = this.Fixture.CreateSessionAsync().GetAwaiter().GetResult();
 
         try
         {
@@ -130,7 +130,7 @@ public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> c
 
         var agent = this.Fixture.Agent;
 
-        var agentThread = this.Fixture.GetNewThread();
+        var agentThread = this.Fixture.CreateSessionAsync().GetAwaiter().GetResult();
 
         try
         {
