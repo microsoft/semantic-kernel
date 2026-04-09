@@ -73,6 +73,7 @@ class KernelArguments(dict):
         else:
             new_execution_settings = {}
             new_execution_settings = {}
+            new_execution_settings = {}
         
         if isinstance(value, KernelArguments) and value.execution_settings:
             # Only copy when we need to merge (mutation)
