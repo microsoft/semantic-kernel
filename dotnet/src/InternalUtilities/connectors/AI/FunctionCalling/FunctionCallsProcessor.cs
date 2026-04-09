@@ -388,7 +388,7 @@ internal sealed class FunctionCallsProcessor
     /// <param name="resultContext">The function result context.</param>
     private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionResultContext resultContext)
     {
-        var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result);
+        var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result, metadata: resultContext.Context.Result.Metadata);
         message.Items.Add(this.GenerateResultContent(resultContext));
         chatHistory.Add(message);
     }
