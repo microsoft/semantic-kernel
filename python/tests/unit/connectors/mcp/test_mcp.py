@@ -261,7 +261,6 @@ class _DummyHttpxClient:
 @patch("semantic_kernel.connectors.mcp.ClientSession")
 @patch("semantic_kernel.connectors.mcp.streamablehttp_client")
 async def test_streamable_http_raises_on_401_403(mock_streamable_client, mock_session, monkeypatch, status_code):
-    # Avoid real network: preflight should catch unauthorized/forbidden before streamable client is used.
     monkeypatch.setattr("semantic_kernel.connectors.mcp.httpx.AsyncClient", lambda **_: _DummyHttpxClient(status_code))
 
     with pytest.raises(KernelPluginInvalidConfigurationError):
@@ -276,7 +275,6 @@ async def test_streamable_http_raises_on_401_403(mock_streamable_client, mock_se
 @patch("semantic_kernel.connectors.mcp.ClientSession")
 @patch("semantic_kernel.connectors.mcp.streamablehttp_client")
 async def test_streamable_http_allows_success(mock_streamable_client, mock_session, monkeypatch):
-    # Simulate 200 OK preflight and a no-op streamable client context manager.
     monkeypatch.setattr("semantic_kernel.connectors.mcp.httpx.AsyncClient", lambda **_: _DummyHttpxClient(200))
 
     mock_read = MagicMock()
@@ -296,6 +294,64 @@ async def test_streamable_http_allows_success(mock_streamable_client, mock_sessi
         url="http://localhost:8080/mcp",
     ) as plugin:
         assert plugin is not None
+
+
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+async def test_streamable_http_skips_preflight_with_existing_session(mock_streamable_client, mock_session):
+    """Preflight is skipped when a session is already provided."""
+    existing_session = MagicMock()
+    existing_session._request_id = 1
+    existing_session.list_tools = AsyncMock(return_value=MagicMock(tools=[]))
+
+    plugin = MCPStreamableHttpPlugin(
+        name="TestMCPPlugin",
+        description="Test MCP Plugin",
+        url="http://localhost:8080/mcp",
+        session=existing_session,
+    )
+    await plugin.connect()
+    assert plugin.session is existing_session
+    await plugin.close()
+
+
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+async def test_streamable_http_session_create_failure_does_not_hang(mock_streamable_client):
+    """ready_event.set() prevents connect() from hanging when session creation fails."""
+    mock_streamable_client.side_effect = RuntimeError("connection refused")
+
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="create a session"):
+        async with MCPStreamableHttpPlugin(
+            name="TestMCPPlugin",
+            description="Test MCP Plugin",
+            url="http://localhost:8080/mcp",
+        ):
+            pass
+
+
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+async def test_streamable_http_session_init_failure_does_not_hang(mock_streamable_client, mock_session, monkeypatch):
+    """ready_event.set() prevents connect() from hanging when session.initialize() fails."""
+    monkeypatch.setattr("semantic_kernel.connectors.mcp.httpx.AsyncClient", lambda **_: _DummyHttpxClient(200))
+
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+    mock_callback = MagicMock()
+
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write, mock_callback)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write, mock_callback)
+    mock_streamable_client.return_value = mock_generator
+    mock_session.return_value.initialize = AsyncMock(side_effect=RuntimeError("init failed"))
+
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="initialize session"):
+        async with MCPStreamableHttpPlugin(
+            name="TestMCPPlugin",
+            description="Test MCP Plugin",
+            url="http://localhost:8080/mcp",
+        ):
+            pass
 
 
 async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function, custom_plugin_class):

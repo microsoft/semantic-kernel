@@ -765,22 +765,24 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
 
     async def __aenter__(self) -> Self:
         """Fail fast on authentication/authorization errors before connecting."""
-        timeout = self.timeout if self.timeout is not None else 30
-        try:
-            async with httpx.AsyncClient(timeout=timeout, headers=self.headers) as client:
-                response = await client.get(self.url)
-                if response.status_code in (httpx.codes.UNAUTHORIZED, httpx.codes.FORBIDDEN):
-                    raise KernelPluginInvalidConfigurationError(
-                        f"Failed to connect to the MCP server: received HTTP {response.status_code} (unauthorized/forbidden)."
-                    )
-                # Raise for other HTTP errors to surface configuration/network issues early.
-                response.raise_for_status()
-        except KernelPluginInvalidConfigurationError:
-            raise
-        except Exception as ex:  # pragma: no cover - guarded for unexpected failures
-            raise KernelPluginInvalidConfigurationError(
-                "Failed to connect to the MCP server. Please check your configuration."
-            ) from ex
+        if not self.session:
+            timeout = self.timeout if self.timeout is not None else 30
+            client_kwargs: dict[str, Any] = {"timeout": timeout, "headers": self.headers}
+            if "auth" in self._client_kwargs:
+                client_kwargs["auth"] = self._client_kwargs["auth"]
+            try:
+                async with httpx.AsyncClient(**client_kwargs) as client:
+                    response = await client.get(self.url)
+                    if response.status_code in (httpx.codes.UNAUTHORIZED, httpx.codes.FORBIDDEN):
+                        raise KernelPluginInvalidConfigurationError(
+                            f"Failed to connect to the MCP server: received HTTP {response.status_code} (unauthorized/forbidden)."
+                        )
+            except KernelPluginInvalidConfigurationError:
+                raise
+            except Exception as ex:  # pragma: no cover - guarded for unexpected failures
+                raise KernelPluginInvalidConfigurationError(
+                    "Failed to connect to the MCP server. Please check your configuration."
+                ) from ex
 
         return await super().__aenter__()
 
