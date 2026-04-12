@@ -68,15 +68,10 @@ class KernelArguments(dict):
             )
 
         # Merge execution settings - only copy when needed
-        if self.execution_settings:
-            new_execution_settings = self.execution_settings.copy()
-        else:
-            new_execution_settings = {}
-            new_execution_settings = {}
-            new_execution_settings = {}
-        
+        # Merge execution settings
+        new_execution_settings = (self.execution_settings or {}).copy()
         if isinstance(value, KernelArguments) and value.execution_settings:
-            # Only copy when we need to merge (mutation)
+            new_execution_settings |= value.execution_settings
             new_execution_settings = {**new_execution_settings, **value.execution_settings}
         # Create a new KernelArguments with merged dict values
         return KernelArguments(settings=new_execution_settings, **(dict(self) | dict(value)))
