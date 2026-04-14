@@ -572,7 +572,7 @@ internal static class SqlServerCommandBuilder
 
             foreach (object parameter in parameters)
             {
-                command.AddParameter(vectorProperty, $"@_{startParamIndex++}", parameter);
+                command.AddParameter(property: null, $"@_{startParamIndex++}", parameter);
             }
 
             sb.AppendLine();

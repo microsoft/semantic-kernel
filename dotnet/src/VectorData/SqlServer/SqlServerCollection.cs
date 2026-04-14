@@ -87,7 +87,7 @@ public class SqlServerCollection<TKey, TRecord>
         // Check if any vector property uses DiskAnn, which requires Azure SQL.
         foreach (var vp in this._model.VectorProperties)
         {
-            if (vp.IndexKind is not (null or "" or IndexKind.Flat))
+            if (vp.IndexKind == IndexKind.DiskAnn)
             {
                 this._requiresAzureSql = true;
                 break;
@@ -627,7 +627,7 @@ public class SqlServerCollection<TKey, TRecord>
         // when the user is done with the results.
         SqlConnection connection = new(this._connectionString);
 
-        if (vectorProperty.IndexKind is not (null or "" or IndexKind.Flat))
+        if (vectorProperty.IndexKind == IndexKind.DiskAnn)
         {
             await this.EnsureAzureSqlForDiskAnnAsync(connection, cancellationToken).ConfigureAwait(false);
         }
@@ -693,7 +693,7 @@ public class SqlServerCollection<TKey, TRecord>
         // when the user is done with the results.
         SqlConnection connection = new(this._connectionString);
 
-        if (vectorProperty.IndexKind is not (null or "" or IndexKind.Flat))
+        if (vectorProperty.IndexKind == IndexKind.DiskAnn)
         {
             await this.EnsureAzureSqlForDiskAnnAsync(connection, cancellationToken).ConfigureAwait(false);
         }
@@ -851,6 +851,14 @@ public class SqlServerCollection<TKey, TRecord>
         if (this._isAzureSql is true)
         {
             return;
+        }
+
+        if (this._isAzureSql is false)
+        {
+            connection.Dispose();
+            throw new NotSupportedException(
+                "DiskAnn vector indexes and the VECTOR_SEARCH function require Azure SQL Database or SQL database in Microsoft Fabric. " +
+                "They are not supported on SQL Server. Use a Flat index kind with VECTOR_DISTANCE instead.");
         }
 
         if (connection.State != System.Data.ConnectionState.Open)
