@@ -3,7 +3,6 @@
 using Qdrant.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Qdrant.ConformanceTests.TypeTests;
@@ -13,15 +12,15 @@ public class QdrantDataTypeTests(QdrantDataTypeTests.Fixture fixture)
 {
     // Qdrant doesn't seem to support filtering on float/double or string ararys,
     // https://qdrant.tech/documentation/concepts/filtering/#match
-    [ConditionalFact]
+    [Fact]
     public override Task Float()
         => this.Test<float>("Float", 8.5f, 9.5f, isFilterable: false);
 
-    [ConditionalFact]
+    [Fact]
     public override Task Double()
         => this.Test<double>("Double", 8.5d, 9.5d, isFilterable: false);
 
-    [ConditionalFact]
+    [Fact]
     public override Task String_array()
         => this.Test<string[]>(
             "StringArray",

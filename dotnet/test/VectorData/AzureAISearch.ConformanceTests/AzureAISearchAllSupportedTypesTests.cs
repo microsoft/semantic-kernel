@@ -2,14 +2,13 @@
 
 using AzureAISearch.ConformanceTests.Support;
 using Microsoft.Extensions.VectorData;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace AzureAISearch.ConformanceTests;
 
 public class AzureAISearchAllSupportedTypesTests(AzureAISearchFixture fixture) : IClassFixture<AzureAISearchFixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task AllTypesBatchGetAsync()
     {
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<string, AzureAISearchAllTypes>("all-types", AzureAISearchAllTypes.GetRecordDefinition());

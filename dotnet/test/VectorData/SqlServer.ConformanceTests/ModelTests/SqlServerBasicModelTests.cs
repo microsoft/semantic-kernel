@@ -4,7 +4,6 @@ using Microsoft.Extensions.VectorData;
 using SqlServer.ConformanceTests.Support;
 using VectorData.ConformanceTests.ModelTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace SqlServer.ConformanceTests.ModelTests;
@@ -14,7 +13,7 @@ public class SqlServerBasicModelTests(SqlServerBasicModelTests.Fixture fixture)
 {
     private const int SqlServerMaxParameters = 2_100;
 
-    [ConditionalFact]
+    [Fact]
     private async Task Split_batches_to_account_for_max_parameter_limit()
     {
         var collection = fixture.Collection;
@@ -43,7 +42,7 @@ public class SqlServerBasicModelTests(SqlServerBasicModelTests.Fixture fixture)
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_batch_is_atomic()
     {
         var collection = fixture.Collection;

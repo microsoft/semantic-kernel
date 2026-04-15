@@ -4,7 +4,6 @@ using Microsoft.Extensions.VectorData;
 using Redis.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Redis.ConformanceTests.TypeTests;
@@ -12,7 +11,7 @@ namespace Redis.ConformanceTests.TypeTests;
 public class RedisJsonKeyTypeTests(RedisJsonKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<RedisJsonKeyTypeTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture

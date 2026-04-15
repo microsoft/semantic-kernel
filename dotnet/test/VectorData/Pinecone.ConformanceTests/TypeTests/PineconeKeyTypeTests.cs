@@ -3,7 +3,6 @@
 using Pinecone.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Pinecone.ConformanceTests.TypeTests;
@@ -11,7 +10,7 @@ namespace Pinecone.ConformanceTests.TypeTests;
 public class PineconeKeyTypeTests(PineconeKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<PineconeKeyTypeTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture

@@ -3,7 +3,6 @@
 using InMemory.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace InMemory.ConformanceTests.TypeTests;
@@ -13,13 +12,13 @@ public class InMemoryKeyTypeTests(InMemoryKeyTypeTests.Fixture fixture)
 {
     // The InMemory provider supports all .NET types as keys; below are just a few basic tests.
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Int() => this.Test<int>(8, 9);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Long() => this.Test<long>(8L, 9L);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
     protected override async Task Test<TKey>(TKey key1, TKey key2, bool supportsAutoGeneration = false)

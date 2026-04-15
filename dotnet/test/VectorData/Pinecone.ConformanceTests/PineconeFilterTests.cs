@@ -3,7 +3,6 @@
 using Pinecone.ConformanceTests.Support;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Pinecone.ConformanceTests;
@@ -14,7 +13,7 @@ public class PineconeFilterTests(PineconeFilterTests.Fixture fixture)
     : FilterTests<string>(fixture), IClassFixture<PineconeFilterTests.Fixture>
 {
     // Specialized Pinecone syntax for NOT over Contains ($nin)
-    [ConditionalFact]
+    [Fact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(
             r => !new[] { 8, 10 }.Contains(r.Int),

@@ -5,16 +5,14 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 using MongoDB.Bson.Serialization.Attributes;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace CosmosMongoDB.ConformanceTests;
 
-[CosmosConnectionStringRequired]
 public sealed class CosmosMongoBsonMappingTests(CosmosMongoBsonMappingTests.Fixture fixture)
     : IClassFixture<CosmosMongoBsonMappingTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_model_works()
     {
         var store = (CosmosMongoTestStore)fixture.TestStore;
@@ -53,7 +51,7 @@ public sealed class CosmosMongoBsonMappingTests(CosmosMongoBsonMappingTests.Fixt
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_vector_store_model_works()
     {
         var store = (CosmosMongoTestStore)fixture.TestStore;
@@ -80,7 +78,7 @@ public sealed class CosmosMongoBsonMappingTests(CosmosMongoBsonMappingTests.Fixt
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_vector_store_with_name_model_works()
     {
         var store = (CosmosMongoTestStore)fixture.TestStore;

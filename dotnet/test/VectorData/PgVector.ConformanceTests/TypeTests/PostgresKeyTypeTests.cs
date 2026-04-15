@@ -3,7 +3,6 @@
 using PgVector.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace PgVector.ConformanceTests.TypeTests;
@@ -11,13 +10,13 @@ namespace PgVector.ConformanceTests.TypeTests;
 public class PostgresKeyTypeTests(PostgresKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<PostgresKeyTypeTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task Int() => this.Test<int>(8, supportsAutoGeneration: true);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Long() => this.Test<long>(8L, supportsAutoGeneration: true);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture

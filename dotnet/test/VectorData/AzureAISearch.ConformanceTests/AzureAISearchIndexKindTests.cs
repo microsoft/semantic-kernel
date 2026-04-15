@@ -4,7 +4,6 @@ using AzureAISearch.ConformanceTests.Support;
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace AzureAISearch.ConformanceTests;
@@ -12,7 +11,7 @@ namespace AzureAISearch.ConformanceTests;
 public class AzureAISearchIndexKindTests(AzureAISearchIndexKindTests.Fixture fixture)
     : IndexKindTests<string>(fixture), IClassFixture<AzureAISearchIndexKindTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task Hnsw()
         => this.Test(IndexKind.Hnsw);
 

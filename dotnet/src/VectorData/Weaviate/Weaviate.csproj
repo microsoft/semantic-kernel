@@ -25,17 +25,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="Microsoft.Bcl.Memory" />
     <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

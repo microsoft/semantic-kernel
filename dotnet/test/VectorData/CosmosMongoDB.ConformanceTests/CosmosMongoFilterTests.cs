@@ -3,7 +3,6 @@
 using CosmosMongoDB.ConformanceTests.Support;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace CosmosMongoDB.ConformanceTests;
@@ -12,7 +11,7 @@ public class CosmosMongoFilterTests(CosmosMongoFilterTests.Fixture fixture)
     : FilterTests<string>(fixture), IClassFixture<CosmosMongoFilterTests.Fixture>
 {
     // Specialized MongoDB syntax for NOT over Contains ($nin)
-    [ConditionalFact]
+    [Fact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(
             r => !new[] { 8, 10 }.Contains(r.Int),

@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\MongoDB\MongoDB.csproj" />
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

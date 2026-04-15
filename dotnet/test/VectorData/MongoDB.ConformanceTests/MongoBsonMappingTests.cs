@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace MongoDB.ConformanceTests;
@@ -13,7 +12,7 @@ namespace MongoDB.ConformanceTests;
 public sealed class MongoBsonMappingTests(MongoBsonMappingTests.Fixture fixture)
     : IClassFixture<MongoBsonMappingTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_model_works()
     {
         var store = (MongoTestStore)fixture.TestStore;
@@ -52,7 +51,7 @@ public sealed class MongoBsonMappingTests(MongoBsonMappingTests.Fixture fixture)
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_vector_store_model_works()
     {
         var store = (MongoTestStore)fixture.TestStore;
@@ -79,7 +78,7 @@ public sealed class MongoBsonMappingTests(MongoBsonMappingTests.Fixture fixture)
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Upsert_with_bson_vector_store_with_name_model_works()
     {
         var store = (MongoTestStore)fixture.TestStore;

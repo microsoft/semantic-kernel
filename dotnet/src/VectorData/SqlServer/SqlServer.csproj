@@ -33,8 +33,8 @@
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
 
   <ItemGroup>

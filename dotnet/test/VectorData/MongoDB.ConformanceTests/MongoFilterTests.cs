@@ -3,7 +3,6 @@
 using MongoDB.ConformanceTests.Support;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace MongoDB.ConformanceTests;
@@ -12,7 +11,7 @@ public class MongoFilterTests(MongoFilterTests.Fixture fixture)
     : FilterTests<string>(fixture), IClassFixture<MongoFilterTests.Fixture>
 {
     // Specialized MongoDB syntax for NOT over Contains ($nin)
-    [ConditionalFact]
+    [Fact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(
             r => !new[] { 8, 10 }.Contains(r.Int),
@@ -65,7 +64,7 @@ public class MongoFilterTests(MongoFilterTests.Fixture fixture)
 #endif
 
 #if NET10_0_OR_GREATER
-    [ConditionalFact]
+    [Fact]
     public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
         => Assert.ThrowsAsync<NotSupportedException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif

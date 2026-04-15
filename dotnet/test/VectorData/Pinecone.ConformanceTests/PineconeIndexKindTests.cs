@@ -3,7 +3,6 @@
 using Pinecone.ConformanceTests.Support;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Pinecone.ConformanceTests;
@@ -14,7 +13,7 @@ public class PineconeIndexKindTests(PineconeIndexKindTests.Fixture fixture)
     // Pinecone does not support index-less searching
     public override Task Flat() => Assert.ThrowsAsync<NotSupportedException>(base.Flat);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task PGA()
         => this.Test("PGA");
 

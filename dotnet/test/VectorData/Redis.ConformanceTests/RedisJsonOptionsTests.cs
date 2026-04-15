@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel.Connectors.Redis;
 using Redis.ConformanceTests.Support;
 using StackExchange.Redis;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Redis.ConformanceTests;
@@ -14,7 +13,7 @@ namespace Redis.ConformanceTests;
 public sealed class RedisJsonOptionsTests(RedisJsonOptionsTests.Fixture fixture)
     : IClassFixture<RedisJsonOptionsTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task Json_collection_with_prefix_and_nested_address_roundtrips()
     {
         var store = (RedisTestStore)fixture.TestStore;
@@ -54,7 +53,7 @@ public sealed class RedisJsonOptionsTests(RedisJsonOptionsTests.Fixture fixture)
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task Json_collection_get_throws_for_invalid_schema()
     {
         var store = (RedisTestStore)fixture.TestStore;

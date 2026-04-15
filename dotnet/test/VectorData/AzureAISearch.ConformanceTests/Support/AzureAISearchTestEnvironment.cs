@@ -23,7 +23,7 @@ internal static class AzureAISearchTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<AzureAISearchUrlRequiredAttribute>()
+            .AddUserSecrets<AzureAISearchTestStore>()
             .Build();
 
         var azureAISearchSection = configuration.GetSection("AzureAISearch");

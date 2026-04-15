@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,6 @@
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Weaviate.ConformanceTests.Support;
 using Xunit;
 
@@ -12,11 +11,11 @@ namespace Weaviate.ConformanceTests;
 public class WeaviateIndexKindTests(WeaviateIndexKindTests.Fixture fixture)
     : IndexKindTests<Guid>(fixture), IClassFixture<WeaviateIndexKindTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task Hnsw()
         => this.Test(IndexKind.Hnsw);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Dynamic()
         => this.Test(IndexKind.Dynamic);
 

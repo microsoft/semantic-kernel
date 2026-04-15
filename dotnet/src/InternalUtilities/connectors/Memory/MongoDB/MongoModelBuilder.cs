@@ -27,9 +27,9 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         UsesExternalSerializer = true,
     };
 
-    protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty, Type? type)
+    protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty)
     {
-        base.ProcessProperty(clrProperty, definitionProperty, type);
+        base.ProcessProperty(clrProperty, definitionProperty);
 
         if (clrProperty?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute
             && this.PropertyMap.TryGetValue(clrProperty.Name, out var property))

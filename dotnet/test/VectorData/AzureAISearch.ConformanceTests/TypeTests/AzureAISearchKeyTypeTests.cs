@@ -3,7 +3,6 @@
 using AzureAISearch.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace AzureAISearch.ConformanceTests.TypeTests;
@@ -11,7 +10,7 @@ namespace AzureAISearch.ConformanceTests.TypeTests;
 public class AzureAISearchKeyTypeTests(AzureAISearchKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<AzureAISearchKeyTypeTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
     public new class Fixture : KeyTypeTests.Fixture

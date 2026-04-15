@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\SqliteVec\SqliteVec.csproj" />
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

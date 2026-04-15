@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\SqlServer\SqlServer.csproj" />
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

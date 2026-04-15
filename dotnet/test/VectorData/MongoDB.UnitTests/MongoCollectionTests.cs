@@ -696,11 +696,11 @@ public sealed class MongoCollectionTests
         [VectorStoreData]
         public string? HotelName { get; set; }
 
-        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StorageName = "test_embedding_1")]
+        [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StorageName = "test_embedding_1")]
         public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
 
         [BsonElement("test_embedding_2")]
-        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
+        [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
         public ReadOnlyMemory<float> TestEmbedding2 { get; set; }
     }
 #pragma warning restore CA1812

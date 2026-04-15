@@ -5,16 +5,14 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace CosmosNoSql.ConformanceTests;
 
-[CosmosConnectionStringRequired]
 public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptionsTests.Fixture fixture)
     : IClassFixture<CosmosNoSqlCollectionOptionsTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task Collection_supports_partition_key_composite_key()
     {
         var store = (CosmosNoSqlTestStore)fixture.TestStore;
@@ -53,7 +51,7 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         }
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(IndexingMode.Consistent)]
     [InlineData(IndexingMode.Lazy)]
     [InlineData(IndexingMode.None)]
@@ -108,7 +106,7 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         [VectorStoreData]
         public string? Description { get; set; }
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
@@ -120,7 +118,7 @@ public sealed class CosmosNoSqlCollectionOptionsTests(CosmosNoSqlCollectionOptio
         [VectorStoreData]
         public string HotelName { get; set; } = string.Empty;
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

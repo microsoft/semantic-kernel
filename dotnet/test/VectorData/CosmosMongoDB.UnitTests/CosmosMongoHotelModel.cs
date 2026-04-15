@@ -39,6 +39,6 @@ public class CosmosMongoHotelModel(string hotelId)
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
+    [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

@@ -4,7 +4,6 @@ using CosmosMongoDB.ConformanceTests.Support;
 using MongoDB.Bson;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace CosmosMongoDB.ConformanceTests.TypeTests;
@@ -12,16 +11,16 @@ namespace CosmosMongoDB.ConformanceTests.TypeTests;
 public class CosmosMongoKeyTypeTests(CosmosMongoKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<CosmosMongoKeyTypeTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task ObjectId() => this.Test<ObjectId>(new("652f8c3e8f9b2c1a4d3e6a7b"), supportsAutoGeneration: true);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Int() => this.Test<int>(8);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task Long() => this.Test<long>(8L);
 
     public new class Fixture : KeyTypeTests.Fixture

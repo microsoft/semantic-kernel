@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj"/>
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
