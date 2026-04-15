@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\CosmosNoSql\CosmosNoSql.csproj"/>
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj"/>
   </ItemGroup>
 
   <ItemGroup>

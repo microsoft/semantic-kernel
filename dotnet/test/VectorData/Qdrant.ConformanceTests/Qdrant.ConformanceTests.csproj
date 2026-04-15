@@ -22,7 +22,6 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\VectorData\Qdrant\Qdrant.csproj" />
-    <ProjectReference Include="..\VectorData.ConformanceTests\VectorData.ConformanceTests.csproj" />
   </ItemGroup>
 
 </Project>

@@ -45,7 +45,6 @@
       "src\\VectorData\\Redis\\Redis.csproj",
       "src\\VectorData\\SqliteVec\\SqliteVec.csproj",
       "src\\VectorData\\SqlServer\\SqlServer.csproj",
-      "src\\VectorData\\VectorData.Abstractions\\VectorData.Abstractions.csproj",
       "src\\VectorData\\Weaviate\\Weaviate.csproj",
 
       "src\\Experimental\\Orchestration.Flow\\Experimental.Orchestration.Flow.csproj",

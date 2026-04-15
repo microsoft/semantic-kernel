@@ -37,8 +37,4 @@
     <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
-  </ItemGroup>
-
 </Project>

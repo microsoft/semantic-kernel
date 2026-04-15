@@ -70,7 +70,7 @@ public class AzureAISearchAllTypes
     [VectorStoreData]
     public List<DateTimeOffset> DateTimeOffsetList { get; set; }
 
-    [VectorStoreVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
+    [VectorStoreVector(dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 
     internal void AssertEqual(AzureAISearchAllTypes other)

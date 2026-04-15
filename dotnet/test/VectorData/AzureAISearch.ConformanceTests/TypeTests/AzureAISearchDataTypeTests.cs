@@ -4,7 +4,6 @@ using AzureAISearch.ConformanceTests.Support;
 using Microsoft.Extensions.VectorData;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace AzureAISearch.ConformanceTests.TypeTests;
@@ -13,7 +12,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
     : DataTypeTests<string, AzureAISearchDataTypeTests.Fixture.AzureAISearchRecord>(fixture),
     IClassFixture<AzureAISearchDataTypeTests.Fixture>
 {
-    [ConditionalFact(Skip = "Issues around empty collection initialization")]
+    [Fact(Skip = "Issues around empty collection initialization")]
     public override Task String_array() => Task.CompletedTask;
 
     protected override object? GenerateEmptyProperty(VectorStoreProperty property)

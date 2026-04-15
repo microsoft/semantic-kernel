@@ -39,6 +39,6 @@ public class MongoHotelModel(string hotelId)
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity)]
+    [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

@@ -14,7 +14,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using SqlServer.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace SqlServer.ConformanceTests;
@@ -29,7 +28,7 @@ public class SqlServerDiskAnnVectorSearchTests(
     /// Tests that approximate vector search via VECTOR_SEARCH() returns correct results
     /// when a DiskANN index exists on the table.
     /// </summary>
-    [ConditionalFact]
+    [Fact]
     public async Task VectorSearch_WithDiskAnnIndex()
     {
         using var collection = this.CreateDiskAnnCollection();
@@ -44,7 +43,7 @@ public class SqlServerDiskAnnVectorSearchTests(
     /// <summary>
     /// Tests that VECTOR_SEARCH() correctly returns multiple results ordered by distance.
     /// </summary>
-    [ConditionalFact]
+    [Fact]
     public async Task VectorSearch_WithDiskAnnIndex_TopN()
     {
         using var collection = this.CreateDiskAnnCollection();
@@ -61,7 +60,7 @@ public class SqlServerDiskAnnVectorSearchTests(
     /// Tests that VECTOR_SEARCH() throws when a LINQ filter is specified,
     /// since SQL Server's VECTOR_SEARCH only supports post-filtering.
     /// </summary>
-    [ConditionalFact]
+    [Fact]
     public async Task VectorSearch_WithDiskAnnIndex_WithFilter_Throws()
     {
         using var collection = this.CreateDiskAnnCollection();

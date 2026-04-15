@@ -39,6 +39,6 @@ public class CosmosNoSqlHotel(string hotelId)
 
     /// <summary>A vector field.</summary>
     [JsonPropertyName("description_embedding")]
-    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
+    [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

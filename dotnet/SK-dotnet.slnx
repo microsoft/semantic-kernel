@@ -136,7 +136,6 @@
     <Project Path="src/VectorData/Redis/Redis.csproj" />
     <Project Path="src/VectorData/SqliteVec/SqliteVec.csproj" />
     <Project Path="src/VectorData/SqlServer/SqlServer.csproj" />
-    <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
     <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
   </Folder>
   <Folder Name="/src/experimental/">
@@ -316,8 +315,6 @@
     <Project Path="test/VectorData/SqliteVec.ConformanceTests/SqliteVec.ConformanceTests.csproj" />
     <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
     <Project Path="test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
     <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
     <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
   </Folder>

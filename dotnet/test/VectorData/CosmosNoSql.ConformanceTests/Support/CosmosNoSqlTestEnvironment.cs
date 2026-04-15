@@ -18,7 +18,7 @@ internal static class CosmosNoSqlTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<CosmosConnectionStringRequiredAttribute>()
+            .AddUserSecrets<CosmosNoSqlTestStore>()
             .Build();
 
         ConnectionString = configuration["CosmosNoSql:ConnectionString"];

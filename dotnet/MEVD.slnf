@@ -18,7 +18,6 @@
       "src/VectorData/SqlServer/SqlServer.csproj",
       "src/VectorData/Weaviate/Weaviate.csproj",
 
-      "src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj",
 
       "test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj",
       "test/VectorData/AzureAISearch.ConformanceTests/AzureAISearch.ConformanceTests.csproj",
@@ -42,9 +41,7 @@
       "test/VectorData/SqliteVec.ConformanceTests/SqliteVec.ConformanceTests.csproj",
       "test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj",
       "test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj",
-      "test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj",
-
-      "test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj"
+      "test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj"
     ]
   }
 }

@@ -2,14 +2,13 @@
 
 using Microsoft.Extensions.VectorData;
 using Pinecone.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace Pinecone.ConformanceTests;
 
 public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFixture<PineconeFixture>
 {
-    [ConditionalFact]
+    [Fact]
     public async Task AllTypesBatchGetAsync()
     {
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<string, PineconeAllTypes>("all-types", PineconeAllTypes.GetRecordDefinition());

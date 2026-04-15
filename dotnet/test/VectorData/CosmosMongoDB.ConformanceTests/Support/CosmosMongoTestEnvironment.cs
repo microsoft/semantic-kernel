@@ -18,7 +18,7 @@ public static class CosmosMongoTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<CosmosConnectionStringRequiredAttribute>()
+            .AddUserSecrets<CosmosMongoTestStore>()
             .Build();
 
         ConnectionString = configuration["CosmosMongo:ConnectionString"];

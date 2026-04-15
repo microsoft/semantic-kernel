@@ -3,7 +3,6 @@
 using CosmosNoSql.ConformanceTests.Support;
 using VectorData.ConformanceTests.Support;
 using VectorData.ConformanceTests.TypeTests;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace CosmosNoSql.ConformanceTests.TypeTests;
@@ -13,7 +12,7 @@ public class CosmosNoSqlDataTypeTests(CosmosNoSqlDataTypeTests.Fixture fixture)
 {
     // Cosmos doesn't support DateTimeOffset with non-zero offset, so we convert it to UTC.
     // See https://github.com/dotnet/efcore/issues/35310
-    [ConditionalFact(Skip = "Need to convert DateTimeOffset to UTC before sending to Cosmos")]
+    [Fact(Skip = "Need to convert DateTimeOffset to UTC before sending to Cosmos")]
     public override Task DateTimeOffset()
         => this.Test<DateTimeOffset>(
             "DateTimeOffset",

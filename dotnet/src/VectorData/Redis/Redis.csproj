@@ -29,12 +29,12 @@
     <PackageReference Include="NRedisStack" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Redis.UnitTests" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Redis.UnitTests" />
   </ItemGroup>
 
 </Project>

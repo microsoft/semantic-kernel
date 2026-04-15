@@ -4,7 +4,6 @@ using Microsoft.Extensions.VectorData;
 using PgVector.ConformanceTests.Support;
 using VectorData.ConformanceTests;
 using VectorData.ConformanceTests.Support;
-using VectorData.ConformanceTests.Xunit;
 using Xunit;
 
 namespace PgVector.ConformanceTests;
@@ -12,7 +11,7 @@ namespace PgVector.ConformanceTests;
 public class PostgresIndexKindTests(PostgresIndexKindTests.Fixture fixture)
     : IndexKindTests<int>(fixture), IClassFixture<PostgresIndexKindTests.Fixture>
 {
-    [ConditionalFact]
+    [Fact]
     public virtual Task Hnsw()
         => this.Test(IndexKind.Hnsw);
 

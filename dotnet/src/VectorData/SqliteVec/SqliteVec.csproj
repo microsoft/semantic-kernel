@@ -29,16 +29,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+    <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" />
-    <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="sqlite-vec" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
 
   <ItemGroup>

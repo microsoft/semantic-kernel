@@ -632,13 +632,13 @@ public sealed class CosmosNoSqlCollectionTests
         [VectorStoreKey]
         public string? Id { get; set; }
 
-        [VectorStoreVector(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
+        [VectorStoreVector(dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreVector(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
+        [VectorStoreVector(dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
+        [VectorStoreVector(dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
         [VectorStoreData(IsIndexed = true)]
