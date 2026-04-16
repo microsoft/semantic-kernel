@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -85,7 +86,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { Tools = [AIFunctionFactory.Create(GetWeather)] });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -98,9 +99,9 @@ async Task SKAgent_As_AFAgentAsync()
     }
 
     // Clean up
-    if (thread is ChatClientAgentThread chatThread)
+    if (thread is ChatClientAgentSession chatSession)
     {
-        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
+        await azureAgentClient.Threads.DeleteThreadAsync(chatSession.ConversationId);
     }
     await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
 }
@@ -109,26 +110,22 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var azureAgentClient = new PersistentAgentsClient(azureEndpoint, new AzureCliCredential());
+    var agent = new AIProjectClient(new Uri(azureEndpoint), new AzureCliCredential())
+        .AsAIAgent(model: deploymentName,
+            instructions: "You are a helpful assistant",
+            tools: [AIFunctionFactory.Create(GetWeather)]);
 
-    var agent = await azureAgentClient.CreateAIAgentAsync(deploymentName, instructions: "Answer questions about the menu");
+    var session = await agent.CreateSessionAsync();
+    var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
-    var thread = agent.GetNewThread();
-    var agentOptions = new ChatClientAgentRunOptions(new() { Tools = [AIFunctionFactory.Create(GetWeather)] });
-
-    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    var result = await agent.RunAsync(userInput, session, agentOptions);
     Console.WriteLine(result);
 
     Console.WriteLine("---");
-    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    await foreach (var update in agent.RunStreamingAsync(userInput, session, agentOptions))
     {
         Console.Write(update);
     }
 
-    // Clean up
-    if (thread is ChatClientAgentThread chatThread)
-    {
-        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
-    }
-    await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
+    // No cleanup needed - non-hosted path doesn't create server-side resources.
 }

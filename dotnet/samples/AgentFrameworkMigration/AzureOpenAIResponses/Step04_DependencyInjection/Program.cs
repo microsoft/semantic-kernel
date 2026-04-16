@@ -6,7 +6,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Agents.OpenAI;
-using OpenAI;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -71,8 +71,8 @@ async Task AFAgentAsync()
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<AIAgent>((sp) => new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-        .GetResponsesClient().AsIChatClient(deploymentName)
-        .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
+        .GetResponsesClient()
+        .AsAIAgent(model: deploymentName, name: "Joker", instructions: "You are good at telling jokes."));
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
     var agent = serviceProvider.GetRequiredService<AIAgent>();
