@@ -23,6 +23,24 @@ internal static class ChatMessageExtensions
             Role = new AuthorRole(message.Role.Value),
         };
 
+        if (response?.RawRepresentation is not null)
+        {
+            var raw = response.RawRepresentation;
+            var messageProp = raw.GetType().GetProperty("Message");
+            var messageObj = messageProp?.GetValue(raw);
+            var thinkingProp = messageObj?.GetType().GetProperty("Thinking");
+            var thinking = thinkingProp?.GetValue(messageObj) as string;
+
+            if (!string.IsNullOrWhiteSpace(thinking))
+            {
+                result.Items.Add(new Microsoft.SemanticKernel.TextContent($"[THINKING]\n{thinking}")
+                {
+                    ModelId = response?.ModelId,
+                    InnerContent = raw
+                });
+            }
+        }
+
         foreach (AIContent content in message.Contents)
         {
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
