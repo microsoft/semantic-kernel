@@ -767,6 +767,28 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Contains("\"result\":\"rainy\"", functionResult.GetProperty("content").GetString());
     }
 
+    [Fact]
+    public async Task GetChatMessageContentShouldIncludeThinkingWhenPresentInResponseAsync()
+    {
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_with_thinking_response.txt"))
+        };
+
+        this._multiMessageHandlerStub.ResponsesToReturn = [response];
+
+        var sut = Kernel.CreateBuilder()
+            .AddOllamaChatCompletion("test-model", this._httpClient)
+            .Build()
+            .GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync("test prompt");
+
+        // Assert
+        Assert.Contains("This is reasoning content", result.Content);
+    }
+    
     private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
     {
         private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;

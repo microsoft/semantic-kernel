@@ -1,0 +1,2 @@
+﻿{"model":"qwen3:0.6b","message":{"role":"assistant","content":"Final answer","thinking":"This is reasoning content"},"done":false}
+{"model":"qwen3:0.6b","message":{"role":"assistant","content":"","thinking":""},"done":true}
