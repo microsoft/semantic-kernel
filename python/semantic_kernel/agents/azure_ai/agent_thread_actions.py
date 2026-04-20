@@ -13,6 +13,7 @@ from azure.ai.agents.models import (
     BaseAsyncAgentEventHandler,
     FunctionToolDefinition,
     RequiredMcpToolCall,
+    ResponseFormatJsonSchema,
     ResponseFormatJsonSchemaType,
     RunStep,
     RunStepAzureAISearchToolCall,
@@ -902,14 +903,46 @@ class AgentThreadActions:
 
         Run-level parameters take precedence.
         """
+        normalized_response_format = (
+            cls._normalize_response_format(response_format)
+            if response_format is not None
+            else cls._normalize_response_format(agent.definition.response_format)
+        )
         return {
             "model": model if model is not None else agent.definition.model,
-            "response_format": response_format if response_format is not None else agent.definition.response_format,
+            "response_format": normalized_response_format,
             "temperature": temperature if temperature is not None else None,
             "top_p": top_p if top_p is not None else None,
             "metadata": metadata if metadata is not None else agent.definition.metadata,
             **kwargs,
         }
+
+    @classmethod
+    def _normalize_response_format(
+        cls: type[_T], response_format: ResponseFormatJsonSchemaType | dict[str, Any] | None
+    ) -> ResponseFormatJsonSchemaType | dict[str, Any] | None:
+        """Normalize structured output response formats for Azure SDK consumers."""
+        if response_format is None or isinstance(response_format, ResponseFormatJsonSchemaType):
+            return response_format
+
+        if not isinstance(response_format, dict):
+            return response_format
+
+        if response_format.get("type") != "json_schema":
+            return response_format
+
+        json_schema = response_format.get("json_schema")
+        if not isinstance(json_schema, dict):
+            return response_format
+
+        return ResponseFormatJsonSchemaType(
+            json_schema=ResponseFormatJsonSchema(
+                name=json_schema.get("name"),
+                description=json_schema.get("description"),
+                schema=json_schema.get("schema"),
+                strict=json_schema.get("strict"),
+            )
+        )
 
     @classmethod
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:

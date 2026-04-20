@@ -8,6 +8,7 @@ from azure.ai.agents.models import (
     MessageTextDetails,
     RequiredFunctionToolCall,
     RequiredFunctionToolCallDetails,
+    ResponseFormatJsonSchemaType,
     RunStep,
     RunStepCodeInterpreterToolCall,
     RunStepCodeInterpreterToolCallDetails,
@@ -78,6 +79,25 @@ async def test_agent_thread_actions_create_message_no_content():
     out = await AgentThreadActions.create_message(FakeClient(), "threadXYZ", message)
     assert out is None
     assert FakeAgentClient.create_message.await_count == 0
+
+
+def test_agent_thread_actions_generate_options_normalizes_dict_response_format(ai_agent_definition):
+    agent = AzureAIAgent(client=AsyncMock(spec=AIProjectClient), definition=ai_agent_definition)
+    agent.definition.response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "planet_mass",
+            "description": "Extract planet mass.",
+            "schema": {"type": "object", "properties": {"mass": {"type": "number"}}},
+            "strict": True,
+        },
+    }
+
+    options = AgentThreadActions._generate_options(agent=agent)
+
+    assert isinstance(options["response_format"], ResponseFormatJsonSchemaType)
+    assert options["response_format"].json_schema.name == "planet_mass"
+    assert options["response_format"].json_schema.strict is True
 
 
 async def test_agent_thread_actions_invoke(ai_project_client: AIProjectClient, ai_agent_definition):
