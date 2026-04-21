@@ -378,13 +378,18 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         if (stepStateType.HasValue)
         {
             stateType = Type.GetType(stepStateType.Value);
-            if (stateType is not null && !typeof(KernelProcessStepState).IsAssignableFrom(stateType))
+            if (stateType is null)
+            {
+                throw new KernelException($"Type '{stepStateType.Value}' could not be resolved to a valid KernelProcessStepState type.").Log(this._logger);
+            }
+
+            if (!typeof(KernelProcessStepState).IsAssignableFrom(stateType))
             {
                 throw new KernelException($"Type '{stepStateType.Value}' is not a valid KernelProcessStepState type.").Log(this._logger);
             }
 
             var stateObjectJson = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepStateJson).ConfigureAwait(false);
-            stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType!) as KernelProcessStepState;
+            stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType) as KernelProcessStepState;
         }
         else
         {
