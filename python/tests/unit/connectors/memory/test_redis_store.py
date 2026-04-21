@@ -291,15 +291,30 @@ async def test_ensure_collection_deleted(collection_hash, mock_ensure_collection
     await collection_hash.ensure_collection_deleted()
 
 
-async def test_create_index(collection_hash, mock_ensure_collection_exists):
-    await collection_hash.ensure_collection_exists()
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_create_index(collection_hash, collection_json, mock_ensure_collection_exists, type_):
+    from redis.commands.search.index_definition import IndexDefinition, IndexType
+
+    collection = collection_hash if type_ == "hashset" else collection_json
+    expected_index_type = IndexType.HASH if type_ == "hashset" else IndexType.JSON
+
+    await collection.ensure_collection_exists()
+
+    mock_ensure_collection_exists.assert_called_once()
+    index_def = mock_ensure_collection_exists.call_args.kwargs["definition"]
+    assert isinstance(index_def, IndexDefinition)
+    # IndexDefinition._append_prefix iterates its argument. A bare string like "test:"
+    # produces PREFIX 5 t e s t : instead of PREFIX 1 test:. Comparing args against a
+    # reference built with a list catches this regression.
+    expected_def = IndexDefinition(prefix=[f"{collection.collection_name}:"], index_type=expected_index_type)
+    assert index_def.args == expected_def.args
 
 
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
     from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
-    index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
+    index_definition = IndexDefinition(prefix=["test:"], index_type=IndexType.HASH)
     await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
 
 
