@@ -295,11 +295,22 @@ async def test_create_index(collection_hash, mock_ensure_collection_exists):
     await collection_hash.ensure_collection_exists()
 
 
+async def test_create_index_prefix_is_list(collection_hash, mock_ensure_collection_exists):
+    """Verify prefix is passed as a list, not a string (#13894)."""
+    await collection_hash.ensure_collection_exists()
+    mock_ensure_collection_exists.assert_called_once()
+    definition = mock_ensure_collection_exists.call_args.kwargs.get("definition")
+    assert definition is not None
+    prefix_idx = definition.args.index("PREFIX")
+    assert definition.args[prefix_idx + 1] == 1
+    assert definition.args[prefix_idx + 2] == f"{collection_hash.collection_name}:"
+
+
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
     from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
-    index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
+    index_definition = IndexDefinition(prefix=["test:"], index_type=IndexType.HASH)
     await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
 
 
