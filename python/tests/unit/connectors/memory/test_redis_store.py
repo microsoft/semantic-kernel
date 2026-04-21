@@ -270,10 +270,30 @@ async def test_get(
     assert records is not None
 
 
+@mark.parametrize("prefix", [True, False])
 @mark.parametrize("type_", ["hashset", "json"])
-async def test_delete(collection_hash, collection_json, type_):
-    collection = collection_hash if type_ == "hashset" else collection_json
+async def test_delete(
+    collection_hash,
+    collection_json,
+    collection_with_prefix_hash,
+    collection_with_prefix_json,
+    mock_delete_hash,
+    mock_delete_json,
+    type_,
+    prefix,
+):
+    if prefix:
+        collection = collection_with_prefix_hash if type_ == "hashset" else collection_with_prefix_json
+    else:
+        collection = collection_hash if type_ == "hashset" else collection_json
+
     await collection._inner_delete(["id1"])
+
+    expected_key = "test:id1" if prefix else "id1"
+    if type_ == "hashset":
+        mock_delete_hash.assert_called_once_with(expected_key)
+    else:
+        mock_delete_json.assert_called_once_with(expected_key)
 
 
 async def test_collection_exists(collection_hash, mock_collection_exists):
@@ -294,12 +314,17 @@ async def test_ensure_collection_deleted(collection_hash, mock_ensure_collection
 async def test_create_index(collection_hash, mock_ensure_collection_exists):
     await collection_hash.ensure_collection_exists()
 
+    # Check that the index definition has the correct prefix list format
+    # The second positional argument to create_index is usually 'definition' (keyword)
+    # but here we check kwargs
+    assert mock_ensure_collection_exists.call_args.kwargs["definition"].prefix == ["test:"]
+
 
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
     from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
-    index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
+    index_definition = IndexDefinition(prefix=["test:"], index_type=IndexType.HASH)
     await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
 
 
