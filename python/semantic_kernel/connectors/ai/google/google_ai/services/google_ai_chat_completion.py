@@ -34,7 +34,9 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_reasoning_content import StreamingReasoningContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.reasoning_content import ReasoningContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -302,7 +304,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         items: list[CMC_ITEM_TYPES] = []
         if candidate.content and candidate.content.parts:
             for idx, part in enumerate(candidate.content.parts):
-                if part.text:
+                if getattr(part, "thought", False):
+                    items.append(ReasoningContent(text=part.text, inner_content=response, metadata=response_metadata))
+                elif part.text:
                     items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
                 elif part.function_call:
                     fc_metadata: dict[str, Any] = {}
@@ -357,7 +361,16 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         items: list[STREAMING_ITEM_TYPES] = []
         if candidate.content and candidate.content.parts:
             for idx, part in enumerate(candidate.content.parts):
-                if part.text:
+                if getattr(part, "thought", False):
+                    items.append(
+                        StreamingReasoningContent(
+                            choice_index=candidate.index or 0,
+                            text=part.text,
+                            inner_content=chunk,
+                            metadata=response_metadata,
+                        )
+                    )
+                elif part.text:
                     items.append(
                         StreamingTextContent(
                             choice_index=candidate.index or 0,
