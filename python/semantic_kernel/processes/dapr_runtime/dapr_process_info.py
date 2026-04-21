@@ -10,6 +10,7 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.step_utils import DEFAULT_ALLOWED_MODULE_PREFIXES
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
@@ -20,13 +21,17 @@ class DaprProcessInfo(DaprStepInfo):
     type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
-    def to_kernel_process(self, allowed_module_prefixes: Sequence[str] | None = None) -> KernelProcess:
+    def to_kernel_process(
+        self, allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES
+    ) -> KernelProcess:
         """Converts the Dapr process info to a kernel process.
 
         Args:
-            allowed_module_prefixes: Optional list of module prefixes that are allowed
-                for step class loading. If provided, step classes must come from modules
-                starting with one of these prefixes.
+            allowed_module_prefixes: Sequence of module prefixes that are allowed
+                for step class loading. Defaults to DEFAULT_ALLOWED_MODULE_PREFIXES
+                ("semantic_kernel.",). Pass None to disable the allowlist and allow
+                any module (not recommended for production). An empty sequence blocks
+                all modules.
         """
         if not isinstance(self.state, KernelProcessState):
             raise ValueError("State must be a kernel process state")
