@@ -31,7 +31,7 @@ internal static class SqlServerCommandBuilder
         if (ifNotExists)
         {
             sb.Append("IF OBJECT_ID(N'");
-            sb.AppendTableName(schema, tableName);
+            sb.AppendTableNameInsideLiteral(schema, tableName);
             sb.AppendLine("', N'U') IS NULL");
         }
         sb.AppendLine("BEGIN");
@@ -125,22 +125,22 @@ internal static class SqlServerCommandBuilder
             // Full-text indexes require a unique index (we use the primary key)
             sb.AppendLine("DECLARE @pkIndexName NVARCHAR(128);");
             sb.Append("SELECT @pkIndexName = name FROM sys.indexes WHERE object_id = OBJECT_ID(N'");
-            sb.AppendTableName(schema, tableName);
+            sb.AppendTableNameInsideLiteral(schema, tableName);
             sb.AppendLine("') AND is_primary_key = 1;");
 
             sb.AppendLine("DECLARE @ftSql NVARCHAR(MAX);");
             sb.Append("SET @ftSql = N'CREATE FULLTEXT INDEX ON ");
-            sb.AppendTableName(schema, tableName).Append(" (");
+            sb.AppendTableNameInsideLiteral(schema, tableName).Append(" (");
             for (int i = 0; i < fullTextProperties.Count; i++)
             {
-                sb.AppendIdentifier(fullTextProperties[i].StorageName);
+                sb.AppendIdentifierInsideLiteral(fullTextProperties[i].StorageName);
                 if (i < fullTextProperties.Count - 1)
                 {
                     sb.Append(',');
                 }
             }
             sb.Append(") KEY INDEX ' + QUOTENAME(@pkIndexName) + N' ON ");
-            sb.AppendIdentifier(catalogName).AppendLine("';");
+            sb.AppendIdentifierInsideLiteral(catalogName).AppendLine("';");
             sb.AppendLine("EXEC sp_executesql @ftSql;");
         }
 
@@ -861,6 +861,30 @@ internal static class SqlServerCommandBuilder
         sb.Append(identifier);
         sb.Replace("]", "]]", index, identifier.Length);
         sb.Append(']');
+        return sb;
+    }
+
+    /// <summary>
+    /// Same as <see cref="AppendTableName"/>, but for use inside a SQL string literal (N'...'),
+    /// where single quotes must be escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendTableNameInsideLiteral(this StringBuilder sb, string? schema, string tableName)
+    {
+        int start = sb.Length;
+        sb.AppendTableName(schema, tableName);
+        sb.Replace("'", "''", start, sb.Length - start);
+        return sb;
+    }
+
+    /// <summary>
+    /// Same as <see cref="AppendIdentifier"/>, but for use inside a SQL string literal (N'...'),
+    /// where single quotes must be escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendIdentifierInsideLiteral(this StringBuilder sb, string identifier)
+    {
+        int start = sb.Length;
+        sb.AppendIdentifier(identifier);
+        sb.Replace("'", "''", start, sb.Length - start);
         return sb;
     }
 
