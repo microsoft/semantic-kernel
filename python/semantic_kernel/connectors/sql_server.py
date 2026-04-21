@@ -163,6 +163,11 @@ class QueryBuilder:
         """
         return f"[{identifier.replace(']', ']]')}]"
 
+    @staticmethod
+    def format_table_name(schema: str, table_name: str) -> str:
+        """Return an escaped [schema].[table] string."""
+        return f"{QueryBuilder.escape_identifier(schema)}.{QueryBuilder.escape_identifier(table_name)}"
+
     def append_table_name(
         self, schema: str, table_name: str, prefix: str = "", suffix: str | None = None, newline: bool = False
     ) -> None:
@@ -178,9 +183,10 @@ class QueryBuilder:
             suffix: Optional suffix to add after the table name.
             newline: Whether to add a newline after the table name or suffix.
         """
-        escaped_schema = self.escape_identifier(schema)
-        escaped_table = self.escape_identifier(table_name)
-        self.append(f"{prefix} {escaped_schema}.{escaped_table} {suffix or ''}", suffix="\n" if newline else "")
+        self.append(
+            f"{prefix} {self.format_table_name(schema, table_name)} {suffix or ''}",
+            suffix="\n" if newline else "",
+        )
 
     def remove_last(self, number_of_chars: int):
         """Remove the last number_of_chars from the StringBuilder."""
@@ -871,9 +877,9 @@ def _build_create_table_query(
     """Build the CREATE TABLE query based on the data model."""
     command = SqlCommand()
     if if_not_exists:
-        command.query.append_table_name(
-            schema, table, prefix="IF OBJECT_ID(N'", suffix="', N'U') IS NULL", newline=True
-        )
+        # OBJECT_ID takes a string literal — escape ' → '' in addition to identifier escaping
+        table_ref = QueryBuilder.format_table_name(schema, table).replace("'", "''")
+        command.query.append(f"IF OBJECT_ID(N'{table_ref}', N'U') IS NULL", suffix="\n")
     with command.query.in_logical_group():
         command.query.append_table_name(schema, table, prefix="CREATE TABLE", newline=True)
         with command.query.in_parenthesis(suffix=";"):
@@ -883,13 +889,11 @@ def _build_create_table_query(
                 f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
             )
             # add the data fields
-            [
+            for field in data_fields:
                 command.query.append(
                     f"{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
                     f" {_python_type_to_sql(field.type_)} NULL,\n"
                 )
-                for field in data_fields
-            ]
             # add the vector fields
             for field in vector_fields:
                 if field.index_kind not in INDEX_KIND_MAP:
@@ -1019,12 +1023,12 @@ def _build_merge_query(
     # Set the Matched clause
     command.query.append("WHEN MATCHED THEN\n")
     command.query.append("UPDATE SET ")
+    update_parts = []
+    for field in chain(data_fields, vector_fields):
+        escaped = QueryBuilder.escape_identifier(field.storage_name or field.name)
+        update_parts.append(f"t.{escaped} = s.{escaped}")
     command.query.append_list(
-        [
-            f"t.{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
-            f" = s.{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
-            for field in chain(data_fields, vector_fields)
-        ],
+        update_parts,
         suffix="\n",
     )
     # Set the Not Matched clause

@@ -145,6 +145,13 @@ class TestQueryBuildFunctions:
             "int NULL,\n[embedding] VECTOR(1536) NULL,\nPRIMARY KEY ([id]) \n) ;\nEND\n"
         )
 
+    def test_build_create_table_query_escapes_single_quote_in_object_id(self):
+        key_field = VectorStoreField("key", name="id", type="str")
+        cmd = _build_create_table_query("dbo", "test'table", key_field, [], [], if_not_exists=True)
+        cmd_str = str(cmd.query)
+        # Single quote must be escaped inside the OBJECT_ID N'...' string literal
+        assert "OBJECT_ID(N'[dbo].[test''table]'" in cmd_str
+
     def test_delete_table_query(self):
         schema = "dbo"
         table = "Test"
@@ -534,8 +541,10 @@ class TestSqlServerCollection:
         await collection.ensure_collection_exists()
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             (
-                "IF OBJECT_ID(N' [dbo].[test] ', N'U') IS NULL\nBEGIN\nCREATE TABLE [dbo].[test] \n ([id] nvarchar"
-                "(255) NOT NULL,\n[content] nvarchar(max) NULL,\n[vector] VECTOR(5) NULL,\nPRIMARY KEY ([id]) \n) ;"
+                "IF OBJECT_ID(N'[dbo].[test]', N'U') IS NULL\n"
+                "BEGIN\nCREATE TABLE [dbo].[test] \n ([id] nvarchar"
+                "(255) NOT NULL,\n[content] nvarchar(max) NULL,\n[vector] VECTOR(5) NULL,\n"
+                "PRIMARY KEY ([id]) \n) ;"
                 "\nEND\n"
             ),
             (),
