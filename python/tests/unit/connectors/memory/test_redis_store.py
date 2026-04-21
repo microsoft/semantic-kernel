@@ -276,6 +276,18 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+async def test_delete_with_prefix_json(collection_with_prefix_json, mock_delete_json):
+    """Verify JSON delete prefixes keys when prefix_collection_name_to_key_names=True (#13904)."""
+    await collection_with_prefix_json._inner_delete(["id1"])
+    mock_delete_json.assert_called_once_with("test:id1")
+
+
+async def test_delete_with_prefix_hash(collection_with_prefix_hash, mock_delete_hash):
+    """Verify hashset delete prefixes keys when prefix_collection_name_to_key_names=True."""
+    await collection_with_prefix_hash._inner_delete(["id1"])
+    mock_delete_hash.assert_called_once_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
