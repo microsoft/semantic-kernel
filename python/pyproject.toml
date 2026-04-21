@@ -117,7 +117,9 @@ ollama = [
 ]
 onnx = [
   # Pinning due to uv tag-resolution issues on macOS.
-  "onnxruntime==1.24.3",
+  # onnxruntime>=1.24.0 dropped Python 3.10 support; keep 1.22.1 for Python 3.10.
+  "onnxruntime==1.22.1; python_version == '3.10'",
+  "onnxruntime==1.24.3; python_version >= '3.11'",
   "onnxruntime-genai==0.9.0"
 ]
 oracledb = [
