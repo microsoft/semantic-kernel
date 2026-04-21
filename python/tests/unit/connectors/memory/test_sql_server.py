@@ -152,6 +152,20 @@ class TestQueryBuildFunctions:
         # Single quote must be escaped inside the OBJECT_ID N'...' string literal
         assert "OBJECT_ID(N'[dbo].[test''table]'" in cmd_str
 
+    def test_build_create_table_query_uses_storage_name_for_primary_key(self):
+        key_field = VectorStoreField("key", name="id", type="str", storage_name="pk_id")
+        cmd = _build_create_table_query("dbo", "Test", key_field, [], [])
+        cmd_str = str(cmd.query)
+        assert "[pk_id] nvarchar" in cmd_str
+        assert "PRIMARY KEY ([pk_id])" in cmd_str
+
+    def test_build_merge_query_output_uses_storage_name(self):
+        key_field = VectorStoreField("key", name="id", type="str", storage_name="pk_id")
+        records = [{"pk_id": "1"}]
+        cmd = _build_merge_query("dbo", "Test", key_field, [], [], records)
+        cmd_str = str(cmd.query)
+        assert "OUTPUT inserted.[pk_id] INTO @UpsertedKeys" in cmd_str
+
     def test_delete_table_query(self):
         schema = "dbo"
         table = "Test"
