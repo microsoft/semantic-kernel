@@ -102,6 +102,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             throw new KernelException($"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.").Log(this._logger);
         }
 
+        if (!typeof(KernelProcessStep).IsAssignableFrom(this._innerStepType))
+        {
+            throw new KernelException($"Type '{stepInfo.InnerStepDotnetType}' is not a valid KernelProcessStep type.").Log(this._logger);
+        }
+
         this.ParentProcessId = parentProcessId;
         this._stepInfo = stepInfo;
         this._stepState = this._stepInfo.State;
@@ -373,6 +378,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         if (stepStateType.HasValue)
         {
             stateType = Type.GetType(stepStateType.Value);
+            if (stateType is not null && !typeof(KernelProcessStepState).IsAssignableFrom(stateType))
+            {
+                throw new KernelException($"Type '{stepStateType.Value}' is not a valid KernelProcessStepState type.").Log(this._logger);
+            }
+
             var stateObjectJson = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepStateJson).ConfigureAwait(false);
             stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType!) as KernelProcessStepState;
         }
