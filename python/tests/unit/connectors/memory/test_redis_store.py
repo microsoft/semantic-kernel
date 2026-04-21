@@ -306,3 +306,46 @@ async def test_create_index_manual(collection_hash, mock_ensure_collection_exist
 async def test_create_index_fail(collection_hash, mock_ensure_collection_exists):
     with raises(VectorStoreOperationException, match="Invalid index type supplied."):
         await collection_hash.ensure_collection_exists(index_definition="index_definition", fields="fields")
+
+
+def test_deserialize_hashset_skips_missing_vector_field(collection_hash):
+    # Simulate search results with include_vectors=False: vector key is absent.
+    records = [{"id": "id1", "content": "hello"}]
+    result = collection_hash._deserialize_store_models_to_dicts(records)
+    assert len(result) == 1
+    assert result[0]["id"] == "id1"
+    assert result[0]["content"] == "hello"
+    assert "vector" not in result[0]
+
+
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_inner_search_passes_index_schema_to_process_results(
+    collection_hash, collection_json, type_
+):
+    from unittest.mock import MagicMock
+
+    from redisvl.schema import IndexSchema, StorageType
+
+    from semantic_kernel.data.vector import SearchType, VectorSearchOptions
+
+    collection = collection_hash if type_ == "hashset" else collection_json
+    expected_storage = StorageType.HASH if type_ == "hashset" else StorageType.JSON
+
+    mock_results = MagicMock()
+    mock_results.docs = []
+    mock_results.total = 0
+
+    with patch("redis.commands.search.AsyncSearch.search", new=AsyncMock(return_value=mock_results)):
+        with patch(
+            "semantic_kernel.connectors.redis.process_results", return_value=[]
+        ) as mock_process:
+            await collection._inner_search(
+                search_type=SearchType.VECTOR,
+                options=VectorSearchOptions(vector_property_name="vector", top=3),
+                vector=[1.0, 2.0, 3.0, 4.0, 5.0],
+            )
+
+    mock_process.assert_called_once()
+    _results_arg, _query_arg, schema_arg = mock_process.call_args.args
+    assert isinstance(schema_arg, IndexSchema), "process_results must receive an IndexSchema, not a StorageType"
+    assert schema_arg.index.storage_type == expected_storage

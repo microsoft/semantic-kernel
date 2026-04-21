@@ -3,7 +3,6 @@
 import ast
 import asyncio
 import contextlib
-import inspect
 import json
 import logging
 import sys
@@ -22,15 +21,7 @@ from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
 from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
-from redisvl.schema import StorageType
-
-try:
-    from redisvl.schema import IndexSchema as _RedisVLIndexSchema
-
-    _PROCESS_RESULTS_USES_SCHEMA: bool = "schema" in inspect.signature(process_results).parameters
-except ImportError:
-    _RedisVLIndexSchema = None  # type: ignore[assignment]
-    _PROCESS_RESULTS_USES_SCHEMA = False
+from redisvl.schema import IndexSchema as _RedisVLIndexSchema, StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.vector import (
@@ -330,13 +321,10 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        if _PROCESS_RESULTS_USES_SCHEMA and _RedisVLIndexSchema is not None:
-            _schema = _RedisVLIndexSchema.from_dict(
-                {"index": {"name": self.collection_name, "storage_type": STORAGE_TYPE_MAP[self.collection_type].value}}
-            )
-            processed = process_results(results, query, _schema)
-        else:
-            processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        schema = _RedisVLIndexSchema.from_dict(
+            {"index": {"name": self.collection_name, "storage_type": STORAGE_TYPE_MAP[self.collection_type].value}}
+        )
+        processed = process_results(results, query, schema)
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
             total_count=results.total,
