@@ -706,7 +706,7 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        await asyncio.gather(*[self.redis_database.json().delete(key, **kwargs) for key in keys])
+        await asyncio.gather(*[self.redis_database.json().delete(self._get_redis_key(key), **kwargs) for key in keys])
 
     @override
     def _serialize_dicts_to_store_models(
