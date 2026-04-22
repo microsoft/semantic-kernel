@@ -28,6 +28,36 @@ public class SqlServerCommandBuilderTests
     }
 
     [Theory]
+    [InlineData("schema", "name", "[schema].[name]")]
+    [InlineData(null, "name", "[name]")]
+    [InlineData("schema", "it's", "[schema].[it''s]")]
+    [InlineData("it's", "name", "[it''s].[name]")]
+    [InlineData("it's", "it's", "[it''s].[it''s]")]
+    [InlineData(null, "it's", "[it''s]")]
+    [InlineData("schema", "[brackets]", "[schema].[[brackets]]]")]
+    public void AppendTableNameInsideLiteral(string? schema, string table, string expectedFullName)
+    {
+        StringBuilder result = new();
+
+        SqlServerCommandBuilder.AppendTableNameInsideLiteral(result, schema, table);
+
+        Assert.Equal(expectedFullName, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("name", "[name]")]
+    [InlineData("it's", "[it''s]")]
+    [InlineData("two''quotes", "[two''''quotes]")]
+    public void AppendIdentifierInsideLiteral(string identifier, string expected)
+    {
+        StringBuilder result = new();
+
+        SqlServerCommandBuilder.AppendIdentifierInsideLiteral(result, identifier);
+
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
     [InlineData("name", "@name_")] // typical name
     [InlineData("na me", "@na_")] // contains a whitespace, an illegal parameter name character
     [InlineData("123", "@_")] // starts with a digit, also not allowed
@@ -147,6 +177,34 @@ public class SqlServerCommandBuilderTests
         }
 
         Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void CreateTable_WithSingleQuoteInName()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "it's", "ta'ble", ifNotExists: true, model);
+
+        var command = Assert.Single(commands);
+        Assert.Equal(
+        "IF OBJECT_ID(N'[it''s].[ta''ble]', N'U') IS NULL" + Environment.NewLine +
+        """
+        BEGIN
+        CREATE TABLE [it's].[ta'ble] (
+        [id] BIGINT IDENTITY,
+        [name] NVARCHAR(MAX),
+        PRIMARY KEY ([id])
+        );
+        END;
+        """,
+        command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
