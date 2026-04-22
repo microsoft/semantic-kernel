@@ -893,7 +893,7 @@ class AgentThreadActions:
         *,
         agent: "AzureAIAgent",
         model: str | None = None,
-        response_format: ResponseFormatJsonSchemaType | None = None,
+        response_format: str | ResponseFormatJsonSchemaType | dict[str, Any] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
@@ -919,8 +919,8 @@ class AgentThreadActions:
 
     @classmethod
     def _normalize_response_format(
-        cls: type[_T], response_format: ResponseFormatJsonSchemaType | dict[str, Any] | None
-    ) -> ResponseFormatJsonSchemaType | dict[str, Any] | None:
+        cls: type[_T], response_format: str | ResponseFormatJsonSchemaType | dict[str, Any] | None
+    ) -> str | ResponseFormatJsonSchemaType | None:
         """Normalize structured output response formats for Azure SDK consumers."""
         if response_format is None or isinstance(response_format, ResponseFormatJsonSchemaType):
             return response_format
@@ -928,7 +928,13 @@ class AgentThreadActions:
         if not isinstance(response_format, dict):
             return response_format
 
-        if response_format.get("type") != "json_schema":
+        # Map simple dict shapes to the string form the Azure SDK expects.
+        # {"type": "json_object"} / {"type": "text"} both have canonical string equivalents.
+        rf_type = response_format.get("type")
+        if rf_type in ("json_object", "text"):
+            return rf_type
+
+        if rf_type != "json_schema":
             return response_format
 
         json_schema = response_format.get("json_schema")
