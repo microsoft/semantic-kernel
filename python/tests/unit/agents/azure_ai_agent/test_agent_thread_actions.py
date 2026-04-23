@@ -3,11 +3,15 @@
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from azure.ai.agents.models import (
+    AgentsResponseFormat,
+    AgentsResponseFormatMode,
     MessageTextContent,
     MessageTextDetails,
     RequiredFunctionToolCall,
     RequiredFunctionToolCallDetails,
+    ResponseFormatJsonSchemaType,
     RunStep,
     RunStepCodeInterpreterToolCall,
     RunStepCodeInterpreterToolCallDetails,
@@ -354,3 +358,52 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
             collected_messages.append(content)
             assert isinstance(content, ChatMessageContent)
             assert content.metadata.get("message_id") == "msg_1"
+
+
+# region _coerce_response_format tests
+
+
+@pytest.mark.parametrize(
+    "input_value, expected_type",
+    [
+        (None, type(None)),
+        ("auto", str),
+        (AgentsResponseFormatMode.AUTO, AgentsResponseFormatMode),
+        (AgentsResponseFormat({"type": "json_object"}), AgentsResponseFormat),
+        (
+            ResponseFormatJsonSchemaType({"type": "json_schema", "json_schema": {"name": "t", "schema": {}}}),
+            ResponseFormatJsonSchemaType,
+        ),
+    ],
+)
+def test_coerce_response_format_passthrough(input_value, expected_type):
+    """Values that are already the correct type should be returned unchanged."""
+    result = AgentThreadActions._coerce_response_format(input_value)
+    assert isinstance(result, expected_type) or result is None
+
+
+def test_coerce_response_format_dict_json_object():
+    """A plain dict with type 'json_object' should become AgentsResponseFormat."""
+    result = AgentThreadActions._coerce_response_format({"type": "json_object"})
+    assert isinstance(result, AgentsResponseFormat)
+
+
+def test_coerce_response_format_dict_json_schema():
+    """A plain dict with type 'json_schema' should become ResponseFormatJsonSchemaType."""
+    payload = {"type": "json_schema", "json_schema": {"name": "MySchema", "strict": True, "schema": {}}}
+    result = AgentThreadActions._coerce_response_format(payload)
+    assert isinstance(result, ResponseFormatJsonSchemaType)
+
+
+def test_coerce_response_format_unknown_type_passthrough():
+    """An unknown (non-dict) type should be returned as-is to let the SDK handle it."""
+
+    class Custom:
+        pass
+
+    custom = Custom()
+    result = AgentThreadActions._coerce_response_format(custom)
+    assert result is custom
+
+
+# endregion

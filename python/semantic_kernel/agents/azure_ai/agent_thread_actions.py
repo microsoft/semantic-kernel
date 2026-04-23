@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 from azure.ai.agents.models import (
     AgentsNamedToolChoiceType,
     AgentStreamEvent,
+    AgentsResponseFormat,
+    AgentsResponseFormatMode,
     AsyncAgentEventHandler,
     AsyncAgentRunStream,
     BaseAsyncAgentEventHandler,
@@ -923,7 +925,7 @@ class AgentThreadActions:
         return {
             "model": merged.get("model"),
             "top_p": merged.get("top_p"),
-            "response_format": merged.get("response_format"),
+            "response_format": cls._coerce_response_format(merged.get("response_format")),
             "temperature": merged.get("temperature"),
             "truncation_strategy": truncation_strategy,
             "metadata": merged.get("metadata"),
@@ -932,6 +934,28 @@ class AgentThreadActions:
             "parallel_tool_calls": parallel_tool_calls,
             "additional_messages": additional_messages,
         }
+
+    @staticmethod
+    def _coerce_response_format(
+        response_format: Any,
+    ) -> "str | AgentsResponseFormatMode | AgentsResponseFormat | ResponseFormatJsonSchemaType | None":
+        """Coerce a plain dict response_format to the appropriate Azure AI typed model.
+
+        When users supply ``response_format`` as a plain Python :class:`dict` (e.g.
+        ``{"type": "json_object"}``), the Azure AI telemetry instrumentor raises
+        ``ValueError: Unknown response format <class 'dict'>`` because it only handles
+        the typed SDK models.  This method converts plain dicts to the correct type so
+        that the Azure AI telemetry layer can serialize them without error.
+        """
+        if response_format is None or isinstance(
+            response_format, (str, AgentsResponseFormatMode, AgentsResponseFormat, ResponseFormatJsonSchemaType)
+        ):
+            return response_format
+        if isinstance(response_format, dict):
+            if response_format.get("type") == "json_schema":
+                return ResponseFormatJsonSchemaType(response_format)
+            return AgentsResponseFormat(response_format)
+        return response_format
 
     @classmethod
     def _translate_additional_messages(
