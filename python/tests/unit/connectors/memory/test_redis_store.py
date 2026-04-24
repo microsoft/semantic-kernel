@@ -314,10 +314,19 @@ async def test_ensure_collection_deleted(collection_hash, mock_ensure_collection
 async def test_create_index(collection_hash, mock_ensure_collection_exists):
     await collection_hash.ensure_collection_exists()
 
-    # Check that the index definition has the correct prefix list format
-    # The second positional argument to create_index is usually 'definition' (keyword)
-    # but here we check kwargs
-    assert mock_ensure_collection_exists.call_args.kwargs["definition"].prefix == ["test:"]
+    index_definition = mock_ensure_collection_exists.call_args.kwargs["definition"]
+
+    # A bare string prefix is treated as an iterable by redis-py and becomes
+    # five one-character prefixes. Assert the generated command uses one prefix.
+    assert index_definition.args == ["ON", "HASH", "PREFIX", 1, "test:", "SCORE", 1.0]
+
+
+def test_create_index_prefix_must_be_sequence():
+    from redis.commands.search.index_definition import IndexDefinition, IndexType
+
+    index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
+
+    assert index_definition.args == ["ON", "HASH", "PREFIX", 5, "t", "e", "s", "t", ":", "SCORE", 1.0]
 
 
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
