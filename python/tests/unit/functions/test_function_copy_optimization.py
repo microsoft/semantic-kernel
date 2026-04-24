@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-"""Tests for function_copy optimization (Issue #1: Lazy deepcopy)."""
+"""Tests for function_copy metadata copy behavior."""
 
 from unittest.mock import patch
 
@@ -21,23 +21,21 @@ def sample_function():
 
 
 class TestFunctionCopyOptimization:
-    """Test suite for function_copy lazy deepcopy optimization."""
+    """Test suite for function_copy metadata isolation."""
 
-    def test_function_copy_same_plugin_no_deepcopy(self, sample_function):
-        """Test that function_copy doesn't deepcopy when plugin_name is same or None.
-
-        This tests the optimization where metadata is reused when no plugin_name change.
-        """
+    def test_function_copy_same_plugin_creates_independent_metadata(self, sample_function):
+        """Test that function_copy isolates metadata even when plugin_name is unchanged."""
         original_plugin = sample_function.plugin_name
 
-        # Case 1: No plugin_name provided (should reuse reference)
+        # Case 1: No plugin_name provided (metadata should still be copied)
         copy1 = sample_function.function_copy()
-        assert copy1.metadata is sample_function.metadata  # Should be same reference
+        assert copy1.metadata is not sample_function.metadata
         assert copy1.plugin_name == original_plugin
 
-        # Case 2: Same plugin_name provided (should reuse reference)
+        # Case 2: Same plugin_name explicitly provided (metadata should still be copied)
         copy2 = sample_function.function_copy(original_plugin)
-        assert copy2.metadata is sample_function.metadata  # Should be same reference
+        assert copy2.metadata is not sample_function.metadata
+        assert copy2.plugin_name == original_plugin
 
     def test_function_copy_different_plugin_creates_copy(self, sample_function):
         """Test that function_copy does create a shallow copy when plugin_name changes.
@@ -69,34 +67,23 @@ class TestFunctionCopyOptimization:
         "semantic_kernel.functions.kernel_function.deepcopy",
         side_effect=AssertionError("deepcopy should not be called"),
     )
-    def test_function_copy_no_unnecessary_deepcopy(self, mock_deepcopy, sample_function):
-        """Test that deepcopy is NOT called when plugin_name doesn't change.
-
-        This is the key optimization test - it verifies that the old problematic
-        deepcopy is not being called anymore.
-        """
-        # When plugin_name is None or same, deepcopy should not be called
+    def test_function_copy_no_module_deepcopy_usage(self, mock_deepcopy, sample_function):
+        """Test that function_copy does not call the module-level deepcopy helper."""
         original_metadata = sample_function.metadata
-        try:
-            copy = sample_function.function_copy()
-            # If we get here, deepcopy was not called and metadata reference was reused
-            assert copy.metadata is original_metadata
-        except AssertionError as e:
-            if "deepcopy should not be called" in str(e):
-                pytest.fail("function_copy still calls deepcopy unnecessarily")
-            raise
+        copy = sample_function.function_copy()
 
-    def test_function_copy_multiple_calls_same_plugin(self, sample_function):
-        """Test that multiple copies with same plugin reuse metadata.
+        assert copy.metadata is not original_metadata
+        mock_deepcopy.assert_not_called()
 
-        This tests the performance benefit of reusing metadata references
-        when no change is needed.
-        """
+    def test_function_copy_multiple_calls_same_plugin_are_isolated(self, sample_function):
+        """Test that multiple copies with same plugin keep independent metadata."""
         copy1 = sample_function.function_copy()
         copy2 = sample_function.function_copy()
         copy3 = sample_function.function_copy(sample_function.plugin_name)
 
-        # All should reference the same original metadata
-        assert copy1.metadata is sample_function.metadata
-        assert copy2.metadata is sample_function.metadata
-        assert copy3.metadata is sample_function.metadata
+        assert copy1.metadata is not sample_function.metadata
+        assert copy2.metadata is not sample_function.metadata
+        assert copy3.metadata is not sample_function.metadata
+        assert copy1.metadata is not copy2.metadata
+        assert copy2.metadata is not copy3.metadata
+        assert copy1.metadata is not copy3.metadata
