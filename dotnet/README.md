@@ -53,7 +53,7 @@ string text1 = @"
 string text2 = @"
 1. An object at rest remains at rest, and an object in motion remains in motion at constant speed and in a straight line unless acted on by an unbalanced force.
 2. The acceleration of an object depends on the mass of the object and the amount of force applied.
-3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite on the first.";
+3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite force on the first.";
 
 Console.WriteLine(await kernel.InvokeAsync(summarize, new() { ["input"] = text1 }));
 
