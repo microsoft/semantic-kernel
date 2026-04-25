@@ -29,6 +29,7 @@ class Services(str, Enum):
     VERTEX_AI = "vertex_ai"
     DEEPSEEK = "deepseek"
     NVIDIA = "nvidia"
+    FUTURMIX = "futurmix"
 
 
 service_id = "default"
@@ -66,6 +67,7 @@ def get_chat_completion_service_and_request_settings(
         Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
         Services.DEEPSEEK: lambda: get_deepseek_chat_completion_service_and_request_settings(),
         Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
+        Services.FUTURMIX: lambda: get_futurmix_chat_completion_service_and_request_settings(),
     }
 
     # Call the appropriate lambda or function based on the service name
@@ -428,5 +430,55 @@ def get_nvidia_chat_completion_service_and_request_settings() -> tuple[
 
     chat_service = NvidiaChatCompletion(service_id=service_id)
     request_settings = NvidiaChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_futurmix_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return FuturMix chat completion service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The FuturMix endpoint can be accessed via the OpenAI connector as the FuturMix API is compatible with OpenAI API.
+    FuturMix (https://futurmix.ai) is a unified AI gateway that provides access to 22+ models from
+    OpenAI, Anthropic, and Google through a single OpenAI-compatible endpoint.
+    Set the `OPENAI_API_KEY` environment variable to the FuturMix API key.
+    Set the `OPENAI_CHAT_MODEL_ID` environment variable to the model ID (e.g., gpt-4o, claude-sonnet-4-20250514,
+    or gemini-2.0-flash).
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from openai import AsyncOpenAI
+
+    from semantic_kernel.connectors.ai.open_ai import (
+        OpenAIChatCompletion,
+        OpenAIChatPromptExecutionSettings,
+        OpenAISettings,
+    )
+
+    openai_settings = OpenAISettings()
+    if not openai_settings.api_key:
+        raise ServiceInitializationError("The FuturMix API key is required.")
+    if not openai_settings.chat_model_id:
+        raise ServiceInitializationError("The FuturMix model ID is required.")
+
+    chat_service = OpenAIChatCompletion(
+        ai_model_id=openai_settings.chat_model_id,
+        service_id=service_id,
+        async_client=AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value(),
+            base_url="https://futurmix.ai/v1",
+        ),
+    )
+    request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
