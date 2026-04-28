@@ -8,8 +8,8 @@ on:
       - ready_for_review
   workflow_dispatch:
     inputs:
-      pr_url:
-        description: Pull request URL to review
+      pr_number:
+        description: Pull request number to review
         required: true
         type: string
 
@@ -40,39 +40,27 @@ jobs:
         shell: bash
         env:
           PR_HTML_URL: ${{ github.event.pull_request.html_url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_URL_INPUT: ${{ inputs.pr_url }}
+          PR_NUMBER_EVENT: ${{ github.event.pull_request.number }}
+          PR_NUMBER_INPUT: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
 
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
-            echo "pr_url=${PR_HTML_URL}" >> "$GITHUB_OUTPUT"
-            echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-            echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
-            exit 0
+            pr_number="${PR_NUMBER_EVENT}"
+            pr_url="${PR_HTML_URL}"
+          else
+            pr_number="${PR_NUMBER_INPUT}"
+            pr_url="https://github.com/${GITHUB_REPOSITORY}/pull/${pr_number}"
           fi
 
-          if [[ -z "$PR_URL_INPUT" ]]; then
-            echo "workflow_dispatch requires pr_url" >&2
+          if [[ ! "$pr_number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Could not determine PR number; for workflow_dispatch runs, the 'pr_number' input is required when not running on pull_request_target." >&2
             exit 1
           fi
 
-          if [[ ! "$PR_URL_INPUT" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+)([/?].*)?$ ]]; then
-            echo "Could not parse pull request URL (expected https://github.com/<owner>/<repo>/pull/<number>): $PR_URL_INPUT" >&2
-            exit 1
-          fi
-
-          pr_repo="${BASH_REMATCH[1]}"
-          pr_number="${BASH_REMATCH[2]}"
-
-          if [[ "$pr_repo" != "$GITHUB_REPOSITORY" ]]; then
-            echo "PR URL repository ($pr_repo) does not match current repository ($GITHUB_REPOSITORY)" >&2
-            exit 1
-          fi
-
-          echo "pr_url=${PR_URL_INPUT}" >> "$GITHUB_OUTPUT"
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
           echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
-          echo "repo=${pr_repo}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
 
       # Safe checkout: base repo only, not the untrusted PR head.
       - name: Checkout target repo base
