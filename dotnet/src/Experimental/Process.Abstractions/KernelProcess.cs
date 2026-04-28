@@ -50,5 +50,9 @@ public sealed record KernelProcess : KernelProcessStepInfo
         Verify.NotNullOrWhiteSpace(state.Name);
 
         this.Steps = [.. steps];
+        if (threads is not null)
+        {
+            this.Threads = threads;
+        }
     }
 }

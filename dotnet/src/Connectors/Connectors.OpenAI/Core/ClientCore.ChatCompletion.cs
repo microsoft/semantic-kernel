@@ -997,9 +997,9 @@ internal partial class ClientCore
             return "audio/opus";
         }
 
-        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Aac)
         {
-            return "audio/wav";
+            return "audio/aac";
         }
 
         if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Flac)
@@ -1012,7 +1012,7 @@ internal partial class ClientCore
             return "audio/pcm16";
         }
 
-        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'flac' and 'pcm16'.");
+        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'aac', 'flac' and 'pcm16'.");
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)
