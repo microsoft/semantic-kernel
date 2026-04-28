@@ -25,7 +25,37 @@ async def test_google_ai_chat_completion_user_agent(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.generate_content = AsyncMock()
 
-        service = GoogleAIChatCompletion(gemini_model_id="gemini-3-flash-preview", api_key="AIza-test-key")
+        service = GoogleAIChatCompletion(gemini_model_id="gemini-3-flash-preview", api_key="test-api-key")
+
+        await service.get_chat_message_contents(
+            chat_history=chat_history, settings=GoogleAIChatPromptExecutionSettings()
+        )
+
+        _, kwargs = mock_client.call_args
+        assert "http_options" in kwargs
+        assert kwargs["http_options"] is not None
+        assert "headers" in kwargs["http_options"]
+        assert USER_AGENT in kwargs["http_options"]["headers"]
+        assert "semantic-kernel-python" in kwargs["http_options"]["headers"][USER_AGENT]
+
+
+async def test_google_ai_chat_completion_vertex_ai_user_agent(google_ai_unit_test_env):
+    """Test that GoogleAIChatCompletion sends the User-Agent header with Vertex AI."""
+    chat_history = ChatHistory()
+    chat_history.add_user_message("hi")
+
+    with patch(
+        "semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion.Client"
+    ) as mock_client:
+        mock_instance = mock_client.return_value.__enter__.return_value
+        mock_instance.aio.models.generate_content = AsyncMock()
+
+        service = GoogleAIChatCompletion(
+            gemini_model_id="gemini-3-flash-preview",
+            use_vertexai=True,
+            project_id="test-project",
+            region="test-region",
+        )
 
         await service.get_chat_message_contents(
             chat_history=chat_history, settings=GoogleAIChatPromptExecutionSettings()
@@ -53,7 +83,7 @@ async def test_google_ai_chat_completion_no_telemetry(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.generate_content = AsyncMock()
 
-        service = GoogleAIChatCompletion(gemini_model_id="gemini-3-flash-preview", api_key="AIza-test-key")
+        service = GoogleAIChatCompletion(gemini_model_id="gemini-3-flash-preview", api_key="test-api-key")
 
         await service.get_chat_message_contents(
             chat_history=chat_history, settings=GoogleAIChatPromptExecutionSettings()
@@ -72,7 +102,7 @@ async def test_google_ai_text_completion_user_agent(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.generate_content = AsyncMock()
 
-        service = GoogleAITextCompletion(gemini_model_id="gemini-3-flash-preview", api_key="AIza-test-key")
+        service = GoogleAITextCompletion(gemini_model_id="gemini-3-flash-preview", api_key="test-api-key")
 
         await service.get_text_contents(prompt="hi", settings=GoogleAITextPromptExecutionSettings())
 
@@ -95,7 +125,7 @@ async def test_google_ai_text_completion_no_telemetry(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.generate_content = AsyncMock()
 
-        service = GoogleAITextCompletion(gemini_model_id="gemini-3-flash-preview", api_key="AIza-test-key")
+        service = GoogleAITextCompletion(gemini_model_id="gemini-3-flash-preview", api_key="test-api-key")
 
         await service.get_text_contents(prompt="hi", settings=GoogleAITextPromptExecutionSettings())
 
@@ -112,7 +142,7 @@ async def test_google_ai_text_embedding_user_agent(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.embed_content = AsyncMock()
 
-        service = GoogleAITextEmbedding(embedding_model_id="gemini-embedding-2-preview", api_key="AIza-test-key")
+        service = GoogleAITextEmbedding(embedding_model_id="gemini-embedding-2-preview", api_key="test-api-key")
 
         await service.generate_embeddings(texts=["hi"], settings=GoogleAIEmbeddingPromptExecutionSettings())
 
@@ -135,7 +165,7 @@ async def test_google_ai_text_embedding_no_telemetry(google_ai_unit_test_env):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.embed_content = AsyncMock()
 
-        service = GoogleAITextEmbedding(embedding_model_id="gemini-embedding-2-preview", api_key="AIza-test-key")
+        service = GoogleAITextEmbedding(embedding_model_id="gemini-embedding-2-preview", api_key="test-api-key")
 
         await service.generate_embeddings(texts=["hi"], settings=GoogleAIEmbeddingPromptExecutionSettings())
 
