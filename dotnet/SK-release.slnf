@@ -32,9 +32,6 @@
       "src\\Connectors\\Connectors.Onnx\\Connectors.Onnx.csproj",
       "src\\Connectors\\Connectors.OpenAI\\Connectors.OpenAI.csproj",
 
-      "src\\VectorData\\Redis\\Redis.csproj",
-      "src\\VectorData\\SqlServer\\SqlServer.csproj",
-
       "src\\Experimental\\Orchestration.Flow\\Experimental.Orchestration.Flow.csproj",
 
       "src\\Experimental\\Process.Abstractions\\Process.Abstractions.csproj",
