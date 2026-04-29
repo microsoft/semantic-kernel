@@ -275,6 +275,8 @@ class GroupChatManagerActor(ActorBase):
         self._internal_topic_type = internal_topic_type
         self._chat_history: ChatHistory = ChatHistory()
         self._chat_history_reducer = chat_history_reducer
+        if chat_history_reducer is not None and chat_history_reducer.messages:
+            self._chat_history.messages = list(chat_history_reducer.messages)
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
@@ -309,10 +311,15 @@ class GroupChatManagerActor(ActorBase):
         await self._determine_state_and_take_action(ctx.cancellation_token)
 
     async def _maybe_reduce_chat_history(self) -> None:
-        """Reduce the chat history if a reducer is configured and the threshold is exceeded."""
+        """Reduce the chat history if a reducer is configured and the threshold is exceeded.
+
+        The reducer operates on the manager\'s internal chat history, which is used
+        for agent selection and termination decisions. Note that this does not reduce
+        the history passed to individual agent LLM calls — that would require reducer
+        support at the AgentThread level, which is a separate enhancement.
+        """
         if self._chat_history_reducer is not None:
-            # Sync messages from the internal history to the reducer
-            self._chat_history_reducer.messages = self._chat_history.messages
+            self._chat_history_reducer.messages = list(self._chat_history.messages)
             result = await self._chat_history_reducer.reduce()
             if result is not None:
                 self._chat_history.messages = result.messages
