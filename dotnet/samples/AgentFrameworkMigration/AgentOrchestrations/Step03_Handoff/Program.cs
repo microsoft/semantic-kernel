@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable MAAIW001 // Experimental: HandoffWorkflowBuilder
+
 using System.ComponentModel;
 using System.Text.Json;
 using Azure.AI.OpenAI;
@@ -207,13 +209,13 @@ async Task AFHandoffAgentWorkflow()
         Console.WriteLine($"User: {query}");
         messages.Add(new(ChatRole.User, query));
 
-        await using var run = await InProcessExecution.StreamAsync(handoffAgentWorkflow, messages);
+        await using var run = await InProcessExecution.RunStreamingAsync(handoffAgentWorkflow, messages);
         await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
         string? lastExecutorId = null;
         await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
         {
-            if (evt is AgentRunUpdateEvent e)
+            if (evt is AgentResponseUpdateEvent e)
             {
                 if (string.IsNullOrEmpty(e.Update.Text) && e.Update.Contents.Count == 0)
                 {
