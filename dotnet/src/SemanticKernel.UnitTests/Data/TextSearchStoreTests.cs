@@ -246,6 +246,37 @@ public class TextSearchStoreTests
     }
 
     [Fact]
+    public async Task GetTextSearchResultsAsyncReturnsTextSearchResults()
+    {
+        // Arrange
+        var mockResults = new List<VectorSearchResult<TextSearchStore<string>.TextRagStorageDocument<string>>>
+        {
+            new(new TextSearchStore<string>.TextRagStorageDocument<string>
+            {
+                Text = "Sample text",
+                SourceName = "src-name",
+                SourceLink = "src-link",
+            }, 0.9f)
+        };
+
+        this._recordCollectionMock
+            .Setup(r => r.SearchAsync("query", 3, It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Returns(mockResults.ToAsyncEnumerable());
+
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
+
+        // Act
+        var actualResults = await store.GetTextSearchResultsAsync("query");
+
+        // Assert
+        var actualResultsList = await actualResults.Results.ToListAsync();
+        Assert.Single(actualResultsList);
+        Assert.Equal("Sample text", actualResultsList[0].Value);
+        Assert.Equal("src-name", actualResultsList[0].Name);
+        Assert.Equal("src-link", actualResultsList[0].Link);
+    }
+
+    [Fact]
     public async Task SearchAsyncWithHybridReturnsSearchResults()
     {
         // Arrange

@@ -1936,6 +1936,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         { "{\"voice\":\"echo\",\"format\":\"opus\"}", "{\"voice\":\"echo\",\"format\":\"opus\"}" },
     };
 
+    public static TheoryData<ChatOutputAudioFormat, string> AudioMimeTypeMappingData => new()
+    {
+        { ChatOutputAudioFormat.Wav, "audio/wav" },
+        { ChatOutputAudioFormat.Aac, "audio/aac" },
+        { ChatOutputAudioFormat.Mp3, "audio/mp3" },
+        { ChatOutputAudioFormat.Opus, "audio/opus" },
+        { ChatOutputAudioFormat.Flac, "audio/flac" },
+        { ChatOutputAudioFormat.Pcm16, "audio/pcm16" },
+    };
+
 #pragma warning disable CS8618, CA1812
     private sealed class MathReasoning
     {
@@ -2144,6 +2154,56 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("This is the audio transcript.", audioContent.Metadata["Transcript"]);
         Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
         // The ExpiresAt value is converted to a DateTime object, so we can't directly compare it to the Unix timestamp
+    }
+
+    [Theory]
+    [MemberData(nameof(AudioMimeTypeMappingData))]
+    public async Task ItMapsAudioOutputFormatToCorrectMimeTypeAsync(ChatOutputAudioFormat format, string expectedMimeType)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var responseJson = """
+        {
+            "model": "gpt-4o",
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "This is the text response.",
+                        "audio": {
+                            "data": "AQIDBA=="
+                        }
+                    },
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 20,
+                "total_tokens": 30
+            }
+        }
+        """;
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        { Content = new StringContent(responseJson) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            Modalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, format)
+        };
+
+        // Act
+        var result = await chatCompletion.GetChatMessageContentAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Items.Count);
+        var audioContent = result.Items[1] as AudioContent;
+        Assert.NotNull(audioContent);
+        Assert.Equal(expectedMimeType, audioContent.MimeType);
     }
 
     [Fact]
