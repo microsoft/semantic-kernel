@@ -27,18 +27,12 @@ from semantic_kernel.connectors.redis import (
     RedisStore,
 )
 from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
-from semantic_kernel.exceptions import MemoryConnectorConnectionException
+from semantic_kernel.exceptions import VectorStoreInitializationException
 
-# Vector search is broken on main due to redisvl 0.5+ API change and a
-# missing guard in the hashset deserializer.  See:
-# https://github.com/microsoft/semantic-kernel/issues/13896
-# https://github.com/microsoft/semantic-kernel/pull/13899
-# Once that PR merges, remove the xfail markers below.
-_SEARCH_XFAIL = pytest.mark.xfail(
-    reason="Vector search broken on main — process_results API mismatch + KeyError on missing vector field (#13896)",
-    raises=(Exception,),
-    strict=False,
-)
+# Vector search was broken on main due to redisvl 0.5+ API change and a
+# missing guard in the hashset deserializer.  Fixed by updating
+# _inner_search to pass IndexSchema and guarding buffer_to_array.
+# See: https://github.com/microsoft/semantic-kernel/issues/13896
 
 
 @vectorstoremodel
@@ -94,7 +88,7 @@ async def collection(collection_cls):
             collection_name=name,
             prefix_collection_name_to_key_names=True,
         )
-    except MemoryConnectorConnectionException as exc:
+    except (VectorStoreInitializationException, ConnectionError) as exc:
         pytest.xfail(f"Failed to connect to store: {exc}")
 
     async with col:
@@ -127,7 +121,7 @@ class TestRedisCoverage:
         """RedisStore.list_collection_names surfaces the created index via FT._LIST."""
         try:
             store = RedisStore()
-        except MemoryConnectorConnectionException as exc:
+        except (VectorStoreInitializationException, ConnectionError) as exc:
             pytest.xfail(f"Failed to connect to store: {exc}")
         try:
             names = await store.list_collection_names()
@@ -161,7 +155,6 @@ class TestRedisCoverage:
         assert with_vec.vector is not None
         assert without_vec.vector is None
 
-    @_SEARCH_XFAIL
     async def test_vector_search_basic(self, collection):
         """FT.SEARCH with an HNSW query returns results ordered by distance."""
         records = _records()
@@ -172,7 +165,6 @@ class TestRedisCoverage:
         assert len(results) == 3
         assert results[0].record.id == "cov-1"
 
-    @_SEARCH_XFAIL
     async def test_vector_search_top_skip(self, collection):
         """top/skip paging works end-to-end."""
         await collection.upsert(_records())
@@ -185,7 +177,6 @@ class TestRedisCoverage:
         seen = {r.record.id for r in page1} | {r.record.id for r in page2}
         assert seen == {"cov-1", "cov-2", "cov-3"}
 
-    @_SEARCH_XFAIL
     async def test_vector_search_with_tag_filter(self, collection):
         """Lambda filter on a text field is translated and honoured."""
         await collection.upsert(_records())
@@ -201,7 +192,6 @@ class TestRedisCoverage:
         assert len(results) == 1
         assert results[0].record.id == "cov-2"
 
-    @_SEARCH_XFAIL
     async def test_vector_search_include_vectors(self, collection):
         """include_vectors toggles whether the vector is returned on search hits."""
         await collection.upsert(_records())
@@ -235,7 +225,7 @@ class TestRedisCoverageNoPrefix:
                 collection_name=name,
                 prefix_collection_name_to_key_names=False,
             )
-        except MemoryConnectorConnectionException as exc:
+        except (VectorStoreInitializationException, ConnectionError) as exc:
             pytest.xfail(f"Failed to connect to store: {exc}")
 
         async with col:
@@ -300,7 +290,6 @@ class TestRedisCoverageExtended:
         with pytest.raises(VectorStoreOperationException, match="Invalid index type supplied."):
             await collection.ensure_collection_exists(index_definition="not-an-IndexDefinition", fields=["content"])
 
-    @_SEARCH_XFAIL
     async def test_vector_search_not_equal_filter(self, collection):
         await collection.upsert(_records())
         await asyncio.sleep(0.2)
@@ -314,7 +303,6 @@ class TestRedisCoverageExtended:
         ids = {r.record.id for r in results}
         assert ids == {"cov-2", "cov-3"}
 
-    @_SEARCH_XFAIL
     async def test_vector_search_and_filter(self, collection):
         await collection.upsert(_records())
         await asyncio.sleep(0.2)
@@ -327,7 +315,6 @@ class TestRedisCoverageExtended:
         )
         assert {r.record.id for r in results} == {"cov-2"}
 
-    @_SEARCH_XFAIL
     async def test_vector_search_or_filter(self, collection):
         await collection.upsert(_records())
         await asyncio.sleep(0.2)

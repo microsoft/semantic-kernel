@@ -21,7 +21,7 @@ from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
 from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
-from redisvl.schema import StorageType
+from redisvl.schema import IndexSchema as _RedisVLIndexSchema, StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.vector import (
@@ -278,7 +278,7 @@ class RedisCollection(
             raise VectorStoreOperationException("Invalid index type supplied.")
         fields = _definition_to_redis_fields(self.definition, self.collection_type)
         index_definition = IndexDefinition(
-            prefix=f"{self.collection_name}:", index_type=INDEX_TYPE_MAP[self.collection_type]
+            prefix=[f"{self.collection_name}:"], index_type=INDEX_TYPE_MAP[self.collection_type]
         )
         await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
 
@@ -321,7 +321,10 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        schema = _RedisVLIndexSchema.from_dict(
+            {"index": {"name": self.collection_name, "storage_type": STORAGE_TYPE_MAP[self.collection_type].value}}
+        )
+        processed = process_results(results, query, schema)
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
             total_count=results.total,
@@ -616,8 +619,9 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
                     case FieldTypes.KEY:
                         rec[field.name] = self._unget_redis_key(rec[field.name])
                     case "vector":
-                        dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
-                        rec[field.name] = buffer_to_array(rec[field.name], dtype)
+                        if field.name in rec:
+                            dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
+                            rec[field.name] = buffer_to_array(rec[field.name], dtype)
             results.append(rec)
         return results
 
