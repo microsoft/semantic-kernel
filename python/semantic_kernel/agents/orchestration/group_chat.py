@@ -18,6 +18,7 @@ from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.agents.runtime.core.topic import TopicId
 from semantic_kernel.agents.runtime.in_process.type_subscription import TypeSubscription
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -259,6 +260,7 @@ class GroupChatManagerActor(ActorBase):
         participant_descriptions: dict[str, str],
         exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
+        chat_history_reducer: ChatHistoryReducer | None = None,
     ):
         """Initialize the group chat manager actor.
 
@@ -271,7 +273,8 @@ class GroupChatManagerActor(ActorBase):
         """
         self._manager = manager
         self._internal_topic_type = internal_topic_type
-        self._chat_history = ChatHistory()
+        self._chat_history: ChatHistory = ChatHistory()
+        self._chat_history_reducer = chat_history_reducer
         self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
 
@@ -301,8 +304,21 @@ class GroupChatManagerActor(ActorBase):
                 )
             )
         self._chat_history.add_message(message.body)
+        await self._maybe_reduce_chat_history()
 
         await self._determine_state_and_take_action(ctx.cancellation_token)
+
+    async def _maybe_reduce_chat_history(self) -> None:
+        """Reduce the chat history if a reducer is configured and the threshold is exceeded."""
+        if self._chat_history_reducer is not None:
+            # Sync messages from the internal history to the reducer
+            self._chat_history_reducer.messages = self._chat_history.messages
+            result = await self._chat_history_reducer.reduce()
+            if result is not None:
+                self._chat_history.messages = result.messages
+                logger.debug(
+                    f"Chat history reduced to {len(self._chat_history.messages)} messages."
+                )
 
     @ActorBase.exception_handler
     async def _determine_state_and_take_action(self, cancellation_token: CancellationToken) -> None:
@@ -377,6 +393,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
+        chat_history_reducer: ChatHistoryReducer | None = None,
     ) -> None:
         """Initialize the group chat orchestration.
 
@@ -392,8 +409,12 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 by the agents.
             streaming_agent_response_callback (Callable | None): A function that is called when a streaming response
                 is produced by the agents.
+            chat_history_reducer (ChatHistoryReducer | None): An optional reducer to summarize or truncate
+                the chat history during the group chat. When provided, the reducer is called after each
+                agent response to keep the history within bounds.
         """
         self._manager = manager
+        self._chat_history_reducer = chat_history_reducer
 
         for member in members:
             if member.description is None:
@@ -496,6 +517,7 @@ class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
                 exception_callback=exception_callback,
                 result_callback=result_callback,
+                chat_history_reducer=self._chat_history_reducer,
             ),
         )
 
