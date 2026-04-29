@@ -179,13 +179,11 @@ public static class PromptExecutionSettingsExtensions
                 options.ToolMode = ChatToolMode.Auto;
                 options.AllowMultipleToolCalls = autoChoiceBehavior.Options?.AllowParallelCalls;
             }
-            else
-            if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.None;
             }
-            else
-            if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.RequireAny;
                 options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
