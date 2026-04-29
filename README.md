@@ -7,6 +7,10 @@
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
+> [!IMPORTANT]
+> **Semantic Kernel's successor SDK is [Microsoft Agent Framework (MAF)](https://github.com/microsoft/agent-framework).** MAF is an open, multi-language framework for building **production-grade AI agents and multi-agent workflows** in **.NET and Python** — and is where major development is now happening.
+>
+> Please use MAF for the latest abstractions to build agents, workflows, and multi-agent orchestrations. Semantic Kernel will continue to receive minimal security and bug fixes only.
 
 ## What is Semantic Kernel?
 

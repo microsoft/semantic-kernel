@@ -1,5 +1,10 @@
 # Get Started with Semantic Kernel ⚡
 
+> [!IMPORTANT]
+> **Semantic Kernel's successor SDK is [Microsoft Agent Framework (MAF)](https://github.com/microsoft/agent-framework).** MAF is an open, multi-language framework for building **production-grade AI agents and multi-agent workflows** in **.NET and Python** — and is where major development is now happening.
+>
+> Please use MAF for the latest abstractions to build agents, workflows, and multi-agent orchestrations. Semantic Kernel will continue to receive minimal security and bug fixes only.
+
 ## OpenAI / Azure OpenAI API keys
 
 To run the LLM prompts and semantic functions in the examples below, make sure
