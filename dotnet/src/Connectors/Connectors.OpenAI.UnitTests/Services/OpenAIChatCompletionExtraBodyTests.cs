@@ -7,10 +7,12 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -288,6 +290,41 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
         var json = JsonDocument.Parse(serialized).RootElement;
         Assert.False(json.GetProperty("enable_thinking").GetBoolean());
         Assert.False(json.GetProperty("thinking").GetProperty("enabled").GetBoolean());
+    }
+
+    [Fact]
+    public async Task IChatClientPathPreservesStronglyTypedSettingsAlongsideExtraBodyAsync()
+    {
+        // Arrange - end-to-end IChatClient path: build an IChatClient via OpenAI SDK and send a request
+        // through M.E.AI. Verify both the strongly-typed property (Temperature) and the ExtraBody patch
+        // (enable_thinking) appear in the outgoing HTTP request body. Per M.E.AI ChatOptions.RawRepresentationFactory
+        // contract, the OpenAI bridge mutates the returned raw options with values from the strongly-typed
+        // ChatOptions properties before serialization.
+        var openAIClient = new global::OpenAI.OpenAIClient(
+            new global::System.ClientModel.ApiKeyCredential("NOKEY"),
+            new global::OpenAI.OpenAIClientOptions { Transport = new global::System.ClientModel.Primitives.HttpClientPipelineTransport(this._httpClient) });
+        global::Microsoft.Extensions.AI.IChatClient chatClient = openAIClient.GetChatClient("gpt-4o").AsIChatClient();
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.7,
+            MaxTokens = 256,
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["enable_thinking"] = false,
+            },
+        };
+        var chatOptions = settings.ToChatOptions(kernel: null);
+
+        // Act
+        var messages = new[] { new global::Microsoft.Extensions.AI.ChatMessage(global::Microsoft.Extensions.AI.ChatRole.User, "hi") };
+        await chatClient.GetResponseAsync(messages, chatOptions);
+
+        // Assert
+        var body = ParseRequestBody(this._messageHandlerStub.RequestContent!);
+        Assert.Equal(0.7, body.GetProperty("temperature").GetDouble());
+        Assert.Equal(256, body.GetProperty("max_completion_tokens").GetInt32());
+        Assert.False(body.GetProperty("enable_thinking").GetBoolean());
     }
 
     private static JsonElement ParseRequestBody(byte[] requestContent)
