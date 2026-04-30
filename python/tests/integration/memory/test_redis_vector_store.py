@@ -67,6 +67,22 @@ async def _collect(results):
     return [r async for r in results.results]
 
 
+async def _wait_for_indexing(collection, vector, expected_count, *, timeout=5.0, interval=0.1):
+    """Poll search until the index has caught up with the expected record count.
+
+    Avoids flaky ``asyncio.sleep`` waits by retrying until the index returns
+    at least ``expected_count`` results or the timeout is reached.
+    """
+    deadline = asyncio.get_event_loop().time() + timeout
+    while True:
+        results = await _collect(await collection.search(vector=vector, top=expected_count))
+        if len(results) >= expected_count:
+            return
+        if asyncio.get_event_loop().time() >= deadline:
+            pytest.fail(f"Indexing did not complete within {timeout}s: expected {expected_count}, got {len(results)}")
+        await asyncio.sleep(interval)
+
+
 @pytest.fixture
 def collection_cls(request):
     """Parametrized fixture selecting the concrete collection class."""
@@ -159,7 +175,7 @@ class TestRedisCoverage:
         """FT.SEARCH with an HNSW query returns results ordered by distance."""
         records = _records()
         await collection.upsert(records)
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
 
         results = await _collect(await collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=3))
         assert len(results) == 3
@@ -168,7 +184,7 @@ class TestRedisCoverage:
     async def test_vector_search_top_skip(self, collection):
         """top/skip paging works end-to-end."""
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
 
         page1 = await _collect(await collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=2, skip=0))
         page2 = await _collect(await collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=2, skip=2))
@@ -180,7 +196,7 @@ class TestRedisCoverage:
     async def test_vector_search_with_tag_filter(self, collection):
         """Lambda filter on a text field is translated and honoured."""
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
 
         results = await _collect(
             await collection.search(
@@ -195,7 +211,7 @@ class TestRedisCoverage:
     async def test_vector_search_include_vectors(self, collection):
         """include_vectors toggles whether the vector is returned on search hits."""
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
 
         with_vec = await _collect(
             await collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=1, include_vectors=True)
@@ -292,7 +308,7 @@ class TestRedisCoverageExtended:
 
     async def test_vector_search_not_equal_filter(self, collection):
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
         results = await _collect(
             await collection.search(
                 vector=[0.1, 0.2, 0.3, 0.4, 0.5],
@@ -305,7 +321,7 @@ class TestRedisCoverageExtended:
 
     async def test_vector_search_and_filter(self, collection):
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
         results = await _collect(
             await collection.search(
                 vector=[0.1, 0.2, 0.3, 0.4, 0.5],
@@ -317,7 +333,7 @@ class TestRedisCoverageExtended:
 
     async def test_vector_search_or_filter(self, collection):
         await collection.upsert(_records())
-        await asyncio.sleep(0.2)
+        await _wait_for_indexing(collection, [0.1, 0.2, 0.3, 0.4, 0.5], 3)
         results = await _collect(
             await collection.search(
                 vector=[0.1, 0.2, 0.3, 0.4, 0.5],
