@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class KernelFunctionLogMessagesTests
+public partial class KernelFunctionLogMessagesTests
 {
     [Theory]
     [InlineData(typeof(string))]
