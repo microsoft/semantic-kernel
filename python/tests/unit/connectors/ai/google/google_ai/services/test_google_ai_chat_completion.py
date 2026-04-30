@@ -75,6 +75,20 @@ def test_google_ai_chat_completion_init_with_use_vertexai_missing_project_id(goo
         GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_REGION"]], indirect=True)
+def test_google_ai_chat_completion_init_with_use_vertexai_missing_region(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with use_vertexai true but missing region"""
+    with pytest.raises(ServiceInitializationError, match="Region must be provided when use_vertexai is True."):
+        GoogleAIChatCompletion(use_vertexai=True, env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
+def test_google_ai_chat_completion_init_with_use_vertexai_no_api_key(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion succeeds with use_vertexai=True and no api_key"""
+    chat_completion = GoogleAIChatCompletion(use_vertexai=True)
+    assert chat_completion.service_settings.use_vertexai is True
+
+
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
     google_ai_chat_completion = GoogleAIChatCompletion()
     assert google_ai_chat_completion.get_prompt_execution_settings_class() == GoogleAIChatPromptExecutionSettings
@@ -440,3 +454,197 @@ def test_google_ai_chat_completion_parse_chat_history_correctly(google_ai_unit_t
     assert parsed_chat_history[0].parts[0].text == "test_user_message"
     assert parsed_chat_history[1].role == "model"
     assert parsed_chat_history[1].parts[0].text == "test_assistant_message"
+
+
+# region deserialization (Part → FunctionCallContent round-trip)
+
+
+def test_create_chat_message_content_with_thought_signature(google_ai_unit_test_env) -> None:
+    """Test that thought_signature from a Part is deserialized into FunctionCallContent.metadata."""
+    from google.genai.types import (
+        Candidate,
+        Content,
+        GenerateContentResponse,
+        GenerateContentResponseUsageMetadata,
+        Part,
+    )
+    from google.genai.types import (
+        FinishReason as GFinishReason,
+    )
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    thought_sig_value = b"test-thought-sig-bytes"
+    part = Part.from_function_call(name="test_function", args={"key": "value"})
+    part.thought_signature = thought_sig_value
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="user", parts=[part])
+    candidate.finish_reason = GFinishReason.STOP
+
+    response = GenerateContentResponse()
+    response.candidates = [candidate]
+    response.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0, cached_content_token_count=0, candidates_token_count=0, total_token_count=0
+    )
+
+    completion = GoogleAIChatCompletion()
+    result = completion._create_chat_message_content(response, candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert fc_items[0].metadata is not None
+    assert fc_items[0].metadata["thought_signature"] == thought_sig_value
+
+
+def test_create_chat_message_content_without_thought_signature(google_ai_unit_test_env) -> None:
+    """Test that FunctionCallContent works when Part has no thought_signature."""
+    from google.genai.types import (
+        Candidate,
+        Content,
+        GenerateContentResponse,
+        GenerateContentResponseUsageMetadata,
+        Part,
+    )
+    from google.genai.types import (
+        FinishReason as GFinishReason,
+    )
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    part = Part.from_function_call(name="test_function", args={"key": "value"})
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="user", parts=[part])
+    candidate.finish_reason = GFinishReason.STOP
+
+    response = GenerateContentResponse()
+    response.candidates = [candidate]
+    response.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0, cached_content_token_count=0, candidates_token_count=0, total_token_count=0
+    )
+
+    completion = GoogleAIChatCompletion()
+    result = completion._create_chat_message_content(response, candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert "thought_signature" not in fc_items[0].metadata
+
+
+def test_create_streaming_chat_message_content_with_thought_signature(google_ai_unit_test_env) -> None:
+    """Test that thought_signature from a Part is deserialized in streaming path."""
+    from google.genai.types import (
+        Candidate,
+        Content,
+        GenerateContentResponse,
+        GenerateContentResponseUsageMetadata,
+        Part,
+    )
+    from google.genai.types import (
+        FinishReason as GFinishReason,
+    )
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    thought_sig_value = b"streaming-thought-sig"
+    part = Part.from_function_call(name="stream_func", args={"a": "b"})
+    part.thought_signature = thought_sig_value
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="user", parts=[part])
+    candidate.finish_reason = GFinishReason.STOP
+
+    chunk = GenerateContentResponse()
+    chunk.candidates = [candidate]
+    chunk.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0, cached_content_token_count=0, candidates_token_count=0, total_token_count=0
+    )
+
+    completion = GoogleAIChatCompletion()
+    result = completion._create_streaming_chat_message_content(chunk, candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert fc_items[0].metadata is not None
+    assert fc_items[0].metadata["thought_signature"] == thought_sig_value
+
+
+def test_create_streaming_chat_message_content_without_thought_signature(google_ai_unit_test_env) -> None:
+    """Test that streaming FunctionCallContent works when Part lacks thought_signature."""
+    from google.genai.types import (
+        Candidate,
+        Content,
+        GenerateContentResponse,
+        GenerateContentResponseUsageMetadata,
+        Part,
+    )
+    from google.genai.types import (
+        FinishReason as GFinishReason,
+    )
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    part = Part.from_function_call(name="stream_func", args={"a": "b"})
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="user", parts=[part])
+    candidate.finish_reason = GFinishReason.STOP
+
+    chunk = GenerateContentResponse()
+    chunk.candidates = [candidate]
+    chunk.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0, cached_content_token_count=0, candidates_token_count=0, total_token_count=0
+    )
+
+    completion = GoogleAIChatCompletion()
+    result = completion._create_streaming_chat_message_content(chunk, candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert "thought_signature" not in fc_items[0].metadata
+
+
+def test_create_chat_message_content_getattr_guard_on_missing_attribute(google_ai_unit_test_env) -> None:
+    """Test that getattr guard handles SDK versions where thought_signature doesn't exist on Part."""
+    from unittest.mock import MagicMock
+
+    from google.genai.types import (
+        GenerateContentResponse,
+        GenerateContentResponseUsageMetadata,
+    )
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    # Create a mock Part that lacks 'thought_signature' attribute entirely
+    mock_part = MagicMock()
+    mock_part.text = None
+    mock_part.function_call.name = "test_func"
+    mock_part.function_call.args = {"x": "y"}
+    del mock_part.thought_signature  # simulate older SDK without the field
+
+    # Use a fully-mocked candidate to avoid Content pydantic validation
+    mock_candidate = MagicMock()
+    mock_candidate.index = 0
+    mock_candidate.content.parts = [mock_part]
+    mock_candidate.finish_reason = 1  # STOP
+
+    response = GenerateContentResponse()
+    response.candidates = [mock_candidate]
+    response.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0, cached_content_token_count=0, candidates_token_count=0, total_token_count=0
+    )
+
+    completion = GoogleAIChatCompletion()
+    result = completion._create_chat_message_content(response, mock_candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert "thought_signature" not in fc_items[0].metadata
+
+
+# endregion deserialization

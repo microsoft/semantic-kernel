@@ -27,7 +27,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that are less than the value of 101?");
         }
         finally
         {

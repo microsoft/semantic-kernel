@@ -18,13 +18,7 @@ public class SqliteDataTypeTests(SqliteDataTypeTests.Fixture fixture)
         [
             typeof(byte),
             typeof(decimal),
-            typeof(DateTime),
-            typeof(DateTimeOffset),
             typeof(string[]),
-#if NET
-            typeof(DateOnly),
-            typeof(TimeOnly)
-#endif
         ];
     }
 }

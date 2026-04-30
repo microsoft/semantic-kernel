@@ -1,0 +1,8 @@
+{
+  // Optional: Provide a connection string to use an external PostgreSQL instance instead of testcontainers
+  // This is useful for running tests against external PostgreSQL instances or cloud databases
+  // If not specified, tests will automatically use a testcontainer
+  "Postgres": {
+    "ConnectionString": ""
+  }
+}

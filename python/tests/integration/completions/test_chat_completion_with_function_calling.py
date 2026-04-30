@@ -24,7 +24,7 @@ from semantic_kernel.kernel import Kernel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
-    google_ai_setup,
+    # google_ai_setup,
     mistral_ai_setup,
     ollama_tool_call_setup,
     vertex_ai_setup,
@@ -504,7 +504,8 @@ pytestmark = pytest.mark.parametrize(
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
             marks=[
-                pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             ],
             id="google_ai_tool_call_auto",
         ),
@@ -526,7 +527,8 @@ pytestmark = pytest.mark.parametrize(
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
             marks=[
-                pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             ],
             id="google_ai_tool_call_non_auto",
         ),
@@ -554,6 +556,10 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
+            marks=[
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
+            ],
             id="google_ai_tool_call_flow",
         ),
         pytest.param(
@@ -573,7 +579,8 @@ pytestmark = pytest.mark.parametrize(
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
             marks=[
-                pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             ],
             id="google_ai_tool_call_auto_complex_return_type",
         ),

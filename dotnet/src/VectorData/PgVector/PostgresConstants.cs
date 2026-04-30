@@ -24,6 +24,9 @@ internal static class PostgresConstants
     /// <summary>The default distance function.</summary>
     public const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
 
+    /// <summary>The default full-text search language for PostgreSQL.</summary>
+    public const string DefaultFullTextSearchLanguage = "english";
+
     public static readonly Dictionary<string, int> IndexMaxDimensions = new()
     {
         { IndexKind.Hnsw, 2000 },
