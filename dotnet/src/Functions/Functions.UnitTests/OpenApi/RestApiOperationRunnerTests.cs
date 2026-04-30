@@ -2085,6 +2085,152 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await sut.RunAsync(operation, []);
     }
 
+    [Fact]
+    public async Task ItShouldBlockRequestWithPrefixCollisionOnAllowedBaseUrlAsync()
+    {
+        // Arrange - attacker URL shares prefix with allowed base URL but diverges at path boundary
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com/v1-evil")],
+            path: "/steal-data",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should be blocked because /v1-evil is not under /v1/
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("not allowed", exception.Message);
+        Assert.Contains("does not match", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestUnderAllowedBaseUrlWithPathAsync()
+    {
+        // Arrange - legitimate sub-path under allowed base URL
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com/v1")],
+            path: "/users",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw; /v1/users is under /v1/
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestWhenAllowedBaseUrlContainsQueryOrFragmentAsync()
+    {
+        // Arrange - base URL misconfigured with query string; validation should ignore it
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com")],
+            path: "/users",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com?x=1")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw; query/fragment in base URL is stripped for comparison
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockHostLevelPrefixCollisionAsync()
+    {
+        // Arrange - malicious host shares textual prefix with allowed host
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com.evil.com")],
+            path: "/steal",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should be blocked; api.example.com.evil.com is not api.example.com
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("not allowed", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowRequestToBaseUrlPathWithQueryParametersAsync()
+    {
+        // Arrange - request to exact base URL path but with query parameters
+        var queryParameter = new RestApiParameter(
+            "user",
+            "string",
+            isRequired: true,
+            false,
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.Form);
+
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com/v1")],
+            path: "/",
+            method: HttpMethod.Get,
+            description: "test operation",
+            parameters: [queryParameter],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "user", "1" },
+        };
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw; the path portion matches the allowed base URL
+        await sut.RunAsync(operation, arguments);
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
