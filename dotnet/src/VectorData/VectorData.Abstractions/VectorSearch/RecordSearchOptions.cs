@@ -2,22 +2,15 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/>.
+/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}"/>.
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
     private int _skip = 0;
-
-    /// <summary>
-    /// Gets or sets a search filter to use before doing the vector search.
-    /// </summary>
-    [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; set; }
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
@@ -29,7 +22,7 @@ public class VectorSearchOptions<TRecord>
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
     /// <remarks>
-    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/> checks if there is a vector property to use by default, and
+    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}"/> checks if there is a vector property to use by default, and
     /// throws an exception if either none or multiple exist.
     /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }

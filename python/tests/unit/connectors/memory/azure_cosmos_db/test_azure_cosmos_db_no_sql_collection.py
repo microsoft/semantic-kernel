@@ -14,11 +14,13 @@ from semantic_kernel.connectors.azure_cosmos_db import (
     _create_default_indexing_policy_nosql,
     _create_default_vector_embedding_policy,
 )
+from semantic_kernel.data._shared import default_dynamic_filter_function
 from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreModelException,
     VectorStoreOperationException,
 )
+from semantic_kernel.functions import KernelParameterMetadata
 
 
 def test_azure_cosmos_db_no_sql_collection_init(
@@ -64,6 +66,66 @@ def test_azure_cosmos_db_no_sql_collection_init_env(
     assert vector_collection.collection_name == collection_name
     assert vector_collection.partition_key.path == f"/{vector_collection.definition.key_name}"
     assert vector_collection.create_database is False
+
+
+def test_azure_cosmos_db_no_sql_build_filter_escapes_apostrophes(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test Cosmos DB filter building escapes apostrophes in string literals."""
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+
+    filter_string = vector_collection._build_filter('lambda x: x.content == "O\'Reilly"')
+
+    assert filter_string == "c.content = 'O''Reilly'"
+
+
+def test_azure_cosmos_db_no_sql_build_filter_escapes_injection_payload(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test Cosmos DB filter building keeps injection-shaped strings inside the literal."""
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+
+    filter_string = vector_collection._build_filter("lambda x: x.content == \"test' OR '1'='1\"")
+
+    assert filter_string == "c.content = 'test'' OR ''1''=''1'"
+
+
+def test_azure_cosmos_db_no_sql_dynamic_filter_injection_payload_stays_literal(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test default_dynamic_filter_function does not let user values alter Cosmos filter syntax."""
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+    generated_filter = default_dynamic_filter_function(
+        filter=None,
+        parameters=[
+            KernelParameterMetadata(
+                name="content",
+                description="Content filter",
+                type="str",
+                is_required=False,
+                type_object=str,
+            )
+        ],
+        content="test' OR '1'='1",
+    )
+
+    assert isinstance(generated_filter, str)
+    assert vector_collection._build_filter(generated_filter) == "c.content = 'test'' OR ''1''=''1'"
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_NO_SQL_URL"]], indirect=True)

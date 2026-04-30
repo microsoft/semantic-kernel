@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
@@ -13,12 +14,11 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
     internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<double>, Embedding<double>, double[]";
 
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-            ?? vectorProperty.ResolveEmbeddingType<Embedding<double>>(embeddingGenerator, userRequestedEmbeddingType);
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<double>>()
+    ];
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {

@@ -77,14 +77,6 @@ public class RedisJsonFilterTests(RedisJsonFilterTests.Fixture fixture)
 
         protected override string CollectionNameBase => "JsonFilterTests";
 
-        public override string SpecialCharactersText
-#if NET
-            => base.SpecialCharactersText;
-#else
-            // Redis client doesn't properly escape '"' on Full Framework.
-            => base.SpecialCharactersText.Replace("\"", "");
-#endif
-
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -136,14 +128,6 @@ public class RedisHashSetFilterTests(RedisHashSetFilterTests.Fixture fixture)
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains_with_null_comparer());
 #endif
 
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_array()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_array());
-
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_List()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_List());
-
     // Array fields not supported on Redis HashSet - Any tests
     public override Task Any_with_Contains_over_inline_string_array()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Any_with_Contains_over_inline_string_array());
@@ -162,14 +146,6 @@ public class RedisHashSetFilterTests(RedisHashSetFilterTests.Fixture fixture)
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
         protected override string CollectionNameBase => "HashSetCollectionFilterTests";
-
-        public override string SpecialCharactersText
-#if NET
-            => base.SpecialCharactersText;
-#else
-            // Redis client doesn't properly escape '"' on Full Framework.
-            => base.SpecialCharactersText.Replace("\"", "");
-#endif
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
         public override VectorStoreCollectionDefinition CreateRecordDefinition()

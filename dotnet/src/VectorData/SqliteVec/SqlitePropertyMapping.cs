@@ -62,7 +62,7 @@ internal static class SqlitePropertyMapping
             else
             {
                 // The Key column in included in both Vector and Data tables.
-                Debug.Assert(property is KeyPropertyModel, "property is VectorStoreRecordKeyPropertyModel");
+                Debug.Assert(property is KeyPropertyModel, "property is not a KeyPropertyModel");
 
                 propertyType = GetStorageDataPropertyType(property);
                 isPrimary = true;
@@ -70,6 +70,7 @@ internal static class SqlitePropertyMapping
 
             var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
             {
+                IsNullable = property.IsNullable,
                 Configuration = configuration,
                 HasIndex = property is DataPropertyModel { IsIndexed: true }
             };
