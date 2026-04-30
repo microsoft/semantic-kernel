@@ -62,7 +62,7 @@ public class KernelFunctionLogMessagesTests
 
         // Use a restricted JsonSerializerOptions that knows about object but not TypeNotInJsonContext,
         // simulating the AOT scenario where AbstractionsJsonContext is used and an unregistered
-        // MEAItype (e.g. Microsoft.Extensions.AI.TextContent) is returned from an MCP tool.
+        // MEAI type (e.g. Microsoft.Extensions.AI.TextContent) is returned from an MCP tool.
         var restrictedOptions = RestrictedJsonContext.Default.Options;
 
         // Act
