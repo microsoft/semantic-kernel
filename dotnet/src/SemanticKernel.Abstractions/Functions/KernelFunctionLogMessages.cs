@@ -168,9 +168,14 @@ internal static partial class KernelFunctionLogMessages
                     var toStringValue = resultValue?.Value?.ToString() ?? string.Empty;
                     s_logFunctionResultValue(logger, pluginName, functionName, toStringValue, null);
                 }
-                catch
+                catch (Exception toStringEx)
                 {
-                    s_logFunctionResultValue(logger, pluginName, functionName, "Failed to log function result value", ex);
+                    s_logFunctionResultValue(
+                        logger,
+                        pluginName,
+                        functionName,
+                        "Failed to log function result value",
+                        new AggregateException(ex, toStringEx));
                 }
             }
         }
