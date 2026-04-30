@@ -358,15 +358,14 @@ async def test_inner_search_passes_index_schema_to_process_results(
     mock_results.docs = []
     mock_results.total = 0
 
-    with patch("redis.commands.search.AsyncSearch.search", new=AsyncMock(return_value=mock_results)):
-        with patch(
-            "semantic_kernel.connectors.redis.process_results", return_value=[]
-        ) as mock_process:
-            await collection._inner_search(
-                search_type=SearchType.VECTOR,
-                options=VectorSearchOptions(vector_property_name="vector", top=3),
-                vector=[1.0, 2.0, 3.0, 4.0, 5.0],
-            )
+    with patch("redis.commands.search.AsyncSearch.search", new=AsyncMock(return_value=mock_results)), patch(
+        "semantic_kernel.connectors.redis.process_results", return_value=[]
+    ) as mock_process:
+        await collection._inner_search(
+            search_type=SearchType.VECTOR,
+            options=VectorSearchOptions(vector_property_name="vector", top=3),
+            vector=[1.0, 2.0, 3.0, 4.0, 5.0],
+        )
 
     mock_process.assert_called_once()
     _results_arg, _query_arg, schema_arg = mock_process.call_args.args
