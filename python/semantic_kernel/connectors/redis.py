@@ -21,7 +21,8 @@ from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
 from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
-from redisvl.schema import IndexSchema as _RedisVLIndexSchema, StorageType
+from redisvl.schema import IndexSchema as _RedisVLIndexSchema
+from redisvl.schema import StorageType
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.vector import (
