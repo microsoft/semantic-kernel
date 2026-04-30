@@ -272,6 +272,7 @@ class MCPPluginBase:
                         "Failed to connect to the MCP server. Please check your configuration."
                     )
                     exc.__cause__ = ex
+                    exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
                 return
 
@@ -293,6 +294,7 @@ class MCPPluginBase:
                         "Failed to create a session. Please check your configuration."
                     )
                     exc.__cause__ = ex
+                    exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
                 return
             try:
@@ -304,6 +306,7 @@ class MCPPluginBase:
                         "Failed to initialize session. Please check your configuration."
                     )
                     exc.__cause__ = ex
+                    exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
                 return
             self.session = session
@@ -311,21 +314,25 @@ class MCPPluginBase:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
         logger.debug("Connected to MCP server: %s", self.session)
-        if self.load_tools_flag:
-            await self.load_tools()
-        if self.load_prompts_flag:
-            await self.load_prompts()
-
-        if logger.level != logging.NOTSET:
-            try:
-                await self.session.set_logging_level(
-                    next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
-                )
-            except Exception:
-                logger.warning("Failed to set log level to %s", logger.level)
-        # Setting up is complete, will now signal the main loop that we are ready
-        if not ready_future.done():
-            ready_future.set_result(None)
+        try:
+            if self.load_tools_flag:
+                await self.load_tools()
+            if self.load_prompts_flag:
+                await self.load_prompts()
+            if logger.level != logging.NOTSET:
+                try:
+                    await self.session.set_logging_level(
+                        next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
+                    )
+                except Exception:
+                    logger.warning("Failed to set log level to %s", logger.level)
+            if not ready_future.done():
+                ready_future.set_result(None)
+        except Exception as ex:
+            await self._exit_stack.aclose()
+            if not ready_future.done():
+                ready_future.set_exception(ex)
+            return
         # Create a stop event to signal the exit stack to close
         self._stop_event = asyncio.Event()
         await self._stop_event.wait()
@@ -441,9 +448,15 @@ class MCPPluginBase:
         if isinstance(message, types.ServerNotification):
             match message.root.method:
                 case "notifications/tools/list_changed":
-                    await self.load_tools()
+                    try:
+                        await self.load_tools()
+                    except Exception as ex:
+                        logger.warning("Failed to reload tools on notification: %s", ex)
                 case "notifications/prompts/list_changed":
-                    await self.load_prompts()
+                    try:
+                        await self.load_prompts()
+                    except Exception as ex:
+                        logger.warning("Failed to reload prompts on notification: %s", ex)
 
     async def load_prompts(self):
         """Load prompts from the MCP server."""
