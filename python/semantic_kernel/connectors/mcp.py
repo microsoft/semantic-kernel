@@ -266,7 +266,6 @@ class MCPPluginBase:
             try:
                 transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
             except Exception as ex:
-                await self._exit_stack.aclose()
                 if not ready_future.done():
                     exc = KernelPluginInvalidConfigurationError(
                         "Failed to connect to the MCP server. Please check your configuration."
@@ -274,6 +273,10 @@ class MCPPluginBase:
                     exc.__cause__ = ex
                     exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
+                try:
+                    await self._exit_stack.aclose()
+                except Exception:
+                    logger.warning("Failed to close exit stack during error handling")
                 return
 
             try:
@@ -288,19 +291,21 @@ class MCPPluginBase:
                     )
                 )
             except Exception as ex:
-                await self._exit_stack.aclose()
                 if not ready_future.done():
                     exc = KernelPluginInvalidConfigurationError(
-                        "Failed to create a session. Please check your configuration."
+                        "Failed to connect to the MCP server. Please check your configuration."
                     )
                     exc.__cause__ = ex
                     exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
+                try:
+                    await self._exit_stack.aclose()
+                except Exception:
+                    logger.warning("Failed to close exit stack during error handling")
                 return
             try:
                 await session.initialize()
             except Exception as ex:
-                await self._exit_stack.aclose()
                 if not ready_future.done():
                     exc = KernelPluginInvalidConfigurationError(
                         "Failed to initialize session. Please check your configuration."
@@ -308,6 +313,10 @@ class MCPPluginBase:
                     exc.__cause__ = ex
                     exc.__suppress_context__ = True
                     ready_future.set_exception(exc)
+                try:
+                    await self._exit_stack.aclose()
+                except Exception:
+                    logger.warning("Failed to close exit stack during error handling")
                 return
             self.session = session
         elif self.session._request_id == 0:
@@ -329,9 +338,12 @@ class MCPPluginBase:
             if not ready_future.done():
                 ready_future.set_result(None)
         except Exception as ex:
-            await self._exit_stack.aclose()
             if not ready_future.done():
                 ready_future.set_exception(ex)
+            try:
+                await self._exit_stack.aclose()
+            except Exception:
+                logger.warning("Failed to close exit stack during error handling")
             return
         # Create a stop event to signal the exit stack to close
         self._stop_event = asyncio.Event()
