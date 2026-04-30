@@ -342,9 +342,7 @@ def test_deserialize_hashset_skips_missing_vector_field(collection_hash):
 
 
 @mark.parametrize("type_", ["hashset", "json"])
-async def test_inner_search_passes_index_schema_to_process_results(
-    collection_hash, collection_json, type_
-):
+async def test_inner_search_passes_index_schema_to_process_results(collection_hash, collection_json, type_):
     from unittest.mock import MagicMock
 
     from redisvl.schema import IndexSchema, StorageType
@@ -358,9 +356,10 @@ async def test_inner_search_passes_index_schema_to_process_results(
     mock_results.docs = []
     mock_results.total = 0
 
-    with patch("redis.commands.search.AsyncSearch.search", new=AsyncMock(return_value=mock_results)), patch(
-        "semantic_kernel.connectors.redis.process_results", return_value=[]
-    ) as mock_process:
+    with (
+        patch("redis.commands.search.AsyncSearch.search", new=AsyncMock(return_value=mock_results)),
+        patch("semantic_kernel.connectors.redis.process_results", return_value=[]) as mock_process,
+    ):
         await collection._inner_search(
             search_type=SearchType.VECTOR,
             options=VectorSearchOptions(vector_property_name="vector", top=3),

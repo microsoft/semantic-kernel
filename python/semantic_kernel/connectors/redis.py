@@ -322,9 +322,9 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        schema = _RedisVLIndexSchema.from_dict(
-            {"index": {"name": self.collection_name, "storage_type": STORAGE_TYPE_MAP[self.collection_type].value}}
-        )
+        schema = _RedisVLIndexSchema.from_dict({
+            "index": {"name": self.collection_name, "storage_type": STORAGE_TYPE_MAP[self.collection_type].value}
+        })
         processed = process_results(results, query, schema)
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
