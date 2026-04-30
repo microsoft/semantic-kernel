@@ -28,6 +28,36 @@ public class SqlServerCommandBuilderTests
     }
 
     [Theory]
+    [InlineData("schema", "name", "[schema].[name]")]
+    [InlineData(null, "name", "[name]")]
+    [InlineData("schema", "it's", "[schema].[it''s]")]
+    [InlineData("it's", "name", "[it''s].[name]")]
+    [InlineData("it's", "it's", "[it''s].[it''s]")]
+    [InlineData(null, "it's", "[it''s]")]
+    [InlineData("schema", "[brackets]", "[schema].[[brackets]]]")]
+    public void AppendTableNameInsideLiteral(string? schema, string table, string expectedFullName)
+    {
+        StringBuilder result = new();
+
+        SqlServerCommandBuilder.AppendTableNameInsideLiteral(result, schema, table);
+
+        Assert.Equal(expectedFullName, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("name", "[name]")]
+    [InlineData("it's", "[it''s]")]
+    [InlineData("two''quotes", "[two''''quotes]")]
+    public void AppendIdentifierInsideLiteral(string identifier, string expected)
+    {
+        StringBuilder result = new();
+
+        SqlServerCommandBuilder.AppendIdentifierInsideLiteral(result, identifier);
+
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
     [InlineData("name", "@name_")] // typical name
     [InlineData("na me", "@na_")] // contains a whitespace, an illegal parameter name character
     [InlineData("123", "@_")] // starts with a digit, also not allowed
@@ -150,6 +180,34 @@ public class SqlServerCommandBuilderTests
     }
 
     [Fact]
+    public void CreateTable_WithSingleQuoteInName()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var commands = SqlServerCommandBuilder.CreateTable(connection, "it's", "ta'ble", ifNotExists: true, model);
+
+        var command = Assert.Single(commands);
+        Assert.Equal(
+        "IF OBJECT_ID(N'[it''s].[ta''ble]', N'U') IS NULL" + Environment.NewLine +
+        """
+        BEGIN
+        CREATE TABLE [it's].[ta'ble] (
+        [id] BIGINT IDENTITY,
+        [name] NVARCHAR(MAX),
+        PRIMARY KEY ([id])
+        );
+        END;
+        """,
+        command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
     public void CreateTable_WithDiskAnnIndex()
     {
         var model = BuildModel(
@@ -262,11 +320,10 @@ public class SqlServerCommandBuilderTests
 
         Assert.Equal(
         """
-        SELECT t.[id],t.[name],t.[embedding],
+        SELECT TOP(5) WITH APPROXIMATE t.[id],t.[name],t.[embedding],
         s.[distance] AS [score]
-        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 5) AS s
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE') AS s
         ORDER BY [score] ASC
-        OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY;
         """, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
@@ -295,16 +352,18 @@ public class SqlServerCommandBuilderTests
 
         Assert.Equal(
         """
-        SELECT t.[id],t.[name],
+        SELECT * FROM (SELECT TOP(8) WITH APPROXIMATE t.[id],t.[name],
         s.[distance] AS [score]
-        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 8) AS s
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE') AS s
+        ORDER BY [score] ASC
+        ) AS [inner]
         ORDER BY [score] ASC
         OFFSET 3 ROWS FETCH NEXT 5 ROWS ONLY;
         """, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
-    public void SelectVector_WithDiskAnnIndex_WithFilter_Throws()
+    public void SelectVector_WithDiskAnnIndex_WithFilter()
     {
         var model = BuildModel(
             [
@@ -324,12 +383,20 @@ public class SqlServerCommandBuilderTests
             Filter = d => (string)d["name"]! == "test"
         };
 
-        Assert.Throws<NotSupportedException>(() =>
-            SqlServerCommandBuilder.SelectVector(
-                connection, "schema", "table",
-                model.VectorProperties[0], model,
-                top: 5, options,
-                new SqlVector<float>(new float[] { 1f, 2f, 3f })));
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            connection, "schema", "table",
+            model.VectorProperties[0], model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }));
+
+        Assert.Equal(
+        """
+        SELECT TOP(5) WITH APPROXIMATE t.[id],t.[name],
+        s.[distance] AS [score]
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE') AS s
+        WHERE (t.[name] = 'test')
+        ORDER BY [score] ASC
+        """, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -361,13 +428,84 @@ public class SqlServerCommandBuilderTests
 
         Assert.Equal(
         """
-        SELECT t.[id],t.[name],t.[embedding],
+        SELECT TOP(5) WITH APPROXIMATE t.[id],t.[name],t.[embedding],
         s.[distance] AS [score]
-        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE', TOP_N = 5) AS s
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE') AS s
         WHERE s.[distance] <= @scoreThreshold
         ORDER BY [score] ASC
-        OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY;
         """, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void SelectVector_WithDiskAnnIndex_WithFilterAndScoreThreshold()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new VectorSearchOptions<Dictionary<string, object?>>
+        {
+            Filter = d => (string)d["name"]! == "test",
+            ScoreThreshold = 0.5f
+        };
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            connection, "schema", "table",
+            model.VectorProperties[0], model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }));
+
+        Assert.Equal(
+        """
+        SELECT TOP(5) WITH APPROXIMATE t.[id],t.[name],
+        s.[distance] AS [score]
+        FROM VECTOR_SEARCH(TABLE = [schema].[table] AS t, COLUMN = [embedding], SIMILAR_TO = @vector, METRIC = 'COSINE') AS s
+        WHERE (t.[name] = 'test')
+        AND s.[distance] <= @scoreThreshold
+        ORDER BY [score] ASC
+        """, command.CommandText, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void SelectHybrid_WithDiskAnnIndex_WithFilter()
+    {
+        var model = BuildModel(
+            [
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 3)
+                {
+                    IndexKind = IndexKind.DiskAnn,
+                    DistanceFunction = DistanceFunction.CosineDistance
+                }
+            ]);
+
+        using SqlConnection connection = CreateConnection();
+
+        var options = new HybridSearchOptions<Dictionary<string, object?>>
+        {
+            Filter = d => (string)d["name"]! == "test"
+        };
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectHybrid(
+            connection, "schema", "table",
+            model.VectorProperties[0], model.DataProperties.First(p => p.IsFullTextIndexed), model,
+            top: 5, options,
+            new SqlVector<float>(new float[] { 1f, 2f, 3f }),
+            "keyword");
+
+        Assert.Contains("SELECT TOP(@candidateCount) WITH APPROXIMATE", command.CommandText);
+        Assert.Contains("WHERE (t.[name] = 'test')", command.CommandText);
+        Assert.Contains("VECTOR_SEARCH(TABLE =", command.CommandText);
     }
 
     [Fact]
