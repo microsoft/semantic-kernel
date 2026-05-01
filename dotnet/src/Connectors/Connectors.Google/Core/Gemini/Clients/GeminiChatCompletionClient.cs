@@ -833,7 +833,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private void LogUsage(List<GeminiChatMessageContent> chatMessageContents)
     {
-        GeminiMetadata? metadata = chatMessageContents[0].Metadata;
+        GeminiMetadata? metadata = chatMessageContents.FirstOrDefault()?.Metadata;
 
         if (metadata is null || metadata.TotalTokenCount <= 0)
         {
