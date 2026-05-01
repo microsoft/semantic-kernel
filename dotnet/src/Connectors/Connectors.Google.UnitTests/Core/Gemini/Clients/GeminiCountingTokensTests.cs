@@ -184,6 +184,7 @@ public sealed class GeminiCountingTokensTests : IDisposable
     [InlineData("us-central1-a")]
     [InlineData("northamerica-northeast1")]
     [InlineData("australia-southeast1")]
+    [InlineData("global")]
     public void ItAcceptsValidHostnameSegments(string validLocation)
     {
         // Arrange
@@ -207,6 +208,50 @@ public sealed class GeminiCountingTokensTests : IDisposable
         });
 
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ShouldUseGlobalEndpointWhenLocationIsGlobalAsync()
+    {
+        // Arrange
+        var client = new GeminiTokenCounterClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            bearerTokenProvider: () => ValueTask.FromResult("fake-key"),
+            apiVersion: VertexAIVersion.V1,
+            location: "global",
+            projectId: "fake-project-id");
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/global/", requestUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ShouldUseRegionalEndpointWhenLocationIsRegionalAsync()
+    {
+        // Arrange
+        var client = new GeminiTokenCounterClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            bearerTokenProvider: () => ValueTask.FromResult("fake-key"),
+            apiVersion: VertexAIVersion.V1,
+            location: "us-central1",
+            projectId: "fake-project-id");
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://us-central1-aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/us-central1/", requestUri, StringComparison.Ordinal);
     }
 
     private sealed class BearerTokenGenerator()
