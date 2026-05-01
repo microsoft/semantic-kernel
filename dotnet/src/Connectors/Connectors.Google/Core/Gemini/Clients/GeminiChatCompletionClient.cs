@@ -777,7 +777,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct).ConfigureAwait(false))
         {
-            lastChatMessageContents = this.ProcessChatResponse(response, logUsage: false);
+            lastChatMessageContents = this.CreateChatMessageContents(response);
             if (HasTokenUsage(lastChatMessageContents))
             {
                 lastChatMessageContentsWithUsage = lastChatMessageContents;
@@ -805,18 +805,18 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
     }
 
-    private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse, bool logUsage = true)
+    private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
+    {
+        var chatMessageContents = this.CreateChatMessageContents(geminiResponse);
+        this.LogUsage(chatMessageContents);
+        return chatMessageContents;
+    }
+
+    private List<GeminiChatMessageContent> CreateChatMessageContents(GeminiResponse geminiResponse)
     {
         ValidateGeminiResponse(geminiResponse);
 
-        var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
-
-        if (logUsage)
-        {
-            this.LogUsage(chatMessageContents);
-        }
-
-        return chatMessageContents;
+        return this.GetChatMessageContentsFromResponse(geminiResponse);
     }
 
     private static bool HasTokenUsage(List<GeminiChatMessageContent> chatMessageContents)
