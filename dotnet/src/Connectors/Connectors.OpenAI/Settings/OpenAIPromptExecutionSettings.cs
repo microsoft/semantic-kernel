@@ -26,7 +26,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Constrains effort on reasoning for reasoning models.
     /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
     /// Possible values are:
-    /// <para>- <see cref="string"/> values: <c>"low"</c>, <c>"medium"</c>, <c>"high"</c>, <c>"minimal"</c>;</para>
+    /// <para>- <see cref="string"/> values:<c>"none"</c>, <c>"minimal"</c>, <c>"low"</c>, <c>"medium"</c>, <c>"high"</c>;</para>
     /// <para>- <see cref="ChatReasoningEffortLevel"/> object;</para>
     /// </remarks>
     [JsonPropertyName("reasoning_effort")]
