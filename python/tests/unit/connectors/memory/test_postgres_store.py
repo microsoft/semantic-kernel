@@ -17,7 +17,12 @@ from semantic_kernel.connectors.postgres import (
     PostgresSettings,
     PostgresStore,
 )
-from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import (
+    DistanceFunction,
+    IndexKind,
+    VectorStoreField,
+    vectorstoremodel,
+)
 
 
 @fixture(scope="function")
@@ -410,6 +415,165 @@ def test_settings_env_vars(monkeypatch) -> None:
     assert conn_info["dbname"] == "dbname"
     assert conn_info["user"] == "user"
     assert conn_info["password"] == "password"
+
+
+# endregion
+
+
+# region Filter Predicate Tests
+
+
+@vectorstoremodel
+@dataclass
+class FilterDataModel:
+    id: Annotated[int, VectorStoreField("key")]
+    embedding: Annotated[
+        list[float] | str | None,
+        VectorStoreField(
+            "vector",
+            index_kind=IndexKind.HNSW,
+            dimensions=1536,
+            distance_function=DistanceFunction.COSINE_DISTANCE,
+            type="float",
+        ),
+    ]
+    content_type: Annotated[str, VectorStoreField("data")]
+    age: Annotated[int, VectorStoreField("data")]
+    is_active: Annotated[bool, VectorStoreField("data")]
+
+
+async def test_filter_equality(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: x.content_type == "course",
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert "\"content_type\" = 'course'" in statement_str
+    assert " WHERE " in statement_str
+
+
+async def test_filter_numeric_comparison(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: x.age > 18,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert '"age" > 18' in statement_str
+
+
+async def test_filter_and(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: x.content_type == "course" and x.age > 18,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert "\"content_type\" = 'course'" in statement_str
+    assert '"age" > 18' in statement_str
+    assert " AND " in statement_str
+
+
+async def test_filter_or(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: x.content_type == "course" or x.age > 18,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert "\"content_type\" = 'course'" in statement_str
+    assert '"age" > 18' in statement_str
+    assert " OR " in statement_str
+
+
+async def test_filter_in(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: x.content_type in ["course", "lesson"],
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert '"content_type" IN' in statement_str
+    assert "'course'" in statement_str
+    assert "'lesson'" in statement_str
+
+
+async def test_filter_not(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: not (x.content_type == "course"),  # noqa: SIM201
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert "NOT" in statement_str
+    assert "\"content_type\" = 'course'" in statement_str
+
+
+async def test_filter_multiple_filters(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=[
+            lambda x: x.content_type == "course",
+            lambda x: x.age > 18,
+        ],
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert "\"content_type\" = 'course'" in statement_str
+    assert '"age" > 18' in statement_str
+    assert " AND " in statement_str
+
+
+async def test_filter_chain_comparison(vector_store: PostgresStore, mock_cursor: Mock) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        filter=lambda x: 10 < x.age < 30,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+    assert '"age"' in statement_str
+    assert " AND " in statement_str
 
 
 # endregion
