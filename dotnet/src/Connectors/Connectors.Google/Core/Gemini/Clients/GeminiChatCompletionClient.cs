@@ -772,26 +772,25 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        List<GeminiChatMessageContent>? lastChatMessageContents = null;
         List<GeminiChatMessageContent>? lastChatMessageContentsWithUsage = null;
 
         await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct).ConfigureAwait(false))
         {
-            lastChatMessageContents = this.CreateChatMessageContents(response);
-            if (HasTokenUsage(lastChatMessageContents))
+            var chatMessageContents = this.CreateChatMessageContents(response);
+            if (HasTokenUsage(chatMessageContents))
             {
-                lastChatMessageContentsWithUsage = lastChatMessageContents;
+                lastChatMessageContentsWithUsage = chatMessageContents;
             }
 
-            foreach (var messageContent in lastChatMessageContents)
+            foreach (var messageContent in chatMessageContents)
             {
                 yield return messageContent;
             }
         }
 
-        if ((lastChatMessageContentsWithUsage ?? lastChatMessageContents) is { } chatMessageContents)
+        if (lastChatMessageContentsWithUsage is { } chatMessageContentsWithUsage)
         {
-            this.LogUsage(chatMessageContents);
+            this.LogUsage(chatMessageContentsWithUsage);
         }
     }
 
