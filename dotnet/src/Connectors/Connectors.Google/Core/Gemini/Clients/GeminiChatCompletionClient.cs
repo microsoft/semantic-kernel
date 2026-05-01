@@ -772,12 +772,26 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
+        List<GeminiChatMessageContent>? lastChatMessageContents = null;
+        List<GeminiChatMessageContent>? lastChatMessageContentsWithUsage = null;
+
         await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct).ConfigureAwait(false))
         {
-            foreach (var messageContent in this.ProcessChatResponse(response))
+            lastChatMessageContents = this.ProcessChatResponse(response, logUsage: false);
+            if (HasTokenUsage(lastChatMessageContents))
+            {
+                lastChatMessageContentsWithUsage = lastChatMessageContents;
+            }
+
+            foreach (var messageContent in lastChatMessageContents)
             {
                 yield return messageContent;
             }
+        }
+
+        if ((lastChatMessageContentsWithUsage ?? lastChatMessageContents) is { } chatMessageContents)
+        {
+            this.LogUsage(chatMessageContents);
         }
     }
 
@@ -791,14 +805,22 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
     }
 
-    private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
+    private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse, bool logUsage = true)
     {
         ValidateGeminiResponse(geminiResponse);
 
         var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
-        this.LogUsage(chatMessageContents);
+
+        if (logUsage)
+        {
+            this.LogUsage(chatMessageContents);
+        }
+
         return chatMessageContents;
     }
+
+    private static bool HasTokenUsage(List<GeminiChatMessageContent> chatMessageContents)
+        => chatMessageContents.FirstOrDefault()?.Metadata is { TotalTokenCount: > 0 };
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
