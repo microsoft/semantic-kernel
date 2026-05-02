@@ -917,6 +917,34 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task FunctionResultsWithoutCallIdThrowClearExceptionAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
+                new FunctionResultContent(functionName: "GetCurrentWeather", pluginName: "MyPlugin", callId: null, result: "rainy")
+            ])
+        };
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.GetChatMessageContentAsync(chatHistory, settings));
+
+        // Assert
+        Assert.Contains("missing a tool call id", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task FunctionResultsCanBeProvidedToLLMAsManyResultsInOneChatMessageAsync()
     {
         // Arrange
