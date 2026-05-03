@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ChatReasoningEffortLevel = global::OpenAI.Chat.ChatReasoningEffortLevel;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Orchestration;
@@ -88,6 +91,32 @@ public class HandoffOrchestrationTests : IDisposable
         Assert.Equal("Final response", response);
     }
 
+    [Fact]
+    public async Task HandoffOrchestrationPreservesAgentExecutionSettingsAsync()
+    {
+        // Arrange
+        HttpMessageHandlerStub messageHandlerStub = new();
+        ChatCompletionAgent mockAgent =
+            this.CreateMockAgent(
+                "Agent1",
+                "Test Agent",
+                Responses.Message("Final response"),
+                messageHandlerStub,
+                new KernelArguments(new OpenAIPromptExecutionSettings
+                {
+                    ReasoningEffort = ChatReasoningEffortLevel.High,
+                }));
+
+        // Act
+        string response = await ExecuteOrchestrationAsync(OrchestrationHandoffs.StartWith(mockAgent), mockAgent);
+
+        // Assert
+        Assert.Equal("Final response", response);
+
+        using JsonDocument requestBody = JsonDocument.Parse(messageHandlerStub.RequestContent!);
+        Assert.Equal("high", requestBody.RootElement.GetProperty("reasoning_effort").GetString());
+    }
+
     private static async Task<string> ExecuteOrchestrationAsync(OrchestrationHandoffs handoffs, params Agent[] mockAgents)
     {
         // Arrange
@@ -110,17 +139,15 @@ public class HandoffOrchestrationTests : IDisposable
         return response;
     }
 
-    private ChatCompletionAgent CreateMockAgent(string name, string description, string response)
+    private ChatCompletionAgent CreateMockAgent(string name, string description, string response, HttpMessageHandlerStub? messageHandlerStub = null, KernelArguments? arguments = null)
     {
-        HttpMessageHandlerStub messageHandlerStub =
-            new()
-            {
-                ResponseToReturn = new HttpResponseMessage
-                {
-                    StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(response),
-                },
-            };
+        messageHandlerStub ??= new HttpMessageHandlerStub();
+
+        messageHandlerStub.ResponseToReturn = new HttpResponseMessage
+        {
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Content = new StringContent(response),
+        };
         HttpClient httpClient = new(messageHandlerStub, disposeHandler: false);
 
         this._disposables.Add(messageHandlerStub);
@@ -136,6 +163,7 @@ public class HandoffOrchestrationTests : IDisposable
                 Name = name,
                 Description = description,
                 Kernel = kernel,
+                Arguments = arguments,
             };
 
         return mockAgent1;
