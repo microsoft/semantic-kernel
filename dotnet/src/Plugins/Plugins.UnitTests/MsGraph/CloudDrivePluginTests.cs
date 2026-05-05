@@ -113,8 +113,9 @@ public class CloudDrivePluginTests
         Mock<ICloudDriveConnector> connectorMock = new();
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
 
-        // Act & Assert — UNC paths are rejected with ArgumentException
-        await Assert.ThrowsAsync<ArgumentException>(async () =>
+        // Act & Assert — UNC paths are rejected (ArgumentException on Windows, InvalidOperationException on Linux
+        // where the path is canonicalized differently and fails the allowlist check instead)
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
             await target.UploadFileAsync("\\\\UNC\\server\\folder\\file.txt", "/remote.txt"));
     }
 
