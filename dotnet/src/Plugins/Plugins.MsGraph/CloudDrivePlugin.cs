@@ -53,10 +53,10 @@ public sealed class CloudDrivePlugin
     /// with trusted directory paths before any file upload operations will succeed.
     /// Paths are canonicalized before validation to prevent directory traversal.
     /// </remarks>
-    public IEnumerable<string>? AllowedUploadDirectories
+    public IEnumerable<string> AllowedUploadDirectories
     {
         get => this._allowedUploadDirectories;
-        set => this._allowedUploadDirectories = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        set => this._allowedUploadDirectories = value is null ? [] : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public sealed class CloudDrivePlugin
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
-        if (this._allowedUploadDirectories is null || this._allowedUploadDirectories.Count == 0)
+        if (this._allowedUploadDirectories.Count == 0)
         {
             return false;
         }
