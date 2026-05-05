@@ -113,8 +113,8 @@ public class CloudDrivePluginTests
         Mock<ICloudDriveConnector> connectorMock = new();
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
 
-        // Act & Assert — UNC paths are rejected
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        // Act & Assert — UNC paths are rejected with ArgumentException
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
             await target.UploadFileAsync("\\\\UNC\\server\\folder\\file.txt", "/remote.txt"));
     }
 
@@ -156,36 +156,57 @@ public class CloudDrivePluginTests
     [Fact]
     public async Task ItExpandsEnvironmentVariablesAndValidatesAsync()
     {
-        // Arrange — use %TEMP% which should expand to the temp directory
+        // Arrange — set a dedicated test env var to avoid platform-specific assumptions
         var tempDir = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar);
-        var envVarPath = Path.Combine("%TEMP%", "testfile.txt");
+        var envVarName = "SK_TEST_UPLOAD_DIR";
+        var originalValue = Environment.GetEnvironmentVariable(envVarName);
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, tempDir);
+            var envVarPath = Path.Combine($"%{envVarName}%", "testfile.txt");
 
-        Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+            Mock<ICloudDriveConnector> connectorMock = new();
+            connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir] };
 
-        // Act — env var should be expanded and path should be allowed
-        await target.UploadFileAsync(envVarPath, "/remote.txt");
+            // Act — env var should be expanded and path should be allowed
+            await target.UploadFileAsync(envVarPath, "/remote.txt");
 
-        // Assert
-        connectorMock.VerifyAll();
+            // Assert
+            connectorMock.VerifyAll();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, originalValue);
+        }
     }
 
     [Fact]
     public async Task ItDeniesExpandedEnvironmentVariablePathsOutsideAllowedAsync()
     {
-        // Arrange — allow a specific subdirectory, but env var expands outside it
-        var allowedDir = Path.Combine(Path.GetTempPath(), "specific-allowed");
-        var envVarPath = Path.Combine("%TEMP%", "outside-file.txt");
+        // Arrange — set a dedicated test env var; allow a subdirectory but env var expands outside it
+        var tempDir = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar);
+        var allowedDir = Path.Combine(tempDir, "specific-allowed");
+        var envVarName = "SK_TEST_UPLOAD_DIR";
+        var originalValue = Environment.GetEnvironmentVariable(envVarName);
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, tempDir);
+            var envVarPath = Path.Combine($"%{envVarName}%", "outside-file.txt");
 
-        Mock<ICloudDriveConnector> connectorMock = new();
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+            Mock<ICloudDriveConnector> connectorMock = new();
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
 
-        // Act & Assert — expanded path is outside allowed directory
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await target.UploadFileAsync(envVarPath, "/remote.txt"));
+            // Act & Assert — expanded path is outside allowed directory
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await target.UploadFileAsync(envVarPath, "/remote.txt"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, originalValue);
+        }
     }
 
     [Fact]
