@@ -104,11 +104,13 @@ public sealed class CloudDrivePlugin
             throw new ArgumentException("Variable was null or whitespace", nameof(destinationPath));
         }
 
+        Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
+
         var canonicalPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(filePath));
 
         if (!this.IsUploadPathAllowed(canonicalPath))
         {
-            throw new InvalidOperationException("Uploading from the provided location is not allowed.");
+            throw new InvalidOperationException("Uploading from the provided location is not allowed. Configure 'AllowedUploadDirectories' with trusted directory paths to enable uploads.");
         }
 
         this._logger.LogDebug("Uploading file '{0}'", canonicalPath);
