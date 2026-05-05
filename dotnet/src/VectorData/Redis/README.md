@@ -8,7 +8,7 @@ This connector uses Redis to implement Semantic Memory. It requires the [RediSea
 
 Ways to get RediSearch:
 
-1. You can create an [Azure Cache for Redis Enterpise instance](https://learn.microsoft.com/azure/azure-cache-for-redis/quickstart-create-redis-enterprise) and [enable RediSearch module](https://learn.microsoft.com/azure/azure-cache-for-redis/cache-redis-modules).
+1. You can create an [Azure Cache for Redis Enterprise instance](https://learn.microsoft.com/azure/azure-cache-for-redis/quickstart-create-redis-enterprise) and [enable RediSearch module](https://learn.microsoft.com/azure/azure-cache-for-redis/cache-redis-modules).
 
 1. Set up the RediSearch on your self-managed Redis, please refer to its [documentation](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/).
 
@@ -24,4 +24,4 @@ docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:la
 
 2. Create a Redis Vector Store using instructions on the [Microsoft Learn site](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/redis-connector).
 
-3. Use the [getting started instructions](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp#getting-started-with-vector-store-connectors) on the Microsoft Leearn site to learn more about using the vector store.
+3. Use the [getting started instructions](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp#getting-started-with-vector-store-connectors) on the Microsoft Learn site to learn more about using the vector store.
