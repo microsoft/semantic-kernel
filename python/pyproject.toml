@@ -77,7 +77,7 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,< 1.4"
+    "chromadb >= 0.5,< 1.6"
 ]
 copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
