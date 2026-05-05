@@ -136,16 +136,16 @@ def test_tool_choice_none():
 def test_cache_settings_default_is_off():
     settings = AnthropicCacheSettings()
     assert settings.enabled is False
-    assert settings.cache_system is False
-    assert settings.cache_tools is False
+    assert settings.include_system is False
+    assert settings.include_tools is False
     assert settings.ttl == "5m"
 
 
 def test_cache_settings_on():
     settings = AnthropicCacheSettings.on()
     assert settings.enabled is True
-    assert settings.cache_system is True
-    assert settings.cache_tools is True
+    assert settings.include_system is True
+    assert settings.include_tools is True
     assert settings.ttl == "5m"
 
 
@@ -163,40 +163,50 @@ def test_cache_settings_off():
 def test_cache_settings_system_only():
     settings = AnthropicCacheSettings.system()
     assert settings.enabled is True
-    assert settings.cache_system is True
-    assert settings.cache_tools is False
+    assert settings.include_system is True
+    assert settings.include_tools is False
 
 
 def test_cache_settings_tools_only():
     settings = AnthropicCacheSettings.tools()
     assert settings.enabled is True
-    assert settings.cache_system is False
-    assert settings.cache_tools is True
+    assert settings.include_system is False
+    assert settings.include_tools is True
 
 
-def test_cache_control_5m():
-    ctrl = AnthropicCacheSettings.on(ttl="5m")._cache_control()
-    assert ctrl == {"type": "ephemeral"}
+def test_cache_control_5m_via_prepare():
+    """5m TTL emits ephemeral block without a ttl key."""
+    settings = AnthropicChatPromptExecutionSettings(
+        system="Hello.",
+        cache=AnthropicCacheSettings.on(ttl="5m"),
+    )
+    data = settings.prepare_settings_dict()
+    assert data["system"][0]["cache_control"] == {"type": "ephemeral"}
 
 
-def test_cache_control_1h():
-    ctrl = AnthropicCacheSettings.on(ttl="1h")._cache_control()
-    assert ctrl == {"type": "ephemeral", "ttl": "1h"}
+def test_cache_control_1h_via_prepare():
+    """1h TTL emits ephemeral block with ttl string '1h'."""
+    settings = AnthropicChatPromptExecutionSettings(
+        system="Hello.",
+        cache=AnthropicCacheSettings.on(ttl="1h"),
+    )
+    data = settings.prepare_settings_dict()
+    assert data["system"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
 
 
 def test_cache_settings_short():
     settings = AnthropicCacheSettings.short()
     assert settings.enabled is True
-    assert settings.cache_system is True
-    assert settings.cache_tools is True
+    assert settings.include_system is True
+    assert settings.include_tools is True
     assert settings.ttl == "5m"
 
 
 def test_cache_settings_long():
     settings = AnthropicCacheSettings.long()
     assert settings.enabled is True
-    assert settings.cache_system is True
-    assert settings.cache_tools is True
+    assert settings.include_system is True
+    assert settings.include_tools is True
     assert settings.ttl == "1h"
 
 
@@ -216,7 +226,7 @@ def test_prepare_settings_dict_cache_off_no_injection():
     assert "cache_control" not in data["tools"][-1]
 
 
-def test_prepare_settings_dict_cache_system_only():
+def test_prepare_settings_dict_include_system_only():
     settings = AnthropicChatPromptExecutionSettings(
         system="You are a helpful assistant.",
         cache=AnthropicCacheSettings.system(),
@@ -228,7 +238,7 @@ def test_prepare_settings_dict_cache_system_only():
     ]
 
 
-def test_prepare_settings_dict_cache_tools_only():
+def test_prepare_settings_dict_include_tools_only():
     tools = [
         {"name": "tool_a", "description": "Tool A"},
         {"name": "tool_b", "description": "Tool B"},
@@ -269,7 +279,7 @@ def test_prepare_settings_dict_cache_on_1h_ttl():
     assert data["tools"][-1]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
 
 
-def test_prepare_settings_dict_cache_system_already_list():
+def test_prepare_settings_dict_include_system_already_list():
     """When system is pre-structured as list[dict], cache_control is injected on the last block."""
     system_blocks = [
         {"type": "text", "text": "First block."},
@@ -287,7 +297,7 @@ def test_prepare_settings_dict_cache_system_already_list():
     assert "cache_control" not in system_blocks[-1]
 
 
-def test_prepare_settings_dict_cache_system_empty_string_no_injection():
+def test_prepare_settings_dict_include_system_empty_string_no_injection():
     """Empty system string should not be wrapped in a cache block."""
     settings = AnthropicChatPromptExecutionSettings(
         system="",
@@ -298,8 +308,8 @@ def test_prepare_settings_dict_cache_system_empty_string_no_injection():
     assert not isinstance(data.get("system"), list)
 
 
-def test_prepare_settings_dict_cache_tools_empty_no_injection():
-    """No tools present — cache_tools flag should be a no-op."""
+def test_prepare_settings_dict_include_tools_empty_no_injection():
+    """No tools present — include_tools flag should be a no-op."""
     settings = AnthropicChatPromptExecutionSettings(
         cache=AnthropicCacheSettings.tools(),
     )
@@ -312,6 +322,58 @@ def test_prepare_settings_dict_cache_excluded_from_serialization():
     settings = AnthropicChatPromptExecutionSettings(cache=AnthropicCacheSettings.on())
     data = settings.prepare_settings_dict()
     assert "cache" not in data
+
+
+def test_prepare_settings_dict_existing_cache_control_not_overwritten():
+    """cache_control already present on the last tool/system block must not be clobbered."""
+    existing_ctrl = {"type": "ephemeral", "ttl": "1h"}
+    tools = [{"name": "t", "description": "d", "cache_control": existing_ctrl}]
+    settings = AnthropicChatPromptExecutionSettings(
+        tools=tools,
+        cache=AnthropicCacheSettings.tools(ttl="5m"),
+    )
+    data = settings.prepare_settings_dict()
+    assert data["tools"][-1]["cache_control"] == existing_ctrl
+
+
+# endregion
+
+# region AnthropicCacheSettings — environment variable support
+
+
+def test_cache_settings_from_env(monkeypatch):
+    """Settings are populated from ANTHROPIC_CACHE_* env vars."""
+    monkeypatch.setenv("ANTHROPIC_CACHE_ENABLED", "true")
+    monkeypatch.setenv("ANTHROPIC_CACHE_INCLUDE_SYSTEM", "true")
+    monkeypatch.setenv("ANTHROPIC_CACHE_INCLUDE_TOOLS", "false")
+    monkeypatch.setenv("ANTHROPIC_CACHE_TTL", "1h")
+    settings = AnthropicCacheSettings()
+    assert settings.enabled is True
+    assert settings.include_system is True
+    assert settings.include_tools is False
+    assert settings.ttl == "1h"
+
+
+def test_cache_settings_explicit_overrides_env(monkeypatch):
+    """Explicit constructor arguments take priority over environment variables."""
+    monkeypatch.setenv("ANTHROPIC_CACHE_ENABLED", "true")
+    monkeypatch.setenv("ANTHROPIC_CACHE_TTL", "1h")
+    settings = AnthropicCacheSettings(enabled=False, ttl="5m")
+    assert settings.enabled is False
+    assert settings.ttl == "5m"
+
+
+def test_cache_settings_env_disabled_by_default(monkeypatch):
+    """With no env vars set, cache is disabled by default."""
+    for key in (
+        "ANTHROPIC_CACHE_ENABLED",
+        "ANTHROPIC_CACHE_INCLUDE_SYSTEM",
+        "ANTHROPIC_CACHE_INCLUDE_TOOLS",
+        "ANTHROPIC_CACHE_TTL",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    settings = AnthropicCacheSettings()
+    assert settings.enabled is False
 
 
 # endregion

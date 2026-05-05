@@ -1,22 +1,30 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import copy
 import logging
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, ClassVar, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field, model_validator
 
 from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 logger = logging.getLogger(__name__)
 
 
-class AnthropicCacheSettings(BaseModel):
+class AnthropicCacheSettings(KernelBaseSettings):
     """Configuration for Anthropic prompt caching.
 
     Controls which parts of the request receive cache_control injection.
+    Settings are loaded from environment variables with the prefix 'ANTHROPIC_CACHE_',
+    then from a .env file, then from defaults. Explicit constructor arguments always win.
+
+    Environment variables (prefix 'ANTHROPIC_CACHE_'):
+      - ANTHROPIC_CACHE_ENABLED        — master switch, bool (default: false)
+      - ANTHROPIC_CACHE_INCLUDE_SYSTEM — cache system message, bool (default: false)
+      - ANTHROPIC_CACHE_INCLUDE_TOOLS  — cache tool definitions, bool (default: false)
+      - ANTHROPIC_CACHE_TTL            — cache TTL, "5m" or "1h" (default: "5m")
 
     Anthropic minimum token thresholds for cache activation:
       - claude-haiku-4-5 : 4,096 tokens
@@ -35,15 +43,17 @@ class AnthropicCacheSettings(BaseModel):
         AnthropicCacheSettings.tools()  # cache tool definitions only
     """
 
+    env_prefix: ClassVar[str] = "ANTHROPIC_CACHE_"
+
     enabled: Annotated[
         bool,
         Field(description="Master switch — disabling skips all cache_control injection regardless of other flags."),
     ] = False
-    cache_system: Annotated[
+    include_system: Annotated[
         bool,
         Field(description="Inject cache_control on the system message content block."),
     ] = False
-    cache_tools: Annotated[
+    include_tools: Annotated[
         bool,
         Field(description="Inject cache_control on the last tool definition, caching the entire tools array prefix."),
     ] = False
@@ -61,7 +71,7 @@ class AnthropicCacheSettings(BaseModel):
     @classmethod
     def on(cls, ttl: Literal["5m", "1h"] = "5m") -> "AnthropicCacheSettings":
         """Enable caching for all supported request sections (system + tools)."""
-        return cls(enabled=True, cache_system=True, cache_tools=True, ttl=ttl)
+        return cls(enabled=True, include_system=True, include_tools=True, ttl=ttl)
 
     @classmethod
     def off(cls) -> "AnthropicCacheSettings":
@@ -71,12 +81,12 @@ class AnthropicCacheSettings(BaseModel):
     @classmethod
     def system(cls, ttl: Literal["5m", "1h"] = "5m") -> "AnthropicCacheSettings":
         """Enable caching for the system message only."""
-        return cls(enabled=True, cache_system=True, cache_tools=False, ttl=ttl)
+        return cls(enabled=True, include_system=True, include_tools=False, ttl=ttl)
 
     @classmethod
     def tools(cls, ttl: Literal["5m", "1h"] = "5m") -> "AnthropicCacheSettings":
         """Enable caching for tool definitions only."""
-        return cls(enabled=True, cache_system=False, cache_tools=True, ttl=ttl)
+        return cls(enabled=True, include_system=False, include_tools=True, ttl=ttl)
 
     @classmethod
     def short(cls) -> "AnthropicCacheSettings":
@@ -84,7 +94,7 @@ class AnthropicCacheSettings(BaseModel):
 
         Write cost: 1.25x. Read cost: 0.1x. Breaks even after a single cache hit.
         """
-        return cls(enabled=True, cache_system=True, cache_tools=True, ttl="5m")
+        return cls(enabled=True, include_system=True, include_tools=True, ttl="5m")
 
     @classmethod
     def long(cls) -> "AnthropicCacheSettings":
@@ -92,7 +102,7 @@ class AnthropicCacheSettings(BaseModel):
 
         Write cost: 2x. Read cost: 0.1x. Needs at least 2 cache hits to break even.
         """
-        return cls(enabled=True, cache_system=True, cache_tools=True, ttl="1h")
+        return cls(enabled=True, include_system=True, include_tools=True, ttl="1h")
 
 
 class AnthropicPromptExecutionSettings(PromptExecutionSettings):
@@ -153,20 +163,16 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 
         cache_control = self.cache._cache_control()
 
-        if self.cache.cache_system:
+        if self.cache.include_system:
             system = data.get("system")
             if isinstance(system, str) and system:
                 data["system"] = [{"type": "text", "text": system, "cache_control": cache_control}]
-            elif isinstance(system, list) and system:
-                system = copy.deepcopy(system)
-                system[-1]["cache_control"] = cache_control
-                data["system"] = system
+            elif isinstance(system, list) and system and "cache_control" not in system[-1]:
+                data["system"] = [*system[:-1], {**system[-1], "cache_control": cache_control}]
 
-        if self.cache.cache_tools:
+        if self.cache.include_tools:
             tools: list[dict[str, Any]] | None = data.get("tools")
-            if tools:
-                tools = copy.deepcopy(tools)
-                tools[-1]["cache_control"] = cache_control
-                data["tools"] = tools
+            if tools and "cache_control" not in tools[-1]:
+                data["tools"] = [*tools[:-1], {**tools[-1], "cache_control": cache_control}]
 
         return data
