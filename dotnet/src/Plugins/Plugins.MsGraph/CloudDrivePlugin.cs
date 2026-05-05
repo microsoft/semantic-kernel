@@ -30,7 +30,7 @@ public sealed class CloudDrivePlugin
 {
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
-    private HashSet<string>? _allowedUploadDirectories = [];
+    private HashSet<string> _allowedUploadDirectories = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
