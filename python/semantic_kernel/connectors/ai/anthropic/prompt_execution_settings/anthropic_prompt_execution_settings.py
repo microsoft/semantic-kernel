@@ -55,7 +55,7 @@ class AnthropicCacheSettings(BaseModel):
     def _cache_control(self) -> dict[str, Any]:
         """Return the cache_control block for the configured TTL."""
         if self.ttl == "1h":
-            return {"type": "ephemeral", "ttl": 3600}
+            return {"type": "ephemeral", "ttl": "1h"}
         return {"type": "ephemeral"}
 
     @classmethod
@@ -157,6 +157,10 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
             system = data.get("system")
             if isinstance(system, str) and system:
                 data["system"] = [{"type": "text", "text": system, "cache_control": cache_control}]
+            elif isinstance(system, list) and system:
+                system = copy.deepcopy(system)
+                system[-1]["cache_control"] = cache_control
+                data["system"] = system
 
         if self.cache.cache_tools:
             tools: list[dict[str, Any]] | None = data.get("tools")

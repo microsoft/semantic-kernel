@@ -181,7 +181,7 @@ def test_cache_control_5m():
 
 def test_cache_control_1h():
     ctrl = AnthropicCacheSettings.on(ttl="1h")._cache_control()
-    assert ctrl == {"type": "ephemeral", "ttl": 3600}
+    assert ctrl == {"type": "ephemeral", "ttl": "1h"}
 
 
 def test_cache_settings_short():
@@ -265,8 +265,26 @@ def test_prepare_settings_dict_cache_on_1h_ttl():
         cache=AnthropicCacheSettings.on(ttl="1h"),
     )
     data = settings.prepare_settings_dict()
-    assert data["system"][0]["cache_control"] == {"type": "ephemeral", "ttl": 3600}
-    assert data["tools"][-1]["cache_control"] == {"type": "ephemeral", "ttl": 3600}
+    assert data["system"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+    assert data["tools"][-1]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+
+def test_prepare_settings_dict_cache_system_already_list():
+    """When system is pre-structured as list[dict], cache_control is injected on the last block."""
+    system_blocks = [
+        {"type": "text", "text": "First block."},
+        {"type": "text", "text": "Second block."},
+    ]
+    settings = AnthropicChatPromptExecutionSettings(
+        system=system_blocks,
+        cache=AnthropicCacheSettings.system(),
+    )
+    data = settings.prepare_settings_dict()
+    assert isinstance(data["system"], list)
+    assert "cache_control" not in data["system"][0]
+    assert data["system"][-1]["cache_control"] == {"type": "ephemeral"}
+    # original list must not be mutated
+    assert "cache_control" not in system_blocks[-1]
 
 
 def test_prepare_settings_dict_cache_system_empty_string_no_injection():
