@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -14,10 +15,21 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// <summary>
 /// Cloud drive plugin (e.g. OneDrive).
 /// </summary>
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. <see cref="AllowedUploadDirectories"/> must be explicitly configured
+/// before any file upload operations are permitted. By default, all local file paths are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedUploadDirectories"/> is restricted to trusted values only.
+/// </para>
+/// </remarks>
 public sealed class CloudDrivePlugin
 {
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
+    private HashSet<string>? _allowedUploadDirectories = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
@@ -30,6 +42,20 @@ public sealed class CloudDrivePlugin
 
         this._connector = connector;
         this._logger = loggerFactory?.CreateLogger(typeof(CloudDrivePlugin)) ?? NullLogger.Instance;
+    }
+
+    /// <summary>
+    /// List of allowed local directories from which files may be uploaded. Subdirectories of allowed directories are also permitted.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no directories allowed). Must be explicitly populated
+    /// with trusted directory paths before any file upload operations will succeed.
+    /// Paths are canonicalized before validation to prevent directory traversal.
+    /// </remarks>
+    public IEnumerable<string>? AllowedUploadDirectories
+    {
+        get => this._allowedUploadDirectories;
+        set => this._allowedUploadDirectories = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -77,10 +103,17 @@ public sealed class CloudDrivePlugin
             throw new ArgumentException("Variable was null or whitespace", nameof(destinationPath));
         }
 
-        this._logger.LogDebug("Uploading file '{0}'", filePath);
+        var canonicalPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(filePath));
+
+        if (!this.IsUploadPathAllowed(canonicalPath))
+        {
+            throw new InvalidOperationException("Uploading from the provided location is not allowed.");
+        }
+
+        this._logger.LogDebug("Uploading file '{0}'", canonicalPath);
 
         // TODO Add support for large file uploads (i.e. upload sessions)
-        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
+        await this._connector.UploadSmallFileAsync(canonicalPath, destinationPath, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -100,4 +133,53 @@ public sealed class CloudDrivePlugin
 
         return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
     }
+
+    #region private
+    /// <summary>
+    /// If a list of allowed upload directories has been provided, the directory of the provided filePath is checked
+    /// to verify it is in the allowed directory list. Paths are canonicalized before comparison.
+    /// Subdirectories of allowed directories are also permitted.
+    /// </summary>
+    private bool IsUploadPathAllowed(string path)
+    {
+        Ensure.NotNullOrWhitespace(path, nameof(path));
+
+        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        string? directoryPath = Path.GetDirectoryName(path);
+
+        if (string.IsNullOrEmpty(directoryPath))
+        {
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
+        }
+
+        if (this._allowedUploadDirectories is null || this._allowedUploadDirectories.Count == 0)
+        {
+            return false;
+        }
+
+        var canonicalDir = Path.GetFullPath(directoryPath);
+
+        foreach (var allowedDirectory in this._allowedUploadDirectories)
+        {
+            var canonicalAllowed = Path.GetFullPath(allowedDirectory);
+            var separator = Path.DirectorySeparatorChar.ToString();
+            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            {
+                canonicalAllowed += separator;
+            }
+
+            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
+                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    #endregion
 }
