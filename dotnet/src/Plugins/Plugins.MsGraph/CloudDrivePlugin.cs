@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -135,6 +136,12 @@ public sealed class CloudDrivePlugin
     }
 
     #region private
+    // Use case-insensitive comparison on Windows (case-insensitive FS), case-sensitive on Linux/macOS.
+    private static readonly StringComparison s_pathComparison =
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
     /// <summary>
     /// If a list of allowed upload directories has been provided, the directory of the provided filePath is checked
     /// to verify it is in the allowed directory list. Paths are canonicalized before comparison.
@@ -167,13 +174,13 @@ public sealed class CloudDrivePlugin
         {
             var canonicalAllowed = Path.GetFullPath(allowedDirectory);
             var separator = Path.DirectorySeparatorChar.ToString();
-            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            if (!canonicalAllowed.EndsWith(separator, s_pathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (canonicalDir.StartsWith(canonicalAllowed, s_pathComparison)
+                || (canonicalDir + separator).Equals(canonicalAllowed, s_pathComparison))
             {
                 return true;
             }

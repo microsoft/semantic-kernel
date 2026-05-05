@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -185,5 +186,32 @@ public class CloudDrivePluginTests
         // Act & Assert — expanded path is outside allowed directory
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await target.UploadFileAsync(envVarPath, "/remote.txt"));
+    }
+
+    [Fact]
+    public async Task ItRespectsPlatformCaseSensitivityAsync()
+    {
+        // Arrange — use differently-cased allowed dir vs file path
+        var allowedDir = Path.Combine(Path.GetTempPath(), "AllowedFolder");
+        var filePath = Path.Combine(Path.GetTempPath(), "allowedfolder", "file.txt");
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Windows: case-insensitive FS — differently-cased path should be allowed
+            await target.UploadFileAsync(filePath, "/remote.txt");
+            connectorMock.VerifyAll();
+        }
+        else
+        {
+            // Linux/macOS: case-sensitive FS — differently-cased path should be denied
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await target.UploadFileAsync(filePath, "/remote.txt"));
+        }
     }
 }
