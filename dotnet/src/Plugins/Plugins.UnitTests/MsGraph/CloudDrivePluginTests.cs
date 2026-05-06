@@ -301,4 +301,56 @@ public class CloudDrivePluginTests
                 await target.UploadFileAsync(filePath, "/remote.txt"));
         }
     }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionToUncPathAsync()
+    {
+        // Arrange — env var that expands to a UNC path should be rejected
+        var envVarName = "SK_TEST_UNC_" + Guid.NewGuid().ToString("N")[..8];
+        var originalValue = Environment.GetEnvironmentVariable(envVarName);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, "\\\\server\\share");
+            var maliciousPath = Path.Combine($"%{envVarName}%", "secret.txt");
+
+            Mock<ICloudDriveConnector> connectorMock = new();
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+
+            // Act & Assert — UNC path after env-var expansion should be rejected
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+                await target.UploadFileAsync(maliciousPath, "/remote.txt"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, originalValue);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarTraversalBypassAsync()
+    {
+        // Arrange — env var that expands to a traversal path
+        var allowedDir = Path.Combine(Path.GetTempPath(), "allowed-sandbox");
+        var envVarName = "SK_TEST_TRAV_" + Guid.NewGuid().ToString("N")[..8];
+        var originalValue = Environment.GetEnvironmentVariable(envVarName);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName,
+                $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}elsewhere");
+            var maliciousPath = Path.Combine(allowedDir, $"%{envVarName}%", "secret.txt");
+
+            Mock<ICloudDriveConnector> connectorMock = new();
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+
+            // Act & Assert — after env-var expansion, the canonical path lands outside the allowed directory
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await target.UploadFileAsync(maliciousPath, "/remote.txt"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, originalValue);
+        }
+    }
 }

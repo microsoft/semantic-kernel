@@ -123,7 +123,7 @@ public sealed class CloudDrivePlugin
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        var canonicalPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(filePath));
+        var canonicalPath = CanonicalizePath(filePath);
 
         if (!this.IsUploadPathAllowed(canonicalPath))
         {
@@ -211,11 +211,10 @@ public sealed class CloudDrivePlugin
     }
 
     /// <summary>
-    /// If a list of allowed upload directories has been provided, the directory of the provided filePath is checked
-    /// to verify it is in the allowed directory list. Paths are canonicalized before comparison.
-    /// Subdirectories of allowed directories are also permitted.
+    /// Expands environment variables and resolves the path to its canonical form.
+    /// This must be called before validation to prevent validate/use mismatches.
     /// </summary>
-    private bool IsUploadPathAllowed(string path)
+    private static string CanonicalizePath(string path)
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
 
@@ -224,19 +223,39 @@ public sealed class CloudDrivePlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        string? directoryPath = Path.GetDirectoryName(path);
+        // Expand environment variables first, then canonicalize — so that
+        // validation and I/O operate on the same resolved path.
+        var expanded = Environment.ExpandEnvironmentVariables(path);
+
+        // Re-check after expansion: an env var could have expanded to a UNC
+        // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
+        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return Path.GetFullPath(expanded);
+    }
+
+    /// <summary>
+    /// Checks whether a canonicalized file path falls within one of the allowed upload directories.
+    /// Subdirectories of allowed directories are also permitted.
+    /// </summary>
+    private bool IsUploadPathAllowed(string canonicalPath)
+    {
+        Ensure.NotNullOrWhitespace(canonicalPath, nameof(canonicalPath));
+
+        string? directoryPath = Path.GetDirectoryName(canonicalPath);
 
         if (string.IsNullOrEmpty(directoryPath))
         {
-            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(canonicalPath));
         }
 
         if (this._allowedUploadDirectories.Count == 0)
         {
             return false;
         }
-
-        var canonicalDir = Path.GetFullPath(directoryPath);
 
         foreach (var allowedDirectory in this._allowedUploadDirectories)
         {
@@ -247,8 +266,8 @@ public sealed class CloudDrivePlugin
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, s_pathComparison)
-                || (canonicalDir + separator).Equals(canonicalAllowed, s_pathComparison))
+            if (directoryPath.StartsWith(canonicalAllowed, s_pathComparison)
+                || (directoryPath + separator).Equals(canonicalAllowed, s_pathComparison))
             {
                 return true;
             }
