@@ -18,12 +18,13 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This plugin is secure by default. <see cref="AllowedUploadDirectories"/> must be explicitly configured
-/// before any file upload operations are permitted. By default, all local file paths are denied.
+/// This plugin is secure by default. <see cref="AllowedUploadDirectories"/> and <see cref="AllowedSharePaths"/>
+/// must be explicitly configured before file upload or share-link operations are permitted.
+/// By default, all paths are denied.
 /// </para>
 /// <para>
 /// When exposing this plugin to an LLM via auto function calling, ensure that
-/// <see cref="AllowedUploadDirectories"/> is restricted to trusted values only.
+/// <see cref="AllowedUploadDirectories"/> and <see cref="AllowedSharePaths"/> are restricted to trusted values only.
 /// </para>
 /// </remarks>
 public sealed class CloudDrivePlugin
@@ -31,6 +32,7 @@ public sealed class CloudDrivePlugin
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
     private HashSet<string> _allowedUploadDirectories = [];
+    private HashSet<string> _allowedSharePaths = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
@@ -57,6 +59,21 @@ public sealed class CloudDrivePlugin
     {
         get => this._allowedUploadDirectories;
         set => this._allowedUploadDirectories = value is null ? [] : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// List of allowed remote paths for which sharing links may be created. Subdirectories of allowed paths are also permitted.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
+    /// with trusted remote paths before any share-link operations will succeed.
+    /// Paths are normalized with forward slashes before comparison and matched case-insensitively
+    /// (OneDrive paths are case-insensitive).
+    /// </remarks>
+    public IEnumerable<string> AllowedSharePaths
+    {
+        get => this._allowedSharePaths;
+        set => this._allowedSharePaths = value is null ? [] : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -131,8 +148,15 @@ public sealed class CloudDrivePlugin
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Creating link for '{0}'", filePath);
-        const string Type = "view"; // TODO expose this as an SK variable
-        const string Scope = "anonymous"; // TODO expose this as an SK variable
+        const string Type = "view";
+        const string Scope = "organization";
+
+        Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
+
+        if (!this.IsSharePathAllowed(filePath))
+        {
+            throw new InvalidOperationException("Creating a share link for the provided path is not allowed. Configure 'AllowedSharePaths' with trusted remote paths to enable sharing.");
+        }
 
         return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
     }
@@ -143,6 +167,48 @@ public sealed class CloudDrivePlugin
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
+
+    /// <summary>
+    /// Checks whether the provided remote path is allowed for sharing.
+    /// Paths are normalized with forward slashes and compared case-insensitively
+    /// (OneDrive paths are case-insensitive). Subdirectories of allowed paths are permitted.
+    /// </summary>
+    private bool IsSharePathAllowed(string path)
+    {
+        Ensure.NotNullOrWhitespace(path, nameof(path));
+
+        if (this._allowedSharePaths.Count == 0)
+        {
+            return false;
+        }
+
+        // Normalize to forward slashes for consistent comparison of remote paths.
+        var normalizedPath = path.Replace('\\', '/');
+
+        foreach (var allowedPath in this._allowedSharePaths)
+        {
+            var normalizedAllowed = allowedPath.Replace('\\', '/');
+            if (!normalizedAllowed.EndsWith("/", StringComparison.Ordinal))
+            {
+                normalizedAllowed += "/";
+            }
+
+            var normalizedDir = normalizedPath;
+            int lastSlash = normalizedDir.LastIndexOf('/');
+            if (lastSlash >= 0)
+            {
+                normalizedDir = normalizedDir.Substring(0, lastSlash);
+            }
+
+            if ((normalizedDir + "/").StartsWith(normalizedAllowed, StringComparison.OrdinalIgnoreCase)
+                || (normalizedDir + "/").Equals(normalizedAllowed, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// If a list of allowed upload directories has been provided, the directory of the provided filePath is checked

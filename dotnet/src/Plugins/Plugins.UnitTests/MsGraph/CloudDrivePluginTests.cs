@@ -38,17 +38,82 @@ public class CloudDrivePluginTests
     public async Task CreateLinkAsyncSucceedsAsync()
     {
         // Arrange
-        string anyFilePath = Guid.NewGuid().ToString();
+        string anyFilePath = "/Documents/report.docx";
         string anyLink = Guid.NewGuid().ToString();
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.CreateShareLinkAsync(anyFilePath, "view", "organization", It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyLink);
 
-        CloudDrivePlugin target = new(connectorMock.Object);
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents"] };
 
         // Act
         string actual = await target.CreateLinkAsync(anyFilePath);
+
+        // Assert
+        Assert.Equal(anyLink, actual);
+        connectorMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task CreateLinkAsyncUsesOrganizationScopeAsync()
+    {
+        // Arrange
+        string anyFilePath = "/Documents/report.docx";
+        string anyLink = Guid.NewGuid().ToString();
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        connectorMock.Setup(c => c.CreateShareLinkAsync(anyFilePath, "view", "organization", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(anyLink);
+
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents"] };
+
+        // Act
+        await target.CreateLinkAsync(anyFilePath);
+
+        // Assert — verify "organization" scope was passed, not "anonymous"
+        connectorMock.Verify(c => c.CreateShareLinkAsync(anyFilePath, "view", "organization", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateLinkAsyncDeniesAllPathsByDefaultAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object);
+
+        // Act & Assert — default config denies all share paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.CreateLinkAsync("/Documents/secret.docx"));
+    }
+
+    [Fact]
+    public async Task CreateLinkAsyncDeniesPathsOutsideAllowedAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents/Public"] };
+
+        // Act & Assert — path outside allowed share paths is denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.CreateLinkAsync("/Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task CreateLinkAsyncAllowsSubdirectoriesOfAllowedSharePathsAsync()
+    {
+        // Arrange
+        string filePath = "/Documents/Public/Reports/Q1/summary.docx";
+        string anyLink = Guid.NewGuid().ToString();
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        connectorMock.Setup(c => c.CreateShareLinkAsync(filePath, "view", "organization", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(anyLink);
+
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents/Public"] };
+
+        // Act — subdirectory of allowed share path should succeed
+        string actual = await target.CreateLinkAsync(filePath);
 
         // Assert
         Assert.Equal(anyLink, actual);
